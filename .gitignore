@@ -1,4 +1,5 @@
 target/
+.classpath
 .project
 .settings
 pom.xml.tag
@@ -9,6 +10,10 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+rebel.xml
+src/main/resources/git.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+/bin/
+/site/
