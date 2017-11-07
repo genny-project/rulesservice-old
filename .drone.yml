@@ -1,0 +1,12 @@
+pipeline:
+  build:
+    image: maven:3.5.0-jdk-8
+    commands:
+      - mvn clean package
+
+  build-push-docker:
+    image: plugins/docker
+    username: gadadockerbot
+    password: WelcomeToTheHub121!
+    repo: gennyproject/rulesservice
+    tag: latest

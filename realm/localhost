@@ -1,0 +1,10 @@
+{
+  "realm": "genny",
+"auth-server-url": "http://localhost:8180/auth",
+  "ssl-required": "none",
+  "resource": "curl",
+  "credentials": {
+    "secret": "056b73c1-7078-411d-80ec-87d41c55c3b4"
+  },
+  "policy-enforcer": {}
+}

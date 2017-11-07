@@ -1,0 +1,194 @@
+package com.sample
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.Ask;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String REACT_APP_QWANDA_API_URL;
+global java.lang.String REACT_APP_VERTX_URL;
+global java.lang.String KEYCLOAKIP;
+
+declare User1
+    uname : String
+    name : String
+    realm : String
+    roles :  String
+end
+    
+
+rule "Init"
+
+    when
+        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
+        $roles : Set(!isEmpty())
+        not User1() 
+    then
+       System.out.println("$$$$ Alyson AUTH_INIT RULE : "+$map1.get("realm") +" Project  $$$$");
+        //creating user fact
+        User1 newUser = new User1();
+        newUser.setUname($map1.get("preferred_username").toString());
+        newUser.setName($map1.get("name").toString());
+        newUser.setRealm($map1.get("realm").toString());
+        newUser.setRoles($map1.get("realm_access").toString());
+        System.out.println("Name   : " +newUser.getName());
+        System.out.println("Role   : " +$roles.toString());
+        insert(newUser);
+        
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+       //Get and print the token
+        String tokenString = (String)$map.get("token");
+        System.out.println("tokenstr="+tokenString);
+      
+        //Getting the User BE and sending it as ALIAS
+        //Get User BE for USER ALIAS based on the user's username
+        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
+          userObj.put("aliasCode", "USER");      
+        //Publish USER BaseEntity ALIAS to EventBus
+        bus.publish("cmds", userObj);
+    
+        
+        //Getting the Project BE and sending it as ALIAS
+        //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
+        JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
+         prjObj.put("aliasCode", "PROJECT");     
+        //Publish PRJ BaseEntity ALIAS to EventBus
+        bus.publish("cmds", prjObj);
+     
+         //sending cmd layout1 
+        QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
+        //Convert cmd to JSON Obj
+        JsonObject obj1 = new JsonObject().mapFrom(cmd);
+        obj1.put("msg_type", "CMD_MSG");
+        obj1.put("cmd_type", "CMD_LAYOUT");
+        obj1.put("code", "layout1");
+        //Get Layout from the Github
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/"+newUser.getRealm()+".json", null);
+        //put layout as data in the JsonObject
+        obj1.put("data", new JsonObject(layout));
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+obj1.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", obj1);
+     
+       //Get BaseEntity for the TreeView  
+        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE", tokenString));
+       //Print the json Object     
+        System.out.println("*******************");
+        System.out.println("Json="+obj.toString()); 
+        System.out.println("*******************");  
+        //Publish it to the EventBus            
+        bus.publish("cmds", obj);
+    
+       //Get Asks from Genny Config
+       JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
+    	  // JsonObject obj2 = new JsonObject();
+     //  obj2.put("msg_type", "DATA_MSG");
+    //   obj2.put("data_type", "Asks");
+   //     obj2.put("items", asks);        
+        //Print Asks
+        System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+        System.out.println("Google Asks="+asks.toString()); 
+        System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+        //Publish Asks              
+        bus.publish("cmds", asks);
+
+        //Get Asks from the Github
+  //     JsonArray askswithdata = new JsonArray( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/asksmsg.json", null));
+   //    JsonObject obj3 = new JsonObject();
+   //     obj3.put("msg_type", "DATA_MSG");
+    //    obj3.put("data_type", "Asks");
+    //    obj3.put("items", askswithdata);        
+        //Print Asks
+  //      System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+   //     System.out.println("Github Asks="+obj3.toString()); 
+    //    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        //Publish Asks              
+     //   bus.publish("cmds", obj3);
+        
+         //Getting B.E. to display in Bucket View
+        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_BEG", tokenString));
+        JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_BEG", tokenString));
+        JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_BEG", tokenString));
+        JsonObject inTransitBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_BEG", tokenString));
+        JsonObject completedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_BEG", tokenString));
+        JsonObject paidBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_BEG/attributes", tokenString));
+        
+        JsonObject noQuotes = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000001/linkcodes/LNK_BEG/attributes", tokenString));
+        JsonObject quotes1 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000002/linkcodes/LNK_BEG/attributes", tokenString));
+   		JsonObject quotes2 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000003/linkcodes/LNK_BEG/attributes", tokenString)); 
+   		JsonObject approved = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000004/linkcodes/LNK_BEG/attributes", tokenString));
+   		JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
+   		//JsonObject completed = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
+		//JsonObject paid = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_CORE/attributes", tokenString));
+		
+		//Publish noQuotes BEG
+		 bus.publish("cmds", noQuotesBEG);
+		//Publish Quotes BEG
+		 bus.publish("cmds", quotesBEG);
+		 //Publish Approved BEG
+		 bus.publish("cmds", approvedBEG);
+		 //Publish In Transit BEG
+		 bus.publish("cmds", inTransitBEG);
+		 //Publish Completed BEG
+		 bus.publish("cmds", completedBEG);
+		 //Publish Paiod BEG
+		 bus.publish("cmds", paidBEG);
+		
+		//Publish noQuotes load            
+        bus.publish("cmds", noQuotes);
+        //Publish Quotes load
+        bus.publish("cmds", quotes1);
+        //Publish Quotes load
+        bus.publish("cmds", quotes2);
+		//Publish approved loads  
+        bus.publish("cmds", approved);
+        //Publish In-Transit loads 
+        bus.publish("cmds", inTransit);
+  //      //Publish completed loads 
+  //      bus.publish("cmds", completed);
+  //      //Publish paid loads 
+ //       bus.publish("cmds", paid);
+        
+        //sending cmd BUCKET_VIEW
+        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+bucketViewJson.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", bucketViewJson); 
+		      
+end

@@ -1,0 +1,98 @@
+package com.sample
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.Ask;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String REACT_APP_QWANDA_API_URL;
+global java.lang.String REACT_APP_VERTX_URL;
+global java.lang.String KEYCLOAKIP;
+
+rule "Answer"
+    when
+        m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then    
+        System.out.println("Answer Rule");
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+        String tokenString = (String)$map.get("token");
+
+        System.out.println("------------------------------------------------------------------------");
+        System.out.println("Here is the Token ="+tokenString);
+        System.out.println("------------------------------------------------------------------------");
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+
+        // extract answers
+        Answer[] answers = m.getItems();
+        for (Answer answer : answers) {
+            Long askId = answer.getAskId();
+            String sourceCode = answer.getSourceCode();
+            String targetCode = answer.getTargetCode();
+            String attributeCode = answer.getAttributeCode();
+            String value = answer.getValue();
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+            
+            //convert answer to json
+            String jsonAnswer = gson.toJson(answer);
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("Json Answer: "+jsonAnswer);
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+            // convert Answer Json to Answer obj
+            Gson ans = new Gson();
+            Answer answerObj = ans.fromJson(jsonAnswer, Answer.class);
+            System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+            System.out.println(answerObj);
+            System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+            //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
+
+            // post answers to qwanda-utils
+            String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+            System.out.println("##############################################################");
+            System.out.println("OUTPUT AFTER POSTING ANSWERS " +output);
+            System.out.println("##############################################################");
+        }           
+        //Get Asks with Answer
+        JsonArray asksWithAnswer = new JsonArray( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asks", tokenString));
+ 	    JsonObject obj2 = new JsonObject();
+        obj2.put("msg_type", "DATA_MSG");
+        obj2.put("data_type", "Asks");
+        obj2.put("items", asksWithAnswer);        
+        
+        //Print Asks with Answer
+        System.out.println("************************************************************");
+        System.out.println("Asks with Answer="+obj2.toString()); 
+        System.out.println("************************************************************");
+        bus.publish("cmds", obj2);
+    end
