@@ -93,7 +93,7 @@ rule "Init"
         obj1.put("cmd_type", "CMD_LAYOUT");
         obj1.put("code", "layout1");
         //Get Layout from the Github
-        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/"+newUser.getRealm()+".json", null);
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
         //put layout as data in the JsonObject
         obj1.put("data", new JsonObject(layout));
         System.out.println(" ##################### ");
@@ -182,13 +182,13 @@ rule "Init"
  //       bus.publish("cmds", paid);
         
         //sending cmd BUCKET_VIEW
-        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+  //      QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         //Convert cmd to JSON Obj
-        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-        System.out.println(" ##################### ");
-        System.out.println("Layout Data ="+bucketViewJson.toString()); 
-        System.out.println(" #################### ");
+ //       JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+  //      System.out.println(" ##################### ");
+   //     System.out.println("Layout Data ="+bucketViewJson.toString()); 
+    //    System.out.println(" #################### ");
         //Publish it to the EventBus
-        bus.publish("cmds", bucketViewJson); 
+    //    bus.publish("cmds", bucketViewJson); 
 		      
 end
