@@ -207,17 +207,16 @@ rule "Select TreeView Items for child items"
 				  
 end
 
+*/
 //Asks rules
 rule "asks for TreeView-YOUR_DETAILS click"
     when
         $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1"  && data.value == "GRP_YOUR_DETAILS" )
         bus: EventBus()
-        $map : Map($value: this["token"])
+        $map : Map($value: this["token"] != null)
     then
  	    System.out.println("------- EXPAND GRP_YOUR_DETAILS RULE --------");
-	    String keycloakIP = System.getenv("HOSTIP")!=null?System.getenv("HOSTIP"): "localhost";
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
- 		System.out.println("HOSTIP:"+keycloakIP+" ,qwandaUrl="+qwandaServiceUrl);
   	    String tokenString = (String)$map.get("token");
 		System.out.println("tokenstr="+tokenString);
         JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
@@ -227,4 +226,3 @@ rule "asks for TreeView-YOUR_DETAILS click"
 		System.out.println("*******************");						
 		bus.publish("cmds", obj);
 end  
-*/
