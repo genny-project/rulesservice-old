@@ -1,4 +1,4 @@
-package life.genny.rulesservice;
+package life.genny.verticle;
 
 import io.vertx.rxjava.core.AbstractVerticle;
 import life.genny.cluster.Cluster;
