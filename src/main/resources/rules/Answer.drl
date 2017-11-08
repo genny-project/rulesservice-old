@@ -82,17 +82,21 @@ rule "Answer"
             System.out.println("##############################################################");
             System.out.println("OUTPUT AFTER POSTING ANSWERS " +output);
             System.out.println("##############################################################");
-        }           
+            
+            bus.publish("cmds", jsonAnswer);       
+            
+        }      
+                  
         //Get Asks with Answer
-        JsonArray asksWithAnswer = new JsonArray( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asks", tokenString));
- 	    JsonObject obj2 = new JsonObject();
-        obj2.put("msg_type", "DATA_MSG");
-        obj2.put("data_type", "Asks");
-        obj2.put("items", asksWithAnswer);        
+ //       JsonArray asksWithAnswer = new JsonArray( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/answer", tokenString));
+// 	    JsonObject obj2 = new JsonObject();
+//        obj2.put("msg_type", "DATA_MSG");
+//        obj2.put("data_type", "Asks");
+//       obj2.put("items", asksWithAnswer);        
         
         //Print Asks with Answer
-        System.out.println("************************************************************");
-        System.out.println("Asks with Answer="+obj2.toString()); 
-        System.out.println("************************************************************");
-        bus.publish("cmds", obj2);
+//        System.out.println("************************************************************");
+//        System.out.println("Asks with Answer="+obj2.toString()); 
+//        System.out.println("************************************************************");
+//        bus.publish("cmds", obj2);
     end
