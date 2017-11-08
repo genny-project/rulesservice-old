@@ -1,4 +1,4 @@
-package life.genny.verticle;
+package life.genny.rulesservice;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
