@@ -76,8 +76,7 @@ rule "Init"
           userObj.put("aliasCode", "USER");      
         //Publish USER BaseEntity ALIAS to EventBus
         bus.publish("cmds", userObj);
-    
-        
+           
         //Getting the Project BE and sending it as ALIAS
         //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
         JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
@@ -85,7 +84,7 @@ rule "Init"
         //Publish PRJ BaseEntity ALIAS to EventBus
         bus.publish("cmds", prjObj);
      
-         //sending cmd layout1 
+        //sending cmd layout1 
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
         //Convert cmd to JSON Obj
         JsonObject obj1 = new JsonObject().mapFrom(cmd);
@@ -93,7 +92,7 @@ rule "Init"
         obj1.put("cmd_type", "CMD_LAYOUT");
         obj1.put("code", "layout1");
         //Get Layout from the Github
-        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/devLayout.json", null);
         //put layout as data in the JsonObject
         obj1.put("data", new JsonObject(layout));
         System.out.println(" ##################### ");
@@ -101,6 +100,8 @@ rule "Init"
         System.out.println(" #################### ");
         //Publish it to the EventBus
         bus.publish("cmds", obj1);
+        
+//        drools.setFocus("layout"); 
      
        //Get BaseEntity for the TreeView  
         JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE", tokenString));
@@ -112,11 +113,7 @@ rule "Init"
         bus.publish("cmds", obj);
     
        //Get Asks from Genny Config
-       JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
-    	  // JsonObject obj2 = new JsonObject();
-     //  obj2.put("msg_type", "DATA_MSG");
-    //   obj2.put("data_type", "Asks");
-   //     obj2.put("items", asks);        
+       JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));   
         //Print Asks
         System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
         System.out.println("Google Asks="+asks.toString()); 
@@ -192,3 +189,58 @@ rule "Init"
     //    bus.publish("cmds", bucketViewJson); 
 		      
 end
+
+/*
+rule "Send DevLayout"
+     agenda-group "layout"
+     when
+        $map1 : Map($value1: this["realm"] == "genny")
+     then
+        System.out.println("Sending Dev Layout");
+            //sending cmd layout1 
+        QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
+        //Convert cmd to JSON Obj
+        JsonObject obj1 = new JsonObject().mapFrom(cmd);
+        obj1.put("msg_type", "CMD_MSG");
+        obj1.put("cmd_type", "CMD_LAYOUT");
+        obj1.put("code", "layout1");
+        //Get Layout from the Github
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/devLayout.json", null);
+        //put layout as data in the JsonObject
+        obj1.put("data", new JsonObject(layout));
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+obj1.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", obj1);
+end
+
+
+rule "Send layout1"
+     agenda-group "layout"
+     when
+        $map1 : Map($value1: this["realm"] != "genny")
+     then
+        System.out.println("Sending Dev Layout");
+            //sending cmd layout1 
+        QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
+        //Convert cmd to JSON Obj
+        JsonObject obj1 = new JsonObject().mapFrom(cmd);
+        obj1.put("msg_type", "CMD_MSG");
+        obj1.put("cmd_type", "CMD_LAYOUT");
+        obj1.put("code", "layout1");
+        //Get Layout from the Github
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
+        //put layout as data in the JsonObject
+        obj1.put("data", new JsonObject(layout));
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+obj1.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", obj1);
+end
+     
+*/
+
+
+
