@@ -187,24 +187,11 @@ end
 
 rule "Select TreeView Item: GRP_USERS"
     when
-        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && data.value == "GRP_USERS" )
+        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_CONTACTS" || data.value == "GRP_USERS" ||  data.value == "GRP_PEOPLE" ) )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
- 	    System.out.println("-------- Rule:- SELECT TreeView Items --------");		
-		
-		//sending cmd view 
-        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
-        //Convert cmd to JSON Obj
-        JsonObject cmdObj = new JsonObject().mapFrom(cmd);
-          
-          cmdObj.put("data", "itemsPerPage:5");        
-        System.out.println(" ##################### ");
-        System.out.println("Layout Data ="+cmdObj.toString()); 
-        System.out.println(" #################### ");
-        //Publish it to the EventBus
-        bus.publish("cmds", cmdObj); 
-				
+ 	    System.out.println("-------- Rule:- SELECT TreeView Items --------");					
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
 		System.out.println("tokenstr="+tokenString);
@@ -213,12 +200,23 @@ rule "Select TreeView Item: GRP_USERS"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
 
         //Getting all BaseEntity and their attributes
-        JsonObject users = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=20", tokenString));
+        JsonObject users = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=20", tokenString));
 		System.out.println("*******************");
 		System.out.println("Json="+users.toString());	
 		System.out.println("*******************");
 		//Publishing DATA_MSG to the Event Bus with datas to be displayed in the table 						
 		bus.publish("cmds", users);
+		
+	   //sending cmd view 
+        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject cmdObj = new JsonObject().mapFrom(cmd);
+        cmdObj.put("data", "itemsPerPage:5");        
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+cmdObj.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", cmdObj); 
 end
 
 /*
