@@ -104,19 +104,6 @@ rule "Init"
         System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
         //Publish Asks              
         bus.publish("cmds", asks);
-
-        //Get Asks from the Github
-  //     JsonArray askswithdata = new JsonArray( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/asksmsg.json", null));
-   //    JsonObject obj3 = new JsonObject();
-   //     obj3.put("msg_type", "DATA_MSG");
-    //    obj3.put("data_type", "Asks");
-    //    obj3.put("items", askswithdata);        
-        //Print Asks
-  //      System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-   //     System.out.println("Github Asks="+obj3.toString()); 
-    //    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        //Publish Asks              
-     //   bus.publish("cmds", obj3);
         
          //Getting B.E. to display in Bucket View
         JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_BEG", tokenString));
