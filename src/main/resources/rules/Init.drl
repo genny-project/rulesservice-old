@@ -168,7 +168,7 @@ rule "Send DevLayout"
        bus: EventBus()
        $user: User1(realm == "genny")
      then
-        System.out.println("Sending Dev Layout");
+        System.out.println("Sending Dev Layout for Genny");
             //sending cmd layout1 
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
         //Convert cmd to JSON Obj
@@ -194,7 +194,7 @@ rule "Send layout1"
        bus: EventBus()
        $user: User1(realm != "genny")
      then
-        System.out.println("Sending Project Layout");
+        System.out.println("Sending Project Layout for project: "+$user.getRealm());
         
         //sending cmd layout1 
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
