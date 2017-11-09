@@ -150,6 +150,40 @@ rule "Select TreeView Item: DASHBOARD"
 				  
 end
 
+//Sending TableView with data for click on the lowest element of the Dashboard
+rule "Select Dashboard lower level child"
+    when
+        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_NO_QUOTES" || data.value == "GRP_QUOTES" || data.value == "GRP_APPROVED" || data.value == "GRP_IN_TRANSIT" || data.value == "GRP_COMPLETED" || data.value == "GRP_PAID") )
+        bus: EventBus()
+        $map : Map($value: this["token"])  
+    then
+         System.out.println("-------- Rule:- SELECT TreeView DASHBOARD Items: TABLE_VIEW --------");	
+		//Getting QwandaService URL
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+ 		//Getting token String
+  	    String tokenString = (String)$map.get("token");
+		System.out.println("tokenstr="+tokenString);
+       //Get the data
+       JsonObject data = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=20", tokenString));
+       System.out.println("*******************");
+		System.out.println("Json="+data.toString());	
+		System.out.println("*******************");
+		//Publishing DATA_MSG to the Event Bus with datas to be displayed in the table 						
+		bus.publish("cmds", data);
+		
+		//sending cmd view 
+        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject cmdObj = new JsonObject().mapFrom(cmd);
+        cmdObj.put("data", "itemsPerPage:5");        
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+cmdObj.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", cmdObj); 
+		
+end
+
 
 rule "Select TreeView Item: GRP_USERS"
     when
