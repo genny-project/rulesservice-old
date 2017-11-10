@@ -8,6 +8,8 @@
 	<properties>
 		<log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.4.2</vertx.version>
+		
+	    <junit-version>4.12</junit-version>
 
 	</properties>
 	<repositories>
@@ -25,6 +27,12 @@
 		</repository>
 	</repositories>
 	<dependencies>
+	   <dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit-version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>qwanda</artifactId>
