@@ -52,6 +52,7 @@ rule "Answer"
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
+        String value= null;
 
         // extract answers
         Answer[] answers = m.getItems();
@@ -60,7 +61,7 @@ rule "Answer"
             String sourceCode = answer.getSourceCode();
             String targetCode = answer.getTargetCode();
             String attributeCode = answer.getAttributeCode();
-            String value = answer.getValue();
+            value = answer.getValue();
             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
             
             //convert answer to json
@@ -97,6 +98,23 @@ rule "Answer"
                    
             
         }      
+        QCmdMessage cmd = new QCmdMessage("SOCIAL_MEDIA_FB_FETCH", value);
+        Gson gson2 = new Gson();
+        String fbCode = gson2.toJson(cmd);
+        System.out.println(fbCode);
+        bus.publish("social", fbCode);
+        
+        // JsonObject obj3 = new JsonObject();
+        // obj3.put("msg_type", "DATA_MSG");
+        // obj3.put("data_type", "SOCIAL_MEDIA_FB_FETCH");
+        // obj3.put("items", value);     
+        // bus.publish("social", obj3);
+
+        // System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~88888888888888888888888888888888~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // System.out.println("##############################################################");
+        // System.out.println("AFTER SENDING TO SOCIAL CHANNEL"");
+        // System.out.println("##############################################################");     
                   
         //Get Asks with Answer
  //       JsonArray asksWithAnswer = new JsonArray( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/answer", tokenString));
