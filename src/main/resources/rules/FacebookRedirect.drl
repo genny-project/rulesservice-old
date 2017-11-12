@@ -23,7 +23,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.FieldNamingPolicy;
-import io.vertx.core.json.JsonObject;
+//import io.vertx.core.json.JsonObject;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
@@ -57,7 +57,7 @@ rule "Facebook Redirect"
     JsonObject obj = new JsonObject();
     obj.put("msg_type", "DATA_MSG");
     obj.put("data_type", "FB_REDIRECT");
-    obj.put("items", items.toString());        
+    obj.put("items", items);        
     bus.publish("cmds", obj); 
 end
 
