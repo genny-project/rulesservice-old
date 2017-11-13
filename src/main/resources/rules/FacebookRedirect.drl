@@ -7,6 +7,7 @@ import io.vertx.core.buffer.Buffer;
 import com.google.gson.Gson;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwanda.message.QDataAskMessage;
@@ -37,30 +38,45 @@ rule "Facebook Redirect"
     bus: EventBus()
     $map : Map($value: this["token"] != null)
   then
-    System.out.println("-------- Rule:- Redirect Executed --------");
+    System.out.println("-------- RULE:- SOCIAL REDIRECT EXECUTED --------");
     String tokenString = (String)$map.get("token");
     System.out.println("tokenstr="+tokenString);
+    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
 
     String clientId= "423902461306952";
     String clientSecret= "a7bd50640f9914b95756ae8f5680751b";
     String redirectUrl= "https://www.facebook.com/v2.8/dialog/oauth?response_type=code";
+    
+    String askId = $m.getData().getValue();
+    System.out.println("Ask ID::"+askId);
 
-    JsonObject items = new JsonObject();
-    items.put("clientId", clientId);
-    items.put("clientSecret", clientSecret);
-    items.put("redirectUrl", redirectUrl);  
+    JsonObject ask = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asks/"+askId, tokenString));
+    System.out.println("This is the ask" +ask.toString());
+
+    ask.put("clientId", clientId);
+    ask.put("clientSecret", clientSecret);
+    ask.put("redirectUrl", redirectUrl);  
+    ask.put("social_type", "facebook");
 
     System.out.println("*******************");
-    System.out.println("Redirect Data="+items.toString());	
-    System.out.println("*******************");						
+    System.out.println("Ask with Redirect DATA" +ask.toString());
+    System.out.println("*******************");		
     
     JsonObject obj = new JsonObject();
     obj.put("msg_type", "DATA_MSG");
-    obj.put("data_type", "FB_REDIRECT");
-    obj.put("items", items);        
+    obj.put("data_type", "SOCIAL_REDIRECT");
+    obj.put("items", ask);        
     bus.publish("cmds", obj); 
 end
 
 
+// rule "Facebook Code"
+//   when
+//     $m : QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE")
+//     //bus: EventBus()
+//    // $map : Map($value: this["token"] != null)
 
+//   then
+//     System.out.println("-------- Rule:- FACEBOOK CODE Executed --------");
+//   end
 
