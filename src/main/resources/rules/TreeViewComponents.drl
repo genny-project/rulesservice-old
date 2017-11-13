@@ -175,7 +175,8 @@ rule "Select Dashboard lower level child"
         QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
         //Convert cmd to JSON Obj
         JsonObject cmdObj = new JsonObject().mapFrom(cmd);
-        cmdObj.put("data", "itemsPerPage:5");        
+        cmdObj.put("data", "itemsPerPage:5");     
+        cmdObj.put("root", $m.getData().getValue());   
         System.out.println(" ##################### ");
         System.out.println("Layout Data ="+cmdObj.toString()); 
         System.out.println(" #################### ");
@@ -211,7 +212,8 @@ rule "Select TreeView Item: GRP_USERS"
         QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
         //Convert cmd to JSON Obj
         JsonObject cmdObj = new JsonObject().mapFrom(cmd);
-        cmdObj.put("data", "itemsPerPage:5");        
+        cmdObj.put("data", "itemsPerPage:5");  
+        cmdObj.put("root", $m.getData().getValue());       
         System.out.println(" ##################### ");
         System.out.println("Layout Data ="+cmdObj.toString()); 
         System.out.println(" #################### ");

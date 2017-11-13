@@ -106,6 +106,7 @@ rule "Init"
         bus.publish("cmds", asks);
         
          //Getting B.E. to display in Bucket View
+	JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));	
         JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_BEG", tokenString));
         JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_BEG", tokenString));
         JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_BEG", tokenString));
@@ -119,7 +120,8 @@ rule "Init"
    		JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
    		//JsonObject completed = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
 		//JsonObject paid = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_CORE/attributes", tokenString));
-		
+	 	//Publish Header Grp
+		bus.publish("cmds", headerGrps);	
 		//Publish noQuotes BEG
 		 bus.publish("cmds", noQuotesBEG);
 		//Publish Quotes BEG
