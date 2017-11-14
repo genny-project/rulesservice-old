@@ -84,18 +84,12 @@ rule "Answer"
             System.out.println("OUTPUT AFTER POSTING ANSWERS " +output);
             System.out.println("##############################################################");
             
-            JsonObject obj2 = new JsonObject();
-            obj2.put("msg_type", "DATA_MSG");
-            obj2.put("data_type", "Answer");
-            obj2.put("items", new JsonObject(jsonAnswer)); 
-            
-           //Print Answer
-           System.out.println("************************************************************");
-           System.out.println("Answer= "+obj2.toString()); 
-           System.out.println("************************************************************");
-            
-           bus.publish("cmds", obj2);
-                   
+            QCmdMessage cmd = new QCmdMessage("SOCIAL_MEDIA_FB_FETCH", value);
+            Gson gson2 = new Gson();
+            String fbCode = gson2.toJson(cmd);
+            System.out.println(fbCode);
+            bus.publish("social", fbCode);
+                
             
         }      
                   
