@@ -69,14 +69,3 @@ rule "Facebook Redirect"
     bus.publish("cmds", obj); 
 end
 
-
-// rule "Facebook Code"
-//   when
-//     $m : QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE")
-//     //bus: EventBus()
-//    // $map : Map($value: this["token"] != null)
-
-//   then
-//     System.out.println("-------- Rule:- FACEBOOK CODE Executed --------");
-//   end
-
