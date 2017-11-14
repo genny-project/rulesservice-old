@@ -37,6 +37,7 @@ import life.genny.qwanda.Ask;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataRuleMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
@@ -87,8 +88,16 @@ public class EBCHandlers {
       final JsonObject payload = new JsonObject(arg.body().toString());
       final String token = payload.getString("token");
       System.out.println(payload);
-      final QEventMessage eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
-      processEvent(eventMsg, eventBus, token);
+      
+      QEventMessage eventMsg = null;
+      if(payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
+    	     //Converting Json to QEventAttributeValueChangeMessage class
+    	     eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+      }else {
+    	      eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);    	      
+       }
+       processEvent(eventMsg, eventBus, token);  
+      
     });
 
     EBConsumers.getFromData().subscribe(arg -> {
@@ -110,40 +119,45 @@ public class EBCHandlers {
     });
   }
 
+  
+  static Map<String, Object> decodedToken = null;
+  static Set<String> userRoles = null;
 
   public static void processEvent(final QEventMessage eventMsg, final EventBus bus,
       final String token) {
     Vertx.vertx().executeBlocking(future -> {
       // kSession = createSession(bus, token);
 
-      // Getting decoded token in Hash Map from QwandaUtils
-      final Map<String, Object> decodedToken = KeycloakUtils.getJsonMap(token);
-      // Getting Set of User Roles from QwandaUtils
-      final Set<String> userRoles =
-          KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
+     if((token != null) && (!token.isEmpty())){
+         // Getting decoded token in Hash Map from QwandaUtils
+         decodedToken = KeycloakUtils.getJsonMap(token);
+         // Getting Set of User Roles from QwandaUtils
+            userRoles =
+             KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
 
-      System.out.println("The Roles value are: " + userRoles.toString());
-
-      /*
-       * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm names as we
-       * can't add multiple realms in genny keyclaok as it is open-source
-       */
-      final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
-      if ((projectRealm != null) && (!projectRealm.isEmpty())) {
-        decodedToken.put("realm", projectRealm);
-      } else {
-        // Extracting realm name from iss value
-        final String realm = (decodedToken.get("iss").toString()
-            .substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
-        // Adding realm name to the decoded token
-        decodedToken.put("realm", realm);
-      }
+          System.out.println("The Roles value are: " + userRoles.toString());
+     
+         /*
+          * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm names as we
+          * can't add multiple realms in genny keyclaok as it is open-source
+          */
+          final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
+          if ((projectRealm != null) && (!projectRealm.isEmpty())) {
+               decodedToken.put("realm", projectRealm);
+           } else {
+              // Extracting realm name from iss value
+              final String realm = (decodedToken.get("iss").toString()
+                .substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
+              // Adding realm name to the decoded token
+              decodedToken.put("realm", realm);
+            }
       System.out.println("######  The realm name is:  #####  " + decodedToken.get("realm"));
       // Printing Decoded Token values
       for (final Map.Entry entry : decodedToken.entrySet()) {
         System.out.println(entry.getKey() + ", " + entry.getValue());
       }
-
+     }
+      
       try {
         kSession = createSession(bus, token, decodedToken, userRoles);
         kSession.insert(eventMsg);
@@ -161,8 +175,8 @@ public class EBCHandlers {
 
   }
 
-  public static KieSession createSession(final EventBus bus, final String token,
-      final Map<String, Object> tokenDecoded, final Set<String> roles) {
+  public static KieSession createSession(EventBus bus, String token,
+      Map<String, Object> tokenDecoded, Set<String> roles) {
     // ks = KieServices.Factory.get();
     if (ks == null) {
       System.out.println("ks is NULL!!!");
