@@ -37,6 +37,7 @@ import life.genny.qwanda.Ask;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataRuleMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
@@ -45,9 +46,9 @@ public class EBCHandlers {
 
   private static final Logger logger = LoggerFactory.getLogger(EBCHandlers.class);
 
-  static Map<String, KieBase> kieBaseCache = null;
+  private static Map<String, KieBase> kieBaseCache = null;
   static {
-    kieBaseCache = new HashMap<String, KieBase>();
+    setKieBaseCache(new HashMap<String, KieBase>());
   }
 
   static Gson gson = new GsonBuilder()
@@ -87,8 +88,16 @@ public class EBCHandlers {
       final JsonObject payload = new JsonObject(arg.body().toString());
       final String token = payload.getString("token");
       System.out.println(payload);
-      final QEventMessage eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
-      processEvent(eventMsg, eventBus, token);
+      
+      QEventMessage eventMsg = null;
+      if(payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
+    	     //Converting Json to QEventAttributeValueChangeMessage class
+    	     eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+      }else {
+    	      eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);    	      
+       }
+       processEvent(eventMsg, eventBus, token);  
+      
     });
 
     EBConsumers.getFromData().subscribe(arg -> {
@@ -110,40 +119,45 @@ public class EBCHandlers {
     });
   }
 
+  
+  static Map<String, Object> decodedToken = null;
+  static Set<String> userRoles = null;
 
   public static void processEvent(final QEventMessage eventMsg, final EventBus bus,
       final String token) {
     Vertx.vertx().executeBlocking(future -> {
       // kSession = createSession(bus, token);
 
-      // Getting decoded token in Hash Map from QwandaUtils
-      final Map<String, Object> decodedToken = KeycloakUtils.getJsonMap(token);
-      // Getting Set of User Roles from QwandaUtils
-      final Set<String> userRoles =
-          KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
+     if((token != null) && (!token.isEmpty())){
+         // Getting decoded token in Hash Map from QwandaUtils
+         decodedToken = KeycloakUtils.getJsonMap(token);
+         // Getting Set of User Roles from QwandaUtils
+            userRoles =
+             KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
 
-      System.out.println("The Roles value are: " + userRoles.toString());
-
-      /*
-       * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm names as we
-       * can't add multiple realms in genny keyclaok as it is open-source
-       */
-      final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
-      if ((projectRealm != null) && (!projectRealm.isEmpty())) {
-        decodedToken.put("realm", projectRealm);
-      } else {
-        // Extracting realm name from iss value
-        final String realm = (decodedToken.get("iss").toString()
-            .substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
-        // Adding realm name to the decoded token
-        decodedToken.put("realm", realm);
-      }
+          System.out.println("The Roles value are: " + userRoles.toString());
+     
+         /*
+          * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm names as we
+          * can't add multiple realms in genny keyclaok as it is open-source
+          */
+          final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
+          if ((projectRealm != null) && (!projectRealm.isEmpty())) {
+               decodedToken.put("realm", projectRealm);
+           } else {
+              // Extracting realm name from iss value
+              final String realm = (decodedToken.get("iss").toString()
+                .substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
+              // Adding realm name to the decoded token
+              decodedToken.put("realm", realm);
+            }
       System.out.println("######  The realm name is:  #####  " + decodedToken.get("realm"));
       // Printing Decoded Token values
       for (final Map.Entry entry : decodedToken.entrySet()) {
         System.out.println(entry.getKey() + ", " + entry.getValue());
       }
-
+     }
+      
       try {
         kSession = createSession(bus, token, decodedToken, userRoles);
         kSession.insert(eventMsg);
@@ -161,8 +175,8 @@ public class EBCHandlers {
 
   }
 
-  public static KieSession createSession(final EventBus bus, final String token,
-      final Map<String, Object> tokenDecoded, final Set<String> roles) {
+  public static KieSession createSession(EventBus bus, String token,
+      Map<String, Object> tokenDecoded, Set<String> roles) {
     // ks = KieServices.Factory.get();
     if (ks == null) {
       System.out.println("ks is NULL!!!");
@@ -232,8 +246,7 @@ public class EBCHandlers {
 
 
   public static void setupKieSession(final String rulesGroup,
-      final List<Tuple2<String, String>> rules, final EventBus bus,
-      final List<Tuple2<String, Object>> globals) {
+      final List<Tuple2<String, String>> rules) {
 
     try {
       KieSession kieSession = null;
@@ -259,17 +272,11 @@ public class EBCHandlers {
       final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
       final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
       final KieBase kbase = kContainer.newKieBase(kbconf);
-      kieSession = kbase.newKieSession();
-
-      kieSession.insert(bus);
-
-      // Load globals
-      for (final Tuple2<String, Object> t : globals) {
-        kieSession.setGlobal(t._1, t._2);
-      }
+     
+   
 
       System.out.println("Put rules KieBase into Custom Cache");
-      kieBaseCache.put(rulesGroup, kbase);
+      getKieBaseCache().put(rulesGroup, kbase);
 
     } catch (final Throwable t) {
       t.printStackTrace();
@@ -277,14 +284,25 @@ public class EBCHandlers {
   }
 
   // fact = gson.fromJson(msg.toString(), QEventMessage.class)
-  public static void executeStatefull(final String rulesGroup, final List<Object> facts) {
+  public static void executeStatefull(final String rulesGroup, final EventBus bus,
+	      final List<Tuple2<String, Object>> globals ,final List<Object> facts) {
 
     try {
-      final KieSession kieSession = kieBaseCache.get(rulesGroup).newKieSession();
+      KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
       /*
        * kSession.addEventListener(new DebugAgendaEventListener()); kSession.addEventListener(new
        * DebugRuleRuntimeEventListener());
        */
+      
+  
+      if (bus!=null) {  // assist testing
+    	  	kieSession.insert(bus);
+      }
+
+      // Load globals
+      for (final Tuple2<String, Object> t : globals) {
+        kieSession.setGlobal(t._1, t._2);
+      }
       for (final Object fact : facts) {
         kieSession.insert(fact);
       }
@@ -296,4 +314,12 @@ public class EBCHandlers {
       t.printStackTrace();
     }
   }
+
+public static Map<String, KieBase> getKieBaseCache() {
+	return kieBaseCache;
+}
+
+public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
+	EBCHandlers.kieBaseCache = kieBaseCache;
+}
 }
