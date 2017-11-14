@@ -46,9 +46,9 @@ public class EBCHandlers {
 
   private static final Logger logger = LoggerFactory.getLogger(EBCHandlers.class);
 
-  static Map<String, KieBase> kieBaseCache = null;
+  private static Map<String, KieBase> kieBaseCache = null;
   static {
-    kieBaseCache = new HashMap<String, KieBase>();
+    setKieBaseCache(new HashMap<String, KieBase>());
   }
 
   static Gson gson = new GsonBuilder()
@@ -246,8 +246,7 @@ public class EBCHandlers {
 
 
   public static void setupKieSession(final String rulesGroup,
-      final List<Tuple2<String, String>> rules, final EventBus bus,
-      final List<Tuple2<String, Object>> globals) {
+      final List<Tuple2<String, String>> rules) {
 
     try {
       KieSession kieSession = null;
@@ -273,17 +272,11 @@ public class EBCHandlers {
       final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
       final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
       final KieBase kbase = kContainer.newKieBase(kbconf);
-      kieSession = kbase.newKieSession();
-
-      kieSession.insert(bus);
-
-      // Load globals
-      for (final Tuple2<String, Object> t : globals) {
-        kieSession.setGlobal(t._1, t._2);
-      }
+     
+   
 
       System.out.println("Put rules KieBase into Custom Cache");
-      kieBaseCache.put(rulesGroup, kbase);
+      getKieBaseCache().put(rulesGroup, kbase);
 
     } catch (final Throwable t) {
       t.printStackTrace();
@@ -291,14 +284,25 @@ public class EBCHandlers {
   }
 
   // fact = gson.fromJson(msg.toString(), QEventMessage.class)
-  public static void executeStatefull(final String rulesGroup, final List<Object> facts) {
+  public static void executeStatefull(final String rulesGroup, final EventBus bus,
+	      final List<Tuple2<String, Object>> globals ,final List<Object> facts) {
 
     try {
-      final KieSession kieSession = kieBaseCache.get(rulesGroup).newKieSession();
+      KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
       /*
        * kSession.addEventListener(new DebugAgendaEventListener()); kSession.addEventListener(new
        * DebugRuleRuntimeEventListener());
        */
+      
+  
+      if (bus!=null) {  // assist testing
+    	  	kieSession.insert(bus);
+      }
+
+      // Load globals
+      for (final Tuple2<String, Object> t : globals) {
+        kieSession.setGlobal(t._1, t._2);
+      }
       for (final Object fact : facts) {
         kieSession.insert(fact);
       }
@@ -310,4 +314,12 @@ public class EBCHandlers {
       t.printStackTrace();
     }
   }
+
+public static Map<String, KieBase> getKieBaseCache() {
+	return kieBaseCache;
+}
+
+public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
+	EBCHandlers.kieBaseCache = kieBaseCache;
+}
 }
