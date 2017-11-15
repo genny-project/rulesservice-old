@@ -68,24 +68,24 @@ public class KieTest {
 @Test
 public  void setupKieSessionTest()
 {
-	  String str = "";
-	    str += "package org.kie.test\n";
-	    str += "global java.util.List list\n";
-	    str += "rule rule1\n";
-	    str += "when\n";
-	    str += "  Integer(intValue > 0)\n";
-	    str += "then\n";
-	    str += "  list.add( 1 );\n";
-	    str += "  System.out.println(\"Added!\");\n";
-	    str += "end\n";
-	    str += "\n";
+	  String rule = "";
+	    rule += "package org.kie.test\n";
+	    rule += "global java.util.List list\n";
+	    rule += "rule rule1\n";
+	    rule += "when\n";
+	    rule += "  Integer(intValue > 0)\n";
+	    rule += "then\n";
+	    rule += "  list.add( 1 );\n";
+	    rule += "  System.out.println(\"Added!\");\n";
+	    rule += "end\n";
+	    rule += "\n";
 	    
 	String rulesGroup = "GRP_RULES_TEST";
 	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
 	EventBus eb = null;
 	
-	rules.add(Tuple.of("rule1",str));
+	rules.add(Tuple.of("rule1",rule));
 	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
