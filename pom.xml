@@ -52,12 +52,12 @@
 		<dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>qwanda</artifactId>
-			<version>0.5.5</version>
+			<version>0.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>qwanda-utils</artifactId>
-			<version>0.4</version>
+			<version>0.5</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
