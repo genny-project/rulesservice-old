@@ -54,7 +54,7 @@ rule "Init"
         $roles : Set(!isEmpty())
         not User1() 
     then
-       System.out.println("$$$$ Alyson AUTH_INIT RULE : "+$map1.get("realm") +" Project  $$$$");
+        System.out.println("$$$$ Alyson AUTH_INIT RULE : "+$map1.get("realm") +" Project  $$$$");
         //creating user fact
         User1 newUser = new User1();
         newUser.setUname($map1.get("preferred_username").toString());
@@ -105,21 +105,21 @@ rule "Init"
         //Publish Asks              
         bus.publish("cmds", asks);
         
-         //Getting B.E. to display in Bucket View
-	JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));	
-        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_BEG", tokenString));
-        JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_BEG", tokenString));
-        JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_BEG", tokenString));
-        JsonObject inTransitBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_BEG", tokenString));
-        JsonObject completedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_BEG", tokenString));
-        JsonObject paidBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_BEG/attributes", tokenString));  
+        //Getting B.E. to display in Bucket View
+	    JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));	
+        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject inTransitBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject completedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject paidBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_CORE/attributes", tokenString));  
+        //Getting Load data for each BEG's
         JsonObject noQuotes = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000001/linkcodes/LNK_BEG/attributes", tokenString));
         JsonObject quotes1 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000002/linkcodes/LNK_BEG/attributes", tokenString));
    		JsonObject quotes2 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000003/linkcodes/LNK_BEG/attributes", tokenString)); 
    		JsonObject approved = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000004/linkcodes/LNK_BEG/attributes", tokenString));
    		JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
-   		//JsonObject completed = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
-		//JsonObject paid = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_CORE/attributes", tokenString));
+
 	 	//Publish Header Grp
 		bus.publish("cmds", headerGrps);	
 		//Publish noQuotes BEG
@@ -145,12 +145,9 @@ rule "Init"
         bus.publish("cmds", approved);
         //Publish In-Transit loads 
         bus.publish("cmds", inTransit);
-  //      //Publish completed loads 
-  //      bus.publish("cmds", completed);
-  //      //Publish paid loads 
- //       bus.publish("cmds", paid);
+
         
-  //      sending cmd BUCKET_VIEW
+        //sending cmd BUCKET_VIEW
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         //Convert cmd to JSON Obj
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
