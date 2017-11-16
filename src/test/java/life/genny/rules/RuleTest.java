@@ -29,7 +29,7 @@ public class RuleTest {
 	    	
 	 }
 	 
-	 
+	/* 
 	 @Test
      public void bucket_view_drag_drop_test() {
 		 final Map<String, String> keyValue = new HashMap<String, String>();
@@ -41,6 +41,6 @@ public class RuleTest {
 	 
 	 }
 		
-	
+	*/
 
 }
