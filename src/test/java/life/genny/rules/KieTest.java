@@ -120,12 +120,14 @@ public  void setupKieSessionTest()
 	   String rule = "";
 	    rule += "package org.kie.test\n";
 	    rule += "import java.util.Map;\n";
+	    rule += "global java.util.List list\n";
 	    rule += "rule rule2\n";
 	    rule += "when\n";
 	    rule += "  $a : Integer(intValue > 1)\n";
 	    rule += "  $map : Map($value: this[\"token\"] != null)\n";
 	    rule += "then\n";
 	    rule += "  System.out.println(\"value a=\"+$a);\n";
+	    rule += "  list.add( $a );\n";
 	    rule += "end\n";
 	    rule += "\n";
 	    
@@ -137,7 +139,7 @@ public  void setupKieSessionTest()
 	rules.add(Tuple.of("rule2",rule));
 	
 	 List<?> list = new ArrayList<Object>();
-	 
+	 globals.add(Tuple.of("list",list));
 	EBCHandlers.setupKieSession(rulesGroup, rules) ;
 	
 	
@@ -158,7 +160,7 @@ public  void setupKieSessionTest()
 	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
 
 	
-	    assertThat( list.size(), is(3) );
+	   assertThat( list.size(), is(2) );
   }
 
 
