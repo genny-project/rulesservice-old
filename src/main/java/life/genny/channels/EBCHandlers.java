@@ -38,6 +38,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataRuleMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
@@ -91,9 +92,16 @@ public class EBCHandlers {
       
       QEventMessage eventMsg = null;
       if(payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
-    	     //Converting Json to QEventAttributeValueChangeMessage class
-    	     eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
-      }else {
+    	       //Converting Json to QEventAttributeValueChangeMessage class
+    	       eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+      }
+      else if(payload.getString("event_type").equals("EVT_LINK_CHANGE")){
+    	        //Converting Json to QEventLinkChangeMessage class
+    	        System.out.println("\n The value in payload :  "+payload);
+    	        eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
+    	        System.out.println("\n The value in converted eventMsg :  "+eventMsg);
+      }
+      else {
     	      eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);    	      
        }
        processEvent(eventMsg, eventBus, token);  
@@ -285,7 +293,7 @@ public class EBCHandlers {
 
   // fact = gson.fromJson(msg.toString(), QEventMessage.class)
   public static void executeStatefull(final String rulesGroup, final EventBus bus,
-	      final List<Tuple2<String, Object>> globals ,final List<Object> facts) {
+	      final List<Tuple2<String, Object>> globals ,final List<Object> facts, final Map<String, String> keyvalue) {
 
     try {
       KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
@@ -306,7 +314,8 @@ public class EBCHandlers {
       for (final Object fact : facts) {
         kieSession.insert(fact);
       }
-
+      kieSession.insert(keyvalue);
+      
       kieSession.fireAllRules();
 
       kieSession.dispose();

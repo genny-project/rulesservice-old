@@ -1,0 +1,82 @@
+package com.sample
+ 
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String REACT_APP_QWANDA_API_URL;
+
+ 
+  
+//BucketView element Transaction
+rule "BucketView Grp Change"
+  when
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE")
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+ 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");
+	  
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+  	    String tokenString = (String)$map.get("token");
+		System.out.println("tokenstr="+tokenString);
+		System.out.println("The Event Message received is: " +$m);
+		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
+	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
+		System.out.println("The Data Code is: " +$m.data.getCode());
+	    System.out.println("The Data Value is: " +$m.data.getValue());
+        
+end
+
+
+//Prevent skipping Groups
+rule "BucketView Grp Change Invalid"
+  when
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES" )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+ 	    System.out.println("-------- Rule:- BucketView transaction prevent Gropu skip for GRP_NO_QUOTES --------");
+	  
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+  	    String tokenString = (String)$map.get("token");
+		System.out.println("tokenstr="+tokenString);
+		System.out.println("The Event Message received is: " +$m);
+		System.out.println("The Data Code is: " +$m.data.getCode());
+	    System.out.println("The Data Value is: " +$m.data.getValue());
+	    System.out.println("Its invalid transaction ");
+	    
+	    QCmdMessage cmdBucketView = new QCmdMessage("BV_TRANSACTION", $m.data.getCode());
+        //Convert cmd to JSON Obj
+        JsonObject abortCmd = new JsonObject().mapFrom(cmdBucketView);        
+        System.out.println(" ##################### ");
+        System.out.println("CMD Msg ="+abortCmd.toString()); 
+        System.out.println(" #################### ");
+        bus.publish("cmds", abortCmd);
+        
+end
+
+
+

@@ -104,12 +104,63 @@ public  void setupKieSessionTest()
 	 facts.add(2);
 	 facts.add(3);
 	 
-	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts) ;
+	 Map<String, String> keyvalue = new HashMap<String, String>();
+     keyvalue.put("token", null);
+     
+	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
 
 	
 	    assertThat( list.size(), is(3) );
-	
-	
+		
 }
+
+   @Test
+   public void drlWhenConditionTest()
+   {
+	   String rule = "";
+	    rule += "package org.kie.test\n";
+	    rule += "import java.util.Map;\n";
+	    rule += "rule rule2\n";
+	    rule += "when\n";
+	    rule += "  $a : Integer(intValue > 1)\n";
+	    rule += "  $map : Map($value: this[\"token\"] != null)\n";
+	    rule += "then\n";
+	    rule += "  System.out.println(\"value a=\"+$a);\n";
+	    rule += "end\n";
+	    rule += "\n";
+	    
+	String rulesGroup = "GRP_RULES_TEST";
+	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
+	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
+	EventBus eb = null;
+	
+	rules.add(Tuple.of("rule2",rule));
+	
+	 List<?> list = new ArrayList<Object>();
+	 
+	EBCHandlers.setupKieSession(rulesGroup, rules) ;
+	
+	
+	Map<String, KieBase> cache = EBCHandlers.getKieBaseCache();
+	Integer count = cache.size();
+	
+	System.out.println("Loaded Test Kie Session with "+count+" ruleGroups");
+	
+		 
+	 List<Object> facts = new ArrayList<Object>();
+	 facts.add(1);
+	 facts.add(2);
+	 facts.add(3);
+	 
+     Map<String, String> keyvalue = new HashMap<String, String>();
+          keyvalue.put("token", "TOKEN");
+	 
+	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
+
+	
+	    assertThat( list.size(), is(3) );
+  }
+
+
 
 }
