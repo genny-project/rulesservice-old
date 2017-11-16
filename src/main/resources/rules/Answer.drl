@@ -84,13 +84,6 @@ rule "Answer"
             System.out.println("OUTPUT AFTER POSTING ANSWERS " +output);
             System.out.println("##############################################################");
             
-            QCmdMessage cmd = new QCmdMessage("SOCIAL_MEDIA_FB_FETCH", value);
-            Gson gson2 = new Gson();
-            String fbCode = gson2.toJson(cmd);
-            System.out.println(fbCode);
-            bus.publish("social", fbCode);
-                
-            
         }      
                   
     end
@@ -127,3 +120,36 @@ rule "Listen Attribute Change"
         bus.publish("cmds", obj2);
 end
 
+//Rule listening to Facebook Code change
+rule "Listen Facebook Code"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
+        bus:EventBus() 
+    then
+        System.out.println("holla amigo");
+        System.out.println("------------ New Facebook Code Recieved  ------------ ");
+        System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
+        System.out.println("\n The code is: "+$m.data.getCode()); 
+
+        // Collect DATA 
+        JsonObject data = new JsonObject();
+        data.put("value", $m.getNewValue());
+        data.put("attributeCode", $m.data.getCode()); 
+        data.put("targetCode", $m.getTargetBaseEntityCode()); 
+        data.put("sourceCode", $m.getSourceBaseEntityCode());  
+        data.put("expired", false);
+        data.put("refused", false);
+        data.put("weight", "0.0");    
+
+        //Create DATA msg
+        JsonObject obj2 = new JsonObject();
+        obj2.put("msg_type", "DATA_MSG");
+        obj2.put("data_type", "Facebook");
+        obj2.put("items", data); 
+
+        //Print DATA msg
+        System.out.println("************************************************************");
+        System.out.println("DATA msg ready to send to SOCIAL= "+obj2); 
+        System.out.println("************************************************************"); 
+        bus.publish("social", data);
+end
