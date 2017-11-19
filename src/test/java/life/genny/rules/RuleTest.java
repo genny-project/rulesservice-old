@@ -29,20 +29,20 @@ public class RuleTest {
 	    	
 	 }
 	 
-    /*
-	 @Test
+
+	// @Test
      public void bucket_view_drag_drop_test() {
 		 final Map<String, String> keyValue = new HashMap<String, String>();
 		 
 		 QEventLinkChangeMessage evtMsg = new 
-			      QEventLinkChangeMessage("GRP_QUOTES","GRP_COMPLETED", "BEG_0000002", "LNK_CORE", "DUMB TOKEN");
+			      QEventLinkChangeMessage("GRP_QUOTES","GRP_COMPLETED", "BEG_0000002", "LNK_CORE", null);
 		 keyValue.put("token", "DUMB TOKEN");
 		 kSession.insert(keyValue);
 		 kSession.insert(evtMsg);
-;		 kSession.fireAllRules();
+		 kSession.fireAllRules();
 	 
 	 }
-		*/
+
 
 
 }
