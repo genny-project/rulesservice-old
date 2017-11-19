@@ -56,7 +56,7 @@ rule "Facebook Redirect"
     ask.put("clientId", clientId);
     ask.put("clientSecret", clientSecret);
     ask.put("redirectUrl", redirectUrl);  
-    ask.put("social_type", "facebook");
+    ask.put("sourceCode", "SOC_FB_BASIC");
     ask.put("askId", askId);
 
     System.out.println("*******************");
