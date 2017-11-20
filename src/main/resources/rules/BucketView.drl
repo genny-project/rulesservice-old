@@ -30,7 +30,7 @@ import life.genny.qwanda.DateTimeDeserializer;
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
  
-  
+/*  
 //BucketView element Transaction
 rule "BucketView Grp Change"
   when
@@ -38,8 +38,7 @@ rule "BucketView Grp Change"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
- 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");
-	  
+ 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
 		System.out.println("tokenstr="+tokenString);
@@ -49,43 +48,42 @@ rule "BucketView Grp Change"
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue());
 	    
-	    EntityEntity entity = new EntityEntity($m.getSourceBaseEntityCode(), $m.getTargetBaseEntityCode(), $m.getLinkCode(), null);
-	    JsonObject begEntity = new JsonObject().mapFrom(entity);
+	    //EntityEntity entity = new EntityEntity($m.getSourceBaseEntityCode(), $m.getTargetBaseEntityCode(), $m.getLinkCode(), null);
+	   // JsonObject begEntity = new JsonObject().mapFrom(entity);
  //      JsonObject begEntity = new JsonObject();
  //      begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
  //      begEntity.put("targetCode",$m.getTargetBaseEntityCode());
  //      begEntity.put("linkCode",$m.getTargetBaseEntityCode());
-	   String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity, tokenString);
-       System.out.println("The Output after POST: "+output);     
+	  // String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity, tokenString);
+      // System.out.println("The Output after POST: "+output);     
        
 end
-
+*/
 
 //Prevent skipping Groups
 rule "BucketView Grp Change Invalid"
   when
-        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES" )
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode != "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode != "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode != "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode != "GRP_PAID") ))
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
- 	    System.out.println("-------- Rule:- BucketView transaction prevent Gropu skip for GRP_NO_QUOTES --------");
-	  
-		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
-  	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+ 	    System.out.println("-------- Rule:- BucketView transaction prevent Group skip --------");	  
 		System.out.println("The Event Message received is: " +$m);
 		System.out.println("The Data Code is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue());
-	    System.out.println("Its invalid transaction ");
+	    System.out.println("Error! Its an invalid transaction.");
 	    
-	    QCmdMessage cmdBucketView = new QCmdMessage("BV_MOVE", $m.data.getCode());
+	    QCmdMessage cmdAbort = new QCmdMessage("BV_MOVE", "ABORT");
+        JsonObject data = new JsonObject();
+          data.put("targetCode", $m.getSourceBaseEntityCode());
+          data.put("dataCode", $m.data.getCode());    
         //Convert cmd to JSON Obj
-        JsonObject abortCmd = new JsonObject().mapFrom(cmdBucketView);        
+        JsonObject abortCmd = new JsonObject().mapFrom(cmdAbort); 
+          abortCmd.put("data", data);   
         System.out.println(" ##################### ");
         System.out.println("CMD Msg ="+abortCmd.toString()); 
         System.out.println(" #################### ");
-        bus.publish("cmds", abortCmd);
-        
+        bus.publish("cmds", abortCmd);       
 end
 
 
