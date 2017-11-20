@@ -50,7 +50,7 @@ rule "Answer"
 		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Answer Rule\n");
-        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40););
+        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("------------------------------------------------------------------------");
 
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -104,7 +104,7 @@ rule "Listen Attribute Change"
  		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Attribute Change Rule\n");
-        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40););
+        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
@@ -144,7 +144,7 @@ rule "Listen Facebook Code"
   		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Facebook Code Rule\n");
-        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40););
+        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
