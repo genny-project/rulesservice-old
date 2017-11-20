@@ -97,9 +97,8 @@ public class EBCHandlers {
       }
       else if(payload.getString("event_type").equals("EVT_LINK_CHANGE")){
     	        //Converting Json to QEventLinkChangeMessage class
-    	        System.out.println("\n The value in payload :  "+payload);
     	        eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
-    	        System.out.println("\n The value in converted eventMsg :  "+eventMsg);
+//    	        System.out.println("\n The value in converted eventMsg :  "+eventMsg);
       }
       else {
     	      eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);    	      
