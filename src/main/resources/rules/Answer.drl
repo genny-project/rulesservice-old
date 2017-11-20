@@ -92,14 +92,11 @@ rule "Listen Attribute Change"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
         bus:EventBus() 
- //       $map : Map($value: this["token"] != null)
-    then
-  //      String tokenString = (String)$map.get("token");
+     then
     
  		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Attribute Change Rule\n");
-  //      System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
@@ -120,6 +117,7 @@ rule "Listen Attribute Change"
             obj2.put("msg_type", "DATA_MSG");
             obj2.put("data_type", "Answer");
             obj2.put("items", obj1); 
+            obj2.put("token",$m.getToken());
         //Print Answer
         System.out.println("************************************************************");
         System.out.println("Answer From attribute change= "+obj2.toString()); 
@@ -132,14 +130,12 @@ rule "Listen Facebook Code"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
         bus:EventBus() 
- //       $map : Map($value: this["token"] != null)
-    then
- //       String tokenString = (String)$map.get("token");
+
+     then
       
   		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Facebook Code Rule\n");
- //       System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
