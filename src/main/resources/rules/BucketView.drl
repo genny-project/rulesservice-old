@@ -4,6 +4,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.entity.EntityEntity;
+import org.apache.commons.lang3.StringUtils;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import io.vertx.core.buffer.Buffer;
 import com.google.gson.Gson;
@@ -41,7 +42,7 @@ rule "BucketView Grp Change"
  	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		System.out.println("The Event Message received is: " +$m);
 		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
 	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());

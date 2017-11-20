@@ -43,7 +43,6 @@ rule "Answer"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then    
-        System.out.println("Answer Rule");
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
         String tokenString = (String)$map.get("token");
 
@@ -65,7 +64,7 @@ rule "Answer"
             String targetCode = answer.getTargetCode();
             String attributeCode = answer.getAttributeCode();
             String value = answer.getValue();
-            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+      //      System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
             
             //convert answer to json
             String jsonAnswer = gson.toJson(answer);
@@ -77,17 +76,13 @@ rule "Answer"
             Gson ans = new Gson();
             Answer answerObj = ans.fromJson(jsonAnswer, Answer.class);
             System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            System.out.println(answerObj);
+            System.out.println("Answer Rule Received Answer:"+answerObj);
             System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
             //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
 
             // post answers to qwanda-utils
             String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
-            System.out.println("##############################################################");
-            System.out.println("OUTPUT AFTER POSTING ANSWERS " +output);
-            System.out.println("##############################################################\n");
-            
-        }      
+         }      
          System.out.println(" End Answer Rule #######################################\n");
            
     end
@@ -97,14 +92,14 @@ rule "Listen Attribute Change"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
         bus:EventBus() 
-        $map : Map($value: this["token"] != null)
+ //       $map : Map($value: this["token"] != null)
     then
-        String tokenString = (String)$map.get("token");
+  //      String tokenString = (String)$map.get("token");
     
  		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Attribute Change Rule\n");
-        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+  //      System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
@@ -137,14 +132,14 @@ rule "Listen Facebook Code"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
         bus:EventBus() 
-        $map : Map($value: this["token"] != null)
+ //       $map : Map($value: this["token"] != null)
     then
-        String tokenString = (String)$map.get("token");
+ //       String tokenString = (String)$map.get("token");
       
   		System.out.println("\n\n");
         System.out.println("------------------------------------------------------------------------");
         System.out.println("Listen Facebook Code Rule\n");
-        System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+ //       System.out.println("Here is the Token ="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
         System.out.println("\n The code is: "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
@@ -166,6 +161,7 @@ rule "Listen Facebook Code"
         obj2.put("msg_type", "DATA_MSG");
         obj2.put("data_type", "Facebook");
         obj2.put("items", data); 
+        obj2.put("token",$m.getToken());
 
         //Print DATA msg
         System.out.println("************************************************************");
