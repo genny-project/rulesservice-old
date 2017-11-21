@@ -130,7 +130,8 @@ rule "Listen Facebook Code"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
         bus:EventBus() 
-
+       $map : Map($value: this["token"] != null)
+ 
      then
       
   		System.out.println("\n\n");
