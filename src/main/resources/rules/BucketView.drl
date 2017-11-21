@@ -31,12 +31,12 @@ import life.genny.qwanda.DateTimeDeserializer;
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
  
-/*
+
 //BucketView element Transaction
 rule "BucketView Grp Change"
   when
         $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE")
-        //bus: EventBus()
+        bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
  	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
@@ -52,7 +52,7 @@ rule "BucketView Grp Change"
 	    //EntityEntity entity = new EntityEntity($m.getSourceBaseEntityCode(), $m.getTargetBaseEntityCode(), $m.getLinkCode(), null);
 	   // JsonObject begEntity = new JsonObject().mapFrom(entity);
          JsonObject begEntity = new JsonObject();
-         begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
+         begEntity.put("parentCode",$m.getSourceBaseEntityCode());
          begEntity.put("targetCode",$m.data.getCode());
          begEntity.put("linkCode",$m.getLinkCode());
          System.out.println("--------------------------");
@@ -62,8 +62,8 @@ rule "BucketView Grp Change"
          System.out.println("The Output after POST: "+output);     
        
 end
-*/
 
+/*
 //Prevent skipping Groups
 rule "BucketView Grp Change Invalid"
   when
@@ -90,5 +90,5 @@ rule "BucketView Grp Change Invalid"
         bus.publish("cmds", abortCmd);       
 end
 
-
+*/
 
