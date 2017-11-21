@@ -152,13 +152,13 @@ rule "Listen Facebook Code"
         data.put("expired", false);
         data.put("refused", false);
         data.put("weight", "0.0");    
+        data.put("token",$m.getToken());
 
         //Create DATA msg
         JsonObject obj2 = new JsonObject();
         obj2.put("msg_type", "DATA_MSG");
         obj2.put("data_type", "Facebook");
         obj2.put("items", data); 
-        obj2.put("token",$m.getToken());
 
         //Print DATA msg
         System.out.println("************************************************************");
