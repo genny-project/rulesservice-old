@@ -31,7 +31,7 @@ import life.genny.qwanda.DateTimeDeserializer;
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
  
-
+/*
 //BucketView element Transaction
 rule "BucketView Grp Change"
   when
@@ -63,7 +63,8 @@ rule "BucketView Grp Change"
        
 end
 
-/*
+*/
+
 //Prevent skipping Groups
 rule "BucketView Grp Change Invalid"
   when
@@ -90,5 +91,4 @@ rule "BucketView Grp Change Invalid"
         bus.publish("cmds", abortCmd);       
 end
 
-*/
 
