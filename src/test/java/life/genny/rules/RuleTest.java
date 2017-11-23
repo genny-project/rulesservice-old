@@ -32,8 +32,15 @@ public class RuleTest {
 	    	
 	 }
 	 
+//	 @Test
+	 public void msgTest() {
+	   String test = new String("hello");
+       kSession.insert(test);
+       kSession.fireAllRules();
+	 }
+	 
 
-	@Test
+//	@Test
      public void bucket_view_drag_drop_test() {
 		System.out.println("Hello");
 		 final Map<String, String> keyValue = new HashMap<String, String>();
