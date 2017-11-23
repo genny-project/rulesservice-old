@@ -72,7 +72,7 @@ end
 
 rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
   when
-        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && (  (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED")) )
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED")) )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
@@ -88,9 +88,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 	    
 	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
 	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
-	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);
-        //GPS[] items = {gps1,gps2,gps3,gps4};
-        
+	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);        
         String entryCode = $m.data.getCode()+"_ENTER";
         String exitCode = $m.data.getCode()+"_EXIT";
         QCmdGeofenceMessage cmdGeoFence = new QCmdGeofenceMessage(gpsLocation, 10.0, entryCode, exitCode);
