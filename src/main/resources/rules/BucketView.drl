@@ -86,15 +86,14 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue()); 
 	    
-	    GPS gps1 = new GPS($m.data.getCode(), "-37.801839837", "144.9632013144");
-	    GPS gps2 = new GPS($m.data.getCode(),"-37.802026337", "144.9651111144");
-	    GPS gps3 = new GPS($m.data.getCode(),"-37.804315237", "144.9633515144");
-	    GPS gps4 = new GPS($m.data.getCode(),"-37.804654237", "144.9659694144");
-        GPS[] items = {gps1,gps2,gps3,gps4};
+	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
+	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
+	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);
+        //GPS[] items = {gps1,gps2,gps3,gps4};
         
         String entryCode = $m.data.getCode()+"_ENTER";
         String exitCode = $m.data.getCode()+"_EXIT";
-        QCmdGeofenceMessage cmdGeoFence = new QCmdGeofenceMessage(items, entryCode, exitCode);
+        QCmdGeofenceMessage cmdGeoFence = new QCmdGeofenceMessage(gpsLocation, 10.0, entryCode, exitCode);
          //Convert cmd to JSON Obj
         JsonObject cmdGeoFenceJson = new JsonObject().mapFrom(cmdGeoFence);
         System.out.println("-----------------------------------");
