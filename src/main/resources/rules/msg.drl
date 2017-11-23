@@ -1,0 +1,8 @@
+package com.sample
+
+rule "msg"
+    when
+        $obj: Object()
+    then 
+    System.out.println("ok");
+end

@@ -32,6 +32,13 @@ public class RuleTest {
 	    	
 	 }
 	 
+//	 @Test
+	 public void msgTest() {
+	   String test = new String("hello");
+       kSession.insert(test);
+       kSession.fireAllRules();
+	 }
+	 
 
 //	@Test
      public void bucket_view_drag_drop_test() {
