@@ -118,7 +118,8 @@ public class EBCHandlers {
       // final JsonObject a = Buffer.buffer(payload.toString()).toJsonObject();
       if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) {
         if (payload.getString("data_type").equals(Rule.class.getSimpleName())) {
-          gson.fromJson(payload.toString(), QDataRuleMessage.class);
+          QDataRuleMessage ruleMsg = gson.fromJson(payload.toString(), QDataRuleMessage.class);
+          System.out.println("Incoming Rule :"+ruleMsg.getData_type());
         } else {
           allRules(payload, eventBus);
         }
