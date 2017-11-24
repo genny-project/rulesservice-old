@@ -137,15 +137,16 @@ rule "Select TreeView Item: DASHBOARD"
         //Get Sub-Layout from the Github
         String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/card.json", null);  
        //Creating subLayout DATA_MSG
-       JsonObject sublayout = new JsonObject();
-        sublayout.put("msg_type", "DATA_MSG");
-        sublayout.put("data_type", "SUB_LAYOUT");
-        sublayout.put("items", new JsonObject(subLayout));        
+       JsonObject sublayoutJson = new JsonObject();
+        sublayoutJson.put("msg_type", "DATA_MSG");
+        sublayoutJson.put("data_type", "SUB_LAYOUT");
+        sublayoutJson.put("code", "cardLayout");
+        sublayoutJson.put("items", new JsonObject(subLayout));        
         System.out.println(" ----------------------------------- ");
-        System.out.println("SubLayout Data ="+sublayout.toString()); 
+        System.out.println("SubLayout Data ="+sublayoutJson.toString()); 
         System.out.println(" ----------------------------------- ");
         //Publish DATA_MSG to the EventBus
-        bus.publish("cmds", sublayout); 
+        bus.publish("cmds", sublayoutJson); 
         
         //sending cmd BUCKET_VIEW
        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
