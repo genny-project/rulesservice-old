@@ -35,7 +35,7 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
  
 /*
 //BucketView element Transaction
-rule "BucketView Grp Change"
+rule "BucketView Grp Change - Valid"
   when
         $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID")) )
         bus: EventBus()
@@ -52,14 +52,15 @@ rule "BucketView Grp Change"
 	    System.out.println("The Data Value is: " +$m.data.getValue());
 	    
          JsonObject begEntity = new JsonObject();
-         begEntity.put("parentCode",$m.getSourceBaseEntityCode());
+         begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
          begEntity.put("targetCode",$m.data.getCode());
-         begEntity.put("linkCode",$m.getLinkCode());
+         begEntity.put("attributeCode",$m.getLinkCode());
          System.out.println("--------------------------");
          System.out.println("EntityEntity : "+begEntity.toString());
          System.out.println("--------------------------");
 	     //String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
          //System.out.println("The Output after POST: "+output);
+         //Fetch new link
          JsonArray entityEntity = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
          System.out.println("-----------------------------------");
          System.out.println("New EntityLinks : "+entityEntity.toString());
@@ -86,6 +87,30 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue()); 
 	    
+	     //Moving the BEG
+         JsonObject begEntity = new JsonObject();
+         begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
+         begEntity.put("targetCode",$m.data.getCode());
+         begEntity.put("attributeCode",$m.getLinkCode());
+         System.out.println("--------------------------");
+         System.out.println("EntityEntity : "+begEntity.toString());
+         System.out.println("--------------------------");
+	     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
+	     System.out.println("The Output after POST: "+output);
+	     //Fectching updated link of BEG
+	     JsonObject updatedLink = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
+	     //Creating a data msg
+	      JsonObject newLink = new JsonObject();
+	      newLink.put("msg_type", "DATA_MSG");
+          newLink.put("data_type", "LINK_CHANGE");
+          newLink.put("code", "cardLayout");
+          newLink.put("items", updatedLink);
+        System.out.println("-----------------------------------");
+        System.out.println("Updated Link : "+newLink.toString());
+        System.out.println("-----------------------------------");
+	    //sending new link data
+	    bus.publish("cmds", newLink);  
+	      
 	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
 	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
 	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);        
@@ -103,7 +128,7 @@ end
 
 
 //Prevent skipping Groups
-rule "BucketView Grp Change Invalid"
+rule "BucketView Grp Change-Invalid"
   when
         $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode != "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode != "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode != "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode != "GRP_PAID") ))
         bus: EventBus()
