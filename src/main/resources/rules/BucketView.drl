@@ -33,11 +33,11 @@ import life.genny.qwanda.DateTimeDeserializer;
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
  
-/*
+
 //BucketView element Transaction
 rule "BucketView Grp Change - Valid"
   when
-        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID")) )
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID")) )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
@@ -49,26 +49,32 @@ rule "BucketView Grp Change - Valid"
 		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
 	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
-	    System.out.println("The Data Value is: " +$m.data.getValue());
-	    
+	    System.out.println("The Data Value is: " +$m.data.getValue());	    
+        	 //Moving the BEG
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
          begEntity.put("targetCode",$m.data.getCode());
          begEntity.put("attributeCode",$m.getLinkCode());
-         System.out.println("--------------------------");
-         System.out.println("EntityEntity : "+begEntity.toString());
-         System.out.println("--------------------------");
-	     //String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
-         //System.out.println("The Output after POST: "+output);
-         //Fetch new link
-         JsonArray entityEntity = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
-         System.out.println("-----------------------------------");
-         System.out.println("New EntityLinks : "+entityEntity.toString());
-         System.out.println("-----------------------------------");
-         //bus.publish("cmds", entityEntity);  
+        // System.out.println("--------------------------");
+        // System.out.println("EntityLink : "+begEntity.toString());
+        // System.out.println("--------------------------");
+ 	     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
+ 	     System.out.println("The Output after POST: "+output);
+	     //Fectching updated link of BEG
+ 	     JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
+	     //Creating a data msg
+ 	      JsonObject newLink = new JsonObject();
+ 	      newLink.put("msg_type", "DATA_MSG");
+          newLink.put("data_type", "LINK_CHANGE");
+          newLink.put("items", updatedLink);
+        System.out.println("-----------------------------------");
+        System.out.println("Updated Link : "+newLink.toString());
+        System.out.println("-----------------------------------");
+	    //sending new link data
+ 	    bus.publish("cmds", newLink);
        
 end
-*/
+
 
 
 rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
@@ -77,39 +83,15 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
-        System.out.println("-------- Rule:- BucketView Items Move GRP_QUOTES to GRP_APPROVED  --------");	  
+        System.out.println("-------- Rule:- BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence  --------");	  
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
-		System.out.println("The Event Message received is: " +$m);
-		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
-	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
-		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
-	    System.out.println("The Data Value is: " +$m.data.getValue()); 
-	    
-	     //Moving the BEG
-         JsonObject begEntity = new JsonObject();
-         begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
-         begEntity.put("targetCode",$m.data.getCode());
-         begEntity.put("attributeCode",$m.getLinkCode());
-         System.out.println("--------------------------");
-         System.out.println("EntityEntity : "+begEntity.toString());
-         System.out.println("--------------------------");
-	     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
-	     System.out.println("The Output after POST: "+output);
-	     //Fectching updated link of BEG
-	     JsonObject updatedLink = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
-	     //Creating a data msg
-	      JsonObject newLink = new JsonObject();
-	      newLink.put("msg_type", "DATA_MSG");
-          newLink.put("data_type", "LINK_CHANGE");
-          newLink.put("code", "cardLayout");
-          newLink.put("items", updatedLink);
-        System.out.println("-----------------------------------");
-        System.out.println("Updated Link : "+newLink.toString());
-        System.out.println("-----------------------------------");
-	    //sending new link data
-	    bus.publish("cmds", newLink);  
+		//System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+		//System.out.println("The Event Message received is: " +$m);
+		//System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
+	    //System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
+		//System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
+	    //System.out.println("The Data Value is: " +$m.data.getValue()); 
 	      
 	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
 	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
