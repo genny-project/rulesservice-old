@@ -96,6 +96,15 @@ rule "Init"
         System.out.println("*******************");  
         //Publish it to the EventBus            
         bus.publish("cmds", obj);
+        
+        //Get BaseEntity with attributes
+        JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
+        //Print the json Object     
+        System.out.println("*******************");
+        System.out.println("Json="+objWithAttr.toString()); 
+        System.out.println("*******************");  
+        //Publish it to the EventBus            
+        bus.publish("cmds", objWithAttr);   
     
        //Get Asks from Genny Config
        JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));   
@@ -175,6 +184,8 @@ rule "Send BucketView"
        //Get and print the token
         String tokenString = (String)$map.get("token");
         System.out.println("tokenstr="+tokenString);
+        //For the links and their weight
+       JsonObject grpLinks = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE", tokenString));
         //Getting B.E. to display in Bucket View
 	    JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));	
         JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
@@ -190,6 +201,8 @@ rule "Send BucketView"
    		JsonObject approved = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000004/linkcodes/LNK_BEG/attributes", tokenString));
    		JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
 
+        //Publish GRP_DASHBOARD
+        bus.publish("cmds", grpLinks);	
 	 	//Publish Header Grp
 		bus.publish("cmds", headerGrps);	
 		//Publish noQuotes BEG
