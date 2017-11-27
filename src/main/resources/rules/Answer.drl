@@ -1,4 +1,5 @@
 package com.sample
+
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
 import life.genny.qwanda.message.QCmdMessage;
