@@ -89,13 +89,13 @@ rule "Init"
        drools.setFocus("BucketView");
      
        //Get BaseEntity for the TreeView  
-        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE", tokenString));
+//        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE", tokenString));
        //Print the json Object     
-        System.out.println("*******************");
-        System.out.println("Json="+obj.toString()); 
-        System.out.println("*******************");  
+//        System.out.println("*******************");
+//        System.out.println("Json="+obj.toString()); 
+//        System.out.println("*******************");  
         //Publish it to the EventBus            
-        bus.publish("cmds", obj);
+//        bus.publish("cmds", obj);
         
         //Get BaseEntity with attributes
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
@@ -185,9 +185,9 @@ rule "Send BucketView"
         String tokenString = (String)$map.get("token");
         System.out.println("tokenstr="+tokenString);
         //For the links and their weight
-       JsonObject grpLinks = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE", tokenString));
+       JsonObject grpLinks = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE/attributes", tokenString));
         //Getting B.E. to display in Bucket View
-	    JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));	
+	    JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE/attributes", tokenString));	
         JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_CORE/attributes", tokenString));
