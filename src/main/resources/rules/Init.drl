@@ -72,7 +72,7 @@ rule "Init"
       
         //Getting the User BE and sending it as ALIAS
         //Get User BE for USER ALIAS based on the user's username
-        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
+        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
           userObj.put("aliasCode", "USER");      
         //Publish USER BaseEntity ALIAS to EventBus
         bus.publish("cmds", userObj);
