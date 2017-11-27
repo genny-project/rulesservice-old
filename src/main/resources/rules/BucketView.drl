@@ -37,7 +37,7 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
 //BucketView element Transaction
 rule "BucketView Grp Change - Valid"
   when
-        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID")) )
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_QUOTES")) )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
@@ -112,7 +112,8 @@ end
 //Prevent skipping Groups
 rule "BucketView Grp Change-Invalid"
   when
-        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode != "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode != "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode != "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode != "GRP_PAID") ))
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode != "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode != "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode != "GRP_PAID") ))
+         //Add || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode != "GRP_IN_TRANSIT") to the conditioin
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then

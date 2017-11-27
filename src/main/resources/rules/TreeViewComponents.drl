@@ -295,33 +295,4 @@ rule "Select TreeView Items for child items"
 end
 
 */
-//Asks rules
-rule "asks for TreeView-YOUR_DETAILS click"
-    when
-        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1"  && data.value == "GRP_YOUR_DETAILS" )
-        bus: EventBus()
-        $map : Map($value: this["token"] != null)
-    then
- 	    System.out.println("------- EXPAND GRP_YOUR_DETAILS RULE: Sending Ask--------");
- 	    
- 	    //sending cmd form view 
-        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","FORM_VIEW");
-        //Convert cmd to JSON Obj
-        JsonObject cmdObj = new JsonObject().mapFrom(cmd);
-        cmdObj.put("data", "itemsPerPage:8");        
-        System.out.println(" ##################### ");
-        System.out.println("Form View ="+cmdObj.toString()); 
-        System.out.println(" #################### ");
-        //Publish it to the EventBus
-        bus.publish("cmds", cmdObj); 
- 	    
-		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
-  	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
-        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
-		
-		System.out.println("*******************");
-		System.out.println("Json="+obj.toString());	
-		System.out.println("*******************");						
-		bus.publish("cmds", obj);
-end  
+
