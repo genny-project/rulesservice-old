@@ -4,6 +4,8 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
 import life.genny.qwanda.entity.EntityEntity;
 import org.apache.commons.lang3.StringUtils;
 import io.vertx.rxjava.core.eventbus.EventBus;
@@ -96,10 +98,11 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
 	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
 	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);        
-        String entryCode = $m.data.getCode()+"_ENTER";
-        String exitCode = $m.data.getCode()+"_EXIT";
+        String entryCode = $m.data.getCode()+"_ENTER_SOURCE";
+        String exitCode = $m.data.getCode()+"_EXIT_SOURCE";
+        //ENTER_DEST EXIT_DEST
         QCmdGeofenceMessage cmdGeoFence = new QCmdGeofenceMessage(gpsLocation, 10.0, entryCode, exitCode);
-         //Convert cmd to JSON Obj
+        //Convert cmd to JSON Obj
         JsonObject cmdGeoFenceJson = new JsonObject().mapFrom(cmdGeoFence);
         System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message : "+cmdGeoFenceJson.toString());
@@ -136,4 +139,58 @@ rule "BucketView Grp Change-Invalid"
         bus.publish("cmds", abortCmd);       
 end
 
+rule "BucketView GEOFENCE-ENTRY"
+   when
+     $m : QEventMessage( event_type == "GEOFENCE_ENTRY" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+   then
+       System.out.println(" ------ Rule: GeoFence Entry ------- ");
+       System.out.println(" The BEG code is: "+$m.data.getCode());
+ end 
+
+
+rule "BucketView GEOFENCE-EXIT"
+  when
+     $m : QEventMessage( event_type == "GEOFENCE_EXIT" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+  then
+     System.out.println(" ------ Rule: GeoFence Exit- Load In Transit 0988 -------  ");
+     System.out.println(" The BEG code is: "+$m.data.getCode());
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     String tokenString = (String)$map.get("token");
+     String[] code = $m.data.getCode().split("_EXIT_SOURCE");
+     System.out.println("The BEG code after split: "+code[0]);
+     //Moving the BEG
+     JsonObject begEntity = new JsonObject();
+     begEntity.put("sourceCode","GRP_APPROVED");
+     begEntity.put("targetCode",code[0]);
+     begEntity.put("attributeCode", "LNK_CORE");
+     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_IN_TRANSIT", begEntity.toString(), tokenString);
+ 	 System.out.println("The Output after POST: "+output);
+ 	 //Fectching updated link of BEG
+ 	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_BEG", tokenString));
+	 //Creating a data msg
+ 	 JsonObject newLink = new JsonObject();
+ 	 newLink.put("msg_type", "DATA_MSG");
+     newLink.put("data_type", "LINK_CHANGE");
+     newLink.put("items", updatedLink);
+ 	 bus.publish("cmds", newLink);
+ 	 
+ 	 //Send evt_msg to Message
+ 	 String code1 = "code:"+code[0];
+ 	 String[] msgMessageData = {code1, "recipient:LOAD_OWNER"};
+ 	 String[] attachments = {};
+ 	 System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
+ 	 
+ 	 //Creating messageData MSG_MESSAGE
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE_APPROVED_INTRANSIT", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	//  String jsonMessage = gson.toJson(msgMessage); 
+ 	 System.out.println("-----------------------------");
+ 	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
+ 	 System.out.println("-----------------------------");
+ 	 bus.publish("messages", jsonMessage);
+end
 
