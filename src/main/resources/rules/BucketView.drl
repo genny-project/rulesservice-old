@@ -94,7 +94,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 	    //System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
 		//System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    //System.out.println("The Data Value is: " +$m.data.getValue()); 
-	      
+	     
 	    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
 	    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
 	    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);        

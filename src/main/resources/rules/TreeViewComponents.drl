@@ -175,7 +175,7 @@ rule "Send CMD_VIEW:GRP_DASHBOARD"
        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         //Convert cmd to JSON Obj
        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-       bucketViewJson.put("data","GRP_DRIVER_VIEW");
+       bucketViewJson.put("root","GRP_DRIVER_VIEW");
        System.out.println(" ##################### ");
        System.out.println("Layout Data ="+bucketViewJson.toString()); 
        System.out.println(" #################### ");
@@ -195,7 +195,7 @@ rule "Send CMD_VIEW: GRP_OWNER_VIEW"
        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
        //Convert cmd to JSON Obj
        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-       bucketViewJson.put("data", $m.data.getValue());
+       bucketViewJson.put("root", $m.data.getValue());
        System.out.println(" ##################### ");
        System.out.println("Layout Data ="+bucketViewJson.toString()); 
        System.out.println(" #################### ");
