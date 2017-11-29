@@ -148,17 +148,62 @@ rule "Select TreeView Item: DASHBOARD"
         //Publish DATA_MSG to the EventBus
         bus.publish("cmds", sublayoutJson); 
         
+       //Calling the rule group to send cmd CMD_VIEW 
+       drools.setFocus("CMD_VIEW"); 
+       
         //sending cmd BUCKET_VIEW
+      // QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+        //Convert cmd to JSON Obj
+      // JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+      // System.out.println(" ##################### ");
+      // System.out.println("Layout Data ="+bucketViewJson.toString()); 
+     //  System.out.println(" #################### ");
+        //Publish it to the EventBus
+      // bus.publish("cmds", bucketViewJson);
+				  
+end
+
+//Rules to Send CMD_VIEW with value based on the GRP_VALUE
+rule "Send CMD_VIEW:GRP_DASHBOARD"
+     agenda-group "CMD_VIEW"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD" || data.value == "GRP_DRIVER_VIEW" ))
+       bus: EventBus()
+     then
+       System.out.println("------- Rule: Send CMD_VIEW :- "+$m.data.getValue()+ " --------");
+       //sending cmd BUCKET_VIEW
        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         //Convert cmd to JSON Obj
        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+       bucketViewJson.put("data","GRP_DRIVER_VIEW");
        System.out.println(" ##################### ");
        System.out.println("Layout Data ="+bucketViewJson.toString()); 
        System.out.println(" #################### ");
         //Publish it to the EventBus
-       bus.publish("cmds", bucketViewJson);
-				  
+       bus.publish("cmds", bucketViewJson); 
+       System.out.println("-------------------------------------------------");    
 end
+
+rule "Send CMD_VIEW: GRP_OWNER_VIEW"
+     agenda-group "CMD_VIEW"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && data.value == "GRP_OWNER_VIEW" )
+       bus: EventBus()
+     then
+       System.out.println("------- Rule: Send CMD_VIEW :- "+$m.data.getValue()+ " --------");
+       //sending cmd BUCKET_VIEW
+       QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+       //Convert cmd to JSON Obj
+       JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+       bucketViewJson.put("data", $m.data.getValue());
+       System.out.println(" ##################### ");
+       System.out.println("Layout Data ="+bucketViewJson.toString()); 
+       System.out.println(" #################### ");
+       //Publish it to the EventBus
+       bus.publish("cmds", bucketViewJson);     
+       System.out.println("----------------------------------------------------"); 
+end
+
 
 //Sending TableView with data for click on the lowest element of the Dashboard
 rule "Select Dashboard lower level child"
