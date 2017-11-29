@@ -170,12 +170,15 @@ rule "BucketView GEOFENCE-EXIT"
      String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_IN_TRANSIT", begEntity.toString(), tokenString);
  	 System.out.println("The Output after POST: "+output);
  	 //Fectching updated link of BEG
- 	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_BEG", tokenString));
+ 	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_CORE", tokenString));
 	 //Creating a data msg
  	 JsonObject newLink = new JsonObject();
  	 newLink.put("msg_type", "DATA_MSG");
      newLink.put("data_type", "LINK_CHANGE");
      newLink.put("items", updatedLink);
+     System.out.println("---------------------");
+     System.out.println("Updated Link: "+newLink.toString());
+     System.out.println("---------------------");    
  	 bus.publish("cmds", newLink);
  	 
  	 //Send evt_msg to Message
