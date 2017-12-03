@@ -204,29 +204,32 @@ rule "BucketView GEOFENCE-EXIT"
      System.out.println("Updated Link: "+newLink.toString());
      System.out.println("---------------------");    
  	 bus.publish("cmds", newLink);
- 	 
- 	 //Send evt_msg to Message
- 	 String code1 = "code:"+code[0];
- 	 String[] msgMessageData = {code1, "recipient:OWNER"};
- 	 String[] attachments = {};
- 	 System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	
+ 	  //Sending message to Message Service
+       //Send evt_msg to Message
+ 	   String begCode = "code:"+code[0];
+ 	   String sourceBE = "sourceBE:GRP_APPROVED";
+ 	   String targerBE = "targetBE:GRP_IN_TRANSIT";
+ 	   String[] msgMessageData = {begCode, sourceBE, targerBE, "recipient:OWNER"};
+ 	   String[] attachments = {};
+ 	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
+ 	 
  	 //Creating messageData MSG_MESSAGE
- 	 //QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE_APPROVED_INTRANSIT", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
- 	 //JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
- 	//  String jsonMessage = gson.toJson(msgMessage); 
- 	 //System.out.println("-----------------------------");
- 	 //System.out.println("The Message to Message Service is: "+jsonMessage.toString());
- 	 //System.out.println("-----------------------------");
- 	 //bus.publish("messages", jsonMessage);  
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	//String jsonMessage = gson.toJson(msgMessage); 
+ 	 System.out.println("-----------------------------");
+ 	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
+ 	 System.out.println("-----------------------------");
+ 	 bus.publish("messages", jsonMessage);
  	 
 end
 
-/*
+
 //Geofence Entry to Destination GPS data
 rule "BucketView GEOFENCE-ENTRY DESTINATION"
    when
-     $m : QEventMessage( event_type == "GEOFENCE_ENTRY" && data.value == "ENTER_DESTINATION" )
+     $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.value == "ENTER_DESTINATION" )
      bus: EventBus()
      $map : Map($value: this["token"] != null) 
    then
@@ -237,10 +240,10 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
       System.out.println("The BEG code after split: "+code[0]);
       //Moving the BEG
      JsonObject begEntity = new JsonObject();
-     begEntity.put("sourceCode","GRP_COMPLETED");
+     begEntity.put("sourceCode","GRP_IN_TRANSIT");
      begEntity.put("targetCode",code[0]);
      begEntity.put("attributeCode", "LNK_CORE");
-     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_APPROVED", begEntity.toString(), tokenString);
+     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_COMPLETED", begEntity.toString(), tokenString);
  	 System.out.println("The Output after POST: "+output);
  	 //Fectching updated link of BEG
  	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_CORE", tokenString));
@@ -272,7 +275,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);    
 end
-*/
+
 
 //BucketView Card double click
 rule "BucketView Card click"
