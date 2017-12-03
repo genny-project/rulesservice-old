@@ -175,7 +175,7 @@ rule "BucketView GEOFENCE-ENTRY"
 
 rule "BucketView GEOFENCE-EXIT"
   when
-     $m : QEventMessage( event_type == "GEOFENCE_EXIT" )
+     $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.value == "EXIT_SOURCE" )
      bus: EventBus()
      $map : Map($value: this["token"] != null)
   then
