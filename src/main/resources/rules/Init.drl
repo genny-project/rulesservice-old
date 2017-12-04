@@ -173,13 +173,19 @@ rule "Send Memberhub Layout"
 
 
       //Getting all BaseEntity and their attributes
-      JsonObject users = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=20", tokenString));
-       System.out.println("*******************");
-       System.out.println("Json="+users.toString());  
-       System.out.println("*******************");
-                  
-       bus.publish("cmds", users);
+    JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_SCORE/attributes", tokenString));
+    System.out.println("*******************");
+    System.out.println("Home Loan BaseEntity="+homeLoan.toString());  
+    System.out.println("*******************");
+                
+    bus.publish("cmds", homeLoan);
 
+    // JsonObject holiday = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PRD_HOME_LOAN", tokenString));
+    // System.out.println("*******************");
+    // System.out.println("Home Loan BaseEntity="+holiday.toString());  
+    // System.out.println("*******************");
+                
+    // bus.publish("cmds", holiday);
 end
 
 
