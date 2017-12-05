@@ -86,7 +86,7 @@ rule "Init"
      
        //Calling the rule group to send cmd layout  
        drools.setFocus("layout"); 
-       drools.setFocus("BucketView");
+       
      
        //Get BaseEntity for the TreeView  
 //        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE", tokenString));
@@ -107,9 +107,9 @@ rule "Init"
         bus.publish("cmds", objWithAttr);   
     
       
-        
-       
-		      
+        //calling BucketView rule
+        drools.setFocus("BucketView");
+       		      
 end
 
 //Rules to Send layout based on the realm name
