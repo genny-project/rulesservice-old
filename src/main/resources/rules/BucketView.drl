@@ -116,19 +116,6 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 		//System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    //System.out.println("The Data Value is: " +$m.data.getValue()); 
 	     
-	//    String latLongs[] = QwandaUtils.getLatLong("121 Cardigan Street Carlton VIC 3053"); 
-	//    System.out.println("Latitude: "+latLongs[0]+" and Longitude: "+latLongs[1]);
-	//    GPS gpsLocation = new GPS($m.data.getCode(), latLongs[0], latLongs[1]);        
-    //    String entryCode = $m.data.getCode()+"_ENTER_SOURCE";
-    //    String exitCode = $m.data.getCode()+"_EXIT_SOURCE";
-        //ENTER_DEST EXIT_DEST
-    //    QCmdGeofenceMessage cmdGeoFence = new QCmdGeofenceMessage(gpsLocation, 10.0, entryCode, exitCode);
-        //Convert cmd to JSON Obj
-    //    JsonObject cmdGeoFenceJson = new JsonObject().mapFrom(cmdGeoFence);
-    //    System.out.println("-----------------------------------");
-    //    System.out.println("Geo Fence Data Message : "+cmdGeoFenceJson.toString());
-    //    System.out.println("-----------------------------------");
-	//    bus.publish("cmds", cmdGeoFenceJson); 
 
         //Getting QCmdGeofenceMessage for source address
         QCmdGeofenceMessage cmdGeoFenceSource =  GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Source", tokenString);
