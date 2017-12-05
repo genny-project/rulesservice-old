@@ -327,3 +327,49 @@ rule "Edit button click for a load"
      JsonObject load = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.data.getValue()+"/linkcodes/LNK_BEG/attributes", tokenString));
      bus.publish("cmds", load);  
 end
+
+//Rule for Add icon click
+rule "Add new LOAD/Quotes"
+   when
+     $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "GRP_NO_QUOTES" && data.value == "ADD_NEW_LOAD" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+   then
+     System.out.println("------------ Rule: BTN_CLICK - ADD NEW LOAD  -------------------");
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     String tokenString = (String)$map.get("token"); 
+     JsonObject qLoadTitle = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_TITLE_GRP/PER_USER1", tokenString));
+     qLoadTitle.put("aliasCode", "POST_LOAD");      
+     JsonObject qPickUpAdd = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_PICKUP_ADDRESS_GRP/PER_USER1", tokenString));
+     qPickUpAdd.put("aliasCode", "POST_LOAD");
+     JsonObject qDropOffAdd = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_DROPOFF_ADDRESS_GRP/PER_USER1", tokenString));
+     qDropOffAdd.put("aliasCode", "POST_LOAD");
+     JsonObject qLoadDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_DETAILS_GRP/PER_USER1", tokenString));
+     qLoadDetails.put("aliasCode", "POST_LOAD");
+     JsonObject qLoadDesc = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_DESCRIPTION_GRP/PER_USER1", tokenString));
+     qLoadDesc.put("aliasCode", "POST_LOAD");
+     System.out.println("Load Title Json: "+qLoadTitle.toString());
+     System.out.println("Load Desc Json: "+qLoadDesc.toString());
+     //Publishing Load Title
+     bus.publish("cmds",qLoadTitle);
+     //Publishing Load PickUp Address
+     bus.publish("cmds",qPickUpAdd);
+     //Publishing Load DropOff Address
+     bus.publish("cmds",qDropOffAdd);
+     //Publishing Load Details
+     bus.publish("cmds",qLoadDetails);
+     //Publishing Load Description
+     bus.publish("cmds",qLoadDesc);
+     
+     //sending cmd FORM_VIEW
+     QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+     //Convert cmd to JSON Obj
+     JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+        formViewJson.put("root", $m.data.getCode());
+        System.out.println(" ##################### ");
+        System.out.println("Layout Data ="+formViewJson.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", formViewJson); 
+     System.out.println("-----------------------------------------------------------"); 
+end
