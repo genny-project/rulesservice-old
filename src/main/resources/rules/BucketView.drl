@@ -339,7 +339,7 @@ rule "Add new LOAD/Quotes"
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
      
-     JsonObject qName = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_NAME_GRP/PER_USER1", tokenString));
+     JsonObject qName = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_NAME_GRP/PER_USER1", tokenString));
      qName.put("aliasCode", $m.data.getCode());   
     // JsonObject qLoadTitle = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks/QUE_LOAD_TITLE_GRP/PER_USER1", tokenString));
     // qLoadTitle.put("aliasCode", "POST_LOAD");      
