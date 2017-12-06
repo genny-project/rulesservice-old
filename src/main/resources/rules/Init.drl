@@ -105,10 +105,6 @@ rule "Init"
         System.out.println("*******************");  
         //Publish it to the EventBus            
         bus.publish("cmds", objWithAttr);   
-    
-      
-        //calling BucketView rule
-        drools.setFocus("BucketView");
        		      
 end
 
@@ -192,6 +188,7 @@ end
 
 
 rule "Send layout1"
+     salience 10
      agenda-group "layout"
      when
        bus: EventBus()
@@ -234,7 +231,8 @@ rule "Send layout1"
 end
 
 rule "Send BucketView"
-    agenda-group "BucketView"
+    salience -10
+    agenda-group "layout"
     when
        bus:EventBus()
        $user: User1(realm != "memberhub")
