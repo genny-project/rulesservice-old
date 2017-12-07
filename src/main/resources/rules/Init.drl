@@ -221,13 +221,13 @@ rule "Send layout1"
         bus.publish("cmds", obj1);
 
          //Get Asks from Genny Config
-       JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));   
+    //   JsonObject asks = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));   
         //Print Asks
-        System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-        System.out.println("Google Asks="+asks.toString()); 
-        System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+     //   System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+     //   System.out.println("Google Asks="+asks.toString()); 
+     //   System.out.println("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
         //Publish Asks              
-        bus.publish("cmds", asks);
+      //  bus.publish("cmds", asks);
 end
 
 rule "Send BucketView"
