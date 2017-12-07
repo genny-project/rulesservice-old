@@ -329,7 +329,7 @@ rule "Edit button click for a load"
 end
 
 //Rule for Add icon click
-rule "Add new LOAD/Quotes"
+rule "Add new LOAD"
    when
      $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "GRP_NO_QUOTES" && data.value == "ADD_NEW_LOAD" )
      bus: EventBus()
@@ -339,8 +339,9 @@ rule "Add new LOAD/Quotes"
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));
-     qPostLoad.put("aliasCode", $m.data.getCode());   
+     //JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/load-asks1", null));   
+     qPostLoad.put("aliasCode", $m.data.getCode());  
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);
      
@@ -350,7 +351,7 @@ rule "Add new LOAD/Quotes"
      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
         formViewJson.put("root", "QUE_LOAD_GRP");
      System.out.println(" ##################### ");
-     System.out.println("Layout Data ="+formViewJson.toString()); 
+     System.out.println("CMD VIEW Msg ="+formViewJson.toString()); 
      System.out.println(" #################### ");
      //Publish it to the EventBus
      bus.publish("cmds", formViewJson); 
