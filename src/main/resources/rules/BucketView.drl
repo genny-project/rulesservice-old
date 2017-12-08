@@ -90,6 +90,7 @@ rule "BucketView Grp Change - Valid"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
@@ -222,6 +223,7 @@ rule "BucketView GEOFENCE-EXIT"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
@@ -275,6 +277,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
