@@ -128,7 +128,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
         System.out.println("-----------------------------------");
         System.out.println("-----------------------------------");
-        System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceDestJson.toString());
+        System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
         System.out.println("-----------------------------------"); 
         //Sending QCmdGeofenceMessage for source address
         bus.publish("cmds", cmdGeoFenceSourceJson);
