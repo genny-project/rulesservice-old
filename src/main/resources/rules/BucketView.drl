@@ -81,14 +81,14 @@ rule "BucketView Grp Change - Valid"
        //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+$m.data.getCode();
- 	   String sourceBE = "sourceBE:"+$m.getSourceBaseEntityCode();
- 	   String targerBE = "targetBE:"+$m.getTargetBaseEntityCode();
- 	   String[] msgMessageData = {begCode, sourceBE, targerBE, "recipient:OWNER"};
+ 	   //String sourceBE = "sourceBE:"+$m.getSourceBaseEntityCode();
+ 	   //String targerBE = "targetBE:"+$m.getTargetBaseEntityCode();
+ 	   String[] msgMessageData = {begCode, "recipient:OWNER"};
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
- 	 
+ 	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
@@ -212,14 +212,15 @@ rule "BucketView GEOFENCE-EXIT"
  	  //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+code[0];
- 	   String sourceBE = "sourceBE:GRP_APPROVED";
- 	   String targerBE = "targetBE:GRP_IN_TRANSIT";
- 	   String[] msgMessageData = {begCode, sourceBE, targerBE, "recipient:OWNER"};
+ 	  // String sourceBE = "sourceBE:GRP_APPROVED";
+ 	   //String targerBE = "targetBE:GRP_IN_TRANSIT";
+ 	   String[] msgMessageData = {begCode, "recipient:OWNER"};
+ 	   String msgTemplateCode = "MSG_CH40_MOVE_GRP_IN_TRANSIT";
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	 
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	//String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
@@ -264,14 +265,15 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	  //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+$m.data.getCode();
- 	   String sourceBE = "sourceBE:GRP_APPROVED";
- 	   String targerBE = "targetBE:GRP_COMPLETED";
- 	   String[] msgMessageData = {begCode, sourceBE, targerBE, "recipient:OWNER"};
+ 	  // String sourceBE = "sourceBE:GRP_APPROVED";
+ 	  // String targerBE = "targetBE:GRP_COMPLETED";
+ 	   String[] msgMessageData = {begCode,"recipient:OWNER"};
+ 	    String msgTemplateCode = "MSG_CH40_MOVE_GRP_COMPLETED";
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	 
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", "MSG_CH40_MOVE", msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
