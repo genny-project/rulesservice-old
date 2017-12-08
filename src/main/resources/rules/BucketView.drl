@@ -339,8 +339,7 @@ rule "Add new LOAD"
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
      //Getting Post Load Question GRP
-     //JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/load-asks1", null));   
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));   
      qPostLoad.put("aliasCode", $m.data.getCode());  
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);

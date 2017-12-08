@@ -53,7 +53,7 @@ rule "User-Profile"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
        // JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
-		JsonObject obj = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/userProfile-asks", null));
+		JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_USER_PROFILE_GRP/PER_USER1", tokenString));
 		System.out.println("*******************");
 		System.out.println("Json="+obj.toString());	
 		System.out.println("*******************");						
