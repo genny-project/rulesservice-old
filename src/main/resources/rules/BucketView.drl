@@ -90,6 +90,7 @@ rule "BucketView Grp Change - Valid"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
@@ -127,7 +128,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
         System.out.println("-----------------------------------");
         System.out.println("-----------------------------------");
-        System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceDestJson.toString());
+        System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
         System.out.println("-----------------------------------"); 
         //Sending QCmdGeofenceMessage for source address
         bus.publish("cmds", cmdGeoFenceSourceJson);
@@ -222,6 +223,7 @@ rule "BucketView GEOFENCE-EXIT"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
@@ -275,6 +277,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 //Creating messageData MSG_MESSAGE
  	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
