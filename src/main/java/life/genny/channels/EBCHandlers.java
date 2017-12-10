@@ -148,9 +148,7 @@ public class EBCHandlers {
         		        }
         		      }).create();
         	 String json = payload.toString();
-        		GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-        		Gson gson3 = gsonBuilder.create();
-        		JsonObject jobj = new JsonObject(json);
+         		JsonObject jobj = new JsonObject(json);
         		JsonArray ja = jobj.getJsonArray("items");
         		String ruleText = ja.getJsonObject(0).getString("rule");
         		String ruleCode = ja.getJsonObject(0).getString("code");
@@ -160,7 +158,7 @@ public class EBCHandlers {
       	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
       	rules.add(Tuple.of(ruleCode,ruleText));
 
-          setupKieSession(rulesGroup,
+          setupKieRules(rulesGroup,
         	      rules);
         } else {
           allRules(payload, eventBus);
@@ -226,6 +224,8 @@ public class EBCHandlers {
 
   public static KieSession createSession(EventBus bus, String token,
       Map<String, Object> tokenDecoded, Set<String> roles) {
+	  
+
     // ks = KieServices.Factory.get();
     if (ks == null) {
       System.out.println("ks is NULL!!!");
@@ -294,11 +294,12 @@ public class EBCHandlers {
   }
 
 
-  public static void setupKieSession(final String rulesGroup,
+  public static void setupKieRules(final String rulesGroup,
       final List<Tuple2<String, String>> rules) {
 
+	     System.out.println("***** Setting up RulesGroup: "+rulesGroup);
+	     
     try {
-      KieSession kieSession = null;
       // load up the knowledge base
       final KieFileSystem kfs = ks.newKieFileSystem();
 
@@ -318,6 +319,7 @@ public class EBCHandlers {
       if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
         System.out.println(kieBuilder.getResults().toString());
       }
+      
       final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
       final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
       final KieBase kbase = kContainer.newKieBase(kbconf);

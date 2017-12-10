@@ -89,7 +89,7 @@ rule "Select TreeView Item: DASHBOARD"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		
 		//Base Entity to be displayed in the table as header
 		JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));		
@@ -217,7 +217,7 @@ rule "Select Dashboard lower level child"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
        //Get the data
        JsonObject data = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=20", tokenString));
        System.out.println("*******************");
@@ -250,7 +250,7 @@ rule "Select TreeView Item: GRP_USERS"
  	    System.out.println("-------- Rule:- SELECT TreeView Items --------");					
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		
 		//Getting QwandaService URL
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
@@ -296,7 +296,7 @@ rule "Select TreeView Item"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		
 		//Base Entity to be displayed in the table as header
 		JsonObject baseEntity = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE?pageStart=0&pageSize=200", tokenString));
@@ -328,7 +328,7 @@ rule "Select TreeView Items for child items"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
  		//Getting token String
   	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		
 		//Base Entity to be displayed in the table as header
 		JsonObject baseEntity = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE?pageStart=0&pageSize=200", tokenString));

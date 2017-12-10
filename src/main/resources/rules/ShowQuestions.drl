@@ -58,7 +58,7 @@ rule "ShowQuestions"
   
   
   	    String tokenString = (String)$map.get("token"); //KeycloakUtils.getToken(keycloakUrl,realm, keycloakClientId, secret, keycloakUser, keycloakPassword);
-		System.out.println("tokenstr="+tokenString);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		String json = QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString);
 		
 	    JsonObject obj = new JsonObject();

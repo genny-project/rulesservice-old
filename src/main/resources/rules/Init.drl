@@ -68,7 +68,7 @@ rule "Init"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
        //Get and print the token
         String tokenString = (String)$map.get("token");
-        System.out.println("tokenstr="+tokenString);
+        System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
       
         //Getting the User BE and sending it as ALIAS
         //Get User BE for USER ALIAS based on the user's username
@@ -123,7 +123,7 @@ rule "Send Memberhub Layout"
       System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       // Get Token
       String tokenString = (String)$map.get("token");
-      System.out.println("tokenstr="+tokenString);
+      System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 
       // Declare Qwanda URL
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
@@ -199,7 +199,7 @@ rule "Send layout1"
         
         // Get Token
         String tokenString = (String)$map.get("token");
-        System.out.println("tokenstr="+tokenString);
+        System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 
         // Declare Qwanda URL
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
@@ -242,7 +242,7 @@ rule "Send BucketView"
        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
        //Get and print the token
         String tokenString = (String)$map.get("token");
-        System.out.println("tokenstr="+tokenString);
+        System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
         //For the links and their weight
        JsonObject grpLinks = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE/attributes", tokenString));
         //Getting B.E. to display in Bucket View

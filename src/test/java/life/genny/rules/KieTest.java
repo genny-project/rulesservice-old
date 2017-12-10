@@ -90,7 +90,7 @@ public  void setupKieSessionTest()
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
 	 
-	EBCHandlers.setupKieSession(rulesGroup, rules) ;
+	EBCHandlers.setupKieRules(rulesGroup, rules) ;
 	
 	
 	Map<String, KieBase> cache = EBCHandlers.getKieBaseCache();
@@ -140,7 +140,7 @@ public  void setupKieSessionTest()
 	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
-	EBCHandlers.setupKieSession(rulesGroup, rules) ;
+	EBCHandlers.setupKieRules(rulesGroup, rules) ;
 	
 	
 	Map<String, KieBase> cache = EBCHandlers.getKieBaseCache();
