@@ -204,7 +204,7 @@ rule "Inference Gender Change"
             data.put("value", gender);
             data.put("attributeCode", "PRI_GENDER"); 
             data.put("targetCode", $m.getTargetBaseEntityCode()); 
-            data.put("sourceCode", "RULES_ENGINE");  
+            data.put("sourceCode", $m.getSourceBaseEntityCode());  
             data.put("expired", false);
             data.put("refused", false);
             data.put("weight", "0.0");    
