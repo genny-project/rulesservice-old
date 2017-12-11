@@ -143,7 +143,8 @@ rule "Send Memberhub Layout"
 
       bus.publish("cmds", layoutObj);
 
-      JsonObject quesGrp = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/memberhub-questions.json", null));
+      //JsonObject quesGrp = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/memberhub-questions.json", null));
+      JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_VINCE/asks2/QUE_MEMBERHUB_GRP/PER_VINCE", tokenString));
 	//PRINT QUESTIONS
 	System.out.println("------------------------------------------------------------------------\n");
 	System.out.println("QUESTION GROUP   ::   "+quesGrp.toString());
