@@ -88,7 +88,7 @@ rule "BucketView Grp Change - Valid"
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
@@ -221,7 +221,7 @@ rule "BucketView GEOFENCE-EXIT"
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	 
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
  	//String jsonMessage = gson.toJson(msgMessage); 
@@ -275,7 +275,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	 
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.SMS, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
  	//  String jsonMessage = gson.toJson(msgMessage); 
