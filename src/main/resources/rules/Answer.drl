@@ -144,16 +144,16 @@ rule "Listen Facebook Code"
        $map : Map($value: this["token"] != null)
  
      then
-      
-  		System.out.println("\n\n");
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("Listen Facebook Code Rule\n");
-        System.out.println("\n The QEventAttributeValueChangeMessage received is: " +$m); 
-        System.out.println("\n The code is: "+$m.data.getCode()); 
-        System.out.println("------------------------------------------------------------------------");
- 
-      
- 
+
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Facebook Code" + LOG_RESET);
+
+        String tokenString = (String)$map.get("token");   
+        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+
         // Collect DATA 
         JsonObject data = new JsonObject();
         data.put("value", $m.getNewValue());
@@ -165,18 +165,14 @@ rule "Listen Facebook Code"
         data.put("weight", "0.0");    
         data.put("token",$m.getToken());
 
-        //Create DATA msg
-        JsonObject obj2 = new JsonObject();
-        obj2.put("msg_type", "DATA_MSG");
-        obj2.put("data_type", "Facebook");
-        obj2.put("items", data); 
-
         //Print DATA msg
-        System.out.println("************************************************************");
-        System.out.println("DATA msg ready to send to SOCIAL= "+obj2); 
-        System.out.println("************************************************************"); 
+        System.out.println("------------------------------------------------------------------------\n");    
+        System.out.println("SOCIAL DATA   ::   "+data); 
+        System.out.println("------------------------------------------------------------------------");     
         bus.publish("social", data);
-        System.out.println(" End Listen Facebook Code Rule #######################################\n");
+
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Listen Facebook Code" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
 end
 
@@ -195,9 +191,9 @@ rule "Inference Gender Change"
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
 
-        System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-        System.out.println("Attribute Code changed   ::    "+$m.data.getCode()); 
+        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
 		
 		String PRI_FIRSTNAME=  $m.getNewValue();
@@ -207,6 +203,7 @@ rule "Inference Gender Change"
         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
         
         String gender= genderObj.getString("gender");    
+        Float weight= genderObj.getFloat("probability");    
        
         if(gender !=null ) {
             System.out.println("GENDER   ::   "+gender.toString());
@@ -220,7 +217,8 @@ rule "Inference Gender Change"
             data.put("sourceCode", $m.getSourceBaseEntityCode());  
             data.put("expired", false);
             data.put("refused", false);
-            data.put("weight", "0.0");    
+            data.put("weight", weight);
+            data.put("inferred", true);    
             
             //Creating Answer DATA_MSG
             JsonObject obj = new JsonObject();
