@@ -233,6 +233,26 @@ public class EBCHandlers {
     kContainer = ks.getKieClasspathContainer();
     final KieSession kSession = kContainer.newKieSession("ksession-rules");
 
+    String RESET = "\u001B[0m";
+    String RED = "\u001B[31m";
+    String GREEN = "\u001B[32m";
+    String YELLOW = "\u001B[33m";
+    String BLUE = "\u001B[34m";
+    String PURPLE = "\u001B[35m";
+    String CYAN = "\u001B[36m";
+    String WHITE = "\u001B[37m";
+    String BOLD = "\u001b[1m";
+    
+    kSession.setGlobal("LOG_RESET", RESET);
+    kSession.setGlobal("LOG_RED", RED);
+    kSession.setGlobal("LOG_GREEN", GREEN);
+    kSession.setGlobal("LOG_YELLOW", YELLOW);
+    kSession.setGlobal("LOG_BLUE", BLUE);
+    kSession.setGlobal("LOG_PURPLE", PURPLE);
+    kSession.setGlobal("LOG_CYAN", CYAN);
+    kSession.setGlobal("LOG_WHITE", WHITE);
+    kSession.setGlobal("LOG_BOLD", BOLD);
+
     kSession.setGlobal("REACT_APP_QWANDA_API_URL", qwandaApiUrl);
     kSession.setGlobal("REACT_APP_VERTX_URL", vertxUrl);
     kSession.setGlobal("KEYCLOAKIP", hostIp);
