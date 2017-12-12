@@ -1,0 +1,58 @@
+package com.sample;
+
+import life.genny.qwanda.message.QBaseMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+
+/*
+rule "msg"
+    when
+        $obj: Object()
+        bus: EventBus()
+    then 
+    	   QBaseMSGMessage msgMessage = new QBaseMSGMessage();
+       msgMessage.setMsgMessageType(QBaseMSGMessageType.EMAIL);
+       msgMessage.setMsgMessageData("hello world");
+       msgMessage.setSource("genny.life.user@gmail.com");
+       msgMessage.setTarget("rpgayatri@gmail.com");
+       msgMessage.setSubject("test_subject");
+       
+       String[] emailAttachments = {};
+       msgMessage.setAttachments(emailAttachments);
+       
+       QBaseMSGMessage msgMessage1 = new QBaseMSGMessage();
+       msgMessage1.setMsgMessageType(QBaseMSGMessageType.EMAIL);
+       msgMessage1.setMsgMessageData("hello world again");
+       msgMessage1.setSource("genny.life.user@gmail.com");
+       msgMessage1.setTarget("rpgayatri@gmail.com");
+       msgMessage1.setSubject("test_subject_something");
+       
+       String[] emailAttachments1 = {};
+       msgMessage1.setAttachments(emailAttachments1);
+       
+       /*
+       List<QBaseMSGMessage> msgList = new ArrayList<>();
+       msgList.add(msgMessage);
+       msgList.add(msgMessage1);
+       */
+       
+      /* JsonObject data = new JsonObject();
+       data = JsonObject.mapFrom(msgMessage);
+       
+       JsonObject data1 = new JsonObject();
+       data1 = JsonObject.mapFrom(msgMessage1);
+       
+       JsonArray msglist = new JsonArray();
+       msglist.add(data);
+       msglist.add(data1);    
+       
+           
+       JsonObject eventMsg = new JsonObject();
+       eventMsg.put("msg_type", "EVT_MSG");
+       eventMsg.put("event_type", "message");
+       eventMsg.put("msgMessageData", msglist);
+       
+       bus.publish("messages", eventMsg);
+ 
+end*/
+
+	

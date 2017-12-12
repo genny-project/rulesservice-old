@@ -31,7 +31,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.FieldNamingPolicy;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 

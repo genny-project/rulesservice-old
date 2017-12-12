@@ -19,7 +19,6 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.GPSUtils;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -31,7 +30,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.FieldNamingPolicy;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 

@@ -13,7 +13,6 @@ import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.Ask;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -26,7 +25,6 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.FieldNamingPolicy;
 import io.vertx.core.json.JsonObject;
 import java.time.format.DateTimeFormatter;
-import org.apache.commons.lang.StringUtils;
 import life.genny.qwanda.DateTimeDeserializer;
 
  global java.lang.String REACT_APP_QWANDA_API_URL;
