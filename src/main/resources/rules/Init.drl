@@ -194,7 +194,7 @@ rule "Send layout1"
         String tokenString = (String)$map.get("token");   
         System.out.println("\nToken   ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
         //Get Genny Layout
-        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/memberhub.json", null);
+        String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
         
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
         JsonObject layoutObj = new JsonObject().mapFrom(cmd);
