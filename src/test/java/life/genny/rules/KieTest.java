@@ -90,10 +90,10 @@ public  void setupKieSessionTest()
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
 	 
-	EBCHandlers.setupKieRules(rulesGroup, rules) ;
+	RulesLoader.setupKieRules(rulesGroup, rules) ;
 	
 	
-	Map<String, KieBase> cache = EBCHandlers.getKieBaseCache();
+	Map<String, KieBase> cache = RulesLoader.getKieBaseCache();
 	Integer count = cache.size();
 	
 	System.out.println("Loaded Test Kie Session with "+count+" ruleGroups");
@@ -107,7 +107,7 @@ public  void setupKieSessionTest()
 	 Map<String, String> keyvalue = new HashMap<String, String>();
      keyvalue.put("token", null);
      
-	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
+	RulesLoader.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
 
 	
 	    assertThat( list.size(), is(3) );
@@ -140,10 +140,10 @@ public  void setupKieSessionTest()
 	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
-	EBCHandlers.setupKieRules(rulesGroup, rules) ;
+	RulesLoader.setupKieRules(rulesGroup, rules) ;
 	
 	
-	Map<String, KieBase> cache = EBCHandlers.getKieBaseCache();
+	Map<String, KieBase> cache = RulesLoader.getKieBaseCache();
 	Integer count = cache.size();
 	
 	System.out.println("Loaded Test Kie Session with "+count+" ruleGroups");
@@ -157,7 +157,7 @@ public  void setupKieSessionTest()
      Map<String, String> keyvalue = new HashMap<String, String>();
           keyvalue.put("token", "TOKEN");
 	 
-	EBCHandlers.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
+	RulesLoader.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
 
 	
 	   assertThat( list.size(), is(2) );

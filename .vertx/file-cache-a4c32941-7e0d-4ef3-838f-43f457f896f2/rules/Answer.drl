@@ -1,0 +1,239 @@
+package com.sample
+
+import org.apache.commons.lang3.StringUtils;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.Ask;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+rule "Answer"
+    when
+        m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then    
+
+        System.out.println("\u001B[33m ================================================================================================================================================ \u001B[0m");
+        System.out.println("\u001B[32m RULE EXECUTED      ::   Answer \u001B[0m");
+        
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+
+        System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        System.out.println("------------------------------------------------------------------------");
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+
+        // extract answers
+        Answer[] answers = m.getItems();
+        for (Answer answer : answers) {
+            Long askId = answer.getAskId();
+            String sourceCode = answer.getSourceCode();
+            String targetCode = answer.getTargetCode();
+            String attributeCode = answer.getAttributeCode();
+            String value = answer.getValue();
+            System.out.println("Printing Answer data recieved   ::");
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+            System.out.println("------------------------------------------------------------------------");
+            
+            //convert answer to json
+            String jsonAnswer = gson.toJson(answer);
+            System.out.println("JSON Answer from FrontEnd   ::   "+jsonAnswer);
+
+            // convert Answer Json to Answer obj
+            Gson ans = new Gson();
+            Answer answerObj = ans.fromJson(jsonAnswer, Answer.class);
+            System.out.println("Answer Object   ::   "+answerObj);
+            System.out.println("------------------------------------------------------------------------");
+            //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
+
+            // post answers to qwanda-utils
+            String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+         }      
+        System.out.println("\n \u001B[31m RULE TERMINATED    ::   Answer \u001B[0m ");
+        System.out.println( "\u001B[33m ------------------------------------------------------------------------------------------------------------------------------------------------  \u001B[0m");
+           
+    end
+
+//Rule listening to Attribute change
+rule "Listen Attribute Change"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
+        bus:EventBus() 
+     then
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Attribute Change" + LOG_RESET);
+        System.out.println("\nQEventAttributeValueChangeMessage   ::    " +$m); 
+        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+        System.out.println("------------------------------------------------------------------------");    
+       
+        //Convert cmd to JSON Obj
+        JsonObject data = new JsonObject();
+        data.put("value", $m.getNewValue());
+        data.put("attributeCode", $m.data.getCode());
+        data.put("targetCode", $m.getTargetBaseEntityCode()); 
+        data.put("sourceCode", $m.getSourceBaseEntityCode());  
+        data.put("expired", false);
+        data.put("refused", false);
+        data.put("weight", "0.0");
+
+        //Creating Answer DATA_MSG
+        JsonObject obj= new JsonObject();
+        obj.put("msg_type", "DATA_MSG");
+        obj.put("data_type", "Answer");
+        obj.put("items", data); 
+
+        //Print Answer
+        System.out.println("\nSaving attribute change as a new Answer   ::    "+obj.toString()); 
+        obj.put("token",$m.getToken());     
+        bus.publish("cmds", obj);
+
+        System.out.println("\n" + LOG_RED + "RULE TERMINATED    ::   Listen Attribute Change" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
+
+//Rule listening to Facebook Code change
+rule "Listen Facebook Code"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
+        bus:EventBus() 
+       $map : Map($value: this["token"] != null)
+ 
+     then
+
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Facebook Code" + LOG_RESET);
+
+        String tokenString = (String)$map.get("token");   
+        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+
+        // Collect DATA 
+        JsonObject data = new JsonObject();
+        data.put("value", $m.getNewValue());
+        data.put("attributeCode", $m.data.getCode()); 
+        data.put("targetCode", $m.getTargetBaseEntityCode()); 
+        data.put("sourceCode", $m.getSourceBaseEntityCode());  
+        data.put("expired", false);
+        data.put("refused", false);
+        data.put("weight", "0.0");    
+        data.put("token",$m.getToken());
+
+        //Print DATA msg
+        System.out.println("------------------------------------------------------------------------\n");    
+        System.out.println("SOCIAL DATA   ::   "+data); 
+        System.out.println("------------------------------------------------------------------------");     
+        bus.publish("social", data);
+
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Listen Facebook Code" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+        
+end
+
+//Rule listening to Gender Inference
+rule "Inference Gender Change"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
+        bus:EventBus() 
+        $map : Map($value: this["token"] != null)
+ 
+     then    
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+
+        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+        System.out.println("------------------------------------------------------------------------");
+		
+		String PRI_FIRSTNAME=  $m.getNewValue();
+        JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
+        //PRINT genderObj
+        System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
+        
+        String gender= genderObj.getString("gender");    
+        Float weight= genderObj.getFloat("probability");    
+       
+        if(gender !=null ) {
+            System.out.println("GENDER   ::   "+gender.toString());
+            System.out.println("\n------------------------------------------------------------------------");
+            
+            // Collect DATA to save gender as an answer
+            JsonObject data = new JsonObject();
+            data.put("value", gender);
+            data.put("attributeCode", "PRI_GENDER"); 
+            data.put("targetCode", $m.getTargetBaseEntityCode()); 
+            data.put("sourceCode", $m.getSourceBaseEntityCode());  
+            data.put("expired", false);
+            data.put("refused", false);
+            data.put("weight", weight);
+            data.put("inferred", true);    
+            
+            //Creating Answer DATA_MSG
+            JsonObject obj = new JsonObject();
+            obj.put("msg_type", "DATA_MSG");
+            obj.put("data_type", "Answer");
+            obj.put("items", data); 
+            //Print Answer
+            System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
+            obj.put("token",tokenString);
+            bus.publish("cmds", obj);
+        }else{
+            System.out.println("------------------------------------------------------------------------\n");
+            System.out.println("GENDER   ::  Not available ");
+            System.out.println("Sorry, No Inferred Rule was executed ");
+        }
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Gender Change" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+        
+end

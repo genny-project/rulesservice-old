@@ -1,0 +1,80 @@
+package com.sample
+ 
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.Ask;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import java.time.format.DateTimeFormatter;
+import org.apache.commons.lang3.StringUtils;
+import life.genny.qwanda.DateTimeDeserializer;
+
+ global java.lang.String REACT_APP_QWANDA_API_URL;
+ global java.lang.String REACT_APP_VERTX_URL;
+ global java.lang.String KEYCLOAKIP;
+   
+
+rule "ShowQuestions"
+    when
+      m : QEventMessage( QEventMessage.data.getCode().equals("Asks") )
+      bus: EventBus()
+      $map : Map($value: this["token"])
+    then
+
+    	    String keycloakProto = System.getProperty("KEYCLOAK_PROTO", "http://");
+    	    String keycloakPort = System.getProperty("KEYCLOAK_PORT", "8180");
+    	    String keycloakIP = System.getProperty("HOSTIP", KEYCLOAKIP);
+ 		String keycloakUrl = keycloakProto+keycloakIP+":"+keycloakPort;
+ 		
+ 		
+ 		String keycloakClientId = System.getProperty("KEYCLOAK_CLIENTID","curl");
+ 		String keycloakUser = System.getProperty("KEYCLOAK_USERID","user1");
+ 		String keycloakPassword = System.getProperty("KEYCLOAK_PASSWORD","password1");
+ 		String realm = System.getProperty("KEYCLOAK_REALM",  "wildfly-swarm-keycloak-example"); 	
+ 		String secret = System.getProperty("KEYCLOAK_SECRET","056b73c1-7078-411d-80ec-87d41c55c3b4");  
+ 		String qwandaServiceUrl = System.getProperty("REACT_APP_QWANDA_API_URL", REACT_APP_QWANDA_API_URL);
+ 		System.out.println("HOSTIP:"+keycloakIP+" qwandSURL="+qwandaServiceUrl);
+ 		
+ 		System.out.println(keycloakUrl+":"+keycloakClientId+":"+keycloakUser+":"+keycloakPassword+":"+realm+":"+secret+":"+qwandaServiceUrl);
+  
+  
+  
+  	    String tokenString = (String)$map.get("token"); //KeycloakUtils.getToken(keycloakUrl,realm, keycloakClientId, secret, keycloakUser, keycloakPassword);
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+		String json = QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString);
+		
+	    JsonObject obj = new JsonObject();
+		obj.put("msg_type", "DATA_MSG");
+		obj.put("data_type", "Asks");
+		obj.put("params", new JsonObject(json));
+
+		System.out.println("*******************");
+		System.out.println("Json="+json);	
+		System.out.println("*******************");
+						
+		bus.publish("cmds", obj);
+  
+end
+	
+ 
+

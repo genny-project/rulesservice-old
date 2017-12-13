@@ -19,6 +19,7 @@ import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -33,7 +34,9 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
@@ -49,355 +52,118 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.rules.RulesLoader;
 
 public class EBCHandlers {
 
-  private static final Logger logger = LoggerFactory.getLogger(EBCHandlers.class);
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-  private static Map<String, KieBase> kieBaseCache = null;
-  static {
-    setKieBaseCache(new HashMap<String, KieBase>());
-  }
+	static Gson gson = new GsonBuilder()
+			.registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+				@Override
+				public LocalDateTime deserialize(final JsonElement json, final Type type,
+						final JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+					return ZonedDateTime.parse(json.getAsJsonPrimitive().getAsString()).toLocalDateTime();
+				}
 
-  static Gson gson = new GsonBuilder()
-      .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-        @Override
-        public LocalDateTime deserialize(final JsonElement json, final Type type,
-            final JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-          return ZonedDateTime.parse(json.getAsJsonPrimitive().getAsString()).toLocalDateTime();
-        }
+				public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+						final JsonSerializationContext context) {
+					return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); // "yyyy-mm-dd"
+				}
+			}).create();
 
-        public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-            final JsonSerializationContext context) {
-          return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); // "yyyy-mm-dd"
-        }
-      }).create();
+	static String token;
 
-  static KieServices ks = KieServices.Factory.get();
-  static KieContainer kContainer;
-  final static String qwandaApiUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-  final static String vertxUrl = System.getenv("REACT_APP_VERTX_URL");
-  final static String hostIp = System.getenv("HOSTIP");
-  static KieSession kSession;
-  static String token;
+	public static void registerHandlers(final EventBus eventBus) {
+		EBConsumers.getFromEvents().subscribe(arg -> {
+			JsonObject payload = processMessage("Event",arg);
 
+			QEventMessage eventMsg = null;
+			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
+				eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
+				eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
+			} else {
+				eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
+			}
+			processMsg("Event",eventMsg, eventBus, payload.getString("token"));
 
+		});
 
-  public static void registerHandlers(final EventBus eventBus) {
-    EBConsumers.getFromEvents().subscribe(arg -> {
-      logger.info("Received EVENT :" + (System.getenv("PROJECT_REALM") == null ? "tokenRealm"
-          : System.getenv("PROJECT_REALM")));
-      if (System.getenv("PROJECT_REALM") != null) {
-        System.out
-            .println("###########    The project realm from system env is : ################    "
-                + System.getenv("PROJECT_REALM"));
-      }
+		EBConsumers.getFromData().subscribe(arg -> {
 
-      final JsonObject payload = new JsonObject(arg.body().toString());
-      final String token = payload.getString("token");
-      System.out.println(payload);
+			JsonObject payload = processMessage("Data",arg);
 
-      QEventMessage eventMsg = null;
-      QMSGMessage msg = null;
-      if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
-        // Converting Json to QEventAttributeValueChangeMessage class
-        eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
-      } else if (payload.getString("event_type").equals("message")) {
-//        kContainer = ks.getKieClasspathContainer();
-//        final KieSession kSession = kContainer.newKieSession("ksession-rules");
-//        String st = new String("string");
-//        kSession.insert(st);
-//        kSession.insert(eventBus);
-//        kSession.fireAllRules();
-        // Converting Json to QEventLinkChangeMessage class
-//        eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
-        // System.out.println("\n The value in converted eventMsg : "+eventMsg);
-      } else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
-        // Converting Json to QEventLinkChangeMessage class
-        eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
-        // System.out.println("\n The value in converted eventMsg : "+eventMsg);
-      } else {
-        eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
-      }
-      processEvent(eventMsg, eventBus, token);
+			if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) { // should always be data if coming through
+																				// this channel
+				QDataAnswerMessage dataMsg = null;
 
-    });
+				// Is it a Rule?
+				if (payload.getString("data_type").equals(Rule.class.getSimpleName())) {
+					JsonArray ja = payload.getJsonArray("items");
+					String ruleText = ja.getJsonObject(0).getString("rule");
+					String ruleCode = ja.getJsonObject(0).getString("code");
+					// QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
+					System.out.println("Incoming Rule :" + ruleText);
+					String rulesGroup = "rules";
+					List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
+					rules.add(Tuple.of(ruleCode, ruleText));
 
-    EBConsumers.getFromData().subscribe(arg -> {
+					RulesLoader.setupKieRules(rulesGroup, rules);
+				} else if  (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
+					 dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
+					processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
+				}
+			}
+		});
+	}
 
-      logger.info("Received DATA :" + (System.getenv("PROJECT_REALM") == null ? "tokenRealm"
-          : System.getenv("PROJECT_REALM")));
-      final JsonObject payload = new JsonObject(arg.body().toString());
-      payload.getString("token");
-      System.out.println(payload);
+	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
+		log.info("Received " + messageType + " :"
+				+ (System.getenv("PROJECT_REALM") == null ? "tokenRealm" : System.getenv("PROJECT_REALM")));
+		if (System.getenv("PROJECT_REALM") != null) {
+			System.out.println("###########    The project realm from system env is : ################    "
+					+ System.getenv("PROJECT_REALM"));
+		}
+		
+		final JsonObject payload = new JsonObject(arg.body().toString());
+		return payload;
+	}
 
-      // final JsonObject a = Buffer.buffer(payload.toString()).toJsonObject();
-      if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) {
-        if (payload.getString("data_type").equals(Rule.class.getSimpleName())) {
-        	 Gson gson2 = new GsonBuilder()
-        		      .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-        		        @Override
-        		        public LocalDateTime deserialize(final JsonElement json, final Type type,
-        		            final JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        		          return ZonedDateTime.parse(json.getAsJsonPrimitive().getAsString()).toLocalDateTime();
-        		        }
+	
 
-        		        public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-        		            final JsonSerializationContext context) {
-        		          return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); // "yyyy-mm-dd"
-        		        }
-        		      }).create();
-        	 String json = payload.toString();
-         		JsonObject jobj = new JsonObject(json);
-        		JsonArray ja = jobj.getJsonArray("items");
-        		String ruleText = ja.getJsonObject(0).getString("rule");
-        		String ruleCode = ja.getJsonObject(0).getString("code");
-       //   QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
-          System.out.println("Incoming Rule :"+ruleText);
-      	String rulesGroup = "GRP_RULES_TEST";
-      	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
-      	rules.add(Tuple.of(ruleCode,ruleText));
-
-          setupKieRules(rulesGroup,
-        	      rules);
-        } else {
-          allRules(payload, eventBus);
-        }
-      }
-    });
-  }
+	static Map<String, Object> decodedToken = null;
+	static Set<String> userRoles = null;
 
 
-  static Map<String, Object> decodedToken = null;
-  static Set<String> userRoles = null;
+	
+	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
+		Vertx.vertx().executeBlocking(future -> {
+			decodedToken = RulesLoader.getDecodedTokenMap(token);
+			userRoles = KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
 
-  public static void processEvent(final QEventMessage eventMsg, final EventBus bus,
-      final String token) {
-    Vertx.vertx().executeBlocking(future -> {
-      // kSession = createSession(bus, token);
+			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
 
-      if ((token != null) && (!token.isEmpty())) {
-        // Getting decoded token in Hash Map from QwandaUtils
-        decodedToken = KeycloakUtils.getJsonMap(token);
-        // Getting Set of User Roles from QwandaUtils
-        userRoles = KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
+			List<Object> facts = new ArrayList<Object>();
+			facts.add(msg);
+			facts.add(decodedToken);
+			facts.add(userRoles);
 
-        System.out.println("The Roles value are: " + userRoles.toString());
+			Map<String, String> keyvalue = new HashMap<String, String>();
+			keyvalue.put("token", token);
 
-        /*
-         * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm names as we
-         * can't add multiple realms in genny keyclaok as it is open-source
-         */
-        final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
-        if ((projectRealm != null) && (!projectRealm.isEmpty())) {
-          decodedToken.put("realm", projectRealm);
-        } else {
-          // Extracting realm name from iss value
-          final String realm = (decodedToken.get("iss").toString()
-              .substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
-          // Adding realm name to the decoded token
-          decodedToken.put("realm", realm);
-        }
-        System.out.println("######  The realm name is:  #####  " + decodedToken.get("realm"));
-        // Printing Decoded Token values
-        for (final Map.Entry entry : decodedToken.entrySet()) {
-          System.out.println(entry.getKey() + ", " + entry.getValue());
-        }
-      }
+			RulesLoader.executeStatefull("rules", eventBus, globals, facts, keyvalue);
 
-      try {
-        kSession = createSession(bus, token, decodedToken, userRoles);
-        kSession.insert(eventMsg);
-        kSession.fireAllRules();
+			future.complete();
+		}, res -> {
+			if (res.succeeded()) {
+				System.out.println("Processed "+msgType+" Msg");
+			}
+		});
 
-      } catch (final Throwable t) {
-        t.printStackTrace();
-      }
-      future.complete();
-    }, res -> {
-      if (res.succeeded()) {
-        System.out.println("ProcessedEvent");
-      }
-    });
-
-  }
-
-  public static KieSession createSession(EventBus bus, String token,
-      Map<String, Object> tokenDecoded, Set<String> roles) {
-	  
-
-    // ks = KieServices.Factory.get();
-    if (ks == null) {
-      System.out.println("ks is NULL!!!");
-    }
-    kContainer = ks.getKieClasspathContainer();
-    final KieSession kSession = kContainer.newKieSession("ksession-rules");
-
-    String RESET = "\u001B[0m";
-    String RED = "\u001B[31m";
-    String GREEN = "\u001B[32m";
-    String YELLOW = "\u001B[33m";
-    String BLUE = "\u001B[34m";
-    String PURPLE = "\u001B[35m";
-    String CYAN = "\u001B[36m";
-    String WHITE = "\u001B[37m";
-    String BOLD = "\u001b[1m";
-    
-    kSession.setGlobal("LOG_RESET", RESET);
-    kSession.setGlobal("LOG_RED", RED);
-    kSession.setGlobal("LOG_GREEN", GREEN);
-    kSession.setGlobal("LOG_YELLOW", YELLOW);
-    kSession.setGlobal("LOG_BLUE", BLUE);
-    kSession.setGlobal("LOG_PURPLE", PURPLE);
-    kSession.setGlobal("LOG_CYAN", CYAN);
-    kSession.setGlobal("LOG_WHITE", WHITE);
-    kSession.setGlobal("LOG_BOLD", BOLD);
-
-    kSession.setGlobal("REACT_APP_QWANDA_API_URL", qwandaApiUrl);
-    kSession.setGlobal("REACT_APP_VERTX_URL", vertxUrl);
-    kSession.setGlobal("KEYCLOAKIP", hostIp);
-    final Map<String, String> keyValue = new HashMap<String, String>();
-    keyValue.put("token", token);
-    kSession.insert(keyValue);
-    kSession.insert(tokenDecoded);
-    kSession.insert(roles);
-    kSession.insert(bus);
-    return kSession;
-  }
-
-  public static void allRules(final JsonObject msg, final EventBus bus) {
-
-    Vertx.vertx().executeBlocking(future -> {
-      try {
-        // load up the knowledge base
-        final KieContainer kContainer = ks.getKieClasspathContainer();
-
-        final KieSession kSession = kContainer.newKieSession("ksession-rules");
-        kSession.insert(bus);
-
-        kSession.setGlobal("REACT_APP_QWANDA_API_URL", qwandaApiUrl);
-        kSession.setGlobal("REACT_APP_VERTX_URL", vertxUrl);
-        kSession.setGlobal("KEYCLOAKIP", hostIp);
-        final Map<String, String> keyValue = new HashMap<String, String>();
-        final String token = msg.getString("token");
-        keyValue.put("token", token);
-        kSession.insert(keyValue);
-
-        kSession.getGlobals();
-        // System.out.println("Globals:" + globals.getGlobalKeys());
-        if (msg.getString("msg_type").equalsIgnoreCase("EVT_MSG")) {
-
-          kSession.insert(gson.fromJson(msg.toString(), QEventMessage.class));
-          kSession.fireAllRules();
-          System.out.println("EVNT MSG FIRED: ");
-
-        } else if (msg.getString("msg_type").equalsIgnoreCase("DATA_MSG")) {
-          if (msg.getString("data_type").equals(Answer.class.getSimpleName())) {
-            final String msgString = msg.toString();
-            System.out.println(msgString);
-            kSession.insert(gson.fromJson(msg.toString(), QDataAnswerMessage.class));
-          } else if (msg.getString("data_type").equals(Ask.class.getSimpleName())) {
-            kSession.insert(gson.fromJson(msg.toString(), QDataAskMessage.class));
-          }
-          kSession.fireAllRules();
-          System.out.println("DATA MSG FIRED: ");
-        }
-      } catch (final Throwable t) {
-        t.printStackTrace();
-      }
-      future.complete();
-    }, res -> {
-      if (res.succeeded()) {
-      }
-    });
-
-  }
-
-
-  public static void setupKieRules(final String rulesGroup,
-      final List<Tuple2<String, String>> rules) {
-
-	     System.out.println("***** Setting up RulesGroup: "+rulesGroup);
-	     
-    try {
-      // load up the knowledge base
-      final KieFileSystem kfs = ks.newKieFileSystem();
-
-      // final String content =
-      // new String(Files.readAllBytes(Paths.get("src/main/resources/validateApplicant.drl")),
-      // Charset.forName("UTF-8"));
-      // System.out.println("Read New Rules set from File");
-
-      for (final Tuple2<String, String> rule : rules) {
-        final String inMemoryDrlFileName = "src/main/resources/" + rule._1 + ".drl";
-        kfs.write(inMemoryDrlFileName, ks.getResources()
-            .newReaderResource(new StringReader(rule._2)).setResourceType(ResourceType.DRL));
-
-      }
-
-      final KieBuilder kieBuilder = ks.newKieBuilder(kfs).buildAll();
-      if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
-        System.out.println(kieBuilder.getResults().toString());
-      }
-      
-      final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
-      final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-      final KieBase kbase = kContainer.newKieBase(kbconf);
+	}
 
 
 
-      System.out.println("Put rules KieBase into Custom Cache");
-     if ( getKieBaseCache().containsKey(rulesGroup)) {
-    	 getKieBaseCache().remove(rulesGroup);
-    	 System.out.println(rulesGroup+" removed");
-     }
-      getKieBaseCache().put(rulesGroup, kbase);
-      System.out.println(rulesGroup+" installed");
-
-    } catch (final Throwable t) {
-      t.printStackTrace();
-    }
-  }
-
-  // fact = gson.fromJson(msg.toString(), QEventMessage.class)
-  public static void executeStatefull(final String rulesGroup, final EventBus bus,
-      final List<Tuple2<String, Object>> globals, final List<Object> facts,
-      final Map<String, String> keyvalue) {
-
-    try {
-      KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
-      /*
-       * kSession.addEventListener(new DebugAgendaEventListener()); kSession.addEventListener(new
-       * DebugRuleRuntimeEventListener());
-       */
-
-
-      if (bus != null) { // assist testing
-        kieSession.insert(bus);
-      }
-
-      // Load globals
-      for (final Tuple2<String, Object> t : globals) {
-        kieSession.setGlobal(t._1, t._2);
-      }
-      for (final Object fact : facts) {
-        kieSession.insert(fact);
-      }
-      kieSession.insert(keyvalue);
-
-      kieSession.fireAllRules();
-
-      kieSession.dispose();
-    } catch (final Throwable t) {
-      t.printStackTrace();
-    }
-  }
-
-  public static Map<String, KieBase> getKieBaseCache() {
-    return kieBaseCache;
-  }
-
-  public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
-    EBCHandlers.kieBaseCache = kieBaseCache;
-  }
 }

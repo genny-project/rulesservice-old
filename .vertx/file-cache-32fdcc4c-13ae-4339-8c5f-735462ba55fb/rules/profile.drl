@@ -1,0 +1,124 @@
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.qwandautils.QwandaUtils;
+import io.vertx.core.json.JsonObject;
+import com.google.gson.Gson;
+import com.sample.*;
+import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+
+ global java.lang.String REACT_APP_QWANDA_API_URL;
+
+declare User1
+    uname : String
+    name : String
+    realm : String
+    roles :  String
+end
+
+rule "Logout"
+    when
+        m : QEventMessage( event_type == "LOGOUT" && data.code == "LOGOUT" )
+        $map : Map($value: this["token"] != null)
+       // $map2 : Map($value1: this["iss"] != null)
+        bus: EventBus()
+    then
+        System.out.println("-------- Rule:- Logout --------");	
+        QCmdMessage cmd = new QCmdMessage("CMD_LOGOUT","LOGOUT");
+        Gson gson = new Gson();
+        String json = gson.toJson(cmd);
+        System.out.println(json);
+        bus.publish("cmds", json);
+        
+end
+
+rule "Accounts"
+    when
+        m : QEventMessage( event_type == "ACCOUNTS" && data.code == "ACCOUNTS" )
+        $map : Map($value: this["token"] != null)
+       // $map2 : Map($value1: this["iss"] != null)
+        bus: EventBus()
+    then
+        System.out.println("-------- Rule:- Keycloak Account --------");	
+        QCmdMessage cmd = new QCmdMessage("CMD_ACCOUNTS","ACCOUNTS");
+        Gson gson = new Gson();
+        String json = gson.toJson(cmd);
+        System.out.println(json);
+        bus.publish("cmds", json);
+
+end
+
+rule "User-Profile"
+    when
+        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" )
+        $map : Map($value: this["token"] != null)
+        bus: EventBus()
+    then
+        System.out.println("-------- Rule:- User Profile --------");		    
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+  	    String tokenString = (String)$map.get("token");
+       // JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
+		JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_USER_PROFILE_GRP/PER_USER1", tokenString));
+		System.out.println("*******************");
+		System.out.println("Json="+obj.toString());	
+		System.out.println("*******************");						
+		bus.publish("cmds", obj);
+		
+		//sending cmd form view 
+        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject cmdObj = new JsonObject().mapFrom(cmd);
+         cmdObj.put("root", "QUE_USER_PROFILE_GRP");
+        //cmdObj.put("data", "itemsPerPage:8");        
+        System.out.println(" ##################### ");
+        System.out.println("Form View ="+cmdObj.toString()); 
+        System.out.println(" #################### ");
+        //Publish it to the EventBus
+        bus.publish("cmds", cmdObj); 
+end
+
+
+rule "test-realm Name"
+   when
+      $map : Map($value: this["token"] != null)
+      $map1 : Map($value1: this["realm"] == "memberhub")
+   then
+      System.out.println("-------- Rule:- Test Realm Name --------");	
+      System.out.println(" #######    Rule : test-realm name memberhub ###### ");
+      System.out.println(" #######    PRJ- memberhub   ###### ");
+      System.out.println(" Hello! You belong to project "+ $map1.get("realm")); 
+
+end
+
+rule "test"
+   when
+      $map : Map($value: this["token"] != null)
+      //$user: User1(uname == "user1")
+      $user : User1()
+     // $roles : Set(!isEmpty())
+      $roles : Set( this.contains("user") && !this.contains("admin"))
+     
+   then
+      System.out.println("-------- Rule:- Test user role- user--------");	
+      System.out.println(" Hello! "+ $user.getName());
+      System.out.println(" Your username is: "+ $user.getUname());
+      System.out.println(" Your have user role: user");   
+end
+
+rule "test user role -admin"
+   when
+      $map : Map($value: this["token"] != null)
+      $user: User1()
+      //$user: User1(uname == "user1")
+      //$roles : Set(!isEmpty())
+      $roles : Set( this.contains("admin") && this.contains("user") )
+   then
+      System.out.println("-------- Rule:- Test user role- user & admin--------");	
+      System.out.println(" Hello! "+ $user.getName());
+      System.out.println(" Your username is: "+ $user.getUname());
+      System.out.println(" Your have two roles - admin and user");    
+end
+

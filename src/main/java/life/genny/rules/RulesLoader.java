@@ -1,15 +1,15 @@
 package life.genny.rules;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
+import org.apache.logging.log4j.Logger;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
@@ -23,189 +23,245 @@ import org.kie.api.runtime.KieSession;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vertx.core.json.DecodeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import life.genny.channels.EBCHandlers;
-import life.genny.cluster.ClusterConfig;
+import life.genny.qwandautils.KeycloakUtils;
 
 public class RulesLoader {
-	  private static final Logger logger = LoggerFactory.getLogger(EBCHandlers.class);
-
-	  private static Map<String, KieBase> kieBaseCache = null;
-	  static {
-	    setKieBaseCache(new HashMap<String, KieBase>());
-	  }
-
-
-	  static KieServices ks = KieServices.Factory.get();
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	final static String qwandaApiUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+	final static String vertxUrl = System.getenv("REACT_APP_VERTX_URL");
+	final static String hostIp = System.getenv("HOSTIP");
 
 
-	  /**
-	   * @param vertx
-	   * @return
-	   */
-	  public static Future<Void> loadInitialRules(final Vertx vertx) {
-	    final Future<Void> fut = Future.future();
-	    vertx.executeBlocking(exec -> {
-	      final List<String> filesList = vertx.fileSystem().readDirBlocking("rules");
+	private static Map<String, KieBase> kieBaseCache = null;
+	static {
+		setKieBaseCache(new HashMap<String, KieBase>());
+	}
 
-	      for (final String dirFileStr : filesList) {
-	        final String fileStr = new File(dirFileStr).getName();;
-	          vertx.fileSystem().readFile(dirFileStr, d -> {
-	            if (!d.failed()) {
-	              try {
-	                System.out.println("Loading in Rule [" + fileStr + "]");
-	                final String ruleText =
-	                    d.result().toString();
-	              	String rulesGroup = "GRP_RULES_TEST";
-	              	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
-	              	rules.add(Tuple.of(fileStr,ruleText));
+	static KieServices ks = KieServices.Factory.get();
 
-	                  setupKieRules(rulesGroup,
-	                	      rules);
-	         
-	              } catch (final DecodeException dE) {
+	/**
+	 * @param vertx
+	 * @return
+	 */
+	public static Future<Void> loadInitialRules(final Vertx vertx) {
+		final Future<Void> fut = Future.future();
+		vertx.executeBlocking(exec -> {
+			 setKieBaseCache(new HashMap<String, KieBase>());   // clear
+		     processFile(vertx,"rules");
+			fut.complete();
+		}, failed -> {
+		});
 
-	              }
-	            } else {
-	              System.err.println("Error reading  file!"+fileStr);
-	            }
-	          });
-	        
-	      }
-	      fut.complete();
-	    }, res -> {
-	    });
-	    return fut;
-	  }
-
-	  private static void readFilenamesFromDirectory(final String rootFilePath,
-	      final Map<String, String> keycloakJsonMap) {
-	    final File folder = new File(rootFilePath);
-	    final File[] listOfFiles = folder.listFiles();
-
-	    for (int i = 0; i < listOfFiles.length; i++) {
-	      if (listOfFiles[i].isFile()) {
-	        System.out.println("File " + listOfFiles[i].getName());
-	        try {
-	          String keycloakJsonText = getFileAsText(listOfFiles[i]);
-	          // Handle case where dev is in place with localhost
-	          final String localIP = System.getenv("HOSTIP");
-	          keycloakJsonText = keycloakJsonText.replaceAll("localhost", localIP);
-	          keycloakJsonMap.put(listOfFiles[i].getName(), keycloakJsonText);
-	        } catch (final IOException e) {
-	          // TODO Auto-generated catch block
-	          e.printStackTrace();
-	        }
-
-	      } else if (listOfFiles[i].isDirectory()) {
-	        System.out.println("Directory " + listOfFiles[i].getName());
-	        readFilenamesFromDirectory(listOfFiles[i].getName(), keycloakJsonMap);
-	      }
-	    }
-	  }
-
-	  private static String getFileAsText(final File file) throws IOException {
-	    final BufferedReader in = new BufferedReader(new FileReader(file));
-	    String ret = "";
-	    String line = null;
-	    while ((line = in.readLine()) != null) {
-	      ret += line;
-	    }
-	    in.close();
-
-	    return ret;
-	  }
-	  
-
-	  public static void setupKieRules(final String rulesGroup,
-	      final List<Tuple2<String, String>> rules) {
-
-		     System.out.println("***** Setting up RulesGroup: "+rulesGroup);
-		     
-	    try {
-	      // load up the knowledge base
-	      final KieFileSystem kfs = ks.newKieFileSystem();
-
-	      // final String content =
-	      // new String(Files.readAllBytes(Paths.get("src/main/resources/validateApplicant.drl")),
-	      // Charset.forName("UTF-8"));
-	      // System.out.println("Read New Rules set from File");
-
-	      for (final Tuple2<String, String> rule : rules) {
-	        final String inMemoryDrlFileName = "src/main/resources/" + rule._1 + ".drl";
-	        kfs.write(inMemoryDrlFileName, ks.getResources()
-	            .newReaderResource(new StringReader(rule._2)).setResourceType(ResourceType.DRL));
-
-	      }
-
-	      final KieBuilder kieBuilder = ks.newKieBuilder(kfs).buildAll();
-	      if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
-	        System.out.println(kieBuilder.getResults().toString());
-	      }
-	      
-	      final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
-	      final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-	      final KieBase kbase = kContainer.newKieBase(kbconf);
+		return fut;
+	}
 
 
+	private static Tuple2<String, String> processFile(final Vertx vertx, String inputFileStr) {
+		File file = new File(inputFileStr);
+		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*","$1");
+		
+		if (!file.isFile()) {
+			final List<String> filesList = vertx.fileSystem().readDirBlocking(inputFileStr);
 
-	      System.out.println("Put rules KieBase into Custom Cache");
-	     if ( getKieBaseCache().containsKey(rulesGroup)) {
-	    	 getKieBaseCache().remove(rulesGroup);
-	    	 System.out.println(rulesGroup+" removed");
-	     }
-	      getKieBaseCache().put(rulesGroup, kbase);
-	      System.out.println(rulesGroup+" installed");
+			List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
+			for (final String dirFileStr : filesList) {
+				Tuple2<String, String> rule = processFile(vertx, dirFileStr); // use directory name as rulegroup
+				rules.add(rule);
+				System.out.println("Loading in Rule:" + rule._1 + " of "+ fileName);
+			}
+			setupKieRules(fileName, rules);
+			return null;
+		} else {
+			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
+			try {
+				final String ruleText = buf.toString();
 
-	    } catch (final Throwable t) {
-	      t.printStackTrace();
-	    }
-	  }
+				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
+			
 
-	  // fact = gson.fromJson(msg.toString(), QEventMessage.class)
-	  public static void executeStatefull(final String rulesGroup, final EventBus bus,
-	      final List<Tuple2<String, Object>> globals, final List<Object> facts,
-	      final Map<String, String> keyvalue) {
+				return rule;
+			} catch (final DecodeException dE) {
 
-	    try {
-	      KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
-	      /*
-	       * kSession.addEventListener(new DebugAgendaEventListener()); kSession.addEventListener(new
-	       * DebugRuleRuntimeEventListener());
-	       */
+			}
 
+		}
+		return null;
+	}
 
-	      if (bus != null) { // assist testing
-	        kieSession.insert(bus);
-	      }
+	public static void setupKieRules(final String rulesGroup, final List<Tuple2<String, String>> rules) {
+		StringJoiner sj = new StringJoiner(":", "[", "]");
+		for (Tuple2<String, String> rule : rules) {
+			sj.add(rule._1);
+		}
+		String ruleNames = sj.toString();
 
-	      // Load globals
-	      for (final Tuple2<String, Object> t : globals) {
-	        kieSession.setGlobal(t._1, t._2);
-	      }
-	      for (final Object fact : facts) {
-	        kieSession.insert(fact);
-	      }
-	      kieSession.insert(keyvalue);
+		System.out.println("***** Setting up RulesGroup: " + rulesGroup + " -> " + ruleNames);
 
-	      kieSession.fireAllRules();
+		try {
+			// load up the knowledge base
+			final KieFileSystem kfs = ks.newKieFileSystem();
 
-	      kieSession.dispose();
-	    } catch (final Throwable t) {
-	      t.printStackTrace();
-	    }
-	  }
+			// final String content =
+			// new
+			// String(Files.readAllBytes(Paths.get("src/main/resources/validateApplicant.drl")),
+			// Charset.forName("UTF-8"));
+			// System.out.println("Read New Rules set from File");
 
-	  
-	  public static Map<String, KieBase> getKieBaseCache() {
-		    return kieBaseCache;
-		  }
+			for (final Tuple2<String, String> rule : rules) {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 + ".drl";
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.DRL));
 
-		  public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
-		    RulesLoader.kieBaseCache = kieBaseCache;
-		  }
+			}
+
+			final KieBuilder kieBuilder = ks.newKieBuilder(kfs).buildAll();
+			if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
+				System.out.println(kieBuilder.getResults().toString());
+			}
+
+			final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
+			final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+			final KieBase kbase = kContainer.newKieBase(kbconf);
+
+			System.out.println("Put rules KieBase into Custom Cache");
+			if (getKieBaseCache().containsKey(rulesGroup)) {
+				getKieBaseCache().remove(rulesGroup);
+				System.out.println(rulesGroup + " removed");
+			}
+			getKieBaseCache().put(rulesGroup, kbase);
+			System.out.println(rulesGroup + " installed");
+
+		} catch (final Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	// fact = gson.fromJson(msg.toString(), QEventMessage.class)
+	public static void executeStatefull(final String rulesGroup, final EventBus bus,
+			final List<Tuple2<String, Object>> globals, final List<Object> facts, final Map<String, String> keyValueMap) {
+
+	    String RESET = "\u001B[0m";
+	    String RED = "\u001B[31m";
+	    String GREEN = "\u001B[32m";
+	    String YELLOW = "\u001B[33m";
+	    String BLUE = "\u001B[34m";
+	    String PURPLE = "\u001B[35m";
+	    String CYAN = "\u001B[36m";
+	    String WHITE = "\u001B[37m";
+	    String BOLD = "\u001b[1m";
+	    
+	    
+		try {
+			KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
+			
+//		    kSession.setGlobal("LOG_RESET", RESET);
+//		    kSession.setGlobal("LOG_RED", RED);
+//		    kSession.setGlobal("LOG_GREEN", GREEN);
+//		    kSession.setGlobal("LOG_YELLOW", YELLOW);
+//		    kSession.setGlobal("LOG_BLUE", BLUE);
+//		    kSession.setGlobal("LOG_PURPLE", PURPLE);
+//		    kSession.setGlobal("LOG_CYAN", CYAN);
+//		    kSession.setGlobal("LOG_WHITE", WHITE);
+//		    kSession.setGlobal("LOG_BOLD", BOLD);
+//
+//		    kSession.setGlobal("REACT_APP_QWANDA_API_URL", qwandaApiUrl);
+//		    kSession.setGlobal("REACT_APP_VERTX_URL", vertxUrl);
+//		    kSession.setGlobal("KEYCLOAKIP", hostIp);
+
+			/*
+			 * kSession.addEventListener(new DebugAgendaEventListener());
+			 * kSession.addEventListener(new DebugRuleRuntimeEventListener());
+			 */
+
+			if (bus != null) { // assist testing
+				kieSession.insert(bus);
+			}
+
+			// Load globals
+			for (final Tuple2<String, Object> t : globals) {
+				kieSession.setGlobal(t._1, t._2);
+			}
+			for (final Object fact : facts) {
+				kieSession.insert(fact);
+			}
+			kieSession.insert(keyValueMap);
+
+			kieSession.fireAllRules();
+
+			kieSession.dispose();
+		} catch (final Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	public static Map<String, KieBase> getKieBaseCache() {
+		return kieBaseCache;
+	}
+
+	public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
+		RulesLoader.kieBaseCache = kieBaseCache;
+	}
+	
+	public static Map<String,Object> getDecodedTokenMap(final String token)
+	{
+		Map<String,Object> decodedToken = null;
+		if ((token != null) && (!token.isEmpty())) {
+			// Getting decoded token in Hash Map from QwandaUtils
+			decodedToken = KeycloakUtils.getJsonMap(token);
+			/*
+			 * Getting Prj Realm name from KeyCloakUtils - Just cheating the keycloak realm
+			 * names as we can't add multiple realms in genny keyclaok as it is open-source
+			 */
+			final String projectRealm = KeycloakUtils.getPRJRealmFromDevEnv();
+			if ((projectRealm != null) && (!projectRealm.isEmpty())) {
+				decodedToken.put("realm", projectRealm);
+			} else {
+				// Extracting realm name from iss value
+				final String realm = (decodedToken.get("iss").toString()
+						.substring(decodedToken.get("iss").toString().lastIndexOf("/") + 1));
+				// Adding realm name to the decoded token
+				decodedToken.put("realm", realm);
+			}
+			log.info("######  The realm name is:  #####  " + decodedToken.get("realm"));
+			// Printing Decoded Token values
+			// for (final Map.Entry entry : decodedToken.entrySet()) {
+			// log.info(entry.getKey() + ", " + entry.getValue());
+			// }
+		}
+		return decodedToken;
+	}
+	
+	public static List<Tuple2<String,Object>> getStandardGlobals()
+	{
+		List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>();
+		String RESET = "\u001B[0m";
+		String RED = "\u001B[31m";
+		String GREEN = "\u001B[32m";
+		String YELLOW = "\u001B[33m";
+		String BLUE = "\u001B[34m";
+		String PURPLE = "\u001B[35m";
+		String CYAN = "\u001B[36m";
+		String WHITE = "\u001B[37m";
+		String BOLD = "\u001b[1m";
+
+		globals.add(Tuple.of("LOG_RESET", RESET));
+		globals.add(Tuple.of("LOG_RED", RED));
+		globals.add(Tuple.of("LOG_GREEN", GREEN));
+		globals.add(Tuple.of("LOG_YELLOW", YELLOW));
+		globals.add(Tuple.of("LOG_BLUE", BLUE));
+		globals.add(Tuple.of("LOG_PURPLE", PURPLE));
+		globals.add(Tuple.of("LOG_CYAN", CYAN));
+		globals.add(Tuple.of("LOG_WHITE", WHITE));
+		globals.add(Tuple.of("LOG_BOLD", BOLD));
+		globals.add(Tuple.of("REACT_APP_QWANDA_API_URL", qwandaApiUrl));
+		globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
+		globals.add(Tuple.of("KEYCLOAKIP", hostIp));
+		return globals;
+	}
 }

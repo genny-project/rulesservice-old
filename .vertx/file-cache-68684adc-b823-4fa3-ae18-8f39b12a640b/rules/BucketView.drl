@@ -1,0 +1,365 @@
+package com.sample
+ 
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
+import life.genny.qwanda.message.QCmdGeofenceMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+import life.genny.qwanda.entity.EntityEntity;
+import org.apache.commons.lang3.StringUtils;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.GPS;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.GPSUtils;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+import life.genny.channels.EBCHandlers;
+ 
+global java.lang.String REACT_APP_QWANDA_API_URL;
+
+
+
+//BucketView element Transaction
+rule "BucketView Grp Change - Valid"
+  when
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode == "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_IN_TRANSIT") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode == "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode == "GRP_PAID") || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode == "GRP_QUOTES")) )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+ 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+  	    String tokenString = (String)$map.get("token");
+		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+		System.out.println("The Event Message received is: " +$m);
+		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
+	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
+		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
+	    System.out.println("The Data Value is: " +$m.data.getValue());	    
+        	 //Moving the BEG
+         JsonObject begEntity = new JsonObject();
+         begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
+         begEntity.put("targetCode",$m.data.getCode());
+         begEntity.put("attributeCode",$m.getLinkCode());
+        // System.out.println("--------------------------");
+        // System.out.println("EntityLink : "+begEntity.toString());
+        // System.out.println("--------------------------");
+ 	     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
+ 	     System.out.println("The Output after POST: "+output);
+	     //Fectching updated link of BEG
+ 	     JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
+	     //Creating a data msg
+ 	      JsonObject newLink = new JsonObject();
+ 	      newLink.put("msg_type", "DATA_MSG");
+          newLink.put("data_type", "LINK_CHANGE");
+          newLink.put("items", updatedLink);
+        System.out.println("-----------------------------------");
+        System.out.println("Updated Link : "+newLink.toString());
+        System.out.println("-----------------------------------");
+	    //sending new link data
+ 	    bus.publish("cmds", newLink);
+       
+       //Sending message to Message Service
+       //Send evt_msg to Message
+ 	   String begCode = "code:"+$m.data.getCode();
+ 	   //String sourceBE = "sourceBE:"+$m.getSourceBaseEntityCode();
+ 	   //String targerBE = "targetBE:"+$m.getTargetBaseEntityCode();
+ 	   String[] msgMessageData = {begCode, "recipient:OWNER"};
+ 	   String[] attachments = {};
+ 	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
+ 	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
+ 	 //Creating messageData MSG_MESSAGE
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
+ 	//  String jsonMessage = gson.toJson(msgMessage); 
+ 	 System.out.println("-----------------------------");
+ 	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
+ 	 System.out.println("-----------------------------");
+ 	 bus.publish("messages", jsonMessage);
+       
+end
+
+
+
+rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
+  when
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode == "GRP_APPROVED")) )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+        System.out.println("-------- Rule:- BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence  --------");	  
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+  	    String tokenString = (String)$map.get("token");
+		//System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
+		//System.out.println("The Event Message received is: " +$m);
+		//System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
+	    //System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
+		//System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
+	    //System.out.println("The Data Value is: " +$m.data.getValue()); 
+	     
+
+        //Getting QCmdGeofenceMessage for source address
+        QCmdGeofenceMessage cmdGeoFenceSource =  GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Source", tokenString);
+	    //Getting QCmdGeofenceMessage for destination address
+	    QCmdGeofenceMessage cmdGeoFenceDest = GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Destination", tokenString);
+	    JsonObject cmdGeoFenceSourceJson = new JsonObject().mapFrom(cmdGeoFenceSource);
+	    JsonObject cmdGeoFenceDestJson = new JsonObject().mapFrom(cmdGeoFenceDest);
+        System.out.println("-----------------------------------");
+        System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
+        System.out.println("-----------------------------------");
+        System.out.println("-----------------------------------");
+        System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
+        System.out.println("-----------------------------------"); 
+        //Sending QCmdGeofenceMessage for source address
+        bus.publish("cmds", cmdGeoFenceSourceJson);
+        //sending QCmdGeofenceMessage for destination address
+	    bus.publish("cmds", cmdGeoFenceDestJson); 
+
+end
+
+
+
+//Prevent skipping Groups
+rule "BucketView Grp Change-Invalid"
+  when
+        $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NO_QUOTES" && targetBaseEntityCode != "GRP_QUOTES") || (sourceBaseEntityCode == "GRP_QUOTES" && targetBaseEntityCode != "GRP_APPROVED") || (sourceBaseEntityCode == "GRP_IN_TRANSIT" && targetBaseEntityCode != "GRP_COMPLETED") || (sourceBaseEntityCode == "GRP_COMPLETED" && targetBaseEntityCode != "GRP_PAID") ))
+         //Add || (sourceBaseEntityCode == "GRP_APPROVED" && targetBaseEntityCode != "GRP_IN_TRANSIT") to the conditioin
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+ 	    System.out.println("-------- Rule:- BucketView transaction prevent Group skip --------");	  
+		System.out.println("The Event Message received is: " +$m);
+		System.out.println("The Data Code is: " +$m.data.getCode());
+	    System.out.println("The Data Value is: " +$m.data.getValue());
+	    System.out.println("Error! Its an invalid transaction.");
+	    
+	    QCmdMessage cmdAbort = new QCmdMessage("BV_MOVE", "ABORT");
+        JsonObject data = new JsonObject();
+          data.put("targetCode", $m.getSourceBaseEntityCode());
+          data.put("dataCode", $m.data.getCode());    
+        //Convert cmd to JSON Obj
+        JsonObject abortCmd = new JsonObject().mapFrom(cmdAbort); 
+          abortCmd.put("data", data);   
+        System.out.println(" ##################### ");
+        System.out.println("CMD Msg ="+abortCmd.toString()); 
+        System.out.println(" #################### ");
+        bus.publish("cmds", abortCmd);  
+         
+end
+
+rule "BucketView GEOFENCE-ENTRY"
+   when
+     $m : QEventMessage( event_type == "GEOFENCE_ENTRY" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+   then
+       System.out.println(" ------ Rule: GeoFence Entry ------- ");
+       System.out.println(" The BEG code is: "+$m.data.getCode());
+end 
+
+
+rule "BucketView GEOFENCE-EXIT"
+  when
+     $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.value == "EXIT_SOURCE" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+  then
+     System.out.println(" ------ Rule: GeoFence Exit- Load In Transit -------  ");
+     System.out.println(" The BEG code is: "+$m.data.getCode());
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     String tokenString = (String)$map.get("token");
+     String[] code = $m.data.getCode().split("_EXIT_SOURCE");
+     System.out.println("The BEG code after split: "+code[0]);
+     //Moving the BEG
+     JsonObject begEntity = new JsonObject();
+     begEntity.put("sourceCode","GRP_APPROVED");
+     begEntity.put("targetCode",code[0]);
+     begEntity.put("attributeCode", "LNK_CORE");
+     System.out.println("------ BEG ENtity: -- "+begEntity.toString());
+     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_IN_TRANSIT", begEntity.toString(), tokenString);
+ 	 System.out.println("The Output after POST: "+output);
+ 	 //Fectching updated link of BEG
+ 	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_CORE", tokenString));
+	 //Creating a data msg
+ 	 JsonObject newLink = new JsonObject();
+ 	 newLink.put("msg_type", "DATA_MSG");
+     newLink.put("data_type", "LINK_CHANGE");
+     newLink.put("items", updatedLink);
+     System.out.println("---------------------");
+     System.out.println("Updated Link: "+newLink.toString());
+     System.out.println("---------------------");    
+ 	 bus.publish("cmds", newLink);
+ 	
+ 	  //Sending message to Message Service
+       //Send evt_msg to Message
+ 	   String begCode = "code:"+code[0];
+ 	  // String sourceBE = "sourceBE:GRP_APPROVED";
+ 	   //String targerBE = "targetBE:GRP_IN_TRANSIT";
+ 	   String[] msgMessageData = {begCode, "recipient:OWNER"};
+ 	   String msgTemplateCode = "MSG_CH40_MOVE_GRP_IN_TRANSIT";
+ 	   String[] attachments = {};
+ 	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
+ 	 
+ 	 //Creating messageData MSG_MESSAGE
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
+ 	//String jsonMessage = gson.toJson(msgMessage); 
+ 	 System.out.println("-----------------------------");
+ 	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
+ 	 System.out.println("-----------------------------");
+ 	 bus.publish("messages", jsonMessage);
+ 	 
+end
+
+
+//Geofence Entry to Destination GPS data
+rule "BucketView GEOFENCE-ENTRY DESTINATION"
+   when
+     $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.value == "ENTER_DESTINATION" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null) 
+   then
+      System.out.println("------ Rule: GEOFENCE-ENTRY DESTINATION -------");
+      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+      String tokenString = (String)$map.get("token");
+      String[] code = $m.data.getCode().split("_ENTER_DESTINATION");
+      System.out.println("The BEG code after split: "+code[0]);
+      //Moving the BEG
+     JsonObject begEntity = new JsonObject();
+     begEntity.put("sourceCode","GRP_IN_TRANSIT");
+     begEntity.put("targetCode",code[0]);
+     begEntity.put("attributeCode", "LNK_CORE");
+     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_COMPLETED", begEntity.toString(), tokenString);
+ 	 System.out.println("The Output after POST: "+output);
+ 	 //Fectching updated link of BEG
+ 	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+code[0]+"/linkcodes/LNK_CORE", tokenString));
+     //Creating a data msg
+ 	 JsonObject newLink = new JsonObject();
+ 	 newLink.put("msg_type", "DATA_MSG");
+     newLink.put("data_type", "LINK_CHANGE");
+     newLink.put("items", updatedLink);
+     System.out.println("---------------------");
+     System.out.println("Updated Link: "+newLink.toString());
+     System.out.println("---------------------");    
+ 	 bus.publish("cmds", newLink); 
+ 	 
+ 	  //Sending message to Message Service
+       //Send evt_msg to Message
+ 	   String begCode = "code:"+$m.data.getCode();
+ 	  // String sourceBE = "sourceBE:GRP_APPROVED";
+ 	  // String targerBE = "targetBE:GRP_COMPLETED";
+ 	   String[] msgMessageData = {begCode,"recipient:OWNER"};
+ 	    String msgTemplateCode = "MSG_CH40_MOVE_GRP_COMPLETED";
+ 	   String[] attachments = {};
+ 	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
+ 	 
+ 	 //Creating messageData MSG_MESSAGE
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 	 jsonMessage.put("token",tokenString);
+ 	//  String jsonMessage = gson.toJson(msgMessage); 
+ 	 System.out.println("-----------------------------");
+ 	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
+ 	 System.out.println("-----------------------------");
+ 	 bus.publish("messages", jsonMessage);    
+end
+
+
+//BucketView Card double click
+rule "BucketView Card click"
+  when
+     $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "LOAD_CLICK" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+  then
+     
+      //sending cmd SUBLAYOUT_CHANGE
+     QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadLayout");
+     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
+     cmdLoadSublayoutJson.put("items", "LOD_LOAD1");
+      //getting Layout from GitHub
+      JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/loadLayout.json", null));
+      // System.out.println("Layout Data as JSON ="+sublayout.toString()); 
+      
+    //  JsonObject subLayoutChange = new JsonObject();
+     //   subLayoutChange.put("msg_type", "DATA_MSG");
+      //  subLayoutChange.put("data_type", "SUBLAYOUT_CHANGE");
+       // subLayoutChange.put("code", "LoadLayout");
+     //   subLayoutChange.put("items", sublayout); 
+     cmdLoadSublayoutJson.put("items",sublayout);
+      System.out.println(" ##################### ");
+      System.out.println("Layout Data ="+cmdLoadSublayoutJson.toString()); 
+      System.out.println(" #################### ");
+        //Publish it to the EventBus
+      bus.publish("cmds", cmdLoadSublayoutJson);    
+end
+
+//Rule for Editing LOAD
+rule "Edit button click for a load"
+  when
+     $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "LOAD_EDIT" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+  then
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     String tokenString = (String)$map.get("token"); 
+     //sending cmd FORM_VIEW
+     QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+     JsonObject cmdFormViewJson = new JsonObject().mapFrom(cmdFormView);
+     cmdFormViewJson.put("root", "LOD_LOAD1");
+     bus.publish("cmds", cmdFormViewJson); 
+     JsonObject load = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.data.getValue()+"/linkcodes/LNK_BEG/attributes", tokenString));
+     bus.publish("cmds", load);  
+end
+
+//Rule for Add icon click
+rule "Add new LOAD"
+   when
+     $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "GRP_NO_QUOTES" && data.value == "ADD_NEW_LOAD" )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null)
+   then
+     System.out.println("------------ Rule: BTN_CLICK - ADD NEW LOAD  -------------------");
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     String tokenString = (String)$map.get("token"); 
+     //Getting Post Load Question GRP
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));   
+     qPostLoad.put("aliasCode", $m.data.getCode());  
+     System.out.println("QName Json: "+qPostLoad.toString());
+     bus.publish("cmds",qPostLoad);
+     
+     //sending cmd FORM_VIEW
+     QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+     //Convert cmd to JSON Obj
+     JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+        formViewJson.put("root", "QUE_LOAD_GRP");
+     System.out.println(" ##################### ");
+     System.out.println("CMD VIEW Msg ="+formViewJson.toString()); 
+     System.out.println(" #################### ");
+     //Publish it to the EventBus
+     bus.publish("cmds", formViewJson); 
+     System.out.println("-----------------------------------------------------------"); 
+end
