@@ -8,7 +8,6 @@ import life.genny.qwanda.message.QCmdMessage;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import io.vertx.core.buffer.Buffer;
 import com.google.gson.Gson;
-import org.apache.commons.lang3.StringUtils;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;

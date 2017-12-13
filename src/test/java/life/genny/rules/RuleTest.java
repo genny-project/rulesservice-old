@@ -40,7 +40,7 @@ public class RuleTest {
 	 }
 	 
 
-	@Test
+	//@Test
      public void bucket_view_drag_drop_test() {
 		System.out.println("Hello");
 		 final Map<String, String> keyValue = new HashMap<String, String>();

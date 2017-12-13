@@ -324,16 +324,16 @@
 		</plugins>
 	</build>
 
-	<reporting>
+<!-- 	<reporting>
 		<plugins>
 			<plugin>
-				<!-- The JXR Plugin generates a cross-reference of the project's sources. -->
+				The JXR Plugin generates a cross-reference of the project's sources.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
 				<version>2.5</version>
 			</plugin>
 			<plugin>
-				<!-- The Javadoc Plugin generates javadocs using the Javadoc tool. -->
+				The Javadoc Plugin generates javadocs using the Javadoc tool.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
@@ -342,15 +342,15 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<!-- The Surefire Report Plugin generates reports for unit and integration 
-					tests. -->
+				The Surefire Report Plugin generates reports for unit and integration 
+					tests.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>2.19.1</version>
 			</plugin>
 			<plugin>
-				<!-- The Checkstyle Plugin generates a report regarding the code style 
-					used by the developers. -->
+				The Checkstyle Plugin generates a report regarding the code style 
+					used by the developers.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>2.17</version>
@@ -360,8 +360,8 @@
 
 			</plugin>
 			<plugin>
-				<!-- The PMD plugin generates PMD and CPD reports using the PMD code 
-					analysis tool. -->
+				The PMD plugin generates PMD and CPD reports using the PMD code 
+					analysis tool.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.6</version>
@@ -376,7 +376,7 @@
 						<ruleset>rulesets/java/clone.xml</ruleset>
 						<ruleset>rulesets/java/codesize.xml</ruleset>
 						<ruleset>rulesets/java/comments.xml</ruleset>
-						<!-- <ruleset>rulesets/java/controversial.xml</ruleset> -->
+						<ruleset>rulesets/java/controversial.xml</ruleset>
 						<ruleset>rulesets/java/coupling.xml</ruleset>
 						<ruleset>rulesets/java/design.xml</ruleset>
 						<ruleset>rulesets/java/empty.xml</ruleset>
@@ -404,12 +404,12 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<!-- FindBugs Plugin looks for bugs in Java programs. It is based on 
-					the concept of bug patterns. -->
+				FindBugs Plugin looks for bugs in Java programs. It is based on 
+					the concept of bug patterns.
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<version>3.0.0</version>
 			</plugin>
 		</plugins>
-	</reporting>
+	</reporting> -->
 </project>
