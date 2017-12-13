@@ -1,0 +1,73 @@
+package com.sample
+ 
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.Ask;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String REACT_APP_QWANDA_API_URL;
+global java.lang.String REACT_APP_VERTX_URL;
+global java.lang.String KEYCLOAKIP;
+   
+rule "Facebook Redirect"
+  when
+    $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "SOC_FB_BASIC_GENNY")
+    bus: EventBus()
+    $map : Map($value: this["token"] != null)
+  then
+    System.out.println("-------- RULE:- SOCIAL REDIRECT EXECUTED --------");
+    String tokenString = (String)$map.get("token");
+    System.out.println("tokenstr="+tokenString);
+    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+
+    String clientId= "423902461306952";
+    String clientSecret= "a7bd50640f9914b95756ae8f5680751b";
+    String redirectUrl= "https://www.facebook.com/v2.8/dialog/oauth?response_type=code";
+    
+    String askId = $m.getData().getValue();
+    System.out.println("Ask ID::"+askId);
+
+    JsonObject ask = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asks/"+askId, tokenString));
+    System.out.println("This is the ask" +ask.toString());
+
+    ask.put("clientId", clientId);
+    ask.put("clientSecret", clientSecret);
+    ask.put("redirectUrl", redirectUrl);  
+    ask.put("sourceCode", "SOC_FB_BASIC");
+    ask.put("askId", askId);
+
+    System.out.println("*******************");
+    System.out.println("Ask with Redirect DATA" +ask.toString());
+    System.out.println("*******************");		
+    
+    JsonObject obj = new JsonObject();
+    obj.put("msg_type", "DATA_MSG");
+    obj.put("data_type", "SOCIAL_REDIRECT");
+    obj.put("items", ask);        
+    bus.publish("cmds", obj); 
+end
+
