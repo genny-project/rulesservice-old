@@ -7,6 +7,7 @@ import life.genny.rules.RulesLoader;
 
 public class ServiceVerticle extends AbstractVerticle {
 
+	static String rulesDir = System.getenv("RULES_DIR");
 
 	
 	  @Override
@@ -15,7 +16,10 @@ public class ServiceVerticle extends AbstractVerticle {
 	    final Future<Void> startFuture = Future.future();
 	    Cluster.joinCluster(vertx).compose(res -> {
 	      final Future<Void> fut = Future.future();
-	      RulesLoader.loadInitialRules(vertx).compose(p -> {
+	      if (rulesDir == null) {
+	    	  	rulesDir = "rules";
+	      }
+	      RulesLoader.loadInitialRules(vertx,rulesDir).compose(p -> {
 	        fut.complete();
 	      }, fut);
 	      startFuture.complete();

@@ -9,7 +9,7 @@ public class EBConsumers {
 	private static Observable<Message<Object>> fromEvents;
 	private static Observable<Message<Object>> fromData;
 	private static Observable<Message<Object>> fromRules;
-	
+	private static Observable<Message<Object>> fromCmds;	
 	/**
 	 * @return the events
 	 */
@@ -55,10 +55,27 @@ public class EBConsumers {
 		EBConsumers.fromRules = fromRules;
 	}
 
+	
+	
+	/**
+	 * @return the fromCmds
+	 */
+	public static Observable<Message<Object>> getFromCmds() {
+		return fromCmds;
+	}
+
+	/**
+	 * @param fromCmds the fromCmds to set
+	 */
+	public static void setFromCmds(Observable<Message<Object>> fromCmds) {
+		EBConsumers.fromCmds = fromCmds;
+	}
+
 	public static void registerAllConsumer(EventBus eb){
 		setFromData(eb.consumer("data").toObservable());
 		setFromEvents(eb.consumer("events").toObservable());
 		setFromRules(eb.consumer("rules").toObservable());
+		setFromCmds(eb.consumer("cmds").toObservable());
 	}
 	
 }

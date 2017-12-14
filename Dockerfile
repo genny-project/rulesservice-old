@@ -6,8 +6,10 @@ ADD target/rulesservice-0.0.1-SNAPSHOT-fat.jar /service.jar
 #ADD cluster.xml /cluster.xml
 
 RUN mkdir /realm
+RUN mkdir /rules
 ADD realm /opt/realm
 ADD docker-entrypoint.sh /docker-entrypoint.sh
+ADD src/main/resources/rules /rules
 
 WORKDIR /
 

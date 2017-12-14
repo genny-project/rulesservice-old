@@ -1,24 +1,5 @@
 package life.genny.channels;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import org.kie.api.KieBase;
-import org.kie.api.KieBaseConfiguration;
-import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieFileSystem;
-import org.kie.api.builder.Message;
-import org.kie.api.io.ResourceType;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
-import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -30,26 +11,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Ask;
-import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwanda.message.QDataAskMessage;
-import life.genny.qwanda.message.QDataRuleMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.RulesLoader;
@@ -58,6 +41,9 @@ public class EBCHandlers {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	static String rulesDir = System.getenv("RULES_DIR");
+    static String projectRealm = System.getenv("PROJECT_REALM");
 
 	static Gson gson = new GsonBuilder()
 			.registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
@@ -76,6 +62,18 @@ public class EBCHandlers {
 	static String token;
 
 	public static void registerHandlers(final EventBus eventBus) {
+		EBConsumers.getFromCmds().subscribe(arg -> {
+			JsonObject payload = processMessage("Command",arg);
+
+			if (payload.getString("cmd_type").equals("CMD_RELOAD_RULES")) {
+				if (payload.getString("code").equals("RELOAD_RULES_FROM_FILES")) {
+					String rulesDir = payload.getString("rulesDir");
+					RulesLoader.loadInitialRules(Vertx.vertx(),rulesDir);
+				} 
+			} 
+
+		});
+
 		EBConsumers.getFromEvents().subscribe(arg -> {
 			JsonObject payload = processMessage("Event",arg);
 
@@ -106,7 +104,11 @@ public class EBCHandlers {
 					String ruleCode = ja.getJsonObject(0).getString("code");
 					// QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
 					System.out.println("Incoming Rule :" + ruleText);
-					String rulesGroup = "rules";
+				      if (rulesDir == null) {
+				    	  	rulesDir = "rules";
+				      }
+
+					String rulesGroup = rulesDir;
 					List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 					rules.add(Tuple.of(ruleCode, ruleText));
 
@@ -121,10 +123,10 @@ public class EBCHandlers {
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
 		log.info("Received " + messageType + " :"
-				+ (System.getenv("PROJECT_REALM") == null ? "tokenRealm" : System.getenv("PROJECT_REALM")));
-		if (System.getenv("PROJECT_REALM") != null) {
-			System.out.println("###########    The project realm from system env is : ################    "
-					+ System.getenv("PROJECT_REALM"));
+				+ (projectRealm == null ? "tokenRealm" : projectRealm));
+		if (projectRealm != null) {
+			System.out.println("###########    The project realm from system env is :    ["
+					+ projectRealm+"]");
 		}
 		
 		final JsonObject payload = new JsonObject(arg.body().toString());

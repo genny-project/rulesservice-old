@@ -49,11 +49,12 @@ public class RulesLoader {
 	 * @param vertx
 	 * @return
 	 */
-	public static Future<Void> loadInitialRules(final Vertx vertx) {
+	public static Future<Void> loadInitialRules(final Vertx vertx,final String rulesDir) {
+		System.out.println("Loading Rules!!!");
 		final Future<Void> fut = Future.future();
 		vertx.executeBlocking(exec -> {
 			 setKieBaseCache(new HashMap<String, KieBase>());   // clear
-		     processFile(vertx,"rules");
+		     processFile(vertx,rulesDir);
 			fut.complete();
 		}, failed -> {
 		});
@@ -146,33 +147,10 @@ public class RulesLoader {
 	public static void executeStatefull(final String rulesGroup, final EventBus bus,
 			final List<Tuple2<String, Object>> globals, final List<Object> facts, final Map<String, String> keyValueMap) {
 
-	    String RESET = "\u001B[0m";
-	    String RED = "\u001B[31m";
-	    String GREEN = "\u001B[32m";
-	    String YELLOW = "\u001B[33m";
-	    String BLUE = "\u001B[34m";
-	    String PURPLE = "\u001B[35m";
-	    String CYAN = "\u001B[36m";
-	    String WHITE = "\u001B[37m";
-	    String BOLD = "\u001b[1m";
-	    
-	    
+		    
 		try {
 			KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
 			
-//		    kSession.setGlobal("LOG_RESET", RESET);
-//		    kSession.setGlobal("LOG_RED", RED);
-//		    kSession.setGlobal("LOG_GREEN", GREEN);
-//		    kSession.setGlobal("LOG_YELLOW", YELLOW);
-//		    kSession.setGlobal("LOG_BLUE", BLUE);
-//		    kSession.setGlobal("LOG_PURPLE", PURPLE);
-//		    kSession.setGlobal("LOG_CYAN", CYAN);
-//		    kSession.setGlobal("LOG_WHITE", WHITE);
-//		    kSession.setGlobal("LOG_BOLD", BOLD);
-//
-//		    kSession.setGlobal("REACT_APP_QWANDA_API_URL", qwandaApiUrl);
-//		    kSession.setGlobal("REACT_APP_VERTX_URL", vertxUrl);
-//		    kSession.setGlobal("KEYCLOAKIP", hostIp);
 
 			/*
 			 * kSession.addEventListener(new DebugAgendaEventListener());
