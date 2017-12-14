@@ -3,6 +3,7 @@ package com.sample;
 import life.genny.qwanda.message.QBaseMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
+
 /*
 rule "msg"
     when
