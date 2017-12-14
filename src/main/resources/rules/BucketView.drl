@@ -128,7 +128,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 	    JsonObject cmdGeoFenceSourceJson = new JsonObject().mapFrom(cmdGeoFenceSource);
 	    JsonObject cmdGeoFenceDestJson = new JsonObject().mapFrom(cmdGeoFenceDest);
 	    cmdGeoFenceSourceJson.put("token", $value);
-	    cmdGeoFenceDest.put("token",$value );
+	    cmdGeoFenceDestJson.put("token",$value );
         System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
         System.out.println("-----------------------------------");

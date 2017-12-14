@@ -28,10 +28,11 @@ rule "Logout"
     then
         System.out.println("-------- Rule:- Logout --------");	
         QCmdMessage cmd = new QCmdMessage("CMD_LOGOUT","LOGOUT");
-        Gson gson = new Gson();
-        String json = gson.toJson(cmd);
+      Gson gson = new Gson();
+        String json = gson.toJson(cmd);      
         System.out.println(json);
-        json.put("token", $value);
+        JsonObject json2 = new JsonObject(json);
+        json2.put("token", $value);
         bus.publish("cmds", json);
         
 end
@@ -47,9 +48,11 @@ rule "Accounts"
         QCmdMessage cmd = new QCmdMessage("CMD_ACCOUNTS","ACCOUNTS");
         Gson gson = new Gson();
         String json = gson.toJson(cmd);
+        
         System.out.println(json);
-        json.put("token", $value);
-        bus.publish("cmds", json);
+        JsonObject json2 = new JsonObject(json);
+        json2.put("token", $value);
+        bus.publish("cmds", json2);
 
 end
 

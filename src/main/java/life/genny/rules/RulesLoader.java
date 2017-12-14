@@ -184,6 +184,7 @@ public class RulesLoader {
 
 	public static void setKieBaseCache(Map<String, KieBase> kieBaseCache) {
 		RulesLoader.kieBaseCache = kieBaseCache;
+
 	}
 	
 	public static Map<String,Object> getDecodedTokenMap(final String token)
