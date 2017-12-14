@@ -67,7 +67,8 @@ rule "Facebook Redirect"
     JsonObject obj = new JsonObject();
     obj.put("msg_type", "DATA_MSG");
     obj.put("data_type", "SOCIAL_REDIRECT");
-    obj.put("items", ask);        
+    obj.put("items", ask);  
+    obj.put("token", $value);       
     bus.publish("cmds", obj); 
 end
 

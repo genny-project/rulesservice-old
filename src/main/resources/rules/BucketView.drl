@@ -74,6 +74,7 @@ rule "BucketView Grp Change - Valid"
  	      newLink.put("msg_type", "DATA_MSG");
           newLink.put("data_type", "LINK_CHANGE");
           newLink.put("items", updatedLink);
+          newLink.put("token", $value );
         System.out.println("-----------------------------------");
         System.out.println("Updated Link : "+newLink.toString());
         System.out.println("-----------------------------------");
@@ -126,6 +127,8 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 	    QCmdGeofenceMessage cmdGeoFenceDest = GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Destination", tokenString);
 	    JsonObject cmdGeoFenceSourceJson = new JsonObject().mapFrom(cmdGeoFenceSource);
 	    JsonObject cmdGeoFenceDestJson = new JsonObject().mapFrom(cmdGeoFenceDest);
+	    cmdGeoFenceSourceJson.put("token", $value);
+	    cmdGeoFenceDest.put("token",$value );
         System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
         System.out.println("-----------------------------------");
@@ -161,7 +164,8 @@ rule "BucketView Grp Change-Invalid"
           data.put("dataCode", $m.data.getCode());    
         //Convert cmd to JSON Obj
         JsonObject abortCmd = new JsonObject().mapFrom(cmdAbort); 
-          abortCmd.put("data", data);   
+          abortCmd.put("data", data); 
+          abortCmd.put("token", $value);  
         System.out.println(" ##################### ");
         System.out.println("CMD Msg ="+abortCmd.toString()); 
         System.out.println(" #################### ");
@@ -207,6 +211,7 @@ rule "BucketView GEOFENCE-EXIT"
  	 newLink.put("msg_type", "DATA_MSG");
      newLink.put("data_type", "LINK_CHANGE");
      newLink.put("items", updatedLink);
+     newLink.put("token", $value);
      System.out.println("---------------------");
      System.out.println("Updated Link: "+newLink.toString());
      System.out.println("---------------------");    
@@ -261,6 +266,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 newLink.put("msg_type", "DATA_MSG");
      newLink.put("data_type", "LINK_CHANGE");
      newLink.put("items", updatedLink);
+     newLink.put("token", $value);
      System.out.println("---------------------");
      System.out.println("Updated Link: "+newLink.toString());
      System.out.println("---------------------");    
@@ -310,6 +316,7 @@ rule "BucketView Card click"
        // subLayoutChange.put("code", "LoadLayout");
      //   subLayoutChange.put("items", sublayout); 
      cmdLoadSublayoutJson.put("items",sublayout);
+     cmdLoadSublayoutJson.put("token",$value);
       System.out.println(" ##################### ");
       System.out.println("Layout Data ="+cmdLoadSublayoutJson.toString()); 
       System.out.println(" #################### ");
@@ -330,8 +337,10 @@ rule "Edit button click for a load"
      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
      JsonObject cmdFormViewJson = new JsonObject().mapFrom(cmdFormView);
      cmdFormViewJson.put("root", "LOD_LOAD1");
+     cmdFormViewJson.put("token", $value);
      bus.publish("cmds", cmdFormViewJson); 
      JsonObject load = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.data.getValue()+"/linkcodes/LNK_BEG/attributes", tokenString));
+     load.put("token", $value);
      bus.publish("cmds", load);  
 end
 
@@ -348,6 +357,7 @@ rule "Add new LOAD"
      //Getting Post Load Question GRP
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_USER1/asks2/QUE_LOAD_GRP/PER_USER1", tokenString));   
      qPostLoad.put("aliasCode", $m.data.getCode());  
+     qPostLoad.put("token", $value); 
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);
      
@@ -356,6 +366,7 @@ rule "Add new LOAD"
      //Convert cmd to JSON Obj
      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
         formViewJson.put("root", "QUE_LOAD_GRP");
+        formViewJson.put("token", $value);
      System.out.println(" ##################### ");
      System.out.println("CMD VIEW Msg ="+formViewJson.toString()); 
      System.out.println(" #################### ");

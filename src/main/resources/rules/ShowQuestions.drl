@@ -67,7 +67,7 @@ rule "ShowQuestions"
 		obj.put("msg_type", "DATA_MSG");
 		obj.put("data_type", "Asks");
 		obj.put("params", new JsonObject(json));
-
+		obj.put("token", $value);	
 		System.out.println("*******************");
 		System.out.println("Json="+json);	
 		System.out.println("*******************");

@@ -48,7 +48,7 @@ rule "Expand TreeView Item"
   	    String tokenString = (String)$map.get("token");
 		System.out.println("tokenstr="+tokenString);
         JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE", tokenString));
-		
+		obj.put("token", $value);
 		System.out.println("*******************");
 		System.out.println("Json="+obj.toString());	
 		System.out.println("*******************");						
@@ -70,7 +70,8 @@ rule "Contract TreeView Items"
 		JsonObject obj = new JsonObject();
 		obj.put("msg_type", "CMD_MSG");
 		obj.put("cmd_type", "TV_CONTRACT");
-		obj.put("code", $m.getData().getValue());		
+		obj.put("code", $m.getData().getValue());
+		obj.put("token", $value);		
 		System.out.println("*******************");
 		System.out.println("Json="+obj.toString());	
 		System.out.println("*******************");						

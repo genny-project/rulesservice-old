@@ -119,16 +119,17 @@ rule "Listen Attribute Change"
         data.put("expired", false);
         data.put("refused", false);
         data.put("weight", "0.0");
-
+		data.put("token",$m.getToken());
         //Creating Answer DATA_MSG
         JsonObject obj= new JsonObject();
         obj.put("msg_type", "DATA_MSG");
         obj.put("data_type", "Answer");
         obj.put("items", data); 
+        obj.put("token",$m.getToken());
+   //     obj.put("token", $value);
 
         //Print Answer
         System.out.println("\nSaving attribute change as a new Answer   ::    "+obj.toString()); 
-        obj.put("token",$m.getToken());     
         bus.publish("cmds", obj);
 
         System.out.println("\n" + LOG_RED + "RULE TERMINATED    ::   Listen Attribute Change" + LOG_RESET);

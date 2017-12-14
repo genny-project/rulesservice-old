@@ -93,13 +93,15 @@ rule "Init"
         //Getting the User BE and sending it as ALIAS
         //Get User BE for USER ALIAS based on the user's username
         JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
-        userObj.put("aliasCode", "USER");      
+        userObj.put("aliasCode", "USER"); 
+        userObj.put("token", $value);      
         bus.publish("cmds", userObj);
            
         //Getting the Project BE and sending it as ALIAS
         //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
         JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
-        prjObj.put("aliasCode", "PROJECT");     
+        prjObj.put("aliasCode", "PROJECT");   
+        prjObj.put("token", $value);    
         bus.publish("cmds", prjObj);
      
         //Calling the rule group : layout
@@ -107,7 +109,8 @@ rule "Init"
         
         //Get BaseEntity with attributes
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
-        //Print the json Object     
+        //Print the json Object  
+        objWithAttr.put("token", $value);     
         System.out.println("------------------------------------------------------------------------");
         System.out.println("BE with ATTRIBUTE   ::   "+objWithAttr.toString()); 
         System.out.println("------------------------------------------------------------------------");            
@@ -144,7 +147,7 @@ rule "Send Memberhub Layout"
         layoutObj.put("cmd_type", "CMD_LAYOUT");
         layoutObj.put("code", "layout1");
         layoutObj.put("data", new JsonObject(layout));
-
+		layoutObj.put("token", $value);
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("MEMBERHUB LAYOUT   ::   "+layoutObj.toString());
         System.out.println("------------------------------------------------------------------------");
@@ -153,6 +156,7 @@ rule "Send Memberhub Layout"
         //JsonObject quesGrp = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/memberhub-questions.json", null));
         JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/asks2/QUE_MEMBERHUB_GRP/PER_USER1", tokenString));
         //PRINT QUESTIONS
+        quesGrp.put("token", $value);
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("QUESTION GROUP   ::   "+quesGrp.toString());
         System.out.println("------------------------------------------------------------------------");
@@ -163,6 +167,7 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("HOMELOAN & HOLIDAY BE   ::   "+homeLoan.toString());  
         System.out.println("------------------------------------------------------------------------");
+        homeLoan.put("token", $value);
         bus.publish("cmds", homeLoan);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Memberhub Layout" + LOG_RESET);
@@ -202,7 +207,7 @@ rule "Send layout1"
         layoutObj.put("cmd_type", "CMD_LAYOUT");
         layoutObj.put("code", "layout1");
         layoutObj.put("data", new JsonObject(layout));
-
+		layoutObj.put("token", $value);
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("GENNY LAYOUT   ::   "+layoutObj.toString());
         System.out.println("------------------------------------------------------------------------");
@@ -249,7 +254,21 @@ rule "Send BucketView"
         JsonObject quotes2 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000003/linkcodes/LNK_BEG/attributes", tokenString)); 
         JsonObject approved = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000004/linkcodes/LNK_BEG/attributes", tokenString));
         JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
-
+		
+		grpLinks.put("token", $value);
+		headerGrps.put("token", $value);
+		noQuotesBEG.put("token", $value);
+		quotesBEG.put("token", $value);
+		approvedBEG.put("token", $value);
+		inTransitBEG.put("token", $value);
+		completedBEG.put("token", $value);
+		paidBEG.put("token", $value);
+		noQuotes.put("token", $value);
+		quotes1.put("token", $value);
+		quotes2.put("token", $value);
+		inTransit.put("token", $value);
+		approved.put("token",$value);
+		
         //Publish GRP_DASHBOARD
         bus.publish("cmds", grpLinks);	
         //Publish Header Grp
@@ -286,7 +305,8 @@ rule "Send BucketView"
         subLayoutObj.put("data_type", "SUB_LAYOUT");
         subLayoutObj.put("code", "cardLayout");
         subLayoutObj.put("items", new JsonObject(subLayout));      
-
+		subLayoutObj.put("token", $value);
+		
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("SUBLAYOUT DATA   ::   " + subLayoutObj.toString()); 
         System.out.println("------------------------------------------------------------------------");
@@ -296,7 +316,8 @@ rule "Send BucketView"
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
         bucketViewJson.put("root", "GRP_DRIVER_VIEW");
-
+        
+		bucketViewJson.put("token", $value);
         System.out.println("BUCKETVIEW DATA   ::    "+bucketViewJson.toString()); 
         bus.publish("cmds", bucketViewJson); 
 
