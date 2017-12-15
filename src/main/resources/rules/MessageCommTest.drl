@@ -63,7 +63,7 @@ rule "MsgCommTest-SMS"
         smsMsg.put("msgMessageType", "SMS");
         smsMsg.put("code", "TST_COMMS");
         bus.publish("messages", smsMsg);       
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
 end
 
@@ -74,13 +74,13 @@ rule "MsgCommTest-EMAIL"
         $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::      Msg Comm Test EMAIL BTN CLICK" + LOG_RESET);
         JsonObject smsMsg = new JsonObject();
         smsMsg.put("msg_type", "MSG_MESSAGE");
         smsMsg.put("msgMessageType", "EMAIL");
         smsMsg.put("code", "TST_COMMS");
         bus.publish("messages", smsMsg);       
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test EMAIL BTN CLICK" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
 end
 
