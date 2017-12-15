@@ -48,6 +48,8 @@ rule "BucketView Grp Change - Valid"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
+        System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Group change" + LOG_RESET);
  	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
@@ -99,7 +101,8 @@ rule "BucketView Grp Change - Valid"
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);
-       
+     System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BucketView Group change" + LOG_RESET);
+     System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);  
 end
 
 
@@ -110,7 +113,8 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
-        System.out.println("-------- Rule:- BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence  --------");	  
+        System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence" + LOG_RESET); 
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
 		//System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
@@ -139,11 +143,12 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         bus.publish("cmds", cmdGeoFenceSourceJson);
         //sending QCmdGeofenceMessage for destination address
 	    bus.publish("cmds", cmdGeoFenceDestJson); 
-
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);  
 end
 
 
-
+/*
 //Prevent skipping Groups
 rule "BucketView Grp Change-Invalid"
   when
@@ -172,6 +177,7 @@ rule "BucketView Grp Change-Invalid"
         bus.publish("cmds", abortCmd);  
          
 end
+*/
 
 rule "BucketView GEOFENCE-ENTRY"
    when
@@ -190,7 +196,8 @@ rule "BucketView GEOFENCE-EXIT"
      bus: EventBus()
      $map : Map($value: this["token"] != null)
   then
-     System.out.println(" ------ Rule: GeoFence Exit- Load In Transit -------  ");
+     System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GeoFence Exit- Load In Transit" + LOG_RESET); 
      System.out.println(" The BEG code is: "+$m.data.getCode());
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token");
@@ -236,6 +243,8 @@ rule "BucketView GEOFENCE-EXIT"
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);
+ 	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GeoFence Exit- Load In Transit " + LOG_RESET);
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
  	 
 end
 
@@ -247,7 +256,8 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
      bus: EventBus()
      $map : Map($value: this["token"] != null) 
    then
-      System.out.println("------ Rule: GEOFENCE-ENTRY DESTINATION -------");
+      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GEOFENCE-ENTRY DESTINATION " + LOG_RESET); 
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
       String tokenString = (String)$map.get("token");
       String[] code = $m.data.getCode().split("_ENTER_DESTINATION");
@@ -290,7 +300,9 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
- 	 bus.publish("messages", jsonMessage);    
+ 	 bus.publish("messages", jsonMessage);
+ 	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GEOFENCE-ENTRY DESTINATION " + LOG_RESET);
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);    
 end
 
 
@@ -301,7 +313,8 @@ rule "BucketView Card click"
      bus: EventBus()
      $map : Map($value: this["token"] != null)
   then
-     
+     System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Card Click layout " + LOG_RESET); 
       //sending cmd SUBLAYOUT_CHANGE
      QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadLayout");
      JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
@@ -321,7 +334,9 @@ rule "BucketView Card click"
       System.out.println("Layout Data ="+cmdLoadSublayoutJson.toString()); 
       System.out.println(" #################### ");
         //Publish it to the EventBus
-      bus.publish("cmds", cmdLoadSublayoutJson);    
+      bus.publish("cmds", cmdLoadSublayoutJson); 
+      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    BucketView Card Click layout " + LOG_RESET);
+      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);   
 end
 
 //Rule for Editing LOAD
@@ -331,6 +346,8 @@ rule "Edit button click for a load"
      bus: EventBus()
      $map : Map($value: this["token"] != null)
   then
+     System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Edit button click on Load " + LOG_RESET); 
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
      //sending cmd FORM_VIEW
@@ -341,7 +358,9 @@ rule "Edit button click for a load"
      bus.publish("cmds", cmdFormViewJson); 
      JsonObject load = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.data.getValue()+"/linkcodes/LNK_BEG/attributes", tokenString));
      load.put("token", $value);
-     bus.publish("cmds", load);  
+     bus.publish("cmds", load); 
+     System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    Edit button click on Load  " + LOG_RESET);
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET); 
 end
 
 //Rule for Add icon click
@@ -351,7 +370,8 @@ rule "Add new LOAD"
      bus: EventBus()
      $map : Map($value: this["token"] != null)
    then
-     System.out.println("------------ Rule: BTN_CLICK - ADD NEW LOAD  -------------------");
+     System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET); 
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
      //Getting Post Load Question GRP
@@ -372,5 +392,6 @@ rule "Add new LOAD"
      System.out.println(" #################### ");
      //Publish it to the EventBus
      bus.publish("cmds", formViewJson); 
-     System.out.println("-----------------------------------------------------------"); 
+     System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET);
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
