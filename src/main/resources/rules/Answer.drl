@@ -130,7 +130,7 @@ rule "Listen Attribute Change"
 
         //Print Answer
         System.out.println("\nSaving attribute change as a new Answer   ::    "+obj.toString()); 
-        bus.publish("cmds", obj);
+        bus.publish("data", obj);
 
         System.out.println("\n" + LOG_RED + "RULE TERMINATED    ::   Listen Attribute Change" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);

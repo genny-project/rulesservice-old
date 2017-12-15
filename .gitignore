@@ -13,6 +13,7 @@ buildNumber.properties
 .mvn/timing.properties
 rebel.xml
 src/main/resources/git.properties
+src/main/resources/rules2
 src/main/resources/rebel.xml
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar

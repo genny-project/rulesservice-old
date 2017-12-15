@@ -142,15 +142,15 @@ public class EBCHandlers {
 	
 	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.vertx().executeBlocking(future -> {
-			decodedToken = RulesLoader.getDecodedTokenMap(token);
-			userRoles = KeycloakUtils.getRoleSet(decodedToken.get("realm_access").toString());
+			Map<String,Object> adecodedToken = RulesLoader.getDecodedTokenMap(token);
+			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedToken.get("realm_access").toString());
 
 			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(msg);
-			facts.add(decodedToken);
-			facts.add(userRoles);
+			facts.add(adecodedToken);
+			facts.add(auserRoles);
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
