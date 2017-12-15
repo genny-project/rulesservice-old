@@ -2,6 +2,7 @@ target/
 .classpath
 .project
 .settings
+.vertx
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
