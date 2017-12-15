@@ -50,4 +50,37 @@ rule "MsgCommTest"
 
 end
 
+rule "MsgCommTest-SMS"
+    when
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "QUE_TEST_COMMS_SMS" )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
+        JsonObject smsMsg = new JsonObject();
+        smsMsg.put("msg_type", "MSG_MESSAGE");
+        smsMsg.put("msgMessageType", "SMS");
+        smsMsg.put("code", "TST_COMMS");
+        bus.publish("messages", smsMsg);       
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
+end
+
+rule "MsgCommTest-EMAIL"
+    when
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "QUE_TEST_COMMS_EMAIL" )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
+        JsonObject smsMsg = new JsonObject();
+        smsMsg.put("msg_type", "MSG_MESSAGE");
+        smsMsg.put("msgMessageType", "EMAIL");
+        smsMsg.put("code", "TST_COMMS");
+        bus.publish("messages", smsMsg);       
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
+end
 
