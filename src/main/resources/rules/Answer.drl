@@ -228,7 +228,7 @@ rule "Inference Gender Change"
             //Print Answer
             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
             obj.put("token",tokenString);
-            bus.publish("cmds", obj);
+            bus.publish("data", obj);
         }else{
             System.out.println("------------------------------------------------------------------------\n");
             System.out.println("GENDER   ::  Not available ");

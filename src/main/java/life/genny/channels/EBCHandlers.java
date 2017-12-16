@@ -65,8 +65,8 @@ public class EBCHandlers {
 		EBConsumers.getFromCmds().subscribe(arg -> {
 			JsonObject payload = processMessage("Command",arg);
 
-			if (payload.getString("cmd_type").equals("CMD_RELOAD_RULES")) {
-				if (payload.getString("code").equals("RELOAD_RULES_FROM_FILES")) {
+			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
+				if ("RELOAD_RULES_FROM_FILES".equals(payload.getString("code"))) {
 					String rulesDir = payload.getString("rulesDir");
 					RulesLoader.loadInitialRules(Vertx.vertx(),rulesDir);
 				} 
