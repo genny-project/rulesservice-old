@@ -42,6 +42,10 @@ public class EBCHandlers {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 	
+	static Map<String, Object> decodedToken = null;
+	static Set<String> userRoles = null;
+
+	
 	static String rulesDir = System.getenv("RULES_DIR");
     static String projectRealm = System.getenv("PROJECT_REALM");
 
@@ -122,22 +126,11 @@ public class EBCHandlers {
 	}
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
-		log.info("Received " + messageType + " :"
-				+ (projectRealm == null ? "tokenRealm" : projectRealm));
-		if (projectRealm != null) {
-			System.out.println("###########    The project realm from system env is :    ["
-					+ projectRealm+"]");
-		}
+		log.info("EVENT-BUS >> " + messageType.toUpperCase() + " :" + projectRealm);
 		
 		final JsonObject payload = new JsonObject(arg.body().toString());
 		return payload;
 	}
-
-	
-
-	static Map<String, Object> decodedToken = null;
-	static Set<String> userRoles = null;
-
 
 	
 	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
