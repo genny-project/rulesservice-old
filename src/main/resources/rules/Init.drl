@@ -88,7 +88,7 @@ rule "Init"
         newUser.setName($map1.get("name").toString());
         newUser.setRealm($map1.get("realm").toString());
         newUser.setRoles($map1.get("realm_access").toString());
-        System.out.println("value from qwandautils  ::   "+QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
+        System.out.println("value from qwandautils  ::   "+QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString).toString());
         newUser.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
 
         System.out.println("User Name      ::    " +newUser.getName());
@@ -142,7 +142,7 @@ rule "Create new User"
       String tokenString = (String)$map.get("token"); 
       System.out.println("Token value ::   "+tokenString);
       //Creating new user based ion keycloak info
-     BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );
+   //  BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );
       
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
