@@ -16,6 +16,7 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.Ask;
+import life.genny.qwanda.entity.BaseEntity;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -55,6 +56,7 @@ declare User1
     name : String
     realm : String
     roles :  String
+    available : Boolean
 end
     
 
@@ -77,7 +79,8 @@ rule "Init"
         String tokenString = (String)$map.get("token");   
 
         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-        System.out.println("Project Name   ::   " + $map1.get("realm") );
+        System.out.println("Project Name   ::   " + $map1.get("realm") );       
+        System.out.println("keycloak ID  ::   " +$map1.get("sub"));
 		
         //Create user fact
         User1 newUser = new User1();
@@ -85,9 +88,14 @@ rule "Init"
         newUser.setName($map1.get("name").toString());
         newUser.setRealm($map1.get("realm").toString());
         newUser.setRoles($map1.get("realm_access").toString());
+        System.out.println("value from qwandautils  ::   "+QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
+        newUser.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
+
         System.out.println("User Name      ::    " +newUser.getName());
         System.out.println("User Role      ::    " +$roles.toString());
         insert(newUser);
+        
+        
         System.out.println("------------------------------------------------------------------------");
       
         //Getting the User BE and sending it as ALIAS
@@ -117,6 +125,29 @@ rule "Init"
         bus.publish("cmds", objWithAttr);   
        		      
 end
+
+
+rule "Create new User"
+   when
+      bus: EventBus()
+      $user: User1(available == true)
+      $map : Map($value: this["token"] != null)
+      $map1 : Map($value1: this["realm"] != null)
+   then
+      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Create New User" + LOG_RESET);
+      System.out.println("User Already Exists? true/false   ::   "+$user.getAvailable());
+      //Prepare Token & qwandaServiceUrl
+      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+      String tokenString = (String)$map.get("token"); 
+      System.out.println("Token value ::   "+tokenString);
+      //Creating new user based ion keycloak info
+     BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );
+      
+      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
+      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end 
+
 
 //Rules to Send layout based on the realm name
 rule "Send Memberhub Layout"
