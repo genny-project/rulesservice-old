@@ -118,6 +118,7 @@ public class EBCHandlers {
 
 					RulesLoader.setupKieRules(rulesGroup, rules);
 				} else if  (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
+
 					 dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
 					processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
 				}
