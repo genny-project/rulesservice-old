@@ -28,6 +28,8 @@ public class ClusterConfig {
    */
   public static Config configHazelcastCluster() {
     final Config hazelcastConfig = new Config();
+    hazelcastConfig.getGroupConfig().setName( "app1" ).setPassword( "app1-pass" );
+
     hazelcastConfig.getNetworkConfig().setPort(portHazelcastCluster);
     hazelcastConfig.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     hazelcastConfig.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
@@ -54,14 +56,17 @@ public class ClusterConfig {
     final VertxOptions options = new VertxOptions();
 
     if (System.getenv("GENNYDEV") == null) {
-//      final ClusterManager mgr = new HazelcastClusterManager(configHazelcastCluster());
-      final ClusterManager mgr = new HazelcastClusterManager();
+      final ClusterManager mgr = new HazelcastClusterManager(configHazelcastCluster());
+//      final ClusterManager mgr = new HazelcastClusterManager();
       options.setClusterManager(mgr);
       options.setEventBusOptions(configEBCluster());
     } else {
       logger.info("Running DEV mode, no cluster");
       ClusterManager mgr = null;
-      mgr = new HazelcastClusterManager(); // standard docker
+      final Config hazelcastConfig = new Config();
+      hazelcastConfig.getGroupConfig().setName( hostIP ).setPassword( "app1-pass" );
+
+      mgr = new HazelcastClusterManager(hazelcastConfig); // standard docker
       System.out.println("Starting Clustered Vertx");
       options.setClusterManager(mgr);
       options.setBlockedThreadCheckInterval(200000000);
