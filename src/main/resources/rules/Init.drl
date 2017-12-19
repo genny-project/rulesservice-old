@@ -80,7 +80,7 @@ rule "Init"
 
         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
         System.out.println("Project Name   ::   " + $map1.get("realm") );       
-        System.out.println("keycloak ID  ::   " +$map1.get("sub"));
+        System.out.println("keycloak ID    ::   " +$map1.get("sub"));
 		
         //Create user fact
         User1 newUser = new User1();
@@ -90,7 +90,7 @@ rule "Init"
         newUser.setRoles($map1.get("realm_access").toString());
         System.out.println("value from qwandautils  ::   "+QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString).toString());
         newUser.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
-
+        //newUser.setAvailable(false);
         System.out.println("User Name      ::    " +newUser.getName());
         System.out.println("User Role      ::    " +$roles.toString());
         insert(newUser);
@@ -151,26 +151,46 @@ rule "Create new User"
       bus.publish("cmds", userObj);
       System.out.println("The person code is   ::   "+person.getCode());
       //Sending USER Profile Asks
-      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+person.getCode()+"/asks2/QUE_USER_PROFILE_GRP/"+person.getCode(), tokenString));
+      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+person.getCode()+"/asks2/QUE_NEW_USER_PROFILE_GRP/"+person.getCode(), tokenString));
       System.out.println("*******************");
       System.out.println("Json="+obj.toString());	
       System.out.println("*******************");	
 	  obj.put("token", $value);					
 	  bus.publish("cmds", obj);
-		
-	  //sending cmd form view 
-      QCmdMessage cmd = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+	  
+	   //Getting the Project BE and sending it as ALIAS
+        //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
+        JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+$user.getRealm(), tokenString));
+        prjObj.put("aliasCode", "PROJECT");   
+        prjObj.put("token", $value);    
+        bus.publish("cmds", prjObj);
+           
+      //Get initial-profile-update sub layout
+      String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/initial-profile-update", null);
+      QCmdMessage cmdLayout = new QCmdMessage("CMD_LAYOUT","profile-update");
+      JsonObject layoutObj = new JsonObject().mapFrom(cmdLayout);
+      layoutObj.put("data", new JsonObject(layout));
+      layoutObj.put("token", $value);
+      System.out.println("------------------------------------------------------------------------\n");
+      System.out.println("PROFILE UPDATE LAYOUT   ::   "+layoutObj.toString());
+      System.out.println("------------------------------------------------------------------------");
+      bus.publish("cmds", layoutObj);
+      
+      //sending cmd form view 
+      String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/welcome-new-user", null);
+      QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","welcomeNewUser");
       //Convert cmd to JSON Obj
-      JsonObject cmdObj = new JsonObject().mapFrom(cmd);
-      cmdObj.put("root", "QUE_USER_PROFILE_GRP");
+      JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);
+      cmdSubLayout.put("items", new JsonObject(subLayout));
+      //cmdObj.put("root", "QUE_USER_PROFILE_GRP");
       //cmdObj.put("data", "itemsPerPage:8");        
       System.out.println(" ##################### ");
-      System.out.println("Form View ="+cmdObj.toString()); 
+      System.out.println("Sub-layout  = "+cmdSubLayout.toString()); 
       System.out.println(" #################### ");
-      cmdObj.put("token", $value);
+      cmdSubLayout.put("token", $value);
       //Publish it to the EventBus
-      bus.publish("cmds", cmdObj); 
-      
+      bus.publish("cmds", cmdSubLayout); 
+           
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end 
@@ -201,9 +221,6 @@ rule "Send Memberhub Layout"
 
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
         JsonObject layoutObj = new JsonObject().mapFrom(cmd);
-        layoutObj.put("msg_type", "CMD_MSG");
-        layoutObj.put("cmd_type", "CMD_LAYOUT");
-        layoutObj.put("code", "layout1");
         layoutObj.put("data", new JsonObject(layout));
 		layoutObj.put("token", $value);
         System.out.println("------------------------------------------------------------------------\n");
@@ -241,7 +258,7 @@ rule "Send layout1"
      agenda-group "layout"
      when
        bus: EventBus()
-       $user: User1(realm != "memberhub")
+       $user: User1(realm != "memberhub" && available == true )
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -280,7 +297,7 @@ rule "Send BucketView"
     agenda-group "layout"
     when
        bus:EventBus()
-       $user: User1(realm != "memberhub")
+       $user: User1(realm != "memberhub" && available == true )
        $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
