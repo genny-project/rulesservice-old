@@ -72,6 +72,7 @@ rule "Answer"
             Long askId = answer.getAskId();
             String sourceCode = answer.getSourceCode();
             String targetCode = answer.getTargetCode();
+            answer.setSourceCode(answer.getTargetCode());
             String attributeCode = answer.getAttributeCode();
             String value = answer.getValue();
             Boolean inferred = answer.getInferred();
@@ -84,7 +85,7 @@ rule "Answer"
             
             //convert answer to json
             String jsonAnswer = gson.toJson(answer);
-            System.out.println("JSON Answer from FrontEnd   ::   "+jsonAnswer);
+            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 
             // convert Answer Json to Answer obj
             Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
