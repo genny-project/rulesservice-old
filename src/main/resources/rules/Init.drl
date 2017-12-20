@@ -100,17 +100,17 @@ rule "Init"
       
         //Getting the User BE and sending it as ALIAS
         //Get User BE for USER ALIAS based on the user's username
-        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
-        userObj.put("aliasCode", "USER"); 
-        userObj.put("token", $value);      
-        bus.publish("cmds", userObj);
+       // JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
+        //userObj.put("aliasCode", "USER"); 
+       // userObj.put("token", $value);      
+       // bus.publish("cmds", userObj);
            
         //Getting the Project BE and sending it as ALIAS
         //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
-        JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
-        prjObj.put("aliasCode", "PROJECT");   
-        prjObj.put("token", $value);    
-        bus.publish("cmds", prjObj);
+       // JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
+      //  prjObj.put("aliasCode", "PROJECT");   
+      //  prjObj.put("token", $value);    
+      //  bus.publish("cmds", prjObj);
      
         //Calling the rule group : layout
         drools.setFocus("layout"); 
@@ -143,27 +143,67 @@ rule "Create new User"
       //Creating new user based ion keycloak info
       BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );      
       //Update the available fact value
-      $user.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));  
-      //Sending USER alias    
-      JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+$user.getUname(), tokenString));
-      userObj.put("aliasCode", "USER"); 
-      userObj.put("token", tokenString);      
-      bus.publish("cmds", userObj);
-      System.out.println("The person code is   ::   "+person.getCode());
-      //Sending USER Profile Asks
-      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+person.getCode()+"/asks2/QUE_NEW_USER_PROFILE_GRP/"+person.getCode(), tokenString));
-      System.out.println("*******************");
-      System.out.println("Json="+obj.toString());	
-      System.out.println("*******************");	
-	  obj.put("token", $value);					
-	  bus.publish("cmds", obj);
-	  
-	   //Getting the Project BE and sending it as ALIAS
+      $user.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString)); 
+      //Calling the rule group : UserRegistration
+      drools.setFocus("UserRegistration");
+           
+      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
+      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end 
+
+rule "Send ALIAS first login"
+   salience 20
+   agenda-group "UserRegistration"
+    when
+       bus: EventBus()
+       $user: User1(realm != null )
+       $map : Map($value: this["token"] != null)
+     then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send ALIAS" + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");  
+        //Getting the User BE and sending it as ALIAS
+        //Get User BE for USER ALIAS based on the user's username
+        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+ $user.getUname(), tokenString));
+        userObj.put("aliasCode", "USER"); 
+        userObj.put("token", $value);      
+        bus.publish("cmds", userObj);
+        
+        //Getting the Project BE and sending it as ALIAS
         //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
         JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+$user.getRealm(), tokenString));
         prjObj.put("aliasCode", "PROJECT");   
         prjObj.put("token", $value);    
         bus.publish("cmds", prjObj);
+        
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send ALIAS" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
+
+
+rule "Send initial-profile-update layout"
+    salience 19
+    agenda-group "UserRegistration"
+    when
+      bus: EventBus()
+      $user: User1(available == false)
+      $map : Map($value: this["token"] != null)
+      //$map1 : Map($value1: this["realm"] != null)
+     then
+       System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+       System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send Initial Profile Update Layout" + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token"); 
+       //Sending USER Profile Asks
+      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$user.getUname()+"/asks2/QUE_NEW_USER_PROFILE_GRP/PER_"+$user.getUname(), tokenString));
+      System.out.println("*******************");
+      System.out.println("Json="+obj.toString());	
+      System.out.println("*******************");	
+	  obj.put("token", $value);					
+	  bus.publish("cmds", obj);
            
       //Get initial-profile-update sub layout
       String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/initial-profile-update", null);
@@ -189,12 +229,45 @@ rule "Create new User"
       System.out.println(" #################### ");
       cmdSubLayout.put("token", $value);
       //Publish it to the EventBus
-      bus.publish("cmds", cmdSubLayout); 
-           
-      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
-      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-end 
+      bus.publish("cmds", cmdSubLayout);
+       
+       
+       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send Initial Profile Update Layout" + LOG_RESET);
+       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+       
+end
 
+
+rule "Send ALIAS"
+   salience 20
+   agenda-group "layout"
+    when
+       bus: EventBus()
+       $user: User1(realm != null )
+       $map : Map($value: this["token"] != null)
+     then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send ALIAS" + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");  
+        //Getting the User BE and sending it as ALIAS
+        //Get User BE for USER ALIAS based on the user's username
+        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+ $user.getUname(), tokenString));
+        userObj.put("aliasCode", "USER"); 
+        userObj.put("token", $value);      
+        bus.publish("cmds", userObj);
+        
+        //Getting the Project BE and sending it as ALIAS
+        //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
+        JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+$user.getRealm(), tokenString));
+        prjObj.put("aliasCode", "PROJECT");   
+        prjObj.put("token", $value);    
+        bus.publish("cmds", prjObj);
+        
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send ALIAS" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
 
 //Rules to Send layout based on the realm name
 rule "Send Memberhub Layout"
@@ -249,8 +322,6 @@ rule "Send Memberhub Layout"
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
 end
-
-
 
 
 rule "Send layout1"
