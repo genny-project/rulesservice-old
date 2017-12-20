@@ -117,15 +117,11 @@ rule "Listen Attribute Change"
         //Convert cmd to JSON Obj
         JsonObject data = new JsonObject();
         data.put("value", $m.getNewValue());
-        data.put("attributeCode", $m.data.getCode());
-        data.put("targetCode", $m.getTargetBaseEntityCode()); 
-        data.put("sourceCode", $m.getSourceBaseEntityCode());  
-        data.put("expired", false);
-        data.put("refused", false);
-        data.put("inferred", false);
-        data.put("weight", "0.0");  // fix attributechange message to include these
-        JsonArray items = new JsonArray();
-        items.add(data);
+        Answer newAnswer = $m.getAnswer();
+        String jsonAnswerStr = gson.toJson(newAnswer);
+        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+       JsonArray items = new JsonArray();
+        items.add(jsonAnswer);
        //Creating Answer DATA_MSG
         JsonObject obj= new JsonObject();
         obj.put("msg_type", "DATA_MSG");
