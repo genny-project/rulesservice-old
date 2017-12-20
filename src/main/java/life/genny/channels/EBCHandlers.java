@@ -118,9 +118,19 @@ public class EBCHandlers {
 
 					RulesLoader.setupKieRules(rulesGroup, rules);
 				} else if  (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
-
+					try {
 					 dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
 					processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
+					} catch (com.google.gson.JsonSyntaxException e) {
+						log.error("BAD Syntax converting to json from "+dataMsg);
+						JsonObject json = new JsonObject(payload.toString());
+						JsonObject answerData = json.getJsonObject("items");
+						JsonArray jsonArray = new JsonArray();
+						jsonArray.add(answerData);
+						json.put("items", jsonArray);
+						 dataMsg = gson.fromJson(json.toString(), QDataAnswerMessage.class);
+						processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
+					}
 				}
 			}
 		});

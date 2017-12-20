@@ -74,8 +74,12 @@ rule "Answer"
             String targetCode = answer.getTargetCode();
             String attributeCode = answer.getAttributeCode();
             String value = answer.getValue();
+            Boolean inferred = answer.getInferred();
+            Double weight = answer.getWeight();
+            Boolean expired = answer.getExpired();
+            Boolean refused = answer.getRefused();
             System.out.println("Printing Answer data recieved   ::");
-            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
             System.out.println("------------------------------------------------------------------------");
             
             //convert answer to json
@@ -118,13 +122,15 @@ rule "Listen Attribute Change"
         data.put("sourceCode", $m.getSourceBaseEntityCode());  
         data.put("expired", false);
         data.put("refused", false);
-        data.put("weight", "0.0");
-		data.put("token",$m.getToken());
-        //Creating Answer DATA_MSG
+        data.put("inferred", false);
+        data.put("weight", "0.0");  // fix attributechange message to include these
+        JsonArray items = new JsonArray();
+        items.add(data);
+       //Creating Answer DATA_MSG
         JsonObject obj= new JsonObject();
         obj.put("msg_type", "DATA_MSG");
         obj.put("data_type", "Answer");
-        obj.put("items", data); 
+        obj.put("items", items); 
         obj.put("token",$m.getToken());
    //     obj.put("token", $value);
 
@@ -210,6 +216,7 @@ rule "Inference Gender Change"
             System.out.println("\n------------------------------------------------------------------------");
             
             // Collect DATA to save gender as an answer
+            
             JsonObject data = new JsonObject();
             data.put("value", gender);
             data.put("attributeCode", "PRI_GENDER"); 
@@ -218,13 +225,16 @@ rule "Inference Gender Change"
             data.put("expired", false);
             data.put("refused", false);
             data.put("weight", weight);
-            data.put("inferred", true);    
+            data.put("inferred", true); 
+            
+            JsonArray items = new JsonArray();
+            items.add(data);   
             
             //Creating Answer DATA_MSG
             JsonObject obj = new JsonObject();
             obj.put("msg_type", "DATA_MSG");
             obj.put("data_type", "Answer");
-            obj.put("items", data); 
+            obj.put("items", items); 
             //Print Answer
             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
             obj.put("token",tokenString);
