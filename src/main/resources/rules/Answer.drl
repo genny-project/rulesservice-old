@@ -74,8 +74,12 @@ rule "Answer"
             String targetCode = answer.getTargetCode();
             String attributeCode = answer.getAttributeCode();
             String value = answer.getValue();
+            Boolean inferred = answer.getInferred();
+            Double weight = answer.getWeight();
+            Boolean expired = answer.getExpired();
+            Boolean refused = answer.getRefused();
             System.out.println("Printing Answer data recieved   ::");
-            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
             System.out.println("------------------------------------------------------------------------");
             
             //convert answer to json
@@ -83,8 +87,7 @@ rule "Answer"
             System.out.println("JSON Answer from FrontEnd   ::   "+jsonAnswer);
 
             // convert Answer Json to Answer obj
-            Gson ans = new Gson();
-            Answer answerObj = ans.fromJson(jsonAnswer, Answer.class);
+            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
             System.out.println("Answer Object   ::   "+answerObj);
             System.out.println("------------------------------------------------------------------------");
             //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
@@ -103,6 +106,11 @@ rule "Listen Attribute Change"
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
         bus:EventBus() 
      then
+     
+           GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+     
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Attribute Change" + LOG_RESET);
@@ -112,19 +120,18 @@ rule "Listen Attribute Change"
        
         //Convert cmd to JSON Obj
         JsonObject data = new JsonObject();
-        data.put("value", $m.getNewValue());
-        data.put("attributeCode", $m.data.getCode());
-        data.put("targetCode", $m.getTargetBaseEntityCode()); 
-        data.put("sourceCode", $m.getSourceBaseEntityCode());  
-        data.put("expired", false);
-        data.put("refused", false);
-        data.put("weight", "0.0");
-		data.put("token",$m.getToken());
-        //Creating Answer DATA_MSG
+        data.put("value", $m.getAnswer().getValue());
+        Answer newAnswer = $m.getAnswer();
+  
+        String jsonAnswerStr = gson.toJson(newAnswer);
+        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+       JsonArray items = new JsonArray();
+        items.add(jsonAnswer);
+       //Creating Answer DATA_MSG
         JsonObject obj= new JsonObject();
         obj.put("msg_type", "DATA_MSG");
         obj.put("data_type", "Answer");
-        obj.put("items", data); 
+        obj.put("items", items); 
         obj.put("token",$m.getToken());
    //     obj.put("token", $value);
 
@@ -145,6 +152,10 @@ rule "Listen Facebook Code"
  
      then
 
+      GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Facebook Code" + LOG_RESET);
@@ -155,21 +166,20 @@ rule "Listen Facebook Code"
         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 
         // Collect DATA 
-        JsonObject data = new JsonObject();
-        data.put("value", $m.getNewValue());
-        data.put("attributeCode", $m.data.getCode()); 
-        data.put("targetCode", $m.getTargetBaseEntityCode()); 
-        data.put("sourceCode", $m.getSourceBaseEntityCode());  
-        data.put("expired", false);
-        data.put("refused", false);
-        data.put("weight", "0.0");    
-        data.put("token",$m.getToken());
+        Answer newAnswer = $m.getAnswer();
+  
+        String jsonAnswerStr = gson.toJson(newAnswer);
+        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+        jsonAnswer.put("token",$m.getToken());
+        
+   
+       
 
         //Print DATA msg
         System.out.println("------------------------------------------------------------------------\n");    
-        System.out.println("SOCIAL DATA   ::   "+data); 
+        System.out.println("SOCIAL DATA   ::   "+jsonAnswer); 
         System.out.println("------------------------------------------------------------------------");     
-        bus.publish("social", data);
+        bus.publish("social", jsonAnswer);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Listen Facebook Code" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
@@ -184,6 +194,11 @@ rule "Inference Gender Change"
         $map : Map($value: this["token"] != null)
  
      then    
+           GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+     
+     
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
@@ -196,7 +211,7 @@ rule "Inference Gender Change"
         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
         System.out.println("------------------------------------------------------------------------");
 		
-		String PRI_FIRSTNAME=  $m.getNewValue();
+		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
         //PRINT genderObj
         System.out.println("------------------------------------------------------------------------\n");
@@ -210,21 +225,22 @@ rule "Inference Gender Change"
             System.out.println("\n------------------------------------------------------------------------");
             
             // Collect DATA to save gender as an answer
-            JsonObject data = new JsonObject();
-            data.put("value", gender);
-            data.put("attributeCode", "PRI_GENDER"); 
-            data.put("targetCode", $m.getTargetBaseEntityCode()); 
-            data.put("sourceCode", $m.getSourceBaseEntityCode());  
-            data.put("expired", false);
-            data.put("refused", false);
-            data.put("weight", weight);
-            data.put("inferred", true);    
-            
-            //Creating Answer DATA_MSG
+          Answer newAnswer = $m.getAnswer();
+  
+        String jsonAnswerStr = gson.toJson(newAnswer);
+        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+        jsonAnswer.put("value",gender);
+        jsonAnswer.put("attributeCode","PRI_GENDER");
+        jsonAnswer.put("inferred",true);
+        jsonAnswer.put("weight",weight);
+       JsonArray items = new JsonArray();
+        items.add(jsonAnswer);
+		
+              //Creating Answer DATA_MSG
             JsonObject obj = new JsonObject();
             obj.put("msg_type", "DATA_MSG");
             obj.put("data_type", "Answer");
-            obj.put("items", data); 
+            obj.put("items", items); 
             //Print Answer
             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
             obj.put("token",tokenString);
