@@ -57,6 +57,7 @@ declare User1
     realm : String
     roles :  String
     available : Boolean
+    profileCompleted : Boolean
 end
     
 
@@ -93,24 +94,8 @@ rule "Init"
         //newUser.setAvailable(false);
         System.out.println("User Name      ::    " +newUser.getName());
         System.out.println("User Role      ::    " +$roles.toString());
-        insert(newUser);
-        
-        
+        insert(newUser);        
         System.out.println("------------------------------------------------------------------------");
-      
-        //Getting the User BE and sending it as ALIAS
-        //Get User BE for USER ALIAS based on the user's username
-       // JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+newUser.getUname(), tokenString));
-        //userObj.put("aliasCode", "USER"); 
-       // userObj.put("token", $value);      
-       // bus.publish("cmds", userObj);
-           
-        //Getting the Project BE and sending it as ALIAS
-        //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
-       // JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+newUser.getRealm(), tokenString));
-      //  prjObj.put("aliasCode", "PROJECT");   
-      //  prjObj.put("token", $value);    
-      //  bus.publish("cmds", prjObj);
      
         //Calling the rule group : layout
         drools.setFocus("layout"); 
@@ -151,7 +136,7 @@ rule "Create new User"
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end 
 
-rule "Send ALIAS first login"
+rule "Send ALIAS when first login"
    salience 20
    agenda-group "UserRegistration"
     when
@@ -183,7 +168,7 @@ rule "Send ALIAS first login"
 end
 
 
-rule "Send initial-profile-update layout"
+rule "Send initial-profile-update layout for first login"
     salience 19
     agenda-group "UserRegistration"
     when
