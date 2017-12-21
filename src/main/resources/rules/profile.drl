@@ -33,7 +33,7 @@ rule "Logout"
         System.out.println(json);
         JsonObject json2 = new JsonObject(json);
         json2.put("token", $value);
-        bus.publish("cmds", json);
+        bus.publish("cmds", json2);
         
 end
 
