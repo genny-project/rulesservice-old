@@ -113,7 +113,7 @@ rule "Init"
         }
         System.out.println("User facts value -  isAvailable   ::   " +$user.getIsAvailable());
         //Calling the rule group : UserRegistration
-      //  drools.setFocus("UserRegistration"); 
+         drools.setFocus("UserRegistration"); 
         //Calling the rule group : layout
        // drools.setFocus("layout"); 
         
