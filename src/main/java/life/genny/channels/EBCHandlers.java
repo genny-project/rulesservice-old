@@ -37,7 +37,7 @@ import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.RulesLoader;
 
-import life.genny.facts.*;
+import life.genny.qwanda.entity.User;
 
 public class EBCHandlers {
 
@@ -167,7 +167,6 @@ public class EBCHandlers {
 				facts.add(usersSession.get(preferredUName));
 			else {
 	            User currentUser = new User(preferredUName, fullName, realm, accessRoles);
-	            //currentUser.setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
 				usersSession.put(adecodedToken.get("preferred_username").toString(), currentUser);
 				facts.add(currentUser);
 			}

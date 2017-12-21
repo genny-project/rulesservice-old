@@ -35,7 +35,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
-import life.genny.facts.User;
+import life.genny.qwanda.entity.User;
 
 // global java.lang.String REACT_APP_QWANDA_API_URL;
 // global java.lang.String REACT_APP_VERTX_URL;
@@ -115,7 +115,7 @@ rule "Init"
         //Calling the rule group : UserRegistration
         drools.setFocus("UserRegistration"); 
         //Calling the rule group : layout
-        drools.setFocus("layout"); 
+       // drools.setFocus("layout"); 
         
         //Get BaseEntity with attributes
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
@@ -183,7 +183,9 @@ rule "Check if Profile Completed"
        modify($user){
            setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
-       System.out.println("isProfileCompleted value    ::    " +$user.getIsProfileCompleted());  
+       System.out.println("isProfileCompleted value    ::    " +$user.getIsProfileCompleted()); 
+       
+        drools.setFocus("layout");  
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Check if Profile Completed   " + LOG_RESET);
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET); 
 end
@@ -280,7 +282,7 @@ end
 
 
 rule "Send ALIAS"
-   salience 20
+   salience 10
    agenda-group "layout"
     when
        bus: EventBus()
@@ -289,7 +291,7 @@ rule "Send ALIAS"
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send ALIAS" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send ALIAS in layout group" + LOG_RESET);
         //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");  
@@ -299,6 +301,10 @@ rule "Send ALIAS"
         userObj.put("aliasCode", "USER"); 
         userObj.put("token", $value);      
         bus.publish("cmds", userObj);
+        
+        System.out.println("User realm   ::  "+$user.getRealm());
+        System.out.println("User isAvailable   ::  "+$user.getIsAvailable());
+        System.out.println("User isProfileCompleted   ::  "+$user.getIsProfileCompleted());
         
         //Getting the Project BE and sending it as ALIAS
         //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
@@ -313,11 +319,12 @@ end
 
 //Rules to Send layout based on the realm name
 rule "Send Memberhub Layout"
+   salience 9
    agenda-group "layout"
    when
         bus: EventBus()
         //$user: User1(realm == "memberhub")
-        $user: User(realm == "memberhub")
+        $user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
         $map : Map($value: this["token"] != null)
    then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -368,12 +375,12 @@ end
 
 
 rule "Send layout1"
-     salience 10
+     salience 8
      agenda-group "layout"
      when
        bus: EventBus()
        //$user: User1(realm != "memberhub" && available == true && profileCompleted == true )
-       $user: User(realm != "memberhub" && isAvailable == true && isProfileCompleted == true )
+       $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -408,12 +415,12 @@ rule "Send layout1"
 end
 
 rule "Send BucketView"
-    salience -10
+    salience -1
     agenda-group "layout"
     when
        bus:EventBus()
        //$user: User1(realm != "memberhub" && available == true && profileCompleted == true )
-       $user: User(realm != "memberhub" && isAvailable == true && isProfileCompleted == true )
+       $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
