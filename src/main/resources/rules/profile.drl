@@ -1,3 +1,5 @@
+package com.sample
+
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
@@ -9,15 +11,10 @@ import com.sample.*;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
+import life.genny.qwanda.entity.User;
 
- global java.lang.String REACT_APP_QWANDA_API_URL;
+global java.lang.String REACT_APP_QWANDA_API_URL;
 
-declare User1
-    uname : String
-    name : String
-    realm : String
-    roles :  String
-end
 
 rule "Logout"
     when
@@ -105,13 +102,13 @@ rule "test"
    when
       $map : Map($value: this["token"] != null)
       //$user: User1(uname == "user1")
-      $user : User1()
+      $user : User()
      // $roles : Set(!isEmpty())
       $roles : Set( this.contains("user") && !this.contains("admin"))
      
    then
       System.out.println("-------- Rule:- Test user role- user--------");	
-      System.out.println(" Hello! "+ $user.getName());
+      System.out.println(" Hello! "+ $user.getFullName());
       System.out.println(" Your username is: "+ $user.getUname());
       System.out.println(" Your have user role: user");   
 end
@@ -119,13 +116,13 @@ end
 rule "test user role -admin"
    when
       $map : Map($value: this["token"] != null)
-      $user: User1()
+      $user: User()
       //$user: User1(uname == "user1")
       //$roles : Set(!isEmpty())
       $roles : Set( this.contains("admin") && this.contains("user") )
    then
       System.out.println("-------- Rule:- Test user role- user & admin--------");	
-      System.out.println(" Hello! "+ $user.getName());
+      System.out.println(" Hello! "+ $user.getFullName());
       System.out.println(" Your username is: "+ $user.getUname());
       System.out.println(" Your have two roles - admin and user");    
 end
