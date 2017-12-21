@@ -360,6 +360,14 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------");
         homeLoan.put("token", $value);
         bus.publish("cmds", homeLoan);
+        
+         //Getting all Facebook Friends and their attributes
+        JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND", tokenString));
+        System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
+        System.out.println("------------------------------------------------------------------------");
+        homeLoan.put("token", $value);
+        bus.publish("cmds", friendList);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Memberhub Layout" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
