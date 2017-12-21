@@ -37,26 +37,28 @@ import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.RulesLoader;
 
+import life.genny.facts.*;
+
 public class EBCHandlers {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
-	
+
 	static Map<String, Object> decodedToken = null;
 	static Set<String> userRoles = null;
+	private static Map<String, User> usersSession = new HashMap<String, User>();
 
-	
 	static String rulesDir = System.getenv("RULES_DIR");
-    static String projectRealm = System.getenv("PROJECT_REALM");
+	static String projectRealm = System.getenv("PROJECT_REALM");
 
 	static Gson gson = new GsonBuilder()
 			.registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
 				@Override
-		          public LocalDateTime deserialize(final JsonElement json, final Type type,
-			              final JsonDeserializationContext jsonDeserializationContext)
-			              throws JsonParseException {
-			            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-			          }
+				public LocalDateTime deserialize(final JsonElement json, final Type type,
+						final JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+					return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(),
+							DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				}
 
 				public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
 						final JsonSerializationContext context) {
@@ -68,19 +70,19 @@ public class EBCHandlers {
 
 	public static void registerHandlers(final EventBus eventBus) {
 		EBConsumers.getFromCmds().subscribe(arg -> {
-			JsonObject payload = processMessage("Command",arg);
+			JsonObject payload = processMessage("Command", arg);
 
 			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
 				if ("RELOAD_RULES_FROM_FILES".equals(payload.getString("code"))) {
 					String rulesDir = payload.getString("rulesDir");
-					RulesLoader.loadInitialRules(Vertx.vertx(),rulesDir);
-				} 
-			} 
+					RulesLoader.loadInitialRules(Vertx.vertx(), rulesDir);
+				}
+			}
 
 		});
 
 		EBConsumers.getFromEvents().subscribe(arg -> {
-			JsonObject payload = processMessage("Event",arg);
+			JsonObject payload = processMessage("Event", arg);
 
 			QEventMessage eventMsg = null;
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
@@ -90,13 +92,13 @@ public class EBCHandlers {
 			} else {
 				eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
 			}
-			processMsg("Event",eventMsg, eventBus, payload.getString("token"));
+			processMsg("Event", eventMsg, eventBus, payload.getString("token"));
 
 		});
 
 		EBConsumers.getFromData().subscribe(arg -> {
 
-			JsonObject payload = processMessage("Data",arg);
+			JsonObject payload = processMessage("Data", arg);
 
 			if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) { // should always be data if coming through
 																				// this channel
@@ -109,28 +111,28 @@ public class EBCHandlers {
 					String ruleCode = ja.getJsonObject(0).getString("code");
 					// QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
 					System.out.println("Incoming Rule :" + ruleText);
-				      if (rulesDir == null) {
-				    	  	rulesDir = "rules";
-				      }
+					if (rulesDir == null) {
+						rulesDir = "rules";
+					}
 
 					String rulesGroup = rulesDir;
 					List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 					rules.add(Tuple.of(ruleCode, ruleText));
 
 					RulesLoader.setupKieRules(rulesGroup, rules);
-				} else if  (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
+				} else if (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
 					try {
-					 dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
-					processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
+						dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
+						processMsg("Data", dataMsg, eventBus, payload.getString("token"));
 					} catch (com.google.gson.JsonSyntaxException e) {
-						log.error("BAD Syntax converting to json from "+dataMsg);
+						log.error("BAD Syntax converting to json from " + dataMsg);
 						JsonObject json = new JsonObject(payload.toString());
 						JsonObject answerData = json.getJsonObject("items");
 						JsonArray jsonArray = new JsonArray();
 						jsonArray.add(answerData);
 						json.put("items", jsonArray);
-						 dataMsg = gson.fromJson(json.toString(), QDataAnswerMessage.class);
-						processMsg("Data",dataMsg, eventBus,  payload.getString("token"));
+						dataMsg = gson.fromJson(json.toString(), QDataAnswerMessage.class);
+						processMsg("Data", dataMsg, eventBus, payload.getString("token"));
 					}
 				}
 			}
@@ -139,23 +141,37 @@ public class EBCHandlers {
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
 		log.info("EVENT-BUS >> " + messageType.toUpperCase() + " :" + projectRealm);
-		
+
 		final JsonObject payload = new JsonObject(arg.body().toString());
 		return payload;
 	}
 
-	
 	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.vertx().executeBlocking(future -> {
 			Map<String,Object> adecodedToken = RulesLoader.getDecodedTokenMap(token);
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedToken.get("realm_access").toString());
-
+			User userInSession = usersSession.get(adecodedToken.get("preferred_username").toString());
+			
+			String preferredUName = adecodedToken.get("preferred_username").toString();
+			String fullName = adecodedToken.get("name").toString();
+			String realm = adecodedToken.get("realm").toString();
+			String accessRoles = adecodedToken.get("realm_access").toString();
+			
 			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(msg);
 			facts.add(adecodedToken);
 			facts.add(auserRoles);
+			if(userInSession!=null)
+				facts.add(usersSession.get(preferredUName));
+			else {
+	            User currentUser = new User(preferredUName, fullName, realm, accessRoles);
+	            //currentUser.setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
+				usersSession.put(adecodedToken.get("preferred_username").toString(), currentUser);
+				facts.add(currentUser);
+			}
+					
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
@@ -175,7 +191,5 @@ public class EBCHandlers {
 		});
 
 	}
-
-
 
 }
