@@ -25,6 +25,7 @@ rule "MsgCommTest"
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
         JsonObject layoutObj = new JsonObject().mapFrom(cmd);
         layoutObj.put("data", new JsonObject(layout));
+        layoutObj.put("token", tokenString);
         //layoutObj.put("data", testLayoutObj);
 
         System.out.println("------------------------------------------------------------------------\n");
@@ -32,9 +33,9 @@ rule "MsgCommTest"
         System.out.println("------------------------------------------------------------------------");
         bus.publish("cmds", layoutObj);
          
-        JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/asks2/QUE_TEST_COMMS_GRP/PER_USER1", tokenString));
+        JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/asks2/QUE_TEST_COMMS_GRP/TST_COMMS", tokenString));
         //PRINT QUESTIONS
-        //quesGrp.put("token", $value);
+        quesGrp.put("token", tokenString);
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("QUESTION GROUP   ::   "+quesGrp.toString());
         System.out.println("------------------------------------------------------------------------");
@@ -42,7 +43,9 @@ rule "MsgCommTest"
         
         //Get TST_COMMS BE
        JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_TEST/attributes?PRI_USERNAME=test", tokenString));
-      // userObj.put("token", $value);      
+       
+       System.out.println("userObj ::"+userObj);
+       userObj.put("token", tokenString);      
        bus.publish("cmds", userObj);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
@@ -58,11 +61,13 @@ rule "MsgCommTest-SMS"
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
-        JsonObject smsMsg = new JsonObject();
-        smsMsg.put("msg_type", "MSG_MESSAGE");
-        smsMsg.put("msgMessageType", "SMS");
-        smsMsg.put("code", "TST_COMMS");
-        bus.publish("messages", smsMsg);       
+        String tokenString = (String)$map.get("token");
+        //QMSGMessage(String msg_type, QBaseMSGMessageType msgMessageType, String code,String[] attachments)
+        QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", QBaseMSGMessageType.SMS, "TST_COMMS", null); 	
+ 	 	JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 		jsonMessage.put("token",tokenString);
+        System.out.println("sms Message:" + jsonMessage);
+        bus.publish("messages", jsonMessage);       
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test SMS BTN CLICK" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
 end
@@ -75,12 +80,21 @@ rule "MsgCommTest-EMAIL"
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::      Msg Comm Test EMAIL BTN CLICK" + LOG_RESET);
-        JsonObject smsMsg = new JsonObject();
-        smsMsg.put("msg_type", "MSG_MESSAGE");
-        smsMsg.put("msgMessageType", "EMAIL");
-        smsMsg.put("code", "TST_COMMS");
-        bus.publish("messages", smsMsg);       
+        String tokenString = (String)$map.get("token");
+        QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", QBaseMSGMessageType.EMAIL, "TST_COMMS", null); 	
+ 	 	JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+ 		jsonMessage.put("token",tokenString);
+        System.out.println("sms Message:" + jsonMessage);
+        bus.publish("messages", jsonMessage);       
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test EMAIL BTN CLICK" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);        
 end
 
+rule "MsgCommTest-button"
+	when
+		$m : QEventMessage( event_type == "BTN_EVT_BUTTON" )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+    	System.out.println("Message layout submit event");
+end
