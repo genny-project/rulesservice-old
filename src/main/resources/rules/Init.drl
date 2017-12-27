@@ -346,7 +346,7 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
         System.out.println("------------------------------------------------------------------------");
-        homeLoan.put("token", $value);
+        friendList.put("token", $value);
         bus.publish("cmds", friendList);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Memberhub Layout" + LOG_RESET);
