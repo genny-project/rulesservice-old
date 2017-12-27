@@ -66,7 +66,7 @@ rule "User-Profile"
        // JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
 		JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$map1.get("preferred_username").toString()+"/asks2/QUE_USER_PROFILE_GRP/PER_"+$map1.get("preferred_username").toString(), tokenString));
 		System.out.println("*******************");
-		System.out.println("Json="+obj.toString());	
+		System.out.println("Profile Json="+obj.toString());	
 		System.out.println("*******************");	
 		obj.put("token", $value);					
 		bus.publish("cmds", obj);

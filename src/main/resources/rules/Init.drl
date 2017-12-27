@@ -52,14 +52,6 @@ global java.lang.String LOG_CYAN;
 global java.lang.String LOG_WHITE;
 global java.lang.String LOG_BOLD;
 
-//declare User1
-//    uname : String
-//    name : String
-//    realm : String
-//    roles :  String
-//    available : Boolean
-//    profileCompleted : Boolean
-//end
     
 
 rule "Init"
@@ -80,7 +72,6 @@ rule "Init"
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
         //Get userCode for the given username
-        String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
       
         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
         System.out.println("Project Name   ::   " + $map1.get("realm") );       
@@ -91,22 +82,7 @@ rule "Init"
         System.out.println("User facts value -  Realm   ::   " +$user.getRealm());
         System.out.println("User facts value -  Roles   ::   " +$user.getRoles());
         
-        
-        //Create user fact
-     //   User1 newUser = new User1();
-     //   newUser.setUname($map1.get("preferred_username").toString());
-     //   newUser.setName($map1.get("name").toString());
-     //   newUser.setRealm($map1.get("realm").toString());
-     //   newUser.setRoles($map1.get("realm_access").toString());
         System.out.println("value from qwandautils  ::   "+QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString).toString());
-        //System.out.println("Profile completed value from qwandautils  ::   "+QwandaUtils.isProfileCompleted("PER_"+$map1.get("preferred_username").toString(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
-    //    newUser.setAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
-          
-     
-        //newUser.setAvailable(false);
-    //    System.out.println("User Name      ::    " +newUser.getName());
-     //   System.out.println("User Role      ::    " +$roles.toString());
-     //   insert(newUser);        
         System.out.println("------------------------------------------------------------------------");
         modify($user){
           setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
@@ -156,9 +132,6 @@ rule "Create new User"
        System.out.println("User facts value after creating user -  isAvailable   ::   " +$user.getIsAvailable());
       //Calling the rule group : UserRegistration
       drools.setFocus("UserRegistration");
-      //$user.setProfileCompleted(QwandaUtils.isProfileCompleted("PER_"+$map1.get("preferred_username").toString(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
-   //   $user.setIsProfileCompleted(QwandaUtils.isProfileCompleted(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString), "QUE_NEW_USER_PROFILE_GRP", tokenString));
-       
       System.out.println("Available value after creating user     ::    " +$user.getIsAvailable());
       System.out.println("isProfileCompleted value after creating user     ::    " +$user.getIsProfileCompleted());     
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
@@ -179,6 +152,7 @@ rule "Check if Profile Completed"
      String tokenString = (String)$map.get("token"); 
      //Get userCode for the given username
      String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
+     System.out.println("User code from Qwanda --> "+userCode);
      //Update the available fact value
        modify($user){
            setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
@@ -216,6 +190,7 @@ rule "Send ALIAS when first login"
         prjObj.put("aliasCode", "PROJECT");   
         prjObj.put("token", $value);    
         bus.publish("cmds", prjObj);
+        System.out.println("Sent Project Alias: ["+prjObj+"]");
         
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send ALIAS" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
@@ -227,7 +202,6 @@ rule "Send initial-profile-update layout for first login"
     agenda-group "UserRegistration"
     when
       bus: EventBus()
-      //$user: User1(available == false || profileCompleted == false)
       $user: User(isProfileCompleted == false)
       $map : Map($value: this["token"] != null)
       //$map1 : Map($value1: this["realm"] != null)
@@ -323,9 +297,10 @@ rule "Send Memberhub Layout"
    agenda-group "layout"
    when
         bus: EventBus()
-        //$user: User1(realm == "memberhub")
+        //$user: User(realm == "memberhub")
         $user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
         $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
    then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Memberhub Layout" + LOG_RESET);
@@ -351,15 +326,14 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------");
         bus.publish("cmds", layoutObj);
 
-        //JsonObject quesGrp = new JsonObject( QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/memberhub-questions.json", null));
-        JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/asks2/QUE_MEMBERHUB_GRP/PER_USER1", tokenString));
-        //PRINT QUESTIONS
-        quesGrp.put("token", $value);
-        System.out.println("------------------------------------------------------------------------\n");
-        System.out.println("QUESTION GROUP   ::   "+quesGrp.toString());
-        System.out.println("------------------------------------------------------------------------");
-        bus.publish("cmds", quesGrp);
+		JsonObject  quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$map1.get("preferred_username").toString()+"/asks2/QUE_MEMBERHUB_GRP/PER_"+$map1.get("preferred_username").toString(), tokenString));
+		System.out.println("*******************");
+		System.out.println("Profile Json="+ quesGrp.toString());	
+		System.out.println("*******************");	
+		quesGrp.put("token", $value);					
+		bus.publish("cmds",  quesGrp);
 
+   
         //Getting all BaseEntity and their attributes
         JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_SCORE/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
@@ -373,7 +347,7 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
         System.out.println("------------------------------------------------------------------------");
-        homeLoan.put("token", $value);
+        friendList.put("token", $value);
         bus.publish("cmds", friendList);
 
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Memberhub Layout" + LOG_RESET);
@@ -387,7 +361,7 @@ rule "Send layout1"
      agenda-group "layout"
      when
        bus: EventBus()
-       //$user: User1(realm != "memberhub" && available == true && profileCompleted == true )
+       //$user: User(realm != "memberhub" )
        $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
      then
@@ -427,7 +401,7 @@ rule "Send BucketView"
     agenda-group "layout"
     when
        bus:EventBus()
-       //$user: User1(realm != "memberhub" && available == true && profileCompleted == true )
+       //$user: User(realm != "memberhub" )
        $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
     then

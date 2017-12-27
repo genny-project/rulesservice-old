@@ -50,7 +50,7 @@ rule "ShowQuestions"
  		String keycloakClientId = System.getProperty("KEYCLOAK_CLIENTID","curl");
  		String keycloakUser = System.getProperty("KEYCLOAK_USERID","user1");
  		String keycloakPassword = System.getProperty("KEYCLOAK_PASSWORD","password1");
- 		String realm = System.getProperty("KEYCLOAK_REALM",  "wildfly-swarm-keycloak-example"); 	
+ 		String realm = System.getProperty("KEYCLOAK_REALM",  "genny"); 	
  		String secret = System.getProperty("KEYCLOAK_SECRET","056b73c1-7078-411d-80ec-87d41c55c3b4");  
  		String qwandaServiceUrl = System.getProperty("REACT_APP_QWANDA_API_URL", REACT_APP_QWANDA_API_URL);
  		System.out.println("HOSTIP:"+keycloakIP+" qwandSURL="+qwandaServiceUrl);
@@ -69,10 +69,10 @@ rule "ShowQuestions"
 		obj.put("params", new JsonObject(json));
 		obj.put("token", $value);	
 		System.out.println("*******************");
-		System.out.println("Json="+json);	
+		System.out.println("SHowQuestions:Json="+json);	
 		System.out.println("*******************");
 						
-		bus.publish("cmds", obj);
+		bus.publish("cmds", json);
   
 end
 	
