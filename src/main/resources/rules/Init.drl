@@ -89,9 +89,9 @@ rule "Init"
         }
         System.out.println("User facts value -  isAvailable   ::   " +$user.getIsAvailable());
         //Calling the rule group : UserRegistration
-        // drools.setFocus("UserRegistration"); 
+        drools.setFocus("UserRegistration"); 
         //Calling the rule group : layout
-        drools.setFocus("layout"); 
+        //drools.setFocus("layout"); 
         
         //Get BaseEntity with attributes
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
@@ -106,7 +106,7 @@ end
 
 
 rule "Create new User"
-   salience 20
+   salience 21
    agenda-group "UserRegistration"
    when
       bus: EventBus()
@@ -126,17 +126,38 @@ rule "Create new User"
       String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
       //Update the available fact value
        modify($user){
+           setuCode(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString)),
            setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString)),
            setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
        System.out.println("User facts value after creating user -  isAvailable   ::   " +$user.getIsAvailable());
       //Calling the rule group : UserRegistration
       drools.setFocus("UserRegistration");
+      System.out.println("The UserCode     ::    " +$user.getuCode());
       System.out.println("Available value after creating user     ::    " +$user.getIsAvailable());
       System.out.println("isProfileCompleted value after creating user     ::    " +$user.getIsProfileCompleted());     
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New User" + LOG_RESET);
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-end 
+end
+
+rule "Set Ucode"
+  salience 20
+   agenda-group "UserRegistration"
+   when
+     $user: User( uCode == null )
+     $map : Map($value: this["token"] != null) 
+   then
+     System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Set User Code  " + LOG_RESET);
+     //Prepare Token & qwandaServiceUrl
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+     String tokenString = (String)$map.get("token"); 
+     System.out.println("The User Code before setting value  :: " +$user.getuCode());
+      modify($user){
+           setuCode(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString));
+        }
+     System.out.println("The User Code after setting value  :: " +$user.getuCode()); 
+end     
 
 rule "Check if Profile Completed"
    salience 19
@@ -151,11 +172,11 @@ rule "Check if Profile Completed"
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
      String tokenString = (String)$map.get("token"); 
      //Get userCode for the given username
-     String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
-     System.out.println("User code from Qwanda --> "+userCode);
+    // String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
+     System.out.println("User code from Qwanda --> "+$user.getuCode());
      //Update the available fact value
        modify($user){
-           setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
        System.out.println("isProfileCompleted value    ::    " +$user.getIsProfileCompleted()); 
        
@@ -212,7 +233,7 @@ rule "Send initial-profile-update layout for first login"
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
        //Sending USER Profile Asks
-      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$user.getUname().toUpperCase()+"/asks2/QUE_NEW_USER_PROFILE_GRP/PER_"+$user.getUname().toUpperCase(), tokenString));
+      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_NEW_USER_PROFILE_GRP/"+$user.getuCode(), tokenString));
       System.out.println("*******************");
       System.out.println("Json="+obj.toString());	
       System.out.println("*******************");	
@@ -297,8 +318,8 @@ rule "Send Memberhub Layout"
    agenda-group "layout"
    when
         bus: EventBus()
-        $user: User(realm == "memberhub")
-        //$user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
+        //$user: User(realm == "memberhub")
+        $user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
    then
@@ -361,8 +382,8 @@ rule "Send layout1"
      agenda-group "layout"
      when
        bus: EventBus()
-       $user: User(realm != "memberhub" )
-      // $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
+       //$user: User(realm != "memberhub" )
+       $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -401,8 +422,8 @@ rule "Send BucketView"
     agenda-group "layout"
     when
        bus:EventBus()
-       $user: User(realm != "memberhub" )
-       //$user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
+       //$user: User(realm != "memberhub" )
+       $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
        $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -518,10 +539,10 @@ rule "NewUser Profile Submit"
       //Prepare Token & qwandaServiceUrl
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
       String tokenString = (String)$map.get("token"); 
-      String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString) ;
+      //String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString) ;
       //Update the profileCompleted user fact value
        modify($user){
-           setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
       System.out.println("The user available value now is   ::    " + $user.getIsAvailable());    
       System.out.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted());
