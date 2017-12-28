@@ -347,7 +347,7 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------");
         bus.publish("cmds", layoutObj);
 
-		JsonObject  quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$map1.get("preferred_username").toString()+"/asks2/QUE_MEMBERHUB_GRP/PER_"+$map1.get("preferred_username").toString(), tokenString));
+		JsonObject  quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_MEMBERHUB_GRP/"+$user.getuCode(), tokenString));
 		System.out.println("*******************");
 		System.out.println("Profile Json="+ quesGrp.toString());	
 		System.out.println("*******************");	
