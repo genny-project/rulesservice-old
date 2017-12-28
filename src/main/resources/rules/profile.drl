@@ -20,7 +20,6 @@ rule "Logout"
     when
         m : QEventMessage( event_type == "LOGOUT" && data.code == "LOGOUT" )
         $map : Map($value: this["token"] != null)
-       // $map2 : Map($value1: this["iss"] != null)
         bus: EventBus()
     then
         System.out.println("-------- Rule:- Logout --------");	
@@ -57,14 +56,14 @@ rule "User-Profile"
     when
         m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" )
         $map : Map($value: this["token"] != null)
-        $map1 : Map($value1: this["realm"] != null)
+        $user: User(realm != null)
         bus: EventBus()
     then
         System.out.println("-------- Rule:- User Profile --------");		    
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
        // JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString));
-		JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/PER_"+$map1.get("preferred_username").toString()+"/asks2/QUE_USER_PROFILE_GRP/PER_"+$map1.get("preferred_username").toString(), tokenString));
+		JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_USER_PROFILE_GRP/"+$user.getuCode(), tokenString));
 		System.out.println("*******************");
 		System.out.println("Profile Json="+obj.toString());	
 		System.out.println("*******************");	
