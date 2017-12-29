@@ -122,6 +122,7 @@ rule "Create new User"
       String tokenString = (String)$map.get("token");      
       //Creating new user based ion keycloak info
       BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );      
+      System.out.println("Person Base Entity   ::     "+person.toString());
       //Get userCode for the given username
       String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
       //Update the available fact value
