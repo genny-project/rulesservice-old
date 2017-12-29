@@ -254,7 +254,8 @@ rule "Select Dashboard lower level child"
 		bus.publish("cmds", data);
 		
 		//sending cmd view 
-        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","TABLE_VIEW");
+        QCmdMessage cmd = new QCmdMessage("CMD_VIEW","LIST_VIEW");
+        
         //Convert cmd to JSON Obj
         JsonObject cmdObj = new JsonObject().mapFrom(cmd);
         cmdObj.put("data", "itemsPerPage:5");     
