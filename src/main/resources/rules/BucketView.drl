@@ -375,8 +375,14 @@ rule "Add new LOAD"
      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET); 
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token"); 
+     //Getting list of loads
+     JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
+     loadLists.put("token", $value); 
+     System.out.println("List of Load Json: "+loadLists.toString());
+     bus.publish("cmds",loadLists);
+     
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_LOAD_GRP/"+$user.getuCode(), tokenString));   
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+$user.getuCode(), tokenString));   
      qPostLoad.put("aliasCode", $m.data.getCode());  
      qPostLoad.put("token", $value); 
      System.out.println("QName Json: "+qPostLoad.toString());
@@ -386,7 +392,7 @@ rule "Add new LOAD"
      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
      //Convert cmd to JSON Obj
      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
-        formViewJson.put("root", "QUE_LOAD_GRP");
+        formViewJson.put("root", "QUE_POST_JOB_GRP");
         formViewJson.put("token", $value);
      System.out.println(" ##################### ");
      System.out.println("CMD VIEW Msg ="+formViewJson.toString()); 
