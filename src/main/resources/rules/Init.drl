@@ -101,6 +101,58 @@ rule "Init"
         System.out.println("BE with ATTRIBUTE   ::   "+objWithAttr.toString()); 
         System.out.println("------------------------------------------------------------------------");            
         bus.publish("cmds", objWithAttr);   
+        	
+        	// Send all sublayouts for entities 
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+      	System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send initial sublayouts" + LOG_RESET);
+		
+		String subLayoutMap = QwandaUtils.apiGet("https://api.github.com/repos/genny-project/layouts/contents/sublayouts", null);
+		if(subLayoutMap != null) {
+		
+			JsonArray subLayouts = new JsonArray(subLayoutMap);
+			if(subLayouts != null) {
+				
+				for(int i = 0; i < subLayouts.size(); i++) {
+					
+					JsonObject sublayoutData = subLayouts.getJsonObject(i);
+					String url = sublayoutData.getString("download_url");
+					String name = sublayoutData.getString("name");
+					name = name.replace(".json", "");
+					name = name.replaceAll("\"", "");
+					
+					if(url != null) {
+						
+						// grab sublayout from github
+						String subLayoutString = QwandaUtils.apiGet(url, null);
+						if(subLayoutString != null) {
+							
+							try {
+								
+								// send sublayout to FE 
+								JsonObject sublayout = new JsonObject(subLayoutString);
+								JsonObject subLayoutObj = new JsonObject();
+						        subLayoutObj.put("msg_type", "DATA_MSG");
+						        subLayoutObj.put("data_type", "SUB_LAYOUT");
+						        subLayoutObj.put("code", name);
+						        subLayoutObj.put("items", sublayout);      
+								subLayoutObj.put("token", $value);
+								
+						        System.out.println("------------------------------------------------------------------------\n");
+						        System.out.println("SUBLAYOUT DATA   ::   " + subLayoutObj.toString()); 
+						        System.out.println("------------------------------------------------------------------------");
+						        bus.publish("cmds", subLayoutObj);
+						        
+							}
+							catch(Exception e) {
+							} 
+						}
+					}
+				}
+			}
+		}
+		
+		System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send initial sublayouts" + LOG_RESET);
+       	System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
        		      
 end
 
