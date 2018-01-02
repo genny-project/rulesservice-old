@@ -325,9 +325,17 @@ rule "Show more information about base entity"
 			String hint = dataJson.getString("hint");
 			String baseEntityCode = dataJson.getString("itemCode");
 			
-			System.out.println("-------- Rule:- Show more info about Base Entity : " + hint + "  --------");	
-			System.out.println("-------- Rule:- Show more info about Base Entity : " + baseEntityCode + "  --------");	
-		    
+			// first we check if the base entity is a load, a driver, or an owner etc... The BE code will tell us:
+			if(baseEntityCode != null) {
+			
+				if(baseEntityCode.contains("LOD_")) {
+					System.out.println("-------- Rule: Showing LOAD layout for BE: " + baseEntityCode + "  --------");	
+			     	return; // stopping there so we dont check the hint below
+				}
+			}
+			
+			
+		    // if the BE code did not help we can still use the hint
 		    if(hint != null && baseEntityCode != null) {
 		    		
 		    		switch(hint) {
@@ -356,6 +364,8 @@ rule "Show more information about base entity"
 				     
 				     //Publish it to the EventBus
 				     bus.publish("cmds", cmdLoadSublayoutJson); 
+				    
+				break;
 			      
 				default:
 					System.out.println("-------- Ending Rule  --------");
