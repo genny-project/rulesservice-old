@@ -116,7 +116,9 @@ rule "Init"
 					
 					JsonObject sublayoutData = subLayouts.getJsonObject(i);
 					String url = sublayoutData.getString("download_url");
-					String name = sublayoutData.getString("name").replace(".json", " ");
+					String name = sublayoutData.getString("name");
+					name = name.replace(".json", "");
+					name = name.replaceAll("\"", "");
 					
 					if(url != null) {
 						
