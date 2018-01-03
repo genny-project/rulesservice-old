@@ -381,8 +381,11 @@ rule "Add new LOAD"
      System.out.println("List of Load Json: "+loadLists.toString());
      bus.publish("cmds",loadLists);
      
+     //Creating new base-entity BEG for Posting new Job
+     BaseEntity beg = EBCHandlers.createBaseEntity("BEG_ABCD25", "Test Name", tokenString);
+     System.out.println("BaseEntity BEG creates is   ::  "+beg.toString());
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+$user.getuCode(), tokenString));   
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+beg.getCode(), tokenString));   
      qPostLoad.put("aliasCode", $m.data.getCode());  
      qPostLoad.put("token", $value); 
      System.out.println("QName Json: "+qPostLoad.toString());

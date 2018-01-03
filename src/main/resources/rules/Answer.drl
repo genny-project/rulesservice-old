@@ -255,3 +255,43 @@ rule "Inference Gender Change"
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
 end
+
+//Rule listening to load selection value change
+rule "Handle load selection"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
+        bus:EventBus() 
+        $map : Map($value: this["token"] != null)
+     then
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::  POST LOAD - Handle load selection  " + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token"); 
+        System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+        
+        //BaseEntity beg = EBCHandlers.createBaseEntity("BEG_ABCD25", "Test Name", tokenString);
+        //System.out.println("BaseEntity BEG creates is   ::  "+beg.toString());
+         //Collect load code from answer
+         Answer newAnswer = $m.getAnswer();
+         System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
+         String targetCode = newAnswer.getTargetCode();
+         String sourceCode = newAnswer.getSourceCode();
+         String loadCode = newAnswer.getValue();
+         System.out.println("The target BE code is   ::  " +targetCode);
+         System.out.println("The source BE code is   ::  " +sourceCode);
+          System.out.println("The load code is   ::  " +loadCode);
+         boolean linkedEntityEntity = EBCHandlers.linkEnitytEntity(targetCode, loadCode, "LNK_BEG",tokenString);  
+         System.out.println("The link is established   ::  " +linkedEntityEntity);
+         
+         
+        
+        
+        
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
