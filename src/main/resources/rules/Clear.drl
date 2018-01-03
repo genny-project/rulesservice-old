@@ -50,7 +50,7 @@ global java.lang.String LOG_BOLD;
 
 rule "Clear User Attribute"
 	when
-		$m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CLEAR" )
+		$m : QEventMessage( event_type == "BTN_CLICK" && data.code == "QUE_CLEAR" )
 		bus: EventBus()
 		$user: User(realm != null)
 		$map : Map($value: this["token"] != null)    
@@ -78,24 +78,24 @@ rule "Clear User Attribute"
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 		String tokenString = (String)$map.get("token"); 
 		
-		//Getting PER_USER1 BE and it's attributes
-		String userString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=user1", tokenString);
-		System.out.println("------------------------------------------------------------------------\n");
-		System.out.println("USER BASEENTITY   ::   "+userString.toString());  
-		System.out.println("------------------------------------------------------------------------");
+		// //Getting PER_USER1 BE and it's attributes
+		// String userString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=user1", tokenString);
+		// System.out.println("------------------------------------------------------------------------\n");
+		// System.out.println("USER BASEENTITY   ::   "+userString.toString());  
+		// System.out.println("------------------------------------------------------------------------");
 		
-		// Deserializing to QDataBaseEntityMessage
-		QDataBaseEntityMessage beUser = gson.fromJson(userString, QDataBaseEntityMessage.class);
-		// set Delete flag to TRUE
-		beUser.setDelete(true);
-		System.out.println("This is QDataBaseEntityMessage      ::   "+ beUser.toString());
+		// // Deserializing to QDataBaseEntityMessage
+		// QDataBaseEntityMessage beUser = gson.fromJson(userString, QDataBaseEntityMessage.class);
+		// // set Delete flag to TRUE
+		// beUser.setDelete(true);
+		// System.out.println("This is QDataBaseEntityMessage      ::   "+ beUser.toString());
 		
-		// Convert QDataBaseEntityMessage TO JsonObject
-		JsonObject userObj = new JsonObject().mapFrom(beUser);
-		userObj.put("token", tokenString);		
+		// // Convert QDataBaseEntityMessage TO JsonObject
+		// JsonObject userObj = new JsonObject().mapFrom(beUser);
+		// userObj.put("token", tokenString);		
 		
-		System.out.println("User Object with delete flag TRUE   ::   "+ userObj.toString());
-		bus.publish("cmds", userObj);
+		// System.out.println("User Object with delete flag TRUE   ::   "+ userObj.toString());
+		// bus.publish("cmds", userObj);
 		
 		
 		 //Getting all Facebook Friends and their attributes
