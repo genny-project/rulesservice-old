@@ -12,6 +12,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -195,11 +196,10 @@ rule "Inference Gender Change"
         $map : Map($value: this["token"] != null)
  
      then    
-           GsonBuilder gsonBuilder = new GsonBuilder();
+        GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
-     
-     
+         
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
@@ -226,18 +226,18 @@ rule "Inference Gender Change"
             System.out.println("\n------------------------------------------------------------------------");
             
             // Collect DATA to save gender as an answer
-          Answer newAnswer = $m.getAnswer();
-  
-        String jsonAnswerStr = gson.toJson(newAnswer);
-        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-        jsonAnswer.put("value",gender);
-        jsonAnswer.put("attributeCode","PRI_GENDER");
-        jsonAnswer.put("inferred",true);
-        jsonAnswer.put("weight",weight);
-       JsonArray items = new JsonArray();
-        items.add(jsonAnswer);
-		
-              //Creating Answer DATA_MSG
+            Answer newAnswer = $m.getAnswer();
+
+            String jsonAnswerStr = gson.toJson(newAnswer);
+            JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+            jsonAnswer.put("value",gender);
+            jsonAnswer.put("attributeCode","PRI_GENDER");
+            jsonAnswer.put("inferred",true);
+            jsonAnswer.put("weight",weight);
+            JsonArray items = new JsonArray();
+            items.add(jsonAnswer);
+
+                //Creating Answer DATA_MSG
             JsonObject obj = new JsonObject();
             obj.put("msg_type", "DATA_MSG");
             obj.put("data_type", "Answer");
@@ -256,75 +256,146 @@ rule "Inference Gender Change"
         
 end
 
-//Rule listening to Image Inference
-rule "Inference Image Change"
+//Rule listening to Gender Inference
+rule "Inference DOB Change"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_IMGURL") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
         bus:EventBus() 
         $map : Map($value: this["token"] != null)
-        $user: User(realm != null)
+        // $user: User(realm != null)
  
-     then    
-        System.out.println("rule executed");
-     	if($user.getUname() ==  $map.get("preferred_username") ){
-     		GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-	        Gson gson = gsonBuilder.create();
-	     
-	     
-	        System.out.println("\n\n");
-	        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-	        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Image Change" + LOG_RESET);
-	        //Prepare Token & qwandaServiceUrl
-	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	        String tokenString = (String)$map.get("token");   
-	
-	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
-	        System.out.println("------------------------------------------------------------------------");       
-	       
-	        // Collect DATA to save facebook image as primary image
-	        Answer newAnswer = $m.getAnswer();
-	        String jsonAnswerStr = gson.toJson(newAnswer);
-	        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-	        
-	        // get FBK_IMGURL
-	        String FBK_IMGURL=  $m.getAnswer().getValue();
-	        
-	        // get source and target code for logged in user
-	        String sourceCode= $user.getuCode();
-	        String targetCode= $user.getuCode();
-	        
-	        jsonAnswer.put("value", FBK_IMGURL);
-	        jsonAnswer.put("attributeCode","PRI_IMAGE_URL");
-	        jsonAnswer.put("sourceCode", sourceCode);
-	        jsonAnswer.put("targetCode", targetCode);
-	        jsonAnswer.put("inferred",true);
-	        jsonAnswer.put("weight", "1");
-	        
-	        JsonArray items = new JsonArray();
-	        items.add(jsonAnswer);
-			
-	        //Creating Answer DATA_MSG
-	        JsonObject obj = new JsonObject();
-	        obj.put("msg_type", "DATA_MSG");
-	        obj.put("data_type", "Answer");
-	        obj.put("items", items); 
-	        
-	        //Print Answer
-	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString()); 
-	        obj.put("token",tokenString);
-	        bus.publish("data", obj);
-	        
-	        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Image Change" + LOG_RESET);
-	        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-     	}else{
-     		 System.out.println("rule executed but outside if");
-     	}
+     then            
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference DOB Change" + LOG_RESET);
+        
+        // //Prepare Token & qwandaServiceUrl
+        // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        // String tokenString = (String)$map.get("token");   
+
+        // // Prepare gson Object
+        // GsonBuilder gsonBuilder = new GsonBuilder();
+        // gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        // Gson gson = gsonBuilder.create();
+
+        // System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+        // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+        // System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+        // System.out.println("------------------------------------------------------------------------");
+		
+		//  // Collect DATA to save facebook dob as primary dob
+        // Answer newAnswer = $m.getAnswer();
+        // String jsonAnswerStr = gson.toJson(newAnswer);
+        // JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+            
+        // // get source and target code for logged in user
+        // String sourceCode= $user.getuCode();
+        // String targetCode= $user.getuCode();
+        // // get FBK_DOB
+        // String FBK_BIRTHDAY=  $m.getAnswer().getValue();  
+        // // Check if PRI_DOB exists ?
+        // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
+        
+        // if(PRI_DOB == null){
+        //     jsonAnswer.put("value", FBK_BIRTHDAY);
+        //     jsonAnswer.put("attributeCode", "PRI_DOB");
+        //     jsonAnswer.put("sourceCode", sourceCode);
+        //     jsonAnswer.put("targetCode", targetCode);
+        //     jsonAnswer.put("inferred",true);
+        //     jsonAnswer.put("weight", "1");
+        
+        //     JsonArray items = new JsonArray();
+        //     items.add(jsonAnswer);
+            
+        //     //Creating Answer DATA_MSG
+        //     JsonObject obj = new JsonObject();
+        //     obj.put("msg_type", "DATA_MSG");
+        //     obj.put("data_type", "Answer");
+        //     obj.put("items", items); 
+            
+        //     //Print Answer
+        //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString()); 
+        //     obj.put("token",tokenString);
+        //     bus.publish("data", obj);
+        // }else {
+        //     System.out.println(" PRI_DOB already exists ! ");
+        // }
+        
+        // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
+        // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
        
         
 end
+
+// //Rule listening to Image Inference
+// rule "Inference Image Change"
+//     when
+//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_IMGURL") )
+//         bus:EventBus() 
+//         $map : Map($value: this["token"] != null)
+//         $user: User(realm != null)
+ 
+//      then    
+//         System.out.println("rule executed");
+//      	if($user.getUname() ==  $map.get("preferred_username") ){
+//      		GsonBuilder gsonBuilder = new GsonBuilder();
+// 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// 	        Gson gson = gsonBuilder.create();
+	     
+	     
+// 	        System.out.println("\n\n");
+// 	        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+// 	        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Image Change" + LOG_RESET);
+// 	        //Prepare Token & qwandaServiceUrl
+// 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// 	        String tokenString = (String)$map.get("token");   
+	
+// 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// 	        System.out.println("------------------------------------------------------------------------");       
+	       
+// 	        // Collect DATA to save facebook image as primary image
+// 	        Answer newAnswer = $m.getAnswer();
+// 	        String jsonAnswerStr = gson.toJson(newAnswer);
+// 	        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+	        
+// 	        // get FBK_IMGURL
+// 	        String FBK_IMGURL=  $m.getAnswer().getValue();
+	        
+// 	        // get source and target code for logged in user
+// 	        String sourceCode= $user.getuCode();
+// 	        String targetCode= $user.getuCode();
+	        
+// 	        jsonAnswer.put("value", FBK_IMGURL);
+// 	        jsonAnswer.put("attributeCode","PRI_IMAGE_URL");
+// 	        jsonAnswer.put("sourceCode", sourceCode);
+// 	        jsonAnswer.put("targetCode", targetCode);
+// 	        jsonAnswer.put("inferred",true);
+// 	        jsonAnswer.put("weight", "1");
+	        
+// 	        JsonArray items = new JsonArray();
+// 	        items.add(jsonAnswer);
+			
+// 	        //Creating Answer DATA_MSG
+// 	        JsonObject obj = new JsonObject();
+// 	        obj.put("msg_type", "DATA_MSG");
+// 	        obj.put("data_type", "Answer");
+// 	        obj.put("items", items); 
+	        
+// 	        //Print Answer
+// 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString()); 
+// 	        obj.put("token",tokenString);
+// 	        bus.publish("data", obj);
+	        
+// 	        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Image Change" + LOG_RESET);
+// 	        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+//      	}else{
+//      		 System.out.println("rule executed but outside if");
+//      	}
+       
+        
+// end
 
 //Rule listening to load selection value change
 rule "Handle load selection"
