@@ -218,6 +218,7 @@ public class EBCHandlers {
 		return beg;
 		
 	}
+    
     //linking Entity Entity
     public static boolean linkEnitytEntity(String sourceCode, String targetCode, String linkCode, String token) {
     	     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");     
@@ -228,11 +229,27 @@ public class EBCHandlers {
  		 gson1 = gsonBuilder.create();
  		
  		try {
-            //link PER_USER1 to friends
             QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson1.toJson(link),token);                        
           }catch (Exception e) {
                e.printStackTrace();
           }
     	   return true;
+    }
+    
+    //linking Entity Entity with linkvalue
+   public static boolean linkEntityEntityWithLinkvalue(String sourceCode, String targetCode, String linkCode, String linkValue, String token) {
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");     
+        Link link = new Link(sourceCode, targetCode, linkCode, linkValue);
+        Gson gson1 = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        gson1 = gsonBuilder.create();
+
+        try {
+              QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson1.toJson(link),token);                        
+          }catch (Exception e) {
+              e.printStackTrace();
+          }
+        return true;
     }
 }
