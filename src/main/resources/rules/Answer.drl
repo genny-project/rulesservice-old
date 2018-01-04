@@ -13,13 +13,18 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.Ask;
+
 
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -326,11 +331,12 @@ rule "Inference Image Change"
         
 end
 
-//Rule listening to load selection value change
+//Rule listening to load selection value change in Post Load
 rule "Handle load selection"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
         bus:EventBus() 
+        $user: User(realm != null)
         $map : Map($value: this["token"] != null)
      then
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -354,13 +360,33 @@ rule "Handle load selection"
          String loadCode = newAnswer.getValue();
          System.out.println("The target BE code is   ::  " +targetCode);
          System.out.println("The source BE code is   ::  " +sourceCode);
-          System.out.println("The load code is   ::  " +loadCode);
-         boolean linkedEntityEntity = EBCHandlers.linkEnitytEntity(targetCode, loadCode, "LNK_BEG",tokenString);  
+         System.out.println("The load code is   ::  " +loadCode);
+         boolean linkedEntityEntity = EBCHandlers.linkEntityEntityWithLinkvalue(targetCode, loadCode, "LNK_BEG", "LOAD", tokenString);  
          System.out.println("The link is established   ::  " +linkedEntityEntity);
+         //Getting load type and load name  information form laod
+         String loadName = MergeUtil.getAttrValue(loadCode, "PRI_DESCRIPTION", tokenString);
+         String loadType = MergeUtil.getAttrValue(loadCode, "PRI_LOAD_TYPE", tokenString);
+         System.out.println(" The load Name is :: "+loadName);
+         System.out.println(" The load type is :: "+loadType);
+         
+         newAnswer.setAttributeCode("PRI_LOAD_TYPE");
+         newAnswer.setValue(loadType);
+         newAnswer.setSourceCode($user.getuCode());
+         newAnswer.setTargetCode(targetCode);
          
          
-        
-        
+         System.out.println("The update answer is :: "+newAnswer.toString());
+         List<Answer> answerList = new ArrayList<Answer>();
+         answerList.add(newAnswer);
+         Answer[] answerArray = new Answer[answerList.size()];
+          answerArray = answerList.toArray(answerArray);
+         
+         QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
+         JsonObject answerObj = new JsonObject().mapFrom(msg);
+         answerObj.put("token",tokenString);
+         System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
+         bus.publish("cmds", answerObj);
+         
         
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);

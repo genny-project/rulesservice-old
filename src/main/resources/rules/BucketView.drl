@@ -382,8 +382,10 @@ rule "Add new LOAD"
      bus.publish("cmds",loadLists);
      
      //Creating new base-entity BEG for Posting new Job
-     BaseEntity beg = EBCHandlers.createBaseEntity("BEG_ABCD25", "Test Name", tokenString);
-     System.out.println("BaseEntity BEG creates is   ::  "+beg.toString());
+     BaseEntity beg = EBCHandlers.createBaseEntity(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", tokenString);
+     System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
+     System.out.println("The BEG code is   ::  "+  beg.getCode());
+   
      //Getting Post Load Question GRP
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+beg.getCode(), tokenString));   
      qPostLoad.put("aliasCode", $m.data.getCode());  
