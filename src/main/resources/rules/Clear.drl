@@ -21,6 +21,9 @@ import life.genny.qwanda.entity.BaseEntity;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -79,25 +82,83 @@ rule "Clear User Attribute"
 		String tokenString = (String)$map.get("token"); 
 		
 		// //Getting PER_USER1 BE and it's attributes
-		// String userString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=user1", tokenString);
-		// System.out.println("------------------------------------------------------------------------\n");
-		// System.out.println("USER BASEENTITY   ::   "+userString.toString());  
-		// System.out.println("------------------------------------------------------------------------");
+		JsonArray userArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/attributes", tokenString));
+        System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("USER ATTRIBUTES   ::   "+userArray.toString());  
+        System.out.println("------------------------------------------------------------------------");
+        
+		// Initialize lists
+        List<Answer> userList = new ArrayList<Answer>();
+        List<Answer> primaryList = new ArrayList<Answer>();
+        
+		// add each attribute obj to userList
+        for(Object obj : userArray) {
+            Answer ansObj = gson.fromJson(obj.toString(), Answer.class);
+			ansObj.setSourceCode("PER_USER1");
+			ansObj.setTargetCode("PER_USER1");
+            userList.add(ansObj);
+        }
+        System.out.println("User List   ::   " + userList.toString());
+		System.out.println("Length      ::   " + userList.size());
+		System.out.println("------------------------------------------------------------------------\n");
+        for(Answer answer : userList) {
+			
+            switch(answer.getAttributeCode()) {
+				
+				case("PRI_UUID") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_FIRSTNAME") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_LASTNAME") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_EMAIL") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_KEYCLOAK_UUID") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_FB_BASIC") :
+					primaryList.add(answer);
+					break;
+			}
+            
+        }
+		System.out.println("Primary List    ::   " + primaryList.toString());
+		System.out.println("Length          ::   " + primaryList.size());
+        System.out.println("------------------------------------------------------------------------\n");
+
+        //Answer[] ansWant = {ans1};
+        userList.removeAll(primaryList);
 		
-		// // Deserializing to QDataBaseEntityMessage
-		// QDataBaseEntityMessage beUser = gson.fromJson(userString, QDataBaseEntityMessage.class);
-		// // set Delete flag to TRUE
-		// beUser.setDelete(true);
-		// System.out.println("This is QDataBaseEntityMessage      ::   "+ beUser.toString());
-		
-		// // Convert QDataBaseEntityMessage TO JsonObject
-		// JsonObject userObj = new JsonObject().mapFrom(beUser);
-		// userObj.put("token", tokenString);		
-		
-		// System.out.println("User Object with delete flag TRUE   ::   "+ userObj.toString());
-		// bus.publish("cmds", userObj);
-		
-		
+		System.out.println("User List after REMOVAL    ::   " + userList.toString());
+		System.out.println("Length                     ::   " + userList.size());
+        System.out.println("------------------------------------------------------------------------\n");
+
+		Answer[] items = new Answer[ userList.size() ];
+        items = userList.toArray(items);
+
+		// Prepare answer msg to be sent
+		QDataAnswerMessage msg = new QDataAnswerMessage(items);
+        msg.setDelete(true);
+
+		// convert to json to put token
+		JsonObject userObj = new JsonObject().mapFrom(msg);
+
+		System.out.println("------------------------------------------------------------------------\n");
+	    System.out.println("USER ATTRIBUTES TO DELETE   ::   "+userObj.toString());  
+	    System.out.println("------------------------------------------------------------------------");
+
+		userObj.put("token",tokenString);
+		bus.publish("cmds", userObj);
+
 		 //Getting all Facebook Friends and their attributes
 	    String friendString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString);
 	    System.out.println("------------------------------------------------------------------------\n");
@@ -115,6 +176,12 @@ rule "Clear User Attribute"
 		friendObj.put("token", tokenString);		
 		
 		System.out.println("Friends Object with delete flag TRUE   ::   "+ friendObj.toString());
+
+		// JsonArray friendArray = friendObj.getJsonArray("items");
+		// System.out.println("FRIEND ARRAY      ::   " + friendArray.toString());
+		// Link link = new Link("PER_USER1", code, "LNK_FRIEND");
+		// QwandaEndpoint.removeLink(link);
+
 		bus.publish("cmds", friendObj);
 
 		System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Clear User Attribute " + LOG_RESET);
