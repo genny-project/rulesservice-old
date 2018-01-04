@@ -432,6 +432,7 @@ rule "Handle load selection"
          System.out.println("The target BE code is   ::  " +targetCode);
          System.out.println("The source BE code is   ::  " +sourceCode);
          System.out.println("The load code is   ::  " +loadCode);
+         //link LOAD to Job
          boolean linkedEntityEntity = EBCHandlers.linkEntityEntityWithLinkvalue(targetCode, loadCode, "LNK_BEG", "LOAD", tokenString);  
          System.out.println("The link is established   ::  " +linkedEntityEntity);
          //Getting load type and load name  information form laod
@@ -456,7 +457,8 @@ rule "Handle load selection"
          JsonObject answerObj = new JsonObject().mapFrom(msg);
          answerObj.put("token",tokenString);
          System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
-         bus.publish("cmds", answerObj);
+        // bus.publish("cmds", answerObj);
+        
          
         
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
