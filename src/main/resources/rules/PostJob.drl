@@ -25,18 +25,63 @@ rule "Post Job"
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::    POST Job - Submit  " + LOG_RESET);
+        // Prepare GSON Deserialization
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
         //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
         String jobCode = $m.data.getValue();
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
         //link current user as load-owner to the Job/BEG
-        boolean linkedLoadOwner = EBCHandlers.linkEntityEntityWithLinkvalue(jobCode, $user.getuCode(), "LNK_BEG","OWNER",tokenString);  
-        System.out.println("The linked owner to beg (true/false)?   ::  " +linkedLoadOwner);
+        QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
+        //boolean linkedLoadOwner = EBCHandlers.linkEntityEntityWithLinkvalue(jobCode, $user.getuCode(), "LNK_BEG","OWNER",tokenString);  
+        //System.out.println("The linked owner to beg (true/false)?   ::  " +linkedLoadOwner);
         //link Job to the GRP_NO_QUOTES
-        boolean linkedBEGtoGRPNoquotes = EBCHandlers.linkEnitytEntity("GRP_NO_QUOTES", $m.data.getValue(), "LNK_CORE",tokenString);  
-        System.out.println("Linked job/beg to GRP_NO_QUOTES (true/false)?   ::  " +linkedBEGtoGRPNoquotes);
+        QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_NO_QUOTES", jobCode,"LNK_CORE")),tokenString);  
+        //boolean linkedBEGtoGRPNoquotes = EBCHandlers.linkEnitytEntity("GRP_NO_QUOTES", jobCode, "LNK_CORE",tokenString);  
+        //System.out.println("Linked job/beg to GRP_NO_QUOTES (true/false)?   ::  " +linkedBEGtoGRPNoquotes);
         
+        String fullPickupAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_PICKUP_ADDRESS", tokenString);
+        String fullDropOffAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_DROPOFF_ADDRESS", tokenString);
+        
+        System.out.println("Full pickup address is     ::    "+fullPickupAddress);
+        System.out.println("Full dropoff address is     ::    "+fullDropOffAddress);
+        //create answer to update full pickup address to the job
+        Answer pickupAddress = new Answer($user.getuCode(),jobCode, "PRI_FULL_PICKUP_ADDRESS", fullPickupAddress);
+        String jsonPickUpAnswerStr = gson.toJson(pickupAddress);
+        JsonObject jsonPickupAddressAnswer = new JsonObject(jsonPickUpAnswerStr);
+         //creating Json array
+         JsonArray items = new JsonArray();
+         items.add(jsonPickupAddressAnswer);
+         //Creating Answer DATA_MSG
+         JsonObject obj = new JsonObject();
+         obj.put("msg_type", "DATA_MSG");
+         obj.put("data_type", "Answer");
+         obj.put("items", items); 
+         //Print Answer
+         System.out.println("\nSaving PRI_FULL_PICKUP_ADDRESS as an Answer   ::    "+obj.toString()); 
+         obj.put("token",tokenString);
+         bus.publish("data", obj);
+        
+        //create answer to update full dropoff address to the job
+        Answer dropOffAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_DROPOFF_ADDRESS", fullDropOffAddress);
+        String jsonDropOffAnswerStr = gson.toJson(dropOffAddress);
+        JsonObject jsonDropOffAddressAnswer = new JsonObject(jsonDropOffAnswerStr);
+         //creating Json array
+         JsonArray items1 = new JsonArray();
+         items1.add(jsonDropOffAddressAnswer);
+         //Creating Answer DATA_MSG
+         JsonObject obj1 = new JsonObject();
+         obj1.put("msg_type", "DATA_MSG");
+         obj1.put("data_type", "Answer");
+         obj1.put("items", items1); 
+         //Print Answer
+         System.out.println("\nSaving PRI_FULL_DROPOFF_ADDRESS as an Answer   ::    "+obj1.toString()); 
+         obj1.put("token",tokenString);
+         bus.publish("data",obj1);
+         
         //Calling the rule group : layout to redirect user to home/bucketView page
         drools.setFocus("layout"); 
         

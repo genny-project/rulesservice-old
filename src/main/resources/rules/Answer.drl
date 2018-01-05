@@ -19,13 +19,14 @@ import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
 
 
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -410,9 +411,11 @@ rule "Handle load selection"
         $user: User(realm != null)
         $map : Map($value: this["token"] != null)
      then
+        // Prepare GSON Deserialization
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
+            
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  POST LOAD - Handle load selection  " + LOG_RESET);
@@ -421,10 +424,10 @@ rule "Handle load selection"
         String tokenString = (String)$map.get("token"); 
         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
         
-        //BaseEntity beg = EBCHandlers.createBaseEntity("BEG_ABCD25", "Test Name", tokenString);
-        //System.out.println("BaseEntity BEG creates is   ::  "+beg.toString());
+
          //Collect load code from answer
          Answer newAnswer = $m.getAnswer();
+         System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
          String targetCode = newAnswer.getTargetCode();
          String sourceCode = newAnswer.getSourceCode();
@@ -433,34 +436,60 @@ rule "Handle load selection"
          System.out.println("The source BE code is   ::  " +sourceCode);
          System.out.println("The load code is   ::  " +loadCode);
          //link LOAD to Job
-         boolean linkedEntityEntity = EBCHandlers.linkEntityEntityWithLinkvalue(targetCode, loadCode, "LNK_BEG", "LOAD", tokenString);  
-         System.out.println("The link is established   ::  " +linkedEntityEntity);
-         //Getting load type and load name  information form laod
+ 
+         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(targetCode,loadCode,"LNK_BEG","LOAD")),tokenString);
          String loadName = MergeUtil.getAttrValue(loadCode, "PRI_DESCRIPTION", tokenString);
          String loadType = MergeUtil.getAttrValue(loadCode, "PRI_LOAD_TYPE", tokenString);
          System.out.println(" The load Name is :: "+loadName);
          System.out.println(" The load type is :: "+loadType);
          
-         newAnswer.setAttributeCode("PRI_LOAD_TYPE");
-         newAnswer.setValue(loadType);
-         newAnswer.setSourceCode($user.getuCode());
-         newAnswer.setTargetCode(targetCode);
+         //Answer loadTypeAnswer = new Answer($user.getuCode(), targetCode, "PRI_LOAD_TYPE",loadType);
+          String jsonAnswerStr = gson.toJson(newAnswer);
+          System.out.println("The answer in string format :: "+jsonAnswerStr);
+         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+         jsonAnswer.put("value",loadType);
+         jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
+         jsonAnswer.put("inferred",true);
+         //jsonAnswer.put("weight",weight);
+         System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
+         //creating Json array
+         JsonArray items = new JsonArray();
+         items.add(jsonAnswer);
+        // newAnswer.setTargetCode(targetCode);
+         //newAnswer.setSourceCode($user.getuCode());
+         //newAnswer.setAttributeCode("PRI_LOAD_TYPE");
+         //newAnswer.setValue(loadType);
+         //newAnswer.setInferred(true);
+       
+       //  String targetCode1 = jsonAnswer.getTargetCode();
+       //  String sourceCode1 = jsonAnswer.getSourceCode();
+       //  String loadCode1 = jsonAnswer.getValue();
+       //  System.out.println("The target BE code is   ::  " +targetCode1);
+       //  System.out.println("The source BE code is   ::  " +sourceCode1);
+       //  System.out.println("The load type is   ::  " +loadCode1);
          
+         //Creating Answer DATA_MSG
+         JsonObject obj = new JsonObject();
+         obj.put("msg_type", "DATA_MSG");
+         obj.put("data_type", "Answer");
+         obj.put("items", items); 
+         //Print Answer
+         System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString()); 
+         obj.put("token",tokenString);
+         bus.publish("data", obj);
          
-         System.out.println("The update answer is :: "+newAnswer.toString());
-         List<Answer> answerList = new ArrayList<Answer>();
-         answerList.add(newAnswer);
-         Answer[] answerArray = new Answer[answerList.size()];
-          answerArray = answerList.toArray(answerArray);
+     //    List<Answer> answerList = new ArrayList<Answer>();
+      //   answerList.add(loadTypeAnswer);         
+     //    Answer[] answerArray = new Answer[answerList.size()];
+      //    answerArray = answerList.toArray(answerArray);
+      //   System.out.println(" Printing the Answer array  :: "+answerArray);
          
-         QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
-         JsonObject answerObj = new JsonObject().mapFrom(msg);
-         answerObj.put("token",tokenString);
-         System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
-        // bus.publish("cmds", answerObj);
-        
-         
-        
+     //    QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
+     //    System.out.println(" Printing the QDataAnswerMessage Obj  :: "+msg.toString());
+     //    JsonObject answerObj = new JsonObject().mapFrom(msg);
+     //    answerObj.put("token",tokenString);
+     //    System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
+     //    bus.publish("cmds", answerObj);    
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
