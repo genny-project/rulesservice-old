@@ -29,14 +29,17 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.RulesLoader;
-
+import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.User;
 
 public class EBCHandlers {
@@ -86,6 +89,7 @@ public class EBCHandlers {
 
 			QEventMessage eventMsg = null;
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
+				System.out.println("EVT_ATTRIBUTE_VALUE_CHANGE DATA is   ::    "+payload.toString());
 				eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
 			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
 				eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
@@ -190,5 +194,28 @@ public class EBCHandlers {
 		});
 
 	}
-
+   
+	//creating new BaseEntity
+    public static BaseEntity createBaseEntity(String entityCode, String name, String token) {
+		BaseEntity beg = new BaseEntity(entityCode, name);
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+		
+		Gson gson1 = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson1 = gsonBuilder.create();
+        
+        String jsonBE = gson1.toJson(beg);
+        try {
+        		// save BE
+            QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys", jsonBE, token);
+            // link PER_USER1 to friends
+            //QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson1.toJson(link),token);                        
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+		
+		return beg;
+		
+	}
 }

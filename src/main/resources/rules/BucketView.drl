@@ -1,5 +1,5 @@
 package com.sample
- 
+
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
@@ -36,7 +36,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
 import life.genny.channels.EBCHandlers;
- 
+
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
 
@@ -50,7 +50,7 @@ rule "BucketView Grp Change - Valid"
     then
         System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Group change" + LOG_RESET);
- 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");	  
+ 	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
 		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
@@ -58,7 +58,7 @@ rule "BucketView Grp Change - Valid"
 		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
 	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
-	    System.out.println("The Data Value is: " +$m.data.getValue());	    
+	    System.out.println("The Data Value is: " +$m.data.getValue());
         	 //Moving the BEG
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
@@ -82,7 +82,7 @@ rule "BucketView Grp Change - Valid"
         System.out.println("-----------------------------------");
 	    //sending new link data
  	    bus.publish("cmds", newLink);
-       
+
        //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+$m.data.getCode();
@@ -93,16 +93,16 @@ rule "BucketView Grp Change - Valid"
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments);
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
- 	//  String jsonMessage = gson.toJson(msgMessage); 
+ 	//  String jsonMessage = gson.toJson(msgMessage);
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);
      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BucketView Group change" + LOG_RESET);
-     System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);  
+     System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
 
@@ -114,7 +114,7 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence" + LOG_RESET); 
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence" + LOG_RESET);
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
 		//System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
@@ -122,8 +122,8 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
 		//System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
 	    //System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
 		//System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
-	    //System.out.println("The Data Value is: " +$m.data.getValue()); 
-	     
+	    //System.out.println("The Data Value is: " +$m.data.getValue());
+
 
         //Getting QCmdGeofenceMessage for source address
         QCmdGeofenceMessage cmdGeoFenceSource =  GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Source", tokenString);
@@ -138,13 +138,13 @@ rule "BucketView item movement - GRP_QUOTES to GRP_APPROVED"
         System.out.println("-----------------------------------");
         System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
-        System.out.println("-----------------------------------"); 
+        System.out.println("-----------------------------------");
         //Sending QCmdGeofenceMessage for source address
         bus.publish("cmds", cmdGeoFenceSourceJson);
         //sending QCmdGeofenceMessage for destination address
-	    bus.publish("cmds", cmdGeoFenceDestJson); 
+	    bus.publish("cmds", cmdGeoFenceDestJson);
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BV Item Move from GRP_QUOTES to GRP_APPROVED|Send GeoFence" + LOG_RESET);
-        System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);  
+        System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
 
@@ -157,25 +157,25 @@ rule "BucketView Grp Change-Invalid"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
- 	    System.out.println("-------- Rule:- BucketView transaction prevent Group skip --------");	  
+ 	    System.out.println("-------- Rule:- BucketView transaction prevent Group skip --------");
 		System.out.println("The Event Message received is: " +$m);
 		System.out.println("The Data Code is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue());
 	    System.out.println("Error! Its an invalid transaction.");
-	    
+
 	    QCmdMessage cmdAbort = new QCmdMessage("BV_MOVE", "ABORT");
         JsonObject data = new JsonObject();
           data.put("targetCode", $m.getSourceBaseEntityCode());
-          data.put("dataCode", $m.data.getCode());    
+          data.put("dataCode", $m.data.getCode());
         //Convert cmd to JSON Obj
-        JsonObject abortCmd = new JsonObject().mapFrom(cmdAbort); 
-          abortCmd.put("data", data); 
-          abortCmd.put("token", $value);  
+        JsonObject abortCmd = new JsonObject().mapFrom(cmdAbort);
+          abortCmd.put("data", data);
+          abortCmd.put("token", $value);
         System.out.println(" ##################### ");
-        System.out.println("CMD Msg ="+abortCmd.toString()); 
+        System.out.println("CMD Msg ="+abortCmd.toString());
         System.out.println(" #################### ");
-        bus.publish("cmds", abortCmd);  
-         
+        bus.publish("cmds", abortCmd);
+
 end
 */
 
@@ -187,7 +187,7 @@ rule "BucketView GEOFENCE-ENTRY"
    then
        System.out.println(" ------ Rule: GeoFence Entry ------- ");
        System.out.println(" The BEG code is: "+$m.data.getCode());
-end 
+end
 
 
 rule "BucketView GEOFENCE-EXIT"
@@ -197,7 +197,7 @@ rule "BucketView GEOFENCE-EXIT"
      $map : Map($value: this["token"] != null)
   then
      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GeoFence Exit- Load In Transit" + LOG_RESET); 
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GeoFence Exit- Load In Transit" + LOG_RESET);
      System.out.println(" The BEG code is: "+$m.data.getCode());
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
      String tokenString = (String)$map.get("token");
@@ -221,9 +221,9 @@ rule "BucketView GEOFENCE-EXIT"
      newLink.put("token", $value);
      System.out.println("---------------------");
      System.out.println("Updated Link: "+newLink.toString());
-     System.out.println("---------------------");    
+     System.out.println("---------------------");
  	 bus.publish("cmds", newLink);
- 	
+
  	  //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+code[0];
@@ -233,19 +233,19 @@ rule "BucketView GEOFENCE-EXIT"
  	   String msgTemplateCode = "MSG_CH40_MOVE_GRP_IN_TRANSIT";
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
- 	 
+
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments);
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
- 	//String jsonMessage = gson.toJson(msgMessage); 
+ 	//String jsonMessage = gson.toJson(msgMessage);
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);
  	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GeoFence Exit- Load In Transit " + LOG_RESET);
      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
- 	 
+
 end
 
 
@@ -254,10 +254,10 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
    when
      $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.value == "ENTER_DESTINATION" )
      bus: EventBus()
-     $map : Map($value: this["token"] != null) 
+     $map : Map($value: this["token"] != null)
    then
       System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GEOFENCE-ENTRY DESTINATION " + LOG_RESET); 
+      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   GEOFENCE-ENTRY DESTINATION " + LOG_RESET);
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
       String tokenString = (String)$map.get("token");
       String[] code = $m.data.getCode().split("_ENTER_DESTINATION");
@@ -279,9 +279,9 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
      newLink.put("token", $value);
      System.out.println("---------------------");
      System.out.println("Updated Link: "+newLink.toString());
-     System.out.println("---------------------");    
- 	 bus.publish("cmds", newLink); 
- 	 
+     System.out.println("---------------------");
+ 	 bus.publish("cmds", newLink);
+
  	  //Sending message to Message Service
        //Send evt_msg to Message
  	   String begCode = "code:"+$m.data.getCode();
@@ -291,18 +291,18 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	    String msgTemplateCode = "MSG_CH40_MOVE_GRP_COMPLETED";
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
- 	 
+
  	 //Creating messageData MSG_MESSAGE
- 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments); 	
+ 	 QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments);
  	 JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
  	 jsonMessage.put("token",tokenString);
- 	//  String jsonMessage = gson.toJson(msgMessage); 
+ 	//  String jsonMessage = gson.toJson(msgMessage);
  	 System.out.println("-----------------------------");
  	 System.out.println("The Message to Message Service is: "+jsonMessage.toString());
  	 System.out.println("-----------------------------");
  	 bus.publish("messages", jsonMessage);
  	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GEOFENCE-ENTRY DESTINATION " + LOG_RESET);
-     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);    
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
 
@@ -314,29 +314,29 @@ rule "BucketView Card click"
      $map : Map($value: this["token"] != null)
   then
      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Card Click layout " + LOG_RESET); 
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Card Click layout " + LOG_RESET);
       //sending cmd SUBLAYOUT_CHANGE
      QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadLayout");
      JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
      cmdLoadSublayoutJson.put("items", "LOD_LOAD1");
       //getting Layout from GitHub
       JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/loadLayout.json", null));
-      // System.out.println("Layout Data as JSON ="+sublayout.toString()); 
-      
+      // System.out.println("Layout Data as JSON ="+sublayout.toString());
+
     //  JsonObject subLayoutChange = new JsonObject();
      //   subLayoutChange.put("msg_type", "DATA_MSG");
       //  subLayoutChange.put("data_type", "SUBLAYOUT_CHANGE");
        // subLayoutChange.put("code", "LoadLayout");
-     //   subLayoutChange.put("items", sublayout); 
+     //   subLayoutChange.put("items", sublayout);
      cmdLoadSublayoutJson.put("items",sublayout);
      cmdLoadSublayoutJson.put("token",$value);
       System.out.println(" ##################### ");
-      System.out.println("Layout Data ="+cmdLoadSublayoutJson.toString()); 
+      System.out.println("Layout Data ="+cmdLoadSublayoutJson.toString());
       System.out.println(" #################### ");
         //Publish it to the EventBus
-      bus.publish("cmds", cmdLoadSublayoutJson); 
+      bus.publish("cmds", cmdLoadSublayoutJson);
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    BucketView Card Click layout " + LOG_RESET);
-      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);   
+      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
 //Rule for Editing LOAD
@@ -347,20 +347,20 @@ rule "Edit button click for a load"
      $map : Map($value: this["token"] != null)
   then
      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Edit button click on Load " + LOG_RESET); 
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Edit button click on Load " + LOG_RESET);
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
-     String tokenString = (String)$map.get("token"); 
+     String tokenString = (String)$map.get("token");
      //sending cmd FORM_VIEW
      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
      JsonObject cmdFormViewJson = new JsonObject().mapFrom(cmdFormView);
      cmdFormViewJson.put("root", "LOD_LOAD1");
      cmdFormViewJson.put("token", $value);
-     bus.publish("cmds", cmdFormViewJson); 
+     bus.publish("cmds", cmdFormViewJson);
      JsonObject load = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.data.getValue()+"/linkcodes/LNK_BEG/attributes", tokenString));
      load.put("token", $value);
-     bus.publish("cmds", load); 
+     bus.publish("cmds", load);
      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    Edit button click on Load  " + LOG_RESET);
-     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET); 
+     System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
 //Rule for Add icon click
@@ -372,22 +372,27 @@ rule "Add new LOAD"
      $map : Map($value: this["token"] != null)
    then
      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET); 
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET);
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
-     String tokenString = (String)$map.get("token"); 
+     String tokenString = (String)$map.get("token");
      //Getting list of loads
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
-     loadLists.put("token", $value); 
+     loadLists.put("token", $value);
      System.out.println("List of Load Json: "+loadLists.toString());
      bus.publish("cmds",loadLists);
-     
+
+     //Creating new base-entity BEG for Posting new Job
+      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", qwandaServiceUrl, tokenString);
+     //BaseEntity beg = EBCHandlers.createBaseEntity(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", tokenString);
+     System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
+     System.out.println("The BEG code is   ::  "+  beg.getCode());
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+$user.getuCode(), tokenString));   
-     qPostLoad.put("aliasCode", $m.data.getCode());  
-     qPostLoad.put("token", $value); 
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+beg.getCode(), tokenString));
+     qPostLoad.put("aliasCode", $m.data.getCode());
+     qPostLoad.put("token", $value);
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);
-     
+
      //sending cmd FORM_VIEW
      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
      //Convert cmd to JSON Obj
@@ -395,10 +400,10 @@ rule "Add new LOAD"
         formViewJson.put("root", "QUE_POST_JOB_GRP");
         formViewJson.put("token", $value);
      System.out.println(" ##################### ");
-     System.out.println("CMD VIEW Msg ="+formViewJson.toString()); 
+     System.out.println("CMD VIEW Msg ="+formViewJson.toString());
      System.out.println(" #################### ");
      //Publish it to the EventBus
-     bus.publish("cmds", formViewJson); 
+     bus.publish("cmds", formViewJson);
      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET);
      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 end
