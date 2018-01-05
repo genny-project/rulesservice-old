@@ -52,6 +52,7 @@ rule "Make Offer"
 	if(data != null) {
 
 		JsonObject dataJson = new JsonObject(data);
+
 		String hint = dataJson.getString("hint");
 		String baseEntityCode = dataJson.getString("itemCode"); // BEG_X ....
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
@@ -64,13 +65,16 @@ rule "Make Offer"
 
             // We create a new OFR Base entity
             BaseEntity ofrBe = EBCHandlers.createBaseEntity(QwandaUtils.getUniqueId($user.getuCode(), null, "OFR", tokenString), "Offer", tokenString);
+            System.out.println(ofrBe.toString());
             if(ofrBe != null) {
 
                 String offerCode = ofrBe.getCode();
+                System.out.println(offerCode);
+                System.out.println(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode);
 
-                // Load the questio group for creation an offer
-                JsonObject qCreateOffer = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
-                System.out.println(qCreateOffer.toString());
+                // Load the question group for creation an offer
+                //JsonObject qCreateOffer = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
+                //System.out.println(qCreateOffer.toString());
             }
 		}
 	}
