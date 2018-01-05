@@ -436,7 +436,6 @@ rule "Handle load selection"
          System.out.println("The source BE code is   ::  " +sourceCode);
          System.out.println("The load code is   ::  " +loadCode);
          //link LOAD to Job
- 
          QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(targetCode,loadCode,"LNK_BEG","LOAD")),tokenString);
          String loadName = MergeUtil.getAttrValue(loadCode, "PRI_DESCRIPTION", tokenString);
          String loadType = MergeUtil.getAttrValue(loadCode, "PRI_LOAD_TYPE", tokenString);

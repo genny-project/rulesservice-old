@@ -373,7 +373,11 @@ rule "Add new LOAD"
    then
      System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
      System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BTN_CLICK - ADD NEW LOAD  " + LOG_RESET);
-     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+     // Prepare GSON Deserialization
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     Gson gson = gsonBuilder.create();
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
      String tokenString = (String)$map.get("token");
      //Getting list of loads
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
@@ -382,12 +386,15 @@ rule "Add new LOAD"
      bus.publish("cmds",loadLists);
 
      //Creating new base-entity BEG for Posting new Job
-      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", qwandaServiceUrl, tokenString);
-     //BaseEntity beg = EBCHandlers.createBaseEntity(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", tokenString);
+     BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "BEG", tokenString), "Base Entity Group", qwandaServiceUrl, tokenString);
+     String jobCode = beg.getCode();
      System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
-     System.out.println("The BEG code is   ::  "+  beg.getCode());
+     System.out.println("The BEG code is   ::  "+jobCode);
+     //link newly created Job to DRAFT - GRP_DRAFT_JOBS
+     QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFT_JOBS",jobCode,"LNK_CORE")),tokenString);
+     
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+beg.getCode(), tokenString));
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+jobCode, tokenString));
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", $value);
      System.out.println("QName Json: "+qPostLoad.toString());
