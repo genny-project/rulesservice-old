@@ -65,7 +65,7 @@ rule "BucketView Grp Change - Valid"
          begEntity.put("targetCode",$m.data.getCode());
          begEntity.put("attributeCode",$m.getLinkCode());
         // System.out.println("--------------------------");
-        // System.out.println("EntityLink : "+begEntity.toString());
+         System.out.println("EntityLink : "+begEntity.toString());
         // System.out.println("--------------------------");
  	     String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
  	     System.out.println("The Output after POST: "+output);
@@ -391,12 +391,13 @@ rule "Add new LOAD"
      System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
      System.out.println("The BEG code is   ::  "+jobCode);
      //link newly created Job to DRAFT - GRP_DRAFT_JOBS
-     QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFT_JOBS",jobCode,"LNK_CORE")),tokenString);
+     QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFTS",jobCode,"LNK_CORE")),tokenString);
      
      //Getting Post Load Question GRP
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_POST_JOB_GRP/"+jobCode, tokenString));
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_POST_JOB_GRP/"+jobCode, tokenString));
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", $value);
+     qPostLoad.put("msg_type", "DATA_MSG");
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);
 
