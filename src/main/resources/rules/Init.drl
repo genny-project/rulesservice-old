@@ -277,7 +277,7 @@ rule "Send initial-profile-update layout for first login"
     agenda-group "UserRegistration"
     when
       bus: EventBus()
-      $user: User(isProfileCompleted == false)
+      $user: User(isProfileCompleted == false && realm != "memberhub")
       $map : Map($value: this["token"] != null)
       //$map1 : Map($value1: this["realm"] != null)
      then
@@ -374,7 +374,7 @@ rule "Send Memberhub Layout"
    when
         bus: EventBus()
         //$user: User(realm == "memberhub")
-        $user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
+        $user: User(realm == "memberhub" && isAvailable == true )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
    then
