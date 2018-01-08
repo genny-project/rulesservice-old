@@ -36,20 +36,25 @@ rule "Post Job"
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
         //link current user as load-owner to the Job/BEG
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
-        //boolean linkedLoadOwner = EBCHandlers.linkEntityEntityWithLinkvalue(jobCode, $user.getuCode(), "LNK_BEG","OWNER",tokenString);  
-        //System.out.println("The linked owner to beg (true/false)?   ::  " +linkedLoadOwner);
         //link Job to the GRP_NO_QUOTES
-        QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_NO_QUOTES", jobCode,"LNK_CORE")),tokenString);  
-        //boolean linkedBEGtoGRPNoquotes = EBCHandlers.linkEnitytEntity("GRP_NO_QUOTES", jobCode, "LNK_CORE",tokenString);  
-        //System.out.println("Linked job/beg to GRP_NO_QUOTES (true/false)?   ::  " +linkedBEGtoGRPNoquotes);
-        
+        // QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_NO_QUOTES", jobCode,"LNK_CORE")),tokenString); 
+        //remove link from GRP_DRAFT_JOBS
+       // QwandaUtils.apiDelete(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFTS", jobCode,"LNK_CORE")),tokenString);
+         //Moving the BEG
+         JsonObject begEntity = new JsonObject();
+         begEntity.put("sourceCode","GRP_DRAFTS");
+         begEntity.put("targetCode",jobCode);
+         begEntity.put("attributeCode","LNK_CORE");
+ 	     String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NO_QUOTES", begEntity.toString(), tokenString);
+ 	     System.out.println("The Output after POST: "+output);
+   
         String fullPickupAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_PICKUP_ADDRESS", tokenString);
         String fullDropOffAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_DROPOFF_ADDRESS", tokenString);
         
         System.out.println("Full pickup address is     ::    "+fullPickupAddress);
         System.out.println("Full dropoff address is     ::    "+fullDropOffAddress);
         //create answer to update full pickup address to the job
-        Answer pickupAddress = new Answer($user.getuCode(),jobCode, "PRI_FULL_PICKUP_ADDRESS", fullPickupAddress);
+        Answer pickupAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_PICKUP_ADDRESS", fullPickupAddress);
         String jsonPickUpAnswerStr = gson.toJson(pickupAddress);
         JsonObject jsonPickupAddressAnswer = new JsonObject(jsonPickUpAnswerStr);
          //creating Json array
