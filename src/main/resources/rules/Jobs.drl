@@ -64,7 +64,7 @@ rule "Make Offer"
             System.out.println("---------- CREATING NEW OFFER  ------------- ");
 
             // We create a new OFR Base entity
-            BaseEntity ofrBe = EBCHandlers.createBaseEntity(QwandaUtils.getUniqueId($user.getuCode(), null, "OFR", tokenString), "Offer", tokenString);
+            BaseEntity ofrBe = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "OFR", tokenString), "Offer", qwandaServiceUrl, tokenString);
             System.out.println(ofrBe.toString());
             if(ofrBe != null) {
 
@@ -80,4 +80,50 @@ rule "Make Offer"
 	}
 
 
+end
+rule "Show Offer Details"
+	when
+		$m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_SHOW_OFFER")
+        bus: EventBus()
+        $user: User(realm != null )
+        $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
+	then
+		
+		System.out.println("---------- Executing rule: SHOWING OFFER DETAILS ------------- ");
+	    String data = $m.getData().getValue();
+		if(data != null) {
+	
+			JsonObject dataJson = new JsonObject(data);
+	
+			String hint = dataJson.getString("hint"); //BEG_XXX
+			String baseEntityCode = dataJson.getString("itemCode"); // OFR_XXX ....
+			String tokenString = (String)$map.get("token");
+			String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
+			if(baseEntityCode != null) {
+			
+				// we send the BE
+				JsonObject be = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/" + baseEntityCode, tokenString));
+				JsonArray array = new JsonArray();
+				array.add(be);
+				
+		        JsonObject cmdBe = new JsonObject();
+		        cmdBe.put("token", $value);
+		        cmdBe.put("msg_type", "DATA_MSG");
+		        cmdBe.put("data_type", "BaseEntity");
+		        cmdBe.put("items", array);
+		        bus.publish("cmds", cmdBe); 
+				
+				// we grab the layout and send it to FE
+				JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/accept_offer.json", null));
+			    	QCmdMessage messageSublayout = new QCmdMessage("CMD_SUBLAYOUT","accept-offer");
+			    JsonObject cmdSubLayout = new JsonObject().mapFrom(messageSublayout);
+			    cmdSubLayout.put("items", sublayout);
+			    cmdSubLayout.put("root", baseEntityCode);
+			    cmdSubLayout.put("token", $value);
+			    //Publish it to the EventBus
+			    bus.publish("cmds", cmdSubLayout);
+			}	
+		}
+	
 end
