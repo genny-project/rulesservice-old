@@ -35,18 +35,18 @@ rule "Payments"
      org.json.simple.JSONObject userobj = new org.json.simple.JSONObject();
      org.json.simple.JSONObject addressobj = new org.json.simple.JSONObject();
      
-     userobj.put("firstName","padma");
-     userobj.put("lastName","raghavan");
-     userobj.put("email","padmaraghav@gmail.com");
-     userobj.put("phoneNumber","61434497337");
+     userobj.put("firstName","abc");
+     userobj.put("lastName","def");
+     userobj.put("email","abcdef@gmail.com");
+     userobj.put("phoneNumber","61444333222");
      userobj.put("tenant","test");
      
-     addressobj.put("line1","toward street");
-     addressobj.put("line2","murrumbeena");
+     addressobj.put("line1","street");
+     addressobj.put("line2","beena");
      addressobj.put("city","Melbourne");
      addressobj.put("state","Victoria");
      addressobj.put("country","AUS");
-     addressobj.put("postcode","3163");
+     addressobj.put("postcode","1212");
      
      userobj.put("address",addressobj);
      
