@@ -195,27 +195,4 @@ public class EBCHandlers {
 
 	}
    
-	//creating new BaseEntity
-    public static BaseEntity createBaseEntity(String entityCode, String name, String token) {
-		BaseEntity beg = new BaseEntity(entityCode, name);
-		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-		
-		Gson gson1 = new Gson();
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-		gson1 = gsonBuilder.create();
-        
-        String jsonBE = gson1.toJson(beg);
-        try {
-        		// save BE
-            QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys", jsonBE, token);
-            // link PER_USER1 to friends
-            //QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson1.toJson(link),token);                        
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-		
-		return beg;
-		
-	}
 }
