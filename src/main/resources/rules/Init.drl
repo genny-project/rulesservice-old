@@ -388,6 +388,12 @@ rule "Send Memberhub Layout"
         System.out.println(LOG_GREEN+ "@@@                                                               @@@" + LOG_RESET);
         System.out.println(LOG_GREEN+ "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + LOG_RESET);
 
+        // Prepare GSON Deserialization
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+            
          //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
@@ -411,6 +417,30 @@ rule "Send Memberhub Layout"
 		quesGrp.put("token", $value);					
 		bus.publish("cmds",  quesGrp);
 
+        String userCode= $user.getuCode();
+        String homeLoanCode = "PRD_HOME_LOAN";
+        String holidayCode = "PRD_HOLIDAY";
+        String linkScore= "LNK_SCORE";
+
+        // Check if a link exists between USER & PRD_HOME_LOAN
+        Boolean linkHomeLoan = QwandaUtils.checkIfLinkExistsForTarget(userCode, linkScore , homeLoanCode, tokenString );
+        System.out.println("LINK EXISTS ?  ::    "+ linkHomeLoan);
+
+        // Creating a link between USER & PRD_HOME_LOAN
+        if(!linkHomeLoan){
+            System.out.println("\nCREATING LINK BETWEEN          ::   " + userCode + "  &  " + homeLoanCode);
+            String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(userCode,homeLoanCode,linkScore)),tokenString);
+        }
+
+         // Check if a link exists between USER & PRD_HOME_LOAN
+        Boolean linkHoliday = QwandaUtils.checkIfLinkExistsForTarget(userCode, linkScore , holidayCode, tokenString );
+        System.out.println("LINK EXISTS ?  ::    "+ linkHoliday);
+
+        // Creating a link between USER & PRD_HOME_LOAN
+        if(!linkHoliday){
+            System.out.println("\nCREATING LINK BETWEEN          ::   " + userCode + "  &  " + holidayCode);
+            String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(userCode,holidayCode,linkScore)),tokenString);
+        }
    
         //Getting all BaseEntity and their attributes
         JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_SCORE/attributes", tokenString));
