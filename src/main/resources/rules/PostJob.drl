@@ -34,12 +34,10 @@ rule "Post Job"
         String tokenString = (String)$map.get("token"); 
         String jobCode = $m.data.getValue();
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
+        System.out.println("If mandatory Fields entered value    ::    "+QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString) );
+     if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
         //link current user as load-owner to the Job/BEG
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
-        //link Job to the GRP_NO_QUOTES
-        // QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_NO_QUOTES", jobCode,"LNK_CORE")),tokenString); 
-        //remove link from GRP_DRAFT_JOBS
-       // QwandaUtils.apiDelete(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFTS", jobCode,"LNK_CORE")),tokenString);
          //Moving the BEG
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode","GRP_DRAFTS");
@@ -95,7 +93,7 @@ rule "Post Job"
         System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
         //Publish new Job/BEG data
         bus.publish("cmds", newJobDetails);
-        
+     }   
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  POST Job - Submit  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
