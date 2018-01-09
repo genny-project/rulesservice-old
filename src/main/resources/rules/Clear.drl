@@ -82,11 +82,14 @@ rule "Clear User Attribute"
 		String tokenString = (String)$map.get("token"); 
 		
 		// //Getting PER_USER1 BE and it's attributes
-		JsonArray userArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/attributes", tokenString));
+		JsonArray userArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("USER ATTRIBUTES   ::   "+userArray.toString());  
         System.out.println("------------------------------------------------------------------------");
         
+		// Get User Code
+		String userCode= $user.getuCode();
+
 		// Initialize lists
         List<Answer> userList = new ArrayList<Answer>();
         List<Answer> primaryList = new ArrayList<Answer>();
@@ -94,8 +97,8 @@ rule "Clear User Attribute"
 		// add each attribute obj to userList
         for(Object obj : userArray) {
             Answer ansObj = gson.fromJson(obj.toString(), Answer.class);
-			ansObj.setSourceCode("PER_USER1");
-			ansObj.setTargetCode("PER_USER1");
+			ansObj.setSourceCode(userCode);
+			ansObj.setTargetCode(userCode);
             userList.add(ansObj);
         }
         System.out.println("User List   ::   " + userList.toString());
@@ -118,6 +121,10 @@ rule "Clear User Attribute"
 					break;
 
 				case("PRI_EMAIL") :
+					primaryList.add(answer);
+					break;
+
+				case("PRI_USERNAME") :
 					primaryList.add(answer);
 					break;
 
@@ -160,7 +167,7 @@ rule "Clear User Attribute"
 		bus.publish("cmds", userObj);
 
 		 //Getting all Facebook Friends and their attributes
-	    String friendString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString);
+	    String friendString = QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_FRIEND/attributes", tokenString);
 	    System.out.println("------------------------------------------------------------------------\n");
 	    System.out.println("FACEBOOK FRIEND LIST   ::   "+friendString.toString());  
 	    System.out.println("------------------------------------------------------------------------");
