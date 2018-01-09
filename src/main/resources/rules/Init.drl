@@ -403,15 +403,15 @@ rule "Send Memberhub Layout"
         bus.publish("cmds", layoutObj);
 
 		JsonObject  quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_MEMBERHUB_GRP/"+$user.getuCode(), tokenString));
-		System.out.println("*******************");
-		System.out.println("Profile Json="+ quesGrp.toString());	
-		System.out.println("*******************");	
+		System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("MEMBERHUB QUESTIONS   ::   "+quesGrp.toString());  
+        System.out.println("------------------------------------------------------------------------");
 		quesGrp.put("token", $value);					
 		bus.publish("cmds",  quesGrp);
 
    
         //Getting all BaseEntity and their attributes
-        JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_SCORE/attributes", tokenString));
+        JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_SCORE/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("HOMELOAN & HOLIDAY BE   ::   "+homeLoan.toString());  
         System.out.println("------------------------------------------------------------------------");
@@ -419,7 +419,7 @@ rule "Send Memberhub Layout"
         bus.publish("cmds", homeLoan);
         
          //Getting all Facebook Friends and their attributes
-        JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString));
+        JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_FRIEND/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
         System.out.println("------------------------------------------------------------------------");

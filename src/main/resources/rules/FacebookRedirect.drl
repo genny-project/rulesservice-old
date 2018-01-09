@@ -90,6 +90,7 @@ rule "Send Facebook Friend List"
     $m : QEventMessage( event_type == "SEND_FB_FRIENDS")
     bus: EventBus()
     $map : Map($value: this["token"] != null)
+    $user: User(realm != null)
   then
   	System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send Facebook Friend List" + LOG_RESET);
@@ -100,15 +101,23 @@ rule "Send Facebook Friend List"
     
     
     //Getting PER_USER1 BE and it's attributes
-    JsonObject user = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=user1", tokenString));
+    JsonObject user = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + $user.getUname(), tokenString));
     System.out.println("------------------------------------------------------------------------\n");
     System.out.println("USER BASEENTITY   ::   "+user.toString());  
     System.out.println("------------------------------------------------------------------------");
     user.put("token", $value);
     bus.publish("cmds", user);
        
+    //  //Getting all Facebook Friends and their attributes
+    // JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString));
+    // System.out.println("------------------------------------------------------------------------\n");
+    // System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
+    // System.out.println("------------------------------------------------------------------------");
+    // friendList.put("token", $value);
+    // bus.publish("cmds", friendList);
+
      //Getting all Facebook Friends and their attributes
-    JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString));
+    JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_FRIEND/attributes", tokenString));
     System.out.println("------------------------------------------------------------------------\n");
     System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
     System.out.println("------------------------------------------------------------------------");

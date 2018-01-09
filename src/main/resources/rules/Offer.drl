@@ -87,13 +87,13 @@ rule "Make Offer"
                     String offerCode = offer.getCode();
                     System.out.println("OFFER CODE   ::   "+offerCode);
                     
-                    //get questions for making a QUOTE
+                    //get OFFER QUESTION GROUP
                     JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
                     System.out.println("------------------------------------------------------------------------");
-                    System.out.println("MAKE OFFER QUES   ::   "+ offerGrp.toString());	
+                    System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
                     System.out.println("------------------------------------------------------------------------");	
                     
-                    // send offer ques with price & msg
+                    // publish QUESTIONS
                     offerGrp.put("token", tokenString);					
                     bus.publish("cmds",  offerGrp);
                 }
@@ -101,10 +101,52 @@ rule "Make Offer"
         }
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Make Offer" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-    end
+end
 
-    
-rule "Send Quote"
+rule "Counter Offer"
+
+    when
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_COUNTER_OFFER")
+        bus: EventBus()
+        $user: User(realm != null )
+        $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
+    then
+
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Counter Offer" + LOG_RESET);
+
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+        
+        // retrieve jsonObj's values sent on data.value
+        String data = $m.getData().getValue();
+        if(data != null) {
+
+            JsonObject dataJson = new JsonObject(data);
+            String offerCode = dataJson.getString("itemCode"); // OFR_X ....
+            String hint = dataJson.getString("hint");
+            
+            System.out.println("OFFER CODE   ::   "+offerCode);
+            System.out.println("HINT         ::   "+hint);
+            
+            //get OFFER QUESTION GROUP
+            JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
+            System.out.println("------------------------------------------------------------------------");
+            System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
+            System.out.println("------------------------------------------------------------------------");	
+            
+            // publish QUESTIONS
+            offerGrp.put("token", tokenString);					
+            bus.publish("cmds",  offerGrp);              
+            
+        }
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Counter Offer" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
+   
+rule "Submit Offer"
     when
        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DETAILS_GRP" ) 
        bus:EventBus()
@@ -112,7 +154,7 @@ rule "Send Quote"
        $map : Map($value: this["token"] != null)
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send Quote" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Submit Offer" + LOG_RESET);
        
         // Prepare GSON Deserialization
         Gson gson = new GsonBuilder()
@@ -152,7 +194,7 @@ rule "Send Quote"
             String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(userCode,offerCode,"LNK_BEG","OFFER")),tokenString);
         }
         
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send Quote" + LOG_RESET);
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Submit Offer" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
