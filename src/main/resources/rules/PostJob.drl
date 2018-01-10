@@ -194,14 +194,33 @@ rule "Create New Load - NEXT"
       String actionCode = dataJson.getString("action");
       System.out.println("The load code is   ::    "+loadCode);
       System.out.println("The action code is   ::    "+actionCode);
-      //get BEG code
-      String jobCode = "";
-      if(actionCode.equals("next")){
+      String jobCode = QwandaUtils.getSourceForTarget("GRP_DRAFTS", "LNK_BEG", loadCode, "LOAD", tokenString);
+      System.out.println("The Job Code is   :: "+jobCode);
+     
+      if(actionCode.equalsIgnoreCase("next")){
          System.out.println("Next Button pressed");
-          
+          //Getting Post Job Question GRP
+         JsonObject qPostJobAddress = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_JOB_ADDRESS_DETAILS_GRP/"+jobCode, tokenString));
+         qPostJobAddress.put("aliasCode", "QUE_JOB_ADDRESS_DETAILS_GRP");
+         qPostJobAddress.put("token", tokenString);
+         qPostJobAddress.put("msg_type", "DATA_MSG");
+         System.out.println("Asks postJob Address Json: "+qPostJobAddress.toString());
+         bus.publish("cmds",qPostJobAddress);
+
+        //sending cmd FORM_VIEW
+        QCmdMessage cmdAddressFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject formViewAddressJson = new JsonObject().mapFrom(cmdAddressFormView);
+        formViewAddressJson.put("root", "QUE_JOB_ADDRESS_DETAILS_GRP");
+        formViewAddressJson.put("token", $value);
+        System.out.println(" ##################### ");
+        System.out.println("CMD VIEW Msg ="+formViewAddressJson.toString());
+        System.out.println(" #################### ");
+         //Publish it to the EventBus
+        bus.publish("cmds", formViewAddressJson);  
           
       }
-      if(actionCode.equals("previous")){
+      if(actionCode.equalsIgnoreCase("previous")){
          //Getting Post Job Question GRP
          JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_POST_JOB_GRP/"+jobCode, tokenString));
          qPostJob.put("aliasCode", "QUE_POST_JOB_GRP");
