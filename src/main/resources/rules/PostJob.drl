@@ -40,7 +40,6 @@ rule "Post Job"
         String tokenString = (String)$map.get("token"); 
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
-                
         String jobCode = dataJson.getString("targetCode");
         
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
@@ -171,3 +170,58 @@ rule "Create new Load"
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
+rule "Create New Load - NEXT"
+    when
+      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_CREATE_LOAD_GRP" )
+      bus: EventBus()
+      $user: User(realm != null)
+      $map : Map($value: this["token"] != null)    
+    then
+      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+      System.out.println(LOG_GREEN + "RULE EXECUTED      ::    Create new Load - NEXT  " + LOG_RESET);
+      // Prepare GSON Deserialization
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     Gson gson = gsonBuilder.create();
+      //Prepare Token & qwandaServiceUrl
+      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+      String tokenString = (String)$map.get("token"); 
+      
+      String dataString = $m.data.getValue();
+      JsonObject dataJson = new JsonObject(dataString);
+      System.out.println(dataJson.toString());
+      String loadCode = dataJson.getString("targetCode");
+      String actionCode = dataJson.getString("action");
+      System.out.println("The load code is   ::    "+loadCode);
+      System.out.println("The action code is   ::    "+actionCode);
+      //get BEG code
+      String jobCode = "";
+      if(actionCode.equals("next")){
+         System.out.println("Next Button pressed");
+          
+          
+      }
+      if(actionCode.equals("previous")){
+         //Getting Post Job Question GRP
+         JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_POST_JOB_GRP/"+jobCode, tokenString));
+         qPostJob.put("aliasCode", "QUE_POST_JOB_GRP");
+         qPostJob.put("token", tokenString);
+         qPostJob.put("msg_type", "DATA_MSG");
+         System.out.println("Asks postJob Json: "+qPostJob.toString());
+         bus.publish("cmds",qPostJob);
+
+        //sending cmd FORM_VIEW
+        QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+        //Convert cmd to JSON Obj
+        JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+        formViewJson.put("root", "QUE_POST_JOB_GRP");
+        formViewJson.put("token", $value);
+        System.out.println(" ##################### ");
+        System.out.println("CMD VIEW Msg ="+formViewJson.toString());
+        System.out.println(" #################### ");
+         //Publish it to the EventBus
+        bus.publish("cmds", formViewJson);
+     }
+     System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create new Load - NEXT  " + LOG_RESET);
+     System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
