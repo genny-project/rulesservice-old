@@ -492,3 +492,66 @@ rule "Handle load selection"
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
+
+//Rule listening to load type selection value change in Create Load
+rule "Handle load type selection"
+    when
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
+        bus:EventBus() 
+        $user: User(realm != null)
+        $map : Map($value: this["token"] != null)
+     then
+        // Prepare GSON Deserialization
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+            
+        System.out.println("\n\n");
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::  Create LOAD - Handle load type selection  " + LOG_RESET);
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token"); 
+        System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+        
+        //Collect load code from answer
+         Answer newAnswer = $m.getAnswer();
+         System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
+         System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
+         String targetCode = newAnswer.getTargetCode();
+         String sourceCode = newAnswer.getSourceCode();
+         String loadTypeCode = newAnswer.getValue();
+         String attributeCode = $m.data.getCode();
+         System.out.println("The target BE code is   ::  " +targetCode);
+         System.out.println("The source BE code is   ::  " +sourceCode);
+         System.out.println("The attribute code is   ::  " +attributeCode);
+         System.out.println("The load type code is   ::  " +loadTypeCode);
+           BaseEntity loadType = MergeUtil.getBaseEntityForAttr(loadTypeCode, tokenString);
+          String loadTypeValue = loadType.getName();
+         System.out.println("The load type value is   ::  " +loadTypeValue);
+         //creating new Answer
+         String jsonAnswerStr = gson.toJson(newAnswer);
+         System.out.println("The answer in string format :: "+jsonAnswerStr);
+         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+         jsonAnswer.put("value",loadTypeValue);
+         jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
+         jsonAnswer.put("inferred",true);
+         //jsonAnswer.put("weight",weight);
+         System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
+         //creating Json array
+         JsonArray items = new JsonArray();
+         items.add(jsonAnswer);
+         //Creating Answer DATA_MSG
+         JsonObject obj = new JsonObject();
+         obj.put("msg_type", "DATA_MSG");
+         obj.put("data_type", "Answer");
+         obj.put("items", items); 
+         //Print Answer
+         System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString()); 
+         obj.put("token",tokenString);
+         bus.publish("data", obj);
+         
+      
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+ end

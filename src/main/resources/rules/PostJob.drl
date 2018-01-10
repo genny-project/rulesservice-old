@@ -127,7 +127,14 @@ rule "Create new Load"
       //Prepare Token & qwandaServiceUrl
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
       String tokenString = (String)$map.get("token"); 
-      //Creating new base-entity LOAD
+      
+      //Getting list of load category
+     JsonObject loadCategoryList = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_CATEGORY/linkcodes/LNK_CORE?pageStart=0&pageSize=20", tokenString));
+     loadCategoryList.put("token", tokenString);
+     //System.out.println("List of Load Catrgory: "+loadCategoryList.toString());
+     bus.publish("cmds",loadCategoryList);
+     
+     //Creating new base-entity LOAD
      BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "LOD", tokenString), "LOAD", qwandaServiceUrl, tokenString);
      String loadCode = load.getCode();
      System.out.println("BaseEntity LOAD created is   ::  "+load.toString());
@@ -147,7 +154,7 @@ rule "Create new Load"
       qCreateLoad.put("aliasCode", $m.data.getCode());
       qCreateLoad.put("token", $value);
       qCreateLoad.put("msg_type", "DATA_MSG");
-      System.out.println("QName Json: "+qCreateLoad.toString());
+      System.out.println("Create Load Json: "+qCreateLoad.toString());
       bus.publish("cmds",qCreateLoad);
 
       //sending cmd FORM_VIEW
