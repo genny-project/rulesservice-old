@@ -98,9 +98,7 @@ rule "Accept Offer"
             String begCode= null;
 
             // base entity code is the job quote will be quoting on
-            if(offerCode != null) {
-                // Grab BEG code
-                
+            if(offerCode != null) {                
                 //get OFFER BE's parent BEG code
                 JsonArray offerArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + offerCode + "/linkcodes/" + linkCode + "/parents", tokenString));
                 System.out.println("------------------------------------------------------------------------");
@@ -113,11 +111,10 @@ rule "Accept Offer"
                     System.out.println("BEG CODE   ::   "+ begCode);	                  
                 }
 
+                //Sending message to BEG OWNER
                 String code= "code:" + begCode ;
                 String recipient = "recipient:OWNER";
                 String[] msgMessageData = {code, recipient};
-
-                //Sending message to BEG OWNER
                 String templateCode = "MSG_CH40_ACCEPT_OFFER";
                 String[] attachments = {};           
                 QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
@@ -135,10 +132,21 @@ rule "Accept Offer"
                 
                 jsonMessage.put("token",tokenString);
                 bus.publish("messages", jsonMessage);
+
+
+                // Check if a link exists between BEG & COMPANY
+                Boolean linkExists = QwandaUtils.checkIfLinkExistsForTarget(begCode, linkCode, userCode, tokenString );
+                System.out.println("LINK EXISTS ?  ::    "+ linkExists);
+
+                // Creating a link between BEG & COMPANY  || LINKVALUE = "QUOTER"
+                if(!linkExists){
+                    System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + userCode);
+                    String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson( new Link( begCode, userCode, linkCode, "QUOTER" )),tokenString);
+                }
             }
         }
 
-        //sending cmd FORM_VIEW
+        //sending cmd BUCKETVIEW
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
         bucketViewJson.put("root", "GRP_DRIVER_VIEW");
