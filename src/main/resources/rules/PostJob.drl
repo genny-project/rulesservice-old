@@ -25,17 +25,26 @@ rule "Post Job"
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::    POST Job - Submit  " + LOG_RESET);
+        
         // Prepare GSON Deserialization
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
+        
         //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
-        String jobCode = $m.data.getValue();
+        String dataString = $m.data.getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+        
+  		System.out.println(dataJson.toString());
+        
+        String jobCode = dataJson.getString("targetCode");
+        
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
         System.out.println("If mandatory Fields entered value    ::    "+QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString) );
-     if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
+     	
+     	if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
         //link current user as load-owner to the Job/BEG
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
          //Moving the BEG

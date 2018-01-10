@@ -602,7 +602,8 @@ rule "Send BucketView"
         
         //Get Sub-Layout 
         String subLayoutList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/list_item.json", null);    
-       //Creating subLayout DATA_MSG
+        
+        //Creating subLayout DATA_MSG
         JsonObject subLayoutListObj = new JsonObject();
         subLayoutListObj.put("msg_type", "DATA_MSG");
         subLayoutListObj.put("data_type", "SUB_LAYOUT");
