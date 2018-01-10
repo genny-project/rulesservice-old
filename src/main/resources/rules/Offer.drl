@@ -326,7 +326,9 @@ rule "Submit Offer"
         System.out.println("------------------------------------------------------------------------");
         
         String userCode = $user.getuCode();
-        String offerCode = $m.getData().getValue();
+        String dataString = $m.getData().getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+        String offerCode = dataJson.getString("targetCode");
         String baseEntityCode = "BEG_XXXX";
         String linkCode= "LNK_BEG";
 

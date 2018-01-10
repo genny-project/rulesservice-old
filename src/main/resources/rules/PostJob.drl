@@ -6,12 +6,16 @@ import life.genny.qwanda.message.QMessage.MessageData;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwandautils.QwandaUtils;
 import com.google.gson.Gson;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 import com.sample.*;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 import life.genny.qwanda.entity.User;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
@@ -25,17 +29,24 @@ rule "Post Job"
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::    POST Job - Submit  " + LOG_RESET);
+        
         // Prepare GSON Deserialization
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
+        
         //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
-        String jobCode = $m.data.getValue();
+        String dataString = $m.data.getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+                
+        String jobCode = dataJson.getString("targetCode");
+        
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
         System.out.println("If mandatory Fields entered value    ::    "+QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString) );
-     if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
+     	
+     	if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
         //link current user as load-owner to the Job/BEG
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
          //Moving the BEG
@@ -98,45 +109,65 @@ rule "Post Job"
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
-//rule "Create new Load"
-//    when
-//      $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "QUE_CREATE_NEW_LOAD" )
-//      bus: EventBus()
-//      $user: User(realm != null)
-//      $map : Map($value: this["token"] != null)    
-//    then
-//      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-//      System.out.println(LOG_GREEN + "RULE EXECUTED      ::    Create new Load  " + LOG_RESET);
-//      //Prepare Token & qwandaServiceUrl
-//      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//      String tokenString = (String)$map.get("token"); 
-      //Creating new base-entity LOAD
-//     BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "LOD", tokenString), "LOAD", qwandaServiceUrl, tokenString);
-//     String loadCode = load.getCode();
-//     System.out.println("BaseEntity LOAD created is   ::  "+load.toString());
-//     System.out.println("The BEG code is   ::  "+loadCode);
-//      
-       //Getting Post Load Question GRP
-//      JsonObject qCreateLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_CREATE_LOAD_GRP/"+loadCode, tokenString));
-//      qCreateLoad.put("aliasCode", $m.data.getCode());
-//      qCreateLoad.put("token", $value);
-//      qCreateLoad.put("msg_type", "DATA_MSG");
-//      System.out.println("QName Json: "+qCreateLoad.toString());
-//      bus.publish("cmds",qCreateLoad);
+rule "Create new Load"
+    when
+      $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "QUE_CREATE_NEW_LOAD" )
+      bus: EventBus()
+      $user: User(realm != null)
+      $map : Map($value: this["token"] != null)    
+    then
+      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+      System.out.println(LOG_GREEN + "RULE EXECUTED      ::    Create new Load  " + LOG_RESET);
+      // Prepare GSON Deserialization
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     Gson gson = gsonBuilder.create();
+      //Prepare Token & qwandaServiceUrl
+      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+      String tokenString = (String)$map.get("token"); 
+      
+      //Getting list of load category
+     JsonObject loadCategoryList = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_CATEGORY/linkcodes/LNK_CORE?pageStart=0&pageSize=20", tokenString));
+     loadCategoryList.put("token", tokenString);
+     //System.out.println("List of Load Catrgory: "+loadCategoryList.toString());
+     bus.publish("cmds",loadCategoryList);
+     
+     //Creating new base-entity LOAD
+     BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId($user.getuCode(), null, "LOD", tokenString), "LOAD", qwandaServiceUrl, tokenString);
+     String loadCode = load.getCode();
+     System.out.println("BaseEntity LOAD created is   ::  "+load.toString());
+     System.out.println("The Load code is   ::  "+loadCode);
+     System.out.println("The BEG/Job code is     ::    "+$m.data.getValue());
+     JSONParser parser = new JSONParser(); 
+     JSONObject jsonValue = (JSONObject) parser.parse($m.data.getValue());
+     String jobCode = (String)jsonValue.get("targetCode");
+     System.out.println("The BEG code from value is    ::    "+jobCode);
+
+     //Link this load to the job
+     QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,loadCode,"LNK_BEG", "LOAD")),tokenString);
+     //Link this load to the user's company's GRP_LOADS using comapnys LNK code 
+    // QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_LOADS",loadCode,"LNK_{comapny_id}", $user.getuCode())),tokenString);
+      //Getting Post Load Question GRP
+      JsonObject qCreateLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_CREATE_LOAD_GRP/"+loadCode, tokenString));
+      qCreateLoad.put("aliasCode", $m.data.getCode());
+      qCreateLoad.put("token", $value);
+      qCreateLoad.put("msg_type", "DATA_MSG");
+      System.out.println("Create Load Json: "+qCreateLoad.toString());
+      bus.publish("cmds",qCreateLoad);
 
       //sending cmd FORM_VIEW
-//      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
       //Convert cmd to JSON Obj
-//      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
-//        formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
-//        formViewJson.put("token", $value);
-//      System.out.println(" ##################### ");
-//      System.out.println("CMD VIEW Msg ="+formViewJson.toString());
-//      System.out.println(" #################### ");
+      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+        formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
+        formViewJson.put("token", $value);
+      System.out.println(" ##################### ");
+     System.out.println("CMD VIEW Msg ="+formViewJson.toString());
+      System.out.println(" #################### ");
       //Publish it to the EventBus
-//      bus.publish("cmds", formViewJson);
+      bus.publish("cmds", formViewJson);
       
-//      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create new Load  " + LOG_RESET);
-//      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-//end
+      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create new Load  " + LOG_RESET);
+      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
 
