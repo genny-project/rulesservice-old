@@ -40,7 +40,6 @@ rule "Post Job"
         String tokenString = (String)$map.get("token"); 
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
-  		System.out.println(dataJson.toString());
         String jobCode = dataJson.getString("targetCode");
         
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
