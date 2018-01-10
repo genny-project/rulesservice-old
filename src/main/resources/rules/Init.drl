@@ -94,7 +94,7 @@ rule "Init"
         //drools.setFocus("layout"); 
         
         //Get BaseEntity with attributes
-        JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=10", tokenString));
         //Print the json Object  
         objWithAttr.put("token", $value);     
         System.out.println("------------------------------------------------------------------------");
@@ -182,7 +182,8 @@ rule "Create new User"
        modify($user){
            setuCode(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString)),
            setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString)),
-           setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           //setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           setIsProfileCompleted( QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
        System.out.println("User facts value after creating user -  isAvailable   ::   " +$user.getIsAvailable());
       //Calling the rule group : UserRegistration
@@ -230,7 +231,8 @@ rule "Check if Profile Completed"
      System.out.println("User code from Qwanda --> "+$user.getuCode());
      //Update the available fact value
        modify($user){
-           setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           //setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           setIsProfileCompleted( QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), $user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
        System.out.println("isProfileCompleted value    ::    " +$user.getIsProfileCompleted()); 
        
@@ -277,7 +279,7 @@ rule "Send initial-profile-update layout for first login"
     agenda-group "UserRegistration"
     when
       bus: EventBus()
-      $user: User(isProfileCompleted == false)
+      $user: User(isProfileCompleted == false && realm != "memberhub")
       $map : Map($value: this["token"] != null)
       //$map1 : Map($value1: this["realm"] != null)
      then
@@ -288,7 +290,7 @@ rule "Send initial-profile-update layout for first login"
         String tokenString = (String)$map.get("token"); 
        //Sending USER Profile Asks
        System.out.println("User uCode = "+$user.getuCode());
-      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_NEW_USER_PROFILE_GRP/"+$user.getuCode(), tokenString));
+      JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_NEW_USER_PROFILE_GRP/"+$user.getuCode(), tokenString));
       System.out.println("*******************");
       System.out.println("Json="+obj.toString());	
       System.out.println("*******************");	
@@ -374,7 +376,7 @@ rule "Send Memberhub Layout"
    when
         bus: EventBus()
         //$user: User(realm == "memberhub")
-        $user: User(realm == "memberhub" && isAvailable == true && isProfileCompleted == true )
+        $user: User(realm == "memberhub" && isAvailable == true )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
    then
@@ -386,6 +388,12 @@ rule "Send Memberhub Layout"
         System.out.println(LOG_GREEN+ "@@@                                                               @@@" + LOG_RESET);
         System.out.println(LOG_GREEN+ "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + LOG_RESET);
 
+        // Prepare GSON Deserialization
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+            
          //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
@@ -403,15 +411,39 @@ rule "Send Memberhub Layout"
         bus.publish("cmds", layoutObj);
 
 		JsonObject  quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_MEMBERHUB_GRP/"+$user.getuCode(), tokenString));
-		System.out.println("*******************");
-		System.out.println("Profile Json="+ quesGrp.toString());	
-		System.out.println("*******************");	
+		System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("MEMBERHUB QUESTIONS   ::   "+quesGrp.toString());  
+        System.out.println("------------------------------------------------------------------------");
 		quesGrp.put("token", $value);					
 		bus.publish("cmds",  quesGrp);
 
+        String userCode= $user.getuCode();
+        String homeLoanCode = "PRD_HOME_LOAN";
+        String holidayCode = "PRD_HOLIDAY";
+        String linkScore= "LNK_SCORE";
+
+        // Check if a link exists between USER & PRD_HOME_LOAN
+        Boolean linkHomeLoan = QwandaUtils.checkIfLinkExistsForTarget(userCode, linkScore , homeLoanCode, tokenString );
+        System.out.println("LINK EXISTS ?  ::    "+ linkHomeLoan);
+
+        // Creating a link between USER & PRD_HOME_LOAN
+        if(!linkHomeLoan){
+            System.out.println("\nCREATING LINK BETWEEN          ::   " + userCode + "  &  " + homeLoanCode);
+            String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(userCode,homeLoanCode,linkScore)),tokenString);
+        }
+
+         // Check if a link exists between USER & PRD_HOME_LOAN
+        Boolean linkHoliday = QwandaUtils.checkIfLinkExistsForTarget(userCode, linkScore , holidayCode, tokenString );
+        System.out.println("LINK EXISTS ?  ::    "+ linkHoliday);
+
+        // Creating a link between USER & PRD_HOME_LOAN
+        if(!linkHoliday){
+            System.out.println("\nCREATING LINK BETWEEN          ::   " + userCode + "  &  " + holidayCode);
+            String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(userCode,holidayCode,linkScore)),tokenString);
+        }
    
         //Getting all BaseEntity and their attributes
-        JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_SCORE/attributes", tokenString));
+        JsonObject homeLoan = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_SCORE/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("HOMELOAN & HOLIDAY BE   ::   "+homeLoan.toString());  
         System.out.println("------------------------------------------------------------------------");
@@ -419,7 +451,7 @@ rule "Send Memberhub Layout"
         bus.publish("cmds", homeLoan);
         
          //Getting all Facebook Friends and their attributes
-        JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/linkcodes/LNK_FRIEND/attributes", tokenString));
+        JsonObject friendList = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/"+$user.getuCode()+"/linkcodes/LNK_FRIEND/attributes", tokenString));
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("FACEBOOK FRIEND LIST   ::   "+friendList.toString());  
         System.out.println("------------------------------------------------------------------------");
@@ -570,7 +602,8 @@ rule "Send BucketView"
         
         //Get Sub-Layout 
         String subLayoutList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/list_item.json", null);    
-       //Creating subLayout DATA_MSG
+        
+        //Creating subLayout DATA_MSG
         JsonObject subLayoutListObj = new JsonObject();
         subLayoutListObj.put("msg_type", "DATA_MSG");
         subLayoutListObj.put("data_type", "SUB_LAYOUT");
@@ -613,7 +646,8 @@ rule "NewUser Profile Submit"
       //String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString) ;
       //Update the profileCompleted user fact value
        modify($user){
-           setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           //setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           setIsProfileCompleted(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), $user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
       System.out.println("The user available value now is   ::    " + $user.getIsAvailable());    
       System.out.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted());

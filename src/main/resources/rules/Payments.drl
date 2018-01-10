@@ -1,0 +1,69 @@
+package com.sample
+
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import com.google.gson.Gson;
+
+import life.genny.qwandautils.PaymentUtils;
+
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+rule "Payments"
+ when
+     m : QEventMessage( QEventMessage.getData().getCode().equals("PAYMENTS") )
+     bus: EventBus()
+     $map : Map($value: this["token"] != null) 
+   then
+     System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Payments Rule  " + LOG_RESET);
+    
+     //Prepare Token & qwandaServiceUrl
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+     String tokenString = (String)$map.get("token"); 
+     System.out.println("token ::"+tokenString);
+     
+     String authString = PaymentUtils.createAuthKey("test","YzQ2MzY4NTQ3ZThiNDc5ZTg4MTg3OTQ0NWFmYTUxOTI=","UdZ5fx63LyJUBpfKw0EEkHXF7FD60FxO");
+     
+     org.json.simple.JSONObject userobj = new org.json.simple.JSONObject();
+     org.json.simple.JSONObject addressobj = new org.json.simple.JSONObject();
+     
+     userobj.put("firstName","abc");
+     userobj.put("lastName","def");
+     userobj.put("email","abcdef@gmail.com");
+     userobj.put("phoneNumber","61444333222");
+     userobj.put("tenant","test");
+     
+     addressobj.put("line1","street");
+     addressobj.put("line2","beena");
+     addressobj.put("city","Melbourne");
+     addressobj.put("state","Victoria");
+     addressobj.put("country","AUS");
+     addressobj.put("postcode","1212");
+     
+     userobj.put("address",addressobj);
+     
+     System.out.println("userobj ::"+userobj);
+     
+     Gson gson = new Gson();
+     String objString = gson.toJson(userobj);
+     
+     System.out.println("user object string ::"+objString);
+     
+     String paymentsResponse = PaymentUtils.apiPostPaymentEntity("http://localhost:3456/users", objString, authString);
+     System.out.println("payments response ::"+paymentsResponse);
+     
+   	 System.out.println("\n \u001B[31m RULE TERMINATED    ::   Payments \u001B[0m ");
+     System.out.println( "\u001B[33m ------------------------------------------------------------------------------------------------------------------------------------------------  \u001B[0m");
+    
+     
+     
+end     
+
