@@ -2,8 +2,8 @@ package com.sample
 
 import life.genny.qwanda.message.QEventMessage;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import com.google.gson.Gson;
-import org.json.JSONObject;
+//import com.google.gson.Gson;
+//import org.json.JSONObject;
 
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.KeycloakUtils;
@@ -36,7 +36,7 @@ rule "Payments"
      String tokenString = (String)$map.get("token"); 
      System.out.println("token ::"+tokenString);
      
-     JSONObject decodedToken = KeycloakUtils.getDecodedToken(tokenString);
+     org.json.JSONObject decodedToken = KeycloakUtils.getDecodedToken(tokenString);
      System.out.println("decoded token ::"+decodedToken);
      
      String username = decodedToken.getString("preferred_username");
