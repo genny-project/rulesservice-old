@@ -22,7 +22,7 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
 
 rule "Post Job"
     when
-      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_POST_JOB_GRP" )
+      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_ADDRESS_DETAILS_GRP" )
       bus: EventBus()
       $user: User(realm != null)
       $map : Map($value: this["token"] != null)    
@@ -41,13 +41,16 @@ rule "Post Job"
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
-        
+        String actionCode = dataJson.getString("action"); 
+        boolean allFieldsEntered =  QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString);      
         System.out.println("The Job/BEG code submitted is    :: "+jobCode);
-        System.out.println("If mandatory Fields entered value    ::    "+QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString) );
+        System.out.println("Action Code is    :: "+actionCode);
+        System.out.println("If mandatory Fields entered value    ::    "+allFieldsEntered );
      	
-     	if(QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), jobCode, $m.data.getCode(), tokenString)){       
+     	//if(allFieldsEntered == true && actionCode.equalsIgnoreCase("submit") ){       
         //link current user as load-owner to the Job/BEG
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
+         System.out.println("After adding owner to BEG");
          //Moving the BEG
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode","GRP_DRAFTS");
@@ -103,7 +106,7 @@ rule "Post Job"
         System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
         //Publish new Job/BEG data
         bus.publish("cmds", newJobDetails);
-     }   
+   //  }   
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  POST Job - Submit  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
@@ -170,7 +173,7 @@ rule "Create new Load"
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
-rule "Create New Load - NEXT"
+rule "Create New Load - NEXT (POST JOB)"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_CREATE_LOAD_GRP" )
       bus: EventBus()
