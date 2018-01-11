@@ -141,8 +141,173 @@ rule "Accept Offer"
                 // Creating a link between BEG & COMPANY  || LINKVALUE = "QUOTER"
                 if(!linkExists){
                     System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + userCode);
-                    String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson( new Link( begCode, userCode, linkCode, "QUOTER" )),tokenString);
+                    Link link = new Link( begCode, userCode, linkCode, "QUOTER");
+                    link.setWeight(0.0);
+                    String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link),tokenString);
                 }
+            
+
+                //Fectching updated link of BEG
+                JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
+                
+                //Creating a data msg
+                JsonObject newLink = new JsonObject();
+                newLink.put("msg_type", "DATA_MSG");
+                newLink.put("data_type", "LINK_CHANGE");
+                newLink.put("items", updatedLink);
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Updated Link   ::  "+newLink.toString());
+                System.out.println("------------------------------------------------------------------------");
+                //publish new link data
+                newLink.put("token", tokenString );
+                bus.publish("cmds", newLink);
+
+
+                //SEND QUOTER BE AGAIN FOR UPDATE
+                JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));
+                quoterObj.put("aliasCode", "USER"); 
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("QUOTER BE   ::  " + quoterObj.toString());
+                System.out.println("------------------------------------------------------------------------");
+                quoterObj.put("token", tokenString);      
+                bus.publish("cmds", quoterObj);
+
+            }
+        }
+
+        //sending cmd BUCKETVIEW
+        // QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+        // JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+        // bucketViewJson.put("root", "GRP_DRIVER_VIEW");
+        
+        // System.out.println("------------------------------------------------------------------------");
+        // System.out.println("BUCKETVIEW DATA   ::   " + bucketViewJson.toString());
+        // System.out.println("------------------------------------------------------------------------");
+        
+        // bucketViewJson.put("token", tokenString);
+        // bus.publish("cmds", bucketViewJson);
+
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Accept Offer" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
+
+rule "Confirm Offer"
+
+    when
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER")
+        bus: EventBus()
+        $user: User(realm != null )
+        $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
+    then
+
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Confirm Offer" + LOG_RESET);
+
+         // Prepare GSON Deserialization
+        Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+                @Override
+                public LocalDateTime deserialize(final JsonElement json, final Type type,
+                    final JsonDeserializationContext jsonDeserializationContext)
+                    throws JsonParseException {
+                return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+
+                public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+                    final JsonSerializationContext context) {
+                return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
+                }
+            }).create();
+        
+        
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+        
+        // retrieve jsonObj's values sent on data.value
+        String data = $m.getData().getValue();
+        if(data != null) {
+
+            JsonObject dataJson = new JsonObject(data);
+            String hint = dataJson.getString("hint"); // hint may carry BEG_CODE
+            String quoterCode = dataJson.getString("itemCode"); // COMPANY who quoted
+            String userCode = $user.getuCode();
+            String linkCode= "LNK_BEG";
+            String linkValue= "OFFER";
+            String begCode= hint;
+
+            // quoter code is the COMPANY quoting the job
+            if(quoterCode != null) {                
+                
+                // Check if a link exists between BEG & QUOTED COMPANY
+                Boolean linkExists = QwandaUtils.checkIfLinkExistsForTarget(begCode, linkCode, userCode, tokenString );
+                System.out.println("LINK EXISTS ?  ::    "+ linkExists);
+
+                // Change link between BEG & QUOTED COMPANY  || WEIGHT = " 0 "
+                if(!linkExists){
+                    System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + userCode);
+                    Link link = new Link( begCode, userCode, linkCode, "QUOTER");
+                    link.setWeight(0.0);
+                    String output = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link),tokenString);
+                }
+
+
+                String oldGroup = "GRP_NO_QUOTES";
+                String newGroup = "GRP_QUOTES";
+                String linkCode2 = "LNK_CORE";
+                //Moving the BEG
+                JsonObject begEntity = new JsonObject();
+                begEntity.put("sourceCode", oldGroup);
+                begEntity.put("targetCode", begCode);
+                begEntity.put("attributeCode", linkCode2);
+                
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("EntityLink   ::   "+begEntity.toString());
+                System.out.println("------------------------------------------------------------------------");
+
+                String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString);
+                System.out.println("The Output after POST: "+output);
+
+                //Fectching updated link of BEG
+                JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + newGroup + "/linkcodes/" + linkCode2, tokenString));
+                
+                //Creating a data msg
+                JsonObject newLink = new JsonObject();
+                newLink.put("msg_type", "DATA_MSG");
+                newLink.put("data_type", "LINK_CHANGE");
+                newLink.put("items", updatedLink);
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Updated Link   ::  "+newLink.toString());
+                System.out.println("------------------------------------------------------------------------");
+                //publish new link data
+                newLink.put("token", tokenString );
+                bus.publish("cmds", newLink);
+
+
+                //Sending message to QUOTER | COMPANY
+                String code= "code:" + begCode ;
+                String recipient = "recipient:OWNER";
+                String[] msgMessageData = {code, recipient};
+                String templateCode = "MSG_CH40_CONFIRM_OFFER";
+                String[] attachments = {};           
+                QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("msgMessageData Array   ::   " + msgMessageData.toString());
+                
+                //Creating messageData MSG_MESSAGE
+                QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
+                JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("MESSAGE TO COMPANY   ::   " + jsonMessage.toString());
+                System.out.println("------------------------------------------------------------------------");
+                
+                jsonMessage.put("token",tokenString);
+                bus.publish("messages", jsonMessage);
             }
         }
 
@@ -158,10 +323,9 @@ rule "Accept Offer"
         bucketViewJson.put("token", tokenString);
         bus.publish("cmds", bucketViewJson);
 
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Accept Offer" + LOG_RESET);
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Confirm Offer" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
-
 rule "Make Offer"
 
     when

@@ -73,7 +73,7 @@ rule "Payments"
      
      System.out.println("userobj ::"+userobj);
      
-     Gson gson = new Gson();
+     com.google.gson.Gson gson = new com.google.gson.Gson();
      String objString = gson.toJson(userobj);
      
      System.out.println("user object string ::"+objString);
