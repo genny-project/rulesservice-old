@@ -98,8 +98,8 @@ rule "Select TreeView Item: DASHBOARD"
 		//Base Entity to be displayed in the table as header
 		JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));		
         //Getting B.E. to display in Bucket View with linkcode LNK_BEG
-        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
-        JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NEW_ITEMS/linkcodes/LNK_CORE/attributes", tokenString));
+        //JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject inTransitBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject completedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
@@ -114,7 +114,7 @@ rule "Select TreeView Item: DASHBOARD"
 		
 		headerGrps.put("token", $value);
 		noQuotesBEG.put("token", $value);
-		quotesBEG.put("token", $value);
+		//quotesBEG.put("token", $value);
 		approvedBEG.put("token", $value);
 		inTransitBEG.put("token", $value);
 		completedBEG.put("token", $value);
@@ -130,7 +130,7 @@ rule "Select TreeView Item: DASHBOARD"
 		//Publish noQuotes BEG
 		 bus.publish("cmds", noQuotesBEG);
 		//Publish Quotes BEG
-		 bus.publish("cmds", quotesBEG);
+	//	 bus.publish("cmds", quotesBEG);
 		 //Publish Approved BEG
 		 bus.publish("cmds", approvedBEG);
 		 //Publish In Transit BEG
@@ -235,7 +235,7 @@ end
 //Sending TableView with data for click on the lowest element of the Dashboard
 rule "Select Dashboard lower level child"
     when
-        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_NO_QUOTES" || data.value == "GRP_QUOTES" || data.value == "GRP_APPROVED" || data.value == "GRP_IN_TRANSIT" || data.value == "GRP_COMPLETED" || data.value == "GRP_PAID") )
+        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_NEW_ITEMS" || data.value == "GRP_APPROVED" || data.value == "GRP_IN_TRANSIT" || data.value == "GRP_COMPLETED" || data.value == "GRP_PAID") )
         bus: EventBus()
         $map : Map($value: this["token"] != null)  
     then
@@ -380,8 +380,7 @@ rule "Show more information about base entity"
 		    if(hint != null && baseEntityCode != null) {
 		    		
 		    		switch(hint) {
-				case "GRP_QUOTES":
-				case "GRP_NO_QUOTES": 
+				case "GRP_NEW_ITEMS": 
 				case "GRP_IN_TRANSIT": 
 				case "GRP_APPROVED": 
 				case "GRP_PAID": 
