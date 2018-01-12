@@ -51,6 +51,173 @@ global java.lang.String LOG_CYAN;
 global java.lang.String LOG_WHITE;
 global java.lang.String LOG_BOLD;
 
+rule "Accept Job"
+
+    when
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_ACCEPT_JOB")
+        bus: EventBus()
+        $user: User(realm != null )
+        $map : Map($value: this["token"] != null)
+        $map1 : Map($value1: this["realm"] != null)
+    then
+
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Accept Job" + LOG_RESET);
+
+         // Prepare GSON Deserialization
+        Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+                @Override
+                public LocalDateTime deserialize(final JsonElement json, final Type type,
+                    final JsonDeserializationContext jsonDeserializationContext)
+                    throws JsonParseException {
+                return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+
+                public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+                    final JsonSerializationContext context) {
+                return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
+                }
+            }).create();
+
+        Gson gson1 = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        gson1 = gsonBuilder.create();
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+
+        
+        // retrieve jsonObj's values sent on data.value
+        String data = $m.getData().getValue();
+        if(data != null) {
+            JsonObject dataJson = new JsonObject(data);
+            String hint = dataJson.getString("hint");
+            String begCode = dataJson.getString("itemCode"); // BEG_X ....
+            String userCode = $user.getuCode();
+            String userName = $user.getUname();
+                     
+            String linkCode= "LNK_BEG";
+            String linkOffer= "OFFER";
+            String linkQuoter= "QUOTER";
+
+            String begPrice = "1234" ;        
+
+            // Create Offer BE
+                BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId( userCode, null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
+                System.out.println("------------------------------------------------------------------------\n");
+                System.out.println("OFFER BASE ENTITY   ::   "+offer.toString());  
+                System.out.println("------------------------------------------------------------------------");
+
+                String offerCode= offer.getCode();
+                System.out.println("OFFER CODE   ::   "+offerCode);
+            
+            // Save attributes for OFFER as answer          
+                Answer price = new Answer(userCode, offerCode, "PRI_PRICE", begPrice);
+                Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
+                Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
+                Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
+                
+                List<Answer> answerList = new ArrayList<Answer>();	
+                answerList.add(price);
+                answerList.add(quoterCode);
+                answerList.add(quoterUname);
+                answerList.add(jobCode);
+
+                // save attributes
+                int i=1;
+                for (Answer answer : answerList) {
+                    System.out.println("Answer      " + i + "::   " + answer.toString());               
+                    QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
+                            gson1.toJson(answer), tokenString);
+                    i++;
+                    
+                }         
+            // link BEG and OFFER BE || OFFER
+                System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
+                Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
+                link1.setWeight(1.0);
+                String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link1),tokenString);
+            // link BEG and QUOTER BE || QUOTER
+                System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + userCode);
+                Link link2 = new Link( begCode, userCode, linkCode, linkQuoter);
+                link2.setWeight(0.0);
+                String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
+            //Sending updated link of BEG
+                JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
+                //Creating a data msg
+                JsonObject newLink = new JsonObject();
+                newLink.put("msg_type", "DATA_MSG");
+                newLink.put("data_type", "LINK_CHANGE");
+                newLink.put("items", updatedLink);
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Updated Link   ::  "+newLink.toString());
+                System.out.println("------------------------------------------------------------------------");
+                //publish new link data
+                newLink.put("token", tokenString );
+                bus.publish("cmds", newLink);
+            
+            //SEND OFFER BE AGAIN FOR UPDATE   
+                JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("UPDATED OFFER BE   ::  " + offerObj.toString());
+                System.out.println("------------------------------------------------------------------------");
+                offerObj.put("token", tokenString);      
+                bus.publish("cmds", offerObj);
+  
+
+
+            //SEND QUOTER BE AGAIN FOR UPDATE
+                JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));
+                quoterObj.put("aliasCode", "USER"); 
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("QUOTER BE   ::  " + quoterObj.toString());
+                System.out.println("------------------------------------------------------------------------");
+                quoterObj.put("token", tokenString);      
+                bus.publish("cmds", quoterObj);
+
+            // //Sending message to BEG OWNER
+                // String code= "code:" + begCode ;
+                // String recipient = "recipient:OWNER";
+                // String[] msgMessageData = {code, recipient};
+                // String templateCode = "MSG_CH40_ACCEPT_OFFER";
+                // String[] attachments = {};           
+                // QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
+
+                // System.out.println("------------------------------------------------------------------------");
+                // System.out.println("msgMessageData Array   ::   " + msgMessageData.toString());
+                
+                // //Creating messageData MSG_MESSAGE
+                // QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
+                // JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+
+                // System.out.println("------------------------------------------------------------------------");
+                // System.out.println("MESSAGE TO OWNER   ::   " + jsonMessage.toString());
+                // System.out.println("------------------------------------------------------------------------");
+                
+                // jsonMessage.put("token",tokenString);
+                // bus.publish("messages", jsonMessage);
+            
+        }
+
+        //sending cmd BUCKETVIEW
+            QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
+            JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+            bucketViewJson.put("root", "GRP_DRIVER_VIEW");
+            
+            System.out.println("------------------------------------------------------------------------");
+            System.out.println("BUCKETVIEW DATA   ::   " + bucketViewJson.toString());
+            System.out.println("------------------------------------------------------------------------");
+            
+            bucketViewJson.put("token", tokenString);
+            bus.publish("cmds", bucketViewJson);
+
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Accept Job" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+end
+
 rule "Accept Offer"
 
     when
