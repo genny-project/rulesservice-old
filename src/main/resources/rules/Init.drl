@@ -530,8 +530,7 @@ rule "Send BucketView"
         JsonObject grpLinks = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE/attributes", tokenString));
         //Getting B.E. to display in Bucket View
         JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE/attributes", tokenString));	
-        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NO_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
-        JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString));
+        JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NEW_ITEMS/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject approvedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject inTransitBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE/attributes", tokenString));
         JsonObject completedBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes", tokenString));
@@ -546,7 +545,6 @@ rule "Send BucketView"
 		grpLinks.put("token", $value);
 		headerGrps.put("token", $value);
 		noQuotesBEG.put("token", $value);
-		quotesBEG.put("token", $value);
 		approvedBEG.put("token", $value);
 		inTransitBEG.put("token", $value);
 		completedBEG.put("token", $value);
@@ -563,8 +561,6 @@ rule "Send BucketView"
         bus.publish("cmds", headerGrps);	
         //Publish noQuotes BEG
         bus.publish("cmds", noQuotesBEG);
-        //Publish Quotes BEG
-        bus.publish("cmds", quotesBEG);
         //Publish Approved BEG
         bus.publish("cmds", approvedBEG);
         //Publish In Transit BEG
