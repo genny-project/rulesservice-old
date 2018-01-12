@@ -60,8 +60,9 @@ rule "Facebook Redirect"
     String clientId= "423902461306952";
     String clientSecret= "a7bd50640f9914b95756ae8f5680751b";
     String redirectUrl= "https://www.facebook.com/v2.8/dialog/oauth?response_type=code";
-    
-    String askId = $m.getData().getValue();
+    	
+    	JsonObject data = new JsonObject($m.getData().getValue());
+    String askId = data.getInteger("askId").toString();
     System.out.println("Ask ID   ::   "+askId);
 
     JsonObject ask = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asks/"+askId, tokenString));
