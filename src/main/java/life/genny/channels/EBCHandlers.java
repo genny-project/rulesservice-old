@@ -73,7 +73,7 @@ public class EBCHandlers {
 
 	public static void registerHandlers(final EventBus eventBus) {
 		EBConsumers.getFromCmds().subscribe(arg -> {
-			JsonObject payload = processMessage("Command", arg);
+			JsonObject payload = processMessage("Service Command", arg);
 
 			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
 				if ("RELOAD_RULES_FROM_FILES".equals(payload.getString("code"))) {

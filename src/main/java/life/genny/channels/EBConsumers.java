@@ -8,7 +8,7 @@ public class EBConsumers {
 	
 	private static Observable<Message<Object>> fromEvents;
 	private static Observable<Message<Object>> fromData;
-	private static Observable<Message<Object>> fromRules;
+	private static Observable<Message<Object>> fromServices;
 	private static Observable<Message<Object>> fromCmds;	
 	/**
 	 * @return the events
@@ -44,15 +44,15 @@ public class EBConsumers {
 	/**
 	 * @return the fromRules
 	 */
-	public static Observable<Message<Object>> getFromRules() {
-		return fromRules;
+	public static Observable<Message<Object>> getFromServices() {
+		return fromServices;
 	}
 
 	/**
 	 * @param fromRules the fromRules to set
 	 */
-	public static void setFromRules(Observable<Message<Object>> fromRules) {
-		EBConsumers.fromRules = fromRules;
+	public static void setFromServices(Observable<Message<Object>> fromServices) {
+		EBConsumers.fromServices = fromServices;
 	}
 
 	
@@ -74,7 +74,7 @@ public class EBConsumers {
 	public static void registerAllConsumer(EventBus eb){
 		setFromData(eb.consumer("data").toObservable());
 		setFromEvents(eb.consumer("events").toObservable());
-		setFromRules(eb.consumer("rules").toObservable());
+		setFromServices(eb.consumer("services").toObservable());
 		setFromCmds(eb.consumer("cmds").toObservable());
 	}
 	

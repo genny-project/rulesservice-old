@@ -28,7 +28,7 @@ rule "test-user"
      
    then
       System.out.println("-------- Rule:- Test user role- user--------");	
-      System.out.println(" Hello! "+ $user.getFullName());
+      System.out.println(" Hello!!! "+ $user.getFullName());
       System.out.println(" Your username is: "+ $user.getUname());
       System.out.println(" Your have user role: user");   
 end
