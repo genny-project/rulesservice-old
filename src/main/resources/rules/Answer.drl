@@ -60,8 +60,8 @@ rule "Answer"
         $map : Map($value: this["token"] != null)
     then    
 
-        System.out.println("\u001B[33m ================================================================================================================================================ \u001B[0m");
-        System.out.println("\u001B[32m RULE EXECUTED      ::   Answer \u001B[0m");
+        System.out.println("================================================================================================================================================");
+        System.out.println("RULE EXECUTED      ::   Answer");
         
         //Prepare Token & qwandaServiceUrl
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
@@ -92,88 +92,10 @@ rule "Answer"
             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
             System.out.println("------------------------------------------------------------------------");
             
-            // if this answer is actually an address we parse the value (json representation of the address) and update all the attributes
-            if(attributeCode.contains("ADDRESS1")) {
+            // if this answer is actually an address another rule will be triggered
+            if(!attributeCode.contains("ADDRESS1")) {
             
-            		System.out.println("UPDATING ADDRESS ANSWER");
-            		try {
-            			
-            			// TODO: this could be done in a loop! no need to hardcode stuff
-            			JsonObject addressDataJson = new JsonObject(value);
-            			System.out.println(addressDataJson.toString());
-            			
-            			if(addressDataJson.containsKey("full_address")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "FULL");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("full_address"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-            			
-            			if(addressDataJson.containsKey("street_address")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "ADDRESS1");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("street_address"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-            			
-            			if(addressDataJson.containsKey("suburb")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "SUBURB");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("suburb"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-
-            			if(addressDataJson.containsKey("state")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "STATE");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("state"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-            			
-            			if(addressDataJson.containsKey("postal_code")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "POSTCODE");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("postal_code"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-            			
-            			if(addressDataJson.containsKey("country")) {
-            				
-            				String newAttributeCode = attributeCode.replace("ADDRESS1", "COUNTRY");
-            				answer.setAttributeCode(newAttributeCode);
-            				answer.setValue(addressDataJson.getString("country"));
-            				String jsonAnswer = gson.toJson(answer);
-			            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonAnswer, tokenString);
-	
-            			}
-            		}
-            		catch (Exception e) {
-            		}
-            }
-            else {
-            	
-	            	//convert answer to json
+             	//convert answer to json
 	            String jsonAnswer = gson.toJson(answer);
 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 	
@@ -184,13 +106,77 @@ rule "Answer"
 	            //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
 	
 	            // post answers to qwanda-utils
-	            String output= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+            		
             }
          }      
+        
         System.out.println("\n \u001B[31m RULE TERMINATED    ::   Answer \u001B[0m ");
         System.out.println( "\u001B[33m ------------------------------------------------------------------------------------------------------------------------------------------------  \u001B[0m");
            
-    end
+end
+
+// Update address 
+rule "Update Address"
+	when
+		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+	    bus: EventBus()
+	    $map : Map($value: this["token"] != null)
+		bus: EventBus()
+	then
+	
+		try {
+			
+			Answer[] newAnswers = new Answer[];
+			Answer[] answers = m.getItems();
+			
+	        for (Answer answer : answers) {
+	        
+	            String targetCode = answer.getTargetCode();
+	            answer.setSourceCode(answer.getTargetCode());
+	            String attributeCode = answer.getAttributeCode();
+	            String value = answer.getValue();
+	            JsonObject addressDataJson = new JsonObject(value);
+	           
+	            // if this answer is actually an address another rule will be triggered
+	            if(attributeCode.contains("ADDRESS1")) {
+	            	
+		            	Map<String, String> availableKeys = new HashMap<String, String>();
+		    			availableKeys.put("full_address", "FULL");
+		    			availableKeys.put("street_address", "ADDRESS1");
+		    			availableKeys.put("suburb", "SUBURB");
+		    			availableKeys.put("state", "STATE");
+		    			availableKeys.put("postal_code", "POSTCODE");
+		    			availableKeys.put("country", "COUNTRY");
+		    			
+		    			for (Map.Entry<String, String> entry : map.entrySet())
+		    			{	
+		    				String key = entry.getKey();
+		    				String value = entry.getValue();
+		    				
+		    				if(addressDataJson.containsKey(key)) {
+		    					
+		    					String newAttributeCode = attributeCode.replace("ADDRESS1", value);
+		    					answer.setAttributeCode(newAttributeCode);
+		    					answer.setValue(addressDataJson.getString(key));
+		    					String jsonAnswer = gson.toJson(answer);
+		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		    					newAnswers.add(answerObj);		    		
+		    				}
+		    			}
+		    			
+		    			// set new answers
+		    			m.setItems(newAnswers);
+		    			String json = gson.toJson(m);
+		    			
+		    			// send new answers to api 
+		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
+	            }
+	         }
+		}
+		catch (Exception e) {
+		}
+end
 
 //Rule listening to Attribute change
 rule "Listen Attribute Change"
