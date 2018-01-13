@@ -1,4 +1,4 @@
-package com.sample
+package com.sample;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -193,7 +193,7 @@ rule "Clear User Attribute"
 
 		System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Clear User Attribute " + LOG_RESET);
 		System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET); 
-	end
+end
 	
 	
 	

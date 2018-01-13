@@ -1,4 +1,4 @@
-package com.sample
+package com.sample;
  
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
@@ -36,15 +36,15 @@ import life.genny.qwanda.DateTimeDeserializer;
 
 rule "KEYCLOAK_LOGOUT"
     when
-    	eval(false)
-      //  m : QEventMessage( QEventMessage.getData().getCode().equals("KEYCLOAK_LOGOUT") )
-      //  bus: EventBus()
-      // $map : Map($value: this["token"])
+      eval(false)
+       m : QEventMessage( QEventMessage.getData().getCode().equals("KEYCLOAK_LOGOUT") ) 
+      bus: EventBus() 
+      $map : Map($value: this["token"] != null)
        
-       // $map: Map(this["token"])
+       /* $map: Map(this["token"])  */
     then
-/*		System.out.println("Alyson KEYCLOAK_LOGOUT RULE");
- //		System.out.println("Rule Token is "+((String)$map.get("token")));
+		System.out.println("Alyson KEYCLOAK_LOGOUT RULE");
+  /*		System.out.println("Rule Token is "+((String)$map.get("token")));  */
   	   String  keycloakProto = System.getenv("KEYCLOAK_PROTO")!=null?System.getenv("KEYCLOAK_PROTO"): "http://";
 	    String keycloakPort = System.getenv("KEYCLOAK_PORT")!=null?System.getenv("KEYCLOAK_PORT"): "8180";
 	   String  keycloakIP = System.getenv("HOSTIP")!=null?System.getenv("HOSTIP"): "localhost";
@@ -61,10 +61,9 @@ rule "KEYCLOAK_LOGOUT"
  		
  		System.out.println(keycloakUrl+":"+keycloakClientId+":"+keycloakUser+":"+keycloakPassword+":"+realm+":"+secret+":"+qwandaServiceUrl);
   
-  
-  
-  	    String tokenString = (String)$map.get("token"); //KeycloakUtils.getToken(keycloakUrl,realm, keycloakClientId, secret, keycloakUser, keycloakPassword);
-	//	System.out.println("tokenstr="+tokenString);
+  	    String tokenString = (String)$map.get("token"); 
+ 
+  	/*	System.out.println("tokenstr="+tokenString); */
 	String usercode = "PER_"+ m.getData().getValue().toUpperCase();
 		String json = QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+usercode+"/attributes", tokenString);
 
@@ -72,10 +71,6 @@ rule "KEYCLOAK_LOGOUT"
 		System.out.println("Json="+json);	
 		System.out.println("*******************");
 						
-	//	bus.publish("cmds", json);
-  */
-        
+	/*	bus.publish("cmds", json);  */    
+  
 end
-	
- 
-

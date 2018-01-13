@@ -54,7 +54,9 @@ public class RulesLoader {
 		final Future<Void> fut = Future.future();
 		vertx.executeBlocking(exec -> {
 			 setKieBaseCache(new HashMap<String, KieBase>());   // clear
-		     processFile(vertx,rulesDir);
+		     List<Tuple2<String, String>> rules = processFile(vertx,rulesDir);
+				setupKieRules("rules", rules);
+
 			fut.complete();
 		}, failed -> {
 		});
@@ -63,30 +65,29 @@ public class RulesLoader {
 	}
 
 
-	private static Tuple2<String, String> processFile(final Vertx vertx, String inputFileStr) {
+	private static List<Tuple2<String, String>> processFile(final Vertx vertx, String inputFileStr) {
 		File file = new File(inputFileStr);
 		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*","$1");
-		
+		List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
+
 		if (!file.isFile()) {
 			final List<String> filesList = vertx.fileSystem().readDirBlocking(inputFileStr);
 
-			List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 			for (final String dirFileStr : filesList) {
-				Tuple2<String, String> rule = processFile(vertx, dirFileStr); // use directory name as rulegroup
-				rules.add(rule);
-				System.out.println("Loading in Rule:" + rule._1 + " of "+ fileName);
+				List<Tuple2<String, String>> childRules = processFile(vertx, dirFileStr); // use directory name as rulegroup
+				rules.addAll(childRules);
 			}
-			setupKieRules(fileName, rules);
-			return null;
+			return rules;
 		} else {
 			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
 			try {
 				final String ruleText = buf.toString();
 
 				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
-			
+				System.out.println("Loading in Rule:" + rule._1 + " of "+ inputFileStr);
+				rules.add(rule);
 
-				return rule;
+				return rules;
 			} catch (final DecodeException dE) {
 
 			}

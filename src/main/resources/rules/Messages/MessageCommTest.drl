@@ -1,0 +1,70 @@
+package com.sample;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
+import java.util.Map;
+
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QCmdMessage;
+
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+
+rule "MsgCommTest"
+    when
+        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && data.value == "GRP_COMMS_TEST" )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+    then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Msg Comm Test Layout" + LOG_RESET);
+        /* Prepare Token & qwandaServiceUrl  */
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token");   
+        /* Get Genny Layout */
+         String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/test_comm.json", null);
+      
+        QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");
+        JsonObject layoutObj = new JsonObject().mapFrom(cmd);
+        layoutObj.put("data", new JsonObject(layout));
+        layoutObj.put("token", tokenString);
+        /* layoutObj.put("data", testLayoutObj); */
+
+        System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("Message Comm Test LAYOUT   ::   "+layoutObj.toString());
+        System.out.println("------------------------------------------------------------------------");
+        bus.publish("cmds", layoutObj);
+         
+        JsonObject quesGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl +"/qwanda/baseentitys/PER_USER1/asks2/QUE_TEST_COMMS_GRP/TST_COMMS", tokenString));
+        /* PRINT QUESTIONS */
+        quesGrp.put("token", tokenString);
+        System.out.println("------------------------------------------------------------------------\n");
+        System.out.println("QUESTION GROUP   ::   "+quesGrp.toString());
+        System.out.println("------------------------------------------------------------------------");
+        bus.publish("cmds", quesGrp);
+        
+        /* Get TST_COMMS BE */
+       JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_TEST/attributes?PRI_USERNAME=test", tokenString));
+       
+       System.out.println("userObj ::"+userObj);
+       userObj.put("token", tokenString);      
+       bus.publish("cmds", userObj);
+
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Msg Comm Test Layout" + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+
+end
+

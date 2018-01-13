@@ -1,4 +1,4 @@
-package com.sample
+package com.sample;
 
 import org.apache.commons.lang3.StringUtils;
 

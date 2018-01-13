@@ -1,11 +1,14 @@
-package com.sample
+package com.sample;
 
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.User;
 import io.vertx.rxjava.core.eventbus.EventBus;
 
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+
+import java.util.Map;
 
 global java.lang.String LOG_RESET;
 global java.lang.String LOG_RED;
@@ -19,8 +22,8 @@ global java.lang.String LOG_BOLD;
 
 rule "New assembly user creation on profile submit"
  when
-     //$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" ) //This fact might be removed in future
-     $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
+     /* $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" ) //This fact might be removed in future */
+     $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true && false) )
      $map : Map($value: this["token"] != null)
    then
      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
@@ -28,27 +31,25 @@ rule "New assembly user creation on profile submit"
      
      String tokenString = (String)$map.get("token"); 
      
-     //get assembly authKey   
+     /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
      
-     //Creates assembly userId
+     /*  Creates assembly userId */
      String assemblyId = PaymentUtils.createAssemblyId(tokenString);
      
      System.out.println("Assembly auth key ::"+assemblyAuthToken);
      System.out.println("Assembly user ID ::"+assemblyId);
      
-     //Check If user already exists in Assembly     
+     /* Check If user already exists in Assembly    */  
      Boolean isAssemblyUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId, assemblyAuthToken);
      System.out.println("is assembly user exists ::"+isAssemblyUserExists);
      
      if(!isAssemblyUserExists) {
-     	//logic to create assembly user - under development
-     	//PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken);
+     	/* logic to create assembly user - under development  */
+     	/* PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken);  */
      }
      
      
    	 System.out.println("\n \u001B[31m RULE TERMINATED    ::   Payments \u001B[0m ");
      System.out.println( "\u001B[33m ------------------------------------------------------------------------------------------------------------------------------------------------  \u001B[0m"); 
-     
 end     
-

@@ -1,4 +1,4 @@
-package com.sample
+package com.sample;
  
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -29,9 +29,9 @@ import java.time.format.DateTimeFormatter;
 import org.apache.commons.lang3.StringUtils;
 import life.genny.qwanda.DateTimeDeserializer;
 
- global java.lang.String REACT_APP_QWANDA_API_URL;
- global java.lang.String REACT_APP_VERTX_URL;
- global java.lang.String KEYCLOAKIP;
+global java.lang.String REACT_APP_QWANDA_API_URL;
+global java.lang.String REACT_APP_VERTX_URL;
+global java.lang.String KEYCLOAKIP;
    
 
 rule "ShowQuestions"
@@ -57,24 +57,9 @@ rule "ShowQuestions"
  		
  		System.out.println(keycloakUrl+":"+keycloakClientId+":"+keycloakUser+":"+keycloakPassword+":"+realm+":"+secret+":"+qwandaServiceUrl);
   
-  
-  
-  	    String tokenString = (String)$map.get("token"); //KeycloakUtils.getToken(keycloakUrl,realm, keycloakClientId, secret, keycloakUser, keycloakPassword);
+  	    String tokenString = (String)$map.get("token"); 
 		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		String json = QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/asksmsg", tokenString);
 		
-	    JsonObject obj = new JsonObject();
-		obj.put("msg_type", "DATA_MSG");
-		obj.put("data_type", "Asks");
-		obj.put("params", new JsonObject(json));
-		obj.put("token", $value);	
-		System.out.println("*******************");
-		System.out.println("SHowQuestions:Json="+json);	
-		System.out.println("*******************");
-						
-		bus.publish("cmds", json);
-  
-end
-	
- 
-
+		bus.publish("cmds", json); 
+ end

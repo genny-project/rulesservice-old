@@ -1,4 +1,4 @@
-package com.sample
+package com.sample;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,6 +36,7 @@ import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
 
 // global java.lang.String REACT_APP_QWANDA_API_URL;
 // global java.lang.String REACT_APP_VERTX_URL;
@@ -457,7 +458,7 @@ rule "Send Memberhub Layout"
         System.out.println("------------------------------------------------------------------------");
         friendList.put("token", $value);
         bus.publish("cmds", friendList);
-
+  
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Memberhub Layout" + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
@@ -541,6 +542,13 @@ rule "Send BucketView"
         JsonObject quotes2 = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000003/linkcodes/LNK_BEG/attributes", tokenString)); 
         JsonObject approved = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000004/linkcodes/LNK_BEG/attributes", tokenString));
         JsonObject inTransit = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes", tokenString)); 
+		
+	//	JsonArray beg4items = approved.getJsonArray("items");
+	//	JsonArray beg4 = beg4items.getJsonArray(0);
+	//	JsonArray ees = beg4.getJsonArray(0);
+	//	JsonObject link = ees.getJsonObject(0).getJsonObject("link");
+	//	link.put("parentColor","#FDE1EA");
+	//	link.put("childColor","#FDE1EA"); // keys and indexes to be checked ADAM
 		
 		grpLinks.put("token", $value);
 		headerGrps.put("token", $value);

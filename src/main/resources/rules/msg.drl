@@ -2,13 +2,17 @@ package com.sample;
 
 import life.genny.qwanda.message.QBaseMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 
 
-/*
 rule "msg"
+	date-expires "20-JUN-1964"	
     when
         $obj: Object()
         bus: EventBus()
+        eval(false)
     then 
     	   QBaseMSGMessage msgMessage = new QBaseMSGMessage();
        msgMessage.setMsgMessageType(QBaseMSGMessageType.EMAIL);
@@ -30,30 +34,30 @@ rule "msg"
        String[] emailAttachments1 = {};
        msgMessage1.setAttachments(emailAttachments1);
        
-       /*
-       List<QBaseMSGMessage> msgList = new ArrayList<>();
+       
+     /*  List<QBaseMSGMessage> msgList = new ArrayList<QBaseMSGMessage>();
        msgList.add(msgMessage);
        msgList.add(msgMessage1);
-       */
        
-      /* JsonObject data = new JsonObject();
+       
+      JsonObject data = new JsonObject();
        data = JsonObject.mapFrom(msgMessage);
        
        JsonObject data1 = new JsonObject();
        data1 = JsonObject.mapFrom(msgMessage1);
        
-       JsonArray msglist = new JsonArray();
-       msglist.add(data);
-       msglist.add(data1);    
+       JsonArray msglist2 = new JsonArray();
+       msglist2.add(data);
+       msglist2.add(data1);    
        
            
        JsonObject eventMsg = new JsonObject();
        eventMsg.put("msg_type", "EVT_MSG");
        eventMsg.put("event_type", "message");
-       eventMsg.put("msgMessageData", msglist);
+       eventMsg.put("msgMessageData", msglist2);
        
        bus.publish("messages", eventMsg);
- 
-end*/
+ */
+end
 
 	

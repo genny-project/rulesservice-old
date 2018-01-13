@@ -1,5 +1,8 @@
 package life.genny.rules;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -78,10 +81,15 @@ public class RuleTest {
 
 	@Test
 	public void checkAllRules() {
-		readFilenamesFromDirectory("src/main/resources/rules");
+		Boolean allCompiled = readFilenamesFromDirectory("src/main/resources/rules");
+		if (!allCompiled) {
+			// This forces us to fix Rules!
+			assertTrue("Drools Compile Error!",false);
+		}
 	}
 
-	private void readFilenamesFromDirectory(String rootFilePath) {
+	private Boolean readFilenamesFromDirectory(String rootFilePath) {
+		Boolean compileOk = true;
 		final File folder = new File(rootFilePath);
 		final File[] listOfFiles = folder.listFiles();
 
@@ -95,6 +103,8 @@ public class RuleTest {
 					Results results = kieHelper.verify();
 					for (Message message : results.getMessages()) {
 						log.error(">> Message ({}): {}", message.getLevel(), message.getText());
+						compileOk = false;
+						assertTrue("Drools Compile Error in "+listOfFiles[i].getName(),false);
 					}
 
 				} catch (final IOException e) {
@@ -104,9 +114,10 @@ public class RuleTest {
 
 			} else if (listOfFiles[i].isDirectory()) {
 				System.out.println("Directory " + listOfFiles[i].getName());
-				readFilenamesFromDirectory(listOfFiles[i].getName());
+				readFilenamesFromDirectory(rootFilePath+"/"+listOfFiles[i].getName());
 			}
 		}
+		return compileOk;
 	}
 
 	private static String getFileAsText(final File file) throws IOException {
