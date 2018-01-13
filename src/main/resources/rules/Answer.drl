@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.Iterator;
 //import java.util.ArrayList;
 //import java.util.List;
+import java.util.HashMap; 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -122,14 +123,18 @@ rule "Update Address"
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
 	    bus: EventBus()
 	    $map : Map($value: this["token"] != null)
-		bus: EventBus()
 	then
 	
 		try {
 			
-			Answer[] newAnswers = new Answer[];
+			Answer[] newAnswers = new Answer[m.getItems().length];
 			Answer[] answers = m.getItems();
-			
+			GsonBuilder gsonBuilder = new GsonBuilder();
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	        Gson gson = gsonBuilder.create();
+	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+	        String tokenString = (String)$map.get("token"); 
+	        
 	        for (Answer answer : answers) {
 	        
 	            String targetCode = answer.getTargetCode();
@@ -149,19 +154,21 @@ rule "Update Address"
 		    			availableKeys.put("postal_code", "POSTCODE");
 		    			availableKeys.put("country", "COUNTRY");
 		    			
-		    			for (Map.Entry<String, String> entry : map.entrySet())
+		    			int i = 0;
+		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
 		    			{	
 		    				String key = entry.getKey();
-		    				String value = entry.getValue();
+		    				String valueEntry = entry.getValue();
 		    				
 		    				if(addressDataJson.containsKey(key)) {
 		    					
-		    					String newAttributeCode = attributeCode.replace("ADDRESS1", value);
+		    					String newAttributeCode = attributeCode.replace("ADDRESS1", valueEntry);
 		    					answer.setAttributeCode(newAttributeCode);
 		    					answer.setValue(addressDataJson.getString(key));
 		    					String jsonAnswer = gson.toJson(answer);
 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-		    					newAnswers.add(answerObj);		    		
+		    					newAnswers[i] = answerObj;
+		    					i++;
 		    				}
 		    			}
 		    			
