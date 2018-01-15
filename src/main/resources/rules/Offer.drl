@@ -102,8 +102,9 @@ rule "Accept Job"
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
 
-            String begPrice = "1234" ;        
-
+            //get BEG PRICE           
+                String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
+                System.out.println("BEG PRICE   ::   "+begPrice);
             // Create Offer BE
                 BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId( userCode, null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
                 System.out.println("------------------------------------------------------------------------\n");
@@ -115,12 +116,14 @@ rule "Accept Job"
             
             // Save attributes for OFFER as answer          
                 Answer price = new Answer(userCode, offerCode, "PRI_PRICE", begPrice);
+                Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
                 Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
                 Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
                 Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
                 
                 List<Answer> answerList = new ArrayList<Answer>();	
                 answerList.add(price);
+                answerList.add(offercode);
                 answerList.add(quoterCode);
                 answerList.add(quoterUname);
                 answerList.add(jobCode);
@@ -129,8 +132,9 @@ rule "Accept Job"
                 int i=1;
                 for (Answer answer : answerList) {
                     System.out.println("Answer      " + i + "::   " + answer.toString());               
-                    QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
+                    String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
                             gson1.toJson(answer), tokenString);
+                            System.out.println("Result      " + i + "::   " + result );
                     i++;
                     
                 }         
@@ -160,7 +164,7 @@ rule "Accept Job"
                 bus.publish("cmds", newLink);
             
             //SEND OFFER BE AGAIN FOR UPDATE   
-                JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));
+                JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("UPDATED OFFER BE   ::  " + offerObj.toString());
                 System.out.println("------------------------------------------------------------------------");
@@ -170,35 +174,34 @@ rule "Accept Job"
 
 
             //SEND QUOTER BE AGAIN FOR UPDATE
-                JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));
-                quoterObj.put("aliasCode", "USER"); 
+                JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("QUOTER BE   ::  " + quoterObj.toString());
                 System.out.println("------------------------------------------------------------------------");
                 quoterObj.put("token", tokenString);      
                 bus.publish("cmds", quoterObj);
 
-            // //Sending message to BEG OWNER
-                // String code= "code:" + begCode ;
-                // String recipient = "recipient:OWNER";
-                // String[] msgMessageData = {code, recipient};
-                // String templateCode = "MSG_CH40_ACCEPT_OFFER";
-                // String[] attachments = {};           
-                // QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
+            //Sending message to BEG OWNER
+                String code= "code:" + begCode ;
+                String recipient = "recipient:OWNER";
+                String[] msgMessageData = {code, recipient};
+                String templateCode = "MSG_CH40_ACCEPT_OFFER";
+                String[] attachments = {};           
+                QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
 
-                // System.out.println("------------------------------------------------------------------------");
-                // System.out.println("msgMessageData Array   ::   " + msgMessageData.toString());
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("msgMessageData Array   ::   " + msgMessageData.toString());
                 
-                // //Creating messageData MSG_MESSAGE
-                // QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
-                // JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
+                //Creating messageData MSG_MESSAGE
+                QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
+                JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
 
-                // System.out.println("------------------------------------------------------------------------");
-                // System.out.println("MESSAGE TO OWNER   ::   " + jsonMessage.toString());
-                // System.out.println("------------------------------------------------------------------------");
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("MESSAGE TO OWNER   ::   " + jsonMessage.toString());
+                System.out.println("------------------------------------------------------------------------");
                 
-                // jsonMessage.put("token",tokenString);
-                // bus.publish("messages", jsonMessage);
+                jsonMessage.put("token",tokenString);
+                bus.publish("messages", jsonMessage);
             
         }
 
