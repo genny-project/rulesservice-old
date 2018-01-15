@@ -127,7 +127,7 @@ rule "Update Address"
 	
 		try {
 			
-			Answer[] newAnswers = new Answer[m.getItems().length];
+			Answer[] newAnswers = new Answer[100];
 			Answer[] answers = m.getItems();
 			GsonBuilder gsonBuilder = new GsonBuilder();
 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
@@ -141,6 +141,9 @@ rule "Update Address"
 	            answer.setSourceCode(answer.getTargetCode());
 	            String attributeCode = answer.getAttributeCode();
 	            String value = answer.getValue();
+	            
+	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+	            
 	            JsonObject addressDataJson = new JsonObject(value);
 	           
 	            // if this answer is actually an address another rule will be triggered
@@ -153,12 +156,15 @@ rule "Update Address"
 		    			availableKeys.put("state", "STATE");
 		    			availableKeys.put("postal_code", "POSTCODE");
 		    			availableKeys.put("country", "COUNTRY");
-		    			
+		    					    					    			
 		    			int i = 0;
 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
 		    			{	
+		    				
 		    				String key = entry.getKey();
 		    				String valueEntry = entry.getValue();
+		    				
+		    				System.out.println("answer updated key ::"+key + ", value ::"+valueEntry + ",i value ::"+i );
 		    				
 		    				if(addressDataJson.containsKey(key)) {
 		    					
@@ -170,11 +176,13 @@ rule "Update Address"
 		    					newAnswers[i] = answerObj;
 		    					i++;
 		    				}
+		    				
 		    			}
 		    			
 		    			// set new answers
 		    			m.setItems(newAnswers);
 		    			String json = gson.toJson(m);
+		    			System.out.println("updated answer json string ::"+json);
 		    			
 		    			// send new answers to api 
 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
@@ -182,6 +190,7 @@ rule "Update Address"
 	         }
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 		}
 end
 
