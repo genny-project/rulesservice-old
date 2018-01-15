@@ -41,13 +41,13 @@ rule "Create New LoadItem - SUBMIT"
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String loadItemCode = dataJson.getString("targetCode");
-        String actionValue =  dataJson.getString("action");
+        String actionCode =  dataJson.getString("action");
         System.out.println("The Load Item code is   ::  "+loadItemCode);
-        System.out.println("The action is   ::  "+actionValue);
+        System.out.println("The action is   ::  "+actionCode);
         
         //Get the sourceCode(load code) for this LOAD_ITEM
-        JsonObject dataJson = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"qwanda/entityentitys/"+loadItemCode+"/linkcodes/LNK_LOAD_ITEM/parents", tokenString));
-        String loadCode = dataJson.getString("sourceCode");
+        JsonObject parentDataJson = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"qwanda/entityentitys/"+loadItemCode+"/linkcodes/LNK_LOAD_ITEM/parents", tokenString));
+        String loadCode = parentDataJson.getString("sourceCode");
         System.out.println("The Load code is   ::  "+loadCode);
         
       if(actionCode.equalsIgnoreCase("submit")){       
