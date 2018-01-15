@@ -46,11 +46,12 @@ rule "Create New LoadItem - SUBMIT"
         System.out.println("The action is   ::  "+actionCode);
         
         //Get the sourceCode(load code) for this LOAD_ITEM
-        JsonObject parentDataJson = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"qwanda/entityentitys/"+loadItemCode+"/linkcodes/LNK_LOAD_ITEM/parents", tokenString));
-        String loadCode = parentDataJson.getString("sourceCode");
+        JsonArray parentDataJson = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+loadItemCode+"/linkcodes/LNK_LOAD_ITEM/parents", tokenString));
+        JsonObject objectInArray = parentDataJson.getJsonObject(0);
+        String loadCode = objectInArray.getString("sourceCode");
         System.out.println("The Load code is   ::  "+loadCode);
         
-      if(actionCode.equalsIgnoreCase("submit")){       
+     if(actionCode.equalsIgnoreCase("submit")){       
          //link newly created Item to the LOAD
         // QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(loadCode,loadItemCode,"LNK_LOAD_ITEM")),tokenString);
          //Getting Post Load Question GRP
@@ -75,7 +76,7 @@ rule "Create New LoadItem - SUBMIT"
       } 
 
         
-       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New Load Item   " + LOG_RESET);
+       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New Load Item - SUBMIT   " + LOG_RESET);
        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
 end

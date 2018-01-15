@@ -137,7 +137,7 @@ rule "Create New LoadItem - SUBMIT inside"
       } 
 
         
-       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New Load Item   " + LOG_RESET);
+       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New Load Item - SUBMIT   " + LOG_RESET);
        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
         
 end
