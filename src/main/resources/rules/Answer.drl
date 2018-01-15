@@ -117,7 +117,7 @@ rule "Answer"
            
 end
 
-// Update address 
+/* Update address */ 
 rule "Update Address"
 	when
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
@@ -146,7 +146,7 @@ rule "Update Address"
 	            
 	            JsonObject addressDataJson = new JsonObject(value);
 	           
-	            // if this answer is actually an address another rule will be triggered
+	            /* if this answer is actually an address another rule will be triggered */
 	            if(attributeCode.contains("ADDRESS1")) {
 	            	
 		            	Map<String, String> availableKeys = new HashMap<String, String>();
@@ -179,18 +179,17 @@ rule "Update Address"
 		    				
 		    			}
 		    			
-		    			// set new answers
+		    			/* set new answers */
 		    			m.setItems(newAnswers);
 		    			String json = gson.toJson(m);
 		    			System.out.println("updated answer json string ::"+json);
 		    			
-		    			// send new answers to api 
+		    			/* send new answers to api */ 
 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
 	            }
 	         }
 		}
 		catch (Exception e) {
-			e.printStackTrace();
 		}
 end
 
