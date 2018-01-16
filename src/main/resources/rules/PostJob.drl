@@ -118,12 +118,32 @@ rule "Post Job"
          begEntity.put("attributeCode","LNK_CORE");
  	     String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
  	     System.out.println("The Output after POST: "+output);
+         
+         //create answer to update default Job image 
+         String imageUrl = "https://dummyimage.com/100/85e085/ffffff.png&text=L";       
+         Answer jobImage = new Answer($user.getuCode(), jobCode, "PRI_IMAGE_URL", imageUrl);
+         String jsonJobImageAnswerStr = gson.toJson(jobImage);
+         JsonObject jsonJobImageAnswer = new JsonObject(jsonJobImageAnswerStr);
+         //creating Json array
+         JsonArray imageItem = new JsonArray();
+         imageItem.add(jsonJobImageAnswer);
+         //Creating Answer DATA_MSG
+         JsonObject objAns = new JsonObject();
+         objAns.put("msg_type", "DATA_MSG");
+         objAns.put("data_type", "Answer");
+         objAns.put("items", imageItem); 
+         //Print Answer
+         System.out.println("\nSaving PRI_IMAGE_URL as an Answer   ::    "+objAns.toString()); 
+         objAns.put("token",tokenString);
+         bus.publish("data", objAns);
    
         String fullPickupAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_PICKUP_ADDRESS", tokenString);
         String fullDropOffAddress = QwandaUtils.getCompleteAddress(jobCode, "PRI_FULL_DROPOFF_ADDRESS", tokenString);
         
         System.out.println("Full pickup address is     ::    "+fullPickupAddress);
         System.out.println("Full dropoff address is     ::    "+fullDropOffAddress);
+        
+        
         //create answer to update full pickup address to the job
         Answer pickupAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_PICKUP_ADDRESS", fullPickupAddress);
         String jsonPickUpAnswerStr = gson.toJson(pickupAddress);
@@ -140,6 +160,7 @@ rule "Post Job"
          System.out.println("\nSaving PRI_FULL_PICKUP_ADDRESS as an Answer   ::    "+obj.toString()); 
          obj.put("token",tokenString);
          bus.publish("data", obj);
+         
         
         //create answer to update full dropoff address to the job
         Answer dropOffAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_DROPOFF_ADDRESS", fullDropOffAddress);
