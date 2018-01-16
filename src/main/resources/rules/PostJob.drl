@@ -59,7 +59,7 @@ rule "Post Job Next/Cancel button click"
         //Convert cmd to JSON Obj
         JsonObject formViewAddressJson = new JsonObject().mapFrom(cmdAddressFormView);
         formViewAddressJson.put("root", "QUE_JOB_ADDRESS_DETAILS_GRP");
-        formViewAddressJson.put("token", $value);
+        formViewAddressJson.put("token", tokenString);
         System.out.println(" ##################### ");
         System.out.println("CMD VIEW Msg ="+formViewAddressJson.toString());
         System.out.println(" #################### ");
@@ -213,7 +213,7 @@ rule "Create new Load"
       //Getting Post Load Question GRP
       JsonObject qCreateLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_CREATE_LOAD_GRP/"+loadCode, tokenString));
       qCreateLoad.put("aliasCode", $m.data.getCode());
-      qCreateLoad.put("token", $value);
+      qCreateLoad.put("token", tokenString);
       qCreateLoad.put("msg_type", "DATA_MSG");
       System.out.println("Create Load Json: "+qCreateLoad.toString());
       bus.publish("cmds",qCreateLoad);
@@ -223,12 +223,33 @@ rule "Create new Load"
       //Convert cmd to JSON Obj
       JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
         formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
-        formViewJson.put("token", $value);
+        formViewJson.put("token", tokenString);
       System.out.println(" ##################### ");
      System.out.println("CMD VIEW Msg ="+formViewJson.toString());
       System.out.println(" #################### ");
       //Publish it to the EventBus
       bus.publish("cmds", formViewJson);
+      
+      //Get the layout for Load Items List view
+      String loadItemsList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_load.json", null);
+      QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadItemList");
+      //Convert cmd to JSON Obj
+      JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);
+      cmdSubLayout.put("items", new JsonObject(loadItemsList));
+      cmdSubLayout.put("root", "QUE_CREATE_LOAD_GRP");
+      System.out.println(" ##################### ");
+      System.out.println("Sub-layout  = "+cmdSubLayout.toString()); 
+      System.out.println(" #################### ");
+      cmdSubLayout.put("token", tokenString);
+      //Publish it to the EventBus
+      bus.publish("cmds", cmdSubLayout);
+      
+     //Getting list of loadsItems
+     JsonObject loadItemLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_ITEMS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
+     loadItemLists.put("token", tokenString);
+     System.out.println("List of Load Json: "+loadItemLists.toString());
+     bus.publish("cmds",loadItemLists);
+      
       
       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create new Load  " + LOG_RESET);
       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
