@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwanda.message.QDataAskMessage;
@@ -24,6 +25,8 @@ import life.genny.qwanda.message.QBaseMSGMessageType;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -40,7 +43,6 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
-
 
 
 rule "Make Offer"
