@@ -230,16 +230,16 @@ rule "Create new Load"
       bus.publish("cmds",qCreateLoad);
 
       //sending cmd FORM_VIEW
-      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
-      //Convert cmd to JSON Obj
-      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
-        formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
-        formViewJson.put("token", tokenString);
-      System.out.println(" ##################### ");
-     System.out.println("CMD VIEW Msg ="+formViewJson.toString());
-      System.out.println(" #################### ");
-      //Publish it to the EventBus
-      bus.publish("cmds", formViewJson);
+//      QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+//      //Convert cmd to JSON Obj
+//      JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+//        formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
+//        formViewJson.put("token", tokenString);
+//      System.out.println(" ##################### ");
+//     System.out.println("CMD VIEW Msg ="+formViewJson.toString());
+//      System.out.println(" #################### ");
+//      //Publish it to the EventBus
+//      bus.publish("cmds", formViewJson);
       
       //Get the layout for Load Items List view
       String loadItemsList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_load.json", null);
@@ -371,7 +371,8 @@ rule "Update Job - NEXT/CANCEL"
       System.out.println("The load Code is   :: "+loadCode);
       
       if(actionCode.equalsIgnoreCase("next")){
-         System.out.println("Next Button pressed");
+         
+    	  	System.out.println("Next Button pressed");
           //Getting Post Job Question GRP
          JsonObject qPostJobAddress = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_CREATE_LOAD_GRP/"+jobCode, tokenString));
          qPostJobAddress.put("aliasCode", "QUE_CREATE_LOAD_GRP");
