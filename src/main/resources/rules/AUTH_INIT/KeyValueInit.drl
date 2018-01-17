@@ -1,0 +1,73 @@
+package com.sample;
+
+import org.apache.commons.lang3.StringUtils;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import com.google.gson.Gson;
+import life.genny.qwanda.message.QDataKeyValueMessage;
+import life.genny.qwandautils.QwandaUtils;
+
+import life.genny.qwanda.message.QCmdMessage;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
+
+
+// global variables for color logs
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+    
+
+rule "Send Key Value"
+
+    when
+        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+        bus: EventBus()
+        $map : Map($value: this["token"] != null)
+        $user : User(uname!= null)
+    then
+        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send Key Value " + LOG_RESET);
+        // Prepare GSON Deserialization
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+        
+        //Prepare Token & qwandaServiceUrl
+        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        String tokenString = (String)$map.get("token"); 
+        String keyValuesJson = QwandaUtils.getSystemEnvJson("REACT_");
+        QDataKeyValueMessage dataKeyValueMsg = new QDataKeyValueMessage(keyValuesJson);
+        String strQDataKeyValueMessage = gson.toJson(dataKeyValueMsg);
+        JsonObject jsonQDataKeyValueMessage = new JsonObject(strQDataKeyValueMessage);
+        System.out.println("Printing QDataKeyValueMessage   ::  "+jsonQDataKeyValueMessage.toString());
+        bus.publish("data", jsonQDataKeyValueMessage);
+        
+        
+        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send Key Value " + LOG_RESET);
+        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+ end
