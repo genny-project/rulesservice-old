@@ -21,6 +21,10 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
