@@ -12,10 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 import life.genny.qwanda.entity.User;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
 //Rule handling Next or Button click in the Create Job
