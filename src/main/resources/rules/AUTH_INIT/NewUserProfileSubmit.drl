@@ -62,7 +62,7 @@ rule "NewUser Profile Submit"
       /* Prepare Token & qwandaServiceUrl */
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
       String tokenString = (String)$map.get("token"); 
-      String userCode = QwandaUtils.getBaseEntityCodeForUserName($map.get("preferred_username")),tokenString) ; 
+      String userCode = QwandaUtils.getBaseEntityCodeForUserName((String)$map.get("preferred_username"),tokenString) ; 
       /* Update the profileCompleted user fact value */
        modify($user){
            /* setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString)); */
