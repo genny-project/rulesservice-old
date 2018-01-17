@@ -67,24 +67,24 @@ rule "Create new User"
       System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
       System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Create New User" + LOG_RESET);
       System.out.println("User Already Exists? true/false   ::   "+$user.getIsAvailable());
-      //Prepare Token & qwandaServiceUrl
+      /* Prepare Token & qwandaServiceUrl */
       String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
       String tokenString = (String)$map.get("token");      
-      //Creating new user based ion keycloak info
+      /* Creating new user based ion keycloak info */
       BaseEntity person = QwandaUtils.createUser(qwandaServiceUrl, tokenString, $map1.get("preferred_username").toString(), $map1.get("given_name").toString(), $map1.get("family_name").toString(), $map1.get("email").toString() );      
       System.out.println("Person Base Entity   ::     "+person.toString());
-      //Get userCode for the given username
+      /* Get userCode for the given username */
       String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
       System.out.println("User Code from DB     ::    "+userCode);
-      //Update the available fact value
+      /* Update the available fact value */
        modify($user){
            setuCode(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString)),
            setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString)),
-           //setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
+           /* setIsProfileCompleted(QwandaUtils.isProfileCompleted(userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString)); */
            setIsProfileCompleted( QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_NEW_USER_PROFILE_GRP", tokenString));
         }
        System.out.println("User facts value after creating user -  isAvailable   ::   " +$user.getIsAvailable());
-      //Calling the rule group : UserRegistration
+      /* Calling the rule group : UserRegistration */
       drools.setFocus("UserRegistration");
       System.out.println("The UserCode     ::    " +$user.getuCode());
       System.out.println("Available value after creating user     ::    " +$user.getIsAvailable());

@@ -73,9 +73,25 @@ rule "Accept Job"
         if(data != null) {
             JsonObject dataJson = new JsonObject(data);
             String begCode = dataJson.getString("itemCode"); /* BEG_X .... */
-            String userCode = $user.getuCode();
-            String userName = $user.getUname();
-                     
+            System.out.println("begCode="+begCode);
+  
+            
+            String userName = $map1.get("preferred_username").toString();
+            System.out.println("UserName="+userName);
+            userName = userName.toUpperCase();
+              System.out.println("UserName2="+userName);
+              String qUrl = qwandaServiceUrl+"/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userName;
+              System.out.println("QURL="+qUrl);
+              System.out.println("tokenString="+tokenString);
+              String results = QwandaUtils.apiGet(qUrl, tokenString);
+              System.out.println("results="+results);
+            JsonObject userObjs = new JsonObject(results);
+            System.out.println("userObjs="+userObjs.toString());
+            JsonArray items = userObjs.getJsonArray("items");
+            JsonObject userObj = items.getJsonObject(0);
+            System.out.println("userObj="+userObj.toString());
+            String userCode = userObj.getString("code");
+            System.out.println("UserCode="+userCode);
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
@@ -84,7 +100,7 @@ rule "Accept Job"
                 String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
                 System.out.println("BEG PRICE   ::   "+begPrice);
             /* Create Offer BE */
-                BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId( userCode, null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
+                BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
                 System.out.println("------------------------------------------------------------------------\n");
                 System.out.println("OFFER BASE ENTITY   ::   "+offer.toString());  
                 System.out.println("------------------------------------------------------------------------");
