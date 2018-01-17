@@ -78,5 +78,16 @@ rule "Counter Offer"
             bus.publish("cmds",  offerGrp);              
             
         }
+        /* sending cmd FORM_VIEW */
+            QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+            JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
+            formViewJson.put("root", "QUE_OFFER_DETAILS_GRP");
+            
+            System.out.println("------------------------------------------------------------------------");
+            System.out.println("FORM VIEW   ::   " + formViewJson.toString());
+            System.out.println("------------------------------------------------------------------------");
+            
+            formViewJson.put("token", tokenString);
+            bus.publish("cmds", formViewJson);
         System.out.println(QwandaUtils.terminateRuleLogger("Counter Offer"));
 end
