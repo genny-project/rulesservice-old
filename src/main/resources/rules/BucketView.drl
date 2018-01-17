@@ -47,32 +47,32 @@ rule "BucketView Group Change - Valid"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
-       
+
     		System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BucketView Group change" + LOG_RESET);
  	    System.out.println("-------- Rule:- Drag and Drop BucketView Items --------");
-		
+
  	    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
-		
+
   	    System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		System.out.println("The Event Message received is: " +$m);
 		System.out.println("The Source Code is: " +$m.getSourceBaseEntityCode());
 	    System.out.println("The Target Code is: " +$m.getTargetBaseEntityCode());
 		System.out.println("The Data Code (BEG code) is: " +$m.data.getCode());
 	    System.out.println("The Data Value is: " +$m.data.getValue());
-        	 
+
 	    //Moving the BEG
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode",$m.getSourceBaseEntityCode());
          begEntity.put("targetCode",$m.data.getCode());
          begEntity.put("attributeCode",$m.getLinkCode());
- 	     
+
          String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/"+$m.getTargetBaseEntityCode(), begEntity.toString(), tokenString);
-	     
+
          //Fectching updated link of BEG
  	     JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+$m.data.getCode()+"/linkcodes/"+$m.getLinkCode(), tokenString));
-	     
+
  	     //Creating a data msg
  	      JsonObject newLink = new JsonObject();
  	      newLink.put("msg_type", "DATA_MSG");
@@ -90,7 +90,7 @@ rule "BucketView Group Change - Valid"
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
  	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
- 	   
+
  	   //Creating messageData MSG_MESSAGE
  	   QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments);
  	   JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
@@ -104,7 +104,14 @@ rule "BucketView Group Change - Valid"
  	   System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
 
-
+rule "Load Details - Back action"
+	when 
+		 $m :  QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_GO_BACK_JOB_DETAIL" )
+	     bus: EventBus()
+	     $map : Map($value: this["token"] != null)
+	then
+		drools.setFocus("bucketview"); 
+end
 
 rule "BucketView item movement - GRP_NEW_ITEMS to GRP_APPROVED"
   when
@@ -112,32 +119,32 @@ rule "BucketView item movement - GRP_NEW_ITEMS to GRP_APPROVED"
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
-       
-    		System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
+
+        System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BV Item Move from GRP_NEW_ITEMS to GRP_APPROVED|Send GeoFence" + LOG_RESET);
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
   	    String tokenString = (String)$map.get("token");
-		
+
         //Getting QCmdGeofenceMessage for source address
         QCmdGeofenceMessage cmdGeoFenceSource =  GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Source", tokenString);
-	    
+
         //Getting QCmdGeofenceMessage for destination address
 	    QCmdGeofenceMessage cmdGeoFenceDest = GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Destination", tokenString);
 	    JsonObject cmdGeoFenceSourceJson = new JsonObject().mapFrom(cmdGeoFenceSource);
 	    JsonObject cmdGeoFenceDestJson = new JsonObject().mapFrom(cmdGeoFenceDest);
 	    cmdGeoFenceSourceJson.put("token", $value);
 	    cmdGeoFenceDestJson.put("token",$value );
-        
+
 	    System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
         System.out.println("-----------------------------------");
         System.out.println("-----------------------------------");
         System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
         System.out.println("-----------------------------------");
-        
+
         //Sending QCmdGeofenceMessage for source address
         bus.publish("cmds", cmdGeoFenceSourceJson);
-        
+
         //sending QCmdGeofenceMessage for destination address
 	    bus.publish("cmds", cmdGeoFenceDestJson);
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BV Item Move from GRP_NEW_ITEMS to GRP_APPROVED|Send GeoFence" + LOG_RESET);
@@ -389,7 +396,7 @@ rule "Add new LOAD"
      System.out.println("The BEG code is   ::  "+jobCode);
      //link newly created Job to DRAFT - GRP_DRAFT_JOBS
      QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFTS",jobCode,"LNK_CORE")),tokenString);
-     
+
      //Getting Post Load Question GRP
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_POST_JOB_GRP/"+jobCode, tokenString));
      qPostLoad.put("aliasCode", $m.data.getCode());
