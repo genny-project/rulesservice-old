@@ -38,6 +38,16 @@ import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 
+/* global variables for color logs */
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
 
 rule "Send initial-profile-update layout for first login"
     salience 17
@@ -46,14 +56,14 @@ rule "Send initial-profile-update layout for first login"
       bus: EventBus()
       $user: User(isProfileCompleted == false && realm != "memberhub")
       $map : Map($value: this["token"] != null)
-      //$map1 : Map($value1: this["realm"] != null)
      then
        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send Initial Profile Update Layout" + LOG_RESET);
-        //Prepare Token & qwandaServiceUrl
+
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
-       //Sending USER Profile Asks
+       /* Sending USER Profile Asks */
        System.out.println("User uCode = "+$user.getuCode());
       JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks2/QUE_NEW_USER_PROFILE_GRP/"+$user.getuCode(), tokenString));
       System.out.println("*******************");
@@ -62,7 +72,7 @@ rule "Send initial-profile-update layout for first login"
 	  obj.put("token", $value);					
 	  bus.publish("cmds", obj);
            
-      //Get initial-profile-update sub layout
+      /* Get initial-profile-update sub layout */
       String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/initial-profile-update", null);
       QCmdMessage cmdLayout = new QCmdMessage("CMD_LAYOUT","profile-update");
       JsonObject layoutObj = new JsonObject().mapFrom(cmdLayout);
@@ -72,20 +82,20 @@ rule "Send initial-profile-update layout for first login"
       System.out.println("PROFILE UPDATE LAYOUT   ::   "+layoutObj.toString());
       System.out.println("------------------------------------------------------------------------");
       bus.publish("cmds", layoutObj);
-      
-      //sending cmd form view 
+  
+       /* sending cmd form view  */
       String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/welcome-new-user", null);
       QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","welcomeNewUser");
-      //Convert cmd to JSON Obj
+      /* Convert cmd to JSON Obj */
       JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);
       cmdSubLayout.put("items", new JsonObject(subLayout));
-      //cmdObj.put("root", "QUE_USER_PROFILE_GRP");
-      //cmdObj.put("data", "itemsPerPage:8");        
+      /* cmdObj.put("root", "QUE_USER_PROFILE_GRP"); */
+      /* cmdObj.put("data", "itemsPerPage:8");    */    
       System.out.println(" ##################### ");
       System.out.println("Sub-layout  = "+cmdSubLayout.toString()); 
       System.out.println(" #################### ");
       cmdSubLayout.put("token", $value);
-      //Publish it to the EventBus
+      /* Publish it to the EventBus */
       bus.publish("cmds", cmdSubLayout);
        
        
@@ -93,6 +103,6 @@ rule "Send initial-profile-update layout for first login"
       System.out.println("isProfileCompleted value after creating user     ::    " +$user.getIsProfileCompleted()); 
        
        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Send Initial Profile Update Layout" + LOG_RESET);
-       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-       
-end
+       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);    
+      
+ end

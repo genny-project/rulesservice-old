@@ -38,23 +38,32 @@ import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 
+/* global variables for color logs */
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
 
 rule "Send ALIAS"
    salience 10
    agenda-group "layout"
     when
        bus: EventBus()
-       //$user: User1(realm != null )
        $user: User(realm != null )
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send ALIAS in layout group" + LOG_RESET);
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");  
-        //Getting the User BE and sending it as ALIAS
-        //Get User BE for USER ALIAS based on the user's username
+        /* Getting the User BE and sending it as ALIAS */
+        /* Get User BE for USER ALIAS based on the user's username */
         JsonObject userObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME="+ $user.getUname(), tokenString));
         userObj.put("aliasCode", "USER"); 
         userObj.put("token", $value);      
@@ -64,8 +73,8 @@ rule "Send ALIAS"
         System.out.println("User isAvailable   ::  "+$user.getIsAvailable());
         System.out.println("User isProfileCompleted   ::  "+$user.getIsProfileCompleted());
         
-        //Getting the Project BE and sending it as ALIAS
-        //Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name
+        /* Getting the Project BE and sending it as ALIAS */
+        /* Get Project BaseEntity for PROJECT ALIAS based on the user's keycloak realm name  */
         JsonObject prjObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PROJECTS/linkcodes/LNK_CORE/attributes?PRI_REALM="+$user.getRealm(), tokenString));
         prjObj.put("aliasCode", "PROJECT");   
         prjObj.put("token", $value);    
