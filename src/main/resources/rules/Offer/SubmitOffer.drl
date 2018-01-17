@@ -51,7 +51,7 @@ rule "Submit Offer"
     then
         System.out.println(QwandaUtils.executeRuleLogger("Submit Offer"));       
         /* Prepare GSON Deserialization */
-        Gson gson = new GsonBuilder()
+            Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
                 @Override
                 public LocalDateTime deserialize(final JsonElement json, final Type type,

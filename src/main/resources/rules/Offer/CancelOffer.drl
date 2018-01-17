@@ -41,17 +41,15 @@ import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 
-
-rule "Confirm Offer"
+rule "Cancle Offer"
     when
-        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER")
+        $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CANCEL_OFFER")
         bus: EventBus()
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
     then
-
-        System.out.println(QwandaUtils.executeRuleLogger("Confirm Offer"));
+        System.out.println(QwandaUtils.executeRuleLogger("Cancel Offer"));
         /* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
@@ -67,23 +65,21 @@ rule "Confirm Offer"
                 return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                 }
             }).create();
-        
-        
+              
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
             String tokenString = (String)$map.get("token");   
         
-        /* retrieve jsonObj's values sent on data.value*/
+        /* retrieve jsonObj's values sent on data.value */
         String data = $m.getData().getValue();
         if(data != null) {
-
             JsonObject dataJson = new JsonObject(data);
-            String offerCode = dataJson.getString("itemCode"); /* COMPANY who quoted */
+            String offerCode = dataJson.getString("itemCode"); /* OFFER code */
             String userCode = $user.getuCode();
             String linkCode= "LNK_BEG";
             String linkValue= "OFFER";
 
-            /* GET attributes of the OFFER that's being accepted */
+            /* GET attributes of the OFFER that's being declined */
                 JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("OFEER DATA   ::   " + offerBe.toString());
@@ -103,30 +99,17 @@ rule "Confirm Offer"
                 System.out.println("------------------------------------------------------------------------");
                 
                 String begCode= map.get("PRI_BEG_CODE");
-                String begPrice= map.get("PRI_PRICE");
-                String quoterCode= map.get("PRI_QUOTER_CODE");
-                String quoterUname= map.get("PRI_QUOTER_USERNAME");
 
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("BEG CODE          ::   " + begCode);
-                System.out.println("BEG PRICE         ::   " + begPrice);
-                System.out.println("QUOTER CODE       ::   " + quoterCode);
-                System.out.println("QUOTER USERNAME   ::   " + quoterUname);
                 System.out.println("------------------------------------------------------------------------");
 
-            /* Update link between BEG and QUOTR as DRIVER */
-                System.out.println("\nCREATING DRIVER LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
-                Link link = new Link( begCode, quoterCode, linkCode, "DRIVER");
-                link.setWeight(1.0);
+
+            /* Update link between BEG and OFFER to weight= 0 */
+                System.out.println("UPDATING weight OF LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
+                Link link = new Link( begCode, offerCode, linkCode, linkValue);
+                link.setWeight(0.0);
                 String output1 = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link),tokenString);
-            
-            /* SEND QUOTER BE UPDATE */
-                JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + quoterUname, tokenString));
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("QUOTER BE   ::  " + quoterObj.toString());
-                System.out.println("------------------------------------------------------------------------");
-                quoterObj.put("token", tokenString);      
-                bus.publish("cmds", quoterObj);
             
             /* Sending updated link of BEG */
                 JsonArray updatedLink1 = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
@@ -143,65 +126,13 @@ rule "Confirm Offer"
                 newLink1.put("token", tokenString );
                 bus.publish("cmds", newLink1);
 
-                
-            /* Move BEG to GRP_APPROVED */
-                String oldGroup = "GRP_NEW_ITEMS";
-                String newGroup = "GRP_APPROVED";
-                String linkCode2 = "LNK_CORE";
-                /* Moving the BEG */
-                JsonObject begEntity = new JsonObject();
-                begEntity.put("sourceCode", oldGroup);
-                begEntity.put("targetCode", begCode);
-                begEntity.put("attributeCode", linkCode2);
-            
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("EntityLink   ::   "+begEntity.toString());
-                System.out.println("------------------------------------------------------------------------");
-
-                String output2= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString);
-                System.out.println("The Output after POST: "+output2);
-
-            /* Sending updated link of GRP_APPROVED */
-                JsonArray updatedLink2 = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + newGroup + "/linkcodes/" + linkCode2, tokenString));
-                
-                /* Creating a data msg */
-                JsonObject newLink = new JsonObject();
-                newLink.put("msg_type", "DATA_MSG");
-                newLink.put("data_type", "LINK_CHANGE");
-                newLink.put("items", updatedLink2);
-
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("Updated Link   ::  "+newLink.toString());
-                System.out.println("------------------------------------------------------------------------");
-                /* publish new link data */
-                newLink.put("token", tokenString );
-                bus.publish("cmds", newLink);
-
-
-            /* Sending message to QUOTER | COMPANY */
-                String code= "code:" + begCode ;
-                String recipient = "recipient:OWNER";
-                String[] msgMessageData = {code, recipient};
-                String templateCode = "MSG_CH40_CONFIRM_OFFER";
-                String[] attachments = {};           
-                QBaseMSGMessageType method = QBaseMSGMessageType.SMS;
-
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("msgMessageData Array   ::   " + msgMessageData.toString());
-                
-                /* Creating messageData MSG_MESSAGE */
-                QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
-                JsonObject jsonMessage = new JsonObject().mapFrom(msgMessage);
-
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("MESSAGE TO COMPANY   ::   " + jsonMessage.toString());
-                System.out.println("------------------------------------------------------------------------");
-                
-                jsonMessage.put("token",tokenString);
+            /* Sending message to QUOTER */
+                String templateCode = "MSG_CH40_CANCEL_OFFER";
+                String recipient = "OWNER";
+                JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
                 bus.publish("messages", jsonMessage);
         }
-
-        /* sending cmd BUCKETVIEW */
-            drools.setFocus("bucketview"); 
-        System.out.println(QwandaUtils.terminateRuleLogger("Confirm Offer"));
+        System.out.println(QwandaUtils.terminateRuleLogger("Cancel Offer"));
 end
+
+

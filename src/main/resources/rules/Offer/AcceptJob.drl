@@ -49,7 +49,6 @@ rule "Accept Job"
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
-        not Offer() 
     then
         System.out.println(QwandaUtils.executeRuleLogger("Accept Job"));
         /* Prepare GSON Deserialization */
@@ -109,32 +108,11 @@ rule "Accept Job"
                     i++;
                     
                 }         
-            
-            /* Creating Offer fact */
-                Offer offerFact = new Offer();
-                offerFact.setBegCode(begCode);
-                offerFact.setOfferCode(offerCode);
-                offerFact.setLinkCode(linkCode);
-                offerFact.setLinkQuoter(linkQuoter);
-                offerFact.setLinkOffer(linkOffer);
-                /* Printing Offer fact */
-                    insert(offerFact);
-                    System.out.println("------------------------------------------------------------------------");
-                    System.out.println("OFFER FACTS");
-                    System.out.println("------------------------------------------------------------------------");
-                    System.out.println("BEG CODE            ::   " +offerFact.getBegCode());
-                    System.out.println("OFFER CODE          ::   " +offerFact.getOfferCode());
-                    System.out.println("LINK CODE           ::   " +offerFact.getLinkCode());
-                    System.out.println("QUOTER LINK VALUE   ::   " +offerFact.getLinkQuoter());
-                    System.out.println("OFFER LINK VALUE    ::   " +offerFact.getLinkOffer());
-                    System.out.println("------------------------------------------------------------------------");
 
             /* link BEG and OFFER BE || OFFER */
                 QwandaUtils.createLink(begCode, offerCode, linkCode, linkOffer, 1.0, tokenString);
             /* link BEG and QUOTER BE || QUOTER */
-                QwandaUtils.createLink(begCode, userCode, linkCode, linkQuoter, 1.0, tokenString);          
-            /* Sending updated link of BEG */
-                drools.setFocus("update");
+                QwandaUtils.createLink(begCode, userCode, linkCode, linkQuoter, 1.0, tokenString);       
             /* SEND OFFER BE    */
                 JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
                 System.out.println("------------------------------------------------------------------------");
@@ -150,6 +128,19 @@ rule "Accept Job"
                 System.out.println("------------------------------------------------------------------------");
                 quoterObj.put("token", tokenString);      
                 bus.publish("cmds", quoterObj);
+            /* Sending updated link of BEG */
+                JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
+                /* Creating a data msg */
+                    JsonObject newLink = new JsonObject();
+                    newLink.put("msg_type", "DATA_MSG");
+                    newLink.put("data_type", "LINK_CHANGE");
+                    newLink.put("items", updatedLink);
+                    System.out.println("------------------------------------------------------------------------");
+                    System.out.println("Updated Link   ::  "+newLink.toString());
+                    System.out.println("------------------------------------------------------------------------");
+                /* publish new link data */
+                    newLink.put("token", tokenString );
+                    bus.publish("cmds", newLink);
 
             /* Sending message to BEG OWNER */
                 String templateCode = "MSG_CH40_ACCEPT_OFFER";

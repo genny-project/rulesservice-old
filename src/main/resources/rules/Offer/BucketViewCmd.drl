@@ -53,8 +53,8 @@ rule "Send Bucketview Cmd"
     then
         System.out.println(QwandaUtils.executeRuleLogger("Send Bucketview Cmd"));
         /* Prepare Token & qwandaServiceUrl */
-        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-        String tokenString = (String)$map.get("token");   
+            String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+            String tokenString = (String)$map.get("token");   
 
         String viewType= "GRP_DRIVER_VIEW"; 
 
