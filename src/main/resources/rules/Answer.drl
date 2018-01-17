@@ -94,7 +94,7 @@ rule "Answer"
             System.out.println("------------------------------------------------------------------------");
             
             // if this answer is actually an address another rule will be triggered
-            if(!attributeCode.contains("ADDRESS1")) {
+            if(!attributeCode.contains("ADDRESS_FULL")) {
             
              	//convert answer to json
 	            String jsonAnswer = gson.toJson(answer);
@@ -147,7 +147,7 @@ rule "Update Address"
 	            JsonObject addressDataJson = new JsonObject(value);
 	           
 	            /* if this answer is actually an address another rule will be triggered */
-	            if(attributeCode.contains("ADDRESS1")) {
+	            if(attributeCode.contains("ADDRESS_FULL")) {
 	            	
 		            	Map<String, String> availableKeys = new HashMap<String, String>();
 		    			availableKeys.put("full_address", "FULL");
@@ -168,7 +168,7 @@ rule "Update Address"
 		    				
 		    				if(addressDataJson.containsKey(key)) {
 		    					
-		    					String newAttributeCode = attributeCode.replace("ADDRESS1", valueEntry);
+		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
 		    					answer.setAttributeCode(newAttributeCode);
 		    					answer.setValue(addressDataJson.getString(key));
 		    					String jsonAnswer = gson.toJson(answer);
