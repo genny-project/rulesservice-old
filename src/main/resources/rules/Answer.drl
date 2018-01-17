@@ -163,9 +163,7 @@ rule "Update Address"
 		    				
 		    				String key = entry.getKey();
 		    				String valueEntry = entry.getValue();
-		    				
-		    				System.out.println("answer updated key ::"+key + ", value ::"+valueEntry + ",i value ::"+i );
-		    				
+		    						    				
 		    				if(addressDataJson.containsKey(key)) {
 		    					
 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
