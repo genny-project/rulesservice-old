@@ -53,8 +53,9 @@ rule "Send initial-profile-update layout for first login"
     salience 17
     agenda-group "UserRegistration"
     when
+   
       bus: EventBus()
-      $user: User(isProfileCompleted == false && realm != "memberhub")
+      $user: User(isProfileCompleted == false && realm != "memberhub" && false)
       $map : Map($value: this["token"] != null)
      then
        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
