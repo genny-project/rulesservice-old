@@ -57,6 +57,7 @@ global java.lang.String LOG_BOLD;
 
 rule "Set Ucode"
   salience 20
+  no-loop true
    agenda-group "UserRegistration"
    when
      $user: User( uCode == null )
