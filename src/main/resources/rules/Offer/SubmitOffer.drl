@@ -117,17 +117,31 @@ rule "Submit Offer"
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
 
+            String templateCode = null;
+         /* Check if a link exists between BEG & OFFER */
+            Boolean linkBegOffer = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, offerCode, tokenString );
+            System.out.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);           
         /* link BEG and OFFER BE || OFFER */
-            System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
-            Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
-            link1.setWeight(.01);
-            String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link1),tokenString);
+            if(!linkBegOffer){
+                System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
+                Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
+                link1.setWeight(.01);
+                String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link1),tokenString);
 
+                templateCode = "MSG_CH40_ACCEPT_OFFER";
+
+            }
+
+        /* Check if a link exists between USER & OFFER */
+            Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
+            System.out.println("LINK EXISTS FOR USER & OFFER?  ::    "+ linkUserOffer);
         /* link BEG and QUOTER BE || QUOTER */
-            System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
-            Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
-            link2.setWeight(1.0);
-            String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
+            if(!linkUserOffer){
+                System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
+                Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
+                link2.setWeight(1.0);
+                String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
+            }
 
         /* SEND OFFER BE    */
             JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
@@ -160,7 +174,7 @@ rule "Submit Offer"
                 bus.publish("cmds", newLink);
 
         /* Sending message to BEG OWNER */
-            String templateCode = "MSG_CH40_ACCEPT_OFFER";
+            templateCode = "MSG_CH40_COUNTER_OFFER";
             String recipient = "OWNER";
             JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
             bus.publish("messages", jsonMessage);
