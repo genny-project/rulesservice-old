@@ -2,20 +2,47 @@ package com.sample;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
+import life.genny.qwanda.message.QCmdGeofenceMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+import life.genny.qwanda.entity.EntityEntity;
+import org.apache.commons.lang3.StringUtils;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import life.genny.qwandautils.QwandaUtils;
+import io.vertx.core.buffer.Buffer;
 import com.google.gson.Gson;
-import com.sample.*;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
-import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.GPS;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.GPSUtils;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+import life.genny.channels.EBCHandlers;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.entity.User;
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
-// Rule handling Next or Button click in the Create Job
+/* Rule handling Next or Button click in the Create Job */
 rule "Create New LoadItem - SUBMIT"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_CREATE_LOAD_ITEM_GRP" )
@@ -23,18 +50,20 @@ rule "Create New LoadItem - SUBMIT"
       $user: User(realm != null)
       $map : Map($value: this["token"] != null)    
     then
-        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::    Create New Load Item - SUBMIT " + LOG_RESET);
+       
+    		System.out.println("================================================================================================================================================");
+        System.out.println("RULE EXECUTED      ::    Create New Load Item - SUBMIT ");
         
-        // Prepare GSON Deserialization
+        /* Prepare GSON Deserialization */
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
         
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
-        //Get data.value and decode
+   
+        /* Get data.value and decode */
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String loadItemCode = dataJson.getString("targetCode");
@@ -42,18 +71,20 @@ rule "Create New LoadItem - SUBMIT"
         System.out.println("The Load Item code is   ::  "+loadItemCode);
         System.out.println("The action is   ::  "+actionCode);
         
-        //Get the sourceCode(load code) for this LOAD_ITEM
+        /* Get the sourceCode(load code) for this LOAD_ITEM */
         JsonArray parentDataJson = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+loadItemCode+"/linkcodes/LNK_LOAD_ITEM/parents", tokenString));
         JsonObject objectInArray = parentDataJson.getJsonObject(0);
         String loadCode = objectInArray.getString("sourceCode");
         System.out.println("The Load code is   ::  "+loadCode);
         
-     if(actionCode.equalsIgnoreCase("submit")){       
-         //link newly created Item to the LOAD
-         //QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(loadCode,loadItemCode,"LNK_LOAD_ITEM")),tokenString);
-         //link created LoadItem to the GRP_LOAD_ITEMS
+        if(actionCode.equalsIgnoreCase("submit")){       
+         
+        	/* link newly created Item to the LOAD */
+         /* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(loadCode,loadItemCode,"LNK_LOAD_ITEM")),tokenString); */
+         /* link created LoadItem to the GRP_LOAD_ITEMS */
          QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_LOAD_ITEMS",loadItemCode,"LNK_CPY_COMPANY1",$user.getuCode())),tokenString);
-         //Getting Post Load Question GRP
+        
+         /* Getting Post Load Question GRP */
          JsonObject qCreateLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_CREATE_LOAD_GRP/"+loadCode, tokenString));
          qCreateLoad.put("aliasCode", "QUE_CREATE_LOAD_GRP");
          qCreateLoad.put("token", tokenString);
@@ -61,48 +92,49 @@ rule "Create New LoadItem - SUBMIT"
          System.out.println("QName Json: "+qCreateLoad.toString());
          bus.publish("cmds",qCreateLoad);
 
-         //sending cmd FORM_VIEW
+         /* sending cmd FORM_VIEW */
          QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
-         //Convert cmd to JSON Obj
+         /* Convert cmd to JSON Obj*/
          JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
          formViewJson.put("root", "QUE_CREATE_LOAD_GRP");
          formViewJson.put("token", tokenString);
          System.out.println(" ##################### ");
          System.out.println("CMD VIEW Msg ="+formViewJson.toString());
          System.out.println(" #################### ");
-         //Publish it to the EventBus
+         /* Publish it to the EventBus */
          bus.publish("cmds", formViewJson);
-         
-         //Get the layout for Load Items List view
-         String loadItemsList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_load.json", null);
-         QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadItemList");
-         //Convert cmd to JSON Obj
-         JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);
-         cmdSubLayout.put("items", new JsonObject(loadItemsList));
-         cmdSubLayout.put("root", "QUE_CREATE_LOAD_GRP");
-         System.out.println(" ##################### ");
-         System.out.println("Sub-layout  = "+cmdSubLayout.toString()); 
-         System.out.println(" #################### ");
-         cmdSubLayout.put("token", tokenString);
-         //Publish it to the EventBus
-         bus.publish("cmds", cmdSubLayout);
-         
-         //Getting list of loadsItems
+                 
+         /* Getting list of loadsItems */
          JsonObject loadItemLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_ITEMS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
          loadItemLists.put("token", tokenString);
          System.out.println("List of Load Json: "+loadItemLists.toString());
          bus.publish("cmds",loadItemLists);
          
-         //Get the list Item added to the current load and send
+         /* Get the list Item added to the current load and send */
          JsonObject itemsInLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+loadCode+"linkcodes/LNK_LOAD_ITEM/attributes",tokenString));
          itemsInLoad.put("token", tokenString);
          System.out.println("List of Load Json: "+itemsInLoad.toString());
          bus.publish("cmds",itemsInLoad);
          
       } 
-
+     
+	     /* Get the layout for Load Items List view */
+	     String loadItemsList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_load.json", null);
+	     QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","LoadItemList");
+	    
+	    /* Convert cmd to JSON Obj */
+	    JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);
+	    cmdSubLayout.put("items", new JsonObject(loadItemsList));
+	    cmdSubLayout.put("root", "QUE_CREATE_LOAD_GRP");
+	    System.out.println(" ##################### ");
+	    System.out.println("Sub-layout  = "+cmdSubLayout.toString()); 
+	    System.out.println(" #################### ");
+	    cmdSubLayout.put("token", tokenString);
+	   
+	   /* Publish it to the EventBus */
+	   bus.publish("cmds", cmdSubLayout);
         
-       System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  Create New Load Item - SUBMIT  " + LOG_RESET);
-       System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+       System.out.println( "\n" + "RULE TERMINATED    ::  Create New Load Item - SUBMIT  ");
+       System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");
         
 end

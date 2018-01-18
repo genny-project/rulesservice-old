@@ -56,7 +56,7 @@ rule "Send layout1"
      when
        bus: EventBus()
        //$user: User(realm != "memberhub" )
-       $user: User(realm != "memberhub" && (isAvailable == true && isProfileCompleted == true) )
+       $user: User(realm != "memberhub" && (isAvailable == true) )
        $map : Map($value: this["token"] != null)
      then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);

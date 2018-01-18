@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
@@ -22,8 +24,8 @@ rule "Create New Load Item"
       $user: User(realm != null)
       $map : Map($value: this["token"] != null)    
     then
-        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::    Create New Load Item  " + LOG_RESET);
+        System.out.println("================================================================================================================================================");
+        System.out.println("RULE EXECUTED      ::    Create New Load Item  ");
         
         // Prepare GSON Deserialization
         GsonBuilder gsonBuilder = new GsonBuilder();
