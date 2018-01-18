@@ -60,7 +60,7 @@ rule "Set Ucode"
   no-loop true
    agenda-group "UserRegistration"
    when
-     $user: User( uCode == null )
+     $user: User( uCode == null and false)
      $map : Map($value: this["token"] != null) 
    then
      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
