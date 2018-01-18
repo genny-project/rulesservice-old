@@ -69,10 +69,10 @@ rule "Init"
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Init" + LOG_RESET);
         
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
-        //Get userCode for the given username
+        /* Get userCode for the given username */
       
         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
         System.out.println("Project Name   ::   " + $map1.get("realm") );       
@@ -89,21 +89,21 @@ rule "Init"
           setIsAvailable(QwandaUtils.checkUserTokenExists(qwandaServiceUrl,tokenString));
         }
         System.out.println("User facts value -  isAvailable   ::   " +$user.getIsAvailable());
-        //Calling the rule group : UserRegistration
+        /* Calling the rule group : UserRegistration */
         drools.setFocus("UserRegistration"); 
-        //Calling the rule group : layout
-        //drools.setFocus("layout"); 
+        /* Calling the rule group : layout */
+        /* drools.setFocus("layout");  */
         
-        //Get BaseEntity with attributes
+        /* Get BaseEntity with attributes */
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=10", tokenString));
-        //Print the json Object  
+        /* Print the json Object   */
         objWithAttr.put("token", $value);     
         System.out.println("------------------------------------------------------------------------");
         System.out.println("BE with ATTRIBUTE   ::   "+objWithAttr.toString()); 
         System.out.println("------------------------------------------------------------------------");            
         bus.publish("cmds", objWithAttr);   
         	
-        	// Send all sublayouts for entities 
+        	/*  Send all sublayouts for entities  */
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
       	System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Send initial sublayouts" + LOG_RESET);
 		
@@ -123,7 +123,7 @@ rule "Init"
 					
 					if(url != null) {
 						
-						// grab sublayout from github
+						/*  grab sublayout from github */
 						String subLayoutString = QwandaUtils.apiGet(url, null);
 						if(subLayoutString != null) {
 							
