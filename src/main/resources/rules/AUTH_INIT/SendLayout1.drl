@@ -55,7 +55,7 @@ rule "Send layout1"
      agenda-group "layout"
      when
        bus: EventBus()
-       //$user: User(realm != "memberhub" )
+       /* $user: User(realm != "memberhub" )  */
        $user: User(realm != "memberhub" && (isAvailable == true) )
        $map : Map($value: this["token"] != null)
      then
@@ -67,11 +67,11 @@ rule "Send layout1"
         System.out.println(LOG_GREEN+ "@@@                                                               @@@" + LOG_RESET);
         System.out.println(LOG_GREEN+ "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + LOG_RESET);
 
-         //Prepare Token & qwandaServiceUrl
+         /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
         System.out.println("\nToken   ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-        //Get Genny Layout
+        /* Get Genny Layout */
         String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
         
         QCmdMessage cmd = new QCmdMessage("CMD_LAYOUT","layout1");

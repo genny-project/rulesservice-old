@@ -57,9 +57,10 @@ global java.lang.String LOG_BOLD;
 
 rule "Set Ucode"
   salience 20
+  no-loop true
    agenda-group "UserRegistration"
    when
-     $user: User( uCode == null )
+     $user: User( uCode == null && false)
      $map : Map($value: this["token"] != null) 
    then
      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
