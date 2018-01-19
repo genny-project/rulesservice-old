@@ -108,7 +108,8 @@ public class QRules {
 	 *            the state to set
 	 */
 	public void setState(String key) {
-		state.put(key, true);
+		state.put(key.toUpperCase(), true);
+		RulesUtils.println("STATE "+key+" SET",RulesUtils.ANSI_RED);
 	}
 
 	/**
@@ -117,6 +118,8 @@ public class QRules {
 	 */
 	public void clearState(String key) {
 		state.remove(key);
+		RulesUtils.println("STATE "+key+" CLEARED",RulesUtils.ANSI_PURPLE);
+
 	}
 
 	/*
@@ -179,6 +182,7 @@ public class QRules {
 
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
+		
 	}
 
 	public BaseEntity getUser() {
@@ -283,4 +287,34 @@ public class QRules {
 		}
 		return be;
 	}
+
+	/**
+	 * @return the state
+	 */
+	public Map<String, Boolean> getState() {
+		return state;
+	}
+
+	/**
+	 * @param state the state to set
+	 */
+	public void setState(Map<String, Boolean> state) {
+		this.state = state;
+	}
+
+	/**
+	 * @return the qwandaserviceurl
+	 */
+	public static String getQwandaServiceUrl() {
+		return qwandaServiceUrl;
+	}
+
+	/**
+	 * @return the devmode
+	 */
+	public static Boolean getDevmode() {
+		return devMode;
+	}
+	
+	
 }

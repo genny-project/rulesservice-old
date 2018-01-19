@@ -10,7 +10,7 @@ rule "No User"
 
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules( isUserPresent() == false  /*  && isNull("USER") */ && isState("USER_CHECKED")) 
+        rules: QRules( isUserPresent() == false  && isState("USER_CHECKED")) 
       then
      	RulesUtils.header(drools.getRule().getName());
      	
@@ -18,6 +18,10 @@ rule "No User"
      	update(rules);
      	
 		RulesUtils.println("New User Created "+be);
+		
+		rules.setState("NEW_USER");
+        update(rules); 
+ 
 		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end

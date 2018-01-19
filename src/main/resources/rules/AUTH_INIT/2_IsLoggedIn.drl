@@ -13,7 +13,7 @@ rule "Is Logged In"
      	RulesUtils.header(drools.getRule().getName());
      	
    
-        RulesUtils.println("IS_LOGGED_IN");
+        RulesUtils.println("CONFIRM IS_LOGGED_IN");
 
 		
 	    RulesUtils.footer(drools.getRule().getName());       		      
