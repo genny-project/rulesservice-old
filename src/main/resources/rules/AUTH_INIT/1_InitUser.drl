@@ -13,10 +13,13 @@ rule "Main Init"
         rules: QRules( isUserPresent() == false ) 
      then
      	RulesUtils.header(drools.getRule().getName());
-     	
-     	
+     	    	
         BaseEntity user = rules.getUser();
-        RulesUtils.println("user is not present");
+        if (user == null) {
+        		RulesUtils.println("user ("+ rules.getAsString("preferred_username")+") is not present");
+  		}
+        rules.setState("USER_CHECKED");
+        update(rules); 
   
   		
 	    RulesUtils.footer(drools.getRule().getName());       		      

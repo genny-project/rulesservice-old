@@ -55,7 +55,7 @@ rule "Send initial-profile-update layout for first login"
     when
    
       bus: EventBus()
-      $user: User(isProfileCompleted == false && realm != "memberhub" && false)
+      $user: User(isProfileCompleted == false && realm != "memberhub" )
       $map : Map($value: this["token"] != null)
      then
        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);

@@ -53,41 +53,24 @@ global java.lang.String LOG_CYAN;
 global java.lang.String LOG_WHITE;
 global java.lang.String LOG_BOLD;
 
-   // global variables for color logs
-global java.lang.String LOG_RESET;
-global java.lang.String LOG_RED;
-global java.lang.String LOG_GREEN;
-global java.lang.String LOG_YELLOW;
-global java.lang.String LOG_BLUE;
-global java.lang.String LOG_PURPLE;
-global java.lang.String LOG_CYAN;
-global java.lang.String LOG_WHITE;
-global java.lang.String LOG_BOLD;
     
-    
-rule "Check if Profile Completed"
-   salience 19
+
+rule "Set Ucode"
+  salience 20
+  no-loop true
    agenda-group "UserRegistration"
    when
-     $user: User( isAvailable == true && false)
+     $user: User( uCode == null && false)
      $map : Map($value: this["token"] != null) 
    then
      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Check if Profile Completed  " + LOG_RESET);
+     System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Set User Code  " + LOG_RESET);
      /* Prepare Token & qwandaServiceUrl */
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
      String tokenString = (String)$map.get("token"); 
-     /* Get userCode for the given username */
-    /* String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);  */
-     System.out.println("User code from Qwanda --> "+$user.getuCode());
-     /* Update the available fact value */
-       modify($user){
-           /* setIsProfileCompleted(QwandaUtils.isProfileCompleted($user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString)); */
-           setIsProfileCompleted( QwandaUtils.isMandatoryFieldsEntered($user.getuCode(), $user.getuCode(), "QUE_NEW_USER_PROFILE_GRP", tokenString));
+     System.out.println("The User Code before setting value  :: " +$user.getuCode());
+      modify($user){
+           setuCode(QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString));
         }
-       System.out.println("isProfileCompleted value    ::    " +$user.getIsProfileCompleted()); 
-       
-        drools.setFocus("layout");  
-      System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Check if Profile Completed   " + LOG_RESET);
-      System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET); 
-end
+     System.out.println("The User Code after setting value  :: " +$user.getuCode()); 
+end   

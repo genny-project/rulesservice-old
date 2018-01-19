@@ -10,8 +10,8 @@ rule "No User"
 
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules( isUserPresent() == false  /*  && isNull("USER") */) 
-     then
+        rules: QRules( isUserPresent() == false  /*  && isNull("USER") */ && isState("USER_CHECKED")) 
+      then
      	RulesUtils.header(drools.getRule().getName());
      	
      	BaseEntity be = rules.createUser();

@@ -81,12 +81,13 @@ public class RulesLoader {
 		} else {
 			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
 			try {
+				if (!fileName.startsWith("XX")) {   // ignore files that start with XX
 				final String ruleText = buf.toString();
-
+				
 				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
 				System.out.println("Loading in Rule:" + rule._1 + " of "+ inputFileStr);
 				rules.add(rule);
-
+				}
 				return rules;
 			} catch (final DecodeException dE) {
 
