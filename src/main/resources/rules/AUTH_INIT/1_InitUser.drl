@@ -61,7 +61,7 @@ rule "Main Init"
 
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules()
+       /*  rules: QRules() */
      then
      	RulesUtils.headerRuleLogger("Main Init");
      	
