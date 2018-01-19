@@ -55,13 +55,13 @@ global java.lang.String LOG_CYAN;
 global java.lang.String LOG_WHITE;
 global java.lang.String LOG_BOLD;
 
-    
+global life.genny.rules.QRules RULES_STATE;
 
 rule "Main Init"
 
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-       /*  rules: QRules() */
+        rules: QRules() 
      then
      	RulesUtils.headerRuleLogger("Main Init");
      	
