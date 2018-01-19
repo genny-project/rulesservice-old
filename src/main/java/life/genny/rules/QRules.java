@@ -267,12 +267,16 @@ public class QRules {
 		BaseEntity be = null;
 		
 		String username = getAsString("preferred_username").toLowerCase();
-		String firstname = StringUtils.capitaliseAllWords(getAsString("first_name").toLowerCase());
-		String lastname = StringUtils.capitaliseAllWords(getAsString("last_name").toLowerCase());
+		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
+		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
+		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
+		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
 		String email = getAsString("email").toLowerCase();		
+		String keycloakId = getAsString("sub").toLowerCase();	
 		
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email);
+			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email, realm,name, keycloakId);
+			set("USER",be);
 			
 		} catch (IOException e) {
 			log.error("Error in Creating User ");

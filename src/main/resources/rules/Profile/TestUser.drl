@@ -20,7 +20,7 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
 
 rule "test-user"
    when
-      $map : Map($value: this["token"] != null)
+      $map : Map($value: this["token"] != null && false)
       /* $user: User1(uname == "user1") */
       $user : User()
      /* $roles : Set(!isEmpty()) */

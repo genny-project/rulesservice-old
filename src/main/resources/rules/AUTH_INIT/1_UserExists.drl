@@ -6,18 +6,21 @@ import life.genny.qwanda.entity.BaseEntity;
 
 import life.genny.qwanda.message.QEventMessage;
 
-rule "Main Init"
-
+rule "User Exists"
+	no-loop true
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules( isUserPresent() == false ) 
+        rules: QRules( isUserPresent() == true ) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	
      	
         BaseEntity user = rules.getUser();
-        RulesUtils.println("user is not present");
+        RulesUtils.println("user exists");
+        RulesUtils.println("User "+user);
   
-  		
+        rules.setState("IS_LOGGED_IN");
+        update(rules); 
+		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end

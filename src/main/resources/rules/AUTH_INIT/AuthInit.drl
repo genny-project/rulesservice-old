@@ -58,12 +58,13 @@ global java.lang.String LOG_BOLD;
 rule "Init"
 
     when
-        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") && false)
         bus: EventBus()
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
         $roles : Set(!isEmpty())
         $user : User(uname!= null)
+        
     then
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
