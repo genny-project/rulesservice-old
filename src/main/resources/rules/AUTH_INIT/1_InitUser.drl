@@ -68,5 +68,5 @@ rule "Main Init"
         
   
 		
-	RulesUtils.footerRuleLogger("Main Init");       		      
+	RulesUtils.terminateRuleLogger("Main Init");       		      
 end
