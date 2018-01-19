@@ -38,6 +38,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.User;
@@ -152,26 +153,29 @@ public class EBCHandlers {
 
 	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.vertx().executeBlocking(future -> {
-			Map<String,Object> adecodedToken = RulesLoader.getDecodedTokenMap(token);
-			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedToken.get("realm_access").toString());
-			User userInSession = usersSession.get(adecodedToken.get("preferred_username").toString());
+			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
+			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
+			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
 			
-			String preferredUName = adecodedToken.get("preferred_username").toString();
-			String fullName = adecodedToken.get("name").toString();
-			String realm = adecodedToken.get("realm").toString();
-			String accessRoles = adecodedToken.get("realm_access").toString();
+			QRules rulesState = new QRules(eventBus, token, adecodedTokenMap);
+			
+			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
+			String fullName = adecodedTokenMap.get("name").toString();
+			String realm = adecodedTokenMap.get("realm").toString();
+			String accessRoles = adecodedTokenMap.get("realm_access").toString();
 			
 			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
+			globals.add(Tuple.of("RULES_STATE", rulesState));
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(msg);
-			facts.add(adecodedToken);
+			facts.add(adecodedTokenMap);
 			facts.add(auserRoles);
 			if(userInSession!=null)
 				facts.add(usersSession.get(preferredUName));
 			else {
 	            User currentUser = new User(preferredUName, fullName, realm, accessRoles);
-				usersSession.put(adecodedToken.get("preferred_username").toString(), currentUser);
+				usersSession.put(adecodedTokenMap.get("preferred_username").toString(), currentUser);
 				facts.add(currentUser);
 			}
 					
