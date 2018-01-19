@@ -52,6 +52,7 @@ rule "Submit Offer"
        bus:EventBus()
        $user: User(realm != null)
        $map : Map($value: this["token"] != null)
+       $map1 : Map($value1: this["realm"] != null)
     then
         System.out.println(QwandaUtils.executeRuleLogger("Submit Offer"));       
         /* Prepare GSON Deserialization */
@@ -76,15 +77,22 @@ rule "Submit Offer"
         
         String dataString = $m.getData().getValue();
         JsonObject dataJson = new JsonObject(dataString);
-        
         String offerCode = dataJson.getString("targetCode");
-        String userCode = $user.getuCode();
+        
+
+        String userName = (String)$map1.get("preferred_username");   
+        System.out.println("username   ::   "+ userName);           
+        String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+        System.out.println("usercode   ::   "+ userCode);
+        String userFullName= MergeUtil.getFullName(userCode, tokenString);
+        System.out.println("user fullName   ::   "+ userFullName);
+
         String linkCode= "LNK_BEG";
         String linkOffer= "OFFER";
         String linkQuoter= "QUOTER";
 
         System.out.println("OFFER CODE FROM FE     ::    "+ offerCode);
-        System.out.println("USER CODE      ::    "+ userCode);
+        System.out.println("USER CODE              ::    "+ userCode);
 
         /* GET  attributes of the OFFER BE */
             JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
@@ -108,12 +116,14 @@ rule "Submit Offer"
             String begCode= map.get("PRI_BEG_CODE");
             String quoterCode= map.get("PRI_QUOTER_CODE");
             String quoterUname= map.get("PRI_QUOTER_USERNAME");
+            String quoterFullName= map.get("PRI_QUOTER_FULLNAME");
             String priOfferCode= map.get("PRI_OFFER_CODE");
-
+            
             System.out.println("------------------------------------------------------------------------");
             System.out.println("BEG CODE          ::   " + begCode);
             System.out.println("QUOTER CODE       ::   " + quoterCode);
             System.out.println("QUOTER USERNAME   ::   " + quoterUname);
+            System.out.println("QUOTER FULLNAME   ::   " + quoterFullName);
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
 
