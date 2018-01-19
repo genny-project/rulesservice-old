@@ -39,11 +39,6 @@ import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
-import life.genny.channels.EBCHandlers;
-
-global java.lang.String REACT_APP_QWANDA_API_URL;
-
-
 
 /*   Rule for Add icon click   */
 rule "Add new JOB"
@@ -62,11 +57,13 @@ rule "Add new JOB"
      String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
      String tokenString = (String)$tokenMap.get("token");
      String userName = (String)$decodedTokenMap.get("preferred_username");
+     System.out.println("The user name is  ::  " +userName);
      /*      Getting list of loads      */
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", tokenString));
      loadLists.put("token", $token);
      System.out.println("List of Load Json: "+loadLists.toString());
      bus.publish("cmds",loadLists);
+     System.out.println("The user name is  ::  " +userName);
      
      String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
      System.out.println("The user Code is  ::  " +userCode);
@@ -89,33 +86,24 @@ rule "Add new JOB"
      System.out.println("QName Json: "+qPostLoad.toString());
      bus.publish("cmds",qPostLoad);
      
-      JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, tokenString));
+     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, tokenString));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", tokenString);
      System.out.println("QName Json: "+qPostJob.toString());
      bus.publish("cmds",qPostJob);
-     
-     String createJobLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_job.json", null);
-     /*   send sublayout to FE    */
-	JsonObject sublayout = new JsonObject(createJobLayout);
-	JsonObject subLayoutObj = new JsonObject();
-    subLayoutObj.put("msg_type", "DATA_MSG");
-    subLayoutObj.put("data_type", "SUB_LAYOUT");
-    subLayoutObj.put("items", sublayout);      
-	subLayoutObj.put("token", tokenString);
-	bus.publish("cmds", subLayoutObj);
 
-     /*      sending cmd FORM_VIEW      */
-     QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
-     /*       Convert cmd to JSON Obj      */
-     JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
-        formViewJson.put("root", "QUE_LOAD_DETAILS_GRP");
-        formViewJson.put("token", $token);
-     System.out.println(" ##################### ");
-     System.out.println("CMD VIEW Msg ="+formViewJson.toString());
-     System.out.println(" #################### ");
-     /*     Publish it to the EventBus      */
-     bus.publish("cmds", formViewJson);
-     
+     /*     Sending cmd SUBLAYOUT_CHANGE      */
+     QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
+     JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);     
+     String createJobLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_job.json", null);
+       cmdJobSublayoutJson.put("items",new JsonObject(createJobLayout));
+       cmdJobSublayoutJson.put("token", tokenString);
+     // System.out.println(" ##################### ");
+     // System.out.println("Layout Data ="+cmdJobSublayoutJson.toString()); 
+     // System.out.println(" #################### ");
+      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
+      /*  Publish it to the EventBus   */
+      bus.publish("cmds", cmdJobSublayoutJson); 
+       
     System.out.println(RulesUtils.terminateRuleLogger("Add New Load"));
 end

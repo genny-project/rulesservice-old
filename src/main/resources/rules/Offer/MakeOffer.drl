@@ -90,12 +90,18 @@ rule "Make Offer"
         if(data != null) {
 
             JsonObject dataJson = new JsonObject(data);
-            String hint = dataJson.getString("hint");
-            String begCode = dataJson.getString("itemCode"); /* BEG_X .... */
-            String userCode = $user.getuCode();
-            String userName = $user.getUname();
-            String linkCode= "LNK_BEG";
 
+            String begCode = dataJson.getString("itemCode"); /* BEG_X .... */
+            System.out.println("begCode  ::   "+ begCode);        
+            
+            String userName = (String)$map1.get("preferred_username");   
+            System.out.println("username   ::   "+ userName);           
+            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("usercode   ::   "+ userCode);
+            String userFullName= MergeUtil.getFullName(userCode, tokenString);
+            System.out.println("user fullName   ::   "+ userFullName);
+
+            String linkCode= "LNK_BEG";
             /* BEG code is the job, quoter is making offer on */
             if(begCode != null) {
                 /* Create Offer BE */
@@ -111,12 +117,14 @@ rule "Make Offer"
                     Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
                     Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
                     Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
+                    Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
                     Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
                     
                     List<Answer> answerList = new ArrayList<Answer>();	
                     answerList.add(offercode);
                     answerList.add(quoterCode);
                     answerList.add(quoterUname);
+                    answerList.add(quoterFullName);
                     answerList.add(jobCode);
 
                     /* save attributes */
@@ -132,7 +140,7 @@ rule "Make Offer"
                 
                 if(offer != null) {
                     /* get OFFER QUESTION GROUP */
-                    JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
+                    JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
                     System.out.println("------------------------------------------------------------------------");
                     System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
                     System.out.println("------------------------------------------------------------------------");	

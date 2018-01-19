@@ -72,26 +72,18 @@ rule "Accept Job"
         String data = $m.getData().getValue();
         if(data != null) {
             JsonObject dataJson = new JsonObject(data);
-            String begCode = dataJson.getString("itemCode"); /* BEG_X .... */
-            System.out.println("begCode="+begCode);
-  
             
-            String userName = $map1.get("preferred_username").toString();
-            System.out.println("UserName="+userName);
-            userName = userName.toUpperCase();
-              System.out.println("UserName2="+userName);
-              String qUrl = qwandaServiceUrl+"/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userName;
-              System.out.println("QURL="+qUrl);
-              System.out.println("tokenString="+tokenString);
-              String results = QwandaUtils.apiGet(qUrl, tokenString);
-              System.out.println("results="+results);
-            JsonObject userObjs = new JsonObject(results);
-            System.out.println("userObjs="+userObjs.toString());
-            JsonArray items = userObjs.getJsonArray("items");
-            JsonObject userObj = items.getJsonObject(0);
-            System.out.println("userObj="+userObj.toString());
-            String userCode = userObj.getString("code");
-            System.out.println("UserCode="+userCode);
+            String begCode = dataJson.getString("itemCode"); /* BEG_X .... */
+            System.out.println("begCode  ::   "+ begCode);        
+            
+            String userName = (String)$map1.get("preferred_username");   
+            System.out.println("username   ::   "+ userName);           
+            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("usercode   ::   "+ userCode);
+            String userFullName= MergeUtil.getFullName(userCode, tokenString);
+            System.out.println("user fullName   ::   "+ userFullName);
+
+            
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
@@ -113,6 +105,7 @@ rule "Accept Job"
                 Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
                 Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
                 Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
+                Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
                 Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
                 
                 List<Answer> answerList = new ArrayList<Answer>();	
@@ -120,6 +113,7 @@ rule "Accept Job"
                 answerList.add(offercode);
                 answerList.add(quoterCode);
                 answerList.add(quoterUname);
+                answerList.add(quoterFullName);
                 answerList.add(jobCode);
 
                 /* save attributes */

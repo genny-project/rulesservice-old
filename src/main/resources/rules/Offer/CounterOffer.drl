@@ -13,6 +13,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -63,12 +64,19 @@ rule "Counter Offer"
             JsonObject dataJson = new JsonObject(data);
             String offerCode = dataJson.getString("itemCode"); /* OFR_X .... */
             String hint = dataJson.getString("hint");
+
+            String userName = (String)$map1.get("preferred_username");   
+            System.out.println("username   ::   "+ userName);           
+            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("usercode   ::   "+ userCode);
+            String userFullName= MergeUtil.getFullName(userCode, tokenString);
+            System.out.println("user fullName   ::   "+ userFullName);
             
             System.out.println("OFFER CODE   ::   "+offerCode);
             System.out.println("HINT         ::   "+hint);
             
             /*get OFFER QUESTION GROUP */
-            JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + $user.getuCode() + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
+            JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
             System.out.println("------------------------------------------------------------------------");
             System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
             System.out.println("------------------------------------------------------------------------");	
