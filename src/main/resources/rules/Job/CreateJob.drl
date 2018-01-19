@@ -98,10 +98,7 @@ rule "Add new JOB"
      String createJobLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_job.json", null);
        cmdJobSublayoutJson.put("items",new JsonObject(createJobLayout));
        cmdJobSublayoutJson.put("token", tokenString);
-     // System.out.println(" ##################### ");
-     // System.out.println("Layout Data ="+cmdJobSublayoutJson.toString()); 
-     // System.out.println(" #################### ");
-      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
+    System.out.println(QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson));
       /*  Publish it to the EventBus   */
       bus.publish("cmds", cmdJobSublayoutJson); 
        
