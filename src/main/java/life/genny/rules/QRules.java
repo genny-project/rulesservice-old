@@ -1,5 +1,6 @@
 package life.genny.rules;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,12 +9,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.RulesUtils;
 
 public class QRules {
@@ -37,7 +40,7 @@ public class QRules {
 		this.eventBus = eventBus;
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
-		this.state = new HashMap<String,Boolean>();
+		this.state = new HashMap<String, Boolean>();
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -105,7 +108,7 @@ public class QRules {
 	 *            the state to set
 	 */
 	public void setState(String key) {
-			state.put(key, true);
+		state.put(key, true);
 	}
 
 	/**
@@ -113,7 +116,7 @@ public class QRules {
 	 *            the state to clear
 	 */
 	public void clearState(String key) {
-			state.remove(key);
+		state.remove(key);
 	}
 
 	/*
@@ -128,6 +131,10 @@ public class QRules {
 
 	public Object get(final String key) {
 		return decodedTokenMap.get(key);
+	}
+
+	public Boolean is(final String key) {
+		return decodedTokenMap.containsKey(key);
 	}
 
 	public String getAsString(final String key) {
@@ -159,8 +166,12 @@ public class QRules {
 	}
 
 	public Boolean isNull(final String key) {
-		if (get(key) == null) {
-			return false;
+		if (is(key)) {
+			if (get(key) == null) {
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return true;
 		}
@@ -180,6 +191,15 @@ public class QRules {
 		}
 		return be;
 	}
+	
+	public Boolean isUserPresent()
+	{
+		if (isNull("USER")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
@@ -191,54 +211,72 @@ public class QRules {
 		}
 		return be;
 	}
-	
+
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);		
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);		
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getObject();
 		} else {
 			return null;
 		}
 	}
-	
+
 	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);		
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);		
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getObjectAsString();
 		} else {
 			return null;
 		}
 	}
-	
-	public  LocalDateTime getBaseEntityValueAsLocalDateTime(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);		
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);		
+
+	public LocalDateTime getBaseEntityValueAsLocalDateTime(final String baseEntityCode, final String attributeCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getValueDateTime();
 		} else {
 			return null;
 		}
 	}
-	
-	public  LocalDate getBaseEntityValueAsLocalDate(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);		
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);		
+
+	public LocalDate getBaseEntityValueAsLocalDate(final String baseEntityCode, final String attributeCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getValueDate();
 		} else {
 			return null;
 		}
 	}
-	
-	public  LocalTime getBaseEntityValueAsLocalTime(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);		
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);		
+
+	public LocalTime getBaseEntityValueAsLocalTime(final String baseEntityCode, final String attributeCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getValueTime();
 		} else {
 			return null;
 		}
+	}
+	
+	public BaseEntity createUser()
+	{
+		BaseEntity be = null;
+		
+		String username = getAsString("preferred_username").toLowerCase();
+		String firstname = StringUtils.capitaliseAllWords(getAsString("first_name").toLowerCase());
+		String lastname = StringUtils.capitaliseAllWords(getAsString("last_name").toLowerCase());
+		String email = getAsString("email").toLowerCase();		
+		
+		try {
+			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email);
+			
+		} catch (IOException e) {
+			log.error("Error in Creating User ");
+		}
+		return be;
 	}
 }
