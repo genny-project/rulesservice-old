@@ -80,7 +80,15 @@ rule "Cancel Offer"
         if(data != null) {
             JsonObject dataJson = new JsonObject(data);
             String offerCode = dataJson.getString("itemCode"); /* OFFER code */
-            String userCode = $user.getuCode();
+            System.out.println("offerCode  ::   "+ offerCode);        
+
+            String userName = (String)$map1.get("preferred_username");   
+            System.out.println("username   ::   "+ userName);           
+            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("usercode   ::   "+ userCode);
+            String userFullName= MergeUtil.getFullName(userCode, tokenString);
+            System.out.println("user fullName   ::   "+ userFullName);
+
             String linkCode= "LNK_BEG";
             String linkValue= "OFFER";
 

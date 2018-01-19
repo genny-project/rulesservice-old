@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.qwandautils.RulesUtils;
 import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
 
 import life.genny.qwanda.message.QEventMessage;
 
@@ -11,10 +12,11 @@ rule "Main Init"
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
         rules: QRules() 
      then
-     	RulesUtils.header("Main Init");
+     	RulesUtils.header(drools.getRule().getName());
      	
-        
+        BaseEntity user = rules.getUser();
+        RulesUtils.println("user is "+user);
   
 		
-	    RulesUtils.footer("Main Init");       		      
+	    RulesUtils.footer(drools.getRule().getName());       		      
 end
