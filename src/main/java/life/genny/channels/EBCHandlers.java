@@ -165,9 +165,10 @@ public class EBCHandlers {
 			String accessRoles = adecodedTokenMap.get("realm_access").toString();
 			
 			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
-			globals.add(Tuple.of("RULES_STATE", rulesState));
+	
 
 			List<Object> facts = new ArrayList<Object>();
+			facts.add(rulesState);
 			facts.add(msg);
 			facts.add(adecodedTokenMap);
 			facts.add(auserRoles);
