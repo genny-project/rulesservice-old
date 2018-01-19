@@ -29,7 +29,7 @@ rule "User-Profile Update"
     when
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_PROFILE_GRP" )
         $map : Map($value: this["token"] != null)
-        $user: User(isProfileCompleted == true)
+        $user: User(realm != null)
         bus: EventBus()
     then
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);

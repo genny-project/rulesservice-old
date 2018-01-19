@@ -69,7 +69,7 @@ rule "Check if Profile Completed"
    salience 19
    agenda-group "UserRegistration"
    when
-     $user: User( isAvailable == true )
+     $user: User( isAvailable == true && false)
      $map : Map($value: this["token"] != null) 
    then
      System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
