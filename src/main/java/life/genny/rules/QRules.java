@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class QRules {
 	private String token;
 	private EventBus eventBus;
 	private Map<String, Object> decodedTokenMap;
-	private String state;
+	private Map<String, Boolean> state;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
@@ -36,7 +37,7 @@ public class QRules {
 		this.eventBus = eventBus;
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
-		this.state = state;
+		this.state = new HashMap<String,Boolean>();
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -91,16 +92,28 @@ public class QRules {
 	/**
 	 * @return the state
 	 */
-	public String getState() {
-		return state;
+	public Boolean isState(final String key) {
+		if (state.containsKey(key)) {
+			return state.get(key);
+		} else {
+			return false;
+		}
 	}
 
 	/**
 	 * @param state
 	 *            the state to set
 	 */
-	public void setState(String state) {
-		this.state = state;
+	public void setState(String key) {
+			state.put(key, true);
+	}
+
+	/**
+	 * @param state
+	 *            the state to clear
+	 */
+	public void clearState(String key) {
+			state.remove(key);
 	}
 
 	/*
