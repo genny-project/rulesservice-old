@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>qwanda-utils</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.3</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
@@ -111,8 +111,6 @@
 			<artifactId>vertx-auth-oauth2</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
-		<!--<dependency> <groupId>com.outcome-hub</groupId> <artifactId>qwanda</artifactId> 
-			<version>0.4.9.5</version> </dependency> -->
 		<!-- https://mvnrepository.com/artifact/com.spotify/docker-client -->
 		<dependency>
 			<groupId>com.spotify</groupId>
