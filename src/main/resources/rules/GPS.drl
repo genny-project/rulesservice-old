@@ -21,14 +21,10 @@ rule "Receive GPS Data"
     when
 	    m : QDataGPSMessage()
 	    rules: QRules()
-	    bus: EventBus()
-        $map : Map($value: this["token"] != null)
      then
      	
      	RulesUtils.header(drools.getRule().getName());
      	
-	    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-		String tokenString = (String)$map.get("token");   
 				
         BaseEntity user = rules.getUser();
         
@@ -41,9 +37,8 @@ rule "Receive GPS Data"
 	    	String driverLatitude = driverPosition.getLatitude();
 	    	String driverLongitude = driverPosition.getLongitude();
         List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
- 		System.out.println(jobsInTransit.toString());
+ 		RulesUtils.println(jobsInTransit.toString());
  			
- 		Gson gson = new GsonBuilder().create();
  		for(BaseEntity be: jobsInTransit) {
  			
  			/* get delivery location for BEG */
@@ -65,8 +60,8 @@ rule "Receive GPS Data"
  				double percent = 100 * (( d / 1000.0 * 100.0) / 0.4);
  				
  				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percent));
-	            String jsonBeUpdate = gson.toJson(updateProgressAnswer);
-	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonBeUpdate, tokenString);
+	            String jsonBeUpdate = RulesUtils.toJson(updateProgressAnswer);
+	            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers", jsonBeUpdate, rules.getToken());
  			}
  		}
  		
