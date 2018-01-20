@@ -1,0 +1,102 @@
+package com.sample;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.User;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.qwanda.Answer;
+
+import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.RulesUtils;
+import com.google.gson.Gson;
+
+import java.time.LocalDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+import java.util.Map;
+
+
+rule "New assembly user creation"
+ when
+     $user: User(realm != "memberhub" && (isAvailable == true) )
+     $map : Map($value: this["token"] != null)
+     bus:EventBus()
+   then
+     RulesUtils.header("Payments User creation Rule");
+     System.out.println(QwandaUtils.executeRuleLogger("Payments User creation Rule"));
+     
+     Gson gson = new Gson();
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     gson = gsonBuilder.create();
+     
+     String tokenString = (String)$map.get("token"); 
+     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+     
+     /* get assembly authKey   */
+     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+     
+     /*  Creates assembly userId */
+     String assemblyId = PaymentUtils.getAssemblyId(tokenString);
+     
+     String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(), tokenString);
+  
+     
+     /* Check If user already exists in Assembly    */  
+     Boolean isAssemblyUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId, assemblyAuthToken);
+     RulesUtils.println("isAssemblyUserExists::"+isAssemblyUserExists);
+     
+     if (isAssemblyUserExists == false) {
+     	modify($user){
+     		setIsAssemblyUserProfileExists(false);
+     	}
+     } 
+     
+     if(!isAssemblyUserExists) {
+     	/* logic to create assembly user & set the payments userProfileExists flag  */
+     	PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, tokenString); 
+     	
+     	Boolean isUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId, assemblyAuthToken);
+     	System.out.println("isAssemblyUserExists::"+isUserExists);
+     	
+     	if(isUserExists == true) {
+     		modify($user) {
+     			setIsAssemblyUserProfileExists(true);
+     			
+     		}
+     	}
+     	
+     	/* Creates a new attribute for assembly user ID */
+    	Answer assemblyIdAnswer = new Answer(userCode, userCode, "PRI_ASSEMBLY_USER_ID", assemblyId);
+    	System.out.println("assemblyIdAnswer ::"+assemblyIdAnswer);
+    	System.out.println("assembly ID created in our system ::"+assemblyId);
+     	QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
+     	
+      }
+
+	 /* If user already exists */
+	 if(isAssemblyUserExists) {
+		modify($user) {
+     			setIsAssemblyUserProfileExists(true);
+     	}
+     	
+     	if(MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_USER_ID", tokenString) == null) {
+     		System.out.println("Assembly ID is null");
+     		Answer assemblyIdAnswer = new Answer(userCode, userCode, "PRI_ASSEMBLY_USER_ID", assemblyId);
+     		QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
+     	}
+	 } 
+	 
+	System.out.println("Assembly user exists :"+$user);     
+	
+	RulesUtils.footer("Payments User creation");
+   
+end     
+
+
+
