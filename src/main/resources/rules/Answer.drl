@@ -64,7 +64,7 @@ rule "Answer"
         System.out.println("================================================================================================================================================");
         System.out.println("RULE EXECUTED      ::   Answer");
         
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
 
@@ -75,7 +75,7 @@ rule "Answer"
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
 
-        // extract answers
+        /* extract answers */
         Answer[] answers = m.getItems();
         for (Answer answer : answers) {
         
@@ -93,20 +93,20 @@ rule "Answer"
             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
             System.out.println("------------------------------------------------------------------------");
             
-            // if this answer is actually an address another rule will be triggered
+            /* if this answer is actually an address another rule will be triggered */
             if(!attributeCode.contains("ADDRESS_FULL")) {
             
-             	//convert answer to json
+             	/* convert answer to json */
 	            String jsonAnswer = gson.toJson(answer);
 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 	
-	            // convert Answer Json to Answer obj
+	            /* convert Answer Json to Answer obj */
 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
 	            System.out.println("Answer Object   ::   "+answerObj);
 	            System.out.println("------------------------------------------------------------------------");
-	            //JsonObject jsonObject = Buffer.buffer(json).toJsonObject();         
+	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
 	
-	            // post answers to qwanda-utils
+	            /* post answers to qwanda-utils */
 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
             }
          }      
@@ -190,50 +190,10 @@ rule "Update Address"
 		}
 end
 
-//Rule listening to Attribute change
-rule "Listen Attribute Change"
-    when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
-        bus:EventBus() 
-     then
-     
-           GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-        Gson gson = gsonBuilder.create();
-     
-        System.out.println("\n\n");
-        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Listen Attribute Change" + LOG_RESET);
-        System.out.println("\nQEventAttributeValueChangeMessage   ::    " +$m); 
-        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
-        System.out.println("------------------------------------------------------------------------");    
-       
-        //Convert cmd to JSON Obj
-        JsonObject data = new JsonObject();
-        data.put("value", $m.getAnswer().getValue());
-        Answer newAnswer = $m.getAnswer();
-  
-        String jsonAnswerStr = gson.toJson(newAnswer);
-        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-       JsonArray items = new JsonArray();
-        items.add(jsonAnswer);
-       //Creating Answer DATA_MSG
-        JsonObject obj= new JsonObject();
-        obj.put("msg_type", "DATA_MSG");
-        obj.put("data_type", "Answer");
-        obj.put("items", items); 
-        obj.put("token",$m.getToken());
-   //     obj.put("token", $value);
+/* Rule listening to Attribute change */
 
-        //Print Answer
-        System.out.println("\nSaving attribute change as a new Answer   ::    "+obj.toString()); 
-        bus.publish("data", obj);
 
-        System.out.println("\n" + LOG_RED + "RULE TERMINATED    ::   Listen Attribute Change" + LOG_RESET);
-        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-end
-
-//Rule listening to Facebook Code change
+/* Rule listening to Facebook Code change */
 rule "Listen Facebook Code"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
@@ -255,7 +215,7 @@ rule "Listen Facebook Code"
         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 
-        // Collect DATA 
+        /* Collect DATA  */
         Answer newAnswer = $m.getAnswer();
   
         String jsonAnswerStr = gson.toJson(newAnswer);
@@ -265,7 +225,7 @@ rule "Listen Facebook Code"
    
        
 
-        //Print DATA msg
+        /* Print DATA msg */
         System.out.println("------------------------------------------------------------------------\n");    
         System.out.println("SOCIAL DATA   ::   "+jsonAnswer); 
         System.out.println("------------------------------------------------------------------------");     
@@ -276,7 +236,7 @@ rule "Listen Facebook Code"
         
 end
 
-//Rule listening to Gender Inference
+/* Rule listening to Gender Inference */
 rule "Inference Gender Change"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
@@ -291,7 +251,7 @@ rule "Inference Gender Change"
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token");   
 
@@ -302,7 +262,7 @@ rule "Inference Gender Change"
 		
 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
-        //PRINT genderObj
+        /* PRINT genderObj */
         System.out.println("------------------------------------------------------------------------\n");
         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
         
@@ -313,7 +273,7 @@ rule "Inference Gender Change"
             System.out.println("GENDER   ::   "+gender.toString());
             System.out.println("\n------------------------------------------------------------------------");
             
-            // Collect DATA to save gender as an answer
+            /* Collect DATA to save gender as an answer */
             Answer newAnswer = $m.getAnswer();
 
             String jsonAnswerStr = gson.toJson(newAnswer);
@@ -325,12 +285,12 @@ rule "Inference Gender Change"
             JsonArray items = new JsonArray();
             items.add(jsonAnswer);
 
-                //Creating Answer DATA_MSG
+                /* Creating Answer DATA_MSG */
             JsonObject obj = new JsonObject();
             obj.put("msg_type", "DATA_MSG");
             obj.put("data_type", "Answer");
             obj.put("items", items); 
-            //Print Answer
+            /* Print Answer */
             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
             obj.put("token",tokenString);
             bus.publish("data", obj);
@@ -344,20 +304,20 @@ rule "Inference Gender Change"
         
 end
 
-//Rule listening to Gender Inference
+/* Rule listening to Gender Inference */
 rule "Inference DOB Change"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
         bus:EventBus() 
         $map : Map($value: this["token"] != null)
-        // $user: User(realm != null)
+        /*  $user: User(realm != null) */
  
      then            
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference DOB Change" + LOG_RESET);
         
-        // //Prepare Token & qwandaServiceUrl
+        /* //Prepare Token & qwandaServiceUrl
         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         // String tokenString = (String)$map.get("token");   
 
@@ -411,11 +371,11 @@ rule "Inference DOB Change"
         
         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-       
+       */
         
 end
 
-// //Rule listening to Image Inference
+/* //Rule listening to Image Inference
 // rule "Inference Image Change"
 //     when
 //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_IMGURL") )
@@ -484,8 +444,8 @@ end
        
         
 // end
-
-//Rule listening to load selection value change in Post Load
+*/
+/* Rule listening to load selection value change in Post Load
 rule "Handle load selection"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
@@ -573,8 +533,9 @@ rule "Handle load selection"
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end
+*/
 
-//Rule listening to load type selection value change in Create Load
+/*Rule listening to load type selection value change in Create Load */
 rule "Handle load type selection"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
@@ -582,7 +543,7 @@ rule "Handle load type selection"
         $user: User(realm != null)
         $map : Map($value: this["token"] != null)
      then
-        // Prepare GSON Deserialization
+        /* Prepare GSON Deserialization */
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
@@ -590,12 +551,12 @@ rule "Handle load type selection"
         System.out.println("\n\n");
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  Create LOAD - Handle load type selection  " + LOG_RESET);
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
         
-        //Collect load code from answer
+        /* Collect load code from answer */
          Answer newAnswer = $m.getAnswer();
          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
@@ -610,24 +571,24 @@ rule "Handle load type selection"
            BaseEntity loadType = MergeUtil.getBaseEntityForAttr(loadTypeCode, tokenString);
           String loadTypeValue = loadType.getName();
          System.out.println("The load type value is   ::  " +loadTypeValue);
-         //creating new Answer
+         /* creating new Answer */
          String jsonAnswerStr = gson.toJson(newAnswer);
          System.out.println("The answer in string format :: "+jsonAnswerStr);
          JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
          jsonAnswer.put("value",loadTypeValue);
          jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
          jsonAnswer.put("inferred",true);
-         //jsonAnswer.put("weight",weight);
+         /* jsonAnswer.put("weight",weight); */
          System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
-         //creating Json array
+         /* creating Json array */
          JsonArray items = new JsonArray();
          items.add(jsonAnswer);
-         //Creating Answer DATA_MSG
+         /* Creating Answer DATA_MSG */
          JsonObject obj = new JsonObject();
          obj.put("msg_type", "DATA_MSG");
          obj.put("data_type", "Answer");
          obj.put("items", items); 
-         //Print Answer
+         /* Print Answer */
          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString()); 
          obj.put("token",tokenString);
          bus.publish("data", obj);
