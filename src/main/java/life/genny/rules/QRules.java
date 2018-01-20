@@ -11,11 +11,19 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.Gson;
+
+import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.RulesUtils;
 
@@ -215,6 +223,17 @@ public class QRules {
 		}
 		return be;
 	}
+	
+	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
+		BaseEntity be = null;
+		if (isNull("BE_" + attributeCode.toUpperCase()+"_"+value)) {
+			be = RulesUtils.getBaseEntityByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(), attributeCode, value);
+			set("BE_" + attributeCode.toUpperCase()+"_"+value, be); // WATCH THIS!!!
+		} else {
+			be = getAsBaseEntity("BE_" + attributeCode.toUpperCase()+"_"+value);
+		}
+		return be;
+	}
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
@@ -316,5 +335,27 @@ public class QRules {
 		return devMode;
 	}
 	
+	public void publish(final String channel, final Object payload)
+	{
+		this.getEventBus().publish(channel, payload);
+	}
 	
+	public void send(final String channel, final Object payload)
+	{
+		this.getEventBus().send(channel, payload);
+	}
+	
+	public void publishCmd(final BaseEntity be, final String aliasCode)
+	{
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be,aliasCode);
+		msg.setToken(getToken());
+	    publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishCmd(final QCmdMessage cmdMsg)
+	{
+		cmdMsg.setToken(getToken());
+	    publish("cmds", RulesUtils.toJsonObject(cmdMsg));
+	}
+
 }

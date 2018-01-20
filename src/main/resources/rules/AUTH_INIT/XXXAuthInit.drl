@@ -63,19 +63,12 @@ rule "Old Init"
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
         $roles : Set(!isEmpty())
-        $user : User(uname!= null)
-        rules: QRules( isUserPresent() == false  && isState("IS_LOGGED_IN")) 
-  
-        
-    then
+        rules: QRules( isState("IS_LOGGED_IN")) 
+     then
   		RulesUtils.header(drools.getRule().getName());  
   		        
-        modify($user){
-          setIsAvailable(QwandaUtils.checkUserTokenExists(rules.getQwandaServiceUrl(),rules.getToken()));
-        }
-        System.out.println("User facts value -  isAvailable   ::   " +$user.getIsAvailable());
         /* Calling the rule group : UserRegistration */
-        drools.setFocus("UserRegistration"); 
+       /* drools.setFocus("UserRegistration");  */
         /* Calling the rule group : layout */
         drools.setFocus("layout");  
         
@@ -83,10 +76,8 @@ rule "Old Init"
         JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=10", rules.getToken()));
         /* Print the json Object   */
         objWithAttr.put("token", rules.getToken());     
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("BE with ATTRIBUTE   ::   "+objWithAttr.toString()); 
-        System.out.println("------------------------------------------------------------------------");            
-        rules.getEventBus().publish("cmds", objWithAttr);   
+ 
+         rules.publish("cmds", objWithAttr);   
         	
         	/*  Send all sublayouts for entities  */
   		RulesUtils.header( "Send initial sublayouts");  
@@ -125,7 +116,7 @@ rule "Old Init"
 						        System.out.println("------------------------------------------------------------------------\n");
 						        System.out.println("SUBLAYOUT DATA   ::   " + subLayoutObj.toString()); 
 						        System.out.println("------------------------------------------------------------------------");
-						        rules.getEventBus().publish("cmds", subLayoutObj);
+						        rules.publish("cmds", subLayoutObj);
 						        
 							}
 							catch(Exception e) {
