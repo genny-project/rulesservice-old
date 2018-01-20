@@ -40,7 +40,7 @@ rule "Add new JOB"
      rules: QRules()
    then
     RulesUtils.header(drools.getRule().getName());
-     /*     Prepare GSON Deserialization     */
+    /*     Prepare GSON Deserialization     */
      GsonBuilder gsonBuilder = new GsonBuilder();
      gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
      Gson gson = gsonBuilder.create();
@@ -49,7 +49,7 @@ rule "Add new JOB"
      String userName = rules.getAsString("preferred_username");   
      System.out.println("The user name is  ::  " +userName);
      
-     /*      Getting list of loads      */
+    /*      Getting list of loads      */
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", rules.getToken()));
      loadLists.put("token", rules.getToken());
      System.out.println("List of Load Json: "+loadLists.toString());
@@ -59,17 +59,20 @@ rule "Add new JOB"
      String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
      System.out.println("The user Code is  ::  " +userCode);
      
-     /*     Creating new base-entity BEG for Posting new Job      */
+    /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "BEG", rules.getToken()), "Base Entity Group", qwandaServiceUrl, rules.getToken());
      String jobCode = beg.getCode();
      System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
      System.out.println("The BEG code is   ::  "+jobCode);
-     /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
+    /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
      QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link("GRP_DRAFTS",jobCode,"LNK_CORE")),rules.getToken());
-     /*  Creating new base-entity LOAD    */
+    /*  Creating new base-entity LOAD    */
      BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "LOD", rules.getToken()), "LOAD", qwandaServiceUrl, rules.getToken());
      String loadCode = load.getCode();
-     /*          Getting Post Load Question GRP        */
+    /*  link newly created LOAD to JOB/BEG    */
+     QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,loadCode,"LNK_BEG", "LOAD")),rules.getToken());
+
+    /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_LOAD_DETAILS_GRP/"+loadCode, rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
      qPostLoad.put("aliasCode", $m.data.getCode());
@@ -83,7 +86,7 @@ rule "Add new JOB"
      System.out.println("QName Json: "+qPostJob.toString());
      rules.getEventBus().publish("cmds",qPostJob);
 
-     /*     Sending cmd SUBLAYOUT_CHANGE      */
+    /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
      JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);     
      String createJobLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_job.json", null);
@@ -91,7 +94,7 @@ rule "Add new JOB"
        cmdJobSublayoutJson.put("token", rules.getToken());
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
 
-      /*  Publish it to the EventBus   */
+    /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson); 
        
 	RulesUtils.footer(drools.getRule().getName());
