@@ -16,6 +16,8 @@ import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.RulesUtils;
 
+import life.genny.qwanda.Answer;
+
 rule "Receive GPS Data"
 	
     when
