@@ -255,10 +255,11 @@ public class QRules {
 		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, false);
 	}
 
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 		List<BaseEntity> bes = null;
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
-			bes = RulesUtils.getBaseEntitysByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
 			if (cache) {
 				set("BES_" + parentCode.toUpperCase()+"_"+linkCode,bes); // WATCH THIS!!!
 			}
@@ -391,6 +392,15 @@ public class QRules {
 	public void publishCmd(final BaseEntity be, final String aliasCode)
 	{
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be,aliasCode);
+		msg.setToken(getToken());
+	    publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode)
+	{
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
+		msg.setParentCode(parentCode);
+		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
 	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}

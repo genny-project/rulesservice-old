@@ -6,15 +6,33 @@ import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
 
 
-rule "Send Treeview To Frontend"
+rule "Send BucketData To Frontend"
     no-loop true
     when
         rules: QRules( isState("IS_LOGGED_IN")) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	
-      	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE",0,10,true);
-   
+     	
+     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
+     	 
+     	for (BaseEntity bucket : buckets ) 
+     	{
+     		RulesUtils.println(bucket);
+     		List<BaseEntity> begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
+     		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
+     		 
+     		for (BaseEntity beg : begs) {
+     			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
+     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
+     			for (BaseEntity begKid : begKids) {
+    	 			
+     	 			RulesUtils.println(begKid);
+     	 		}
+     		}
+     	}
+       	
      		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end
