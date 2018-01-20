@@ -393,7 +393,7 @@ rule "Show more information about base entity"
 				     
 				     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
 				     
-				     JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("loadLayout.json"), null));
+				     String sublayout = RulesUtils.getLayout("loadLayout.json");
 				     cmdLoadSublayoutJson.put("items", sublayout);
 				     cmdLoadSublayoutJson.put("root", baseEntityCode);
 				     cmdLoadSublayoutJson.put("token", $value);

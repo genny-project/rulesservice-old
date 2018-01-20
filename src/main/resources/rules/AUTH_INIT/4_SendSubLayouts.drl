@@ -9,6 +9,7 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
+import com.google.gson.Gson;
 
 
 rule "Send Sub Layouts To Frontend"
@@ -16,8 +17,9 @@ rule "Send Sub Layouts To Frontend"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY")) 
      then
-     	RulesUtils.header(drools.getRule().getName());
-     	
+
+     RulesUtils.header(drools.getRule().getName());
+
        	/*  Send all sublayouts for entities  */
   		RulesUtils.header( "Send initial sublayouts");  
   

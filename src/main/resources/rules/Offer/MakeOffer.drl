@@ -47,14 +47,15 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
-
+import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.QRules;
 
 rule "Make Offer"
 
     when
         $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_MAKE_OFFER")
         bus: EventBus()
-        $user: User(realm != null )
+        rules: QRules()
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
     then
@@ -104,13 +105,14 @@ rule "Make Offer"
             String linkCode= "LNK_BEG";
             /* BEG code is the job, quoter is making offer on */
             if(begCode != null) {
-                /* Create Offer BE */
+            			
+            			/* Create Offer BE */
                     BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId( userCode, null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
                     System.out.println("------------------------------------------------------------------------\n");
                     System.out.println("OFFER BASE ENTITY   ::   "+offer.toString());  
                     System.out.println("------------------------------------------------------------------------");
 
-                    String offerCode= offer.getCode();
+                    String offerCode = offer.getCode();
                     System.out.println("OFFER CODE   ::   "+offerCode);
             
                 /* Save attributes for OFFER as answer           */
@@ -130,30 +132,45 @@ rule "Make Offer"
                     /* save attributes */
                     int i=1;
                     for (Answer answer : answerList) {
-                        System.out.println("Answer      " + i + "::   " + answer.toString());               
-                        String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
-                                gson1.toJson(answer), tokenString);
-                                System.out.println("Result      " + i + "::   " + result );
-                        i++;
-                        
+	                        
+	                    	try {
+	                    		
+	                    		   System.out.println("Answer      " + i + "::   " + answer.toString());        
+	                    		   String jsona =  gson1.toJson(answer);
+	                    		   if(jsona != null) {
+	                    			   
+	                    			    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsona, tokenString);
+	   	                            System.out.println("Result      " + i + "::   " + result );
+	   	                            i++;
+	                    		   }
+	                    	}
+	                    	catch(Exception e) {
+	                    		System.out.println(e);
+	                    	}
                     }         
-                
-                if(offer != null) {
-                    /* get OFFER QUESTION GROUP */
-                    JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
-                    System.out.println("------------------------------------------------------------------------");
-                    System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
-                    System.out.println("------------------------------------------------------------------------");	
                     
-                    /* publish QUESTIONS */
-                    offerGrp.put("token", tokenString);					
-                    bus.publish("cmds",  offerGrp);
-                }
+                    if(offer != null) {
+                    
+	                		/* get OFFER QUESTION GROUP */
+                    		String response = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString);
+                    		if(response != null) {
+                    			
+                    			System.out.println(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode);
+                    			JsonObject offerGrp = new JsonObject(response);
+        	                    System.out.println("------------------------------------------------------------------------");
+        	                    System.out.println("OFFER QUESTION GROUP   ::   "+ offerGrp.toString());	
+        	                    System.out.println("------------------------------------------------------------------------");	
+        	                    
+        	                    /* publish QUESTIONS */
+        	                    offerGrp.put("token", tokenString);					
+        	                    bus.publish("cmds",  offerGrp);
+                    		}
+                   }
             }
         }
 
         /* sending cmd FORM_VIEW */
-        QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
+        QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
         JsonObject formViewJson = new JsonObject().mapFrom(cmdFormView);
         formViewJson.put("root", "QUE_OFFER_DETAILS_GRP");
         

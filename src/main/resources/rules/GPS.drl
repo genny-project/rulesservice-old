@@ -9,6 +9,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.util.Map;
 import java.util.List;
+import com.google.gson.GsonBuilder;
+import java.util.ArrayList;
 
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwandautils.QwandaUtils;
@@ -25,15 +27,49 @@ rule "Receive GPS Data"
      	
      	RulesUtils.header(drools.getRule().getName());
      	
+	    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+		String tokenString = (String)$map.get("token");   
+				
         BaseEntity user = rules.getUser();
-        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-        String tokenString = (String)$map.get("token");   
         
         /* Get Jobs in transit */
         /* http://localhost:8280/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE
          * 
          */
+        
+        GPS driverPosition = m.getItems()[0];
+	    	String driverLatitude = driverPosition.getLatitude();
+	    	String driverLongitude = driverPosition.getLongitude();
         List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
  		System.out.println(jobsInTransit.toString());
-	    RulesUtils.footer(drools.getRule().getName());       		      
+ 			
+ 		Gson gson = new GsonBuilder().create();
+ 		for(BaseEntity be: jobsInTransit) {
+ 			
+ 			/* get delivery location for BEG */
+ 			
+ 			/* Call Google Maps API to know how far the driver is */
+ 			String response = QwandaUtils.apiGet("https://maps.googleapis.com/maps/api/distancematrix/json?origins=" + driverLatitude + "," + driverLongitude + "&destinations=-37.8021691,144.9664282&mode=driving&language=pl-PL", null);
+ 			System.out.println(response);
+ 			if(response != null) {
+ 				
+ 				JsonObject distanceMatrix = new JsonObject(response);
+ 				JsonArray elements = distanceMatrix.getJsonArray("rows").getJsonObject(0).getJsonArray("elements");
+ 				JsonObject distance = elements.getJsonObject(0).getJsonObject("distance");
+ 				int distanceValue = distance.getInteger("value");
+ 				System.out.println("===");
+ 				System.out.println(distance.getInteger("value"));
+ 				System.out.println(distanceValue);
+ 				
+ 				double d = (double)distanceValue;
+ 				double percent = 100 * (( d / 1000.0 * 100.0) / 0.4);
+ 				
+ 				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percent));
+	            String jsonBeUpdate = gson.toJson(updateProgressAnswer);
+	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonBeUpdate, tokenString);
+ 			}
+ 		}
+ 		
+	    RulesUtils.footer(drools.getRule().getName());       
+	    	
 end
