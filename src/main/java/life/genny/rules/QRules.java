@@ -6,12 +6,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -149,6 +151,10 @@ public class QRules {
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
 	}
+	
+	public List<BaseEntity> getAsBaseEntitys(final String key) {
+		return (List<BaseEntity>) get(key);
+	}
 
 	public Attribute getAsAttribute(final String key) {
 		return (Attribute) get(key);
@@ -228,6 +234,36 @@ public class QRules {
 		}
 		return be;
 	}
+	
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode) {
+		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, 0, 10, false);
+	}
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize) {
+		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, false);
+	}
+	
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
+		List<BaseEntity> bes = null;
+		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
+			bes = RulesUtils.getBaseEntitysByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+			if (cache) {
+				set("BES_" + parentCode.toUpperCase()+"_"+linkCode,bes); // WATCH THIS!!!
+			}
+		} else {
+			bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase()+"_"+linkCode);
+		}
+		return bes;
+	}
+	
+	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
+
+			String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+			JsonObject obj = new  JsonObject(json);
+			obj.put("token", getToken());
+			publish("cmds",obj);
+	}
+	
+	
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
