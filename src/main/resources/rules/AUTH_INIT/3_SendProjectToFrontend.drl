@@ -2,8 +2,7 @@ package life.genny.rules;
 
 import life.genny.qwandautils.RulesUtils;
 import life.genny.rules.QRules;
-
-import life.genny.entity.BaseEntity;
+import life.genny.qwanda.entity.BaseEntity;
 
 
 rule "Send Project To Frontend"
