@@ -18,6 +18,7 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Map;
+import java.util.HashMap; 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -36,21 +37,26 @@ import life.genny.qwanda.DateTimeDeserializer;
 /*   Rule to handle load selection   */
 rule "Handle Load Selection"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_LOAD_LISTS") )
          rules: QRules()
      then
         RulesUtils.header(drools.getRule().getName());
         
         /* Prepare GSON Deserialization  */
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-        Gson gson = gsonBuilder.create();          
+         GsonBuilder gsonBuilder = new GsonBuilder();
+         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+         Gson gson = gsonBuilder.create();          
       
         /*  Prepare Token & qwandaServiceUrl    */
-        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-        System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+        /*  Get Username and userCode    */
+         String userName = rules.getAsString("preferred_username");   
+         System.out.println("The user name is  ::  " +userName);
+         String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
+         System.out.println("The user Code is  ::  " +userCode);
+         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
 
-         /*     Collect load code from answer    */
+        /*     Collect load code from answer    */
          Answer newAnswer = $m.getAnswer();
          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
@@ -60,8 +66,40 @@ rule "Handle Load Selection"
          System.out.println("The target BE code is   ::  " +targetCode);
          System.out.println("The source BE code is   ::  " +sourceCode);
          System.out.println("The load code is   ::  " +loadCode);
-         /*    link LOAD to Job    */
-   
-        	RulesUtils.footer(drools.getRule().getName());
+
+        /*  Grab attributes from load and save it to newly load    */
+         JsonArray loadBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + loadCode + "/attributes", rules.getToken()));
+         RulesUtils.ruleLogger("Load DATA", loadBe );
+         Map<String, String> map = new HashMap<>();
+         /* loop to GET attributeCodes and VALUE */
+            for(Object obj : loadBe) {
+            JsonObject attributeObj = (JsonObject) obj;
+            String attributeCode = attributeObj.getString("attributeCode");
+            String attributeValue = attributeObj.getString("valueString");
+            map.put(attributeCode, attributeValue); /* PUT in map */
+            }
+        /* RulesUtils.ruleLogger("MAP DATA", map);   */
+          RulesUtils.ruleLogger(" MAP DATA ",map );
+          Answer[] newAnswers = new Answer[100];
+            try{
+                int i = 0;
+		    	for (Map.Entry<String, String> entry : map.entrySet())
+		    	{	
+                    Answer answerObj = new Answer(userCode, targetCode, entry.getKey(), entry.getValue() );
+                    newAnswers[i] = answerObj;
+                    i++; 
+                  }
+                                
+                }catch (Exception e) {
+                }              
+            QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers);
+            String jsonQDataAnswerMessage = gson.toJson(newLoadAnswers);
+		    System.out.println("updated answer json string ::"+jsonQDataAnswerMessage);
+        /* send new answers to api to save it  */ 
+		   QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", jsonQDataAnswerMessage, rules.getToken());
+           System.out.println("The new laod with attribute is ::   "+targetCode.toString());
+       
+        
+          RulesUtils.footer(drools.getRule().getName());
 
 end
