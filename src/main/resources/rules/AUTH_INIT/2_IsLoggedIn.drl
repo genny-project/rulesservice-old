@@ -9,7 +9,7 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Is Logged In"
     when
         rules: QRules( isState("IS_LOGGED_IN")) 
-        $map: Map()
+
      then
      	RulesUtils.header(drools.getRule().getName());
      	
