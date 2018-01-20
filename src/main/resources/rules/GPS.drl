@@ -60,7 +60,10 @@ rule "Receive GPS Data"
  				double percent = 100 * (( d / 1000.0 * 100.0) / 0.4);
  				
  				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percent));
+ 				RulesUtils.println(updateProgressAnswer);
+ 				
 	            String jsonBeUpdate = RulesUtils.toJson(updateProgressAnswer);
+	            RulesUtils.println("Answer Json String:"+jsonBeUpdate);
 	            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers", jsonBeUpdate, rules.getToken());
  			}
  		}
