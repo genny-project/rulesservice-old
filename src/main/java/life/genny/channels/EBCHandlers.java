@@ -30,8 +30,10 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.GPS;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
@@ -138,6 +140,25 @@ public class EBCHandlers {
 						json.put("items", jsonArray);
 						dataMsg = gson.fromJson(json.toString(), QDataAnswerMessage.class);
 						processMsg("Data", dataMsg, eventBus, payload.getString("token"));
+					}
+				}
+				else if (payload.getString("data_type").equals(GPS.class.getSimpleName())) {
+						
+					QDataGPSMessage dataGPSMsg = null;
+					try {
+						dataGPSMsg = gson.fromJson(payload.toString(), QDataGPSMessage.class);
+						processMsg("GPS", dataGPSMsg, eventBus, payload.getString("token"));
+					} 
+					catch (com.google.gson.JsonSyntaxException e) {
+						
+						log.error("BAD Syntax converting to json from " + dataGPSMsg);
+						JsonObject json = new JsonObject(payload.toString());
+						JsonObject answerData = json.getJsonObject("items");
+						JsonArray jsonArray = new JsonArray();
+						jsonArray.add(answerData);
+						json.put("items", jsonArray);
+						dataGPSMsg = gson.fromJson(json.toString(), QDataGPSMessage.class);
+						processMsg("GPS", dataGPSMsg, eventBus, payload.getString("token"));
 					}
 				}
 			}

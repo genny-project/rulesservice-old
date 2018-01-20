@@ -108,7 +108,6 @@ rule "Answer"
 	
 	            // post answers to qwanda-utils
 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
-            		
             }
          }      
         

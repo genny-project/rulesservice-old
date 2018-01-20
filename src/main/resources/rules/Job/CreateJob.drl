@@ -89,7 +89,7 @@ rule "Add new JOB"
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
      JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);     
-     String createJobLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/create_job.json", null);
+     String createJobLayout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("create_job.json"), null);
        cmdJobSublayoutJson.put("items",new JsonObject(createJobLayout));
        cmdJobSublayoutJson.put("token", rules.getToken());
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);

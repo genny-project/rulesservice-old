@@ -77,7 +77,7 @@ end
 	  bus.publish("cmds", obj);
            
 
-      String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/initial-profile-update", null);
+      String layout = QwandaUtils.apiGet("http://layout-cache:2223/layouts/initial-profile-update", null);
       QCmdMessage cmdLayout = new QCmdMessage("CMD_LAYOUT","profile-update");
       JsonObject layoutObj = new JsonObject().mapFrom(cmdLayout);
       layoutObj.put("data", new JsonObject(layout));
@@ -88,7 +88,7 @@ end
       bus.publish("cmds", layoutObj);
   
      
-      String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/welcome-new-user", null);
+      String subLayout = QwandaUtils.apiGet("http://layout-cache:2223/welcome-new-user", null);
       QCmdMessage cmdSublayout = new QCmdMessage("CMD_SUBLAYOUT","welcomeNewUser");
      
       JsonObject cmdSubLayout = new JsonObject().mapFrom(cmdSublayout);

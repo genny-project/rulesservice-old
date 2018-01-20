@@ -16,7 +16,7 @@ rule "Send Default Layout To Frontend"
      then
      	RulesUtils.header(drools.getRule().getName());
      	
-     	String layout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json", null);
+     	String layout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("layouts/layout1.json"), null);
   		RulesUtils.println(layout);
   		QCmdMessage layoutCmd = new QCmdLayoutMessage("layout1",layout);
   		

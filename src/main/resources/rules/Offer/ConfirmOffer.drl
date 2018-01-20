@@ -1,4 +1,6 @@
+
 package com.sample;
+
 import org.apache.commons.lang3.StringUtils;
 
 import life.genny.qwanda.message.QEventMessage;
@@ -44,7 +46,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
-
+import life.genny.qwanda.attribute.Attribute;
 
 
 rule "Confirm Offer"
@@ -97,12 +99,13 @@ rule "Confirm Offer"
                 Map<String, String> map = new HashMap<>();
                 /* loop to GET attributeCodes and VALUE */
                 for(Object obj : offerBe) {
-                    JsonObject offerObj = (JsonObject) obj;
+                    
+                		JsonObject offerObj = (JsonObject) obj;
                     String attributeCode = offerObj.getString("attributeCode");
                     String attributeValue = offerObj.getString("valueString");
                     map.put(attributeCode, attributeValue); /* PUT in map */
-
                 }
+                                
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("MAP DATA   ::   " + map);
                 System.out.println("------------------------------------------------------------------------");
@@ -154,12 +157,17 @@ rule "Confirm Offer"
                 /* publish new link data */
                 newLink1.put("token", tokenString );
                 bus.publish("cmds", newLink1);
-
                 
-            /* Move BEG to GRP_APPROVED */
+                /* Update BEG to have DRIVER_CODE as an attribute */
+                Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
+	            String jsonBeUpdate = gson.toJson(beAnswer);
+	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonBeUpdate, tokenString);
+                
+                /* Move BEG to GRP_APPROVED */
                 String oldGroup = "GRP_NEW_ITEMS";
                 String newGroup = "GRP_APPROVED";
                 String linkCode2 = "LNK_CORE";
+                
                 /* Moving the BEG */
                 JsonObject begEntity = new JsonObject();
                 begEntity.put("sourceCode", oldGroup);
@@ -170,7 +178,7 @@ rule "Confirm Offer"
                 System.out.println("EntityLink   ::   "+begEntity.toString());
                 System.out.println("------------------------------------------------------------------------");
 
-                String output2= QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString);
+                String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString);
                 System.out.println("The Output after POST: "+output2);
 
             /* Sending updated link of GRP_APPROVED */
@@ -190,7 +198,7 @@ rule "Confirm Offer"
                 bus.publish("cmds", newLink);
 
 
-            /* Sending message to QUOTER | COMPANY */
+                /* Sending message to QUOTER | COMPANY */
                 String code= "code:" + begCode ;
                 String recipient = "recipient:OWNER";
                 String[] msgMessageData = {code, recipient};
@@ -211,11 +219,25 @@ rule "Confirm Offer"
                 
                 jsonMessage.put("token",tokenString);
                 bus.publish("messages", jsonMessage);
-
-            
+                
+                /* Set progression of LOAD delivery to 0 */
+                Answer answer = new Answer(begCode, begCode, "PRI_PROGRESS", "0");                
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+                System.out.println(answer.toString());
+                String jsonAnswer = gson.toJson(answer);
+                QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, tokenString);
+                
+                /* We ask FE to monitor GPS */
+                JsonObject askGPS = new JsonObject();
+                askGPS.put("msg_type", "EVT_MSG");
+                String datax = "{\"evt_type\": \"GPS_MONITOR\"}";
+                askGPS.put("data", new JsonObject(datax));
+                askGPS.put("token", tokenString );
+                bus.publish("cmds", askGPS);
         }
 
         /* sending cmd BUCKETVIEW */
-            drools.setFocus("bucketview"); 
+        drools.setFocus("bucketview"); 
         System.out.println(QwandaUtils.terminateRuleLogger("Confirm Offer"));
 end

@@ -13,6 +13,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.RulesUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -78,7 +79,7 @@ rule "Show Offer Details"
 		        bus.publish("cmds", cmdBe); 
 				
 				/* we grab the layout and send it to FE */
-				JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/accept_offer.json", null));
+				JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("accept_offer.json"), null));
 			    	QCmdMessage messageSublayout = new QCmdMessage("CMD_SUBLAYOUT","accept-offer");
 			    JsonObject cmdSubLayout = new JsonObject().mapFrom(messageSublayout);
 			    cmdSubLayout.put("items", sublayout);

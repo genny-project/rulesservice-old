@@ -133,7 +133,7 @@ rule "Send BucketView"
         bus.publish("cmds", inTransit);
         
         /* Get Sub-Layout  */
-        String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/card.json", null);    
+        String subLayout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("card.json"), null);    
        /* Creating subLayout DATA_MSG */
         JsonObject subLayoutObj = new JsonObject();
         subLayoutObj.put("msg_type", "DATA_MSG");
@@ -148,7 +148,7 @@ rule "Send BucketView"
         bus.publish("cmds", subLayoutObj); 
         
         /* Get Sub-Layout */
-        String subLayoutList = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/list_item.json", null);    
+        String subLayoutList = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("list-item.json"), null);    
         
         /* Creating subLayout DATA_MSG */
         JsonObject subLayoutListObj = new JsonObject();

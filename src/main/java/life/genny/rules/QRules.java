@@ -128,7 +128,7 @@ public class QRules {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -151,7 +151,7 @@ public class QRules {
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
 	}
-	
+
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
 	}
@@ -190,7 +190,7 @@ public class QRules {
 
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
-		
+
 	}
 
 	public BaseEntity getUser() {
@@ -203,7 +203,7 @@ public class QRules {
 		}
 		return be;
 	}
-	
+
 	public Boolean isUserPresent()
 	{
 		if (isNull("USER")) {
@@ -223,8 +223,9 @@ public class QRules {
 		}
 		return be;
 	}
-	
+
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
+
 		BaseEntity be = null;
 		if (isNull("BE_" + attributeCode.toUpperCase()+"_"+value)) {
 			be = RulesUtils.getBaseEntityByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(), attributeCode, value);
@@ -234,14 +235,26 @@ public class QRules {
 		}
 		return be;
 	}
-	
+
+	public List<BaseEntity> getBaseEntitysByAttributeAndValue(final String attributeCode, final String value) {
+
+		List<BaseEntity> bes = null;
+		if (isNull("BE_" + attributeCode.toUpperCase()+"_"+value)) {
+			bes = RulesUtils.getBaseEntitysByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(), attributeCode, value);
+			set("BE_" + attributeCode.toUpperCase()+"_"+value, bes); // WATCH THIS!!!
+		}
+
+		return bes;
+	}
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode) {
 		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, 0, 10, false);
 	}
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize) {
 		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, false);
 	}
-	
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 		List<BaseEntity> bes = null;
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
@@ -254,7 +267,7 @@ public class QRules {
 		}
 		return bes;
 	}
-	
+
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 
 			String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
@@ -262,8 +275,8 @@ public class QRules {
 			obj.put("token", getToken());
 			publish("cmds",obj);
 	}
-	
-	
+
+
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
@@ -314,23 +327,23 @@ public class QRules {
 			return null;
 		}
 	}
-	
+
 	public BaseEntity createUser()
 	{
 		BaseEntity be = null;
-		
+
 		String username = getAsString("preferred_username").toLowerCase();
 		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
 		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
 		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
 		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
-		String email = getAsString("email").toLowerCase();		
-		String keycloakId = getAsString("sub").toLowerCase();	
-		
+		String email = getAsString("email").toLowerCase();
+		String keycloakId = getAsString("sub").toLowerCase();
+
 		try {
 			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email, realm,name, keycloakId);
 			set("USER",be);
-			
+
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -364,24 +377,24 @@ public class QRules {
 	public static Boolean getDevmode() {
 		return devMode;
 	}
-	
+
 	public void publish(final String channel, final Object payload)
 	{
 		this.getEventBus().publish(channel, payload);
 	}
-	
+
 	public void send(final String channel, final Object payload)
 	{
 		this.getEventBus().send(channel, payload);
 	}
-	
+
 	public void publishCmd(final BaseEntity be, final String aliasCode)
 	{
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be,aliasCode);
 		msg.setToken(getToken());
 	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
-	
+
 	public void publishCmd(final QCmdMessage cmdMsg)
 	{
 		cmdMsg.setToken(getToken());

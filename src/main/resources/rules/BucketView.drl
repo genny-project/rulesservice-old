@@ -324,7 +324,7 @@ rule "BucketView Card click"
      JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
      cmdLoadSublayoutJson.put("items", "LOD_LOAD1");
       //getting Layout from GitHub
-      JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/loadLayout.json", null));
+      JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("loadLayout.json"), null));
       // System.out.println("Layout Data as JSON ="+sublayout.toString());
 
     //  JsonObject subLayoutChange = new JsonObject();

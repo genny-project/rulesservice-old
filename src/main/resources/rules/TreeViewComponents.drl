@@ -153,7 +153,7 @@ rule "Select TreeView Item: DASHBOARD"
         
          //sending cmd SUB_LAYOUT  
         //Get Sub-Layout from the Github
-        String subLayout = QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/card.json", null);  
+        String subLayout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("card.json"), null);  
        //Creating subLayout DATA_MSG
        JsonObject sublayoutJson = new JsonObject();
         sublayoutJson.put("msg_type", "DATA_MSG");
@@ -393,7 +393,7 @@ rule "Show more information about base entity"
 				     
 				     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
 				     
-				     JsonObject sublayout = new JsonObject(QwandaUtils.apiGet("https://raw.githubusercontent.com/genny-project/layouts/master/loadLayout.json", null));
+				     JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("loadLayout.json"), null));
 				     cmdLoadSublayoutJson.put("items", sublayout);
 				     cmdLoadSublayoutJson.put("root", baseEntityCode);
 				     cmdLoadSublayoutJson.put("token", $value);
