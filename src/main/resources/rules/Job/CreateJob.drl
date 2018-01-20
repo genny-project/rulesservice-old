@@ -40,14 +40,17 @@ rule "Add new JOB"
      rules: QRules()
    then
     RulesUtils.header(drools.getRule().getName());
-    /*     Prepare GSON Deserialization     */
+    /*    Prepare GSON Deserialization     */
      GsonBuilder gsonBuilder = new GsonBuilder();
      gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
      Gson gson = gsonBuilder.create();
      
-     String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+     String qwandaServiceUrl = rules.getQwandaServiceUrl();
+   /*    Get user code from the username   */
      String userName = rules.getAsString("preferred_username");   
      System.out.println("The user name is  ::  " +userName);
+     String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
+     System.out.println("The user Code is  ::  " +userCode);
      
     /*      Getting list of loads      */
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", rules.getToken()));
@@ -55,9 +58,6 @@ rule "Add new JOB"
      System.out.println("List of Load Json: "+loadLists.toString());
      rules.getEventBus().publish("cmds",loadLists);
      System.out.println("The user name is  ::  " +userName);
-     
-     String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
-     System.out.println("The user Code is  ::  " +userCode);
      
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "BEG", rules.getToken()), "Base Entity Group", qwandaServiceUrl, rules.getToken());
@@ -98,4 +98,5 @@ rule "Add new JOB"
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson); 
        
 	RulesUtils.footer(drools.getRule().getName());
+  
 end
