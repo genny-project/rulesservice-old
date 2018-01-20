@@ -9,7 +9,7 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 
 
 
-rule "Send Default Layout To Frontend"
+rule "Send Layout Change To Frontend"
     no-loop true
     when
         rules: QRules( isState("IS_LOGGED_IN")) 
@@ -23,6 +23,10 @@ rule "Send Default Layout To Frontend"
         rules.publishCmd(layoutCmd);
            
         RulesUtils.println("DEFAULT LAYOUT SENT TO FRONTEND");
+        rules.clearState("IS_LOGGED_IN");
+        rules.setState("LAYOUT_CHANGE_READY");
+        update(rules); 
+ 
 		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end

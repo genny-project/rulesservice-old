@@ -9,13 +9,16 @@ import java.util.List;
 rule "Send BucketData To Frontend"
     no-loop true
     when
-        rules: QRules( isState("IS_LOGGED_IN")) 
+        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	
+     	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
+  
      	
      	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
+     	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
      	 
      	for (BaseEntity bucket : buckets ) 
      	{

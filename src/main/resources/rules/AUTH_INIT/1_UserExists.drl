@@ -18,7 +18,8 @@ rule "User Exists"
         BaseEntity user = rules.getUser();
         RulesUtils.println("user exists");
         RulesUtils.println("User "+user);
-  
+        
+  		rules.clearState("USER_CHECKED");
         rules.setState("IS_LOGGED_IN");
         update(rules); 
 		

@@ -379,8 +379,12 @@ public class QRules {
 		return devMode;
 	}
 
-	public void publish(final String channel, final Object payload)
+	public void publish(String channel, final Object payload)
 	{
+		if (channel.startsWith("debug")) {
+			channel = channel.substring("debug".length());
+		}
+		
 		this.getEventBus().publish(channel, payload);
 	}
 
