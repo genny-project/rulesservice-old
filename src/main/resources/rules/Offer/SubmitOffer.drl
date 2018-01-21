@@ -72,6 +72,10 @@ rule "Submit Offer"
                 return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                 }
             }).create();
+            Gson gson1 = new Gson();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+            gson1 = gsonBuilder.create();
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
@@ -129,20 +133,7 @@ rule "Submit Offer"
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
             
-            /* Update the number of offers for BEG */
-            Double number_of_offers = 0.0;
-            String number_of_offers_string = rules.getBaseEntityValueAsString(begCode, "PRI_NUMBER_OFFERS");
-            if(number_of_offers_string == null) { 
-            		number_of_offers = 1.0;
-            }
-            else {
-            	
-            		number_of_offers = Double.parseDouble(number_of_offers_string);
-            		number_of_offers = number_of_offers + 1;
-            }
-            
-            Answer begUpdate = new Answer(begCode, begCode, "PRI_NUMBER_OFFERS", Double.toString(number_of_offers));
-            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers", RulesUtils.toJson(begUpdate), rules.getToken());
+                        
 
             String templateCode = null;
          /* Check if a link exists between BEG & OFFER */
@@ -158,6 +149,19 @@ rule "Submit Offer"
 
                 templateCode = "MSG_CH40_ACCEPT_OFFER";
 
+                 /* Update the number of offers for BEG */ 
+                    Integer offerCount = 0;
+                    String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
+                    if(offerCountString == null) { 
+                        offerCount = 1;
+                    }else {                 
+                        offerCount = Integer.parseInt(offerCountString);
+                        offerCount = offerCount + 1;
+                        System.out.println("Offer Count is   ::   " + offerCount);
+                    }
+
+                    Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
+                    String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerCountAnswer), tokenString);  
             }
 
         /* Check if a link exists between USER & OFFER */

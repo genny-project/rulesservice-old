@@ -70,6 +70,10 @@ rule "Cancel Offer"
                 return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                 }
             }).create();
+            Gson gson1 = new Gson();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+            gson1 = gsonBuilder.create();
               
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
@@ -117,6 +121,19 @@ rule "Cancel Offer"
                 System.out.println("BEG CODE          ::   " + begCode);
                 System.out.println("------------------------------------------------------------------------");
 
+             /* Update the number of offers for BEG */ 
+                Integer offerCount = 0;
+                String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
+                if(offerCountString == null) { 
+                    offerCount = 0;
+                }else {                 
+                    offerCount = Integer.parseInt(offerCountString);
+                    offerCount = offerCount - 1;
+                    System.out.println("Offer Count is   ::   " + offerCount);
+                }
+
+                Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
+                String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerCountAnswer), tokenString);               
 
             /* Update link between BEG and OFFER to weight= 0 */
                 System.out.println("UPDATING weight OF LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);

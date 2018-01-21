@@ -102,7 +102,7 @@ rule "Confirm Offer"
                 /* loop to GET attributeCodes and VALUE */
                 for(Object obj : offerBe) {
                     
-                		JsonObject offerObj = (JsonObject) obj;
+                    JsonObject offerObj = (JsonObject) obj;
                     String attributeCode = offerObj.getString("attributeCode");
                     String attributeValue = offerObj.getString("valueString");
                     map.put(attributeCode, attributeValue); /* PUT in map */
