@@ -21,7 +21,6 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.RulesUtils;
 
 public class QRules {
 
