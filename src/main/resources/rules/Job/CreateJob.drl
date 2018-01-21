@@ -33,8 +33,8 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
 
-/*   Rule for Add icon click   */
-rule "Add new JOB"
+/*   Rule for Add Load button click   */
+rule "Add new Load"
    when
      $m : QEventMessage( event_type == "BTN_CLICK" && data.value == "ADD_NEW_LOAD" )
      rules: QRules()
