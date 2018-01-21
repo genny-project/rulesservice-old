@@ -434,7 +434,7 @@ public class QRules {
 		msg.setParentCode(parentCode);
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
-	    publish("cmds", RulesUtils.toJsonObject2(msg));
+	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg)
