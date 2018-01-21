@@ -14,7 +14,7 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MessageUtils;
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.Ask;
