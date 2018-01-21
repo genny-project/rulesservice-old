@@ -126,7 +126,7 @@ rule "Update Address"
 	
 		try {
 			
-			Answer[] newAnswers = new Answer[100];
+			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
 			GsonBuilder gsonBuilder = new GsonBuilder();
 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
@@ -175,6 +175,22 @@ rule "Update Address"
 		    				}
 		    				
 		    			}
+		    					    	        
+		    	        /* Store latitude */
+		    	        String newAttCode = "PRI_ADDRESS_LATITUDE";
+		    			answer.setAttributeCode("PRI_ADDRESS_LATITUDE");
+		    			answer.setValue(addressDataJson.getString('latitude'));
+		    			String jsonAnswer = gson.toJson(answer);
+		    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		    			newAnswers[newAnswers.length] = answerObj;
+		    			
+		    			/* Store longitude */
+		    			newAttCode = "PRI_ADDRESS_LONGITUDE";
+		    			answer.setAttributeCode("PRI_ADDRESS_LONGITUDE");
+		    			answer.setValue(addressDataJson.getString('longitude'));
+		    			jsonAnswer = gson.toJson(answer);
+		    			answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		    			newAnswers[newAnswers.length] = answerObj;
 		    			
 		    			/* set new answers */
 		    			m.setItems(newAnswers);
