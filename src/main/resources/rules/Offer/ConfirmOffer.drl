@@ -48,6 +48,7 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 
+import life.genny.rules.QRules;
 
 rule "Confirm Offer"
     when
