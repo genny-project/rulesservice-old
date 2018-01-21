@@ -1,0 +1,88 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
+import life.genny.qwanda.entity.EntityEntity;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.rules.RulesUtils;
+import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.Map;
+import java.util.HashMap; 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+/* Rule handling Cancel and Submit Button click in the Create Load  */
+rule "Post Load Cancel/Submit button click"
+    when
+      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
+      rules: QRules()   
+    then
+        RulesUtils.header(drools.getRule().getName());
+      /*   Prepare GSON Deserialization    */
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+        
+       /*  Prepare Token & qwandaServiceUrl    */
+         String qwandaServiceUrl = rules.getQwandaServiceUrl();
+         String tokenString = rules.getToken();
+       /*  Get Username and userCode    */
+         String userName = rules.getAsString("preferred_username");   
+         System.out.println("The user name is  ::  " +userName);
+         String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+         System.out.println("The user Code is  ::  " +userCode);
+                
+       /*  Get data.value and decode    */
+        String dataString = $m.data.getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+        String jobCode = dataJson.getString("targetCode");
+        String actionCode = dataJson.getString("action"); 
+        
+       if(actionCode.equalsIgnoreCase("submit") ){       
+         /*    link current user as load-owner to the Job/BEG     */
+           QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,userCode,"LNK_BEG","OWNER")),tokenString);
+           System.out.println("After adding owner to BEG");
+          /*     Moving the BEG      */
+           JsonObject begEntity = new JsonObject();
+           begEntity.put("sourceCode","GRP_DRAFTS");
+           begEntity.put("targetCode",jobCode);
+           begEntity.put("attributeCode","LNK_CORE");
+ 	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
+ 	       System.out.println("The Output after POST: "+output);
+ 	      /*     Calling the rule group : layout to redirect user to home/bucketView page    */
+          /*  drools.setFocus("layout");    */
+        
+           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
+           newJobDetails.put("token", tokenString);
+           System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
+            /*  Publish new Job/BEG data to the EventBus   */
+           rules.getEventBus().publish("cmds", newJobDetails); 
+      }
+      
+        
+     RulesUtils.footer(drools.getRule().getName());
+        
+end
