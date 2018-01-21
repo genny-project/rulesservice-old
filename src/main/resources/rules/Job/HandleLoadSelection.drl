@@ -1,6 +1,6 @@
 package life.genny.rules;
 
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -13,7 +13,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;

@@ -1,6 +1,6 @@
 package life.genny.rules;
 
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.GPS;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 
 import life.genny.qwanda.Answer;
 

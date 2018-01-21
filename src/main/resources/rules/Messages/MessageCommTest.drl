@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Map;
 
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.qwanda.message.QCmdMessage;
 
 global java.lang.String LOG_RESET;
