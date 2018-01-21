@@ -177,7 +177,7 @@ rule "Update Address"
 		    			}
 		    					    	        
 		    	        /* Store latitude */
-		    	        String newAttCode = "PRI_ADDRESS_LATITUDE";
+		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
 		    			answer.setAttributeCode("PRI_ADDRESS_LATITUDE");
 		    			answer.setValue(addressDataJson.getString('latitude'));
 		    			String jsonAnswer = gson.toJson(answer);
@@ -185,7 +185,7 @@ rule "Update Address"
 		    			newAnswers[newAnswers.length] = answerObj;
 		    			
 		    			/* Store longitude */
-		    			newAttCode = "PRI_ADDRESS_LONGITUDE";
+		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
 		    			answer.setAttributeCode("PRI_ADDRESS_LONGITUDE");
 		    			answer.setValue(addressDataJson.getString('longitude'));
 		    			jsonAnswer = gson.toJson(answer);
