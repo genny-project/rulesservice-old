@@ -16,12 +16,13 @@ rule "Send Layout Change To Frontend"
      then
      	RulesUtils.header(drools.getRule().getName());
      	
-     	String layout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("layouts/layout1.json"), null);
+     	/*  String layout = QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL("layouts/layout1.json"), null); */
+     	String layout = RulesUtils.getLayout("layouts/layout1.json");
+     	
   		RulesUtils.println(layout);
   		QCmdMessage layoutCmd = new QCmdLayoutMessage("layout1",layout);
   		
         rules.publishCmd(layoutCmd);
-           
         RulesUtils.println("DEFAULT LAYOUT SENT TO FRONTEND");
         rules.clearState("IS_LOGGED_IN");
         rules.setState("LAYOUT_CHANGE_READY");
