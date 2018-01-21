@@ -18,9 +18,11 @@ import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.QwandaUtils;
 
 public class QRules {
@@ -320,12 +322,23 @@ public class QRules {
 	}
 
 	public LocalTime getBaseEntityValueAsLocalTime(final String baseEntityCode, final String attributeCode) {
+		
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
 		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
 		if (ea.isPresent()) {
 			return ea.get().getValueTime();
 		} else {
 			return null;
+		}
+	}
+	
+	public void geofenceJob(final String begCode, final String driverCode, Double radius) {
+			
+		BaseEntity be = RulesUtils.getBaseEntityByCode(QRules.getQwandaServiceUrl(), this.getDecodedTokenMap(), this.getToken(), begCode);
+		QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, QRules.getQwandaServiceUrl(), this.getToken(), this.getDecodedTokenMap());
+		
+		for(QCmdGeofenceMessage cmd: cmds) {
+			this.publishCmd(cmd);
 		}
 	}
 

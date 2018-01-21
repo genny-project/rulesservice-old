@@ -14,6 +14,7 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MessageUtils;
+import life.genny.rules.RulesUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.Ask;
@@ -44,7 +45,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
-
+import life.genny.rules.QRules;
 
 rule "Submit Offer"
     when
@@ -53,6 +54,7 @@ rule "Submit Offer"
        $user: User(realm != null)
        $map : Map($value: this["token"] != null)
        $map1 : Map($value1: this["realm"] != null)
+       rules: QRules()
     then
         System.out.println(QwandaUtils.executeRuleLogger("Submit Offer"));       
         /* Prepare GSON Deserialization */
@@ -126,13 +128,29 @@ rule "Submit Offer"
             System.out.println("QUOTER FULLNAME   ::   " + quoterFullName);
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
+            
+            /* Update the number of offers for BEG */
+            Double number_of_offers = 0.0;
+            String number_of_offers_string = rules.getBaseEntityValueAsString(begCode, "PRI_NUMBER_OFFERS");
+            if(number_of_offers_string == null) { 
+            		number_of_offers = 1.0;
+            }
+            else {
+            	
+            		number_of_offers = Double.parseDouble(number_of_offers_string);
+            		number_of_offers = number_of_offers + 1;
+            }
+            
+            Answer begUpdate = new Answer(begCode, begCode, "PRI_NUMBER_OFFERS", Double.toString(number_of_offers));
+            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers", RulesUtils.toJson(begUpdate), rules.getToken());
 
             String templateCode = null;
          /* Check if a link exists between BEG & OFFER */
             Boolean linkBegOffer = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, offerCode, tokenString );
             System.out.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);           
-        /* link BEG and OFFER BE || OFFER */
-            if(!linkBegOffer){
+            
+            /* link BEG and OFFER BE || OFFER */
+            if(!linkBegOffer) {
                 System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
                 Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
                 link1.setWeight(.01);

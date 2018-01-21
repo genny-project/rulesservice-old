@@ -116,39 +116,12 @@ end
 rule "BucketView item movement - GRP_NEW_ITEMS to GRP_APPROVED"
   when
         $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NEW_ITEMS" && targetBaseEntityCode == "GRP_APPROVED")) )
-        bus: EventBus()
-        $map : Map($value: this["token"] != null)
+        rules: QRules()
     then
-
-        System.out.println(LOG_YELLOW + "========================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   BV Item Move from GRP_NEW_ITEMS to GRP_APPROVED|Send GeoFence" + LOG_RESET);
-		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
-  	    String tokenString = (String)$map.get("token");
-
-        //Getting QCmdGeofenceMessage for source address
-        QCmdGeofenceMessage cmdGeoFenceSource =  GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Source", tokenString);
-
-        //Getting QCmdGeofenceMessage for destination address
-	    QCmdGeofenceMessage cmdGeoFenceDest = GPSUtils.getGeoFenceOfAddress($m.getTargetBaseEntityCode(), $m.data.getCode(), 10.0, "Destination", tokenString);
-	    JsonObject cmdGeoFenceSourceJson = new JsonObject().mapFrom(cmdGeoFenceSource);
-	    JsonObject cmdGeoFenceDestJson = new JsonObject().mapFrom(cmdGeoFenceDest);
-	    cmdGeoFenceSourceJson.put("token", $value);
-	    cmdGeoFenceDestJson.put("token",$value );
-
-	    System.out.println("-----------------------------------");
-        System.out.println("Geo Fence Data Message of Source is : "+cmdGeoFenceSourceJson.toString());
-        System.out.println("-----------------------------------");
-        System.out.println("-----------------------------------");
-        System.out.println("Geo Fence Data Message of Destination is : "+cmdGeoFenceDestJson.toString());
-        System.out.println("-----------------------------------");
-
-        //Sending QCmdGeofenceMessage for source address
-        bus.publish("cmds", cmdGeoFenceSourceJson);
-
-        //sending QCmdGeofenceMessage for destination address
-	    bus.publish("cmds", cmdGeoFenceDestJson);
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   BV Item Move from GRP_NEW_ITEMS to GRP_APPROVED|Send GeoFence" + LOG_RESET);
-        System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
+    
+    		RulesUtils.header(drools.getRule().getName());
+        rules.geofenceJob($m.data.getCode(), rules.getUser().getCode(), 10.0);
+        RulesUtils.footer(drools.getRule().getName());
 end
 
 

@@ -48,6 +48,7 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 
+import life.genny.rules.QRules;
 
 rule "Confirm Offer"
     when
@@ -56,6 +57,7 @@ rule "Confirm Offer"
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
+        rules: QRules()
     then
 
         System.out.println(QwandaUtils.executeRuleLogger("Confirm Offer"));
@@ -229,12 +231,7 @@ rule "Confirm Offer"
                 QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, tokenString);
                 
                 /* We ask FE to monitor GPS */
-                JsonObject askGPS = new JsonObject();
-                askGPS.put("msg_type", "EVT_MSG");
-                String datax = "{\"evt_type\": \"GPS_MONITOR\"}";
-                askGPS.put("data", new JsonObject(datax));
-                askGPS.put("token", tokenString );
-                bus.publish("cmds", askGPS);
+                rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0);
         }
 
         /* sending cmd BUCKETVIEW */
