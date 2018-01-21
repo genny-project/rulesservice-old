@@ -48,7 +48,7 @@ public class RulesUtils {
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
 
-	final static Gson gson = new GsonBuilder()
+	final static Gson gson2 = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
               @Override
               public LocalDate deserialize(final JsonElement json, final Type type,
@@ -74,6 +74,11 @@ public class RulesUtils {
                     return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                   }
                 }).create();
+	
+	static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	static Gson gson = gsonBuilder.create();
+
+	
 	public static String executeRuleLogger(final String status, final String module, final String topColour,
 			final String bottomColour) {
 		String moduleLogger = "\n" + (devMode ? "" : bottomColour) + status + " ::  " + module
@@ -175,7 +180,7 @@ public class RulesUtils {
 			String code = "PER_" + uname.toUpperCase();
 			// CHEAT TODO
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code, token);
-			BaseEntity be = gson.fromJson(beJson, BaseEntity.class);
+			BaseEntity be = gson2.fromJson(beJson, BaseEntity.class);
 
 //			if (username != null) {
 //				beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + username+"&pageSize=1", token);
@@ -304,7 +309,7 @@ public class RulesUtils {
 	        T item = null;
 	        if (json != null) {
 	                try {
-	                      item = (T)gson.fromJson(json, clazz);
+	                      item = (T)gson2.fromJson(json, clazz);
 	                } catch (Exception e) {
 	                     log.error("Bad Deserialisation for "+clazz.getSimpleName());
 	                }
@@ -316,9 +321,9 @@ public class RulesUtils {
 	{
 	      GsonBuilder gsonBuilder = new GsonBuilder();
 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-	        Gson gson2 = gsonBuilder.create();
+	        Gson gson3 = gsonBuilder.create();
 
-		String ret =  gson2.toJson(obj);
+		String ret =  gson3.toJson(obj);
 		return ret;
 	}
 	

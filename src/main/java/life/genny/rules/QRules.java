@@ -19,6 +19,7 @@ import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.QwandaUtils;
 
@@ -397,6 +398,12 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be,aliasCode);
 		msg.setToken(getToken());
 	    publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishData(final QDataAnswerMessage msg)
+	{
+		msg.setToken(getToken());
+	    publish("data", RulesUtils.toJsonObject(msg));
 	}
 	
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode)

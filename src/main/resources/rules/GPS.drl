@@ -59,7 +59,7 @@ rule "Receive GPS Data"
  				System.out.println(distanceValue);
  				
  				double d = (double)distanceValue;
- 				double percent = 100 * (( d / 1000.0 * 100.0) / 0.4);
+ 				double percent =   100 * ( d / 100.0) ; 
  				
  				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percent));
  				RulesUtils.println(updateProgressAnswer);

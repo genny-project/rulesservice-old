@@ -24,7 +24,7 @@ rule "Listen Attribute Change"
         
         Answer newAnswer = $m.getAnswer();
         
-        rules.publish("data",new QDataAnswerMessage(newAnswer));
+        rules.publishData(new QDataAnswerMessage(newAnswer));
   
    
   
