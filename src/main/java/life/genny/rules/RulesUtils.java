@@ -317,6 +317,12 @@ public class RulesUtils {
 	        return item;
 	}
 	
+	public static String toJson2(Object obj)
+	{
+	
+		String ret =  gson2.toJson(obj);
+		return ret;
+	}
 	public static String toJson(Object obj)
 	{
 	      GsonBuilder gsonBuilder = new GsonBuilder();
@@ -330,6 +336,13 @@ public class RulesUtils {
 	public static JsonObject toJsonObject(Object obj)
 	{
 		String json = toJson(obj);
+		JsonObject jsonObj = new JsonObject(json);
+		return jsonObj;
+	}
+	
+	public static JsonObject toJsonObject2(Object obj)
+	{
+		String json = toJson2(obj);
 		JsonObject jsonObj = new JsonObject(json);
 		return jsonObj;
 	}
@@ -397,7 +410,7 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
