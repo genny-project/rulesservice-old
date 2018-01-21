@@ -9,7 +9,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.RulesUtils;
+import life.genny.rules.RulesUtils;
 
 import java.util.Map;
 

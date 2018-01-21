@@ -9,8 +9,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.RulesUtils;
-import life.genny.qwandautils.PaymentEndpoint;
+import life.genny.rules.RulesUtils;
 import com.google.gson.Gson;
 
 import java.time.LocalDateTime;
