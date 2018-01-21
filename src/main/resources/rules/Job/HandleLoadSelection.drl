@@ -48,7 +48,7 @@ rule "Handle Load Selection"
          Gson gson = gsonBuilder.create();          
       
         /*  Prepare Token & qwandaServiceUrl    */
-         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+         String qwandaServiceUrl = rules.getQwandaServiceUrl();
         /*  Get Username and userCode    */
          String userName = rules.getAsString("preferred_username");   
          System.out.println("The user name is  ::  " +userName);
@@ -71,14 +71,13 @@ rule "Handle Load Selection"
          JsonArray loadBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + loadCode + "/attributes", rules.getToken()));
          RulesUtils.ruleLogger("Load DATA", loadBe );
          Map<String, String> map = new HashMap<>();
-         /* loop to GET attributeCodes and VALUE */
-            for(Object obj : loadBe) {
-            JsonObject attributeObj = (JsonObject) obj;
-            String attributeCode = attributeObj.getString("attributeCode");
-            String attributeValue = attributeObj.getString("valueString");
-            map.put(attributeCode, attributeValue); /* PUT in map */
+        /* loop to GET attributeCodes and VALUE */
+           for(Object obj : loadBe) {
+           JsonObject attributeObj = (JsonObject) obj;
+           String attributeCode = attributeObj.getString("attributeCode");
+           String attributeValue = attributeObj.getString("valueString");
+           map.put(attributeCode, attributeValue); /* PUT in map */
             }
-        /* RulesUtils.ruleLogger("MAP DATA", map);   */
           RulesUtils.ruleLogger(" MAP DATA ",map );
           Answer[] newAnswers = new Answer[100];
             try{
@@ -95,7 +94,7 @@ rule "Handle Load Selection"
             QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers);
             String jsonQDataAnswerMessage = gson.toJson(newLoadAnswers);
 		    System.out.println("updated answer json string ::"+jsonQDataAnswerMessage);
-        /* send new answers to api to save it  */ 
+         /*   Send new answers to api to save it   */ 
 		   QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", jsonQDataAnswerMessage, rules.getToken());
            System.out.println("The new laod with attribute is ::   "+targetCode.toString());
        
