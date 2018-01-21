@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.qwanda.Answer;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
@@ -416,6 +417,13 @@ public class QRules {
 	public void publishData(final QDataAnswerMessage msg)
 	{
 		msg.setToken(getToken());
+	    publish("data", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishData(final Answer answer)
+	{
+		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setToken(getToken());  
 	    publish("data", RulesUtils.toJsonObject(msg));
 	}
 	
