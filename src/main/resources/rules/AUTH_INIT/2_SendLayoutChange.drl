@@ -12,7 +12,7 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 rule "Send Layout Change To Frontend"
     no-loop true
     when
-        rules: QRules( isState("USER_SENT") && (!isState("LAYOUT_CHANGE_READY"))) 
+        rules: QRules( isState("IS_LOGGED_IN") && (!isState("LAYOUT_CHANGE_READY"))) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	

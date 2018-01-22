@@ -6,9 +6,9 @@
  import java.util.List;
  import life.genny.qwanda.message.QEventMessage;
 
- rule "Send GPS Region"
+ rule "Send GPS Regions Data"
      when
-         rules: QRules( isState("LAYOUT_CHANGE_READY"))
+         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SENT_GPS_REGION")))
       then
       	
       	 RulesUtils.header(drools.getRule().getName()); 
@@ -20,5 +20,7 @@
  			rules.geofenceJob(begCode, rules.getUser().getCode(), 30.0);
  		}
  		        
+ 		rules.setState("SENT_GPS_REGION");
+        update(rules);
  	    RulesUtils.footer(drools.getRule().getName());       		      
  end
