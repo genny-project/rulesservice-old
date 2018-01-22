@@ -19,6 +19,8 @@ import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Map;
 import java.util.HashMap; 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -43,11 +45,35 @@ rule "Submit LOAD"
        rules: QRules( ) 
     then
         RulesUtils.header(drools.getRule().getName());
-        JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/GRP_NEW_ITEMS/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=10", rules.getToken()));
-        newJobDetails.put("token", rules.getToken());
-        System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-       /*  Publish new Job/BEG data to the EventBus   */
-         rules.publish("cmds",newJobDetails);
+        BaseEntity user = rules.getUser();
+        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(buckets,"GRP_NEW_ITEMS","LNK_CORE");
+     	 
+     	for (BaseEntity bucket : buckets ) 
+     	{
+     		RulesUtils.println(bucket);
+     		List<BaseEntity> begs = new ArrayList<BaseEntity>();
+     		if (user.is("PRI_DRIVER")) {
+     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     			begs.addAll(driverbegs);
+     		}
+ 
+    			if (user.is("PRI_OWNER")) {
+     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     		    begs.addAll(ownerbegs);
+     		}
+ 
+     		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
+     		 
+     		 
+     		for (BaseEntity beg : begs) {
+     			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
+     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
+     			for (BaseEntity begKid : begKids) {   	 			
+     	 			RulesUtils.println(bucket.getCode()+":"+begKid.getCode());
+     	 		}
+     		}
+     	}
         
        String layout = RulesUtils.getLayout("card.json");
      	/* sending cmd BUCKET_VIEW */
