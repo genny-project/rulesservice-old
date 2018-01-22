@@ -1,31 +1,39 @@
-package com.sample;
+package life.genny.rules;
 
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.KeycloakUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.User;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
-import io.vertx.rxjava.core.eventbus.EventBus;
-import io.vertx.core.buffer.Buffer;
-import com.google.gson.Gson;
-import life.genny.qwanda.Answer;
-import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwandautils.KeycloakUtils;
-import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.MessageUtils;
+import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.Ask;
-import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-import java.util.Set;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -34,39 +42,33 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.FieldNamingPolicy;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import life.genny.qwanda.DateTimeDeserializer;
-import life.genny.qwanda.entity.User;
-import life.genny.qwanda.Link;
-
-
 
 rule "Send Bucketview Cmd"
     salience 10
     agenda-group "bucketview"
     when    
         bus: EventBus()
-        $user: User(realm != null )
-        $map : Map($value: this["token"] != null)
+        rules: QRules()
     then
-        System.out.println(QwandaUtils.executeRuleLogger("Send Bucketview Cmd"));
+        RulesUtils.header(drools.getRule().getName());
         /* Prepare Token & qwandaServiceUrl */
-            String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-            String tokenString = (String)$map.get("token");   
+            String qwandaServiceUrl = rules.getQwandaServiceUrl();
+            String tokenString = rules.getToken();
+        /* Sendind Bucketview */
+            QCmdViewMessage cmdBucketView = new QCmdViewMessage("BUCKET_VIEW", "GRP_DRIVER_VIEW");
+            RulesUtils.ruleLogger("Sending Bucketview", cmdBucketView);
+            rules.publishCmd(cmdBucketView);
 
-        String viewType= "GRP_DRIVER_VIEW"; 
-
-        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
-        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-        bucketViewJson.put("root", viewType);
-        
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("BUCKETVIEW DATA   ::   " + bucketViewJson.toString());
-        System.out.println("------------------------------------------------------------------------");
-        
-        bucketViewJson.put("token", tokenString);
-        bus.publish("cmds", bucketViewJson);
-        System.out.println(QwandaUtils.terminateRuleLogger("Send Bucketview Cmd"));
+        RulesUtils.footer(drools.getRule().getName());
 end

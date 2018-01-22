@@ -120,7 +120,7 @@ rule "Accept Job"
                 
             } 
 
-            /* Update the number of offers for BEG */ 
+        /* Update the number of offers for BEG */ 
             Integer offerCount = 0;
             String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
             if(offerCountString == null) { 
@@ -142,13 +142,13 @@ rule "Accept Job"
             JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
             RulesUtils.ruleLogger("Updated OFFER Base Entity", offerObj);
             offerObj.put("token", tokenString);      
-            rules.getEventBus().publish("cmds", offerObj);
+            rules.publish("cmds", offerObj);
 
         /* SEND QUOTER BE */
             JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
             RulesUtils.ruleLogger("QUOTER Base Entity", quoterObj);
             quoterObj.put("token", tokenString);      
-            rules.getEventBus().publish("cmds", quoterObj);
+            rules.publish("cmds", quoterObj);
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
             /* Creating a data msg */
@@ -159,7 +159,7 @@ rule "Accept Job"
                 RulesUtils.ruleLogger("Updated Link of BEG", newLink);
             /* publish new link data */
                 newLink.put("token", tokenString );
-                rules.getEventBus().publish("cmds", newLink);
+                rules.publish("cmds", newLink);
 
         /* Sending message to BEG OWNER */
             rules.set("begCode", begCode);
