@@ -7,13 +7,15 @@ import life.genny.rules.QRules;
 rule "Send User To Frontend"
     no-loop true
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
+        rules: QRules( isState("PROJECT_SENT")  && (!isState("USER_SENT")) )
      then
      	RulesUtils.header(drools.getRule().getName());
      	
         rules.publishCmd(rules.getUser(),"USER");
    
         RulesUtils.println("USER SENT TO FRONTEND");
+        rules.setState("USER_SENT");
+        update(rules); 
 		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end

@@ -8,7 +8,7 @@ import life.genny.qwanda.entity.BaseEntity;
 rule "Send Project To Frontend"
     no-loop true
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
+        rules: QRules( isState("IS_LOGGED_IN")  && (!isState("PROJECT_SENT")) )
      then
      	RulesUtils.header(drools.getRule().getName());
      	
@@ -18,6 +18,8 @@ rule "Send Project To Frontend"
         rules.publishCmd(project,"PROJECT");
    
         RulesUtils.println("PROJECT SENT TO FRONTEND");
+        rules.setState("PROJECT_SENT");
+        update(rules); 
 		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end
