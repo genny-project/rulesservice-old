@@ -51,13 +51,22 @@ rule "Add new Load"
      GsonBuilder gsonBuilder = new GsonBuilder();
      gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
      Gson gson = gsonBuilder.create();
+   /* Get the users Company Code  */
+     String companyCode =  rules.getUsersCompanyCode(userCode);
+    System.out.println("The users company code is  ::   " +companyCode);
+    
      
     /*      Getting list of loads      */
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", rules.getToken()));
      loadLists.put("token", rules.getToken());
      System.out.println("List of Load Json: "+loadLists.toString());
      rules.getEventBus().publish("cmds",loadLists);
-     System.out.println("The user name is  ::  " +userName);
+
+    /*   Getting list of the load category   */
+     JsonObject loadCategoryLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_CATEGORY/linkcodes/LNK_CORE?pageStart=0&pageSize=20", rules.getToken()));
+     loadCategoryLists.put("token", rules.getToken());
+     System.out.println("List of Load category Json: "+loadCategoryLists.toString());
+     rules.getEventBus().publish("cmds",loadCategoryLists);
      
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "BEG", rules.getToken()), "Base Entity Group", qwandaServiceUrl, rules.getToken());
@@ -103,7 +112,7 @@ rule "Add new Load"
 
     /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson); 
-       
+    System.out.println("The users comapny code is  ::   " +companyCode); 
 	RulesUtils.footer(drools.getRule().getName());
   
 end
