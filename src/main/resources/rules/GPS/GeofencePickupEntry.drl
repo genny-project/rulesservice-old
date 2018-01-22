@@ -3,6 +3,8 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
+import java.util.HashMap;
+
 
 rule "Geofence Enter Pickup Point"
 	when
@@ -21,10 +23,12 @@ rule "Geofence Enter Pickup Point"
 		String[] recipients = new String[1];
 		recipients[0] = rules.getUser().getCode();
 		
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", begCode);
+		contextMap.put("DRIVER", rules.getUser().getCode());
 		
-		
-		/* rules.sendMessage(begCode, recipients, "MSG_CH40_DRIVER_PICKUP_ARRIVED", "SMS"); */
-		
+		/* rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_PICKUP_ARRIVED", "SMS"); */
+
 		RulesUtils.footer(drools.getRule().getName());
 
 end

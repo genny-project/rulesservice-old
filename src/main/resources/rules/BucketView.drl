@@ -113,6 +113,23 @@ rule "Load Details - Back action"
 		drools.setFocus("bucketview"); 
 end
 
+rule "BucketView movement"
+	when
+		 $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" )
+	     bus: EventBus()
+	     $map : Map($value: this["token"] != null)
+	     rules: QRules()
+	then
+		
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL") == null ? System.getenv("REACT_APP_QWANDA_API_URL") : System.getenv("REACT_APP_QWANDA_API_URL");
+		String tokenString = rules.getToken();
+		
+		/* we update the link */
+		String destinationGroup = $m.getTargetBaseEntityCode();
+	    String begCode = $m.getData().getValue();
+		QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + destinationGroup, begCode, tokenString);
+end
+
 rule "BucketView item movement - GRP_NEW_ITEMS to GRP_APPROVED"
   when
         $m : QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && ( (sourceBaseEntityCode == "GRP_NEW_ITEMS" && targetBaseEntityCode == "GRP_APPROVED")) )

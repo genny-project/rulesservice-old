@@ -3,6 +3,8 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
+import java.util.HashMap;
+import life.genny.qwandautils.QwandaUtils;
 
 rule "Geofence Exit Pickup Point"
 	when
@@ -14,9 +16,21 @@ rule "Geofence Exit Pickup Point"
   
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
-			
+		
 		RulesUtils.println("---- ACTION ----");
 		RulesUtils.println("EXITED PICKUP POINT");
+		
+		RulesUtils.footer(drools.getRule().getName());
+		
+		String[] recipients = new String[1];
+		recipients[0] = rules.getUser().getCode();
+		
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", begCode);
+		contextMap.put("DRIVER", rules.getUser().getCode());
+		
+		/* rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS"); */
+		rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT", "LNK_CORE");
 		
 		RulesUtils.footer(drools.getRule().getName());
 

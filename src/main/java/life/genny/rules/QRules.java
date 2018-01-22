@@ -13,6 +13,7 @@ import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
@@ -301,8 +302,24 @@ public class QRules {
          begEntity.put("attributeCode", linkCode);
 
          try {
-			return QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, begEntity.toString(), getToken());
+			
+	        	 QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, begEntity.toString(), getToken());
+	        	 
+	        	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+baseEntityCode+"/linkcodes/"+linkCode, getToken()));
+	
+	         //Creating a data msg
+	         JsonObject newLink = new JsonObject();
+	         newLink.put("msg_type", "DATA_MSG");
+	         newLink.put("data_type", "LINK_CHANGE");
+	         newLink.put("items", updatedLink);
+	         newLink.put("token", getToken() );
+	         System.out.println("-----------------------------------");
+	         System.out.println("Updated Link : "+newLink.toString());
+	         System.out.println("-----------------------------------");
+	         getEventBus().publish("cmds", newLink);
+        	 
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
          
          return null;
