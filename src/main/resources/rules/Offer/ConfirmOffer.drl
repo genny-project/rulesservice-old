@@ -79,10 +79,10 @@ rule "Confirm Offer"
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
-
+        
+        /* Get offerCode, username, userCode, userFullName */
             String offerCode = $m.getItemCode();
             System.out.println("offerCode  ::   "+ offerCode);          
-
             String userName = rules.getAsString("preferred_username");
             System.out.println("username   ::   "+ userName);                 
             String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
