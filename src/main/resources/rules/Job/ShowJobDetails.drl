@@ -1,0 +1,72 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+import io.vertx.core.json.JsonObject;
+
+rule "Show more information about base entity"
+	when
+		$m: QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_LOAD_SEE_MORE")
+		rules: QRules()
+	then
+		
+		RulesUtils.header(drools.getRule().getName());
+		
+		String data = $m.getData().getValue();
+		if(data != null) {
+			
+			JsonObject dataJson = new JsonObject(data);
+			String hint = dataJson.getString("hint");
+			String baseEntityCode = dataJson.getString("itemCode");
+			
+			// first we check if the base entity is a load, a driver, or an owner etc... The BE code will tell us:
+			if(baseEntityCode != null) {
+			
+				if(baseEntityCode.contains("LOD_")) {
+					System.out.println("-------- Rule: Showing LOAD layout for BE: " + baseEntityCode + "  --------");	
+			     	return; // stopping there so we dont check the hint below
+				}
+			}
+			
+			
+		    // if the BE code did not help we can still use the hint
+		    if(hint != null && baseEntityCode != null) {
+		    		
+		    		switch(hint) {
+				case "GRP_NEW_ITEMS": 
+				case "GRP_IN_TRANSIT": 
+				case "GRP_APPROVED": 
+				case "GRP_PAID": 
+				case "GRP_DELIVERED": 
+			     	
+			     	System.out.println("-------- Rule: Showing JOB layout for BE: " + baseEntityCode + "  --------");	
+			     	
+				     //sending cmd SUBLAYOUT_CHANGE
+				     QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT", "LoadLayout");
+				     
+				     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
+				     
+				     String sublayout = RulesUtils.getLayout("loadLayout.json");
+				     cmdLoadSublayoutJson.put("items", sublayout);
+				     cmdLoadSublayoutJson.put("root", baseEntityCode);
+				     cmdLoadSublayoutJson.put("token", $value);
+				    
+				     System.out.println(" ##################### ");
+				     System.out.println("Layout Data = " + cmdLoadSublayoutJson.toString()); 
+				     System.out.println(" #################### ");
+				     
+				     //Publish it to the EventBus
+				     bus.publish("cmds", cmdLoadSublayoutJson); 
+				    
+				break;
+			      
+				default:
+					System.out.println("-------- Ending Rule  --------");
+				}
+		    }
+		}
+		
+		RulesUtils.footer(drools.getRule().getName());
+	
+end
