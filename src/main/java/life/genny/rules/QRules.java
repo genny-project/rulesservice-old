@@ -293,14 +293,35 @@ public class QRules {
 		}
 	}
 
-	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
-		if (ea.isPresent()) {
-			return ea.get().getObjectAsString();
-		} else {
-			return null;
+	/**
+	 * 
+	 * @param BaseEntity object
+	 * @param attributeCode
+	 * @return The attribute value for the BaseEntity attribute code passed
+	 */
+	public static String getBaseEntityAttrValueAsString(BaseEntity be, String attributeCode) {
+		
+		String attributeVal = null;
+		for(EntityAttribute ea : be.getBaseEntityAttributes()) {
+			if(ea.getAttributeCode().equals(attributeCode)) {
+				attributeVal = ea.getObjectAsString();
+			}
 		}
+		
+		return attributeVal;
+	}
+	
+
+	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
+		String attrValue = null;
+		
+		if(baseEntityCode != null ) {
+			
+			BaseEntity be = getBaseEntityByCode(baseEntityCode);
+			attrValue = getBaseEntityAttrValueAsString(be, attributeCode);			
+		}
+		
+		return attrValue;
 	}
 
 	public LocalDateTime getBaseEntityValueAsLocalDateTime(final String baseEntityCode, final String attributeCode) {
@@ -312,6 +333,7 @@ public class QRules {
 			return null;
 		}
 	}
+	
 
 	public LocalDate getBaseEntityValueAsLocalDate(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
