@@ -34,7 +34,7 @@ import life.genny.qwanda.DateTimeDeserializer;
 
 
 /*   Rule for Add Load button click   */
-rule "Add new Load"
+rule "Create Job"
    when
      $m : QEventMessage( event_type == "BTN_CLICK" && data.value == "ADD_NEW_LOAD" )
      rules: QRules()
@@ -52,8 +52,8 @@ rule "Add new Load"
      gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
      Gson gson = gsonBuilder.create();
    /* Get the users Company Code  */
-     String companyCode =  rules.getUsersCompanyCode(userCode);
-    System.out.println("The users company code is  ::   " +companyCode);
+    BaseEntity company =  rules.getParent(userCode,"LNK_STAFF");
+    System.out.println("The users company code is  ::   " +company.getCode());
     
      
     /*      Getting list of loads      */
@@ -112,7 +112,7 @@ rule "Add new Load"
 
     /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson); 
-    System.out.println("The users comapny code is  ::   " +companyCode); 
+    System.out.println("The users comapny code is  ::   " +company.getCode()); 
 	RulesUtils.footer(drools.getRule().getName());
   
 end
