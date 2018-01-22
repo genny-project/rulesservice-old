@@ -26,7 +26,7 @@ import java.util.Map;
 rule "Create Payments Assembly Company"
 	no-loop true
 	when 
-		rules: QRules(( isUserPresent() == true)  && isState("USER_CHECKED") && isState("IS_ASSEMBLY_USER_CREATED")) 
+		rules: QRules(isState("IS_ASSEMBLY_USER_CREATED")) 
 	then
 		RulesUtils.header(drools.getRule().getName());
 		
@@ -42,10 +42,11 @@ rule "Create Payments Assembly Company"
 		
 		 /* get assembly authKey   */
     	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
-     
-     	/*  Gets assembly userId */
+    	
+    	/*  Gets assembly userId */
     	String assemblyId = MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_USER_ID", tokenString);
-     	
+    	
+    	     	
      	if(MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_COMPANY_ID", tokenString) == null) {	
      	
      		RulesUtils.println("Company not found for user..So creating a Company now..");
@@ -63,14 +64,13 @@ rule "Create Payments Assembly Company"
     	 			Answer assemblyIdAnswer = new Answer(userCode, userCode, "PRI_ASSEMBLY_COMPANY_ID", companyId);
     	 			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
      				RulesUtils.println("Assembly Company created");
-     				System.out.println("Assembly Company created");
      				
 				}
 			}
      	}
      	
      	rules.clearState("IS_ASSEMBLY_USER_CREATED");
-    	update(rules);	
-     			
+    	update(rules);
+     	     			
 		RulesUtils.footer(drools.getRule().getName());
 end

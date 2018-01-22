@@ -394,7 +394,7 @@ public class RulesUtils {
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
-
+			
 	}
 	
 	/**

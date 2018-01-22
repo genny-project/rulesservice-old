@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.qwanda.Answer;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
@@ -47,6 +48,7 @@ public class QRules {
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
 		this.state = new HashMap<String, Boolean>();
+		setState(DEFAULT_STATE);
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -291,14 +293,35 @@ public class QRules {
 		}
 	}
 
-	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);
-		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
-		if (ea.isPresent()) {
-			return ea.get().getObjectAsString();
-		} else {
-			return null;
+	/**
+	 * 
+	 * @param BaseEntity object
+	 * @param attributeCode
+	 * @return The attribute value for the BaseEntity attribute code passed
+	 */
+	public static String getBaseEntityAttrValueAsString(BaseEntity be, String attributeCode) {
+		
+		String attributeVal = null;
+		for(EntityAttribute ea : be.getBaseEntityAttributes()) {
+			if(ea.getAttributeCode().equals(attributeCode)) {
+				attributeVal = ea.getObjectAsString();
+			}
 		}
+		
+		return attributeVal;
+	}
+	
+
+	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
+		String attrValue = null;
+		
+		if(baseEntityCode != null ) {
+			
+			BaseEntity be = getBaseEntityByCode(baseEntityCode);
+			attrValue = getBaseEntityAttrValueAsString(be, attributeCode);			
+		}
+		
+		return attrValue;
 	}
 
 	public LocalDateTime getBaseEntityValueAsLocalDateTime(final String baseEntityCode, final String attributeCode) {
@@ -310,6 +333,7 @@ public class QRules {
 			return null;
 		}
 	}
+	
 
 	public LocalDate getBaseEntityValueAsLocalDate(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
@@ -419,13 +443,20 @@ public class QRules {
 	    publish("data", RulesUtils.toJsonObject(msg));
 	}
 	
+	public void publishData(final Answer answer)
+	{
+		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setToken(getToken());  
+	    publish("data", RulesUtils.toJsonObject(msg));
+	}
+	
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode)
 	{
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
 		msg.setParentCode(parentCode);
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
-	    publish("cmds", RulesUtils.toJsonObject2(msg));
+	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg)

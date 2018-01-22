@@ -35,6 +35,7 @@ import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
@@ -94,6 +95,9 @@ public class EBCHandlers {
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
 				System.out.println("EVT_ATTRIBUTE_VALUE_CHANGE DATA is   ::    "+payload.toString());
 				eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+			} else if (payload.getString("event_type").equals("BTN_CLICK")) {
+				System.out.println("BTN_CLICK DATA is   ::    "+payload.toString());
+				eventMsg = gson.fromJson(payload.toString(), QEventBtnClickMessage.class);
 			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
 				eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
 			} else {

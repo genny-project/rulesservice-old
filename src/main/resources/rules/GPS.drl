@@ -53,20 +53,18 @@ rule "Receive GPS Data"
  				JsonObject distanceMatrix = new JsonObject(response);
  				JsonArray elements = distanceMatrix.getJsonArray("rows").getJsonObject(0).getJsonArray("elements");
  				JsonObject distance = elements.getJsonObject(0).getJsonObject("distance");
- 				int distanceValue = distance.getInteger("value");
+ 				Integer distanceValue = distance.getInteger("value");
  				System.out.println("===");
  				System.out.println(distance.getInteger("value"));
  				System.out.println(distanceValue);
  				
- 				double d = (double)distanceValue;
- 				double percent =   100 * ( d / 100.0) ; 
+ 				Double d = distanceValue.doubleValue();
+ 				Double totalDistance = 400.0;
+ 				Double percentage =  100.0 * (totalDistance - d) / (totalDistance); 
  				
- 				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percent));
+ 				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percentage));
  				RulesUtils.println(updateProgressAnswer);
- 				
-	            String jsonBeUpdate = RulesUtils.toJson(updateProgressAnswer);
-	            RulesUtils.println("Answer Json String:"+jsonBeUpdate);
-	            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers", jsonBeUpdate, rules.getToken());
+ 		        rules.publishData(updateProgressAnswer);
  			}
  		}
  		
