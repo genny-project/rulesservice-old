@@ -89,7 +89,7 @@ rule "BucketView Group Change - Valid"
  	   String[] msgMessageData = {begCode, "recipient:OWNER"};
  	   String[] attachments = {};
  	   System.out.println("msgMessageData String Arrray: "+msgMessageData.toString());
- 	   String msgTemplateCode = "MSG_CH40_MOVE_"+$m.getTargetBaseEntityCode();
+ 	   String msgTemplateCode = "MSG_CH40_MOVE_" + $m.getTargetBaseEntityCode();
 
  	   //Creating messageData MSG_MESSAGE
  	   QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", msgTemplateCode, msgMessageData, QBaseMSGMessageType.EMAIL, attachments);
@@ -156,6 +156,7 @@ rule "BucketView Grp Change-Invalid"
 end
 */
 
+/*
 rule "BucketView GEOFENCE-ENTRY"
    when
      $m : QEventMessage( event_type == "GEOFENCE_ENTRY" )
@@ -166,7 +167,9 @@ rule "BucketView GEOFENCE-ENTRY"
        System.out.println(" The BEG code is: "+$m.data.getCode());
 end
 
+*/
 
+/*
 rule "BucketView GEOFENCE-EXIT"
   when
      $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.value == "EXIT_SOURCE" )
@@ -223,10 +226,9 @@ rule "BucketView GEOFENCE-EXIT"
  	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GeoFence Exit- Load In Transit " + LOG_RESET);
      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
 
-end
+end */
 
-
-//Geofence Entry to Destination GPS data
+/*
 rule "BucketView GEOFENCE-ENTRY DESTINATION"
    when
      $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.value == "ENTER_DESTINATION" )
@@ -280,7 +282,7 @@ rule "BucketView GEOFENCE-ENTRY DESTINATION"
  	 bus.publish("messages", jsonMessage);
  	 System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    GEOFENCE-ENTRY DESTINATION " + LOG_RESET);
      System.out.println(LOG_YELLOW + "-----------------------------------------------------------------------------------------------" + LOG_RESET);
-end
+end */
 
 
 //BucketView Card double click

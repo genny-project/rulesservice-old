@@ -12,6 +12,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.rules.RulesUtils;
 import life.genny.qwanda.entity.User;
@@ -40,11 +41,12 @@ rule "Post Load Cancel/Submit button click"
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
       rules: QRules()   
     then
-        RulesUtils.header(drools.getRule().getName());      
-       /*  Prepare Token & qwandaServiceUrl    */
+
+    		RulesUtils.header(drools.getRule().getName());   
          String qwandaServiceUrl = rules.getQwandaServiceUrl();
          String tokenString = rules.getToken();
-       /*  Get Username and userCode    */
+         
+         /*  Get Username and userCode    */
          String userName = rules.getAsString("preferred_username");   
          System.out.println("The user name is  ::  " +userName);
          String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
@@ -57,24 +59,35 @@ rule "Post Load Cancel/Submit button click"
         String actionCode = dataJson.getString("action"); 
         System.out.println("The job code is   :: "+jobCode);
         
-       if(actionCode.equalsIgnoreCase("submit") ){       
-         /*    link current user as load-owner to the Job/BEG     */
+       if(actionCode.equalsIgnoreCase("submit")) {       
+         
+    	   /*    link current user as load-owner to the Job/BEG     */
            Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
            System.out.println(" Added Load Owner to BEG/JOB ");
+           
+           /* We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be triggered in another rule */
+           	String pickupLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LATITUDE");
+           	String pickupLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LONGITUDE");
+           	String deliveryLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
+           	String deliveryLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
+           	
+           	Double totalDistance = GPSUtils.getDistance(pickupLatitudeString, pickupLongitudeString, deliveryLatitudeString, deliveryLongitudeString);
+       		if(totalDistance > 0) {
+       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_METERS", Double.toString(totalDistance));
+           		rules.publishData(totalDistanceAnswer);
+       		}
+       		
           /*     Moving the BEG      */
            JsonObject begEntity = new JsonObject();
            begEntity.put("sourceCode","GRP_DRAFTS");
            begEntity.put("targetCode",jobCode);
            begEntity.put("attributeCode","LNK_CORE");
  	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
- 	       System.out.println("The Output after POST: "+output);   
- 	      /*     Calling the rule group : layout to redirect user to home/bucketView page    */
           /*  drools.setFocus("layout");    */
         
            JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
            newJobDetails.put("token", tokenString);
            System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-          /*  Publish new Job/BEG data to the EventBus   */
            rules.getEventBus().publish("cmds", newJobDetails); 
           
           /*    Setting NEW_LOAD_SUBMISSION_COMPLETED state   */

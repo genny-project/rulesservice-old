@@ -5,9 +5,9 @@ import life.genny.qwanda.entity.BaseEntity;
 
 import life.genny.qwanda.message.QEventMessage;
 
-rule "Geofence Enter"
+rule "Geofence Enter Delivery Point"
    when
-     $m : QEventMessage( event_type == "GEOFENCE_ENTRY" )
+     $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("DELIVERY"))
      rules: QRules()
    then
        
@@ -15,11 +15,66 @@ rule "Geofence Enter"
      
    		String begCode = $m.data.getCode();
    		String action = $m.data.getValue();
-   		
-   		RulesUtils.println(begCode);
-   		RulesUtils.println(action);
+   			
+   		RulesUtils.println("---- ACTION ----");
+   		RulesUtils.println("ARRIVED AT DELIVERY POINT");
    		
   		RulesUtils.footer(drools.getRule().getName());
+
+end
+
+rule "Geofence Enter Pickup Point"
+when
+  $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("PICKUP"))
+  rules: QRules()
+then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("ARRIVED AT PICKUP POINT");
+		
+		RulesUtils.footer(drools.getRule().getName());
+
+end
+
+
+rule "Geofence Exit Pickup Point"
+when
+  $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.code.contains("PICKUP"))
+  rules: QRules()
+then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("EXITED PICKUP POINT");
+		
+		RulesUtils.footer(drools.getRule().getName());
+
+end
+
+rule "Geofence Exit Delivery Point"
+when
+  $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.code.contains("DELIVERY"))
+  rules: QRules()
+then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("EXITED DELIVERY POINT");
+		
+		RulesUtils.footer(drools.getRule().getName());
 
 end
 
