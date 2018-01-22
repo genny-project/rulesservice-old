@@ -60,18 +60,20 @@ rule "Post Load Cancel/Submit button click"
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
+        System.out.println("The job code is   :: "+jobCode);
         
        if(actionCode.equalsIgnoreCase("submit") ){       
          /*    link current user as load-owner to the Job/BEG     */
-           QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,userCode,"LNK_BEG","OWNER")),tokenString);
-           System.out.println("After adding owner to BEG");
+           Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
+           System.out.println(" Added Load Owner to BEG/JOB ");
           /*     Moving the BEG      */
            JsonObject begEntity = new JsonObject();
            begEntity.put("sourceCode","GRP_DRAFTS");
            begEntity.put("targetCode",jobCode);
            begEntity.put("attributeCode","LNK_CORE");
+           begEntity.put("weight",1);
  	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
- 	       System.out.println("The Output after POST: "+output);
+ 	       System.out.println("The Output after POST: "+output);   
  	      /*     Calling the rule group : layout to redirect user to home/bucketView page    */
           /*  drools.setFocus("layout");    */
         
