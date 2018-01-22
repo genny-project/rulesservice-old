@@ -22,6 +22,7 @@ rule "Send Layout Change To Frontend"
   		QCmdMessage layoutCmd = new QCmdLayoutMessage("layout1",layout);
   		
         rules.publishCmd(layoutCmd);
+        
         RulesUtils.println("DEFAULT LAYOUT SENT TO FRONTEND");
         rules.clearState("IS_LOGGED_IN");
         rules.setState("LAYOUT_CHANGE_READY");

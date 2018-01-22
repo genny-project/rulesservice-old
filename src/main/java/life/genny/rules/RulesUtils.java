@@ -376,6 +376,21 @@ public class RulesUtils {
 		return null;
 
 	}
+	
+	public static String getBaseEntitysJsonByChildAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String childCode, final String linkCode) {
+
+		try {
+			String beJson = null;
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+childCode+"/linkcodes/"+linkCode+"/parents/attributes", token);
+			return beJson;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 
 	public static String getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode, final String stakeholderCode) {
@@ -430,7 +445,26 @@ public class RulesUtils {
 			return arrayList;
 
 	}
-	
+
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @return baseEntitys
+	 */
+	public static List<BaseEntity> getBaseEntitysByChildAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String childCode, final String linkCode) {
+
+			String beJson = getBaseEntitysJsonByChildAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, childCode, linkCode);
+			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			BaseEntity[] beArray = msg.getItems();
+			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			return arrayList;
+
+	}
 	/**
 	 * 
 	 * @param qwandaServiceUrl

@@ -5,6 +5,8 @@ import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,14 +264,22 @@ public class QRules {
 	}
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize) {
+
 		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, false);
 	}
 
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
+		if (getUser().is("PRI_DRIVER") && parentCode.equals("GRP_NEW_ITEMS"))
+		{
+			RulesUtils.println("Dummy");
+		}
+
 		List<BaseEntity> bes = null;
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+
+			
 			if (cache) {
 				set("BES_" + parentCode.toUpperCase()+"_"+linkCode,bes); // WATCH THIS!!!
 			}
@@ -282,6 +292,9 @@ public class QRules {
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache,final String stakeholderCode) {
 		List<BaseEntity> bes = null;
+		if (getUser().is("PRI_DRIVER")) {
+			RulesUtils.println("Is True");
+		}
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode,stakeholderCode);
 			if (cache) {
@@ -557,5 +570,6 @@ public class QRules {
 	
       return companyCode;
 	}
+	
 
 }

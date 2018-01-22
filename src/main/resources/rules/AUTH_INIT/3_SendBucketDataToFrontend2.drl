@@ -15,7 +15,7 @@ rule "Send Ch40 BucketData To Frontend"
      	RulesUtils.header(drools.getRule().getName());
      	
      	BaseEntity user = rules.getUser();
-     	
+      	
      	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
   		RulesUtils.println(views);
@@ -27,13 +27,17 @@ rule "Send Ch40 BucketData To Frontend"
      	{
      		RulesUtils.println(bucket);
      		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if (user.is("PRI_DRIVER")) {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
+     		} else {
+     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
+     		    begs.addAll(driverbegs);
+    		
      		}
  
     			if (user.is("PRI_OWNER")) {
-     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(ownerbegs);
      		}
  
