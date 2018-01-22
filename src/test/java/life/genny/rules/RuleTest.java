@@ -96,6 +96,8 @@ public class RuleTest {
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
 				System.out.println("File " + listOfFiles[i].getName());
+				if (!listOfFiles[i].getName().startsWith("XX")) {   // ignore files that start with XX
+
 				try {
 					String ruleText = getFileAsText(listOfFiles[i]);
 					KieHelper kieHelper = new KieHelper();
@@ -110,6 +112,7 @@ public class RuleTest {
 				} catch (final IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
 				}
 
 			} else if (listOfFiles[i].isDirectory()) {

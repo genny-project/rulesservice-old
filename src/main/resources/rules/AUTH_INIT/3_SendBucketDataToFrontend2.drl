@@ -4,6 +4,7 @@ import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
+import java.util.ArrayList;
 
 
 rule "Send Ch40 BucketData To Frontend"

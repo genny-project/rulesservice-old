@@ -50,7 +50,7 @@ public class QRules {
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
 		this.stateMap = new HashMap<String, Boolean>();
-		stateMap.put(DEFAULT_STATE, true);
+		stateMap.put(DEFAULT_STATE, true); 
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
