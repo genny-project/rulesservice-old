@@ -1,40 +1,10 @@
+package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
 import io.vertx.core.json.JsonObject;
-
-/* TODO: to clean up */
-import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwanda.message.QCmdMessage;
-import io.vertx.rxjava.core.eventbus.EventBus;
-import io.vertx.core.buffer.Buffer;
-import com.google.gson.Gson;
-import life.genny.qwanda.Answer;
-import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwandautils.KeycloakUtils;
-import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwanda.message.QDataAskMessage;
-import life.genny.qwanda.Ask;
-
-import java.lang.reflect.Type;
-import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
-import io.vertx.core.json.JsonObject;
-import java.time.format.DateTimeFormatter;
-import life.genny.qwanda.DateTimeDeserializer;
 
 rule "Show more info about job"
 	when
@@ -51,17 +21,14 @@ rule "Show more info about job"
 			String hint = dataJson.getString("hint");
 			String baseEntityCode = dataJson.getString("itemCode");
 			
-			// first we check if the base entity is a load, a driver, or an owner etc... The BE code will tell us:
+			/* first we check if the base entity is a load, a driver, or an owner etc... The BE code will tell us: */
 			if(baseEntityCode != null) {
 			
 				if(baseEntityCode.contains("LOD_")) {
-					System.out.println("-------- Rule: Showing LOAD layout for BE: " + baseEntityCode + "  --------");	
-			     	return; // stopping there so we dont check the hint below
+			     	return; 
 				}
 			}
 			
-			
-		    // if the BE code did not help we can still use the hint
 		    if(hint != null && baseEntityCode != null) {
 		    		
 		    		switch(hint) {
@@ -70,10 +37,7 @@ rule "Show more info about job"
 				case "GRP_APPROVED": 
 				case "GRP_PAID": 
 				case "GRP_DELIVERED": 
-			     	
-			     	System.out.println("-------- Rule: Showing JOB layout for BE: " + baseEntityCode + "  --------");	
-			     	
-				     //sending cmd SUBLAYOUT_CHANGE
+			     		
 				     QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT", "LoadLayout");
 				     
 				     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
@@ -82,18 +46,12 @@ rule "Show more info about job"
 				     cmdLoadSublayoutJson.put("items", sublayout);
 				     cmdLoadSublayoutJson.put("root", baseEntityCode);
 				     cmdLoadSublayoutJson.put("token", $value);
-				    
-				     System.out.println(" ##################### ");
-				     System.out.println("Layout Data = " + cmdLoadSublayoutJson.toString()); 
-				     System.out.println(" #################### ");
-				     
-				     //Publish it to the EventBus
 				     bus.publish("cmds", cmdLoadSublayoutJson); 
 				    
 				break;
 			      
 				default:
-					System.out.println("-------- Ending Rule  --------");
+					break;
 				}
 		    }
 		}
