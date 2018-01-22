@@ -1,0 +1,27 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+
+rule "Manually Confirm Delivery"
+when
+  $m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_DELIVERY")
+  rules: QRules()
+then
+    
+		RulesUtils.header(drools.getRule().getName());
+  		String data = $m.getData().getValue();
+		
+  		if(data != null) {
+		
+		     JsonObject dataJson = new JsonObject(data);
+		     String begCode = dataJson.getString("itemCode");
+		     if(begCode != null) {
+		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_COMPLETED","LNK_CORE");
+		     }
+		}
+
+		RulesUtils.footer(drools.getRule().getName());
+
+end
