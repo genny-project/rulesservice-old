@@ -272,6 +272,20 @@ public class QRules {
 		}
 		return bes;
 	}
+	
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache,final String stakeholderCode) {
+		List<BaseEntity> bes = null;
+		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
+			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode,stakeholderCode);
+			if (cache) {
+				set("BES_" + parentCode.toUpperCase()+"_"+linkCode,bes); // WATCH THIS!!!
+			}
+		} else {
+			bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase()+"_"+linkCode);
+		}
+		return bes;
+	}
+	
 
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 

@@ -377,6 +377,20 @@ public class RulesUtils {
 
 	}
 
+	public static String getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode, final String stakeholderCode) {
+
+		try {
+			String beJson = null;
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+parentCode+"/linkcodes/"+linkCode+"/attributes/"+stakeholderCode, token);
+			return beJson;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -410,6 +424,29 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
+			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			BaseEntity[] beArray = msg.getItems();
+			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			return arrayList;
+
+	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param stakeholderCode
+	 * @return baseEntitys
+	 */
+	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributesAndStakeholderCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode, final String stakeholderCode) {
+			if (parentCode.equalsIgnoreCase("GRP_NEW_ITEMS")) {
+				println("Group New Items Debug");
+			}
+			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode, stakeholderCode);
 			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
