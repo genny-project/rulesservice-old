@@ -33,18 +33,20 @@ then
 			    Set<String> recipientSet = new HashSet<String>();
 			    
  				for (BaseEntity kid : begKids) {
-			    		/* Get kid */
-			    		List<Link> links = rules.getLinks(kid.getCode(),"LNK_BEG");
+					RulesUtils.println(kid.getCode());
+			    		/*List<Link> links = rules.getLinks(kid.getCode(),"LNK_BEG");
 			    		for (Link link : links) {
 			    			contextMap.put(link.getLinkValue(), link.getTargetCode());
 			    			if (link.getTargetCode().startsWith("PER_")) {
 			    				recipientSet.add(link.getTargetCode());
-			    			}
+			    			} 
 			    		}
+			    		*/
 			    }
-		 String[] recipients = recipientSet.toArray(new String[0]);
+			    
+		/* String[] recipients = recipientSet.toArray(new String[0]);
 
-		 rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS"); 
+		 rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS"); */
 		     }
 		}
 
