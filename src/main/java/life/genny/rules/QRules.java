@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.attribute.Attribute;
@@ -523,6 +524,21 @@ public class QRules {
 		JsonObject jsonMessage = JsonObject.mapFrom(message);
 		jsonMessage.put("token", getToken());
         publish("messages", jsonMessage);
+	}
+	
+	/*
+	 * Get user's company code
+	 */
+	public String getUsersCompanyCode(final String userCode) {
+		String companyCode = "";
+		try {
+			JsonArray obj =new JsonArray( QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+getUser().getCode()+"linkcodes/LNK_STAFF/parents", getToken()));
+			JsonObject objectInArray = obj.getJsonObject(0);
+	        companyCode = objectInArray.getString("sourceCode");
+	        System.out.println("The Company code is   ::  "+companyCode);
+		}catch(Exception e) {}
+	
+      return companyCode;
 	}
 
 }
