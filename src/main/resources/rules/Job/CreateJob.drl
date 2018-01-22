@@ -6,7 +6,6 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.entity.EntityEntity;
 import org.apache.commons.lang3.StringUtils;
-import com.google.gson.Gson;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.QwandaUtils;
@@ -17,6 +16,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import com.google.gson.Gson;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import com.google.gson.GsonBuilder;
@@ -47,6 +47,10 @@ rule "Add new Load"
      System.out.println("The user name is  ::  " +userName);
      String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
      System.out.println("The user Code is  ::  " +userCode);
+   /*   Prepare GSON Deserialization   */
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     Gson gson = gsonBuilder.create();
      
     /*      Getting list of loads      */
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_CPY_COMPANY1/attributes", rules.getToken()));
@@ -65,6 +69,14 @@ rule "Add new Load"
     /*  Creating new base-entity LOAD    */
      BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "LOD", rules.getToken()), "LOAD", qwandaServiceUrl, rules.getToken());
      String loadCode = load.getCode();
+     
+    /*  Add author to the load    */
+      Answer loadAuthorAns = new Answer(rules.getUser().getCode(),loadCode, "PRI_AUTHOR", rules.getUser().getCode() );      	  
+    /* convert answer to json */
+	 String jsonAnswer = gson.toJson(loadAuthorAns);	     
+    /* post answers to qwanda-utils */
+	  QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, rules.getToken());
+     
     /*  link newly created LOAD to JOB/BEG    */
      Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
     /*    Getting Post Load Question GRP        */
