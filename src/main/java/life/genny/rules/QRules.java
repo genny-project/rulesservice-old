@@ -24,6 +24,7 @@ import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
+import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -471,6 +472,15 @@ public class QRules {
 		}
 		return be;
 	}
+	
+	public void sendLayout(final String layoutCode, final String layoutPath) {
+		
+		String layout = RulesUtils.getLayout(layoutPath);
+     	
+  		RulesUtils.println(layout);
+  		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
+        publishCmd(layoutCmd);
+	}
 
 	/**
 	 * @return the state
@@ -559,16 +569,24 @@ public class QRules {
 	/*
 	 * Get user's company code
 	 */
-	public String getUsersCompanyCode(final String userCode) {
-		String companyCode = "";
+	public BaseEntity getParent(final String targetCode, final String linkCode) {
+		
 		try {
-			JsonArray obj =new JsonArray( QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+getUser().getCode()+"linkcodes/LNK_STAFF/parents", getToken()));
-			JsonObject objectInArray = obj.getJsonObject(0);
-	        companyCode = objectInArray.getString("sourceCode");
-	        System.out.println("The Company code is   ::  "+companyCode);
-		}catch(Exception e) {}
+			
+			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"linkcodes/"+linkCode+"/parents", getToken());
+			QDataBaseEntityMessage msg = RulesUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+			BaseEntity[] beArray = msg.getItems();
+ 			if (beArray.length> 0) {
+			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			BaseEntity first = arrayList.get(0);
+			RulesUtils.println("The Company code is   ::  "+first.getCode());
+			return first;
+ 			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	
-      return companyCode;
+      return null;
 	}
 	
 
