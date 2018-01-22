@@ -19,11 +19,47 @@ then
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
-		    	 	rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
-		     }
-		}
-		
+		    	 	
+		    	 rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
+		    	 	
+		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
+		    	    contextMap.put("JOB", begCode);
+		    	    
+		    	    /* List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(begCode,"LNK_BEG", 0, 20, false) ;
+		  
+		    	    if(begKids != null) {
+		    	    		
+			    	    	Set<String> recipientSet = new HashSet<String>();
+				    	    
+			    		for (BaseEntity kid : begKids) {
+			    			
+			    	    		List<Link> links = rules.getLinks(kid.getCode(), "LNK_BEG");
+			    	    		 RulesUtils.println("Got LINKS");
+			    	    		 RulesUtils.println(links);
+			    	    		if(links != null) {
+			    	    			
+			    	    			for (Link link : links) {
+				    	    				
+			    			    	    RulesUtils.println(link.getLinkValue());
 
+			    	    				contextMap.put(link.getLinkValue(), link.getTargetCode());
+				    	    			
+			    	    				RulesUtils.println("TargetCode: ", link.getTargetCode());
+			    	    				RulesUtils.println(link.getTargetCode().startsWith("PER_"));
+			    	    				if (link.getTargetCode().startsWith("PER_")) {
+				    	    				recipientSet.add(link.getTargetCode());
+				    	    			} 
+				    	    		}
+			    	    		}
+			    	    }
+			    	    
+			    		RulesUtils.println(recipientSet); */
+			    		String[] recipients = new String[1];
+			    		recipients[0] = rules.getUser().getCode();
+			    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS");
+		    	    }
+		     }
+		
 		RulesUtils.footer(drools.getRule().getName());
 
 end

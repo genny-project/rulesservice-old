@@ -273,18 +273,20 @@ public class QRules {
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 	
-
 		List<BaseEntity> bes = null;
+		
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
+			
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
-
 			
 			if (cache) {
 				set("BES_" + parentCode.toUpperCase()+"_"+linkCode,bes); // WATCH THIS!!!
 			}
+			
 		} else {
 			bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase()+"_"+linkCode);
 		}
+		
 		return bes;
 	}
 	
@@ -445,7 +447,7 @@ public class QRules {
 	
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap, String templateCode, String messageType) {
 		
-		JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray, templateCode);
+		JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray, getToken());
         this.getEventBus().publish("messages", message);
 	}
 

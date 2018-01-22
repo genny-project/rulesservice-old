@@ -24,29 +24,15 @@ then
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
+		    	 	
 		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID","LNK_CORE");
 		    	 	
 		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
 			    contextMap.put("JOB", begCode);
 			    
-			    List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(begCode,"LNK_BEG", 0, 20, false) ;
-			    Set<String> recipientSet = new HashSet<String>();
-			    
- 				for (BaseEntity kid : begKids) {
-					RulesUtils.println(kid.getCode());
-			    		/*List<Link> links = rules.getLinks(kid.getCode(),"LNK_BEG");
-			    		for (Link link : links) {
-			    			contextMap.put(link.getLinkValue(), link.getTargetCode());
-			    			if (link.getTargetCode().startsWith("PER_")) {
-			    				recipientSet.add(link.getTargetCode());
-			    			} 
-			    		}
-			    		*/
-			    }
-			    
-		/* String[] recipients = recipientSet.toArray(new String[0]);
-
-		 rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS"); */
+			    String[] recipients = new String[1];
+		    		recipients[0] = rules.getUser().getCode();
+		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_DELIVERY_ARRIVED", "SMS");
 		     }
 		}
 
