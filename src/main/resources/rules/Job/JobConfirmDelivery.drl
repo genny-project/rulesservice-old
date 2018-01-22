@@ -3,6 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
+import io.vertx.core.json.JsonObject;
 
 rule "Manually Confirm Delivery"
 when
@@ -18,7 +19,7 @@ then
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
-		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_COMPLETED","LNK_CORE");
+		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID","LNK_CORE");
 		     }
 		}
 

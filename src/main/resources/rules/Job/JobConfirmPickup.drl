@@ -3,6 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
+import io.vertx.core.json.JsonObject;
 
 rule "Manually Confirm Pickup"
 when
