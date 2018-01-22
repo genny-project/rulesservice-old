@@ -20,6 +20,17 @@ then
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
 		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID","LNK_CORE");
+		    	 	
+		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
+			    contextMap.put("JOB", begCode);
+			    
+			    List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(begCode,"LNK_BEG", 0, 20, false) ;
+ 				for (BaseEntity kid : begKids) {
+			    		/* Get kid */
+			    		contextMap.put("DRIVER", kid.getCode());
+			    }
+		
+		 rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS"); 
 		     }
 		}
 

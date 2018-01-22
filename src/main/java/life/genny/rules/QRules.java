@@ -573,7 +573,7 @@ public class QRules {
 		
 		try {
 			
-			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"linkcodes/"+linkCode+"/parents", getToken());
+			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode+"/parents", getToken());
 			QDataBaseEntityMessage msg = RulesUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
  			if (beArray.length> 0) {
