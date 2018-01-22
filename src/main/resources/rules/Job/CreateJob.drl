@@ -40,12 +40,8 @@ rule "Add new Load"
      rules: QRules()
    then
     RulesUtils.header(drools.getRule().getName());
-    /*    Prepare GSON Deserialization     */
-     GsonBuilder gsonBuilder = new GsonBuilder();
-     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-     Gson gson = gsonBuilder.create();
      
-     String qwandaServiceUrl = rules.getQwandaServiceUrl();
+    String qwandaServiceUrl = rules.getQwandaServiceUrl();
    /*    Get user code from the username   */
      String userName = rules.getAsString("preferred_username");   
      System.out.println("The user name is  ::  " +userName);
