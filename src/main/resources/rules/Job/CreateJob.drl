@@ -66,7 +66,7 @@ rule "Add new Load"
      BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "LOD", rules.getToken()), "LOAD", qwandaServiceUrl, rules.getToken());
      String loadCode = load.getCode();
     /*  link newly created LOAD to JOB/BEG    */
-     Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_CORE", "LOAD", (double) 1, rules.getToken());
+     Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
     /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_LOAD_DETAILS_GRP/"+loadCode, rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
