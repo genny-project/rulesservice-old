@@ -47,7 +47,7 @@ rule "Show more info about job"
 				     String sublayout = RulesUtils.getLayout("loadLayout.json");
 				     cmdLoadSublayoutJson.put("items", sublayout);
 				     cmdLoadSublayoutJson.put("root", baseEntityCode);
-				     cmdLoadSublayoutJson.put("token", $value);
+				     cmdLoadSublayoutJson.put("token", rules.getToken());
 				     rules.getEventBus().publish("cmds", cmdLoadSublayoutJson); 
 				    
 				break;
