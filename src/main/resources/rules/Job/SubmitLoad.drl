@@ -6,7 +6,6 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.entity.EntityEntity;
-import com.google.gson.Gson;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
@@ -22,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap; 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -45,6 +45,10 @@ rule "Post Load Cancel/Submit button click"
     		RulesUtils.header(drools.getRule().getName());   
          String qwandaServiceUrl = rules.getQwandaServiceUrl();
          String tokenString = rules.getToken();
+       /*   Prepare GSON Deserialization   */
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
          
          /*  Get Username and userCode    */
          String userName = rules.getAsString("preferred_username");   
@@ -77,14 +81,22 @@ rule "Post Load Cancel/Submit button click"
            		rules.publishData(totalDistanceAnswer);
        		}
        		
+       	 /*    Adding Offer Count to 0   */
+       	  Answer offerCountAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_OFFER_COUNT", "0" );
+       	  
+         /* convert answer to json */
+	      String jsonAnswer = gson.toJson(offerCountAns);
+	     
+         /* post answers to qwanda-utils */
+	       QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+	    
           /*     Moving the BEG      */
            JsonObject begEntity = new JsonObject();
            begEntity.put("sourceCode","GRP_DRAFTS");
            begEntity.put("targetCode",jobCode);
            begEntity.put("attributeCode","LNK_CORE");
  	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
-          /*  drools.setFocus("layout");    */
-        
+ 	      /*    Send newly created job with its attributes   */        
            JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
            newJobDetails.put("token", tokenString);
            System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
