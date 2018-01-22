@@ -207,6 +207,8 @@ public class QRules {
 		} else {
 			be = getAsBaseEntity("USER");
 		}
+
+
 		return be;
 	}
 
@@ -507,7 +509,7 @@ public class QRules {
 		msg.setParentCode(parentCode);
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
-	    publish("cmds", RulesUtils.toJsonObject(msg));
+	    publish("cmds", RulesUtils.toJsonObject(msg)); 
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg)
