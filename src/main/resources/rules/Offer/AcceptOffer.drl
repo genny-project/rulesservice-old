@@ -20,6 +20,7 @@ import life.genny.qwanda.Ask;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
+import life.genny.rules.QRules;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -49,6 +50,7 @@ rule "Accept Offer"
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
+        rules: QRules()
     then
 
         System.out.println(QwandaUtils.executeRuleLogger("Accept Offer"));
@@ -88,7 +90,8 @@ rule "Accept Offer"
 
             /* base entity code is the job quote will be quoting on */
             if(offerCode != null) {                
-                /* get OFFER BE's parent BEG code */
+                
+            		/* get OFFER BE's parent BEG code */
                 JsonArray offerArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + offerCode + "/linkcodes/" + linkCode + "/parents", tokenString));
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("OFFER BE   ::   "+ offerArray.toString());	
@@ -151,7 +154,8 @@ rule "Accept Offer"
                 /* publish new link data */
                 newLink.put("token", tokenString );
                 bus.publish("cmds", newLink);
-
+                
+                rules.geofenceJob(begCode, userCode, 10.0);
 
                 /* SEND QUOTER BE AGAIN FOR UPDATE */
                 JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_PEOPLE/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + userCode, tokenString));

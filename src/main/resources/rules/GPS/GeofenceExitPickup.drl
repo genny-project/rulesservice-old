@@ -1,0 +1,23 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+
+rule "Geofence Exit Pickup Point"
+	when
+	  $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.code.contains("PICKUP"))
+	  rules: QRules()
+	then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("EXITED PICKUP POINT");
+		
+		RulesUtils.footer(drools.getRule().getName());
+
+end

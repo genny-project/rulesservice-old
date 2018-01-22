@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.RulesUtils;
+import life.genny.qwandautils.GPSUtils;
 
 import life.genny.qwanda.Answer;
 
@@ -24,50 +25,34 @@ rule "Receive GPS Data"
 	    m : QDataGPSMessage()
 	    rules: QRules()
      then
-     	
-     	RulesUtils.header(drools.getRule().getName());
-     	
-				
+     	     			
         BaseEntity user = rules.getUser();
-        
-        /* Get Jobs in transit */
-        /* http://localhost:8280/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE
-         * 
-         */
-        
         GPS driverPosition = m.getItems()[0];
 	    	String driverLatitude = driverPosition.getLatitude();
 	    	String driverLongitude = driverPosition.getLongitude();
-        List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
- 		RulesUtils.println(jobsInTransit.toString());
- 			
- 		for(BaseEntity be: jobsInTransit) {
- 			
- 			/* get delivery location for BEG */
- 			
- 			/* Call Google Maps API to know how far the driver is */
- 			String response = QwandaUtils.apiGet("https://maps.googleapis.com/maps/api/distancematrix/json?origins=" + driverLatitude + "," + driverLongitude + "&destinations=-37.8021691,144.9664282&mode=driving&language=pl-PL", null);
- 			System.out.println(response);
- 			if(response != null) {
- 				
- 				JsonObject distanceMatrix = new JsonObject(response);
- 				JsonArray elements = distanceMatrix.getJsonArray("rows").getJsonObject(0).getJsonArray("elements");
- 				JsonObject distance = elements.getJsonObject(0).getJsonObject("distance");
- 				Integer distanceValue = distance.getInteger("value");
- 				System.out.println("===");
- 				System.out.println(distance.getInteger("value"));
- 				System.out.println(distanceValue);
- 				
- 				Double d = distanceValue.doubleValue();
- 				Double totalDistance = 400.0;
- 				Double percentage =  100.0 * (totalDistance - d) / (totalDistance); 
- 				
- 				Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percentage));
- 				RulesUtils.println(updateProgressAnswer);
- 		        rules.publishData(updateProgressAnswer);
- 			}
- 		}
- 		
-	    RulesUtils.footer(drools.getRule().getName());       
 	    	
+	    	if(driverLatitude != null && driverLongitude != null) {
+	    		
+	    		    List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
+	     		RulesUtils.println(jobsInTransit.toString());
+	     			
+	     		for(BaseEntity be: jobsInTransit) {
+	     			
+	     			String begCode = be.getCode();	     			
+	     			String deliveryLatitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
+	     			String deliveryLongitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
+	     			String totalDistanceString = rules.getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_METERS");
+	     			
+	     			/* Call Google Maps API to know how far the driver is */
+	    	     		Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString, deliveryLongitudeString);
+	    	     		Double totalDistance = Double.parseDouble(totalDistanceString);
+	    	    			Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
+	    	    			percentage = percentage < 0 ? 0 : percentage;
+	    	     				
+	    	    			Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percentage));
+	    	    			RulesUtils.println(updateProgressAnswer);
+	    	    		    rules.publishData(updateProgressAnswer);
+	     		}
+	    	}
+ 		    	
 end

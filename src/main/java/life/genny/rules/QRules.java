@@ -23,7 +23,9 @@ import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
 
 public class QRules {
@@ -273,6 +275,7 @@ public class QRules {
 		return bes;
 	}
 	
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache,final String stakeholderCode) {
 		List<BaseEntity> bes = null;
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
@@ -286,6 +289,22 @@ public class QRules {
 		return bes;
 	}
 	
+
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode) {
+		
+		 JsonObject begEntity = new JsonObject();
+         begEntity.put("sourceCode", sourceCode);
+         begEntity.put("targetCode", baseEntityCode);
+         begEntity.put("attributeCode", linkCode);
+
+         try {
+			return QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, begEntity.toString(), getToken());
+		} catch (IOException e) {
+		}
+         
+         return null;
+	}
+
 
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 
@@ -327,12 +346,13 @@ public class QRules {
 	
 
 	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
+		
 		String attrValue = null;
 		
 		if(baseEntityCode != null ) {
 			
 			BaseEntity be = getBaseEntityByCode(baseEntityCode);
-			attrValue = getBaseEntityAttrValueAsString(be, attributeCode);			
+			attrValue = getBaseEntityAttrValueAsString(be, attributeCode);
 		}
 		
 		return attrValue;
@@ -370,14 +390,31 @@ public class QRules {
 		}
 	}
 	
+	public void geofenceJob(final String begCode, final String driverCode) {
+		geofenceJob(begCode, driverCode, 100.0);
+	}
+	
 	public void geofenceJob(final String begCode, final String driverCode, Double radius) {
 			
 		BaseEntity be = RulesUtils.getBaseEntityByCode(QRules.getQwandaServiceUrl(), this.getDecodedTokenMap(), this.getToken(), begCode);
-		QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, QRules.getQwandaServiceUrl(), this.getToken(), this.getDecodedTokenMap());
-		
-		for(QCmdGeofenceMessage cmd: cmds) {
-			this.publishCmd(cmd);
+		if(be != null) {
+			
+			QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, QRules.getQwandaServiceUrl(), this.getToken(), this.getDecodedTokenMap());
+			
+			if(cmds != null) {
+				for(QCmdGeofenceMessage cmd: cmds) {
+					if(cmd != null) {
+						this.publishCmd(cmd);
+					}
+				}
+			}
 		}
+	}
+	
+	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap, String templateCode, String messageType) {
+		
+		JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray, templateCode);
+        this.getEventBus().publish("messages", message);
 	}
 
 	public BaseEntity createUser()
@@ -477,6 +514,13 @@ public class QRules {
 	{
 		cmdMsg.setToken(getToken());
 	    publish("cmds", RulesUtils.toJsonObject(cmdMsg));
+	}
+	
+	public void publishMsg(final QMSGMessage message) {
+		
+		JsonObject jsonMessage = JsonObject.mapFrom(message);
+		jsonMessage.put("token", getToken());
+        publish("messages", jsonMessage);
 	}
 
 }

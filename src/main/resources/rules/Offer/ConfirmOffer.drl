@@ -189,22 +189,19 @@ rule "Confirm Offer"
                     newLink.put("token", tokenString );
                     rules.publish("cmds", newLink);
 
-            /* Sending message to QUOTER */
+                    /* Sending message to QUOTER */
                 String templateCode = "MSG_CH40_CONFIRM_OFFER";
                 String recipient = "OWNER";
                 JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
                 rules.publish("messages", jsonMessage);
                 
-            /* Set progression of LOAD delivery to 0 
-                Answer answer = new Answer(begCode, begCode, "PRI_PROGRESS", "0");                
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-                System.out.println(answer.toString());
-                String jsonAnswer = gson.toJson(answer);
-                QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, tokenString);*/
+                /* Set progression of LOAD delivery to 0 */
+                Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+    				RulesUtils.println(updateProgressAnswer);
+    				rules.publishData(updateProgressAnswer);
                 
-                /* We ask FE to monitor GPS 
-                rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0);*/
+                /* We ask FE to monitor GPS */
+                rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
 
         /* sending cmd BUCKETVIEW */
         drools.setFocus("bucketview"); 

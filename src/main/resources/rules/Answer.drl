@@ -252,11 +252,8 @@ rule "Listen Facebook Code"
   
         String jsonAnswerStr = gson.toJson(newAnswer);
         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-        jsonAnswer.put("token",$m.getToken());
+        jsonAnswer.put("token", $m.getToken());
         
-   
-       
-
         /* Print DATA msg */
         System.out.println("------------------------------------------------------------------------\n");    
         System.out.println("SOCIAL DATA   ::   "+jsonAnswer); 
