@@ -20,6 +20,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
@@ -574,13 +575,12 @@ public class QRules {
 		try {
 			
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode+"/parents", getToken());
-			QDataBaseEntityMessage msg = RulesUtils.fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
- 			if (beArray.length> 0) {
-			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
-			BaseEntity first = arrayList.get(0);
-			RulesUtils.println("The Company code is   ::  "+first.getCode());
-			return first;
+			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+ 			if (linkArray.length> 0) {
+			ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray)); 
+			Link first = arrayList.get(0);
+			RulesUtils.println("The Company code is   ::  "+first.getSourceCode());
+			return getBaseEntityByCode(first.getSourceCode());
  			}
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -589,5 +589,11 @@ public class QRules {
       return null;
 	}
 	
+	public List<Link> getLinks(final String parentCode, final String linkCode) 
+	{
+		List<Link> links = RulesUtils.getLinks(getQwandaServiceUrl(), getDecodedTokenMap(),
+				getToken(), parentCode,  linkCode) ;
+		return links;
+	}
 
 }

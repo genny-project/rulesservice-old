@@ -25,6 +25,7 @@ import com.google.gson.JsonSerializationContext;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -487,4 +488,35 @@ public class RulesUtils {
 			return arrayList;
 
 	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param stakeholderCode
+	 * @return baseEntitys
+	 */
+	public static List<Link> getLinks(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode) {
+			String linkJson=null;
+			List<Link> linkList = null;
+			try {
+				linkJson = QwandaUtils
+						.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/"+linkCode+"/children", token);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			
+			gson.fromJson(linkJson, List.class);
+//			BaseEntity[] beArray = msg.getItems();
+//			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+//			return arrayList;
+			return linkList;
+	}
+	
 }
