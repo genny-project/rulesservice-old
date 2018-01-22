@@ -26,7 +26,9 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.RulesUtils;
 
 public class QRules {
 
@@ -395,12 +397,10 @@ public class QRules {
 		}
 	}
 	
-	public void sendMessage(String begCode, String recipientCode, String templateCode, QBaseMSGMessageType messageType) {
+	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap, String templateCode, String messageType) {
 		
-		JsonObject message = MessageUtils.prepareMessageTemplate();
-  
-        QMSGMessage msgMessage = new QMSGMessage("MSG_MESSAGE", templateCode, msgMessageData, method, attachments);
-        this.publishMsg(msgMessage);
+		JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray, templateCode);
+        this.getEventBus().publish("messages", message);
 	}
 
 	public BaseEntity createUser()

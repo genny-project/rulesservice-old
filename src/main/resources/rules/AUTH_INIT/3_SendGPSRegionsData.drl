@@ -3,7 +3,7 @@
  import life.genny.rules.RulesUtils;
  import life.genny.rules.QRules;
  import life.genny.qwanda.entity.BaseEntity;
-
+ import java.util.List;
  import life.genny.qwanda.message.QEventMessage;
 
  rule "Send GPS Region"
