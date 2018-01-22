@@ -34,30 +34,8 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
 global java.lang.String REACT_APP_VERTX_URL;
 global java.lang.String KEYCLOAKIP;
  
-   
-//TreeView element EXPAND
-rule "Expand TreeView Item"
-  when
-        $m : QEventMessage( event_type == "TV_EXPAND" && data.code == "TV1" )
-        bus: EventBus()
-        $map : Map($value: this["token"] != null)
-    then
- 	    System.out.println("-------- Rule:- EXPAND TreeView Items --------");
-	    String keycloakIP = System.getenv("HOSTIP")!=null?System.getenv("HOSTIP"): "localhost";
-		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL")==null?System.getenv("REACT_APP_QWANDA_API_URL"):REACT_APP_QWANDA_API_URL;
- 		System.out.println("HOSTIP:"+keycloakIP+" ,qwandaUrl="+qwandaServiceUrl);
-  	    String tokenString = (String)$map.get("token");
-		System.out.println("tokenstr="+tokenString);
-        JsonObject obj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$m.getData().getValue()+"/linkcodes/LNK_CORE", tokenString));
-		obj.put("token", $value);
-		System.out.println("*******************");
-		System.out.println("Json="+obj.toString());	
-		System.out.println("*******************");						
-		bus.publish("cmds", obj);
-end
-
-
-//Treeview element CONTRACT
+  
+/* Treeview element CONTRACT */
 rule "Contract TreeView Items"
     when
         $m : QEventMessage( event_type == "TV_CONTRACT" && data.code == "TV1" )
@@ -81,7 +59,7 @@ end
 
 
 
-//Treeview item selection Rules
+/* Treeview item selection Rules */
 rule "Select TreeView Item: DASHBOARD"
      when
         $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD" || data.value == "GRP_DRIVER_VIEW" || data.value == "GRP_OWNER_VIEW") )

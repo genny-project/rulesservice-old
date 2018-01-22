@@ -26,16 +26,15 @@ rule "Send Ch40 BucketData To Frontend"
      		List<BaseEntity> begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
      		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
      		 
+     		 
      		for (BaseEntity beg : begs) {
      			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
      			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
-     			for (BaseEntity begKid : begKids) {
-    	 			
+     			for (BaseEntity begKid : begKids) {   	 			
      	 			RulesUtils.println(bucket.getCode()+":"+begKid.getCode());
      	 		}
      		}
      	}
-       	
-     		
+       	   		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end

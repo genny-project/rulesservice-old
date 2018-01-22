@@ -41,7 +41,7 @@ public class QRules {
 	private String token;
 	private EventBus eventBus;
 	private Map<String, Object> decodedTokenMap;
-	private Map<String, Boolean> state;
+	private Map<String, Boolean> stateMap;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
@@ -49,8 +49,8 @@ public class QRules {
 		this.eventBus = eventBus;
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
-		this.state = new HashMap<String, Boolean>();
-		setState(DEFAULT_STATE);
+		this.stateMap = new HashMap<String, Boolean>();
+		stateMap.put(DEFAULT_STATE, true);
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -106,8 +106,8 @@ public class QRules {
 	 * @return the state
 	 */
 	public Boolean isState(final String key) {
-		if (state.containsKey(key)) {
-			return state.get(key);
+		if (stateMap.containsKey(key)) {
+			return stateMap.get(key);
 		} else {
 			return false;
 		}
@@ -118,7 +118,7 @@ public class QRules {
 	 *            the state to set
 	 */
 	public void setState(String key) {
-		state.put(key.toUpperCase(), true);
+		stateMap.put(key.toUpperCase(), true);
 		RulesUtils.println("STATE "+key+" SET",RulesUtils.ANSI_RED);
 	}
 
@@ -127,7 +127,7 @@ public class QRules {
 	 *            the state to clear
 	 */
 	public void clearState(String key) {
-		state.remove(key);
+		stateMap.remove(key);
 		RulesUtils.println("STATE "+key+" CLEARED",RulesUtils.ANSI_PURPLE);
 
 	}
@@ -139,7 +139,7 @@ public class QRules {
 	 */
 	@Override
 	public String toString() {
-		return "QRules [decodedTokenMap=" + decodedTokenMap + ", state=" + state + "]";
+		return "QRules [decodedTokenMap=" + decodedTokenMap + ", state=" + stateMap + "]";
 	}
 
 	public Object get(final String key) {
@@ -443,14 +443,14 @@ public class QRules {
 	 * @return the state
 	 */
 	public Map<String, Boolean> getState() {
-		return state;
+		return stateMap;
 	}
 
 	/**
 	 * @param state the state to set
 	 */
 	public void setState(Map<String, Boolean> state) {
-		this.state = state;
+		this.stateMap = state;
 	}
 
 	/**

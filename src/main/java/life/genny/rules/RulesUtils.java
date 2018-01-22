@@ -122,7 +122,7 @@ public class RulesUtils {
 		if (devMode) {
 			System.out.println(obj);
 		} else {
-			log.info((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
+			System.out.println((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
 		}
 
 	}
