@@ -272,10 +272,7 @@ public class QRules {
 
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
-		if (getUser().is("PRI_DRIVER") && parentCode.equals("GRP_NEW_ITEMS"))
-		{
-			RulesUtils.println("Dummy");
-		}
+	
 
 		List<BaseEntity> bes = null;
 		if (isNull("BES_" + parentCode.toUpperCase()+"_"+linkCode)) {
