@@ -123,7 +123,7 @@ rule "Update Address"
 	    bus: EventBus()
 	    $map : Map($value: this["token"] != null)
 	then
-	
+	    System.out.println(" ------  Update Address being exected  --------   ");
 		try {
 			
 			Answer[] newAnswers = new Answer[50];
@@ -143,11 +143,11 @@ rule "Update Address"
 	            
 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 	            
-	            JsonObject addressDataJson = new JsonObject(value);
+	          
 	           
 	            /* if this answer is actually an address another rule will be triggered */
 	            if(attributeCode.contains("ADDRESS_FULL")) {
-	            	
+	            	  JsonObject addressDataJson = new JsonObject(value);
 		            	Map<String, String> availableKeys = new HashMap<String, String>();
 		    			availableKeys.put("full_address", "FULL");
 		    			availableKeys.put("street_address", "ADDRESS1");
@@ -175,22 +175,37 @@ rule "Update Address"
 		    				}
 		    				
 		    			}
+		    		
 		    					    	        
 		    	        /* Store latitude */
 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
-		    			answer.setAttributeCode("PRI_ADDRESS_LATITUDE");
-		    			answer.setValue(addressDataJson.getString('latitude'));
-		    			String jsonAnswer = gson.toJson(answer);
-		    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-		    			newAnswers[newAnswers.length] = answerObj;
+		    			answer.setAttributeCode(newAttCode);
+		    			Double latitude = addressDataJson.getDouble("latitude");
+		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+		    			
+		    			if(latitude != null) {
+			    			answer.setValue(Double.toString(latitude));
+			    			String jsonAnswer = gson.toJson(answer);
+			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+			    			newAnswers[i] = answerObj;
+			    			i++;
+			    			System.out.println("The answer object for latitude attribute added to Answer array " );
+		    			}
 		    			
 		    			/* Store longitude */
 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
-		    			answer.setAttributeCode("PRI_ADDRESS_LONGITUDE");
-		    			answer.setValue(addressDataJson.getString('longitude'));
-		    			jsonAnswer = gson.toJson(answer);
-		    			answerObj = gson.fromJson(jsonAnswer, Answer.class);
-		    			newAnswers[newAnswers.length] = answerObj;
+		    			answer.setAttributeCode(newAttCode);
+		    			Double longitude = addressDataJson.getDouble("longitude");
+		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+		    			
+		    			if(longitude != null) {
+			    			answer.setValue(Double.toString(longitude));
+			    			String jsonAnswer = gson.toJson(answer);
+			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    			newAnswers[i] = answerObj;
+			    			i++;
+		    			}
 		    			
 		    			/* set new answers */
 		    			m.setItems(newAnswers);
@@ -203,6 +218,7 @@ rule "Update Address"
 	         }
 		}
 		catch (Exception e) {
+	       e.printStackTrace();
 		}
 end
 
