@@ -219,7 +219,7 @@ public class EBCHandlers {
 			future.complete();
 		}, res -> {
 			if (res.succeeded()) {
-				System.out.println("Processed "+msgType+" Msg");
+				//System.out.println("Processed "+msgType+" Msg");
 			}
 		});
 

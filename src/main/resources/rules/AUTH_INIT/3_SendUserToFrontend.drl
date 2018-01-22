@@ -13,7 +13,7 @@ rule "Send User To Frontend"
      	
         rules.publishCmd(rules.getUser(),"USER");
    
-        RulesUtils.println("USER SENT TO FRONTEND");
+        RulesUtils.println("USER "+rules.getUser().getCode()+" SENT TO FRONTEND");
         rules.setState("USER_SENT");
         update(rules); 
 		

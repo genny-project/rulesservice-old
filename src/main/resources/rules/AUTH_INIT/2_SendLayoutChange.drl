@@ -18,7 +18,7 @@ rule "Send Layout Change To Frontend"
      	
       	String layout = RulesUtils.getLayout("layouts/layout1.json");
      	
-  		RulesUtils.println(layout);
+  		RulesUtils.println("layouts/layout1.json");
   		QCmdMessage layoutCmd = new QCmdLayoutMessage("layout1",layout);
   		
         rules.publishCmd(layoutCmd);

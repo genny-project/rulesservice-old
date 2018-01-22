@@ -14,7 +14,7 @@ rule "Send Treeview To Frontend"
      	RulesUtils.header(drools.getRule().getName());
      	
       	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE",0,10,true);
-   
+   	    RulesUtils.println("Root Group is "+"GRP_ROOT");
      		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end
