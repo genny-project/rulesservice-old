@@ -24,6 +24,7 @@ import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
+import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -459,6 +460,15 @@ public class QRules {
 			log.error("Error in Creating User ");
 		}
 		return be;
+	}
+	
+	public void sendLayout(final String layoutCode, final String layoutPath) {
+		
+		String layout = RulesUtils.getLayout(layoutPath);
+     	
+  		RulesUtils.println(layout);
+  		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
+        publishCmd(layoutCmd);
 	}
 
 	/**
