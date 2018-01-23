@@ -15,7 +15,10 @@ rule "Create New User"
      	rules.header();
      	
      	BaseEntity be = rules.createUser();
+     	be = rules.getUser();
+     	
   		rules.setState("NEW_USER");
+  		
         
 	    rules.footer();   		      
 end

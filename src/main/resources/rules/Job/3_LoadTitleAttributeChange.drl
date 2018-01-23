@@ -15,7 +15,7 @@ rule "Load Title Attribute Change"
     $m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_NAME")  && getAnswer().getTargetCode().startsWith("LOD_") )
     	rules : QRules()
     then    
-    	    RulesUtils.header(drools.getRule().getName());
+    	    rules.header();
 	    
          Answer newAnswer = $m.getAnswer();
          RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
@@ -23,7 +23,7 @@ rule "Load Title Attribute Change"
          RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
   
          String loadTitle = newAnswer.getValue();
-         RulesUtils.println("The new laod title is     ::"  +loadTitle );
+         rules.println("The new load title is     ::"  +loadTitle );
            
        /* Get the sourceCode(Job code) for this LOAD */
         BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
@@ -31,7 +31,7 @@ rule "Load Title Attribute Change"
        Answer jobTitleAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_TITLE" ,loadTitle);             
        rules.publishData(jobTitleAnswer);
         
-       RulesUtils.footer(drools.getRule().getName());
+       rules.footer();
        
 
 end

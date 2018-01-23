@@ -226,7 +226,9 @@ public class QRules {
 			String code = "PER_" + uname.toUpperCase();
 
 			be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl,  getDecodedTokenMap(), getToken(), code);
-			set("USER", be); // WATCH THIS!!!
+			if (be != null) {
+				set("USER", be); // WATCH THIS!!!
+			}
 		} else {
 			be = getAsBaseEntity("USER");
 		}
@@ -482,8 +484,9 @@ public class QRules {
 
 		try {
 			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email, realm,name, keycloakId);
-			set("USER",be);
-			RulesUtils.println("New User Created "+be);
+			be = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
+					getToken(), be.getCode());
+			println("New User Created "+be);
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
