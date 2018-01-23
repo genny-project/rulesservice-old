@@ -669,5 +669,14 @@ public class QRules {
 	return null;
 	 
 	}
+	
+	public String updateBaseEntity(BaseEntity be) {
+		try {
+			return QwandaUtils.apiPutEntity(getQwandaServiceUrl()+"/qwanda/baseentitys", be.toString(), getToken());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 }
