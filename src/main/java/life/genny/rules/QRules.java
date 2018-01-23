@@ -594,5 +594,15 @@ public class QRules {
 				getToken(), parentCode,  linkCode) ;
 		return links;
 	}
-
+    
+	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
+		Link link = new Link(parentCode, childCode, linkCode);
+		try {
+			 return	QwandaUtils.apiDelete(getQwandaServiceUrl()+"/qwanda/entityentitys", link.toString(), getToken());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	return null;
+	 
+	}
 }
