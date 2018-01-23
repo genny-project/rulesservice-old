@@ -73,7 +73,7 @@ public class RuleTest {
 
 		Link link = new Link("GRP_QUOTES", "GRP_COMPLETED", "BEG_0000002",
 				"LNK_CORE", null);
-		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage(link,null);
+		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage(link,null,"TEST");
 		keyValue.put("token", "DUMB TOKEN");
 		kSession.insert(keyValue);
 		kSession.insert(evtMsg);
