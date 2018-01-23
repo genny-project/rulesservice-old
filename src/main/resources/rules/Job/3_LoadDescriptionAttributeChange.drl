@@ -10,7 +10,7 @@ import life.genny.qwanda.entity.BaseEntity;
  
 
 rule "Load Description Attribute Change"
-/*  Update Jobs description based on Load's desc value change  */
+/*  Update Jobs description based on Loadss desc value change  */
 
     when
       $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_DESCRIPTION") && getAnswer().getTargetCode().startsWith("LOD_") )
@@ -27,10 +27,9 @@ rule "Load Description Attribute Change"
          String loadDescription = newAnswer.getValue();
            
        /* Get the sourceCode(Job code) for this LOAD */
-       BaseEntity job = rules.getParent(newAnswer.getTargetCode(),newAnswer.getAttributeCode());
+       BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
        
-         Answer jobDescriptionAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), newAnswer.getAttributeCode() ,loadDescription);  
-            
+       Answer jobDescriptionAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), newAnswer.getAttributeCode() ,loadDescription);          	    
        rules.publishData(jobDescriptionAnswer);
         
        RulesUtils.footer(drools.getRule().getName());
