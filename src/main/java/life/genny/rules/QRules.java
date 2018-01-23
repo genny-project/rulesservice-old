@@ -758,89 +758,102 @@ public class QRules {
 	
 	public void processAddressAnswers(QDataAnswerMessage m)
 	{
-	      GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
-	        Gson gson3 = gsonBuilder.create();
-
-		try {		
-			Answer[] newAnswers = new Answer[50];
-			Answer[] answers = m.getItems();
+	
+	    	try {
+				
+				Answer[] newAnswers = new Answer[50];
+				Answer[] answers = m.getItems();
+				GsonBuilder gsonBuilder = new GsonBuilder();
+		        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
+		        Gson gson = gsonBuilder.create();
 		        
-	        for (Answer answer : answers) {	        
-	            answer.setSourceCode(answer.getTargetCode());
-	            String value = answer.getValue();
-	            
-	            System.out.println("value ::"+value + "attribute code ::"+answer.getAttributeCode());
+		        String qwandaServiceUrl = getQwandaServiceUrl();
+	            String userCode =  getUser().getCode();
+		        
+		        for (Answer answer : answers) {
+		        
+		            String targetCode = answer.getTargetCode();
+		            answer.setSourceCode(answer.getTargetCode());
+		            String attributeCode = answer.getAttributeCode();
+		            String value = answer.getValue();
+		            
+		            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 
-	            /* if this answer is actually an address another rule will be triggered */
-	            if(answer.getAttributeCode().contains("ADDRESS_FULL")) {
-	            	  JsonObject addressDataJson = new JsonObject(value);
-		            	Map<String, String> availableKeys = new HashMap<String, String>();
-		    			availableKeys.put("full_address", "FULL");
-		    			availableKeys.put("street_address", "ADDRESS1");
-		    			availableKeys.put("suburb", "SUBURB");
-		    			availableKeys.put("state", "STATE");
-		    			availableKeys.put("postal_code", "POSTCODE");
-		    			availableKeys.put("country", "COUNTRY");
-		    					    					    			
-		    			int i = 0;
-		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
-		    			{			    				
-		    				String key = entry.getKey();
-		    				String valueEntry = entry.getValue();
-		    						    				
-		    				if(addressDataJson.containsKey(key)) {	    					
-		    					String newAttributeCode = answer.getAttributeCode().replace("FULL", valueEntry);
-		    					answer.setAttributeCode(newAttributeCode);
-		    					answer.setValue(addressDataJson.getString(key));
-			    				newAnswers[i] = answer;
-		    					i++;
-		    				}		    				
-		    			}
-		    			    					    	        
-		    	        /* Store latitude */
-		    	        String newAttCode = answer.getAttributeCode().replace("FULL", "LATITUDE");
-		    			answer.setAttributeCode(newAttCode);
-		    			Double latitude = addressDataJson.getDouble("latitude");
-		    			println(" The latitude value after conversion is  :: "+latitude );
-		    			
-		    			if(latitude != null) {
-			    			answer.setValue(Double.toString(latitude));
-			    			String jsonAnswer = gson3.toJson(answer);
-			    			Answer answerObj = gson3.fromJson(jsonAnswer, Answer.class);
-			    			println("The answer object for latitude attribute is  :: "+answerObj.toString() );
-			    			newAnswers[i] = answerObj;
-			    			i++;
-			    			println("The answer object for latitude attribute added to Answer array " );
-		    			}
-		    			
-		    			/* Store longitude */
-		    			newAttCode = answer.getAttributeCode().replace("FULL", "LONGITUDE");
-		    			answer.setAttributeCode(newAttCode);
-		    			Double longitude = addressDataJson.getDouble("longitude");
-		    			println(" The longitude value after conversion is  :: "+longitude );
-		    			
-		    			if(longitude != null) {
-			    			answer.setValue(Double.toString(longitude));
-			    			String jsonAnswer = gson3.toJson(answer);
-			    			Answer answerObj = gson3.fromJson(jsonAnswer, Answer.class);
-			    			newAnswers[i] = answerObj;
-			    			i++;
-		    			}
-		    			
-		    			/* set new answers */
-		    			m.setItems(newAnswers);
-		    			String json = gson3.toJson(m);
-		    			println("updated answer json string ::"+json);
-		    			
-		    			/* send new answers to api */ 
-		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, getToken());
-	            }
-	         }
-		}
-		catch (Exception e) {
-	       e.printStackTrace();
-		}
+		            /* if this answer is actually an address another rule will be triggered */
+		            if(attributeCode.contains("ADDRESS_FULL")) {
+		            	  JsonObject addressDataJson = new JsonObject(value);
+			            	Map<String, String> availableKeys = new HashMap<String, String>();
+			    			availableKeys.put("full_address", "FULL");
+			    			availableKeys.put("street_address", "ADDRESS1");
+			    			availableKeys.put("suburb", "SUBURB");
+			    			availableKeys.put("state", "STATE");
+			    			availableKeys.put("postal_code", "POSTCODE");
+			    			availableKeys.put("country", "COUNTRY");
+			    					    					    			
+			    			int i = 0;
+			    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+			    			{	
+			    				
+			    				String key = entry.getKey();
+			    				String valueEntry = entry.getValue();
+			    						    				
+			    				if(addressDataJson.containsKey(key)) {
+			    					
+			    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+			    					answer.setAttributeCode(newAttributeCode);
+			    					answer.setValue(addressDataJson.getString(key));
+			    					String jsonAnswer = gson.toJson(answer);
+			    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    					newAnswers[i] = answerObj;
+			    					i++;
+			    				}
+			    				
+			    			}
+			    		
+			    					    	        
+			    	        /* Store latitude */
+			    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+			    			answer.setAttributeCode(newAttCode);
+			    			Double latitude = addressDataJson.getDouble("latitude");
+			    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+			    			
+			    			if(latitude != null) {
+				    			answer.setValue(Double.toString(latitude));
+				    			String jsonAnswer = gson.toJson(answer);
+				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+				    			newAnswers[i] = answerObj;
+				    			i++;
+				    			System.out.println("The answer object for latitude attribute added to Answer array " );
+			    			}
+			    			
+			    			/* Store longitude */
+			    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+			    			answer.setAttributeCode(newAttCode);
+			    			Double longitude = addressDataJson.getDouble("longitude");
+			    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+			    			
+			    			if(longitude != null) {
+				    			answer.setValue(Double.toString(longitude));
+				    			String jsonAnswer = gson.toJson(answer);
+				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			newAnswers[i] = answerObj;
+				    			i++;
+			    			}
+			    			
+			    			/* set new answers */
+			    			m.setItems(newAnswers);
+			    			String json = gson.toJson(m);
+			    			System.out.println("updated answer json string ::"+json);
+			    			
+			    			/* send new answers to api */ 
+			    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, getToken());
+		            }
+		         }
+			}
+			catch (Exception e) {
+		       e.printStackTrace();
+	}
 	}
 
 	public void processAnswer(QDataAnswerMessage m)
@@ -850,7 +863,7 @@ public class QRules {
 	        String userCode =  getUser().getCode();
 
 	        GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
 	        Gson gson = gsonBuilder.create();
 
 	        /* extract answers */
@@ -898,7 +911,7 @@ public class QRules {
 	{
   
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
         Gson gson = gsonBuilder.create();
 
         /* extract answers */

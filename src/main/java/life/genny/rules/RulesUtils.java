@@ -77,7 +77,7 @@ public class RulesUtils {
                   }
                 }).create();
 	
-	static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
 	static Gson gson = gsonBuilder.create();
 
 	
@@ -336,7 +336,7 @@ public class RulesUtils {
 	public static String toJson(Object obj)
 	{
 	      GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()));
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
 	        Gson gson3 = gsonBuilder.create();
 
 		String ret =  gson3.toJson(obj);
