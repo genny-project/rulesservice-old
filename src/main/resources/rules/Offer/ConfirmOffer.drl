@@ -6,6 +6,7 @@ import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -93,6 +94,7 @@ rule "Confirm Offer"
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
+            String linkOwner = "OWNER";
 
             /* GET attributes of the OFFER that's being accepted */
                 JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
@@ -183,17 +185,34 @@ rule "Confirm Offer"
                     newLink.put("msg_type", "DATA_MSG");
                     newLink.put("data_type", "LINK_CHANGE");
                     newLink.put("items", updatedLink2);
+                    
 
                  RulesUtils.ruleLogger("Updated Link", newLink);
                 /* publish new link data */
                     newLink.put("token", tokenString );
                     rules.publish("cmds", newLink);
 
-                    /* Sending message to QUOTER */
-                String templateCode = "MSG_CH40_CONFIRM_OFFER";
-                String recipient = "OWNER";
-                JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
-                rules.publish("messages", jsonMessage);
+                /* Sending message to OWNER */
+                HashMap<String,String> contextMap = new HashMap<String, String>();
+        		contextMap.put("DRIVER",quoterCode);
+        		contextMap.put("JOB", begCode);  
+       
+        		String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        		RulesUtils.println("owner code ::"+userCode);
+				String[] recipientArr = {userCode};
+
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+            
+            	 /* Sending message to DRIVER */
+        		HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        		contextMapForDriver.put("JOB", begCode);
+        		contextMapForDriver.put("OWNER", userCode);
+        
+				String[] recipientArrForDriver = {quoterCode};
+		
+				rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+        		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
                 
                 /* Set progression of LOAD delivery to 0 */
                 Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
