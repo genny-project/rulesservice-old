@@ -764,7 +764,7 @@ public class QRules {
 				Answer[] newAnswers = new Answer[50];
 				Answer[] answers = m.getItems();
 				GsonBuilder gsonBuilder = new GsonBuilder();
-		        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
+		        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 		        Gson gson = gsonBuilder.create();
 		        
 		        String qwandaServiceUrl = getQwandaServiceUrl();
@@ -863,7 +863,7 @@ public class QRules {
 	        String userCode =  getUser().getCode();
 
 	        GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 	        Gson gson = gsonBuilder.create();
 
 	        /* extract answers */
@@ -911,7 +911,7 @@ public class QRules {
 	{
   
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
 
         /* extract answers */
