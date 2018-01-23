@@ -1,6 +1,6 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
+
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 
@@ -10,16 +10,16 @@ rule "Send Project To Frontend"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY")  && (!isState("PROJECT_SENT")) )
      then
-     	RulesUtils.header(drools.getRule().getName());
+     	rules.header();
      	
      	BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM",rules.getAsString("realm"));
-     	RulesUtils.println("Project "+project);
+     	rules.println("Project "+project);
      	  
         rules.publishCmd(project,"PROJECT");
    
-        RulesUtils.println("PROJECT SENT TO FRONTEND");
+        rules.println("PROJECT SENT TO FRONTEND");
         rules.setState("PROJECT_SENT");
-        update(rules); 
+
 		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();      		      
 end

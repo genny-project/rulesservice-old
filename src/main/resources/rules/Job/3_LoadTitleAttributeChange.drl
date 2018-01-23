@@ -18,12 +18,12 @@ rule "Load Title Attribute Change"
     	    RulesUtils.header(drools.getRule().getName());
 	    
          Answer newAnswer = $m.getAnswer();
-         System.out.println(" Indside the Load Title Attribute Change  rule  "   );
+         RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
          RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
          RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
   
          String loadTitle = newAnswer.getValue();
-         System.out.println("The new laod title is     ::"  +loadTitle );
+         RulesUtils.println("The new laod title is     ::"  +loadTitle );
            
        /* Get the sourceCode(Job code) for this LOAD */
         BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");

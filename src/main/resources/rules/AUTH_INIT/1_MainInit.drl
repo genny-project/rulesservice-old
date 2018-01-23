@@ -1,6 +1,5 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 
@@ -12,15 +11,12 @@ rule "Main Init"
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
         rules: QRules( isUserPresent() == false && (!isState("USER_CHECKED"))) 
      then
-     	RulesUtils.header(drools.getRule().getName());
+        rules.setDrools(drools);
+         
+     	rules.header();
      	    	
-        BaseEntity user = rules.getUser();
-        if (user == null) {
-        		RulesUtils.println("user ("+ rules.getAsString("preferred_username")+") is not present");
-  		}
+        rules.getUser();
         rules.setState("USER_CHECKED");
-        update(rules); 
-  
-  		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+		
+	    rules.footer();       		      
 end

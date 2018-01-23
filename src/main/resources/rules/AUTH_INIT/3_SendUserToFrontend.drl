@@ -1,6 +1,5 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 
 
@@ -9,13 +8,12 @@ rule "Send User To Frontend"
     when
         rules: QRules( isState("PROJECT_SENT")  && (!isState("USER_SENT")) )
      then
-     	RulesUtils.header(drools.getRule().getName());
+     	rules.header();
      	
         rules.publishCmd(rules.getUser(),"USER");
    
-        RulesUtils.println("USER "+rules.getUser().getCode()+" SENT TO FRONTEND");
+        rules.println("USER "+rules.getUser().getCode()+" SENT TO FRONTEND");
         rules.setState("USER_SENT");
-        update(rules); 
 		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();     		      
 end
