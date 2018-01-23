@@ -10,7 +10,7 @@ rule "Create New User"
 	no-loop true
 	
     when
-        rules: QRules( isState("NO_USER") && (!isState("LAYOUT_CHANGE_READY")) &&  (!isState("NEW_USER")) ) 
+        rules: QRules( isState("NO_USER") &&  (!isState("NEW_USER")) ) 
       then
      	rules.header();
      	

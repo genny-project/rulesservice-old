@@ -6,7 +6,7 @@ import life.genny.rules.QRules;
 rule "Ask First User Profile"
     no-loop true
     when
-        rules: QRules( isState("NO_USER") && (!isState("LAYOUT_CHANGE_READY")) &&  (!isState("ASK_FIRST_PROFILE")) ) 
+        rules: QRules(  isState("NEW_USER") && (!isState("ASK_FIRST_PROFILE")) ) 
      then
      	rules.header();
      	

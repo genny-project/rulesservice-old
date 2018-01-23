@@ -1,0 +1,159 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
+
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.HashMap; 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+/* Update address */ 
+rule "Update Address Answers"
+	when
+		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+	    rules: QRules()
+	then
+	    RulesUtils.header(drools.getRule().getName());
+		try {
+			
+			Answer[] newAnswers = new Answer[50];
+			Answer[] answers = m.getItems();
+			GsonBuilder gsonBuilder = new GsonBuilder();
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	        Gson gson = gsonBuilder.create();
+	        
+	        String qwandaServiceUrl = rules.getQwandaServiceUrl();
+            String userCode =  rules.getUser().getCode();
+	        
+	        for (Answer answer : answers) {
+	        
+	            String targetCode = answer.getTargetCode();
+	            answer.setSourceCode(answer.getTargetCode());
+	            String attributeCode = answer.getAttributeCode();
+	            String value = answer.getValue();
+	            
+	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+
+	            /* if this answer is actually an address another rule will be triggered */
+	            if(attributeCode.contains("ADDRESS_FULL")) {
+	            	  JsonObject addressDataJson = new JsonObject(value);
+		            	Map<String, String> availableKeys = new HashMap<String, String>();
+		    			availableKeys.put("full_address", "FULL");
+		    			availableKeys.put("street_address", "ADDRESS1");
+		    			availableKeys.put("suburb", "SUBURB");
+		    			availableKeys.put("state", "STATE");
+		    			availableKeys.put("postal_code", "POSTCODE");
+		    			availableKeys.put("country", "COUNTRY");
+		    					    					    			
+		    			int i = 0;
+		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+		    			{	
+		    				
+		    				String key = entry.getKey();
+		    				String valueEntry = entry.getValue();
+		    						    				
+		    				if(addressDataJson.containsKey(key)) {
+		    					
+		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+		    					answer.setAttributeCode(newAttributeCode);
+		    					answer.setValue(addressDataJson.getString(key));
+		    					String jsonAnswer = gson.toJson(answer);
+		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		    					newAnswers[i] = answerObj;
+		    					i++;
+		    				}
+		    				
+		    			}
+		    		
+		    					    	        
+		    	        /* Store latitude */
+		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+		    			answer.setAttributeCode(newAttCode);
+		    			Double latitude = addressDataJson.getDouble("latitude");
+		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+		    			
+		    			if(latitude != null) {
+			    			answer.setValue(Double.toString(latitude));
+			    			String jsonAnswer = gson.toJson(answer);
+			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+			    			newAnswers[i] = answerObj;
+			    			i++;
+			    			System.out.println("The answer object for latitude attribute added to Answer array " );
+		    			}
+		    			
+		    			/* Store longitude */
+		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+		    			answer.setAttributeCode(newAttCode);
+		    			Double longitude = addressDataJson.getDouble("longitude");
+		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+		    			
+		    			if(longitude != null) {
+			    			answer.setValue(Double.toString(longitude));
+			    			String jsonAnswer = gson.toJson(answer);
+			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    			newAnswers[i] = answerObj;
+			    			i++;
+		    			}
+		    			
+		    			/* set new answers */
+		    			m.setItems(newAnswers);
+		    			String json = gson.toJson(m);
+		    			System.out.println("updated answer json string ::"+json);
+		    			
+		    			/* send new answers to api */ 
+		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, rules.getToken());
+	            }
+	         }
+		}
+		catch (Exception e) {
+	       e.printStackTrace();
+		}
+		
+     RulesUtils.footer(drools.getRule().getName());
+end
