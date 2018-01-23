@@ -82,6 +82,7 @@ rule "Accept Job"
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
+            String linkOwner = "OWNER";
 
         /* get BEG PRICE */           
             String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
@@ -162,12 +163,29 @@ rule "Accept Job"
                 rules.publish("cmds", newLink);
 
         /* Sending message to BEG OWNER */
-            rules.set("begCode", begCode);
-            rules.set("recipient", "OWNER");
-            rules.set("templateCode", "MSG_CH40_ACCEPT_OFFER");           
-            rules.setState("SEND_MESSAGE");       
-            update(rules); 
-            drools.setFocus("message"); 
+            HashMap<String,String> contextMap = new HashMap<String, String>();
+        	contextMap.put("QUOTER",userCode);
+        	contextMap.put("JOB", begCode); 
+        	contextMap.put("OFFER", offerCode); 
+       
+        	String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        	RulesUtils.println("owner code ::"+ownerCode);
+			String[] recipientArr = {ownerCode};
+
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS");
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL");
+            
+        	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        	contextMapForDriver.put("JOB", begCode);
+        	contextMapForDriver.put("OWNER", ownerCode);
+        	contextMapForDriver.put("OFFER", offerCode);
+        	contextMapForDriver.put("QUOTER", userCode);
+        
+			String[] recipientArrForDriver = {userCode};
+		
+			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
+        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
+
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview"); 
         RulesUtils.footer(drools.getRule().getName());
