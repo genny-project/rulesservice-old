@@ -103,6 +103,7 @@ rule "Submit Offer"
         String linkCode= "LNK_BEG";
         String linkOffer= "OFFER";
         String linkQuoter= "QUOTER";
+        String linkOwner = "OWNER";
 
         System.out.println("OFFER CODE FROM FE     ::    "+ offerCode);
         System.out.println("USER CODE              ::    "+ userCode);
@@ -143,18 +144,29 @@ rule "Submit Offer"
                         
 
             String templateCode = null;
+            Boolean linkExists = false;
+            
          /* Check if a link exists between BEG & OFFER */
             Boolean linkBegOffer = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, offerCode, tokenString );
-            System.out.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);           
+            System.out.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);        
+            
+            if(linkBegOffer) { 
+               
+            	linkExists = true;
+            }   
             
             /* link BEG and OFFER BE || OFFER */
             if(!linkBegOffer) {
+            	
+            	linkExists = false;
+            	
                 System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
                 Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
                 link1.setWeight(.01);
                 String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link1),tokenString);
 
                 templateCode = "MSG_CH40_ACCEPT_OFFER";
+                /* Send message 
 
                  /* Update the number of offers for BEG */ 
                     Integer offerCount = 0;
@@ -180,7 +192,9 @@ rule "Submit Offer"
                 Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
                 link2.setWeight(1.0);
                 String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
-            }
+            } 
+            
+            
 
         /* SEND OFFER BE    */
             JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
@@ -212,11 +226,90 @@ rule "Submit Offer"
                 newLink.put("token", tokenString );
                 bus.publish("cmds", newLink);
 
-        /* Sending message to BEG OWNER */
-            templateCode = "MSG_CH40_COUNTER_OFFER";
-            String recipient = "OWNER";
-            JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
-            bus.publish("messages", jsonMessage);
+        /* Sending message if offer exists*/
+        if(linkExists) {
+        
+        	/* Driver is giving counter-offer */
+        	if(userCode.equals(quoterCode)) {
+        		RulesUtils.println("Driver is giving counter offer");
+        		HashMap<String,String> contextMap = new HashMap<String, String>();
+        		contextMap.put("QUOTER",quoterCode);
+        		contextMap.put("JOB", begCode);  
+        		contextMap.put("OFFER", offerCode); 
+       
+        		String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        		RulesUtils.println("owner code ::"+ownerCode);
+				String[] recipientArr = {ownerCode};
+
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL");
+            
+        		HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        		contextMapForDriver.put("JOB", begCode);
+        		contextMapForDriver.put("OWNER", ownerCode);
+        		contextMapForDriver.put("OFFER", offerCode);
+        
+				String[] recipientArrForDriver = {quoterCode};
+		
+				rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");
+        		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL");
+        	}
+        	
+        	/* Owner is giving counter offer */
+        	if(!userCode.equals(quoterCode)) {
+        		RulesUtils.println("Owner is giving counter offer");
+        		HashMap<String,String> contextMap = new HashMap<String, String>();
+        		contextMap.put("QUOTER",quoterCode);
+        		contextMap.put("JOB", begCode);  
+        		contextMap.put("OFFER", offerCode); 
+       
+        		String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        		RulesUtils.println("owner code ::"+ownerCode);
+				String[] recipientArr = {ownerCode};
+
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
+        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL");
+            
+        		HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        		contextMapForDriver.put("JOB", begCode);
+        		contextMapForDriver.put("OWNER", ownerCode);
+        		contextMapForDriver.put("OFFER", offerCode);
+        
+				String[] recipientArrForDriver = {quoterCode};
+		
+				rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS");
+        		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL");
+        	}
+        	
+        }
+        
+        
+        /* Sending message if offer does not exist */
+        if(!linkExists) {
+        	HashMap<String,String> contextMap = new HashMap<String, String>();
+        	contextMap.put("QUOTER",quoterCode);
+        	contextMap.put("JOB", begCode); 
+        	contextMap.put("OFFER", offerCode); 
+       
+        	String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        	RulesUtils.println("owner code ::"+ownerCode);
+			String[] recipientArr = {ownerCode};
+
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
+            
+        	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        	contextMapForDriver.put("JOB", begCode);
+        	contextMapForDriver.put("OWNER", ownerCode);
+        	contextMapForDriver.put("OFFER", offerCode);
+        	contextMapForDriver.put("QUOTER", quoterCode);
+        
+			String[] recipientArrForDriver = {quoterCode};
+		
+			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
+        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
+        }
+          
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview");        
