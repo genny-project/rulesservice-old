@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.deser.DateDeserializer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -335,7 +336,7 @@ public class RulesUtils {
 	public static String toJson(Object obj)
 	{
 	      GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
 	        Gson gson3 = gsonBuilder.create();
 
 		String ret =  gson3.toJson(obj);

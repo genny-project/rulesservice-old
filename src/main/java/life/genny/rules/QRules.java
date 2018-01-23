@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.deser.DateDeserializer;
 import org.drools.core.WorkingMemory;
 import org.drools.core.base.DefaultKnowledgeHelper;
 import org.drools.core.base.SequentialKnowledgeHelper;
@@ -544,7 +545,15 @@ public class QRules {
 		if (channel.startsWith("debug")) {
 			channel = channel.substring("debug".length());
 		}
-		
+		if (payload instanceof JsonObject) {
+			if (payload.toString().contains("year")) {
+				println("BAD JSON");
+			} else {
+				if (payload.toString().contains("year")) {
+					println("BAD JSON");
+				} 
+			}
+		}
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -750,7 +759,7 @@ public class QRules {
 	public void processAddressAnswers(QDataAnswerMessage m)
 	{
 	      GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
 	        Gson gson3 = gsonBuilder.create();
 
 		try {		
@@ -837,8 +846,59 @@ public class QRules {
 	public void processAnswer(QDataAnswerMessage m)
 	{
   
+	      String qwandaServiceUrl = getQwandaServiceUrl();
+	        String userCode =  getUser().getCode();
+
+	        GsonBuilder gsonBuilder = new GsonBuilder();
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
+	        Gson gson = gsonBuilder.create();
+
+	        /* extract answers */
+	        Answer[] answers = m.getItems();
+	        for (Answer answer : answers) {
+	        
+	            Long askId = answer.getAskId();
+	            String sourceCode = answer.getSourceCode();
+	            String targetCode = answer.getTargetCode();
+	            answer.setSourceCode(answer.getTargetCode());
+	            String attributeCode = answer.getAttributeCode();
+	            String value = answer.getValue();
+	            Boolean inferred = answer.getInferred();
+	            Double weight = answer.getWeight();
+	            Boolean expired = answer.getExpired();
+	            Boolean refused = answer.getRefused();
+	            System.out.println("Printing Answer data recieved   ::");
+	            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+	            System.out.println("------------------------------------------------------------------------");
+	            
+	            /* if this answer is actually an address another rule will be triggered */
+	            if(!attributeCode.contains("ADDRESS_FULL")) {
+	                  	/* convert answer to json */
+		            String jsonAnswer = gson.toJson(answer);
+		            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
+		
+		            /* convert Answer Json to Answer obj */
+		            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		            System.out.println("Answer Object   ::   "+answerObj);
+		            System.out.println("------------------------------------------------------------------------");
+		            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
+		
+		            /* post answers to qwanda-utils */
+		            try {
+						QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, getToken());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	            }
+	} 
+	}
+	
+	public void processAnswer2(QDataAnswerMessage m)
+	{
+  
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).registerTypeAdapter(LocalDate.class, new DateDeserializer());
         Gson gson = gsonBuilder.create();
 
         /* extract answers */
