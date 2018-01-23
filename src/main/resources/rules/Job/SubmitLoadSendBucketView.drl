@@ -46,20 +46,29 @@ rule "Submit LOAD"
     then
         RulesUtils.header(drools.getRule().getName());
         BaseEntity user = rules.getUser();
-        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_NEW_ITEMS","LNK_CORE");
+       	
+     	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
+  		RulesUtils.println(views);
+     	
+     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
      	 
      	for (BaseEntity bucket : buckets ) 
      	{
      		RulesUtils.println(bucket);
      		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if (user.is("PRI_DRIVER")) {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
+     		} else {
+     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
+     		    begs.addAll(driverbegs);
+    		
      		}
  
     			if (user.is("PRI_OWNER")) {
-     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, rules.getUser().getCode()) ;
+     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(ownerbegs);
      		}
  
@@ -74,7 +83,7 @@ rule "Submit LOAD"
      	 		}
      		}
      	}
-        
+       
        String layout = RulesUtils.getLayout("card.json");
      	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
