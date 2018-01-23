@@ -18,6 +18,12 @@ rule "Load Title Attribute Change"
     	    RulesUtils.header(drools.getRule().getName());
 	    
          Answer newAnswer = $m.getAnswer();
+         BaseEntity load = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+         System.out.println("The laod value is "+load.toString());
+         load.setName(newAnswer.getValue());
+         /* Update Load BaseEntity   */
+         rules.updateBaseEntity(load);
+         RulesUtils.println(" Load Baseentity Upodated  "   );
          RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
          RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
          RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
