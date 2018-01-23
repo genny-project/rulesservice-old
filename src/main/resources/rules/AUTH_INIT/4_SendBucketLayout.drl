@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 rule "Send Bucket Layout To Frontend"
     no-loop true
     when
-        rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY") ) 
+        rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY") && (!isState("ASK_FIRST_PROFILE")) ) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	

@@ -621,9 +621,18 @@ public class QRules {
 	{
 	    JsonObject obj;
 		try {
-			obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
+			  obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
 			  publish("data", obj);
-		        RulesUtils.println(questionCode+" SENT TO FRONTEND");
+			  
+			  QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+			  JsonObject json = JsonObject.mapFrom(cmdFormView);
+			  json.put("root", questionCode);
+			  json.put("token", getToken());
+			  publish("cmds", json);
+			  
+		      RulesUtils.println(questionCode+" SENT TO FRONTEND");
+		      
+		      
 			  return true;
 		} catch (IOException e) {
 			return false;
