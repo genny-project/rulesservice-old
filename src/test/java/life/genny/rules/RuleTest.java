@@ -28,6 +28,7 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
 
 import io.vertx.core.json.JsonObject;
+import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 
@@ -70,8 +71,9 @@ public class RuleTest {
 		// System.out.println("The token is: "+token);
 		// System.out.println("The token is: "+token1);
 
-		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage("GRP_QUOTES", "GRP_COMPLETED", "BEG_0000002",
+		Link link = new Link("GRP_QUOTES", "GRP_COMPLETED", "BEG_0000002",
 				"LNK_CORE", null);
+		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage(link,null,"TEST");
 		keyValue.put("token", "DUMB TOKEN");
 		kSession.insert(keyValue);
 		kSession.insert(evtMsg);
