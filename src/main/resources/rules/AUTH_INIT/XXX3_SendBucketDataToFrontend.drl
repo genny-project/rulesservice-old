@@ -17,9 +17,6 @@ rule "Send BucketData To Frontend"
      	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
   		RulesUtils.println(views);
      	
-     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
-     	 
      	for (BaseEntity bucket : buckets ) 
      	{
      		RulesUtils.println(bucket);

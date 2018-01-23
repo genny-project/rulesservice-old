@@ -18,8 +18,7 @@ rule "Send Sub Layouts To Frontend"
         rules: QRules( isState("USER_SENT")) 
      then
 
-     rules.header();
-
+        rules.header();
   
   		String subLayoutMap = RulesUtils.getLayout("sublayouts");
  		if(subLayoutMap != null) {

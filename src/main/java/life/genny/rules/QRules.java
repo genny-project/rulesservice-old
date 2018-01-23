@@ -14,8 +14,11 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.drools.core.WorkingMemory;
 import org.drools.core.base.DefaultKnowledgeHelper;
+import org.drools.core.base.SequentialKnowledgeHelper;
 import org.drools.core.spi.KnowledgeHelper;
+import org.kie.api.runtime.process.ProcessInstance;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -65,6 +68,7 @@ public class QRules {
 		this.decodedTokenMap = decodedTokenMap;
 		this.stateMap = new HashMap<String, Boolean>();
 		stateMap.put(DEFAULT_STATE, true); 
+	
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -679,4 +683,5 @@ public class QRules {
 		return null;
 	}
 
+	
 }

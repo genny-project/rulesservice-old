@@ -18,9 +18,9 @@ rule "Expand TreeView Item"
      then
      	RulesUtils.header(drools.getRule().getName());
 
-       JsonObject obj = new JsonObject(QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+m.getData().getValue()+"/linkcodes/LNK_CORE", rules.getToken()));
-		obj.put("token", rules.getToken());
-	rules.publish("cmds", obj);
+        JsonObject obj = new JsonObject(QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+m.getData().getValue()+"/linkcodes/LNK_CORE", rules.getToken()));
+	 	obj.put("token", rules.getToken());
+	    rules.publish("cmds", obj);
 
     
   		

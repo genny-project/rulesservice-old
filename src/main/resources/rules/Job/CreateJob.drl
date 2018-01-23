@@ -32,9 +32,11 @@ rule "Create Job"
      String jobCode = beg.getCode();
      System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
      System.out.println("The BEG code is   ::  "+jobCode);
-    /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
+   
+     /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", jobCode, "LNK_CORE", null, (double) 1, rules.getToken());
-    /*  Creating new base-entity LOAD    */
+    
+     /*  Creating new base-entity LOAD    */
      BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "LOD", rules.getToken()), "LOAD", qwandaServiceUrl, rules.getToken());
      String loadCode = load.getCode();
      
@@ -42,9 +44,11 @@ rule "Create Job"
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),loadCode, "PRI_AUTHOR", rules.getUser().getCode() );  
       rules.publishData(loadAuthorAns);    	  
     
-    /*  link newly created LOAD to JOB/BEG    */
+    
+      /*  link newly created LOAD to JOB/BEG    */
      Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
-    /*    Getting Post Load Question GRP        */
+    
+     /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_LOAD_DETAILS_GRP/"+loadCode, rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
      qPostLoad.put("aliasCode", $m.data.getCode());
