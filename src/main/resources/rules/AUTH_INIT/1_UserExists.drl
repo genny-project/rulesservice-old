@@ -12,16 +12,17 @@ rule "User Exists"
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
         rules: QRules(( isUserPresent() == true)  && isState("USER_CHECKED")) 
      then
-     	RulesUtils.header(drools.getRule().getName());
+        rules.header();
      	
      	
         BaseEntity user = rules.getUser();
-        RulesUtils.println("user exists");
-        RulesUtils.println("User "+user);
+        rules.println("user exists");
+        rules.println("User "+user);
         
   		rules.clearState("USER_CHECKED");
+  		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
-        update(rules); 
+
 		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();     		      
 end

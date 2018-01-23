@@ -18,10 +18,8 @@ rule "Send Sub Layouts To Frontend"
         rules: QRules( isState("USER_SENT")) 
      then
 
-     RulesUtils.header(drools.getRule().getName());
+     rules.header();
 
-       	/*  Send all sublayouts for entities  */
-  		RulesUtils.header( "Send initial sublayouts");  
   
   		String subLayoutMap = RulesUtils.getLayout("sublayouts");
  		if(subLayoutMap != null) {
@@ -67,5 +65,5 @@ rule "Send Sub Layouts To Frontend"
 			}
 		}
 		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();     		      
 end

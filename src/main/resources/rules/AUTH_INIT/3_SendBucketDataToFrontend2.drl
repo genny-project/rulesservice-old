@@ -1,6 +1,5 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
@@ -10,22 +9,22 @@ import java.util.ArrayList;
 rule "Send Ch40 BucketData To Frontend"
     no-loop true
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
+        rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_BUCKET_DATA"))) 
      then
-     	RulesUtils.header(drools.getRule().getName());
+     	rules.header();
      	
      	BaseEntity user = rules.getUser();
       	
      	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
-  		RulesUtils.println(views);
+  		 rules.println(views);
      	
      	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
      	 
      	for (BaseEntity bucket : buckets ) 
      	{
-     		RulesUtils.println(bucket);
+     		rules.println(bucket);
      		List<BaseEntity> begs = new ArrayList<BaseEntity>();
      		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
@@ -48,10 +47,12 @@ rule "Send Ch40 BucketData To Frontend"
      			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
      			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
      			for (BaseEntity begKid : begKids) {   	 			
-     	 			RulesUtils.println(bucket.getCode()+":"+begKid.getCode());
+     	 			rules.println(bucket.getCode()+":"+begKid.getCode());
      	 		}
      		}
      	}
+     	
+     	 rules.setState("SEND_BUCKET_DATA");
        	   		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();       		      
 end

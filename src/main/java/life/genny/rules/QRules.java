@@ -14,6 +14,8 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.drools.core.base.DefaultKnowledgeHelper;
+import org.drools.core.spi.KnowledgeHelper;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -48,6 +50,12 @@ public class QRules {
 	private EventBus eventBus;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
+	
+	KnowledgeHelper drools;
+	
+	public void setDrools(KnowledgeHelper drools) {
+		this.drools = drools;
+	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
@@ -125,7 +133,8 @@ public class QRules {
 	 */
 	public void setState(String key) {
 		stateMap.put(key.toUpperCase(), true);
-		RulesUtils.println("STATE "+key+" SET",RulesUtils.ANSI_RED);
+		println("STATE "+key+" SET",RulesUtils.ANSI_RED);
+		update();
 	}
 
 	/**
@@ -134,8 +143,8 @@ public class QRules {
 	 */
 	public void clearState(String key) {
 		stateMap.remove(key);
-		RulesUtils.println("STATE "+key+" CLEARED",RulesUtils.ANSI_PURPLE);
-
+		println("STATE "+key+" CLEARED",RulesUtils.ANSI_PURPLE);
+		update();
 	}
 
 	/*
@@ -208,7 +217,11 @@ public class QRules {
 	public BaseEntity getUser() {
 		BaseEntity be = null;
 		if (isNull("USER")) {
-			be = RulesUtils.getUser(qwandaServiceUrl, getDecodedTokenMap(), getToken());
+			String username = (String) getDecodedTokenMap().get("preferred_username");
+			String uname = QwandaUtils.getNormalisedUsername(username);
+			String code = "PER_" + uname.toUpperCase();
+
+			be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl,  getDecodedTokenMap(), getToken(), code);
 			set("USER", be); // WATCH THIS!!!
 		} else {
 			be = getAsBaseEntity("USER");
@@ -466,7 +479,7 @@ public class QRules {
 		try {
 			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email, realm,name, keycloakId);
 			set("USER",be);
-
+			RulesUtils.println("New User Created "+be);
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -480,6 +493,9 @@ public class QRules {
   		RulesUtils.println(layout);
   		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
         publishCmd(layoutCmd);
+        
+        RulesUtils.println(layoutCode+" SENT TO FRONTEND");
+        
 	}
 
 	/**
@@ -571,8 +587,7 @@ public class QRules {
 	 */
 	public BaseEntity getParent(final String targetCode, final String linkCode) {
 		
-		try {
-			
+		try {			
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode+"/parents", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
  			if (linkArray.length> 0) {
@@ -595,4 +610,44 @@ public class QRules {
 		return links;
 	}
 
+	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode)
+	{
+	    JsonObject obj;
+		try {
+			obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
+			  publish("cmds", obj);
+		        RulesUtils.println(questionCode+" SENT TO FRONTEND");
+			  return true;
+		} catch (IOException e) {
+			return false;
+		}
+		
+	   
+	}
+	
+	public void header()
+	{
+		RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+	}
+	
+	public void footer()
+	{
+		RulesUtils.footer(drools.getRule().getName() + " - " +   ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+	}
+	
+	public void println(final Object str)
+	{
+		RulesUtils.println(str);
+	}
+	
+	public void println(final Object str, final String colour)
+	{
+		RulesUtils.println(str,colour);
+	}
+	
+	public void update()
+	{
+		this.drools.update(this);
+	}
+	
 }
