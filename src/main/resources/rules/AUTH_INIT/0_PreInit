@@ -8,9 +8,6 @@ rule "Pre Init"
          rules: QRules(!isState("STARTED")) 
      then
         rules.setDrools(drools);
-         
-     	rules.header();
-         rules.setState("STARTED");
-		
-	    rules.footer();       		      
+        rules.setState("STARTED");
+      		      
 end
