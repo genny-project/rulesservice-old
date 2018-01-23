@@ -38,10 +38,11 @@ global java.lang.String KEYCLOAKIP;
 rule "Send CMD_VIEW: GRP_OWNER_VIEW"
      agenda-group "CMD_VIEW"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && data.value == "GRP_OWNER_VIEW" )
+       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && data.value == "GRP_DASHBOARD" )
        bus: EventBus()
        $map : Map($value: this["token"] != null)
      then
+       
        System.out.println("------- Rule: Send CMD_VIEW :- "+$m.data.getValue()+ " --------");
        /*sending cmd BUCKET_VIEW */
        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");

@@ -135,11 +135,11 @@ public class RulesUtils {
 	
 	public static String getLayoutCacheURL(final String path) {
 		
-		//https://raw.githubusercontent.com/genny-project/layouts/master/
+		//https://raw.githubusercontent.com/genny-project/layouts/master
 		// System.getenv("LAYOUT_CACHE_HOST");
 		//http://localhost:2223
 		
-		String host = "https://raw.githubusercontent.com/genny-project/layouts/master/";
+		String host = "http://localhost:2223";
 		if(host == null) {
 			host = "http://localhost:2223";
 		}
