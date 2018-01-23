@@ -101,10 +101,12 @@ rule "Post Load Cancel/Submit button click"
            newJobDetails.put("token", tokenString);
            System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
            rules.getEventBus().publish("cmds", newJobDetails); 
-          
-          /*    Setting NEW_LOAD_SUBMISSION_COMPLETED state   */
-       /*   rules.setState("NEW_LOAD_SUBMISSION_COMPLETED");  */
-      /*    update(rules);   */
+          /* Get the sourceCode(Company code) for this User */
+            BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+         /*     link newly created Job to GRP_LOADS   */
+           String loadCode =  QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", "LNK_BEG", jobCode , "LOAD", false, rules.getToken());
+           Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_"+company.getCode(), null, (double) 1, rules.getToken());
+           System.out.println("The load has been added to the GRP_LOADS ");
          /*    Calling the rule group : BucketView     */
           drools.setFocus("BucketView"); 
       }
