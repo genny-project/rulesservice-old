@@ -10,7 +10,9 @@ rule "Ask First User Profile"
      then
      	rules.header();
      	
+     	
   		rules.askQuestions(rules.getUser().getCode(),rules.getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
+  		rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update");
   		
         rules.setState("ASK_FIRST_PROFILE");
  		
