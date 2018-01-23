@@ -622,7 +622,7 @@ public class QRules {
 	    JsonObject obj;
 		try {
 			obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
-			  publish("cmds", obj);
+			  publish("data", obj);
 		        RulesUtils.println(questionCode+" SENT TO FRONTEND");
 			  return true;
 		} catch (IOException e) {
@@ -677,5 +677,9 @@ public class QRules {
 	 
 	}
 
+	public void debug()
+	{
+		println("");
+	}
 	
 }
