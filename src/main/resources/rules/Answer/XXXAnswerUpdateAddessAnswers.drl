@@ -42,45 +42,25 @@ import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
-global java.lang.String LOG_RESET;
-global java.lang.String LOG_RED;
-global java.lang.String LOG_GREEN;
-global java.lang.String LOG_YELLOW;
-global java.lang.String LOG_BLUE;
-global java.lang.String LOG_PURPLE;
-global java.lang.String LOG_CYAN;
-global java.lang.String LOG_WHITE;
-global java.lang.String LOG_BOLD;
-
 /* Update address */ 
 rule "Update Address Answers"
 	when
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
 	    rules: QRules()
 	then
-	    RulesUtils.header(drools.getRule().getName());
-		try {
-			
+	    rules.header();	    
+		try {		
 			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
-			GsonBuilder gsonBuilder = new GsonBuilder();
-	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-	        Gson gson = gsonBuilder.create();
-	        
-	        String qwandaServiceUrl = rules.getQwandaServiceUrl();
-            String userCode =  rules.getUser().getCode();
-	        
-	        for (Answer answer : answers) {
-	        
-	            String targetCode = answer.getTargetCode();
+		        
+	        for (Answer answer : answers) {	        
 	            answer.setSourceCode(answer.getTargetCode());
-	            String attributeCode = answer.getAttributeCode();
 	            String value = answer.getValue();
 	            
 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 
 	            /* if this answer is actually an address another rule will be triggered */
-	            if(attributeCode.contains("ADDRESS_FULL")) {
+	            if(answer.getAttributeCode().contains("ADDRESS_FULL")) {
 	            	  JsonObject addressDataJson = new JsonObject(value);
 		            	Map<String, String> availableKeys = new HashMap<String, String>();
 		    			availableKeys.put("full_address", "FULL");
@@ -92,13 +72,11 @@ rule "Update Address Answers"
 		    					    					    			
 		    			int i = 0;
 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
-		    			{	
-		    				
+		    			{			    				
 		    				String key = entry.getKey();
 		    				String valueEntry = entry.getValue();
 		    						    				
-		    				if(addressDataJson.containsKey(key)) {
-		    					
+		    				if(addressDataJson.containsKey(key)) {	    					
 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
 		    					answer.setAttributeCode(newAttributeCode);
 		    					answer.setValue(addressDataJson.getString(key));
@@ -106,32 +84,30 @@ rule "Update Address Answers"
 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
 		    					newAnswers[i] = answerObj;
 		    					i++;
-		    				}
-		    				
+		    				}		    				
 		    			}
-		    		
-		    					    	        
+		    			    					    	        
 		    	        /* Store latitude */
 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
 		    			answer.setAttributeCode(newAttCode);
 		    			Double latitude = addressDataJson.getDouble("latitude");
-		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+		    			rules.println(" The latitude value after conversion is  :: "+latitude );
 		    			
 		    			if(latitude != null) {
 			    			answer.setValue(Double.toString(latitude));
 			    			String jsonAnswer = gson.toJson(answer);
 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+			    			rules.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
 			    			newAnswers[i] = answerObj;
 			    			i++;
-			    			System.out.println("The answer object for latitude attribute added to Answer array " );
+			    			rules.println("The answer object for latitude attribute added to Answer array " );
 		    			}
 		    			
 		    			/* Store longitude */
 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
 		    			answer.setAttributeCode(newAttCode);
 		    			Double longitude = addressDataJson.getDouble("longitude");
-		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+		    			rules.println(" The longitude value after conversion is  :: "+longitude );
 		    			
 		    			if(longitude != null) {
 			    			answer.setValue(Double.toString(longitude));
@@ -144,7 +120,7 @@ rule "Update Address Answers"
 		    			/* set new answers */
 		    			m.setItems(newAnswers);
 		    			String json = gson.toJson(m);
-		    			System.out.println("updated answer json string ::"+json);
+		    			rules.println("updated answer json string ::"+json);
 		    			
 		    			/* send new answers to api */ 
 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, rules.getToken());
@@ -155,5 +131,5 @@ rule "Update Address Answers"
 	       e.printStackTrace();
 		}
 		
-     RulesUtils.footer(drools.getRule().getName());
+     rules.footer();
 end

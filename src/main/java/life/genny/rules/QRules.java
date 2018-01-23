@@ -20,12 +20,16 @@ import org.drools.core.base.SequentialKnowledgeHelper;
 import org.drools.core.spi.KnowledgeHelper;
 import org.kie.api.runtime.process.ProcessInstance;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Ask;
+import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -741,6 +745,143 @@ public class QRules {
 	public void debug()
 	{
 		println("");
+	}
+	
+	public void processAddressAnswers(QDataAnswerMessage m)
+	{
+	      GsonBuilder gsonBuilder = new GsonBuilder();
+	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	        Gson gson3 = gsonBuilder.create();
+
+		try {		
+			Answer[] newAnswers = new Answer[50];
+			Answer[] answers = m.getItems();
+		        
+	        for (Answer answer : answers) {	        
+	            answer.setSourceCode(answer.getTargetCode());
+	            String value = answer.getValue();
+	            
+	            System.out.println("value ::"+value + "attribute code ::"+answer.getAttributeCode());
+
+	            /* if this answer is actually an address another rule will be triggered */
+	            if(answer.getAttributeCode().contains("ADDRESS_FULL")) {
+	            	  JsonObject addressDataJson = new JsonObject(value);
+		            	Map<String, String> availableKeys = new HashMap<String, String>();
+		    			availableKeys.put("full_address", "FULL");
+		    			availableKeys.put("street_address", "ADDRESS1");
+		    			availableKeys.put("suburb", "SUBURB");
+		    			availableKeys.put("state", "STATE");
+		    			availableKeys.put("postal_code", "POSTCODE");
+		    			availableKeys.put("country", "COUNTRY");
+		    					    					    			
+		    			int i = 0;
+		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+		    			{			    				
+		    				String key = entry.getKey();
+		    				String valueEntry = entry.getValue();
+		    						    				
+		    				if(addressDataJson.containsKey(key)) {	    					
+		    					String newAttributeCode = answer.getAttributeCode().replace("FULL", valueEntry);
+		    					answer.setAttributeCode(newAttributeCode);
+		    					answer.setValue(addressDataJson.getString(key));
+			    				newAnswers[i] = answer;
+		    					i++;
+		    				}		    				
+		    			}
+		    			    					    	        
+		    	        /* Store latitude */
+		    	        String newAttCode = answer.getAttributeCode().replace("FULL", "LATITUDE");
+		    			answer.setAttributeCode(newAttCode);
+		    			Double latitude = addressDataJson.getDouble("latitude");
+		    			println(" The latitude value after conversion is  :: "+latitude );
+		    			
+		    			if(latitude != null) {
+			    			answer.setValue(Double.toString(latitude));
+			    			String jsonAnswer = gson3.toJson(answer);
+			    			Answer answerObj = gson3.fromJson(jsonAnswer, Answer.class);
+			    			println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+			    			newAnswers[i] = answerObj;
+			    			i++;
+			    			println("The answer object for latitude attribute added to Answer array " );
+		    			}
+		    			
+		    			/* Store longitude */
+		    			newAttCode = answer.getAttributeCode().replace("FULL", "LONGITUDE");
+		    			answer.setAttributeCode(newAttCode);
+		    			Double longitude = addressDataJson.getDouble("longitude");
+		    			println(" The longitude value after conversion is  :: "+longitude );
+		    			
+		    			if(longitude != null) {
+			    			answer.setValue(Double.toString(longitude));
+			    			String jsonAnswer = gson3.toJson(answer);
+			    			Answer answerObj = gson3.fromJson(jsonAnswer, Answer.class);
+			    			newAnswers[i] = answerObj;
+			    			i++;
+		    			}
+		    			
+		    			/* set new answers */
+		    			m.setItems(newAnswers);
+		    			String json = gson3.toJson(m);
+		    			println("updated answer json string ::"+json);
+		    			
+		    			/* send new answers to api */ 
+		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, getToken());
+	            }
+	         }
+		}
+		catch (Exception e) {
+	       e.printStackTrace();
+		}
+	}
+
+	public void processAnswer(QDataAnswerMessage m)
+	{
+  
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+        Gson gson = gsonBuilder.create();
+
+        /* extract answers */
+    	List<Answer> answers = new ArrayList<Answer>();
+
+        Answer[] answers2 = m.getItems();
+        for (Answer answer : answers2) {
+        		if (answer != null) {
+            Long askId = answer.getAskId();
+            String sourceCode = answer.getSourceCode();
+            String targetCode = answer.getTargetCode();
+            answer.setSourceCode(answer.getTargetCode());
+            String attributeCode = answer.getAttributeCode();
+            String value = answer.getValue();
+            Boolean inferred = answer.getInferred();
+            Double weight = answer.getWeight();
+            Boolean expired = answer.getExpired();
+            Boolean refused = answer.getRefused();
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+            System.out.println("------------------------------------------------------------------------");
+            
+            /* if this answer is actually an address another rule will be triggered */
+            if(!attributeCode.contains("ADDRESS_FULL")) {
+            		answers.add(answer);
+              }
+        		} else {
+        			println("Answer was null ");
+        		}
+         }    
+        
+	
+	      Answer items[] = new Answer[answers.size()];
+	      items = answers.toArray(items);
+		QDataAnswerMessage msg = new QDataAnswerMessage(items);
+	
+	      
+        String jsonAnswer = gson.toJson(msg);
+		try {
+			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer,token);
+		} catch (IOException e) {
+			log.error("Socket error trying to post answer");
+		}
+
 	}
 	
 }
