@@ -619,10 +619,14 @@ public class QRules {
 
 	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode)
 	{
-	    JsonObject obj;
+	    JsonObject questionJson;
 		try {
-			  obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
-			  publish("data", obj);
+			  questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
+			 /* QDataAskMessage */
+			  publish("data", questionJson);
+			  
+			  // Now auto push any selection data
+			  
 			  
 			  QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
 			  JsonObject json = JsonObject.mapFrom(cmdFormView);
@@ -637,8 +641,23 @@ public class QRules {
 		} catch (IOException e) {
 			return false;
 		}
-		
+	}
+	
+	public boolean sendSelections(final String selectionRootCode, final String linkCode, final Integer maxItems)
+	{
 	   
+	     JsonObject selectionLists;
+		try {
+			selectionLists = new JsonObject( QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+selectionRootCode+"/linkcodes/"+linkCode+"?pageStart=0&pageSize="+maxItems, getToken()));
+			   selectionLists.put("token", getToken());
+			     publish("cmds",selectionLists);
+			     return true;
+		} catch (IOException e) {
+			log.error("Unable to fetch selections");
+			return false;
+		}
+	  
+
 	}
 	
 	public void header()
