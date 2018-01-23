@@ -39,7 +39,7 @@ global java.lang.String KEYCLOAKIP;
 /* Treeview item selection Rules */
 rule "Select TreeView Item: DASHBOARD"
      when
-        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD" || data.value == "GRP_DRIVER_VIEW" || data.value == "GRP_OWNER_VIEW") )
+        $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD") )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
     then
@@ -51,7 +51,7 @@ rule "Select TreeView Item: DASHBOARD"
 		System.out.println("tokenstr="+StringUtils.abbreviateMiddle(tokenString, "...", 40));
 		
 		/*Base Entity to be displayed in the table as header */
-		JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DRIVER_VIEW/linkcodes/LNK_CORE", tokenString));		
+		JsonObject headerGrps = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE", tokenString));		
         /*Getting B.E. to display in Bucket View with linkcode LNK_BEG */
         JsonObject noQuotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_NEW_ITEMS/linkcodes/LNK_CORE/attributes", tokenString));
         /*JsonObject quotesBEG = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_QUOTES/linkcodes/LNK_CORE/attributes", tokenString)); */

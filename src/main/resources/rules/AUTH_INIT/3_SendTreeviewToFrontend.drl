@@ -6,12 +6,14 @@ import life.genny.rules.QRules;
 rule "Send Treeview To Frontend"
     no-loop true
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
+        rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_TREEVIEW"))) 
      then
      	rules.header();
      	
       	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE",0,10,true);
    	    rules.println("Root Group is "+"GRP_ROOT");
+   	    
+   	    rules.setState("SEND_TREEVIEW");
      		
 	    rules.footer();     		      
 end

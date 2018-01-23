@@ -14,8 +14,11 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.drools.core.WorkingMemory;
 import org.drools.core.base.DefaultKnowledgeHelper;
+import org.drools.core.base.SequentialKnowledgeHelper;
 import org.drools.core.spi.KnowledgeHelper;
+import org.kie.api.runtime.process.ProcessInstance;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -65,6 +68,7 @@ public class QRules {
 		this.decodedTokenMap = decodedTokenMap;
 		this.stateMap = new HashMap<String, Boolean>();
 		stateMap.put(DEFAULT_STATE, true); 
+	
 	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
@@ -119,7 +123,7 @@ public class QRules {
 	/**
 	 * @return the state
 	 */
-	public Boolean isState(final String key) {
+	public boolean isState(final String key) {
 		if (stateMap.containsKey(key)) {
 			return stateMap.get(key);
 		} else {
@@ -490,7 +494,6 @@ public class QRules {
 		
 		String layout = RulesUtils.getLayout(layoutPath);
      	
-  		RulesUtils.println(layout);
   		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
         publishCmd(layoutCmd);
         
@@ -628,13 +631,20 @@ public class QRules {
 	
 	public void header()
 	{
-		RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		try {
+			RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		} catch (NullPointerException e) {
+			println("Error in rules: ","ANSI_RED");
+		}
 	}
 	
 	public void footer()
 	{
-		RulesUtils.footer(drools.getRule().getName() + " - " +   ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
-	}
+		try {
+			RulesUtils.footer(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		} catch (NullPointerException e) {
+			println("Error in rules: ","ANSI_RED");
+		}	}
 	
 	public void println(final Object str)
 	{
@@ -664,4 +674,5 @@ public class QRules {
 	 
 	}
 
+	
 }

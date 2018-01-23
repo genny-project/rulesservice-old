@@ -47,12 +47,9 @@ rule "Submit LOAD"
         RulesUtils.header(drools.getRule().getName());
         BaseEntity user = rules.getUser();
        	
-     	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
-  		RulesUtils.println(views);
-     	
-     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
+     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
+  		RulesUtils.println(buckets);
      	 
      	for (BaseEntity bucket : buckets ) 
      	{
@@ -88,7 +85,7 @@ rule "Submit LOAD"
      	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-        bucketViewJson.put("root", "GRP_DRIVER_VIEW");
+        bucketViewJson.put("root", "GRP_DASHBOARD");
         bucketViewJson.put("token",rules.getToken());
   		
         rules.publish("cmds",bucketViewJson);

@@ -66,7 +66,7 @@ rule "Send Bucketview Cmd"
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
         /* Sendind Bucketview */
-            QCmdViewMessage cmdBucketView = new QCmdViewMessage("BUCKET_VIEW", "GRP_DRIVER_VIEW");
+            QCmdViewMessage cmdBucketView = new QCmdViewMessage("BUCKET_VIEW", "GRP_DASHBOARD");
             RulesUtils.ruleLogger("Sending Bucketview", cmdBucketView);
             rules.publishCmd(cmdBucketView);
 

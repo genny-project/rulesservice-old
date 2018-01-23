@@ -133,10 +133,9 @@ public class RulesUtils {
 
 	}
 	
-	
 	public static String getLayoutCacheURL(final String path) {
 		
-		String host = System.getenv("LAYOUT_CACHE_HOST");
+		String host = "http://localhost:2223"; //System.getenv("LAYOUT_CACHE_HOST");
 		if(host == null) {
 			host = "http://localhost:2223";
 		}
@@ -148,6 +147,8 @@ public class RulesUtils {
 		String jsonStr = "";
 		try {
 		   String url = getLayoutCacheURL(path);
+		   println("Trying to load url.....");
+		   println(url);
 		   jsonStr = QwandaUtils.apiGet(url, null);		
 		 }catch(Exception e) {
 			 e.printStackTrace();
@@ -161,7 +162,6 @@ public class RulesUtils {
 		msg.setToken(token);
 		
 		return toJsonObject(msg);
-
 	}
 
 	/**
