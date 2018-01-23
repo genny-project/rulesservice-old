@@ -1,0 +1,31 @@
+
+ 
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+
+rule "TV_SELECT Event"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT")
+       rules: QRules()
+     then
+       	
+     rules.header();
+       	
+       //TODO: refactor this.
+       	String viewType = "LIST_VIEW";
+       	if($m.getData().getValue().equals("GRP_DASHBOARD")) {
+       		viewType = "BUCKET_VIEW";
+       	}
+       	/* sending cmd LIST_VIEW */
+	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW",viewType);
+	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+	     bucketViewJson.put("root", $m.getData().getValue());
+	     bucketViewJson.put("token", rules.getToken());
+	     rules.publish("cmds",bucketViewJson);
+      
+     
+     rules.footer();
+end
+

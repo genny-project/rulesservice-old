@@ -16,13 +16,12 @@ rule "Expand TreeView Item"
         m : QEventMessage( QEventMessage.getData().getCode().equals("LAYOUT_CHANGE_READY") )
         rules: QRules( ) 
      then
-     	RulesUtils.header(drools.getRule().getName());
+     	
+     RulesUtils.header(drools.getRule().getName());
 
         JsonObject obj = new JsonObject(QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+m.getData().getValue()+"/linkcodes/LNK_CORE", rules.getToken()));
 	 	obj.put("token", rules.getToken());
 	    rules.publish("cmds", obj);
 
-    
-  		
 	    RulesUtils.footer(drools.getRule().getName());       		      
 end
