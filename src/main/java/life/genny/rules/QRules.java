@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -32,7 +33,9 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
@@ -566,6 +569,12 @@ public class QRules {
 	    publish("data", RulesUtils.toJsonObject(msg));
 	}
 	
+	public void publishData(final QDataAskMessage msg)
+	{
+		msg.setToken(getToken());  
+	    publish("data", RulesUtils.toJsonObject(msg));
+	}
+	
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode)
 	{
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
@@ -616,23 +625,47 @@ public class QRules {
 		return links;
 	}
 
-
 	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode)
 	{
-	    JsonObject questionJson;
+		return askQuestions(sourceCode, targetCode, questionCode, false);
+	}
+
+	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode, final boolean autoPushSelections)
+	{
+	    JsonObject questionJson = null;
+	    
 		try {
-			  questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
-			 /* QDataAskMessage */
-			  publish("data", questionJson);
-			  
-			  // Now auto push any selection data
-			  
-			  
-			  QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
-			  JsonObject json = JsonObject.mapFrom(cmdFormView);
-			  json.put("root", questionCode);
-			  json.put("token", getToken());
-			  publish("cmds", json);
+			if (autoPushSelections) {
+				  String json = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken());
+					
+				  QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+				  
+					  publishData(msg);
+					  
+					  // Now auto push any selection data
+//					  for (Ask ask : msg.getItems()) {
+//						  if (ask.getAttributeCode().startsWith("LNK_")) {
+//							  
+//							 // sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 10);
+//						  }
+//					  }
+					  
+					  QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);		
+					  publishCmd(cmdFormView);
+			} else {
+				  questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
+					 /* QDataAskMessage */
+					  publish("data", questionJson);
+					  
+					  // Now auto push any selection data
+					  
+					  
+					  QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+					  JsonObject json = JsonObject.mapFrom(cmdFormView);
+					  json.put("root", questionCode);
+					  json.put("token", getToken());
+					  publish("cmds", json);			
+			}
 			  
 		      RulesUtils.println(questionCode+" SENT TO FRONTEND");
 		      
