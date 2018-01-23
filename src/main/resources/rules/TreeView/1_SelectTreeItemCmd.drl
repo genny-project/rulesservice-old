@@ -13,7 +13,7 @@ rule "TV_SELECT Event"
        	
      rules.header();
        	
-       //TODO: refactor this.
+        /* TODO: refactor this. */
        	String viewType = "LIST_VIEW";
        	if($m.getData().getValue().equals("GRP_DASHBOARD")) {
        		viewType = "BUCKET_VIEW";
