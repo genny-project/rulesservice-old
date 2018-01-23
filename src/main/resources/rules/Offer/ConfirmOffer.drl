@@ -160,7 +160,14 @@ rule "Confirm Offer"
                 Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
 	            String jsonBeUpdate = gson.toJson(beAnswer);
 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers", jsonBeUpdate, tokenString);
-                
+
+            /* Update BEG's PRI_PRICE */
+                Answer priceAnswer = new Answer(begCode, begCode, "PRI_PRICE", begPrice);
+                priceAnswer.setInferred(true);
+                System.out.println("UPDATING PRICE of BEG          ::   " + priceAnswer);
+                RulesUtils.println(priceAnswer);
+                rules.publishData(priceAnswer);
+
             /* Move BEG to GRP_APPROVED */
                 String oldGroup = "GRP_NEW_ITEMS";
                 String newGroup = "GRP_APPROVED";
