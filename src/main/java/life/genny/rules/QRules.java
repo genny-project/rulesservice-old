@@ -119,7 +119,7 @@ public class QRules {
 	/**
 	 * @return the state
 	 */
-	public Boolean isState(final String key) {
+	public boolean isState(final String key) {
 		if (stateMap.containsKey(key)) {
 			return stateMap.get(key);
 		} else {
@@ -490,7 +490,6 @@ public class QRules {
 		
 		String layout = RulesUtils.getLayout(layoutPath);
      	
-  		RulesUtils.println(layout);
   		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
         publishCmd(layoutCmd);
         
@@ -628,13 +627,20 @@ public class QRules {
 	
 	public void header()
 	{
-		RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		try {
+			RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		} catch (NullPointerException e) {
+			println("Error in rules: ","ANSI_RED");
+		}
 	}
 	
 	public void footer()
 	{
-		RulesUtils.footer(drools.getRule().getName() + " - " +   ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
-	}
+		try {
+			RulesUtils.footer(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
+		} catch (NullPointerException e) {
+			println("Error in rules: ","ANSI_RED");
+		}	}
 	
 	public void println(final Object str)
 	{

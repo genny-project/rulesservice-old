@@ -26,43 +26,34 @@ rule "New Payments User"
 	no-loop true
     when
     	
-       rules: QRules( isState("NEW_USER")) 
+       rules: QRules( isState("NEW_USER") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
       then
-     	RulesUtils.header(drools.getRule().getName());
+     	rules.header();
      	
-     Gson gson = new Gson();
-     GsonBuilder gsonBuilder = new GsonBuilder();
-     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-     gson = gsonBuilder.create();	
-     	
-     String userName = rules.getAsString("preferred_username");
-     String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
-     String tokenString = rules.getToken();
-     String qwandaServiceUrl = rules.getQwandaServiceUrl();
-     
+       
      /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
      
      /*  Creates assembly userId */
-     String assemblyId = PaymentUtils.getAssemblyId(tokenString);
+     String assemblyId = PaymentUtils.getAssemblyId(rules.getToken());
      
       /* Check If user already exists in Assembly    */  
      Boolean isAssemblyUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId);
-     RulesUtils.println("isAssemblyUserExists::"+isAssemblyUserExists);
+     rules.println("isAssemblyUserExists::"+isAssemblyUserExists);
      
 	 if(!isAssemblyUserExists) {
      	
      	/* logic to create assembly user & set the payments userProfileExists flag  */
-     	PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, tokenString); 
+     	PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, rules.getToken()); 
      	
      	Boolean isUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId);
-     	System.out.println("isAssemblyUserExists::"+isUserExists);
+     	rules.println("isAssemblyUserExists::"+isUserExists);
      	
      	/* Creates a new attribute for assembly user ID */
-    	Answer assemblyIdAnswer = new Answer(userCode, userCode, "PRI_ASSEMBLY_USER_ID", assemblyId);
-    	System.out.println("assemblyIdAnswer ::"+assemblyIdAnswer);
-    	System.out.println("assembly ID created in our system ::"+assemblyId);
-     	QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
+    	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
+    rules.println("assemblyIdAnswer ::"+assemblyIdAnswer);
+    rules.println("assembly ID created in our system ::"+assemblyId);
+     	rules.publishData(assemblyIdAnswer);
      	
      	if(isUserExists == true) {
      		rules.setState("IS_ASSEMBLY_USER_CREATED");
@@ -70,6 +61,6 @@ rule "New Payments User"
      	
       }
 	
-	  update(rules);	
-	  RulesUtils.footer(drools.getRule().getName());       		      
+
+	  rules.footer();      		      
 end
