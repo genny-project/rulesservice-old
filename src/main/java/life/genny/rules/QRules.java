@@ -610,6 +610,7 @@ public class QRules {
 		return links;
 	}
 
+
 	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode)
 	{
 	    JsonObject obj;
@@ -650,4 +651,17 @@ public class QRules {
 		this.drools.update(this);
 	}
 	
+
+    
+	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
+		Link link = new Link(parentCode, childCode, linkCode);
+		try {
+			 return	QwandaUtils.apiDelete(getQwandaServiceUrl()+"/qwanda/entityentitys", link.toString(), getToken());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	return null;
+	 
+	}
+
 }

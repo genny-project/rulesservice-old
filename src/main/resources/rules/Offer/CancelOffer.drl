@@ -96,6 +96,7 @@ rule "Cancel Offer"
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
+            String linkOwner = "OWNER";
 
         /* GET attributes of the OFFER that's being declined */
             JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
@@ -153,11 +154,28 @@ rule "Cancel Offer"
             newLink1.put("token", tokenString );
             rules.publish("cmds", newLink1);
 
-        /* Sending message to QUOTER */
-            String templateCode = "MSG_CH40_CANCEL_OFFER";
-            String recipient = "OWNER";
-            JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
-            rules.publish("messages", jsonMessage);
+        /* Sending message to OWNER */
+           HashMap<String,String> contextMap = new HashMap<String, String>();
+        	contextMap.put("JOB", begCode); 
+        	contextMap.put("OFFER", offerCode); 
+       
+        	String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+        	RulesUtils.println("owner code ::"+ownerCode);
+			String[] recipientArr = {ownerCode};
+
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS");
+        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL");
+            
+            /* Could not find the quoterCode/driverCode to whom message needs to be triggered */
+        	/* HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+        	contextMapForDriver.put("JOB", begCode);
+        	contextMapForDriver.put("OWNER", ownerCode);
+        	contextMapForDriver.put("OFFER", offerCode);
+        
+			String[] recipientArrForDriver = {quoterCode};
+		
+			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
+        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); */
     
         RulesUtils.footer(drools.getRule().getName());
 end

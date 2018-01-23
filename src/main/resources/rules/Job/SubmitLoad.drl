@@ -4,34 +4,19 @@ import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
-import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.GPSUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.rules.RulesUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Map;
 import java.util.HashMap; 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
+
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
+
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
@@ -44,16 +29,8 @@ rule "Post Load Cancel/Submit button click"
 
     		RulesUtils.header(drools.getRule().getName());   
          String qwandaServiceUrl = rules.getQwandaServiceUrl();
-         String tokenString = rules.getToken();
-       /*   Prepare GSON Deserialization   */
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-        Gson gson = gsonBuilder.create();
-         
-         /*  Get Username and userCode    */
-         String userName = rules.getAsString("preferred_username");   
-         System.out.println("The user name is  ::  " +userName);
-         String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+         String tokenString = rules.getToken();      
+         String userCode =  rules.getUser().getCode();
          System.out.println("The user Code is  ::  " +userCode);
                 
        /*  Get data.value and decode    */
@@ -83,12 +60,8 @@ rule "Post Load Cancel/Submit button click"
        		
        	 /*    Adding Offer Count to 0   */
        	  Answer offerCountAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_OFFER_COUNT", "0" );
-       	  
-         /* convert answer to json */
-	      String jsonAnswer = gson.toJson(offerCountAns);
-	     
-         /* post answers to qwanda-utils */
-	       QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+       	 /* Publish Answer   */
+       	 rules.publishData(offerCountAns); 
 	    
           /*     Moving the BEG      */
            JsonObject begEntity = new JsonObject();
@@ -109,9 +82,13 @@ rule "Post Load Cancel/Submit button click"
            System.out.println("The load has been added to the GRP_LOADS ");
          /*    Calling the rule group : BucketView     */
           drools.setFocus("BucketView"); 
+      }else if(actionCode.equalsIgnoreCase("cancel")){
+       /*  String status =  rules.removeLink("GRP_DRAFTS", jobCode, "LNK_CORE");
+        System.out.println("Status after removing link  :: " +status);   */
+       /*    Calling the rule group : BucketView     */
+         drools.setFocus("BucketView");       
       }
-      
-        
+             
      RulesUtils.footer(drools.getRule().getName());
         
 end
