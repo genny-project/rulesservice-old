@@ -22,7 +22,7 @@ rule "Send Bucket Layout To Frontend"
      	        /* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-        bucketViewJson.put("root", "GRP_DRIVER_VIEW");
+        bucketViewJson.put("root", "GRP_DASHBOARD");
         bucketViewJson.put("token",rules.getToken());
   		
         rules.publish("cmds",bucketViewJson);

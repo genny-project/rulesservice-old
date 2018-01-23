@@ -41,7 +41,7 @@ global java.lang.String KEYCLOAKIP;
 rule "Send CMD_VIEW:GRP_DASHBOARD"
      agenda-group "CMD_VIEW"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD" || data.value == "GRP_DRIVER_VIEW" ))
+       $m : QEventMessage( event_type == "TV_SELECT" && data.code == "TV1" && (data.value == "GRP_DASHBOARD"))
        bus: EventBus()
        $map : Map($value: this["token"] != null)
      then
@@ -53,7 +53,7 @@ rule "Send CMD_VIEW:GRP_DASHBOARD"
        
        bucketViewJson.put("token", $value);
        
-       bucketViewJson.put("root","GRP_DRIVER_VIEW");
+       bucketViewJson.put("root","GRP_DASHBOARD");
        System.out.println(" ##################### ");
        System.out.println("Layout Data ="+bucketViewJson.toString()); 
        System.out.println(" #################### ");

@@ -14,13 +14,14 @@ rule "Send Ch40 BucketData To Frontend"
      	rules.header();
      	
      	BaseEntity user = rules.getUser();
-      	
-     	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
-  		 rules.println(views);
-     	
-     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DRIVER_VIEW","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_DRIVER_VIEW","LNK_CORE");
+      		
+     	 List<BaseEntity> root = rules.getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
+    	 	 rules.publishCmd(root,"GRP_ROOT","LNK_CORE");
+ 		 rules.println(root);
+ 		 
+     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
+  		 rules.println(buckets);
      	 
      	for (BaseEntity bucket : buckets ) 
      	{
