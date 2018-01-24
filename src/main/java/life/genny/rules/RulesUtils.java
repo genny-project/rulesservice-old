@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.deser.DateDeserializer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,6 +36,34 @@ public class RulesUtils {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	final static Gson gson = new GsonBuilder()
+	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
+	          @Override
+	          public LocalDate deserialize(final JsonElement json, final Type type,
+	              final JsonDeserializationContext jsonDeserializationContext)
+	              throws JsonParseException {
+	            return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
+	          }
+
+	          public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
+	              final JsonSerializationContext context) {
+	            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
+	          }
+	        }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+		          @Override
+		          public LocalDateTime deserialize(final JsonElement json, final Type type,
+		              final JsonDeserializationContext jsonDeserializationContext)
+		              throws JsonParseException {
+		            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		          }
+
+		          public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+		              final JsonSerializationContext context) {
+		            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
+		          }
+		        }).create();
+
 
 	public static final String ANSI_RESET = "\u001B[0m";
 	public static final String ANSI_BLUE = "\u001B[34m";
@@ -49,35 +78,6 @@ public class RulesUtils {
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
 
-	final static Gson gson2 = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
-              @Override
-              public LocalDate deserialize(final JsonElement json, final Type type,
-                  final JsonDeserializationContext jsonDeserializationContext)
-                  throws JsonParseException {
-                return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
-              }
-
-              public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
-                  final JsonSerializationContext context) {
-                return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
-              }
-            }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-                  @Override
-                  public LocalDateTime deserialize(final JsonElement json, final Type type,
-                      final JsonDeserializationContext jsonDeserializationContext)
-                      throws JsonParseException {
-                    return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                  }
-
-                  public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-                      final JsonSerializationContext context) {
-                    return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-                  }
-                }).create();
-	
-	static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-	static Gson gson = gsonBuilder.create();
 
 	
 	public static String executeRuleLogger(final String status, final String module, final String topColour,
@@ -135,9 +135,17 @@ public class RulesUtils {
 	
 	public static String getLayoutCacheURL(final String path) {
 		
-		String host = "http://localhost:2223"; //System.getenv("LAYOUT_CACHE_HOST");
-		if(host == null) {
-			host = "http://localhost:2223";
+		//https://raw.githubusercontent.com/genny-project/layouts/master
+		// System.getenv("LAYOUT_CACHE_HOST");
+		//http://localhost:2223
+		
+	
+		String host = "http://localhost:2223";
+		if(path.contains(".json")) {
+			host = "https://raw.githubusercontent.com/genny-project/layouts/master";
+		}
+		else {
+			host = "https://api.github.com/repos/genny-project/layouts/contents/"; // TODO: this has a rate limit
 		}
 		
 		return String.format("%s/%s", host, path);
@@ -181,7 +189,7 @@ public class RulesUtils {
 			String code = "PER_" + uname.toUpperCase();
 			// CHEAT TODO
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code, token);
-			BaseEntity be = gson2.fromJson(beJson, BaseEntity.class);
+			BaseEntity be = gson.fromJson(beJson, BaseEntity.class);
 
 //			if (username != null) {
 //				beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + username+"&pageSize=1", token);
@@ -310,7 +318,7 @@ public class RulesUtils {
 	        T item = null;
 	        if (json != null) {
 	                try {
-	                      item = (T)gson2.fromJson(json, clazz);
+	                      item = (T)gson.fromJson(json, clazz);
 	                } catch (Exception e) {
 	                     log.error("Bad Deserialisation for "+clazz.getSimpleName());
 	                }
@@ -321,7 +329,7 @@ public class RulesUtils {
 	public static String toJson2(Object obj)
 	{
 	
-		String ret =  gson2.toJson(obj);
+		String ret =  gson.toJson(obj);
 		return ret;
 	}
 	public static String toJson(Object obj)
@@ -440,7 +448,7 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
@@ -460,7 +468,7 @@ public class RulesUtils {
 			final String token, final String childCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByChildAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, childCode, linkCode);
-			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
@@ -482,7 +490,7 @@ public class RulesUtils {
 				println("Group New Items Debug");
 			}
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode, stakeholderCode);
-			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;

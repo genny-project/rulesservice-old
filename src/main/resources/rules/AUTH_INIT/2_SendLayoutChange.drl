@@ -6,7 +6,7 @@ import life.genny.rules.QRules;
 rule "Send Layout Change To Frontend"
     no-loop true
     when
-        rules: QRules( isState("IS_LOGGED_IN") && (!isState("LAYOUT_CHANGE_READY"))) 
+        rules: QRules( isState("IS_LOGGED_IN") && (!isState("LAYOUT_CHANGE_READY")) && (!isState("ASK_FIRST_PROFILE"))) 
      then
      	rules.header();
      	

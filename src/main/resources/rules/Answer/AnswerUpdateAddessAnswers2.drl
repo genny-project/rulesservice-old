@@ -42,28 +42,15 @@ import io.vertx.core.json.JsonArray;
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
-global java.lang.String LOG_RESET;
-global java.lang.String LOG_RED;
-global java.lang.String LOG_GREEN;
-global java.lang.String LOG_YELLOW;
-global java.lang.String LOG_BLUE;
-global java.lang.String LOG_PURPLE;
-global java.lang.String LOG_CYAN;
-global java.lang.String LOG_WHITE;
-global java.lang.String LOG_BOLD;
-
-rule "Answer"
-    when
-        m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-        rules: QRules()
-    then    
-        rules.header();
-        
-	rules.processAnswer(m); 
- 
-       rules.footer();
-           
+/* Update address */ 
+rule "Update Address Answers"
+	when
+		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+	    rules: QRules()
+	then
+	    rules.header();	    
+	
+		rules.processAddressAnswers(m);
+		
+     rules.footer();
 end
-
-
-   

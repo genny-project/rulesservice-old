@@ -22,7 +22,7 @@ rule "Send DropDown Datas"
    when
      rules: QRules()
    then
-    RulesUtils.header(drools.getRule().getName());
+    rules.header();
      
     String qwandaServiceUrl = rules.getQwandaServiceUrl();
      String userCode =  rules.getUser().getCode();
@@ -44,6 +44,6 @@ rule "Send DropDown Datas"
      System.out.println("List of Load category Json: "+loadCategoryLists.toString());
      rules.getEventBus().publish("cmds",loadCategoryLists);
      
- 	RulesUtils.footer(drools.getRule().getName());
+ 	rules.footer();
   
 end

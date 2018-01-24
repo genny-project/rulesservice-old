@@ -8,7 +8,7 @@ import life.genny.qwanda.entity.BaseEntity;
 rule "Send Project To Frontend"
     no-loop true
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY")  && (!isState("PROJECT_SENT")) )
+        rules: QRules( (isState("LAYOUT_CHANGE_READY") || isState("ASK_FIRST_PROFILE") )  && (!isState("PROJECT_SENT")) )
      then
      	rules.header();
      	
