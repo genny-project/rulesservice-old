@@ -16,12 +16,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.deser.DateDeserializer;
-import org.drools.core.WorkingMemory;
-import org.drools.core.base.DefaultKnowledgeHelper;
-import org.drools.core.base.SequentialKnowledgeHelper;
 import org.drools.core.spi.KnowledgeHelper;
-import org.kie.api.runtime.process.ProcessInstance;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,11 +29,8 @@ import com.google.gson.JsonSerializationContext;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Ask;
-import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -50,6 +42,7 @@ import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -548,7 +541,25 @@ public class QRules {
         RulesUtils.println(layoutCode+" SENT TO FRONTEND");
         
 	}
+	
+	public void sendParentLinks(final String targetCode, final String linkCode)
+	{
+		 JsonArray latestLinks;
+		try {
+			latestLinks = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode, getToken()));
+		       //Creating a data msg
+			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE",latestLinks);
+	        publishData(msg);
+	         
+	         // Send to all 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+  
 
+	}
 	/**
 	 * @return the state
 	 */
@@ -605,7 +616,12 @@ public class QRules {
 		msg.setToken(getToken());
 	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
-	
+
+	public void publishData(final QDataMessage msg)
+	{
+		msg.setToken(getToken());
+	    publish("data", RulesUtils.toJsonObject(msg));
+	}
 	public void publishData(final QDataAnswerMessage msg)
 	{
 		msg.setToken(getToken());
