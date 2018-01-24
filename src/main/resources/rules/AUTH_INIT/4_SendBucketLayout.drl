@@ -9,22 +9,20 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 
 import io.vertx.core.json.JsonObject;
 
-
-
 rule "Send Bucket Layout To Frontend"
     no-loop true
     when
-        rules: QRules( isState("USER_SENT")) 
+        rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY") && (!isState("ASK_FIRST_PROFILE")) ) 
      then
      	RulesUtils.header(drools.getRule().getName());
      	
      	String layout = RulesUtils.getLayout("card.json");
-     	        /* sending cmd BUCKET_VIEW */
+     	
+     	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
         bucketViewJson.put("root", "GRP_DASHBOARD");
-        bucketViewJson.put("token",rules.getToken());
-  		
+        bucketViewJson.put("token", rules.getToken());
         rules.publish("cmds",bucketViewJson);
            
         RulesUtils.println("BUCKET  LAYOUT (CMD VIEW) SENT TO FRONTEND");

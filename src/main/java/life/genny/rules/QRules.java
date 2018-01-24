@@ -2,9 +2,11 @@ package life.genny.rules;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,17 +16,29 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.deser.DateDeserializer;
 import org.drools.core.WorkingMemory;
 import org.drools.core.base.DefaultKnowledgeHelper;
 import org.drools.core.base.SequentialKnowledgeHelper;
 import org.drools.core.spi.KnowledgeHelper;
 import org.kie.api.runtime.process.ProcessInstance;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -32,7 +46,9 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
@@ -43,6 +59,35 @@ public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	final static Gson gson = new GsonBuilder()
+	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
+	          @Override
+	          public LocalDate deserialize(final JsonElement json, final Type type,
+	              final JsonDeserializationContext jsonDeserializationContext)
+	              throws JsonParseException {
+	            return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
+	          }
+
+	          public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
+	              final JsonSerializationContext context) {
+	            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
+	          }
+	        }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+		          @Override
+		          public LocalDateTime deserialize(final JsonElement json, final Type type,
+		              final JsonDeserializationContext jsonDeserializationContext)
+		              throws JsonParseException {
+		            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		          }
+
+		          public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+		              final JsonSerializationContext context) {
+		            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
+		          }
+		        }).create();
+
+
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
@@ -226,7 +271,9 @@ public class QRules {
 			String code = "PER_" + uname.toUpperCase();
 
 			be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl,  getDecodedTokenMap(), getToken(), code);
-			set("USER", be); // WATCH THIS!!!
+			if (be != null) {
+				set("USER", be); // WATCH THIS!!!
+			}
 		} else {
 			be = getAsBaseEntity("USER");
 		}
@@ -482,8 +529,9 @@ public class QRules {
 
 		try {
 			be = QwandaUtils.createUser(qwandaServiceUrl,getToken(), username, firstname, lastname, email, realm,name, keycloakId);
-			set("USER",be);
-			RulesUtils.println("New User Created "+be);
+			be = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
+					getToken(), be.getCode());
+			println("New User Created "+be);
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -534,7 +582,15 @@ public class QRules {
 		if (channel.startsWith("debug")) {
 			channel = channel.substring("debug".length());
 		}
-		
+		if (payload instanceof JsonObject) {
+			if (payload.toString().contains("year")) {
+				println("BAD JSON");
+			} else {
+				if (payload.toString().contains("year")) {
+					println("BAD JSON");
+				} 
+			}
+		}
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -559,6 +615,12 @@ public class QRules {
 	public void publishData(final Answer answer)
 	{
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setToken(getToken());  
+	    publish("data", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishData(final QDataAskMessage msg)
+	{
 		msg.setToken(getToken());  
 	    publish("data", RulesUtils.toJsonObject(msg));
 	}
@@ -613,20 +675,72 @@ public class QRules {
 		return links;
 	}
 
-
 	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode)
 	{
-	    JsonObject obj;
+		return askQuestions(sourceCode, targetCode, questionCode, false);
+	}
+
+	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode, final boolean autoPushSelections)
+	{
+	    JsonObject questionJson = null;
+	    
 		try {
-			obj = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
-			  publish("cmds", obj);
-		        RulesUtils.println(questionCode+" SENT TO FRONTEND");
+			if (autoPushSelections) {
+				  String json = QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken());
+					
+				  QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+				  
+					  publishData(msg);
+					  
+					  // Now auto push any selection data
+//					  for (Ask ask : msg.getItems()) {
+//						  if (ask.getAttributeCode().startsWith("LNK_")) {
+//							  
+//							 // sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 10);
+//						  }
+//					  }
+					  
+					  QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);		
+					  publishCmd(cmdFormView);
+			} else {
+				  questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+sourceCode+"/asks2/"+questionCode+"/"+targetCode, getToken()));
+					 /* QDataAskMessage */
+					  publish("data", questionJson);
+					  
+					  // Now auto push any selection data
+					  
+					  
+					  QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+					  JsonObject json = JsonObject.mapFrom(cmdFormView);
+					  json.put("root", questionCode);
+					  json.put("token", getToken());
+					  publish("cmds", json);			
+			}
+			  
+		      RulesUtils.println(questionCode+" SENT TO FRONTEND");
+		      
+		      
 			  return true;
 		} catch (IOException e) {
 			return false;
 		}
-		
+	}
+	
+	public boolean sendSelections(final String selectionRootCode, final String linkCode, final Integer maxItems)
+	{
 	   
+	     JsonObject selectionLists;
+		try {
+			selectionLists = new JsonObject( QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/baseentitys/"+selectionRootCode+"/linkcodes/"+linkCode+"?pageStart=0&pageSize="+maxItems, getToken()));
+			   selectionLists.put("token", getToken());
+			     publish("cmds",selectionLists);
+			     return true;
+		} catch (IOException e) {
+			log.error("Unable to fetch selections");
+			return false;
+		}
+	  
+
 	}
 	
 	public void header()
@@ -683,5 +797,201 @@ public class QRules {
 		return null;
 	}
 
+	public void debug()
+	{
+		println("");
+	}
+	
+	public void processAddressAnswers(QDataAnswerMessage m)
+	{
+	
+	    	try {
+				
+				Answer[] newAnswers = new Answer[50];
+				Answer[] answers = m.getItems();
+		        
+		        String qwandaServiceUrl = getQwandaServiceUrl();
+	            String userCode =  getUser().getCode();
+		        
+		        for (Answer answer : answers) {
+		        
+		            String targetCode = answer.getTargetCode();
+		            answer.setSourceCode(answer.getTargetCode());
+		            String attributeCode = answer.getAttributeCode();
+		            String value = answer.getValue();
+		            
+		            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+
+		            /* if this answer is actually an address another rule will be triggered */
+		            if(attributeCode.contains("ADDRESS_FULL")) {
+		            	  JsonObject addressDataJson = new JsonObject(value);
+			            	Map<String, String> availableKeys = new HashMap<String, String>();
+			    			availableKeys.put("full_address", "FULL");
+			    			availableKeys.put("street_address", "ADDRESS1");
+			    			availableKeys.put("suburb", "SUBURB");
+			    			availableKeys.put("state", "STATE");
+			    			availableKeys.put("postal_code", "POSTCODE");
+			    			availableKeys.put("country", "COUNTRY");
+			    					    					    			
+			    			int i = 0;
+			    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+			    			{	
+			    				
+			    				String key = entry.getKey();
+			    				String valueEntry = entry.getValue();
+			    						    				
+			    				if(addressDataJson.containsKey(key)) {
+			    					
+			    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+			    					answer.setAttributeCode(newAttributeCode);
+			    					answer.setValue(addressDataJson.getString(key));
+			    					String jsonAnswer = gson.toJson(answer);
+			    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    					newAnswers[i] = answerObj;
+			    					i++;
+			    				}
+			    				
+			    			}
+			    		
+			    					    	        
+			    	        /* Store latitude */
+			    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+			    			answer.setAttributeCode(newAttCode);
+			    			Double latitude = addressDataJson.getDouble("latitude");
+			    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+			    			
+			    			if(latitude != null) {
+				    			answer.setValue(Double.toString(latitude));
+				    			String jsonAnswer = gson.toJson(answer);
+				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+				    			newAnswers[i] = answerObj;
+				    			i++;
+				    			System.out.println("The answer object for latitude attribute added to Answer array " );
+			    			}
+			    			
+			    			/* Store longitude */
+			    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+			    			answer.setAttributeCode(newAttCode);
+			    			Double longitude = addressDataJson.getDouble("longitude");
+			    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+			    			
+			    			if(longitude != null) {
+				    			answer.setValue(Double.toString(longitude));
+				    			String jsonAnswer = gson.toJson(answer);
+				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			newAnswers[i] = answerObj;
+				    			i++;
+			    			}
+			    			
+			    			/* set new answers */
+			    			m.setItems(newAnswers);
+			    			String json = gson.toJson(m);
+			    			System.out.println("updated answer json string ::"+json);
+			    			
+			    			/* send new answers to api */ 
+			    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, getToken());
+		            }
+		         }
+			}
+			catch (Exception e) {
+		       e.printStackTrace();
+	}
+	}
+
+	public void processAnswer(QDataAnswerMessage m)
+	{
+  
+	      String qwandaServiceUrl = getQwandaServiceUrl();
+	        String userCode =  getUser().getCode();
+
+	
+	        /* extract answers */
+	        Answer[] answers = m.getItems();
+	        for (Answer answer : answers) {
+	        
+	            Long askId = answer.getAskId();
+	            String sourceCode = answer.getSourceCode();
+	            String targetCode = answer.getTargetCode();
+	            answer.setSourceCode(answer.getTargetCode());
+	            String attributeCode = answer.getAttributeCode();
+	            String value = answer.getValue();
+	            Boolean inferred = answer.getInferred();
+	            Double weight = answer.getWeight();
+	            Boolean expired = answer.getExpired();
+	            Boolean refused = answer.getRefused();
+	            System.out.println("Printing Answer data recieved   ::");
+	            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+	            System.out.println("------------------------------------------------------------------------");
+	            
+	            /* if this answer is actually an address another rule will be triggered */
+	            if(!attributeCode.contains("ADDRESS_FULL")) {
+	                  	/* convert answer to json */
+		            String jsonAnswer = gson.toJson(answer);
+		            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
+		
+		            /* convert Answer Json to Answer obj */
+		            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		            System.out.println("Answer Object   ::   "+answerObj);
+		            System.out.println("------------------------------------------------------------------------");
+		            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
+		
+		            /* post answers to qwanda-utils */
+		            try {
+						QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, getToken());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	            }
+	} 
+	}
+	
+	public void processAnswer2(QDataAnswerMessage m)
+	{
+  
+  
+        /* extract answers */
+    	List<Answer> answers = new ArrayList<Answer>();
+
+        Answer[] answers2 = m.getItems();
+        for (Answer answer : answers2) {
+        		if (answer != null) {
+            Long askId = answer.getAskId();
+            String sourceCode = answer.getSourceCode();
+            String targetCode = answer.getTargetCode();
+            answer.setSourceCode(answer.getTargetCode());
+            String attributeCode = answer.getAttributeCode();
+            String value = answer.getValue();
+            Boolean inferred = answer.getInferred();
+            Double weight = answer.getWeight();
+            Boolean expired = answer.getExpired();
+            Boolean refused = answer.getRefused();
+            System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+            System.out.println("------------------------------------------------------------------------");
+            
+            /* if this answer is actually an address another rule will be triggered */
+            if(!attributeCode.contains("ADDRESS_FULL")) {
+            		answers.add(answer);
+              }
+        		} else {
+        			println("Answer was null ");
+        		}
+         }    
+        
+	
+	      Answer items[] = new Answer[answers.size()];
+	      items = answers.toArray(items);
+		QDataAnswerMessage msg = new QDataAnswerMessage(items);
+	
+	      
+        String jsonAnswer = gson.toJson(msg);
+		try {
+			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer,token);
+		} catch (IOException e) {
+			log.error("Socket error trying to post answer");
+		}
+
+	}
 	
 }
