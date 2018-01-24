@@ -183,8 +183,8 @@ rule "Accept Job"
         
 			String[] recipientArrForDriver = {userCode};
 		
-			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
-        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
+			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS");
+        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL");
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview"); 
