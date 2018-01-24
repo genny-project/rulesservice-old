@@ -788,9 +788,14 @@ public class QRules {
 	 
 	}
 	
+	/*
+	 * @param BaseEntity
+	 * @param token
+	 * @return status
+	 */
 	public String updateBaseEntity(BaseEntity be) {
 		try {
-			return QwandaUtils.apiPutEntity(getQwandaServiceUrl()+"/qwanda/baseentitys", be.toString(), getToken());
+			return QwandaUtils.apiPutEntity(getQwandaServiceUrl()+"/qwanda/baseentitys", RulesUtils.toJson(be), getToken());
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
