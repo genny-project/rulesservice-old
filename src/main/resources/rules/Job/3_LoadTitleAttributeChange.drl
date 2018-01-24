@@ -18,6 +18,14 @@ rule "Load Title Attribute Change"
     	    rules.header();
 	    
          Answer newAnswer = $m.getAnswer();
+         BaseEntity load = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+         System.out.println("The laod value is "+load.toString());
+         load.setName(newAnswer.getValue());
+         System.out.println("The updated laod name before PUT "+load.getName());
+         /* Update Load BaseEntity   */
+         rules.updateBaseEntity(load);
+         RulesUtils.println(" Load Baseentity Upodated  " );
+         System.out.println("The updated laod name after PUT is "+load.getName());
          RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
          RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
          RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
