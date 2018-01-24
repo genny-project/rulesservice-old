@@ -20,7 +20,7 @@ rule "Listen Link Change"
  
  		Link link = $m.getLink();
  		 		
- 		rules.sendParentLinks(link.targetCode(),link.getAttributeCode());
+ 		rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());
  		
  	   
    	    rules.footer();
