@@ -14,18 +14,22 @@ rule "TV_SELECT Event"
      rules.header();
        	
         /* TODO: refactor this. */
-       	String viewType = "LIST_VIEW";
-       	if($m.getData().getValue().equals("GRP_DASHBOARD")) {
-       		viewType = "BUCKET_VIEW";
-       	}
-       	/* sending cmd LIST_VIEW */
-	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW",viewType);
-	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-	     bucketViewJson.put("root", $m.getData().getValue());
-	     bucketViewJson.put("token", rules.getToken());
-	     rules.publish("cmds",bucketViewJson);
-      
-     
+       	String grpCode = $m.getData().getValue();
+        if(!grpCode.equals("GRP_MESSAGES")) {
+        		
+	        	String viewType = "LIST_VIEW";
+	        if(grpCode.equals("GRP_DASHBOARD")) {
+	           viewType = "BUCKET_VIEW";
+	         }
+	           	
+	           	/* sending cmd LIST_VIEW */
+	    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW",viewType);
+	    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+	    	     bucketViewJson.put("root", grpCode);
+	    	     bucketViewJson.put("token", rules.getToken());
+	    	     rules.publish("cmds",bucketViewJson);
+        }
+        
      rules.footer();
 end
 
