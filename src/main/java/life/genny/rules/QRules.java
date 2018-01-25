@@ -379,15 +379,15 @@ public class QRules {
 	        	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+baseEntityCode+"/linkcodes/"+linkCode, getToken()));
 	
 	         //Creating a data msg
-	         JsonObject newLink = new JsonObject();
-	         newLink.put("msg_type", "DATA_MSG");
-	         newLink.put("data_type", "LINK_CHANGE");
-	         newLink.put("items", updatedLink);
-	         newLink.put("token", getToken() );
-	         System.out.println("-----------------------------------");
-	         System.out.println("Updated Link : "+newLink.toString());
-	         System.out.println("-----------------------------------");
-	         getEventBus().publish("cmds", newLink);
+//	         JsonObject newLink = new JsonObject();
+//	         newLink.put("msg_type", "DATA_MSG");
+//	         newLink.put("data_type", "LINK_CHANGE");
+//	         newLink.put("items", updatedLink);
+//	         newLink.put("token", getToken() );
+//	         System.out.println("-----------------------------------");
+//	         System.out.println("Updated Link : "+newLink.toString());
+//	         System.out.println("-----------------------------------");
+//	         getEventBus().publish("cmds", newLink);
         	 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -550,7 +550,7 @@ public class QRules {
 		       //Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE",latestLinks);
 	        publishData(msg);
-	         
+	        publish("cmds",msg);
 	         // Send to all 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
