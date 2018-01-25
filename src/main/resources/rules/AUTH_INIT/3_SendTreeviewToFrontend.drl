@@ -10,7 +10,8 @@ rule "Send Treeview To Frontend"
      then
      	rules.header();
      	
-      	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE",0,10,true);
+      	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 10, true); /* Send tree view */
+      	rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); /* Send messages */
    	    rules.println("Root Group is "+"GRP_ROOT");
    	    
    	    rules.setState("SEND_TREEVIEW");

@@ -145,7 +145,7 @@ public class RulesUtils {
 			host = "https://raw.githubusercontent.com/genny-project/layouts/master";
 		}
 		else {
-			host = "https://api.github.com/repos/genny-project/layouts/contents/"; // TODO: this has a rate limit
+			host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
 		}
 		
 		return String.format("%s/%s", host, path);

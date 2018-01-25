@@ -405,7 +405,13 @@ public class QRules {
 			publish("cmds",obj);
 	}
 
+	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 
+		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+		JsonObject obj = new  JsonObject(json);
+		obj.put("token", getToken());
+		publish("cmds",obj);
+	}
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
@@ -534,12 +540,19 @@ public class QRules {
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 		
 		String layout = RulesUtils.getLayout(layoutPath);
-     	
   		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
         publishCmd(layoutCmd);
-        
         RulesUtils.println(layoutCode+" SENT TO FRONTEND");
-        
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
+		
+		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
+	    JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);     
+	    String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+	    cmdJobSublayoutJson.put("items", sublayoutString);
+	    cmdJobSublayoutJson.put("token", getToken());
+	    this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 	
 	public void sendParentLinks(final String targetCode, final String linkCode)
