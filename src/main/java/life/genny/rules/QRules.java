@@ -43,6 +43,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -538,7 +539,7 @@ public class QRules {
 			msg.setToken(getToken());
 			final JsonObject json = RulesUtils.toJsonObject(msg);
 	        publishData(json);
-	        publish("cmds",json);
+	     //   publish("cmds",json);
 	         // Send to all 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -821,6 +822,11 @@ public class QRules {
 	public void debug()
 	{
 		println("");
+	}
+	
+	public void debug(QEventLinkChangeMessage m)
+	{
+		println(m);
 	}
 	
 	public void processAddressAnswers(QDataAnswerMessage m)
