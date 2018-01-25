@@ -53,33 +53,6 @@ public class QRules {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 	
-	final static Gson gson = new GsonBuilder()
-	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
-	          @Override
-	          public LocalDate deserialize(final JsonElement json, final Type type,
-	              final JsonDeserializationContext jsonDeserializationContext)
-	              throws JsonParseException {
-	            return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
-	          }
-
-	          public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
-	              final JsonSerializationContext context) {
-	            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
-	          }
-	        }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-		          @Override
-		          public LocalDateTime deserialize(final JsonElement json, final Type type,
-		              final JsonDeserializationContext jsonDeserializationContext)
-		              throws JsonParseException {
-		            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		          }
-
-		          public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-		              final JsonSerializationContext context) {
-		            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-		          }
-		        }).create();
-
 
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
@@ -549,8 +522,10 @@ public class QRules {
 			latestLinks = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode, getToken()));
 		       //Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE",latestLinks);
-	        publishData(msg);
-	        publish("cmds",msg);
+			msg.setToken(getToken());
+			final JsonObject json = RulesUtils.toJsonObject(msg);
+	        publishData(json);
+	        publish("cmds",json);
 	         // Send to all 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -617,6 +592,18 @@ public class QRules {
 	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 
+	public void publishData(final JsonObject msg)
+	{
+		msg.put("token",getToken());
+	    publish("data", msg);
+	}
+	
+	public void publishCmd(final JsonObject msg)
+	{
+		msg.put("token",getToken());
+	    publish("cmds", msg);
+	}
+	
 	public void publishData(final QDataMessage msg)
 	{
 		msg.setToken(getToken());
@@ -866,8 +853,8 @@ public class QRules {
 			    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
 			    					answer.setAttributeCode(newAttributeCode);
 			    					answer.setValue(addressDataJson.getString(key));
-			    					String jsonAnswer = gson.toJson(answer);
-			    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    					String jsonAnswer = RulesUtils.toJson(answer);
+			    					Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 			    					newAnswers[i] = answerObj;
 			    					i++;
 			    				}
@@ -883,8 +870,8 @@ public class QRules {
 			    			
 			    			if(latitude != null) {
 				    			answer.setValue(Double.toString(latitude));
-				    			String jsonAnswer = gson.toJson(answer);
-				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			String jsonAnswer = RulesUtils.toJson(answer);
+				    			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 				    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
 				    			newAnswers[i] = answerObj;
 				    			i++;
@@ -899,15 +886,15 @@ public class QRules {
 			    			
 			    			if(longitude != null) {
 				    			answer.setValue(Double.toString(longitude));
-				    			String jsonAnswer = gson.toJson(answer);
-				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			String jsonAnswer = RulesUtils.toJson(answer);
+				    			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 				    			newAnswers[i] = answerObj;
 				    			i++;
 			    			}
 			    			
 			    			/* set new answers */
 			    			m.setItems(newAnswers);
-			    			String json = gson.toJson(m);
+			    			String json = RulesUtils.toJson(m);
 			    			System.out.println("updated answer json string ::"+json);
 			    			
 			    			/* send new answers to api */ 
@@ -923,10 +910,7 @@ public class QRules {
 	public void processAnswer(QDataAnswerMessage m)
 	{
   
-	      String qwandaServiceUrl = getQwandaServiceUrl();
-	        String userCode =  getUser().getCode();
-
-	
+		
 	        /* extract answers */
 	        Answer[] answers = m.getItems();
 	        for (Answer answer : answers) {
@@ -948,11 +932,11 @@ public class QRules {
 	            /* if this answer is actually an address another rule will be triggered */
 	            if(!attributeCode.contains("ADDRESS_FULL")) {
 	                  	/* convert answer to json */
-		            String jsonAnswer = gson.toJson(answer);
+		            String jsonAnswer = RulesUtils.toJson(answer);
 		            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 		
 		            /* convert Answer Json to Answer obj */
-		            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		            Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 		            System.out.println("Answer Object   ::   "+answerObj);
 		            System.out.println("------------------------------------------------------------------------");
 		            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
@@ -1006,7 +990,7 @@ public class QRules {
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 	
 	      
-        String jsonAnswer = gson.toJson(msg);
+        String jsonAnswer = RulesUtils.toJson(msg);
 		try {
 			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer,token);
 		} catch (IOException e) {
