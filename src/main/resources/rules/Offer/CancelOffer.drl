@@ -129,8 +129,10 @@ rule "Cancel Offer"
                 offerCount = 0;
             }else {                 
                 offerCount = Integer.parseInt(offerCountString);
-                offerCount = offerCount - 1;
-                System.out.println("Offer Count is   ::   " + offerCount);
+                if(offerCount >= 0){
+                    offerCount = offerCount - 1;
+                    System.out.println("Offer Count is   ::   " + offerCount);
+                }
             }
 
             Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
