@@ -536,8 +536,10 @@ public class QRules {
 			latestLinks = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode, getToken()));
 		       //Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE",latestLinks);
+			
 			msg.setToken(getToken());
 			final JsonObject json = RulesUtils.toJsonObject(msg);
+			json.put("items", latestLinks);
 	        publishData(json);
 	     //   publish("cmds",json);
 	         // Send to all 
