@@ -490,7 +490,7 @@ public class RulesUtils {
 				println("Group New Items Debug");
 			}
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode, stakeholderCode);
-			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
