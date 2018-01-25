@@ -674,7 +674,7 @@ public class QRules {
  			if (linkArray.length> 0) {
 			ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray)); 
 			Link first = arrayList.get(0);
-			RulesUtils.println("The Company code is   ::  "+first.getSourceCode());
+			RulesUtils.println("The parent code is   ::  "+first.getSourceCode());
 			return getBaseEntityByCode(first.getSourceCode());
  			}
 		}catch(Exception e) {
