@@ -8,6 +8,7 @@
 
  rule "Send GPS Regions Data"
    no-loop true
+   salience 5
    agenda-group "SendLayoutsAndData"
      when
          rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SENT_GPS_REGION")))
