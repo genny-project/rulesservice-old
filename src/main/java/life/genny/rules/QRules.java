@@ -301,8 +301,9 @@ public class QRules {
 	}
 	
 	public Boolean isNewUserProfileCompleted() {
-		   return QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());	
-		}
+		   Boolean status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());	
+		return status;
+	}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
