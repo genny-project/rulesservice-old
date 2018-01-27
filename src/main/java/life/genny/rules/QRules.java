@@ -1059,4 +1059,10 @@ public class QRules {
 
 	}
 
+	public void startWorkflow(final String id)
+	{
+		println("Starting process "+id);
+		drools.getKieRuntime().startProcess(id);
+	}
+	
 }

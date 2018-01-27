@@ -11,6 +11,8 @@ rule "Pre Init"
         rules.setDrools(drools);
         rules.header();
         rules.setState("STARTED");
+        
+        rules.startWorkflow("com.sample.bpmn.hello");
         rules.footer();
       		      
 end
