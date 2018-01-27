@@ -38,7 +38,7 @@ rule "Send Sub Layouts To Frontend"
 					
 					if(url != null) {
 						
-						/*  grab sublayout from github */
+						/*    grab sublayout from github   */
 
 						rules.println(url);
 						
@@ -47,7 +47,7 @@ rule "Send Sub Layouts To Frontend"
 							
 							try {
 								
-								/* send sublayout to FE  */
+								/*    send sublayout to FE    */
 								JsonObject subLayoutObj = new JsonObject();
 						        subLayoutObj.put("msg_type", "DATA_MSG");
 						        subLayoutObj.put("data_type", "SUB_LAYOUT");
