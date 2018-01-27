@@ -5,19 +5,19 @@ import life.genny.rules.QRules;
 
 rule "Ask First User Profile"
     no-loop true
+	salience 4
+    agenda-group "NewUser"
     when
-        rules: QRules(  isState("NEW_USER") && (!isState("ASK_FIRST_PROFILE")) ) 
+        rules: QRules( isState("NEW_USER") && isNewUserProfileCompleted() == false ) 
      then
      	rules.header();
-     	rules.debug();
-   
-    		rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update");
+     	rules.debug();   		
    	
    		rules.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
    	
   		rules.askQuestions(rules.getUser().getCode(),rules.getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
   		
-        rules.setState("ASK_FIRST_PROFILE");
+	    rules.clearState("NEW_USER"); 
  		
 	    rules.footer();     		      
 end
