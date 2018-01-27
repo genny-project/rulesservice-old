@@ -12,8 +12,7 @@ rule "Main Init"
         rules: QRules(isState("STARTED") &&  isUserPresent() == false && (!isState("USER_CHECKED"))) 
      then
      
-     	rules.setDrools(drools);
-         
+          
      	rules.header();
      	    	
         rules.getUser();

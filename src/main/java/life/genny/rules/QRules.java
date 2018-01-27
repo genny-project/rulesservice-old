@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
+import org.kie.api.runtime.KieSession;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -72,6 +73,8 @@ public class QRules {
 	public void setDrools(KnowledgeHelper drools) {
 		this.drools = drools;
 	}
+	
+	
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
