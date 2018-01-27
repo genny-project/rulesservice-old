@@ -3,12 +3,11 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 rule "Pre Init"
-    salience 100
+    salience 60000
 	no-loop true
     when
          rules: QRules(!isState("STARTED")) 
-     then
-      
+     then    
         rules.setDrools(drools);
         rules.header();
         rules.setState("STARTED");

@@ -81,7 +81,7 @@ public class RulesLoader {
 		} else {
 			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
 			try {
-				if (!fileName.startsWith("XX")) {   // ignore files that start with XX
+				if ((!fileName.startsWith("XX")) && (fileName.endsWith(".drl"))) {   // ignore files that start with XX
 				final String ruleText = buf.toString();
 				
 				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
@@ -171,6 +171,7 @@ public class RulesLoader {
 				kieSession.insert(fact);
 			}
 			kieSession.insert(keyValueMap);
+			kieSession.insert(kieSession); // TODO this feels wring
 
 			kieSession.fireAllRules();
 
