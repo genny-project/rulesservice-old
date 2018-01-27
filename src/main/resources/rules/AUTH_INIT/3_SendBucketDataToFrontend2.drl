@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 rule "Send Ch40 BucketData To Frontend"
     no-loop true
+    salience 7
     agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_BUCKET_DATA"))) 
