@@ -24,6 +24,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
@@ -36,6 +37,10 @@ public class RulesUtils {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	static public AsyncMap<String, BaseEntity> baseEntityMap;
+
+
 	
 	final static Gson gson2 = new GsonBuilder()
 	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
