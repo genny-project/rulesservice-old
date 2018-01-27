@@ -10,7 +10,7 @@ rule "User Exists"
     no-loop true
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules(( isUserPresent() == true)  && isState("USER_CHECKED")) 
+        rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) ) 
      then
         rules.header();
      	
@@ -18,8 +18,7 @@ rule "User Exists"
         BaseEntity user = rules.getUser();
         rules.println("user exists");
         rules.println("User "+user);
-        
-  		rules.clearState("USER_CHECKED");
+
   		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
 

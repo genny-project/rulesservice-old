@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 rule "Send Bucket Layout To Frontend"
     no-loop true
+    agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY") && (!isState("ASK_FIRST_PROFILE")) ) 
      then

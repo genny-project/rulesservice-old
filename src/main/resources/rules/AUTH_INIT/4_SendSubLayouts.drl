@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 
 rule "Send Sub Layouts To Frontend"
     no-loop true
+    agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("USER_SENT")) 
      then

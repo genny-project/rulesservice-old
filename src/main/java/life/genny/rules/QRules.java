@@ -257,6 +257,10 @@ public class QRules {
 			return true;
 		}
 	}
+	
+	public Boolean isNewUserProfileCompleted() {
+		   return QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());	
+		}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
@@ -765,6 +769,9 @@ public class QRules {
 	public void header()
 	{
 		try {
+			if(drools == null) {
+				println("Drools not set");
+			}
 			RulesUtils.header(drools.getRule().getName() + " - " +  ((drools.getRule().getAgendaGroup() != null)?drools.getRule().getAgendaGroup():""));
 		} catch (NullPointerException e) {
 			println("Error in rules: ","ANSI_RED");

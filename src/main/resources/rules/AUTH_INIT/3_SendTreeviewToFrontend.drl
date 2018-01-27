@@ -5,6 +5,7 @@ import life.genny.rules.QRules;
 
 rule "Send Treeview To Frontend"
     no-loop true
+    agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_TREEVIEW"))) 
      then

@@ -10,12 +10,8 @@ rule "Main Init"
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
         rules: QRules(isState("STARTED") &&  isUserPresent() == false && (!isState("USER_CHECKED"))) 
-     then
-     
-     	rules.setDrools(drools);
-         
-     	rules.header();
-     	    	
+     then    
+     	rules.header();   	    	
         rules.getUser();
         rules.setState("USER_CHECKED");
 		
