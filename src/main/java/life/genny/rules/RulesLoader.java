@@ -68,6 +68,7 @@ public class RulesLoader {
 	private static List<Tuple2<String, String>> processFile(final Vertx vertx, String inputFileStr) {
 		File file = new File(inputFileStr);
 		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*","$1");
+		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)","$1");
 		List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 
 		if (!file.isFile()) {
@@ -81,7 +82,7 @@ public class RulesLoader {
 		} else {
 			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
 			try {
-				if ((!fileName.startsWith("XX")) && (fileName.endsWith(".drl"))) {   // ignore files that start with XX
+				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) {   // ignore files that start with XX
 				final String ruleText = buf.toString();
 				
 				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
