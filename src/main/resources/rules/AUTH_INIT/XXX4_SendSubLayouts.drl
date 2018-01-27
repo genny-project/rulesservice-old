@@ -38,7 +38,7 @@ rule "Send Sub Layouts To Frontend"
 						
 						/*  grab sublayout from github */
 
-						RulesUtils.println(url);
+						rules.println(url);
 						
 						String subLayoutString = QwandaUtils.apiGet(url, null);
 						if(subLayoutString != null) {

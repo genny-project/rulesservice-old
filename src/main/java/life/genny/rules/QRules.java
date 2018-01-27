@@ -43,6 +43,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
+import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -53,33 +54,6 @@ public class QRules {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 	
-	final static Gson gson = new GsonBuilder()
-	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
-	          @Override
-	          public LocalDate deserialize(final JsonElement json, final Type type,
-	              final JsonDeserializationContext jsonDeserializationContext)
-	              throws JsonParseException {
-	            return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
-	          }
-
-	          public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
-	              final JsonSerializationContext context) {
-	            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
-	          }
-	        }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-		          @Override
-		          public LocalDateTime deserialize(final JsonElement json, final Type type,
-		              final JsonDeserializationContext jsonDeserializationContext)
-		              throws JsonParseException {
-		            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		          }
-
-		          public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-		              final JsonSerializationContext context) {
-		            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-		          }
-		        }).create();
-
 
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
@@ -379,15 +353,15 @@ public class QRules {
 	        	 JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/entityentitys/"+baseEntityCode+"/linkcodes/"+linkCode, getToken()));
 	
 	         //Creating a data msg
-	         JsonObject newLink = new JsonObject();
-	         newLink.put("msg_type", "DATA_MSG");
-	         newLink.put("data_type", "LINK_CHANGE");
-	         newLink.put("items", updatedLink);
-	         newLink.put("token", getToken() );
-	         System.out.println("-----------------------------------");
-	         System.out.println("Updated Link : "+newLink.toString());
-	         System.out.println("-----------------------------------");
-	         getEventBus().publish("cmds", newLink);
+//	         JsonObject newLink = new JsonObject();
+//	         newLink.put("msg_type", "DATA_MSG");
+//	         newLink.put("data_type", "LINK_CHANGE");
+//	         newLink.put("items", updatedLink);
+//	         newLink.put("token", getToken() );
+//	         System.out.println("-----------------------------------");
+//	         System.out.println("Updated Link : "+newLink.toString());
+//	         System.out.println("-----------------------------------");
+//	         getEventBus().publish("cmds", newLink);
         	 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -405,7 +379,13 @@ public class QRules {
 			publish("cmds",obj);
 	}
 
+	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 
+		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode);
+		JsonObject obj = new  JsonObject(json);
+		obj.put("token", getToken());
+		publish("cmds",obj);
+	}
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
@@ -534,12 +514,19 @@ public class QRules {
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 		
 		String layout = RulesUtils.getLayout(layoutPath);
-     	
   		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
         publishCmd(layoutCmd);
-        
         RulesUtils.println(layoutCode+" SENT TO FRONTEND");
-        
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
+		
+		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
+	    JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);     
+	    String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+	    cmdJobSublayoutJson.put("items", sublayoutString);
+	    cmdJobSublayoutJson.put("token", getToken());
+	    this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 	
 	public void sendParentLinks(final String targetCode, final String linkCode)
@@ -549,8 +536,12 @@ public class QRules {
 			latestLinks = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl()+"/qwanda/entityentitys/"+targetCode+"/linkcodes/"+linkCode, getToken()));
 		       //Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE",latestLinks);
-	        publishData(msg);
-	         
+			
+			msg.setToken(getToken());
+			final JsonObject json = RulesUtils.toJsonObject(msg);
+			json.put("items", latestLinks);
+	        publishData(json);
+	     //   publish("cmds",json);
 	         // Send to all 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -617,6 +608,18 @@ public class QRules {
 	    publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 
+	public void publishData(final JsonObject msg)
+	{
+		msg.put("token",getToken());
+	    publish("data", msg);
+	}
+	
+	public void publishCmd(final JsonObject msg)
+	{
+		msg.put("token",getToken());
+	    publish("cmds", msg);
+	}
+	
 	public void publishData(final QDataMessage msg)
 	{
 		msg.setToken(getToken());
@@ -823,6 +826,11 @@ public class QRules {
 		println("");
 	}
 	
+	public void debug(QEventLinkChangeMessage m)
+	{
+		println(m);
+	}
+	
 	public void processAddressAnswers(QDataAnswerMessage m)
 	{
 	
@@ -866,8 +874,8 @@ public class QRules {
 			    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
 			    					answer.setAttributeCode(newAttributeCode);
 			    					answer.setValue(addressDataJson.getString(key));
-			    					String jsonAnswer = gson.toJson(answer);
-			    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+			    					String jsonAnswer = RulesUtils.toJson(answer);
+			    					Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 			    					newAnswers[i] = answerObj;
 			    					i++;
 			    				}
@@ -883,8 +891,8 @@ public class QRules {
 			    			
 			    			if(latitude != null) {
 				    			answer.setValue(Double.toString(latitude));
-				    			String jsonAnswer = gson.toJson(answer);
-				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			String jsonAnswer = RulesUtils.toJson(answer);
+				    			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 				    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
 				    			newAnswers[i] = answerObj;
 				    			i++;
@@ -899,15 +907,15 @@ public class QRules {
 			    			
 			    			if(longitude != null) {
 				    			answer.setValue(Double.toString(longitude));
-				    			String jsonAnswer = gson.toJson(answer);
-				    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+				    			String jsonAnswer = RulesUtils.toJson(answer);
+				    			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 				    			newAnswers[i] = answerObj;
 				    			i++;
 			    			}
 			    			
 			    			/* set new answers */
 			    			m.setItems(newAnswers);
-			    			String json = gson.toJson(m);
+			    			String json = RulesUtils.toJson(m);
 			    			System.out.println("updated answer json string ::"+json);
 			    			
 			    			/* send new answers to api */ 
@@ -923,10 +931,7 @@ public class QRules {
 	public void processAnswer(QDataAnswerMessage m)
 	{
   
-	      String qwandaServiceUrl = getQwandaServiceUrl();
-	        String userCode =  getUser().getCode();
-
-	
+		
 	        /* extract answers */
 	        Answer[] answers = m.getItems();
 	        for (Answer answer : answers) {
@@ -948,11 +953,11 @@ public class QRules {
 	            /* if this answer is actually an address another rule will be triggered */
 	            if(!attributeCode.contains("ADDRESS_FULL")) {
 	                  	/* convert answer to json */
-		            String jsonAnswer = gson.toJson(answer);
+		            String jsonAnswer = RulesUtils.toJson(answer);
 		            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 		
 		            /* convert Answer Json to Answer obj */
-		            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+		            Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 		            System.out.println("Answer Object   ::   "+answerObj);
 		            System.out.println("------------------------------------------------------------------------");
 		            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
@@ -1006,7 +1011,7 @@ public class QRules {
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 	
 	      
-        String jsonAnswer = gson.toJson(msg);
+        String jsonAnswer = RulesUtils.toJson(msg);
 		try {
 			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer,token);
 		} catch (IOException e) {
