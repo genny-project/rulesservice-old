@@ -32,7 +32,7 @@ then
 			    
 			    String[] recipients = new String[1];
 		    		recipients[0] = rules.getUser().getCode();
-		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_DELIVERY_ARRIVED", "SMS");
+		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DELIVERED", "SMS");
 		     }
 		}
 
