@@ -301,7 +301,11 @@ public class QRules {
 	}
 	
 	public Boolean isNewUserProfileCompleted() {
-		   Boolean status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());	
+		Boolean status = false;
+		if(getUser() != null) {
+			 status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());
+		}
+		   	
 		return status;
 	}
 
@@ -1075,6 +1079,27 @@ public class QRules {
 	{
 		println("Starting process "+id);
 		drools.getKieRuntime().startProcess(id);
+	}
+	
+	public void askQuestionFormViewPublish(String sourceCode, String targetCode, String questionCode) {
+		
+		String json;
+		try {
+			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+					+ questionCode + "/" + targetCode, getToken());
+			
+			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+
+			msg.setToken(getToken());
+			publish("cmds", RulesUtils.toJsonObject(msg));
+
+			QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);
+			publishCmd(cmdFormView);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 }
