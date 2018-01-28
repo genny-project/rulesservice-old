@@ -676,6 +676,9 @@ public class QRules {
 				}
 			}
 		}
+		if ("data".equals(channel)) {
+			System.out.println("Naughty coding");;
+		}
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -717,7 +720,8 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		JsonObject jsonObj = RulesUtils.toJsonObject(msg);
+		publish("data", jsonObj);
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -799,6 +803,7 @@ public class QRules {
 				questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
 						+ sourceCode + "/asks2/" + questionCode + "/" + targetCode, getToken()));
 				/* QDataAskMessage */
+				questionJson.put("token", getToken());
 				publish("data", questionJson);
 
 				// Now auto push any selection data
