@@ -23,14 +23,22 @@ import life.genny.qwanda.DateTimeDeserializer;
 import java.util.Map;
 
 rule "New Payments User"
+	agenda-group "payments"
 	no-loop true
     when
-    	
-       rules: QRules( isState("NEW_USER") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
-      then
-     	rules.header();
-     	
-       
+    	rules: QRules( isState("IS_LOGGED_IN") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
+    then
+     
+     RulesUtils.header(drools.getRule().getName());
+     
+     String tokenString = rules.getToken();
+     String qwandaServiceUrl = rules.getQwandaServiceUrl();
+		
+	 Gson gson = new Gson();
+     GsonBuilder gsonBuilder = new GsonBuilder();
+     gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+     gson = gsonBuilder.create();
+     	     
      /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
      
@@ -42,23 +50,27 @@ rule "New Payments User"
      rules.println("isAssemblyUserExists::"+isAssemblyUserExists);
      
 	 if(!isAssemblyUserExists) {
-     	
+     			
      	/* logic to create assembly user & set the payments userProfileExists flag  */
      	PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, rules.getToken()); 
      	
-     	Boolean isUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId);
-     	rules.println("isAssemblyUserExists::"+isUserExists);
-     	
      	/* Creates a new attribute for assembly user ID */
-    	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
-    rules.println("assemblyIdAnswer ::"+assemblyIdAnswer);
-    rules.println("assembly ID created in our system ::"+assemblyId);
-     	rules.publishData(assemblyIdAnswer);
+     	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
+     	rules.println("assemblyIdAnswer ::"+assemblyIdAnswer);
+    	QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
+     	rules.println("assembly ID created in our system ::"+assemblyId);
+     	RulesUtils.println("Assembly Company created");
      	
-     	if(isUserExists == true) {
-     		rules.setState("IS_ASSEMBLY_USER_CREATED");
-     	}
      	
+     	/* Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
+     	rules.publishData(assemblyIdAnswer); */
+      }
+      
+      Boolean isCheckUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId);
+      rules.println("isAssemblyUserExists::"+isCheckUserExists);
+     	
+      if(isCheckUserExists == true) {  	
+     	rules.setState("IS_ASSEMBLY_USER_CREATED");
       }
 	
 
