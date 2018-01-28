@@ -151,47 +151,38 @@ rule "Submit Offer"
             if(linkBegOffer) { 
                
             	/* Driver is giving counter-offer */
-                if(userCode.equals(quoterCode)) {
-                    RulesUtils.println("Driver is giving counter offer");
-                    HashMap<String,String> counterContextMap = new HashMap<String, String>();
-                    counterContextMap.put("QUOTER",quoterCode);
-                    counterContextMap.put("JOB", begCode);  
-                    counterContextMap.put("OFFER", priOfferCode); 
-        
-                    String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                    RulesUtils.println("owner code ::"+ownerCode);
-                    String[] counterRecipientArr = {ownerCode};
-
-                    /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS"); */
-                    /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL"); */
-                
-                    HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
-                    counterContextMapForDriver.put("JOB", begCode);
-                    counterContextMapForDriver.put("OWNER", ownerCode);
-                    counterContextMapForDriver.put("OFFER", priOfferCode);
+                    if(userCode.equals(quoterCode)) {
+                        RulesUtils.println("Driver is giving counter offer");
+                        HashMap<String,String> counterContextMap = new HashMap<String, String>();
+                        counterContextMap.put("QUOTER",quoterCode);
+                        counterContextMap.put("JOB", begCode);  
+                        counterContextMap.put("OFFER", priOfferCode); 
             
-                    String[] counterRecipientArrForDriver = {quoterCode};
+                        String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+                        RulesUtils.println("owner code ::"+ownerCode);
+                        String[] counterRecipientArr = {ownerCode};
 
-                    RulesUtils.println("counter SMS sent to DRIVER");
-                    /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");\ */
+                        /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS"); */
+                        /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL"); */
+                    
+                        HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
+                        counterContextMapForDriver.put("JOB", begCode);
+                        counterContextMapForDriver.put("OWNER", ownerCode);
+                        counterContextMapForDriver.put("OFFER", priOfferCode);
+                
+                        String[] counterRecipientArrForDriver = {quoterCode};
 
-                    RulesUtils.println("counter EMAIL sent to DRIVER");
-                    /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
+                        RulesUtils.println("counter SMS sent to DRIVER");
+                        /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");\ */
 
-                    /* Update PRI_NEXT_ACTION = OWNER */ 
-                        if( userCode == quoterCode ){
-                            Answer offerActionAnswer0 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                            String result0= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer0), tokenString);  
-                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer0);
-                        }
+                        RulesUtils.println("counter EMAIL sent to DRIVER");
+                        /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
 
-                    /* Update PRI_NEXT_ACTION = QUOTER */ 
-                        if( userCode == ownerCode ){
-                            Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
+                        /* Update PRI_NEXT_ACTION = OWNER */ 
+                            Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
                             String result1= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer1), tokenString);  
                             RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer1);
-                        }
-                }
+                    }
         	
                 /* Owner is giving counter offer */
                     if(!userCode.equals(quoterCode)) {
