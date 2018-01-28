@@ -17,7 +17,7 @@ rule "Send Sub Layouts To Frontend"
      salience 9
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY")) 
+        rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SUBLAYOUT_CHANGE_READY")) && isNewUserProfileCompleted() == true ) 
      then
 
         rules.header();
@@ -65,6 +65,9 @@ rule "Send Sub Layouts To Frontend"
 				}
 			}
 		}
+		
+		rules.setState("SUBLAYOUT_CHANGE_READY");
+	/*	rules.clearState("LAYOUT_CHANGE_READY");  */
 		
 	    rules.footer();     		      
 end

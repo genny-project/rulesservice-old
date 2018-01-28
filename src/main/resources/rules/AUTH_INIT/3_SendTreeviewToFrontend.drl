@@ -8,7 +8,7 @@ rule "Send Treeview To Frontend"
     salience 8
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_TREEVIEW"))) 
+        rules: QRules( !isState("SEND_TREEVIEW") ) 
      then
      	rules.header();
      	
