@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
+import com.sample.DecisionTableTest.Message;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -209,6 +210,12 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
+	           Message message = new Message();
+	            message.setMessage("Hello World");
+	            message.setStatus(Message.HELLO);
+	            facts.add(message);
+
+			
 			try {
 				RulesLoader.executeStatefull("rules", eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
@@ -225,4 +232,32 @@ public class EBCHandlers {
 
 	}
    
+	  public static class Message {
+
+	        public static final int HELLO = 0;
+	        public static final int GOODBYE = 1;
+	        public static final int SEEYA = 2;
+
+	        private String message;
+
+	        private int status;
+
+	        public String getMessage() {
+	            return this.message;
+	        }
+
+	        public void setMessage(String message) {
+	            this.message = message;
+	        }
+
+	        public int getStatus() {
+	            return this.status;
+	        }
+
+	        public void setStatus(int status) {
+	            this.status = status;
+	        }
+
+	    }
+
 }
