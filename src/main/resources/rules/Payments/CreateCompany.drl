@@ -6,21 +6,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 
 import life.genny.qwandautils.PaymentUtils;
-import life.genny.qwandautils.PaymentEndpoint;
-import life.genny.qwandautils.QwandaUtils;
-import life.genny.rules.RulesUtils;
 import life.genny.qwandautils.MergeUtil;
-
-import com.google.gson.Gson;
-
-import java.time.LocalDateTime;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import java.time.format.DateTimeFormatter;
-import life.genny.qwanda.DateTimeDeserializer;
-
-import java.util.Map;
 
 
 rule "Create Payments Assembly Company"
@@ -31,22 +17,15 @@ rule "Create Payments Assembly Company"
 	then
 		RulesUtils.header(drools.getRule().getName());
 		
-     	String tokenString = rules.getToken();
-    	String qwandaServiceUrl = rules.getQwandaServiceUrl();
-		
-		Gson gson = new Gson();
-     	GsonBuilder gsonBuilder = new GsonBuilder();
-     	gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-     	gson = gsonBuilder.create();
 		
 		 /* get assembly authKey   */
     	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
     	
     	/*  Gets assembly userId */
-    	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", tokenString);
+    	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
     	
     	     	
-     	if(MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", tokenString) == null) {	
+     	if(MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", rules.getToken()) == null) {	
      	
      		RulesUtils.println("Company not found for user..So creating a Company now..");
      		RulesUtils.println("assembly ID ::"+assemblyId);
@@ -54,14 +33,15 @@ rule "Create Payments Assembly Company"
      		if(assemblyId != null) {
 				
 				/* Create Assembly Company for user */
-				String companyId = PaymentUtils.createCompany(assemblyId, assemblyAuthToken, tokenString);
+				String companyId = PaymentUtils.createCompany(assemblyId, assemblyAuthToken, rules.getToken());
+		
 		
 				/* Save companyId as an attribute for the user */
-				System.out.println("create payment company response -"+companyId);
+				RulesUtils.println("create payment company response -"+companyId);
 		
 				if(companyId != null) {
-    	 			Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
-    	 			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
+    	 			Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
+    	 			PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyCompanyIdAnswer, rules.getToken());
      				RulesUtils.println("Assembly Company created");
      				
 				}

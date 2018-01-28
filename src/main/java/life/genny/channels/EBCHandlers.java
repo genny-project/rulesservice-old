@@ -3,7 +3,6 @@ package life.genny.channels;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,9 +28,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.GPS;
-import life.genny.qwanda.Link;
+import life.genny.qwanda.entity.User;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
@@ -40,11 +38,8 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
-import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
-import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.entity.User;
 
 public class EBCHandlers {
 
@@ -209,6 +204,12 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
+	           Message message = new Message();
+	            message.setMessage("Hello World");
+	            message.setStatus(Message.HELLO);
+	            facts.add(message);
+
+			
 			try {
 				RulesLoader.executeStatefull("rules", eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
@@ -225,4 +226,32 @@ public class EBCHandlers {
 
 	}
    
+	  public static class Message {
+
+	        public static final int HELLO = 0;
+	        public static final int GOODBYE = 1;
+	        public static final int SEEYA = 2;
+
+	        private String message;
+
+	        private int status;
+
+	        public String getMessage() {
+	            return this.message;
+	        }
+
+	        public void setMessage(String message) {
+	            this.message = message;
+	        }
+
+	        public int getStatus() {
+	            return this.status;
+	        }
+
+	        public void setStatus(int status) {
+	            this.status = status;
+	        }
+
+	    }
+
 }

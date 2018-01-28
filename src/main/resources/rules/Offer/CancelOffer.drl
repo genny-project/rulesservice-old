@@ -122,7 +122,13 @@ rule "Cancel Offer"
             System.out.println("BEG CODE          ::   " + begCode);
             System.out.println("------------------------------------------------------------------------");
 
-            /* Update the number of offers for BEG */ 
+        /* Update PRI_NEXT_ACTION = null */ 
+            String noneCode= "NONE";
+            Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", noneCode);
+            QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer), tokenString);  
+            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer);
+
+        /* Update the number of offers for BEG */ 
             Integer offerCount = 0;
             String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
             if(offerCountString == null) { 
@@ -167,8 +173,8 @@ rule "Cancel Offer"
 	        	RulesUtils.println("owner code ::"+ownerCode);
 			String[] recipientArr = {ownerCode};
 	
-	        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS");
-	        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL");
+	        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS"); */
+	        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL"); */
          
          /* Sending message to DRIVER */  
 	        	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -178,8 +184,8 @@ rule "Cancel Offer"
         
 			String[] recipientArrForDriver = {quoterCode};
 		
-			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
-        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
+			/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS"); */
+        	/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");  */
     
         RulesUtils.footer(drools.getRule().getName());
 end
