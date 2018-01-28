@@ -76,6 +76,10 @@ rule "Confirm Offer"
                 return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                 }
             }).create();
+            Gson gson1 = new Gson();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+            gson1 = gsonBuilder.create();
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
@@ -95,6 +99,7 @@ rule "Confirm Offer"
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
+            String linkDriver = "DRIVER";
 
             /* GET attributes of the OFFER that's being accepted */
                 JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
@@ -128,7 +133,7 @@ rule "Confirm Offer"
 
             /* Update link between BEG and QUOTR as DRIVER */
                 System.out.println("\nCREATING DRIVER LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
-                Link link = new Link( begCode, quoterCode, linkCode, "DRIVER");
+                Link link = new Link( begCode, quoterCode, linkCode, linkDriver);
                 link.setWeight(1.0);
                 String output1 = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link),tokenString);
             
@@ -169,6 +174,10 @@ rule "Confirm Offer"
                 System.out.println("UPDATING PRICE of BEG          ::   " + priceAnswer);
                 RulesUtils.println(priceAnswer);
                 rules.publishData(priceAnswer);
+
+            /* Update PRI_NEXT_ACTION */
+                Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkDriver);
+                QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(actionCode), tokenString);               
 
             /* Move BEG to GRP_APPROVED */
                 String oldGroup = "GRP_NEW_ITEMS";
@@ -211,8 +220,8 @@ rule "Confirm Offer"
         		RulesUtils.println("owner code ::"+userCode);
 				String[] recipientArr = {userCode};
 
-        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
-        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+        		/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS"); */
+        		/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); */
             
             	 /* Sending message to DRIVER */
         		HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -221,8 +230,8 @@ rule "Confirm Offer"
         
 				String[] recipientArrForDriver = {quoterCode};
 		
-				rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-        		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+				/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS"); */
+        		/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); */
                 
                 /* Set progression of LOAD delivery to 0 */
                 Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));

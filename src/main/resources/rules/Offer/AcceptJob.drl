@@ -101,6 +101,7 @@ rule "Accept Job"
             Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
             Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
             Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
+            Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
             
             List<Answer> answerList = new ArrayList<Answer>();	
             answerList.add(price);
@@ -109,6 +110,7 @@ rule "Accept Job"
             answerList.add(quoterUname);
             answerList.add(quoterFullName);
             answerList.add(jobCode);
+            answerList.add(actionCode);
 
             /* save attributes */
             int i=1;
@@ -172,8 +174,8 @@ rule "Accept Job"
         	RulesUtils.println("owner code ::"+ownerCode);
 			String[] recipientArr = {ownerCode};
 
-        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS");
-        	rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL");
+        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); */
+        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); */
             
         	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
         	contextMapForDriver.put("JOB", begCode);
@@ -183,8 +185,8 @@ rule "Accept Job"
         
 			String[] recipientArrForDriver = {userCode};
 		
-			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS");
-        	rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL");
+			/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); */
+        	/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); */
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview"); 

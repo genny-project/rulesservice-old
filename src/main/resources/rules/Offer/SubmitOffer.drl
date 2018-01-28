@@ -140,8 +140,6 @@ rule "Submit Offer"
             System.out.println("QUOTER FULLNAME   ::   " + quoterFullName);
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
-            
-                        
 
             String templateCode = null;
             Boolean linkExists = false;
@@ -164,8 +162,8 @@ rule "Submit Offer"
                     RulesUtils.println("owner code ::"+ownerCode);
                     String[] counterRecipientArr = {ownerCode};
 
-                    rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
-                    rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL");
+                    /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS"); */
+                    /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL"); */
                 
                     HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
                     counterContextMapForDriver.put("JOB", begCode);
@@ -175,10 +173,24 @@ rule "Submit Offer"
                     String[] counterRecipientArrForDriver = {quoterCode};
 
                     RulesUtils.println("counter SMS sent to DRIVER");
-                    rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");\
+                    /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");\ */
 
                     RulesUtils.println("counter EMAIL sent to DRIVER");
-                    rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL");
+                    /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
+
+                    /* Update PRI_NEXT_ACTION = OWNER */ 
+                        if( userCode == quoterCode ){
+                            Answer offerActionAnswer0 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                            String result0= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer0), tokenString);  
+                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer0);
+                        }
+
+                    /* Update PRI_NEXT_ACTION = QUOTER */ 
+                        if( userCode == ownerCode ){
+                            Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
+                            String result1= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer1), tokenString);  
+                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer1);
+                        }
                 }
         	
                 /* Owner is giving counter offer */
@@ -194,10 +206,10 @@ rule "Submit Offer"
                         String[] recipientArr = {ownerCode};
 
                         RulesUtils.println("counter SMS sent to OWNER");
-                        rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
+                        /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS"); */
                         
                         RulesUtils.println("counter EMAIL sent to OWNER");
-                        rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL");
+                        /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL"); */
                     
                         HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
                         contextMapForDriver.put("JOB", begCode);
@@ -206,8 +218,13 @@ rule "Submit Offer"
                 
                         String[] recipientArrForDriver = {quoterCode};
                 
-                        rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS");
-                        rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL");
+                        /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS"); */
+                        /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL"); */
+
+                        /* Update PRI_NEXT_ACTION = OWNER */ 
+                            Answer offerActionAnswer2 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
+                            String result2= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer2), tokenString);  
+                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer2);
                     }
             }   
             
@@ -234,6 +251,11 @@ rule "Submit Offer"
 
                     Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
                     String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerCountAnswer), tokenString);  
+                
+                /* Update PRI_NEXT_ACTION = OWNER */ 
+                    Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                    String result3= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer3), tokenString);  
+                    RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer3);
 
                 /* Driver is making-offer for first time */
                     HashMap<String,String> noLinkContextMap = new HashMap<String, String>();
@@ -246,10 +268,10 @@ rule "Submit Offer"
                     String[] noLinkRecipientArr = {ownerCode};
 
                     RulesUtils.println("submit EMAIL sent to OWNER");
-				    rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
+				    /* rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); */
 
                     RulesUtils.println("submit SMS sent to OWNER");
-                    rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
+                    /* rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS"); */
                     
                     
                     HashMap<String,String> noLinkContextMapForDriver = new HashMap<String, String>();
@@ -261,10 +283,10 @@ rule "Submit Offer"
                     String[] noLinkRecipientArrForDriver = {quoterCode};
 
                     RulesUtils.println("submit EMAIL sent to DRIVER");
-                    rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
+                    /* rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS"); */
 
                     RulesUtils.println("submit SMS sent to DRIVER");
-                    rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
+                    /* rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL"); */
             }
 
         /* Check if a link exists between USER & OFFER */
