@@ -20,7 +20,7 @@ rule "Company ABN Value Entered"
 	    
          Answer newAnswer = $m.getAnswer();
 
-         RulesUtils.println(" Inside :: "+rules.header() );
+         RulesUtils.println(" Inside :: Company ABN Value Entered");
          RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Company ABN Attribute Change ::  "+newAnswer.toString());
   
          String companyABN = newAnswer.getValue();
