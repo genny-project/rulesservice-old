@@ -23,7 +23,7 @@ then
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
-		    	 	
+		    	 rules.println("$$$$$$$$$$$$$$$$$$$$$$$$ MOVE BASE ENTITY $$$$$$$$$$$$$$$$$$$$$"+begCode);
 		    	 rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
 		    	 	
 		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();

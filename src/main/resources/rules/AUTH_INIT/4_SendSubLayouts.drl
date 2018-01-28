@@ -14,8 +14,10 @@ import com.google.gson.Gson;
 
 rule "Send Sub Layouts To Frontend"
     no-loop true
+     salience 9
+    agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("USER_SENT")) 
+        rules: QRules( isState("USER_SENT") && isState("LAYOUT_CHANGE_READY")) 
      then
 
         rules.header();
@@ -36,16 +38,16 @@ rule "Send Sub Layouts To Frontend"
 					
 					if(url != null) {
 						
-						/*  grab sublayout from github */
+						/*    grab sublayout from github   */
 
-						RulesUtils.println(url);
+						rules.println(url);
 						
 						String subLayoutString = QwandaUtils.apiGet(url, null);
 						if(subLayoutString != null) {
 							
 							try {
 								
-								/* send sublayout to FE  */
+								/*    send sublayout to FE    */
 								JsonObject subLayoutObj = new JsonObject();
 						        subLayoutObj.put("msg_type", "DATA_MSG");
 						        subLayoutObj.put("data_type", "SUB_LAYOUT");

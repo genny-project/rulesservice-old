@@ -18,9 +18,12 @@ rule "Listen Link Change"
      then    
       	rules.header();
  
- 		Link link = $m.getLink();
- 		 		
- 		rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());
+ 		Link link = $m.getLink(); 
+ 		rules.debug($m);
+ 		if (link != null) {
+ 		    rules.println("Link LinkCode="+link.getAttributeCode());
+ 		    rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode()); 
+ 		 }
  		
  	   
    	    rules.footer();

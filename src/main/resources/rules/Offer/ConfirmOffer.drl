@@ -198,11 +198,14 @@ rule "Confirm Offer"
                 /* publish new link data */
                     newLink.put("token", tokenString );
                     rules.publish("cmds", newLink);
+                    
+                /* drools.setFocus("payments"); */
 
                 /* Sending message to OWNER */
                 HashMap<String,String> contextMap = new HashMap<String, String>();
         		contextMap.put("DRIVER",quoterCode);
         		contextMap.put("JOB", begCode);  
+        		contextMap.put("QUOTER", quoterCode); 
        
         		String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
         		RulesUtils.println("owner code ::"+userCode);

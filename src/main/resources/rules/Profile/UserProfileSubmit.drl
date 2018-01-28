@@ -42,7 +42,8 @@ rule "User-Profile Update"
         String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
-  	   if(actionCode.equalsIgnoreCase("submit")){ 
+  	   if(actionCode.equalsIgnoreCase("submit")) { 
+  		   
           modify($user){          
              setIsProfileCompleted(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", tokenString));           
           }

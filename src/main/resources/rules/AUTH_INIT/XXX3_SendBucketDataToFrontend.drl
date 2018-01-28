@@ -8,6 +8,7 @@ import java.util.List;
 
 rule "Send BucketData To Frontend"
     no-loop true
+    
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY")) 
      then
