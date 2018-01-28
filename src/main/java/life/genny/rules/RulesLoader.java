@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import org.kie.api.builder.Message;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.internal.io.ResourceFactory;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -95,6 +97,13 @@ public class RulesLoader {
 					System.out.println("Loading in BPMN:" + bpmn._1 + " of "+ inputFileStr);
 					rules.add(bpmn);
 					}
+				else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) {   // ignore files that start with XX
+					final String xlsText = buf.toString();
+					
+					Tuple2<String, String> xls = (Tuple.of(fileName+"."+fileNameExt, xlsText));
+					System.out.println("Loading in XLS:" + xls._1 + " of "+ inputFileStr);
+					rules.add(xls);
+					}
 				return rules;
 			} catch (final DecodeException dE) {
 
@@ -135,8 +144,9 @@ public class RulesLoader {
 						.setResourceType(ResourceType.BPMN2));
 				} else if (rule._1.endsWith(".xls")) {
 				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
-				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
-						.setResourceType(ResourceType.DTABLE));
+				// Needs t handle byte[]
+//				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new FileReader(rule._2))
+//						.setResourceType(ResourceType.DTABLE));
 
 				} else {
 				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
