@@ -12,7 +12,7 @@ rule "Pre Init"
         rules.header();
         rules.setState("STARTED");
         
-        rules.startWorkflow("com.sample.bpmn.hello");
+        /* rules.startWorkflow("com.sample.bpmn.hello"); */
         rules.footer();
       		      
 end

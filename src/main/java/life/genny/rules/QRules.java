@@ -588,6 +588,17 @@ public class QRules {
 		cmdJobSublayoutJson.put("token", getToken());
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
+	
+	public void showLoading(String text) {
+		
+		if(text == null) { text = "Loading..."; }
+		
+		QCmdMessage cmdLoading = new QCmdMessage("CMD_VIEW","LOADING");
+		JsonObject json = JsonObject.mapFrom(cmdLoading);
+		json.put("root", text);
+		json.put("token", getToken());
+		publish("cmds", json);
+	}
 
 	public void sendParentLinks(final String targetCode, final String linkCode) {
 		JsonArray latestLinks;
