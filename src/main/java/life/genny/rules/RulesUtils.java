@@ -408,7 +408,7 @@ public class RulesUtils {
 			e.printStackTrace();
 		}
 		return null;
-
+		
 	}
 
 	public static String getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
