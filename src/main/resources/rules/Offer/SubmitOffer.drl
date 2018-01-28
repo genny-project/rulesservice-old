@@ -140,8 +140,6 @@ rule "Submit Offer"
             System.out.println("QUOTER FULLNAME   ::   " + quoterFullName);
             System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
-            
-                        
 
             String templateCode = null;
             Boolean linkExists = false;
@@ -181,9 +179,18 @@ rule "Submit Offer"
                     /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
 
                     /* Update PRI_NEXT_ACTION = OWNER */ 
-                        Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                        String result1= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer1), tokenString);  
-                        RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer1);
+                        if( userCode == quoterCode ){
+                            Answer offerActionAnswer0 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                            String result0= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer0), tokenString);  
+                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer0);
+                        }
+
+                    /* Update PRI_NEXT_ACTION = QUOTER */ 
+                        if( userCode == ownerCode ){
+                            Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
+                            String result1= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer1), tokenString);  
+                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer1);
+                        }
                 }
         	
                 /* Owner is giving counter offer */
