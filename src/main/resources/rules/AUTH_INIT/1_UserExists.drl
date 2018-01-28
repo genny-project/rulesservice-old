@@ -21,7 +21,7 @@ rule "User Exists"
 
   		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
-
+		drools.setFocus("payments");
 		
 	    rules.footer();     		      
 end
