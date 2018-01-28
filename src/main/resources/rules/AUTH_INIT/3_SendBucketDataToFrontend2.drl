@@ -16,7 +16,7 @@ rule "Send Ch40 BucketData To Frontend"
      	rules.header();
 	
 		/* Show loading indicator */
-		/*  rules.showLoading("Loading your interface...");   */
+		  rules.showLoading("Loading your interface..."); 
      	
      	BaseEntity user = rules.getUser();
       		
