@@ -13,6 +13,7 @@ rule "Send Initial User Profile Layout"
      	rules.header();   	
      	rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update.json");
      	rules.sendSublayout("SUB_LAY_WELCOME_NEW_USER", "welcome-new-user.json");
+     	rules.sendSublayout("SUB_LAY_INITIAL_PROFILE", "create_user.json");
      	rules.clearState("NEW_USER");
 	    rules.footer();   		      
 end
