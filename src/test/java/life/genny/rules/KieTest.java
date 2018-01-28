@@ -82,11 +82,10 @@ public  void setupKieSessionTest()
 	    
 	String rulesGroup = "GRP_RULES_TEST";
 	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
+	
+	rules.add(Tuple.of("rule1.drl",rule));
+	
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
-	EventBus eb = null;
-	
-	rules.add(Tuple.of("rule1",rule));
-	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
 	 
@@ -98,7 +97,8 @@ public  void setupKieSessionTest()
 	
 	System.out.println("Loaded Test Kie Session with "+count+" ruleGroups");
 	
-		 
+	EventBus eb = null;
+
 	 List<Object> facts = new ArrayList<Object>();
 	 facts.add(1);
 	 facts.add(2);
@@ -136,7 +136,7 @@ public  void setupKieSessionTest()
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
 	EventBus eb = null;
 	
-	rules.add(Tuple.of("rule2",rule));
+	rules.add(Tuple.of("rule2.drl",rule));
 	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));

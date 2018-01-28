@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QMessage.MessageData;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwandautils.QwandaUtils;
 import com.google.gson.Gson;
-//import org.json.JSONObject;
+/* import org.json.JSONObject; */
 import com.sample.*;
 import java.util.Map;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ import org.json.simple.parser.JSONParser;
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
-//Rule handling Next or Button click in the Create Job
+/* Rule handling Next or Button click in the Create Job */
 rule "Post Job Next/Cancel button click"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_POST_JOB_GRP" )
@@ -30,15 +30,15 @@ rule "Post Job Next/Cancel button click"
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::    POST Job - Next  " + LOG_RESET);
         
-        // Prepare GSON Deserialization
+        /* Prepare GSON Deserialization */
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
         
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
-        //Get data.value and decode
+        /* Get data.value and decode */
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
@@ -46,7 +46,7 @@ rule "Post Job Next/Cancel button click"
         
         if(actionCode.equalsIgnoreCase("next")){
          System.out.println("Next Button pressed");
-          //Getting Post Job Question GRP
+          /* Getting Post Job Question GRP */
          JsonObject qPostJobAddress = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+$user.getuCode()+"/asks3/QUE_JOB_ADDRESS_DETAILS_GRP/"+jobCode, tokenString));
          qPostJobAddress.put("aliasCode", "QUE_JOB_ADDRESS_DETAILS_GRP");
          qPostJobAddress.put("token", tokenString);
@@ -54,7 +54,7 @@ rule "Post Job Next/Cancel button click"
          System.out.println("Asks postJob Address Json: "+qPostJobAddress.toString());
          bus.publish("cmds",qPostJobAddress);
 
-        //sending cmd FORM_VIEW
+        /* sending cmd FORM_VIEW */
         QCmdMessage cmdAddressFormView = new QCmdMessage("CMD_VIEW","FORM_VIEW");
         //Convert cmd to JSON Obj
         JsonObject formViewAddressJson = new JsonObject().mapFrom(cmdAddressFormView);
@@ -63,7 +63,7 @@ rule "Post Job Next/Cancel button click"
         System.out.println(" ##################### ");
         System.out.println("CMD VIEW Msg ="+formViewAddressJson.toString());
         System.out.println(" #################### ");
-         //Publish it to the EventBus
+         /* Publish it to the EventBus */
         bus.publish("cmds", formViewAddressJson);  
           
       }
@@ -79,7 +79,7 @@ rule "Post Job Next/Cancel button click"
         
 end
 
-//Rule handling Job Submit
+/* Rule handling Job Submit */
 rule "Post Job"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_ADDRESS_DETAILS_GRP" )
@@ -90,12 +90,12 @@ rule "Post Job"
         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
         System.out.println(LOG_GREEN + "RULE EXECUTED      ::    POST Job - Submit  " + LOG_RESET);
         
-        // Prepare GSON Deserialization
+        /* Prepare GSON Deserialization */
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
         Gson gson = gsonBuilder.create();
         
-        //Prepare Token & qwandaServiceUrl
+        /* Prepare Token & qwandaServiceUrl */
         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
         String tokenString = (String)$map.get("token"); 
         String dataString = $m.data.getValue();
@@ -107,11 +107,11 @@ rule "Post Job"
         System.out.println("Action Code is    :: "+actionCode);
         System.out.println("If mandatory Fields entered value    ::    "+allFieldsEntered );
      	
-     	//if(allFieldsEntered == true && actionCode.equalsIgnoreCase("submit") ){       
-        //link current user as load-owner to the Job/BEG
+     	/* if(allFieldsEntered == true && actionCode.equalsIgnoreCase("submit") ){     */   
+        /* link current user as load-owner to the Job/BEG */
         QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(jobCode,$user.getuCode(),"LNK_BEG","OWNER")),tokenString);
          System.out.println("After adding owner to BEG");
-         //Moving the BEG
+         /* Moving the BEG */
          JsonObject begEntity = new JsonObject();
          begEntity.put("sourceCode","GRP_DRAFTS");
          begEntity.put("targetCode",jobCode);
@@ -119,11 +119,11 @@ rule "Post Job"
  	     String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
  	     System.out.println("The Output after POST: "+output);
          
-         //create answer to update default Job image 
+         /* create answer to update default Job image */
          String imageUrl = "https://dummyimage.com/100/85e085/ffffff.png&text=L";       
          Answer jobImage = new Answer($user.getuCode(), jobCode, "PRI_IMAGE_URL", imageUrl);
          String jsonJobImageAnswerStr = gson.toJson(jobImage);
-         //Posting it as Answer
+         /* Posting it as Answer */
          QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonJobImageAnswerStr, tokenString);
   
    
@@ -134,50 +134,50 @@ rule "Post Job"
         System.out.println("Full dropoff address is     ::    "+fullDropOffAddress);
         
         
-        //create answer to update full pickup address to the job
+        /* create answer to update full pickup address to the job */
         Answer pickupAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_PICKUP_ADDRESS", fullPickupAddress);
         String jsonPickUpAnswerStr = gson.toJson(pickupAddress);
         JsonObject jsonPickupAddressAnswer = new JsonObject(jsonPickUpAnswerStr);
-         //creating Json array
+         /* creating Json array */
          JsonArray items = new JsonArray();
          items.add(jsonPickupAddressAnswer);
-         //Creating Answer DATA_MSG
+         /* Creating Answer DATA_MSG */
          JsonObject obj = new JsonObject();
          obj.put("msg_type", "DATA_MSG");
          obj.put("data_type", "Answer");
          obj.put("items", items); 
-         //Print Answer
+         /* Print Answer */
          System.out.println("\nSaving PRI_FULL_PICKUP_ADDRESS as an Answer   ::    "+obj.toString()); 
          obj.put("token",tokenString);
          bus.publish("data", obj);
          
         
-        //create answer to update full dropoff address to the job
+        /* create answer to update full dropoff address to the job */
         Answer dropOffAddress = new Answer($user.getuCode(), jobCode, "PRI_FULL_DROPOFF_ADDRESS", fullDropOffAddress);
         String jsonDropOffAnswerStr = gson.toJson(dropOffAddress);
         JsonObject jsonDropOffAddressAnswer = new JsonObject(jsonDropOffAnswerStr);
-         //creating Json array
+         /* creating Json array */
          JsonArray items1 = new JsonArray();
          items1.add(jsonDropOffAddressAnswer);
-         //Creating Answer DATA_MSG
+         /* Creating Answer DATA_MSG */
          JsonObject obj1 = new JsonObject();
          obj1.put("msg_type", "DATA_MSG");
          obj1.put("data_type", "Answer");
          obj1.put("items", items1); 
-         //Print Answer
+         /* Print Answer */
          System.out.println("\nSaving PRI_FULL_DROPOFF_ADDRESS as an Answer   ::    "+obj1.toString()); 
          obj1.put("token",tokenString);
          bus.publish("data",obj1);
          
-        //Calling the rule group : layout to redirect user to home/bucketView page
+        /* Calling the rule group : layout to redirect user to home/bucketView page */
         drools.setFocus("layout"); 
         
         JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
         newJobDetails.put("token", $value);
         System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-        //Publish new Job/BEG data
+        /* Publish new Job/BEG data */
         bus.publish("cmds", newJobDetails);
-   //  }   
+   /*  }    */
         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::  POST Job - Submit  " + LOG_RESET);
         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 end

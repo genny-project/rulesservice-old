@@ -50,7 +50,7 @@ public class RulesLoader {
 	 * @return
 	 */
 	public static Future<Void> loadInitialRules(final Vertx vertx,final String rulesDir) {
-		System.out.println("Loading Rules!!!");
+		System.out.println("Loading Rules and workflows!!!");
 		final Future<Void> fut = Future.future();
 		vertx.executeBlocking(exec -> {
 			 setKieBaseCache(new HashMap<String, KieBase>());   // clear
@@ -68,6 +68,7 @@ public class RulesLoader {
 	private static List<Tuple2<String, String>> processFile(final Vertx vertx, String inputFileStr) {
 		File file = new File(inputFileStr);
 		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*","$1");
+		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)","$1");
 		List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 
 		if (!file.isFile()) {
@@ -81,13 +82,19 @@ public class RulesLoader {
 		} else {
 			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
 			try {
-				if (!fileName.startsWith("XX")) {   // ignore files that start with XX
+				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) {   // ignore files that start with XX
 				final String ruleText = buf.toString();
 				
-				Tuple2<String, String> rule = (Tuple.of(fileName, ruleText));
+				Tuple2<String, String> rule = (Tuple.of(fileName+"."+fileNameExt, ruleText));
 				System.out.println("Loading in Rule:" + rule._1 + " of "+ inputFileStr);
 				rules.add(rule);
-				}
+				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) {   // ignore files that start with XX
+					final String bpmnText = buf.toString();
+					
+					Tuple2<String, String> bpmn = (Tuple.of(fileName+"."+fileNameExt, bpmnText));
+					System.out.println("Loading in BPMN:" + bpmn._1 + " of "+ inputFileStr);
+					rules.add(bpmn);
+					}
 				return rules;
 			} catch (final DecodeException dE) {
 
@@ -117,9 +124,25 @@ public class RulesLoader {
 			// System.out.println("Read New Rules set from File");
 
 			for (final Tuple2<String, String> rule : rules) {
-				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 + ".drl";
+				if (rule._1.endsWith(".drl")) {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
 				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
 						.setResourceType(ResourceType.DRL));
+				}
+				if (rule._1.endsWith(".bpmn")) {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.BPMN2));
+				} else if (rule._1.endsWith(".xls")) {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.DTABLE));
+
+				} else {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.DRL));
+				}
 
 			}
 
@@ -171,6 +194,7 @@ public class RulesLoader {
 				kieSession.insert(fact);
 			}
 			kieSession.insert(keyValueMap);
+			kieSession.insert(kieSession); // TODO this feels wring
 
 			kieSession.fireAllRules();
 

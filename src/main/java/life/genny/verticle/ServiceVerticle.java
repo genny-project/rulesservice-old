@@ -2,8 +2,13 @@ package life.genny.verticle;
 
 import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
+import io.vertx.rxjava.core.shareddata.AsyncMap;
+import io.vertx.rxjava.core.shareddata.SharedData;
+import life.genny.channels.Routers;
 import life.genny.cluster.Cluster;
+import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.RulesLoader;
+import life.genny.rules.RulesUtils;
 
 public class ServiceVerticle extends AbstractVerticle {
 
@@ -19,10 +24,11 @@ public class ServiceVerticle extends AbstractVerticle {
 	      if (rulesDir == null) {
 	    	  	rulesDir = "rules";
 	      }
+			     
 	      RulesLoader.loadInitialRules(vertx,rulesDir).compose(p -> {
+	    	  	Routers.routers(vertx);
 	        fut.complete();
 	      }, fut);
-	      startFuture.complete();
 	    }, startFuture);
 	  
 	  }
