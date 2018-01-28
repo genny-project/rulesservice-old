@@ -34,7 +34,7 @@ then
 		contextMap.put("DRIVER", rules.getUser().getCode()); */
 		
 		/* Sending message to BEG OWNER */
-		/* rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_DELIVERY_ARRIVED", "SMS"); */
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "SMS");
 		
 		rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
 		
