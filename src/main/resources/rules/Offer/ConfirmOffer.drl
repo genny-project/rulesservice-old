@@ -208,8 +208,8 @@ rule "Confirm Offer"
         		RulesUtils.println("owner code ::"+userCode);
 				String[] recipientArr = {userCode};
 
-        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
-        		rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+        		/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS"); */
+        		/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); */
             
             	 /* Sending message to DRIVER */
         		HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -218,8 +218,8 @@ rule "Confirm Offer"
         
 				String[] recipientArrForDriver = {quoterCode};
 		
-				rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-        		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+				/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS"); */
+        		/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); */
                 
                 /* Set progression of LOAD delivery to 0 */
                 Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
