@@ -24,14 +24,13 @@ import java.util.Map;
 
 
 rule "Create Payments Assembly Company"
+	agenda-group "payments"
 	no-loop true
 	when 
 		rules: QRules(isState("IS_ASSEMBLY_USER_CREATED")) 
 	then
 		RulesUtils.header(drools.getRule().getName());
 		
-		String userName = rules.getAsString("preferred_username");
-     	String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
      	String tokenString = rules.getToken();
     	String qwandaServiceUrl = rules.getQwandaServiceUrl();
 		
@@ -44,10 +43,10 @@ rule "Create Payments Assembly Company"
     	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
     	
     	/*  Gets assembly userId */
-    	String assemblyId = MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_USER_ID", tokenString);
+    	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", tokenString);
     	
     	     	
-     	if(MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_COMPANY_ID", tokenString) == null) {	
+     	if(MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", tokenString) == null) {	
      	
      		RulesUtils.println("Company not found for user..So creating a Company now..");
      		RulesUtils.println("assembly ID ::"+assemblyId);
@@ -61,7 +60,7 @@ rule "Create Payments Assembly Company"
 				System.out.println("create payment company response -"+companyId);
 		
 				if(companyId != null) {
-    	 			Answer assemblyIdAnswer = new Answer(userCode, userCode, "PRI_ASSEMBLY_COMPANY_ID", companyId);
+    	 			Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
     	 			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(assemblyIdAnswer), tokenString);
      				RulesUtils.println("Assembly Company created");
      				
@@ -69,8 +68,6 @@ rule "Create Payments Assembly Company"
 			}
      	}
      	
-     	rules.clearState("IS_ASSEMBLY_USER_CREATED");
-    	update(rules);
      	     			
 		RulesUtils.footer(drools.getRule().getName());
 end
