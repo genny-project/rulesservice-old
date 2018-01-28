@@ -8,7 +8,8 @@ import life.genny.qwanda.message.QEventMessage;
 rule "New User Profile Submit"
 	no-loop true
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" )
+       /* $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" )   */
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )
         rules: QRules( isNewUserProfileCompleted() == true ) 
       then
      	rules.header();
