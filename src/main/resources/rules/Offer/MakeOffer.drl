@@ -60,7 +60,9 @@ rule "Make Offer"
         rules: QRules()
     then
         RulesUtils.header(drools.getRule().getName());
-        /* Prepare GSON Deserialization */
+        
+        
+        		/* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
                     @Override

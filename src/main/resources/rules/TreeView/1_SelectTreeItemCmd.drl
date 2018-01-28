@@ -15,14 +15,14 @@ rule "TV_SELECT Event"
        	
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
-        if(!grpCode.equals("GRP_MESSAGES")) {
+        if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_")) {
         		
 	        	String viewType = "LIST_VIEW";
 	        if(grpCode.equals("GRP_DASHBOARD")) {
 	           viewType = "BUCKET_VIEW";
 	         }
 	           	
-	           	/* sending cmd LIST_VIEW */
+	         /* sending cmd LIST_VIEW */
 	    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW",viewType);
 	    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
 	    	     bucketViewJson.put("root", grpCode);

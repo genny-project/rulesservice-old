@@ -428,6 +428,14 @@ public class QRules {
 
 		return null;
 	}
+	
+	public void publishBaseEntityByCode(final String beCode) {
+			
+		BaseEntity be = getBaseEntityByCode(beCode);
+		if(be != null) {
+			publishCmd(be, getToken());
+		}
+	}
 
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize, Boolean cache) {
@@ -913,7 +921,9 @@ public class QRules {
 
 				/* if this answer is actually an address another rule will be triggered */
 				if (attributeCode.contains("ADDRESS_FULL")) {
+					
 					JsonObject addressDataJson = new JsonObject(value);
+					
 					Map<String, String> availableKeys = new HashMap<String, String>();
 					availableKeys.put("full_address", "FULL");
 					availableKeys.put("street_address", "ADDRESS1");
@@ -970,7 +980,19 @@ public class QRules {
 						newAnswers[i] = answerObj;
 						i++;
 					}
-
+					
+					ArrayList<Answer> list = new ArrayList<Answer>();
+					for (Answer s : newAnswers) {
+					    if (s != null)
+					        list.add(s);
+					}
+					
+					System.out.println("---------------------------");
+					System.out.println(list);
+					newAnswers = list.toArray(new Answer[list.size()]);
+					
+					System.out.println(newAnswers);
+					
 					/* set new answers */
 					m.setItems(newAnswers);
 					String json = RulesUtils.toJson(m);
@@ -1009,6 +1031,7 @@ public class QRules {
 
 			/* if this answer is actually an address another rule will be triggered */
 			if (!attributeCode.contains("ADDRESS_FULL")) {
+				
 				/* convert answer to json */
 				String jsonAnswer = RulesUtils.toJson(answer);
 				System.out.println("incoming JSON Answer   ::   " + jsonAnswer);
