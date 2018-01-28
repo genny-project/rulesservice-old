@@ -133,6 +133,15 @@ public class RulesLoader {
 				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
 				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
 						.setResourceType(ResourceType.BPMN2));
+				} else if (rule._1.endsWith(".xls")) {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.DTABLE));
+
+				} else {
+				final String inMemoryDrlFileName = "src/main/resources/" + rule._1 ;
+				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
+						.setResourceType(ResourceType.DRL));
 				}
 
 			}

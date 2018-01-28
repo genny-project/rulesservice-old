@@ -9,8 +9,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.HashMap;
-
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,12 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
 
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.buffer.Buffer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
@@ -71,9 +77,8 @@ public class RuleTest {
 		// System.out.println("The token is: "+token);
 		// System.out.println("The token is: "+token1);
 
-		Link link = new Link("GRP_QUOTES", "GRP_COMPLETED", "BEG_0000002",
-				"LNK_CORE", null);
-		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage(link,null,"TEST");
+		Link link = new Link("GRP_QUOTES", "GRP_COMPLETED", "BEG_0000002", "LNK_CORE", null);
+		QEventLinkChangeMessage evtMsg = new QEventLinkChangeMessage(link, null, "TEST");
 		keyValue.put("token", "DUMB TOKEN");
 		kSession.insert(keyValue);
 		kSession.insert(evtMsg);
@@ -86,7 +91,7 @@ public class RuleTest {
 		Boolean allCompiled = readFilenamesFromDirectory("src/main/resources/rules");
 		if (!allCompiled) {
 			// This forces us to fix Rules!
-			assertTrue("Drools Compile Error!",false);
+			assertTrue("Drools Compile Error!", false);
 		}
 	}
 
@@ -94,35 +99,99 @@ public class RuleTest {
 		Boolean compileOk = true;
 		final File folder = new File(rootFilePath);
 		final File[] listOfFiles = folder.listFiles();
+		String fileName = rootFilePath.replaceFirst(".*/(\\w+).*", "$1");
+		String fileNameExt = rootFilePath.replaceFirst(".*/\\w+\\.(.*)", "$1");
 
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
 				System.out.println("File " + listOfFiles[i].getName());
-				if (!listOfFiles[i].getName().startsWith("XX")) {   // ignore files that start with XX
+					if ((!listOfFiles[i].getName().startsWith("XX")) && (listOfFiles[i].getName().equalsIgnoreCase("drl"))) { // ignore files that start
+						// with XX
+
+					try {
+						String ruleText = getFileAsText(listOfFiles[i]);
+						KieHelper kieHelper = new KieHelper();
+						kieHelper.addContent(ruleText, ResourceType.DRL);
+						Results results = kieHelper.verify();
+						for (Message message : results.getMessages()) {
+							log.error(">> Message ({}): {}", message.getLevel(), message.getText());
+							compileOk = false;
+							assertTrue("Drools Compile Error in " + listOfFiles[i].getName(), false);
+						}
+
+					} catch (final IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else if ((!listOfFiles[i].getName().startsWith("XX")) && (listOfFiles[i].getName().equalsIgnoreCase("bpmn"))) { // ignore files that start
+					// with XX
 
 				try {
 					String ruleText = getFileAsText(listOfFiles[i]);
 					KieHelper kieHelper = new KieHelper();
-					kieHelper.addContent(ruleText, ResourceType.DRL);
+					kieHelper.addContent(ruleText, ResourceType.BPMN2);
 					Results results = kieHelper.verify();
 					for (Message message : results.getMessages()) {
 						log.error(">> Message ({}): {}", message.getLevel(), message.getText());
 						compileOk = false;
-						assertTrue("Drools Compile Error in "+listOfFiles[i].getName(),false);
+						assertTrue("BPMN Compile Error in " + listOfFiles[i].getName(), false);
 					}
 
 				} catch (final IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				}
+			}
 
 			} else if (listOfFiles[i].isDirectory()) {
 				System.out.println("Directory " + listOfFiles[i].getName());
-				readFilenamesFromDirectory(rootFilePath+"/"+listOfFiles[i].getName());
+				readFilenamesFromDirectory(rootFilePath + "/" + listOfFiles[i].getName());
 			}
 		}
 		return compileOk;
+	}
+
+	private static List<Tuple2<String, String>> processFile(final Vertx vertx, String inputFileStr) {
+		File file = new File(inputFileStr);
+		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
+		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
+		List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
+
+		if (!file.isFile()) {
+			final List<String> filesList = vertx.fileSystem().readDirBlocking(inputFileStr);
+
+			for (final String dirFileStr : filesList) {
+				List<Tuple2<String, String>> childRules = processFile(vertx, dirFileStr); // use directory name as
+																							// rulegroup
+				rules.addAll(childRules);
+			}
+			return rules;
+		} else {
+			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
+			try {
+				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that start
+																								// with XX
+					final String ruleText = buf.toString();
+
+					Tuple2<String, String> rule = (Tuple.of(fileName + "." + fileNameExt, ruleText));
+					System.out.println("Loading in Rule:" + rule._1 + " of " + inputFileStr);
+					rules.add(rule);
+				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
+																										// that start
+																										// with XX
+					final String bpmnText = buf.toString();
+
+					Tuple2<String, String> bpmn = (Tuple.of(fileName + "." + fileNameExt, bpmnText));
+					System.out.println("Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+					rules.add(bpmn);
+				}
+				return rules;
+			} catch (final DecodeException dE) {
+
+			}
+
+		}
+		return null;
 	}
 
 	private static String getFileAsText(final File file) throws IOException {
