@@ -1,0 +1,39 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.List;
+
+
+rule "Send BucketData To Frontend"
+    no-loop true
+    
+    when
+        rules: QRules( isState("LAYOUT_CHANGE_READY")) 
+     then
+     	RulesUtils.header(drools.getRule().getName());
+     	
+     	 List<BaseEntity> views = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+     	 rules.publishCmd(views,"GRP_DASHBOARD","LNK_CORE");
+  		RulesUtils.println(views);
+     	
+     	for (BaseEntity bucket : buckets ) 
+     	{
+     		RulesUtils.println(bucket);
+     		List<BaseEntity> begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
+     		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
+     		 
+     		for (BaseEntity beg : begs) {
+     			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
+     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
+     			for (BaseEntity begKid : begKids) {
+    	 			
+     	 			RulesUtils.println(begKid);
+     	 		}
+     		}
+     	}
+       	
+     		
+	    RulesUtils.footer(drools.getRule().getName());       		      
+end

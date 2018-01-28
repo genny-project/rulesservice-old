@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Create GPS Route Simulation"
+    no-loop true
+  when
+        m : QEventMessage( QEventMessage.getEvent_type().equals("GPS_TEST") )
+        rules: QRules()
+     then
+     	RulesUtils.header(drools.getRule().getName());
+     	    	
+        BaseEntity user = rules.getUser();
+        BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM",rules.getAsString("realm"));
+ 		RulesUtils.println(project);
+		String googleApiKey = project.findEntityAttribute("PRI_GOOGLE_API_KEY").get().getAsString();
+	
+  /* "https://maps.googleapis.com/maps/api/directions/json?origin=121+Cardigan+St,Carlton&destination=161+Lygon+St,+Carlton+VIC+3053&key="+googleApiKey */
+  		
+	    RulesUtils.footer(drools.getRule().getName());   
+end

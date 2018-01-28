@@ -144,8 +144,11 @@ public class RuleTest {
 			}
 
 			} else if (listOfFiles[i].isDirectory()) {
+				if (!listOfFiles[i].getName().startsWith("XX")) {
+
 				System.out.println("Directory " + listOfFiles[i].getName());
 				readFilenamesFromDirectory(rootFilePath + "/" + listOfFiles[i].getName());
+				}
 			}
 		}
 		return compileOk;
