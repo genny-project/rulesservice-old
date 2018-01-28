@@ -11,12 +11,12 @@ rule "Send Ch40 BucketData To Frontend"
     salience 7
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SEND_BUCKET_DATA"))) 
+        rules: QRules( !isState("SEND_BUCKET_DATA") ) 
      then
      	rules.header();
 	
 		/* Show loading indicator */
-		rules.showLoading("Loading your interface...");
+		/*  rules.showLoading("Loading your interface...");   */
      	
      	BaseEntity user = rules.getUser();
       		
