@@ -150,12 +150,12 @@ public class RulesUtils {
 		
 	
 		String host = "http://localhost:2223";
-		if(path.contains(".json")) {
-			host = "https://raw.githubusercontent.com/genny-project/layouts/master";
-		}
-		else {
-			host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
-		}
+//		if(path.contains(".json")) {
+//			host = "https://raw.githubusercontent.com/genny-project/layouts/master";
+//		}
+//		else {
+//			host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
+//		}
 		
 		return String.format("%s/%s", host, path);
 	}
