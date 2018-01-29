@@ -33,16 +33,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -60,32 +50,10 @@ rule "Make Offer"
         rules: QRules()
     then
         RulesUtils.header(drools.getRule().getName());
-        
-        
-        		/* Prepare GSON Deserialization */
-            Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-                    @Override
-                    public LocalDateTime deserialize(final JsonElement json, final Type type,
-                        final JsonDeserializationContext jsonDeserializationContext)
-                        throws JsonParseException {
-                    return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    }
-
-                    public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-                        final JsonSerializationContext context) {
-                    return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-                    }
-                }).create();
-            Gson gson1 = new Gson();
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-            gson1 = gsonBuilder.create();
-        
-        
-       /* Prepare Token & qwandaServiceUrl */
+        /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
+
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
             System.out.println("begCode  ::   "+ begCode);                    
@@ -121,26 +89,12 @@ rule "Make Offer"
             answerList.add(quoterFullName);
             answerList.add(jobCode);
 
-            /* save attributes */
-            int i=1;
+            /* save attributes as answer */
             for (Answer answer : answerList) {
-                System.out.println("Answer      " + i + "::   " + answer.toString());               
-                String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
-                        gson1.toJson(answer), tokenString);
-                        System.out.println("Result      " + i + "::   " + result );
-                i++;                    
+                rules.saveAnswer(answer);             
             }                              
-            /* get OFFER QUESTION GROUP */
-                JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
-                RulesUtils.ruleLogger("Make offer Questions", offerGrp);
-                /* publish QUESTIONS */
-                    offerGrp.put("token", tokenString);					
-                    rules.publish("cmds",  offerGrp); 
-                
-
-        /* sending cmd FORM_VIEW to display Questions */
-            QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", "QUE_OFFER_DETAILS_GRP");
-            rules.publishCmd(cmdFormView);
+        /* Send Offer Questions */
+            rules.askQuestions(userCode, offerCode, "QUE_OFFER_DETAILS_GRP", false); /* false for form_view*/
 
         RulesUtils.footer(drools.getRule().getName());
 end

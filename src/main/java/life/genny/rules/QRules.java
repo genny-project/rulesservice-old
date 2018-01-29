@@ -52,6 +52,8 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.DateTimeDeserializer;
+
 
 public class QRules {
 
@@ -596,12 +598,19 @@ public class QRules {
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
+		sendSublayout(layoutCode, sublayoutPath, null);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
+		if(root != null) {
+			cmdJobSublayoutJson.put("root", root);
+		}
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 	
@@ -707,6 +716,13 @@ public class QRules {
         publish("data", RulesUtils.toJsonObject(msg));
     }
 
+	public void publishCmdToRecipients(final BaseEntity be, final String[] recipientsCode) {
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
+		msg.setRecipientCodeArray(recipientsCode);
+		msg.setToken(getToken());
+		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+
 	public void publishData(final JsonObject msg) {
 		msg.put("token", getToken());
 		publish("data", msg);
@@ -745,6 +761,21 @@ public class QRules {
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
 		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+
+	// public void publishUpdatedLink(final String parentCode, final String linkCode) {
+	// 	QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
+	// 	msg.setParentCode(parentCode);
+	// 	msg.setLinkCode(linkCode);
+	// 	msg.setToken(getToken());
+	// 	publish("cmds", RulesUtils.toJsonObject(msg));
+	// }
+
+	public Link[] getUpdatedLink(String parentCode, String linkCode){
+		List<Link> links= getLinks(parentCode, linkCode);
+		Link[] items = new Link[ links.size() ];
+		items = (Link[]) links.toArray(items);
+		return items;
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg) {
@@ -1027,6 +1058,19 @@ public class QRules {
 		}
 	}
 
+	public void saveAnswer(Answer answer){
+		Gson gson = new Gson();
+	    GsonBuilder gsonBuilder = new GsonBuilder();
+	    gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	    gson = gsonBuilder.create();
+		
+		try {
+			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(answer), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+
 	public void processAnswer(QDataAnswerMessage m) {
 
 		/* extract answers */
@@ -1230,8 +1274,41 @@ public class QRules {
 		}
 		
 		return gstPrice;
+	}	
+
+	public Link createLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {	
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+		
+		log.info("CREATING LINK between "+ groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
+		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
+		link.setWeight(weight);	
+		try {
+			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/entityentitys", gson.toJson(link), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		return link;
 	}
 	
+	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {	
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+		
+		log.info("UPDATING LINK between "+ groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
+		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
+		link.setWeight(weight);	
+		try {
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		return link;
+	}
 	
 	
 }
