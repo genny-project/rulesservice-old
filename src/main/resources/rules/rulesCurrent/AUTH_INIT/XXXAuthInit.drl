@@ -1,0 +1,131 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+
+import org.apache.commons.lang3.StringUtils;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import com.google.gson.Gson;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.entity.BaseEntity;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
+
+// global java.lang.String REACT_APP_QWANDA_API_URL;
+// global java.lang.String REACT_APP_VERTX_URL;
+// global java.lang.String KEYCLOAKIP;
+
+// global variables for color logs
+global java.lang.String LOG_RESET;
+global java.lang.String LOG_RED;
+global java.lang.String LOG_GREEN;
+global java.lang.String LOG_YELLOW;
+global java.lang.String LOG_BLUE;
+global java.lang.String LOG_PURPLE;
+global java.lang.String LOG_CYAN;
+global java.lang.String LOG_WHITE;
+global java.lang.String LOG_BOLD;
+
+    
+
+rule "Old Init"
+
+    when
+        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+        $roles : Set(!isEmpty())
+        rules: QRules( isState("IS_LOGGED_IN")) 
+     then
+  		RulesUtils.header(drools.getRule().getName());  
+  		        
+        /* Calling the rule group : UserRegistration */
+       /* drools.setFocus("UserRegistration");  */
+        /* Calling the rule group : layout */
+        drools.setFocus("layout");  
+        
+        /* Get BaseEntity with attributes */
+        JsonObject objWithAttr = new JsonObject(QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes?pageStart=0&pageSize=10", rules.getToken()));
+        /* Print the json Object   */
+        objWithAttr.put("token", rules.getToken());     
+ 
+         rules.publish("cmds", objWithAttr);   
+        	
+        	/*  Send all sublayouts for entities  */
+  		RulesUtils.header( "Send initial sublayouts");  
+  
+  		String subLayoutMap = QwandaUtils.apiGet("https://api.github.com/repos/genny-project/layouts/contents/sublayouts", null);
+		if(subLayoutMap != null) {
+		
+			JsonArray subLayouts = new JsonArray(subLayoutMap);
+			if(subLayouts != null) {
+				
+				for(int i = 0; i < subLayouts.size(); i++) {
+					
+					JsonObject sublayoutData = subLayouts.getJsonObject(i);
+					String url = sublayoutData.getString("download_url");
+					String name = sublayoutData.getString("name");
+					name = name.replace(".json", "");
+					name = name.replaceAll("\"", "");
+					
+					if(url != null) {
+						
+						/*  grab sublayout from github */
+						String subLayoutString = QwandaUtils.apiGet(url, null);
+						if(subLayoutString != null) {
+							
+							try {
+								
+								// send sublayout to FE 
+								JsonObject sublayout = new JsonObject(subLayoutString);
+								JsonObject subLayoutObj = new JsonObject();
+						        subLayoutObj.put("msg_type", "DATA_MSG");
+						        subLayoutObj.put("data_type", "SUB_LAYOUT");
+						        subLayoutObj.put("code", name);
+						        subLayoutObj.put("items", sublayout);      
+								subLayoutObj.put("token", rules.getToken());
+								
+						        System.out.println("------------------------------------------------------------------------\n");
+						        System.out.println("SUBLAYOUT DATA   ::   " + subLayoutObj.toString()); 
+						        System.out.println("------------------------------------------------------------------------");
+						        rules.publish("cmds", subLayoutObj);
+						        
+							}
+							catch(Exception e) {
+							} 
+						}
+					}
+				}
+			}
+		}
+		
+	 RulesUtils.footer(drools.getRule().getName());       		      
+end

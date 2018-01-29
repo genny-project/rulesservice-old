@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import org.kie.api.runtime.process.WorkflowProcessInstance;
+
+
+
+rule "Send PROJECT To Frontend"
+    no-loop true
+    ruleflow-group "SendProjects"
+    when
+         rules: QRules( )
+        $process : WorkflowProcessInstance( )
+     then
+     	rules.header();
+     	
+     	BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM",rules.getAsString("realm"));
+     	rules.println("Project "+project);
+     	  
+        rules.publishCmd(project,"PROJECT");
+        
+     //   WorkflowProcessInstance $p = (WorkflowProcessInstance)kcontext.getKieRuntime().getProcessInstance($process.getId()); //casting to WorkflowProcessInstance is essential
+	//	System.out.println($p.getVariable( "myevent"));
+	//	System.out.println(WorkflowProcessInstance(variable["myevent"]));
+	//	retract($process);
+ 	
+	    rules.footer();      		      
+end

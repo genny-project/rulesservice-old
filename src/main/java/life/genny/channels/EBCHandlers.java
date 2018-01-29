@@ -177,7 +177,7 @@ public class EBCHandlers {
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
 			
-			QRules rulesState = new QRules(eventBus, token, adecodedTokenMap);
+			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
 			
 			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
 			String fullName = adecodedTokenMap.get("name").toString();
@@ -188,7 +188,7 @@ public class EBCHandlers {
 	
 
 			List<Object> facts = new ArrayList<Object>();
-			facts.add(rulesState);
+			facts.add(qRules);
 			facts.add(msg);
 			facts.add(adecodedTokenMap);
 			facts.add(auserRoles);

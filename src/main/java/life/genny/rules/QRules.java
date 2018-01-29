@@ -65,10 +65,13 @@ public class QRules {
 
 	private String token;
 	private EventBus eventBus;
+	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
 
 	KnowledgeHelper drools;
+	
+	
 
 	public void setDrools(KnowledgeHelper drools) {
 		this.drools = drools;
@@ -84,6 +87,7 @@ public class QRules {
 		this.decodedTokenMap = decodedTokenMap;
 		this.stateMap = new HashMap<String, Boolean>();
 		stateMap.put(DEFAULT_STATE, true);
+		setStarted(false);
 
 	}
 
@@ -181,7 +185,7 @@ public class QRules {
 	 */
 	public boolean isState(final String key) {
 		if (stateMap.containsKey(key)) {
-			return stateMap.get(key);
+			return stateMap.get(key) ;
 		} else {
 			return false;
 		}
@@ -676,6 +680,9 @@ public class QRules {
 				}
 			}
 		}
+		if ("data".equals(channel)) {
+			System.out.println("Naughty coding");;
+		}
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -717,7 +724,8 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		JsonObject jsonObj = RulesUtils.toJsonObject(msg);
+		publish("data", jsonObj);
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -799,6 +807,7 @@ public class QRules {
 				questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
 						+ sourceCode + "/asks2/" + questionCode + "/" + targetCode, getToken()));
 				/* QDataAskMessage */
+				questionJson.put("token", getToken());
 				publish("data", questionJson);
 
 				// Now auto push any selection data
@@ -1098,10 +1107,16 @@ public class QRules {
 
 	}
 
-	public void startWorkflow(final String id)
+	public void startWorkflow(final String id )
+	{
+		startWorkflow(id,new HashMap<String,Object>());
+	}
+	public void startWorkflow(final String id,  Map<String,Object> parms )
 	{
 		println("Starting process "+id);
-		drools.getKieRuntime().startProcess(id);
+		if (drools != null) {
+			drools.getKieRuntime().startProcess(id,parms);
+		}
 	}
 	
 	public void askQuestionFormViewPublish(String sourceCode, String targetCode, String questionCode) {
@@ -1126,6 +1141,25 @@ public class QRules {
 		}
 		
 	}
+
+
+
+	/**
+	 * @return the started
+	 */
+	public Boolean isStarted() {
+		return this.started; 
+	}
+
+
+
+	/**
+	 * @param started the started to set
+	 */
+	public void setStarted(Boolean started) {
+		this.started = started;
+	}
+	
 	
 	
 	
