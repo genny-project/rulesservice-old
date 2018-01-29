@@ -20,7 +20,8 @@ rule "Create Job"
      $m : QEventMessage( event_type == "BTN_CLICK" && data.value == "ADD_NEW_LOAD" )
      rules: QRules(!isState("CREATE_LOAD_CLICKED"))
    then
-     RulesUtils.header(drools.getRule().getName());
+     rules.setDrools(drools);
+     rules.header();
      
      String qwandaServiceUrl = rules.getQwandaServiceUrl();
      String userCode =  rules.getUser().getCode();
@@ -72,6 +73,7 @@ rule "Create Job"
 
     /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson); 
-	RulesUtils.footer(drools.getRule().getName());
+     
+     rules.footer();  
   
 end
