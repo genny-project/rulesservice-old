@@ -13,7 +13,6 @@ rule "New User Profile Submit"
         rules: QRules( isNewUserProfileCompleted() == true ) 
       then
      	rules.header();
-
         /*  Send Layouts and initial Datas    */
         drools.setFocus("SendLayoutsAndData");
         

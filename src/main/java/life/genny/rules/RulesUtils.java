@@ -3,11 +3,14 @@ package life.genny.rules;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -164,6 +167,13 @@ public class RulesUtils {
 		}
 		
 		return String.format("%s/%s", host, path);
+	}
+	
+	public static String getTodaysDate(final String dateFormat) {
+			
+		DateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+		Date date = new Date();
+		return dateFormatter.format(date);
 	}
 	
 	public static String getLayout(final String path) {

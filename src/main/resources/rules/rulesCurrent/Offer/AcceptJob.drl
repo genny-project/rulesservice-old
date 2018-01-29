@@ -20,6 +20,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QDataLinksMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -31,16 +32,6 @@ import io.vertx.rxjava.core.eventbus.EventBus;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -61,14 +52,10 @@ rule "Accept Job"
         rules: QRules()
     then
         RulesUtils.header(drools.getRule().getName());
-        /* Prepare GSON Deserialization */
-            Gson gson1 = new Gson();
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-            gson1 = gsonBuilder.create();
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
+        
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
             System.out.println("begCode  ::   "+ begCode);                    
@@ -87,6 +74,7 @@ rule "Accept Job"
         /* get BEG PRICE */           
             String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
             System.out.println("BEG PRICE   ::   "+begPrice);
+
         /* Create Offer BE */
             BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
             RulesUtils.ruleLogger("OFFER Base Entity", offer);
@@ -115,12 +103,7 @@ rule "Accept Job"
             /* save attributes */
             int i=1;
             for (Answer answer : answerList) {
-                System.out.println("Answer      " + i + "::   " + answer.toString());               
-                String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers",
-                        gson1.toJson(answer), tokenString);
-                        System.out.println("Result      " + i + "::   " + result );
-                i++;
-                
+                rules.saveAnswer(answer);
             } 
 
         /* Update the number of offers for BEG */ 
@@ -135,23 +118,16 @@ rule "Accept Job"
             }
 
             Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
-            String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerCountAnswer), tokenString);               
+            rules.saveAnswer(offerCountAnswer);               
 
         /* link BEG and OFFER BE || OFFER */
             QwandaUtils.createLink(begCode, offerCode, linkCode, linkOffer, 1.0, tokenString);
         /* link BEG and QUOTER BE || QUOTER */
             QwandaUtils.createLink(begCode, userCode, linkCode, linkQuoter, 1.0, tokenString);       
         /* SEND OFFER BE    */
-            JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
-            RulesUtils.ruleLogger("Updated OFFER Base Entity", offerObj);
-            offerObj.put("token", tokenString);      
-            rules.publish("cmds", offerObj);
-
+            rules.publishBaseEntityByCode(offerCode);
         /* SEND QUOTER BE */
-            JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
-            RulesUtils.ruleLogger("QUOTER Base Entity", quoterObj);
-            quoterObj.put("token", tokenString);      
-            rules.publish("cmds", quoterObj);
+            rules.publishBaseEntityByCode(userCode);
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
             /* Creating a data msg */
@@ -163,7 +139,12 @@ rule "Accept Job"
             /* publish new link data */
                 newLink.put("token", tokenString );
                 rules.publish("cmds", newLink);
-
+        /* TEST 
+            Link[] linkArray = rules.getUpdatedLink(begCode, linkCode);
+            System.out.println( "Link array   ::   " + linkArray.toString() );
+            QDataLinksMessage msg = new QDataLinksMessage(linkArray);
+            rules.publishData(msg); */
+        	
         /* Sending message to BEG OWNER */
             HashMap<String,String> contextMap = new HashMap<String, String>();
         	contextMap.put("QUOTER",userCode);
