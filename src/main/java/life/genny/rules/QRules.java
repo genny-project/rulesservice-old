@@ -1267,8 +1267,41 @@ public class QRules {
 		}
 		
 		return gstPrice;
+	}	
+
+	public Link createLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {	
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+		
+		log.info("CREATING LINK between "+ groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
+		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
+		link.setWeight(weight);	
+		try {
+			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/entityentitys", gson.toJson(link), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		return link;
 	}
 	
+	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {	
+		Gson gson = new Gson();
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+		gson = gsonBuilder.create();
+		
+		log.info("UPDATING LINK between "+ groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
+		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
+		link.setWeight(weight);	
+		try {
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		return link;
+	}
 	
 	
 }
