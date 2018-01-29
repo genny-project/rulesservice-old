@@ -33,7 +33,7 @@ rule "Create Payments Assembly Company"
      		if(assemblyId != null) {
 				
 				/* Create Assembly Company for user */
-				String companyId = PaymentUtils.createCompany(assemblyId, assemblyAuthToken, rules.getToken());
+				String companyId = PaymentUtils.createCompany(assemblyAuthToken, rules.getToken());
 		
 		
 				/* Save companyId as an attribute for the user */
