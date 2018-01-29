@@ -45,6 +45,7 @@ import com.google.gson.FieldNamingPolicy;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -96,16 +97,18 @@ rule "Send Message"
 		    			
 		    			QDataAnswerMessage msg = new QDataAnswerMessage(items);
 		    			msg.setRecipientCodeArray(recipientCodeArray);
-		    			msg.setToken(rules.getToken());
+		    			msg.setToken(rules.getToken()); 
 
 		    			String jsonAnswer = RulesUtils.toJson(msg);
-		    			QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken());
+		    			QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken()); 
 		    			
   		    			
 		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), textMessage); */
 		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), creator); */
   		    			
-		    			rules.publishData(newMessage, recipientCodeArray);	    			
+		    			 rules.publishBaseEntityByCode(newMessage.getCode(), recipientCodeArray);
+
+		       	 	/* rules.publishData(newMessage, recipientCodeArray);	    	 */		
   		    		}
   		    }
   		}

@@ -423,12 +423,16 @@ public class QRules {
 		return null;
 	}
 	
-	public void publishBaseEntityByCode(final String beCode) {
+	public void publishBaseEntityByCode(final String beCode, final String[] recipientCodes) {
 			
 		BaseEntity be = getBaseEntityByCode(beCode);
 		if(be != null) {
-			publishCmd(be, getToken());
+			publishCmd(be, getToken(), recipientCodes);
 		}
+	}
+	
+	public void publishBaseEntityByCode(final String beCode) {
+		this.publishBaseEntityByCode(beCode, null);
 	}
 
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
@@ -691,10 +695,18 @@ public class QRules {
 		this.getEventBus().send(channel, payload);
 	}
 
-	public void publishCmd(final BaseEntity be, final String aliasCode) {
+	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
+		if(recipientsCode != null) {
+			msg.setRecipientCodeArray(recipientsCode);
+		}
+		
 		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishCmd(final BaseEntity be, final String aliasCode) {
+		this.publishCmd(be, aliasCode, null);
 	}
 	
 	public void publishData(final BaseEntity be, final String[] recipientsCode) {
@@ -744,10 +756,17 @@ public class QRules {
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
+		this.publishCmd(beList, parentCode, linkCode, null);
+	}
+	
+	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode, String[] recipientCodes) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
 		msg.setParentCode(parentCode);
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
+		if(recipientCodes != null) {
+			msg.setRecipientCodeArray(recipientCodes);
+		}
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 

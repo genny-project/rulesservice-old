@@ -6,6 +6,7 @@ rule "Pre Init"
     salience 60000
 	no-loop true
     when
+         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
          rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
