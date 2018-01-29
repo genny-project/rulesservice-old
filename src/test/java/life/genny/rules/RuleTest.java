@@ -1,13 +1,11 @@
 package life.genny.rules;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,11 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.junit.Before;
 import org.junit.Test;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
 import org.kie.api.KieServices;
 import org.kie.api.builder.Message;
 import org.kie.api.builder.Results;
@@ -31,12 +26,10 @@ import org.kie.internal.utils.KieHelper;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
-import life.genny.qwanda.message.QEventMessage;
 
 public class RuleTest {
 	private static final Logger log = org.apache.logging.log4j.LogManager
@@ -207,5 +200,22 @@ public class RuleTest {
 		in.close();
 
 		return ret;
+	}
+	
+	@Test
+	public void testFeesCalculation() {
+		Double price = 10000.00;
+		QRules rules = new QRules(null, null, null);
+		Double fees = rules.calculateFees(price);
+		System.out.println("fees ::"+fees);	
+		
+	}
+	
+	@Test
+	public void testExcludeGST() {
+		Double price = 10000.00;
+		QRules rules = new QRules(null, null, null);
+		Double excludedGSTPrice = rules.excludeGST(price);
+		System.out.println("excluded GST price ::"+excludedGSTPrice);
 	}
 }
