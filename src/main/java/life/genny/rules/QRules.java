@@ -1199,51 +1199,6 @@ public class QRules {
 		this.started = started;
 	}
 	
-	public BigDecimal calculateFees(BigDecimal price) {
-
-		BigDecimal fees = new BigDecimal(0);
-		
-		if (price.compareTo(BigDecimal.valueOf(0)) > 0 && price.compareTo(BigDecimal.valueOf(1000)) <= 0) {
-			
-			/* 15% of price if price less than or equal to 1000 */
-			System.out.println("Price greater than 0 and less or equal to 1000");
-			fees = price.multiply(new BigDecimal("0.15"));
-			
-		} else if (price.compareTo(BigDecimal.valueOf(1000)) > 0 && price.compareTo(BigDecimal.valueOf(3000)) <= 0) {
-			/*
-			 * 15% + 10% of remaining price if price greater than 1000 and less
-			 * than or equal to 3000
-			 */
-			System.out.println("Price greater than 1000 and less or equal to 3000");
-			BigDecimal initialFee = new BigDecimal("150");
-			BigDecimal negatedAmount = price.subtract(new BigDecimal("1000"));
-			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.1")));
-			
-			
-		} else if (price.compareTo(BigDecimal.valueOf(3000)) > 0 && price.compareTo(BigDecimal.valueOf(5000)) <= 0) {
-			/*
-			 * 15% + 10% + (7.5% of remaining amount) if price is greater than
-			 * 3000 and less than or equal to 5000
-			 */
-			System.out.println("Price greater than 3000 and less or equal to 5000");
-			BigDecimal initialFee = new BigDecimal("350");
-			BigDecimal negatedAmount = price.subtract(new BigDecimal("3000"));
-			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.075")));
-			
-		} else if (price.compareTo(BigDecimal.valueOf(5000)) > 0) {
-			/*
-			 * 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
-			 * than 5000
-			 */
-			System.out.println("Price greater than 5000");
-			BigDecimal initialFee = new BigDecimal("500");
-			BigDecimal negatedAmount = price.subtract(new BigDecimal("5000"));
-			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
-		}
-
-		return fees;
-	}
-	
 	
 	public BigDecimal includeGST(BigDecimal price) {
 		

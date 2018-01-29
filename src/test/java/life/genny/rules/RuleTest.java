@@ -202,24 +202,4 @@ public class RuleTest {
 
 		return ret;
 	}
-	
-	@Test
-	public void testFeesCalculation() {
-		BigDecimal price = new BigDecimal("1000");
-		QRules rules = new QRules(null, null, null);
-		BigDecimal fees = rules.calculateFees(price);
-		System.out.println("fees ::"+fees);	
-		
-		int i = price.compareTo(BigDecimal.valueOf(1000));
-		System.out.println("compare value ::"+i);
-		
-	}
-	
-	@Test
-	public void testExcludeGST() {
-		BigDecimal price = new BigDecimal("1000");
-		QRules rules = new QRules(null, null, null);
-		BigDecimal excludedGSTPrice = rules.excludeGST(price);
-		System.out.println("excluded GST price ::"+excludedGSTPrice);
-	}
 }
