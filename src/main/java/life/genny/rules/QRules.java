@@ -668,9 +668,11 @@ public class QRules {
 	}
 
 	public void publish(String channel, final Object payload) {
+		
 		if (channel.startsWith("debug")) {
 			channel = channel.substring("debug".length());
 		}
+		
 		if (payload instanceof JsonObject) {
 			if (payload.toString().contains("year")) {
 				println("BAD JSON");
@@ -680,9 +682,11 @@ public class QRules {
 				}
 			}
 		}
+		
 		if ("data".equals(channel)) {
-			System.out.println("Naughty coding");;
+			System.out.println("Naughty coding");
 		}
+		
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -695,6 +699,13 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
+	
+	public void publishData(final BaseEntity be, final String[] recipientsCode) {
+        QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
+        msg.setRecipientCodeArray(recipientsCode);
+        msg.setToken(getToken());
+        publish("data", RulesUtils.toJsonObject(msg));
+    }
 
 	public void publishData(final JsonObject msg) {
 		msg.put("token", getToken());
