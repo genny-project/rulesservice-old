@@ -52,6 +52,8 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwanda.DateTimeDeserializer;
+
 
 public class QRules {
 
@@ -707,6 +709,13 @@ public class QRules {
         publish("data", RulesUtils.toJsonObject(msg));
     }
 
+	public void publishCmdToRecipients(final BaseEntity be, final String[] recipientsCode) {
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
+		msg.setRecipientCodeArray(recipientsCode);
+		msg.setToken(getToken());
+		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+
 	public void publishData(final JsonObject msg) {
 		msg.put("token", getToken());
 		publish("data", msg);
@@ -745,6 +754,21 @@ public class QRules {
 		msg.setLinkCode(linkCode);
 		msg.setToken(getToken());
 		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+
+	// public void publishUpdatedLink(final String parentCode, final String linkCode) {
+	// 	QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
+	// 	msg.setParentCode(parentCode);
+	// 	msg.setLinkCode(linkCode);
+	// 	msg.setToken(getToken());
+	// 	publish("cmds", RulesUtils.toJsonObject(msg));
+	// }
+
+	public Link[] getUpdatedLink(String parentCode, String linkCode){
+		List<Link> links= getLinks(parentCode, linkCode);
+		Link[] items = new Link[ links.size() ];
+		items = (Link[]) links.toArray(items);
+		return items;
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg) {
@@ -1025,6 +1049,19 @@ public class QRules {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void saveAnswer(Answer answer){
+		Gson gson = new Gson();
+	    GsonBuilder gsonBuilder = new GsonBuilder();
+	    gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+	    gson = gsonBuilder.create();
+		
+		try {
+			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",gson.toJson(answer), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 
 	public void processAnswer(QDataAnswerMessage m) {
