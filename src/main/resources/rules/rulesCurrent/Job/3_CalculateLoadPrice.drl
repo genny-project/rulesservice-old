@@ -28,11 +28,11 @@ rule "Calculate Load Price"
 	   
         Answer newAnswer = $m.getAnswer();
        
-         BigDecimal originalPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
+         BigDecimal price = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
          String begCode = newAnswer.getTargetCode();
          
         /* Calculating Owner Price - adding GST  */
-         BigDecimal ownerPrice = rules.includeGST(originalPrice);
+         BigDecimal ownerPrice = rules.includeGST(price);
          
         /*  Saving OWNER_PRICE attribute to the BEG   */
          Answer jobOwnerPriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_OWNER_PRICE",String.valueOf(ownerPrice));             
@@ -74,12 +74,12 @@ rule "Calculate Load Price"
  			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
  		}
  		
- 		BigDecimal feeWithGST = new BigDecimal(fees + rules.includeGST(fees));
+ 		BigDecimal feeWithGST = fees.add(rules.includeGST(fees));
        
        /*  Saving FEE_PRICE attribute to the BEG - Fees in ex GST amount + GST  */
          Answer feePriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_FEE",String.valueOf(feeWithGST));             
          rules.publishData(feePriceAnswer);
-         BigDecimal driverPrice = new BigDecimal (ownerPrice - feeWithGST);
+         BigDecimal driverPrice = ownerPrice.subtract(feeWithGST);
        
        /*  Saving DRIVER_PRICE attribute to the BEG   */
          Answer driverPriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_DRIVER_PRICE",String.valueOf(driverPrice));             
