@@ -138,8 +138,7 @@ public class RulesUtils {
 	}
 	
 	public static void println(final Object obj) {
-		println(obj,ANSI_RESET);
-
+		println(obj, ANSI_RESET);
 	}
 	
 	public static String getLayoutCacheURL(final String path) {
