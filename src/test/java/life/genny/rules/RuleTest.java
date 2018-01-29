@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -204,18 +205,21 @@ public class RuleTest {
 	
 	@Test
 	public void testFeesCalculation() {
-		Double price = 10000.00;
+		BigDecimal price = new BigDecimal("1000");
 		QRules rules = new QRules(null, null, null);
-		Double fees = rules.calculateFees(price);
+		BigDecimal fees = rules.calculateFees(price);
 		System.out.println("fees ::"+fees);	
+		
+		int i = price.compareTo(BigDecimal.valueOf(1000));
+		System.out.println("compare value ::"+i);
 		
 	}
 	
 	@Test
 	public void testExcludeGST() {
-		Double price = 10000.00;
+		BigDecimal price = new BigDecimal("1000");
 		QRules rules = new QRules(null, null, null);
-		Double excludedGSTPrice = rules.excludeGST(price);
+		BigDecimal excludedGSTPrice = rules.excludeGST(price);
 		System.out.println("excluded GST price ::"+excludedGSTPrice);
 	}
 }
