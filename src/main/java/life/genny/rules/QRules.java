@@ -2,11 +2,10 @@ package life.genny.rules;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,21 +18,10 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
-import org.kie.api.runtime.KieSession;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
@@ -1171,62 +1159,78 @@ public class QRules {
 		this.started = started;
 	}
 	
-	public Double calculateFees(Double price) {
+	public BigDecimal calculateFees(BigDecimal price) {
 
-		Double fees = 0.00;
-		if (price > 0 && price <= 1000.00) {
+		BigDecimal fees = price;
+		
+		if (price.compareTo(BigDecimal.valueOf(0)) > 0 && price.compareTo(BigDecimal.valueOf(1000)) <= 0) {
 			
 			/* 15% of price if price less than or equal to 1000 */
-			fees = price * 0.15;
+			System.out.println("Price greater than 0 and less or equal to 1000");
+			fees = price.multiply(new BigDecimal("0.15"));
 			
-		} else if (price > 1000 && price <= 3000) {
+		} else if (price.compareTo(BigDecimal.valueOf(1000)) > 0 && price.compareTo(BigDecimal.valueOf(3000)) <= 0) {
 			/*
 			 * 15% + 10% of remaining price if price greater than 1000 and less
 			 * than or equal to 3000
 			 */
-			fees = 150.00 + ((price - 1000) * 0.1);
+			System.out.println("Price greater than 1000 and less or equal to 3000");
+			BigDecimal initialFee = new BigDecimal("150");
+			BigDecimal negatedAmount = price.subtract(new BigDecimal("1000"));
+			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.1")));
 			
-		} else if (price > 3000 && price <= 5000) {
+			
+		} else if (price.compareTo(BigDecimal.valueOf(3000)) > 0 && price.compareTo(BigDecimal.valueOf(5000)) <= 0) {
 			/*
 			 * 15% + 10% + (7.5% of remaining amount) if price is greater than
 			 * 3000 and less than or equal to 5000
 			 */
-			fees = 350.00 + ((price - 3000) * 0.075);
+			System.out.println("Price greater than 3000 and less or equal to 5000");
+			BigDecimal initialFee = new BigDecimal("350");
+			BigDecimal negatedAmount = price.subtract(new BigDecimal("3000"));
+			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.075")));
 			
-		} else if (price > 5000) {
+		} else if (price.compareTo(BigDecimal.valueOf(5000)) > 0) {
 			/*
 			 * 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
 			 * than 5000
 			 */
-			fees = 500.00 + ((price - 5000) * 0.05);
+			System.out.println("Price greater than 5000");
+			BigDecimal initialFee = new BigDecimal("500");
+			BigDecimal negatedAmount = price.subtract(new BigDecimal("5000"));
+			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
 		}
 
 		return fees;
 	}
 	
 	
-	public Double includeGST(Double price) {
+	public BigDecimal includeGST(BigDecimal price) {
 		
-		Double gstPrice = price;
+		BigDecimal gstPrice = price;
 		
 		/* Including 10% of price for GST */
 		
-		if(price > 0) {
-			gstPrice = price + (0.1 * price);			
+		if(price.compareTo(BigDecimal.ZERO) > 0) {
+			
+			BigDecimal priceToBeIncluded = price.multiply(new BigDecimal("0.1"));
+			gstPrice = price.add(priceToBeIncluded);			
 		}
 		
 		return gstPrice;
 		 
 	}
 	
-	public Double excludeGST(Double price) {
+	public BigDecimal excludeGST(BigDecimal price) {
 		
 		/* Excluding 10% of price for GST */
 		
-		Double gstPrice = price;
+		BigDecimal gstPrice = price;
 		
-		if(price > 0) {
-			gstPrice = price - (0.1 * price);			
+		if(price.compareTo(BigDecimal.ZERO) > 0) {
+			
+			BigDecimal priceToBeIncluded = price.multiply(new BigDecimal("0.1"));
+			gstPrice = price.subtract(priceToBeIncluded);			
 		}
 		
 		return gstPrice;
