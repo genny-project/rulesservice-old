@@ -208,7 +208,7 @@ rule "Confirm Offer"
                     newLink.put("token", tokenString );
                     rules.publish("cmds", newLink);
                     
-                /* drools.setFocus("payments"); */
+                drools.setFocus("payments");
 
                 /* Sending message to OWNER */
                 HashMap<String,String> contextMap = new HashMap<String, String>();
