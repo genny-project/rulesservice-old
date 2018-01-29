@@ -1201,7 +1201,7 @@ public class QRules {
 	
 	public BigDecimal calculateFees(BigDecimal price) {
 
-		BigDecimal fees = price;
+		BigDecimal fees = new BigDecimal(0);
 		
 		if (price.compareTo(BigDecimal.valueOf(0)) > 0 && price.compareTo(BigDecimal.valueOf(1000)) <= 0) {
 			
