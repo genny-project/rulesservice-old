@@ -1112,6 +1112,8 @@ public class QRules {
 					+ questionCode + "/" + targetCode, getToken());
 			
 			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			
+			System.out.println("QDataAskMessage for payments question group ::"+msg);
 
 			msg.setToken(getToken());
 			publish("cmds", RulesUtils.toJsonObject(msg));
@@ -1124,5 +1126,8 @@ public class QRules {
 		}
 		
 	}
+	
+	
+	
 	
 }
