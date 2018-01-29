@@ -35,6 +35,7 @@ public class ClusterConfig {
     hazelcastConfig.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
     hazelcastConfig.getNetworkConfig().setPublicAddress(hostIP);
     hazelcastConfig.getNetworkConfig().getJoin().getTcpIpConfig().addMember(hostIP);
+    
     return hazelcastConfig;
   }
 
@@ -60,6 +61,7 @@ public class ClusterConfig {
 //      final ClusterManager mgr = new HazelcastClusterManager();
       options.setClusterManager(mgr);
       options.setEventBusOptions(configEBCluster());
+      options.setClustered(true);
     } else {
       logger.info("Running DEV mode, no cluster");
       ClusterManager mgr = null;
@@ -71,6 +73,7 @@ public class ClusterConfig {
       options.setClusterManager(mgr);
       options.setBlockedThreadCheckInterval(200000000);
       options.setMaxEventLoopExecuteTime(Long.MAX_VALUE);
+      options.setClustered(true);
     }
     return options;
 
