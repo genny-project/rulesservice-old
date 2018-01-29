@@ -12,18 +12,19 @@ rule "User-Profile"
         m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" )
        rules: QRules( ) 
     then
+        rules.setDrools(drools);
         rules.header();
   	    String userCode = rules.getUser().getCode();
   	    
         rules.askQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP");
        /*  Get Company Code of the current user   */
-        BaseEntity job = rules.getParent(userCode, "LNK_STAFF");
-        String companyCode = job.getCode();
+        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
+        String companyCode = company.getCode();
         rules.println("The Company Code is :: "+companyCode);
        /*    Send Company asks   */       
         rules.askQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
 	  /* Send SubLayout  */	
-		rules.sendSublayout("SUB_USER_PROFILE", "create_user.json");
+		rules.sendSublayout("SUB_USER_PROFILE", "user-profile.json");
          
        rules.footer(); 
 end
