@@ -138,8 +138,7 @@ public class RulesUtils {
 	}
 	
 	public static void println(final Object obj) {
-		println(obj,ANSI_RESET);
-
+		println(obj, ANSI_RESET);
 	}
 	
 	public static String getLayoutCacheURL(final String path) {
@@ -148,14 +147,21 @@ public class RulesUtils {
 		// System.getenv("LAYOUT_CACHE_HOST");
 		//http://localhost:2223
 		
-	
-		String host = "http://localhost:2223";
-//		if(path.contains(".json")) {
-//			host = "https://raw.githubusercontent.com/genny-project/layouts/master";
-//		}
-//		else {
-//			host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
-//		}
+		Boolean activateCache = true;
+		
+		String host = System.getenv("LAYOUT_CACHE_HOST");
+		if(host == null) {
+			host = "http://localhost:2223";
+		}
+		
+		if(activateCache == false) {
+			if(path.contains(".json")) {
+				host = "https://raw.githubusercontent.com/genny-project/layouts/master";
+			}
+			else {
+				host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
+			}
+		}
 		
 		return String.format("%s/%s", host, path);
 	}

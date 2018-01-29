@@ -670,9 +670,11 @@ public class QRules {
 	}
 
 	public void publish(String channel, final Object payload) {
+		
 		if (channel.startsWith("debug")) {
 			channel = channel.substring("debug".length());
 		}
+		
 		if (payload instanceof JsonObject) {
 			if (payload.toString().contains("year")) {
 				println("BAD JSON");
@@ -682,9 +684,11 @@ public class QRules {
 				}
 			}
 		}
+		
 		if ("data".equals(channel)) {
-			System.out.println("Naughty coding");;
+			System.out.println("Naughty coding");
 		}
+		
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -697,6 +701,13 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
+	
+	public void publishData(final BaseEntity be, final String[] recipientsCode) {
+        QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
+        msg.setRecipientCodeArray(recipientsCode);
+        msg.setToken(getToken());
+        publish("data", RulesUtils.toJsonObject(msg));
+    }
 
 	public void publishCmdToRecipients(final BaseEntity be, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
@@ -1164,6 +1175,8 @@ public class QRules {
 					+ questionCode + "/" + targetCode, getToken());
 			
 			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			
+			System.out.println("QDataAskMessage for payments question group ::"+msg);
 
 			msg.setToken(getToken());
 			publish("cmds", RulesUtils.toJsonObject(msg));
@@ -1194,6 +1207,68 @@ public class QRules {
 	public void setStarted(Boolean started) {
 		this.started = started;
 	}
+	
+	public Double calculateFees(Double price) {
+
+		Double fees = 0.00;
+		if (price > 0 && price <= 1000.00) {
+			
+			/* 15% of price if price less than or equal to 1000 */
+			fees = price * 0.15;
+			
+		} else if (price > 1000 && price <= 3000) {
+			/*
+			 * 15% + 10% of remaining price if price greater than 1000 and less
+			 * than or equal to 3000
+			 */
+			fees = 150.00 + ((price - 1000) * 0.1);
+			
+		} else if (price > 3000 && price <= 5000) {
+			/*
+			 * 15% + 10% + (7.5% of remaining amount) if price is greater than
+			 * 3000 and less than or equal to 5000
+			 */
+			fees = 350.00 + ((price - 3000) * 0.075);
+			
+		} else if (price > 5000) {
+			/*
+			 * 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
+			 * than 5000
+			 */
+			fees = 500.00 + ((price - 5000) * 0.05);
+		}
+
+		return fees;
+	}
+	
+	
+	public Double includeGST(Double price) {
+		
+		Double gstPrice = price;
+		
+		/* Including 10% of price for GST */
+		
+		if(price > 0) {
+			gstPrice = price + (0.1 * price);			
+		}
+		
+		return gstPrice;
+		 
+	}
+	
+	public Double excludeGST(Double price) {
+		
+		/* Excluding 10% of price for GST */
+		
+		Double gstPrice = price;
+		
+		if(price > 0) {
+			gstPrice = price - (0.1 * price);			
+		}
+		
+		return gstPrice;
+	}
+	
 	
 	
 }
