@@ -598,12 +598,19 @@ public class QRules {
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
+		sendSublayout(layoutCode, sublayoutPath, null);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
+		if(root != null) {
+			cmdJobSublayoutJson.put("root", root);
+		}
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 	
