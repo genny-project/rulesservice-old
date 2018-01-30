@@ -52,6 +52,7 @@ rule "Accept Job"
         rules: QRules()
     then
         rules.header();
+        rules.showLoading("Please wait for a moment...");
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();

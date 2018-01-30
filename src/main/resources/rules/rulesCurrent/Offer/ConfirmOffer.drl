@@ -60,6 +60,7 @@ rule "Confirm Offer"
         rules: QRules()
     then
         rules.header();
+        rules.showLoading("Please wait for a moment...");
         /* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
