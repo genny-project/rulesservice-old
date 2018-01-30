@@ -39,16 +39,9 @@ rule "Show more info about job"
 				case "GRP_APPROVED": 
 				case "GRP_PAID": 
 				case "GRP_DELIVERED": 
+				case "GRP_COMPLETED": 
 			     		
-				     QCmdMessage cmdLoadSublayout = new QCmdMessage("CMD_SUBLAYOUT", "LoadLayout");
-				     
-				     JsonObject cmdLoadSublayoutJson = new JsonObject().mapFrom(cmdLoadSublayout);
-				     
-				     String sublayout = RulesUtils.getLayout("loadLayout.json");
-				     cmdLoadSublayoutJson.put("items", sublayout);
-				     cmdLoadSublayoutJson.put("root", baseEntityCode);
-				     cmdLoadSublayoutJson.put("token", rules.getToken());
-				     rules.getEventBus().publish("cmds", cmdLoadSublayoutJson); 
+				     rules.sendSublayout("LOAD_DETAILS", "loadLayout.json", baseEntityCode);
 				    
 				break;
 			      

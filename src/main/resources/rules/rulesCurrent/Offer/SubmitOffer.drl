@@ -63,7 +63,7 @@ rule "Submit Offer"
        $map1 : Map($value1: this["realm"] != null)
        rules: QRules()
     then
-        System.out.println(QwandaUtils.executeRuleLogger("Submit Offer"));       
+        rules.header();
         /* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
@@ -86,27 +86,25 @@ rule "Submit Offer"
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-            String tokenString = (String)$map.get("token");   
+            String tokenString = (String)$map.get("token");        
         
-        String dataString = $m.getData().getValue();
-        JsonObject dataJson = new JsonObject(dataString);
-        String offerCode = dataJson.getString("targetCode");
+        /* Get offerCode, username, userCode, userFullName */
+            String dataString = $m.getData().getValue();
+            JsonObject dataJson = new JsonObject(dataString);
+
+            String offerCode = dataJson.getString("targetCode");
+            System.out.println("offerCode   ::   "+ offerCode);       
+            String userName = rules.getAsString("preferred_username");
+            System.out.println("username   ::   "+ userName);                 
+            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("usercode   ::   "+ userCode);
+            String userFullName= MergeUtil.getFullName(userCode, tokenString);
+            System.out.println("user fullName   ::   "+ userFullName);
         
-
-        String userName = (String)$map1.get("preferred_username");   
-        System.out.println("username   ::   "+ userName);           
-        String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
-        System.out.println("usercode   ::   "+ userCode);
-        String userFullName= MergeUtil.getFullName(userCode, tokenString);
-        System.out.println("user fullName   ::   "+ userFullName);
-
-        String linkCode= "LNK_BEG";
-        String linkOffer= "OFFER";
-        String linkQuoter= "QUOTER";
-        String linkOwner = "OWNER";
-
-        System.out.println("OFFER CODE FROM FE     ::    "+ offerCode);
-        System.out.println("USER CODE              ::    "+ userCode);
+            String linkCode= "LNK_BEG";
+            String linkOffer= "OFFER";
+            String linkQuoter= "QUOTER";  
+            String linkOwner = "OWNER";
 
         /* GET  attributes of the OFFER BE */
             JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
@@ -180,8 +178,7 @@ rule "Submit Offer"
 
                         /* Update PRI_NEXT_ACTION = OWNER */ 
                             Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                            String result1= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer1), tokenString);  
-                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer1);
+                            rules.saveAnswer(offerActionAnswer1);
                     }
         	
                 /* Owner is giving counter offer */
@@ -214,8 +211,7 @@ rule "Submit Offer"
 
                         /* Update PRI_NEXT_ACTION = OWNER */ 
                             Answer offerActionAnswer2 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
-                            String result2= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer2), tokenString);  
-                            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer2);
+                            rules.saveAnswer(offerActionAnswer2);
                     }
             }   
             
@@ -241,12 +237,11 @@ rule "Submit Offer"
                     }
 
                     Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
-                    String result= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerCountAnswer), tokenString);  
+                    rules.saveAnswer(offerCountAnswer);
                 
                 /* Update PRI_NEXT_ACTION = OWNER */ 
                     Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                    String result3= QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", gson1.toJson(offerActionAnswer3), tokenString);  
-                    RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer3);
+                    rules.saveAnswer(offerActionAnswer3);
 
                 /* Driver is making-offer for first time */
                     HashMap<String,String> noLinkContextMap = new HashMap<String, String>();
@@ -328,5 +323,5 @@ rule "Submit Offer"
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview");        
-        System.out.println(QwandaUtils.terminateRuleLogger("Submit Offer"));
+        rules.footer();
 end
