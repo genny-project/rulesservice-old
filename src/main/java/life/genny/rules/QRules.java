@@ -38,6 +38,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
+import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
@@ -857,6 +858,63 @@ public class QRules {
 				linkCode);
 		return links;
 	}
+	
+	
+	public QDataAskMessage getAskQuestions(final QDataQSTMessage qstMsg) {
+		JsonObject questionJson = null;
+		QDataAskMessage msg = null;
+		try {		
+			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+			  msg = RulesUtils.fromJson(json, QDataAskMessage.class);	
+			
+			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
+
+			return msg;
+		} catch (IOException e) {
+			return msg;
+		}
+	}
+
+	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg) {
+		return askQuestions(qstMsg, false);
+	}
+	
+	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean autoPushSelections) {
+		JsonObject questionJson = null;
+		QDataAskMessage msg = null;
+		try {
+			if (autoPushSelections) {
+				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+
+				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+
+				publishData(msg);
+
+				QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", qstMsg.getRootQST().getQuestionCode());
+				publishCmd(cmdFormView);
+			} else {
+				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken()));
+				/* QDataAskMessage */
+				questionJson.put("token", getToken());
+				publish("data", questionJson);
+
+				// Now auto push any selection data
+
+				QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+				JsonObject json = JsonObject.mapFrom(cmdFormView);
+				json.put("root", qstMsg.getRootQST().getQuestionCode());
+				json.put("token", getToken());
+				publish("cmds", json);
+			}
+
+			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
+
+			return msg;
+		} catch (IOException e) {
+			return msg;
+		}
+	}
+
 
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
