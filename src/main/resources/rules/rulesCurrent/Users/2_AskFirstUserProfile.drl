@@ -8,7 +8,7 @@ rule "Ask First User Profile"
 	salience 5
     agenda-group "NewUserProfile"
     when
-        rules: QRules( !isNewUserProfileCompleted() ) 
+        rules: QRules( isState("PROFILE_CHECK_COMPLETED") ) 
      then
      	rules.header();
      	rules.debug();   		

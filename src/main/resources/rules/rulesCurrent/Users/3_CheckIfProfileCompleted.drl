@@ -10,7 +10,7 @@ rule "Check if Profile Completed"
     agenda-group "CheckIfProfileCompleted"
     salience 8
     when
-        rules: QRules( !isState("PROFILE_CHECK_COMPLETED") ) 
+        rules: QRules( !isState("PROFILE_CHECK_COMPLETED")  ) 
      then
      	rules.header();
      	rules.debug();   		

@@ -23,7 +23,6 @@ rule "Create New User"
         
         rules.println("The user created is  ::  "+be.toString() );
 
-  		rules.println("The value of is Profile completed ::  "+rules.isNewUserProfileCompleted());
   		/* Calling the rule agenda group : NewUser   */
         drools.setFocus("CheckIfProfileCompleted");
   		

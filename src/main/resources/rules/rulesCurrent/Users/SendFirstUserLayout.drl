@@ -8,7 +8,7 @@ rule "Send Initial User Profile Layout"
 	salience 4
     agenda-group "NewUserProfile"
     when
-        rules: QRules( isNewUserProfileCompleted() == false ) 
+        rules: QRules( ) 
       then
      	rules.header();   	
      	rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update.json");

@@ -10,7 +10,7 @@ rule "New User Profile Submit"
     when
        /* $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" )   */
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )
-        rules: QRules( isNewUserProfileCompleted() == true ) 
+        rules: QRules(  ) 
       then
      	rules.header();
         /*  Send Layouts and initial Datas    */
