@@ -23,6 +23,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -38,6 +39,7 @@ import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwanda.DateTimeDeserializer;
@@ -289,34 +291,24 @@ public class QRules {
 		}
 	}
 
-	public Boolean isNewUserProfileCompleted() {
-		Boolean status = false;
-		if (getUser() != null) {
-			status = QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(),
-					"QUE_NEW_USER_PROFILE_GRP", getToken());
-		}
-
-		return status;
-	}
-
 	public void updateBaseEntityByCode(final String code) {
 		BaseEntity be = null;
 		be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 
 		if (System.getenv("API_PORT") != null) {
-				try {
-					QwandaUtils.apiPutCodedEntity(be, getToken());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				QwandaUtils.apiPutCodedEntity(be, getToken());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else {
 
-				set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
+			set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
 		}
 
 	}
-	
+
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
 		if (System.getenv("API_PORT") != null) {
@@ -863,20 +855,20 @@ public class QRules {
 		return links;
 	}
 
-	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
+	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
 	}
 
-	public Boolean askQuestions(final String sourceCode, final String targetCode, final String questionCode,
+	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections) {
 		JsonObject questionJson = null;
-
+		QDataAskMessage msg = null;
 		try {
 			if (autoPushSelections) {
 				String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 						+ questionCode + "/" + targetCode, getToken());
 
-				QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
 				publishData(msg);
 
@@ -908,9 +900,9 @@ public class QRules {
 
 			RulesUtils.println(questionCode + " SENT TO FRONTEND");
 
-			return true;
+			return msg;
 		} catch (IOException e) {
-			return false;
+			return msg;
 		}
 	}
 
