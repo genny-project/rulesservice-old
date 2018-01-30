@@ -7,7 +7,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 
 import life.genny.qwandautils.PaymentUtils;
-import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
 
 
 rule "Create Payment Item"
@@ -44,8 +44,8 @@ rule "Create Payment Item"
 	        /* Saving Assembly authentication tokens as user attributes */
         	PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
         	
-        	/* rules.println("----->Payment gateway questions group publish<-------");
-        	rules.askQuestionFormViewPublish(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_PAYMENT_METHOD_GRP"); */
+        	rules.println("----->Payment gateway questions group publish<-------");
+        	rules.askQuestionFormViewPublish(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
         	
         	rules.println("Item creation process ended");	   
 	        
@@ -53,11 +53,3 @@ rule "Create Payment Item"
 		
 		rules.footer();			
 end 
-
-		
-
-
-
-
-
-
