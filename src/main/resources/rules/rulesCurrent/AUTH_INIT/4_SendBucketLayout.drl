@@ -21,13 +21,8 @@ rule "Send Bucket Layout To Frontend"
      	String layout = RulesUtils.getLayout("card.json");
      	
      	/* sending cmd BUCKET_VIEW */
-        QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
-        JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-        bucketViewJson.put("root", "GRP_DASHBOARD");
-        bucketViewJson.put("token", rules.getToken());
-        rules.publish("cmds",bucketViewJson);
+        rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
            
-        RulesUtils.println("BUCKET  LAYOUT (CMD VIEW) SENT TO FRONTEND");
 		/*  rules.clearState("SEND_BUCKET_DATA");  */
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
