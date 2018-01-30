@@ -8,15 +8,17 @@ import io.vertx.core.json.JsonObject;
 rule "TV_SELECT Messages Event"
      when
        $m : QEventMessage( event_type == "TV_SELECT")
-       rules: QRules(isState("STARTED"))
+       rules: QRules()
      then
        	
      rules.header();
        	
-        /* TODO: refactor this. */
+        /* TODO: rule should not be fired if user did not click on messages => add in predicate */
        	String grpCode = $m.getData().getValue();
         if(grpCode.equals("GRP_MESSAGES")) {
-	       rules.sendSublayout("messages-layout", "layouts/messages-layout.json");
+        		
+        		System.out.println("-----------------");
+        		rules.sendSublayout("messages-layout", "layouts/messages-layout.json");
         }
         
      rules.footer();

@@ -733,6 +733,7 @@ public class QRules {
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
+		
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
 		if (recipientsCode != null) {
@@ -1131,23 +1132,23 @@ public class QRules {
 			Double weight = answer.getWeight();
 			Boolean expired = answer.getExpired();
 			Boolean refused = answer.getRefused();
-			System.out.println("Printing Answer data recieved   ::");
-			System.out.println("\nAskId: " + askId + "\nSource Code: " + sourceCode + "\nTarget Code: " + targetCode
-					+ "\nAttribute Code: " + attributeCode + "\nAttribute Value: " + value + " \nInferred: "
-					+ (inferred ? "TRUE" : "FALSE") + " \nWeight: " + weight);
-			System.out.println("------------------------------------------------------------------------");
+//			System.out.println("Printing Answer data recieved   ::");
+//			System.out.println("\nAskId: " + askId + "\nSource Code: " + sourceCode + "\nTarget Code: " + targetCode
+//					+ "\nAttribute Code: " + attributeCode + "\nAttribute Value: " + value + " \nInferred: "
+//					+ (inferred ? "TRUE" : "FALSE") + " \nWeight: " + weight);
+//			System.out.println("------------------------------------------------------------------------");
 
 			/* if this answer is actually an address another rule will be triggered */
 			if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
 
 				/* convert answer to json */
 				String jsonAnswer = RulesUtils.toJson(answer);
-				System.out.println("incoming JSON Answer   ::   " + jsonAnswer);
+//				System.out.println("incoming JSON Answer   ::   " + jsonAnswer);
 
 				/* convert Answer Json to Answer obj */
 				Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-				System.out.println("Answer Object   ::   " + answerObj);
-				System.out.println("------------------------------------------------------------------------");
+//				System.out.println("Answer Object   ::   " + answerObj);
+//				System.out.println("------------------------------------------------------------------------");
 				/* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
 
 				/* post answers to qwanda-utils */
@@ -1179,10 +1180,10 @@ public class QRules {
 				Double weight = answer.getWeight();
 				Boolean expired = answer.getExpired();
 				Boolean refused = answer.getRefused();
-				System.out.println("\nAskId: " + askId + "\nSource Code: " + sourceCode + "\nTarget Code: " + targetCode
-						+ "\nAttribute Code: " + attributeCode + "\nAttribute Value: " + value + " \nInferred: "
-						+ (inferred ? "TRUE" : "FALSE") + " \nWeight: " + weight);
-				System.out.println("------------------------------------------------------------------------");
+//				System.out.println("\nAskId: " + askId + "\nSource Code: " + sourceCode + "\nTarget Code: " + targetCode
+//						+ "\nAttribute Code: " + attributeCode + "\nAttribute Value: " + value + " \nInferred: "
+//						+ (inferred ? "TRUE" : "FALSE") + " \nWeight: " + weight);
+//				System.out.println("------------------------------------------------------------------------");
 
 				/* if this answer is actually an address another rule will be triggered */
 				if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {

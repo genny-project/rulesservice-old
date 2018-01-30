@@ -1,7 +1,9 @@
 package life.genny.rules;
 
+import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.QRules;
-
+import java.util.List;
+import java.util.ArrayList;
 
 rule "Send Treeview To Frontend"
     no-loop true
@@ -13,10 +15,28 @@ rule "Send Treeview To Frontend"
      	rules.header();
      	
       	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 10, true); /* Send tree view */
-      	rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); /* Send messages */
-   	    rules.println("Root Group is "+"GRP_ROOT");
+      	
+      	/* Send messages to user if they belong to the conversation. TODO: to optimize */
+      	
+      	/* rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); */
+      	
+      	List<BaseEntity> conversations = rules.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+      	List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
+      	 
+      	for(BaseEntity convo: conversations) {
+      		
+      		List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
+      		for(BaseEntity user: users) {
+      			
+      			/* if user is a stackholder of this conversation  we send it */
+      			if(user.getCode().equals(rules.getUser().getCode())) {
+      				userConversations.add(convo);
+      			}
+      		}
+      	}
+  	
+  		rules.publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
    	    
-   	    rules.setState("SEND_TREEVIEW");
-     		
+   	    rules.setState("SEND_TREEVIEW");	
 	    rules.footer();     		      
 end

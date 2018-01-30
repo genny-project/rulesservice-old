@@ -19,7 +19,7 @@ function Double calculate(String price) {
 
 /*  Calculate Load Price adding service fee  */
 rule "Calculate Load Price"
-
+	no-loop true
     when
     $m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_PRICE")  && getAnswer().getTargetCode().startsWith("BEG_") )
     	rules : QRules()
