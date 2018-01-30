@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.deser.DateDeserializer;
+import org.javamoney.moneta.Money;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,6 +32,7 @@ import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
+import life.genny.qwanda.MoneyDeserializer;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -45,7 +47,7 @@ public class RulesUtils {
 
 
 	
-	final static Gson gson2 = new GsonBuilder()
+	final static Gson gson2 = new GsonBuilder().registerTypeAdapter(Money.class, new MoneyDeserializer())
 	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
 	          @Override
 	          public LocalDate deserialize(final JsonElement json, final Type type,
@@ -72,7 +74,7 @@ public class RulesUtils {
 		          }
 		        }).create();
 
-   public static  GsonBuilder gsonBuilder = new GsonBuilder();
+   public static  GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(Money.class, new MoneyDeserializer());
     public static Gson gson = gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).setPrettyPrinting()
     	    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
 

@@ -28,7 +28,6 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
-import io.vertx.rxjava.core.eventbus.EventBus;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
@@ -58,17 +57,23 @@ rule "Send Bucketview Cmd"
     salience 10
     agenda-group "bucketview"
     when    
-        bus: EventBus()
         rules: QRules()
     then
-        RulesUtils.header(drools.getRule().getName());
-        /* Prepare Token & qwandaServiceUrl */
-            String qwandaServiceUrl = rules.getQwandaServiceUrl();
-            String tokenString = rules.getToken();
-        /* Sendind Bucketview */
+        rules.header();
+        /* Sending Bucketview */
             QCmdViewMessage cmdBucketView = new QCmdViewMessage("BUCKET_VIEW", "GRP_DASHBOARD");
             RulesUtils.ruleLogger("Sending Bucketview", cmdBucketView);
             rules.publishCmd(cmdBucketView);
 
-        RulesUtils.footer(drools.getRule().getName());
+        rules.footer();
+end
+
+rule "Send Loading"
+    agenda-group "loading"
+    when    
+        rules: QRules()
+    then
+        rules.header();
+        rules.showLoading("Please wait for a moment...");
+        rules.footer();
 end

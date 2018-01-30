@@ -3,6 +3,7 @@ package life.genny.rules;
 import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.entity.BaseEntity;
@@ -21,71 +22,117 @@ function Double calculate(String price) {
 rule "Calculate Load Price"
 	no-loop true
     when
-    $m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_PRICE")  && getAnswer().getTargetCode().startsWith("BEG_") )
+    	$m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_PRICE")  && getAnswer().getTargetCode().startsWith("BEG_") || 
+												QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_PRICE")  && getAnswer().getTargetCode().startsWith("OFR_") )
     	rules : QRules()
     then    
-    	    rules.header();
-	   
-        Answer newAnswer = $m.getAnswer();
-       
-         BigDecimal price = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
-         String begCode = newAnswer.getTargetCode();
-         
-        /* Calculating Owner Price - adding GST  */
-         BigDecimal ownerPrice = rules.includeGST(price);
-         
-        /*  Saving OWNER_PRICE attribute to the BEG   */
-         Answer jobOwnerPriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_OWNER_PRICE",String.valueOf(ownerPrice));             
-         rules.publishData(jobOwnerPriceAnswer);
-      
-       /*   Calculating  service fee - (Fees(in ex GST Amount- PRI_PRICE)+ GST on total fee amount)   */
-         BigDecimal fees = new BigDecimal(0);
- 		
- 		if (price.compareTo(BigDecimal.valueOf(0)) > 0 && price.compareTo(BigDecimal.valueOf(1000)) <= 0) {
- 			
- 			/* 15% of price if price less than or equal to 1000 */
- 			fees = price.multiply(new BigDecimal("0.15"));
- 			
- 		} else if (price.compareTo(BigDecimal.valueOf(1000)) > 0 && price.compareTo(BigDecimal.valueOf(3000)) <= 0) {
- 			/*
- 			 * 15% + 10% of remaining price if price greater than 1000 and less
- 			 * than or equal to 3000
- 			 */
- 			BigDecimal initialFee = new BigDecimal("150");
- 			BigDecimal negatedAmount = price.subtract(new BigDecimal("1000"));
- 			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.1")));
- 			
- 		} else if (price.compareTo(BigDecimal.valueOf(3000)) > 0 && price.compareTo(BigDecimal.valueOf(5000)) <= 0) {
- 			/*
- 			 * 15% + 10% + (7.5% of remaining amount) if price is greater than
- 			 * 3000 and less than or equal to 5000
- 			 */
- 			BigDecimal initialFee = new BigDecimal("350");
- 			BigDecimal negatedAmount = price.subtract(new BigDecimal("3000"));
- 			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.075")));
- 			
- 		} else if (price.compareTo(BigDecimal.valueOf(5000)) > 0) {
- 			/*
- 			 * 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
- 			 * than 5000
- 			 */
- 			BigDecimal initialFee = new BigDecimal("500");
- 			BigDecimal negatedAmount = price.subtract(new BigDecimal("5000"));
- 			fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
- 		}
- 		
- 		BigDecimal feeWithGST = fees.add(rules.includeGST(fees));
-       
-       /*  Saving FEE_PRICE attribute to the BEG - Fees in ex GST amount + GST  */
-         Answer feePriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_FEE",String.valueOf(feeWithGST));             
-         rules.publishData(feePriceAnswer);
-         BigDecimal driverPrice = ownerPrice.subtract(feeWithGST);
-       
-       /*  Saving DRIVER_PRICE attribute to the BEG   */
-         Answer driverPriceAnswer = new Answer(rules.getUser().getCode(),begCode,"PRI_DRIVER_PRICE",String.valueOf(driverPrice));             
-         rules.publishData(driverPriceAnswer);
-       
-        rules.footer();
+		rules.header();
+
+		Answer newAnswer = $m.getAnswer();
+
+		String beCode = newAnswer.getTargetCode();
+		BigDecimal answerPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
+		BigDecimal fees = new BigDecimal(0);
+
+		/* Calculate Fees*/
+			if (answerPrice.compareTo(BigDecimal.valueOf(0)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(1000)) <= 0) {
+				
+				/* 15% of price if price less than or equal to 1000 */
+				fees = answerPrice.multiply(new BigDecimal("0.15"));
+				
+			} else if (answerPrice.compareTo(BigDecimal.valueOf(1000)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(3000)) <= 0) {
+				/*
+					* 15% + 10% of remaining price if price greater than 1000 and less
+					* than or equal to 3000
+					*/
+				BigDecimal initialFee = new BigDecimal("150");
+				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("1000"));
+				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.1")));
+				
+			} else if (answerPrice.compareTo(BigDecimal.valueOf(3000)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(5000)) <= 0) {
+				/*
+					* 15% + 10% + (7.5% of remaining amount) if price is greater than
+					* 3000 and less than or equal to 5000
+					*/
+				BigDecimal initialFee = new BigDecimal("350");
+				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("3000"));
+				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.075")));
+				
+			} else if (answerPrice.compareTo(BigDecimal.valueOf(5000)) > 0) {
+				/*
+					* 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
+					* than 5000
+					*/
+				BigDecimal initialFee = new BigDecimal("500");
+				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("5000"));
+				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
+			}
+			BigDecimal feeWithoutGST = fees;
+			BigDecimal feeWithGST = rules.includeGST(fees);
+
+		String priceCode = $m.getData().getCode();
+		
+		String ownerPriceIncGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_INC_GST");
+		String ownerPriceExcGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_EXC_GST");
+
+		String driverPriceIncGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_INC_GST");
+		String driverPriceExcGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_EXC_GST");
+
+
+		String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
+		String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
+		
+		BigDecimal ownerPriceExcGST = new  BigDecimal(0);
+		BigDecimal ownerPriceIncGST = new  BigDecimal(0);
+		BigDecimal driverPriceExcGST = new BigDecimal(0);
+		BigDecimal driverPriceIncGST = new BigDecimal(0);
+
+		/* Get userRole */
+			String userRole = null;
+			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
+				String offerCode = newAnswer.getTargetCode();
+				userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+			}
+
+		if(newAnswer.getTargetCode().startsWith("BEG_") || (newAnswer.getTargetCode().startsWith("OFR_") && userRole == "OWNER")) {
+			ownerPriceExcGST = answerPrice;
+			ownerPriceIncGST = rules.includeGST(answerPrice);
+			driverPriceIncGST = ownerPriceIncGST.subtract(feeWithGST);
+			driverPriceExcGST = ownerPriceExcGST.subtract(feeWithoutGST);
+		}
+		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == "QUOTER" || userRole == null)) {
+			driverPriceExcGST = answerPrice;
+			driverPriceIncGST = rules.includeGST(answerPrice);
+			ownerPriceExcGST = driverPriceExcGST.subtract(feeWithoutGST);
+			ownerPriceIncGST = driverPriceIncGST.add(feeWithGST);
+		}
+
+
+		/* Saving  OWNER_PRICE_INC_GST */
+			Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, String.valueOf(ownerPriceIncGST));          
+			rules.publishData(ownerPriceIncGSTAnswer);   
+
+		/* Saving  OWNER_PRICE_EXC_GST */
+			Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, String.valueOf(ownerPriceExcGST));          
+			rules.publishData(ownerPriceExcGSTAnswer); 
+
+		/* Saving  DRIVER_PRICE_INC_GST */
+			Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, String.valueOf(driverPriceIncGST));          
+			rules.publishData(driverPriceIncGSTAnswer);   
+
+		/* Saving  DRIVER_PRICE_EXC_GST */
+			Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, String.valueOf(driverPriceExcGST));          
+			rules.publishData(driverPriceExcGSTAnswer); 
+
+		/* Saving  FEE_INC_GST */
+			Answer feePriceIncGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, String.valueOf(feeWithGST));          
+			rules.publishData(feePriceIncGstCodeAnswer);   
+			
+		/* Saving  FEE_EXC_GST */
+			Answer feePriceExcGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, String.valueOf(feeWithoutGST));          
+			rules.publishData(feePriceExcGstCodeAnswer); 
+
+		rules.footer();
 end
 
 

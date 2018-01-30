@@ -91,7 +91,7 @@ rule "Accept Offer"
             /* base entity code is the job quote will be quoting on */
             if(offerCode != null) {                
                 
-            		/* get OFFER BE's parent BEG code */
+                /* get OFFER BE's parent BEG code */
                 JsonArray offerArray = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + offerCode + "/linkcodes/" + linkCode + "/parents", tokenString));
                 System.out.println("------------------------------------------------------------------------");
                 System.out.println("OFFER BE   ::   "+ offerArray.toString());	

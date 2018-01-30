@@ -78,17 +78,9 @@ rule "Counter Offer"
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
-            
-        /*get OFFER QUESTION GROUP */
-            JsonObject offerGrp = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + userCode + "/asks2/QUE_OFFER_DETAILS_GRP/" + offerCode, tokenString));
-            RulesUtils.ruleLogger("Counter offer Questions", offerGrp);     
-            /* publish QUESTIONS */
-                offerGrp.put("token", tokenString);					
-                rules.publish("cmds",  offerGrp);              
-    
-        /* sending cmd FORM_VIEW to display Questions */
-            QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", "QUE_OFFER_DETAILS_GRP");
-            rules.publishCmd(cmdFormView);
+
+        /* Send Offer Questions */
+            rules.askQuestions(userCode, offerCode, "QUE_OFFER_DETAILS_GRP", false); /* false for form_view*/
 
         RulesUtils.footer(drools.getRule().getName());
 end
