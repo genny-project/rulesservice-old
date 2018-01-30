@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 rule "TV_SELECT Messages Event"
      when
        $m : QEventMessage( event_type == "TV_SELECT")
-       rules: QRules(isState("STARTED"))
+       rules: QRules()
      then
        	
      rules.header();
