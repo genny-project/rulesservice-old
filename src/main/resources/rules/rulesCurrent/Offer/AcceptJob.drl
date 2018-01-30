@@ -51,7 +51,7 @@ rule "Accept Job"
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_ACCEPT_JOB")
         rules: QRules()
     then
-        RulesUtils.header(drools.getRule().getName());
+        rules.header();
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
@@ -164,32 +164,35 @@ rule "Accept Job"
             rules.publishData(msg); */
         	
         /* Messages */
-            HashMap<String,String> contextMap = new HashMap<String, String>();
-        	contextMap.put("QUOTER",userCode);
-        	contextMap.put("JOB", begCode); 
-        	contextMap.put("OFFER", offerCode); 
-       
-        	String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-        	RulesUtils.println("owner code ::"+ownerCode);
-			String[] recipientArr = {ownerCode};
 
-            /* Sending message to BEG OWNER */
-            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
-            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); 
-            
-        	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
-        	contextMapForDriver.put("JOB", begCode);
-        	contextMapForDriver.put("OWNER", ownerCode);
-        	contextMapForDriver.put("OFFER", offerCode);
-        	contextMapForDriver.put("QUOTER", userCode);
+            /* OWNER config */
+                HashMap<String,String> contextMap = new HashMap<String, String>();
+                contextMap.put("QUOTER",userCode);
+                contextMap.put("JOB", begCode); 
+                contextMap.put("OFFER", offerCode); 
         
-			String[] recipientArrForDriver = {userCode};
+                String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+                RulesUtils.println("owner code ::"+ownerCode);
+                String[] recipientArr = {ownerCode};
 
-            /* Sending message to QUOTER */
-            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
-            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); 
+                /* Sending message to BEG OWNER */
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); 
+            
+            /* QUOTER config */
+                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+                contextMapForDriver.put("JOB", begCode);
+                contextMapForDriver.put("OWNER", ownerCode);
+                contextMapForDriver.put("OFFER", offerCode);
+                contextMapForDriver.put("QUOTER", userCode);
+            
+                String[] recipientArrForDriver = {userCode};
+
+                /* Sending message to QUOTER */
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); 
 
         /* Send BUCKETVIEW Cmd */
-        drools.setFocus("bucketview"); 
-        RulesUtils.footer(drools.getRule().getName());
+            drools.setFocus("bucketview"); 
+        rules.footer();
 end
