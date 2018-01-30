@@ -25,7 +25,7 @@ rule "Create New User"
 
   		rules.println("The value of is Profile completed ::  "+rules.isNewUserProfileCompleted());
   		/* Calling the rule agenda group : NewUser   */
-        drools.setFocus("NewUserProfile");
+        drools.setFocus("CheckIfProfileCompleted");
   		
 	    rules.footer();   		      
 end
