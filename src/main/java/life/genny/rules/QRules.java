@@ -18,6 +18,8 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -1136,7 +1138,7 @@ public class QRules {
 			System.out.println("------------------------------------------------------------------------");
 
 			/* if this answer is actually an address another rule will be triggered */
-			if (!attributeCode.contains("ADDRESS_FULL")) {
+			if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
 
 				/* convert answer to json */
 				String jsonAnswer = RulesUtils.toJson(answer);
@@ -1183,7 +1185,7 @@ public class QRules {
 				System.out.println("------------------------------------------------------------------------");
 
 				/* if this answer is actually an address another rule will be triggered */
-				if (!attributeCode.contains("ADDRESS_FULL")) {
+				if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
 					answers.add(answer);
 				}
 			} else {
