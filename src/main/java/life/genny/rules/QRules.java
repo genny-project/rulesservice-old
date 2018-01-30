@@ -15,9 +15,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
+import org.javamoney.moneta.Money;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -56,6 +60,8 @@ public class QRules {
 	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
 
 	final static String DEFAULT_STATE = "NEW";
+
+	private static final CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");
 
 	private String token;
 	private EventBus eventBus;
@@ -1361,6 +1367,38 @@ public class QRules {
 			e.printStackTrace();
 		}
 		return link;
+	}
+	
+	public Money includeGSTMoney(Money price) {
+		
+		Money gstPrice = Money.of(0, DEFAULT_CURRENCY_AUD);
+
+		/* Including 10% of price for GST */
+
+		if (price.compareTo(gstPrice) > 0) {
+			
+			Money priceToBeIncluded = price.multiply(0.1);		
+			gstPrice = price.add(priceToBeIncluded);
+		}
+
+		return gstPrice;
+
+	}
+	
+	public Money excludeGSTMoney(Money price) {
+		
+		Money gstPrice = Money.of(0, DEFAULT_CURRENCY_AUD);
+
+		/* Including 10% of price for GST */
+
+		if (price.compareTo(gstPrice) > 0) {
+			
+			Money priceToBeIncluded = price.multiply(0.1);		
+			gstPrice = price.subtract(priceToBeIncluded);
+		}
+
+		return gstPrice;
+
 	}
 
 }
