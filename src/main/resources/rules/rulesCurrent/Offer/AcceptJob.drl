@@ -51,7 +51,8 @@ rule "Accept Job"
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_ACCEPT_JOB")
         rules: QRules()
     then
-        RulesUtils.header(drools.getRule().getName());
+        rules.header();
+        rules.showLoading("Please wait for a moment...");
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
@@ -71,19 +72,33 @@ rule "Accept Job"
             String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
 
-        /* get BEG PRICE */           
+        /* get BEG PRICEs */           
+            String begOwnerPrice = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE", tokenString);       
+            System.out.println("BEG OWNER PRICE   ::   "+begOwnerPrice);
+
+            String begDriverPrice = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE", tokenString);       
+            System.out.println("BEG DRIVER PRICE   ::   "+begDriverPrice);
+
             String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
             System.out.println("BEG PRICE   ::   "+begPrice);
+
+            String begFeePrice = MergeUtil.getAttrValue(begCode, "PRI_FEE", tokenString);       
+            System.out.println("BEG FEE   ::   "+begFeePrice);
+
 
         /* Create Offer BE */
             BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
             RulesUtils.ruleLogger("OFFER Base Entity", offer);
-
+            /* Get Offer Code */
             String offerCode= offer.getCode();
             System.out.println("OFFER CODE   ::   "+offerCode);
         
         /* Save attributes for OFFER as answer          */
+            Answer ownerPrice = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE", begOwnerPrice);
+            Answer driverPrice = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE", begDriverPrice);
             Answer price = new Answer(userCode, offerCode, "PRI_OFFER_PRICE", begPrice);
+            Answer feePrice = new Answer(userCode, offerCode, "PRI_OFFER_FEE", begFeePrice);
+
             Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
             Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
             Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
@@ -92,7 +107,11 @@ rule "Accept Job"
             Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
             
             List<Answer> answerList = new ArrayList<Answer>();	
+            answerList.add(ownerPrice);
+            answerList.add(driverPrice);
             answerList.add(price);
+            answerList.add(feePrice);
+
             answerList.add(offercode);
             answerList.add(quoterCode);
             answerList.add(quoterUname);
@@ -121,9 +140,9 @@ rule "Accept Job"
             rules.saveAnswer(offerCountAnswer);               
 
         /* link BEG and OFFER BE || OFFER */
-            QwandaUtils.createLink(begCode, offerCode, linkCode, linkOffer, 1.0, tokenString);
+            rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
         /* link BEG and QUOTER BE || QUOTER */
-            QwandaUtils.createLink(begCode, userCode, linkCode, linkQuoter, 1.0, tokenString);       
+            rules.createLink(begCode, userCode, linkCode, linkQuoter, 1.0);       
         /* SEND OFFER BE    */
             rules.publishBaseEntityByCode(offerCode);
         /* SEND QUOTER BE */
@@ -145,31 +164,36 @@ rule "Accept Job"
             QDataLinksMessage msg = new QDataLinksMessage(linkArray);
             rules.publishData(msg); */
         	
-        /* Sending message to BEG OWNER */
-            HashMap<String,String> contextMap = new HashMap<String, String>();
-        	contextMap.put("QUOTER",userCode);
-        	contextMap.put("JOB", begCode); 
-        	contextMap.put("OFFER", offerCode); 
-       
-        	String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-        	RulesUtils.println("owner code ::"+ownerCode);
-			String[] recipientArr = {ownerCode};
+        /* Messages */
 
-        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); */
-        	/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); */
-            
-        	HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
-        	contextMapForDriver.put("JOB", begCode);
-        	contextMapForDriver.put("OWNER", ownerCode);
-        	contextMapForDriver.put("OFFER", offerCode);
-        	contextMapForDriver.put("QUOTER", userCode);
+            /* OWNER config */
+                HashMap<String,String> contextMap = new HashMap<String, String>();
+                contextMap.put("QUOTER",userCode);
+                contextMap.put("JOB", begCode); 
+                contextMap.put("OFFER", offerCode); 
         
-			String[] recipientArrForDriver = {userCode};
-		
-			/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); */
-        	/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); */
+                String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+                RulesUtils.println("owner code ::"+ownerCode);
+                String[] recipientArr = {ownerCode};
+
+                /* Sending message to BEG OWNER */
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); 
+            
+            /* QUOTER config */
+                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+                contextMapForDriver.put("JOB", begCode);
+                contextMapForDriver.put("OWNER", ownerCode);
+                contextMapForDriver.put("OFFER", offerCode);
+                contextMapForDriver.put("QUOTER", userCode);
+            
+                String[] recipientArrForDriver = {userCode};
+
+                /* Sending message to QUOTER */
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); 
 
         /* Send BUCKETVIEW Cmd */
-        drools.setFocus("bucketview"); 
-        RulesUtils.footer(drools.getRule().getName());
+            drools.setFocus("bucketview"); 
+        rules.footer();
 end
