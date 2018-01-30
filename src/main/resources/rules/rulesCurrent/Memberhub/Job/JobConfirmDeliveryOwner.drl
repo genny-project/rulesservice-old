@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import life.genny.qwanda.Link;
+import life.genny.qwanda.Answer;
 
 rule "Job Confirm Delivery - Owner"
 when
@@ -23,8 +24,35 @@ then
 		
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
-		     if(begCode != null) {
-		    	 	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
+		     String userCode = rules.getUser().getCode();
+		     String driverCode = null;
+		     
+		     /* we get all the linked BEs to beg */
+		     List<Link> links = rules.getLinks(begCode, "LNK_BEG");
+	    	 	 if(links != null) {
+	    	 		 
+	    	 		for(Link link: links) {
+	    	 			
+	    	 			String linkValue = link.getLinkValue();
+	    	 			
+	    	 			if(linkValue != null && linkValue.equals("DRIVER")) {
+	    	 				
+	    	 				driverCode = link.getTargetCode();
+	    	 			}
+	    	 		}
+	    	 	 }
+	    	 	 		     
+		     if(begCode != null && driverCode != null) {
+		    	 
+		    	 	/* we save the BEG code as an attribute in order to track what jobs are being currently rated against. if this comment does not make sense please refer to the french man. */
+		    	 	Answer beAnswer = new Answer(userCode, userCode, "STT_JOB_IS_RATING", begCode);
+		        rules.publishData(beAnswer); 
+		    	 
+		    	 	/* we send the questions */
+		    	 	rules.askQuestions(rules.getUser().getCode(), driverCode, "QUE_USER_RATING_GRP", true);
+		    	 	
+		    	 	/* we send the layout */
+		    	 	rules.sendSublayout("driver-rating", "rate-driver.json", driverCode);
 		     }
 		}
 

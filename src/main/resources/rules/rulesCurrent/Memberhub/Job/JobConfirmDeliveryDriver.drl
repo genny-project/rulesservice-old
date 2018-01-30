@@ -61,36 +61,17 @@ when
 then
     
 		RulesUtils.header(drools.getRule().getName());
-  		String data = $m.getData().getValue();
-  		String qwandaServiceUrl = rules.getQwandaServiceUrl();
-        String tokenString = rules.getToken();
-        
+  		
+  		String data = $m.getData().getValue();      
   		if(data != null) {
   			
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     if(begCode != null) {
-		    	 	
-		    	  /* I am sorry Adam for this bad code - if you read this, please remind me to fix it */
-		    	 	Gson gson = new GsonBuilder()
-		    	            .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-		    	                @Override
-		    	                public LocalDateTime deserialize(final JsonElement json, final Type type,
-		    	                    final JsonDeserializationContext jsonDeserializationContext)
-		    	                    throws JsonParseException {
-		    	                return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		    	                }
-
-		    	                public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-		    	                    final JsonSerializationContext context) {
-		    	                return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-		    	                }
-		    	            }).create();
 		    	 
 		    	 	/* mark job as delivered by driver */
-		    	 	Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
-		        String jsonBeUpdate = gson.toJson(beAnswer);
-		        QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonBeUpdate, tokenString);
+		        Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "TRUE");
+	            rules.publishData(beAnswer);  
 		    	 	
 		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
 			    contextMap.put("JOB", begCode);

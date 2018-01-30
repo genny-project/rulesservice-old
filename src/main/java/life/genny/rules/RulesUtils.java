@@ -26,7 +26,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
+import com.google.gson.reflect.TypeToken;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
@@ -537,18 +539,22 @@ public class RulesUtils {
 	 */
 	public static List<Link> getLinks(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
+			
 			String linkJson=null;
 			List<Link> linkList = null;
+		
 			try {
-				linkJson = QwandaUtils
-						.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/"+linkCode+"/children", token);
+				
+				linkJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/"+linkCode+"/children", token);
+				return gson.fromJson(linkJson, new TypeToken<List<Link>>(){}.getType());
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			
-			gson.fromJson(linkJson, List.class);
+			
 //			BaseEntity[] beArray = msg.getItems();
 //			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 //			return arrayList;
