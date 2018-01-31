@@ -24,6 +24,10 @@ rule "Send Ch40 BucketData To Frontend"
     	 	 rules.publishCmd(root,"GRP_ROOT","LNK_CORE");
  		 rules.println(root);
  		 
+ 		 /* admin stuff. send only if user is admin */
+ 		 List<BaseEntity> admin = rules.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 2, false) ;
+	 	 rules.publishCmd(admin, "GRP_ADMIN","LNK_CORE");
+ 		 
      	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
   		 rules.println(buckets);
@@ -36,6 +40,7 @@ rule "Send Ch40 BucketData To Frontend"
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
      		} else {
+     			
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(driverbegs);
     		
