@@ -67,8 +67,8 @@ rule "Calculate Load Price"
 				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("5000"));
 				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
 			}
-			BigDecimal feeWithoutGST = fees;
-			BigDecimal feeWithGST = rules.includeGST(fees);
+			BigDecimal feePriceExcGST = fees;
+			BigDecimal feePriceIncGST = rules.includeGST(fees);
 
 		String priceCode = $m.getData().getCode();
 		
@@ -97,14 +97,14 @@ rule "Calculate Load Price"
 		if(newAnswer.getTargetCode().startsWith("BEG_") || (newAnswer.getTargetCode().startsWith("OFR_") && userRole == "OWNER")) {
 			ownerPriceExcGST = answerPrice;
 			ownerPriceIncGST = rules.includeGST(answerPrice);
-			driverPriceIncGST = ownerPriceIncGST.subtract(feeWithGST);
-			driverPriceExcGST = ownerPriceExcGST.subtract(feeWithoutGST);
+			driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
+			driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
 		}
 		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == "QUOTER" || userRole == null)) {
 			driverPriceExcGST = answerPrice;
 			driverPriceIncGST = rules.includeGST(answerPrice);
-			ownerPriceExcGST = driverPriceExcGST.subtract(feeWithoutGST);
-			ownerPriceIncGST = driverPriceIncGST.add(feeWithGST);
+			ownerPriceExcGST = driverPriceExcGST.subtract(feePriceExcGST);
+			ownerPriceIncGST = rules.includeGST(ownerPriceExcGST);
 		}
 
 
@@ -125,11 +125,11 @@ rule "Calculate Load Price"
 			rules.publishData(driverPriceExcGSTAnswer); 
 
 		/* Saving  FEE_INC_GST */
-			Answer feePriceIncGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, String.valueOf(feeWithGST));          
+			Answer feePriceIncGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, String.valueOf(feePriceIncGST));          
 			rules.publishData(feePriceIncGstCodeAnswer);   
 			
 		/* Saving  FEE_EXC_GST */
-			Answer feePriceExcGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, String.valueOf(feeWithoutGST));          
+			Answer feePriceExcGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, String.valueOf(feePriceExcGST));          
 			rules.publishData(feePriceExcGstCodeAnswer); 
 
 		rules.footer();
