@@ -881,7 +881,7 @@ public class QRules {
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		try {		
-			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
 			  msg = RulesUtils.fromJson(json, QDataAskMessage.class);	
 			
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
@@ -901,7 +901,7 @@ public class QRules {
 		QDataAskMessage msg = null;
 		try {
 			if (autoPushSelections) {
-				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
 
 				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
@@ -910,7 +910,7 @@ public class QRules {
 				QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", qstMsg.getRootQST().getQuestionCode());
 				publishCmd(cmdFormView);
 			} else {
-				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken()));
+				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken()));
 				/* QDataAskMessage */
 				questionJson.put("token", getToken());
 				publish("data", questionJson);
