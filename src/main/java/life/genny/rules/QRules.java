@@ -299,6 +299,15 @@ public class QRules {
 			return true;
 		}
 	}
+	
+	public Boolean isNewUserProfileCompleted() {
+		Boolean status = false;
+		if(getUser() != null) {
+			 status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());
+		}
+		   	
+		return status;
+	}
 
 	public void updateBaseEntityByCode(final String code) {
 		BaseEntity be = null;
