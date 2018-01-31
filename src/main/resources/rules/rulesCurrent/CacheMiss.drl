@@ -57,7 +57,7 @@ global java.lang.String LOG_BOLD;
 rule "Cache Miss"
 
     when
-        m : QEventMessage( QEventMessage.getEvent_type().equals("EVT_CACHE_MISS") )
+        m : QEventMessage( getEvent_type().equals("EVT_CACHE_MISS") )
         bus: EventBus()
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)

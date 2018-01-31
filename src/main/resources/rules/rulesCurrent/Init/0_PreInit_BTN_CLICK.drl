@@ -4,10 +4,9 @@ import life.genny.rules.QRules;
 
 rule "Pre Init Btn Click"
 	no-loop true
-	lock-on-active true
 	ruleflow-group 'Init'
     when
-          m : QEventMessage( event_type == "BTN_CLICK" && data.value == "ADD_NEW_LOAD" )
+          m : QEventMessage( event_type == "BTN_CLICK" )
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);

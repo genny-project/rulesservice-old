@@ -24,7 +24,7 @@ rule "Create New User"
      	rules.clearState("NEW_REGISTRATION");
          
   
-  		/* Calling the rule agenda group : NewUser   */
+  		/* Calling the rule agenda group : NewUser   You're an agenda group! */
         drools.setFocus("SendAliases");
   		
 	    rules.footer();   		      

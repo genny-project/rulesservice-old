@@ -784,24 +784,24 @@ public class QRules {
 
 	public void publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJson(msg));
 	}
 
 	public void publishData(final QDataAnswerMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJson(msg));
 	}
 
 	public void publishData(final Answer answer) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJson(msg));
 	}
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		JsonObject jsonObj = RulesUtils.toJsonObject(msg);
-		publish("data", jsonObj);
+		String json =JsonUtils.toJson(msg);
+		publish("data", json);
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {

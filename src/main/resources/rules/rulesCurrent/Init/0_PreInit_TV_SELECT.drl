@@ -4,7 +4,6 @@ import life.genny.rules.QRules;
 
 rule "Pre Init EVT_TV_SELECT"
 	no-loop true
-	lock-on-active true
 	ruleflow-group 'Init'
     when
           m : QEventMessage( event_type == "TV_SELECT") 
