@@ -37,6 +37,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
@@ -53,20 +54,6 @@ public class EBCHandlers {
 	static String rulesDir = System.getenv("RULES_DIR");
 	static String projectRealm = System.getenv("PROJECT_REALM");
 
-	static Gson gson = new GsonBuilder()
-			.registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-				@Override
-				public LocalDateTime deserialize(final JsonElement json, final Type type,
-						final JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-					return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(),
-							DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-				}
-
-				public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-						final JsonSerializationContext context) {
-					return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); // "yyyy-mm-dd"
-				}
-			}).create();
 
 	static String token;
 
@@ -87,18 +74,17 @@ public class EBCHandlers {
 			JsonObject payload = processMessage("Event", arg);
 
 			QEventMessage eventMsg = null;
+			String evtMsg = "Event:";
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
-				System.out.println("EVT_ATTRIBUTE_VALUE_CHANGE DATA is   ::    "+payload.toString());
-				eventMsg = gson.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
+				eventMsg = JsonUtils.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
 			} else if (payload.getString("event_type").equals("BTN_CLICK")) {
-				System.out.println("BTN_CLICK DATA is   ::    "+payload.toString());
-				eventMsg = gson.fromJson(payload.toString(), QEventBtnClickMessage.class);
+				eventMsg = JsonUtils.fromJson(payload.toString(), QEventBtnClickMessage.class);
 			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
-				eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
+				eventMsg = JsonUtils.fromJson(payload.toString(), QEventLinkChangeMessage.class);
 			} else {
-				eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
+				eventMsg = JsonUtils.fromJson(payload.toString(), QEventMessage.class);
 			}
-			processMsg("Event", eventMsg, eventBus, payload.getString("token"));
+			processMsg("Event:"+payload.getString("event_type"), eventMsg, eventBus, payload.getString("token"));
 
 		});
 
@@ -128,8 +114,8 @@ public class EBCHandlers {
 					RulesLoader.setupKieRules(rulesGroup, rules);
 				} else if (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
 					try {
-						dataMsg = gson.fromJson(payload.toString(), QDataAnswerMessage.class);
-						processMsg("Data", dataMsg, eventBus, payload.getString("token"));
+						dataMsg = JsonUtils.fromJson(payload.toString(), QDataAnswerMessage.class);
+						processMsg("Data:"+dataMsg.getData_type(), dataMsg, eventBus, payload.getString("token"));
 					} catch (com.google.gson.JsonSyntaxException e) {
 						log.error("BAD Syntax converting to json from " + dataMsg);
 						JsonObject json = new JsonObject(payload.toString());
@@ -137,15 +123,15 @@ public class EBCHandlers {
 						JsonArray jsonArray = new JsonArray();
 						jsonArray.add(answerData);
 						json.put("items", jsonArray);
-						dataMsg = gson.fromJson(json.toString(), QDataAnswerMessage.class);
-						processMsg("Data", dataMsg, eventBus, payload.getString("token"));
+						dataMsg = JsonUtils.fromJson(json.toString(), QDataAnswerMessage.class);
+						processMsg("Data:"+dataMsg.getData_type(), dataMsg, eventBus, payload.getString("token"));
 					}
 				}
 				else if (payload.getString("data_type").equals(GPS.class.getSimpleName())) {
 						
 					QDataGPSMessage dataGPSMsg = null;
 					try {
-						dataGPSMsg = gson.fromJson(payload.toString(), QDataGPSMessage.class);
+						dataGPSMsg = JsonUtils.fromJson(payload.toString(), QDataGPSMessage.class);
 						processMsg("GPS", dataGPSMsg, eventBus, payload.getString("token"));
 					} 
 					catch (com.google.gson.JsonSyntaxException e) {
@@ -156,8 +142,8 @@ public class EBCHandlers {
 						JsonArray jsonArray = new JsonArray();
 						jsonArray.add(answerData);
 						json.put("items", jsonArray);
-						dataGPSMsg = gson.fromJson(json.toString(), QDataGPSMessage.class);
-						processMsg("GPS", dataGPSMsg, eventBus, payload.getString("token"));
+						dataGPSMsg = JsonUtils.fromJson(json.toString(), QDataGPSMessage.class);
+						processMsg("GPS:"+dataGPSMsg.getData_type(), dataGPSMsg, eventBus, payload.getString("token"));
 					}
 				}
 			}
@@ -204,12 +190,8 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-	           Message message = new Message();
-	            message.setMessage("Hello World");
-	            message.setStatus(Message.HELLO);
-	            facts.add(message);
+			System.out.println("FIRE RULES "+msgType);
 
-			
 			try {
 				RulesLoader.executeStatefull("rules", eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
