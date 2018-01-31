@@ -1,0 +1,17 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAnswerMessage;
+
+rule "Answer - Rating "
+    when
+        m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()))
+        rules: QRules()
+    then    
+       
+    	   rules.header();
+	   rules.processAnswerRating(m); 
+       rules.footer();
+           
+end

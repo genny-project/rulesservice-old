@@ -42,7 +42,7 @@ rule "Owner rate driver and confirm delivery"
           	/* TODO: release payment for driver */
 
       		/* we mark the job as marked */
-          	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
+          	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
           	
           	/* redirecting user to bucket */
           	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
