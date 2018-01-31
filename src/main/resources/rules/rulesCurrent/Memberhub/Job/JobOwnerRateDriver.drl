@@ -39,7 +39,8 @@ rule "Owner rate driver and confirm delivery"
 
       	 if(begCode != null) {
       		
-          	/* TODO: release payment for driver */
+          	/*Release payment for driver */
+          	 drools.setFocus("payments");
 
       		/* we mark the job as marked */
           	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
