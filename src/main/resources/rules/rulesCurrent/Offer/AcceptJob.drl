@@ -73,17 +73,25 @@ rule "Accept Job"
             String linkOwner = "OWNER";
 
         /* get BEG PRICEs */           
-            String begOwnerPrice = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE", tokenString);       
-            System.out.println("BEG OWNER PRICE   ::   "+begOwnerPrice);
-
-            String begDriverPrice = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE", tokenString);       
-            System.out.println("BEG DRIVER PRICE   ::   "+begDriverPrice);
-
+            System.out.println("BEG Prices   ::   ");
+            
             String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
-            System.out.println("BEG PRICE   ::   "+begPrice);
+            System.out.println("PRI_PRICE   ::   "+begPrice);
 
-            String begFeePrice = MergeUtil.getAttrValue(begCode, "PRI_FEE", tokenString);       
-            System.out.println("BEG FEE   ::   "+begFeePrice);
+            String ownerPriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE_EXC_GST", tokenString);       
+            System.out.println("Owner Price no GST   ::   "+ownerPriceExcGST);
+            String ownerPriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE_INC_GST", tokenString);       
+            System.out.println("Owner Price with GST   ::   "+ownerPriceIncGST);
+
+            String driverPriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE_EXC_GST", tokenString);       
+            System.out.println("Driver Price no GST   ::   "+driverPriceExcGST);
+            String driverPriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE_INC_GST", tokenString);       
+            System.out.println("Driver Price with GST   ::   "+driverPriceIncGST);
+
+            String feePriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_FEE_EXC_GST", tokenString);       
+            System.out.println("fee Price no GST   ::   "+feePriceExcGST);
+            String feePriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_FEE_INC_GST", tokenString);       
+            System.out.println("fee Price with GST   ::   "+feePriceIncGST);
 
 
         /* Create Offer BE */
@@ -94,10 +102,16 @@ rule "Accept Job"
             System.out.println("OFFER CODE   ::   "+offerCode);
         
         /* Save attributes for OFFER as answer          */
-            Answer ownerPrice = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE", begOwnerPrice);
-            Answer driverPrice = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE", begDriverPrice);
             Answer price = new Answer(userCode, offerCode, "PRI_OFFER_PRICE", begPrice);
-            Answer feePrice = new Answer(userCode, offerCode, "PRI_OFFER_FEE", begFeePrice);
+
+            Answer ownerPriceExcGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
+            Answer ownerPriceIncGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST", ownerPriceIncGST);
+
+            Answer driverPriceExcGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
+            Answer driverPriceIncGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE_INC_GST", driverPriceIncGST);
+
+            Answer feePriceExcGstCodeAnswer = new Answer(userCode, offerCode, "PRI_OFFER_FEE_EXC_GST", feePriceExcGST);
+            Answer feePriceIncGstCodeAnswer = new Answer(userCode, offerCode, "PRI_OFFER_FEE_INC_GST", feePriceIncGST);
 
             Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
             Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
@@ -107,10 +121,13 @@ rule "Accept Job"
             Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
             
             List<Answer> answerList = new ArrayList<Answer>();	
-            answerList.add(ownerPrice);
-            answerList.add(driverPrice);
             answerList.add(price);
-            answerList.add(feePrice);
+            answerList.add(ownerPriceExcGSTAnswer);
+            answerList.add(ownerPriceIncGSTAnswer);
+            answerList.add(driverPriceExcGSTAnswer);
+            answerList.add(driverPriceIncGSTAnswer);
+            answerList.add(feePriceExcGstCodeAnswer);
+            answerList.add(feePriceIncGstCodeAnswer);
 
             answerList.add(offercode);
             answerList.add(quoterCode);

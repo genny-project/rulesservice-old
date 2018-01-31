@@ -117,37 +117,53 @@ rule "Confirm Offer"
             System.out.println("------------------------------------------------------------------------");
             System.out.println("MAP DATA   ::   " + map);
             System.out.println("------------------------------------------------------------------------");
-            
-            String offerOwnerPrice= map.get("PRI_OFFER_OWNER_PRICE");
-            String offerDriverPrice= map.get("PRI_OFFER_DRIVER_PRICE");
+
             String offerPrice= map.get("PRI_OFFER_PRICE");
-            String offerFeePrice= map.get("PRI_OFFER_FEE");
+
+            String ownerPriceExcGST= map.get("PRI_OFFER_OWNER_PRICE_EXC_GST");
+            String ownerPriceIncGST= map.get("PRI_OFFER_OWNER_PRICE_INC_GST");
+            String driverPriceExcGST= map.get("PRI_OFFER_DRIVER_PRICE_EXC_GST");
+            String driverPriceIncGST= map.get("PRI_OFFER_DRIVER_PRICE_INC_GST");
+            String feePriceExcGST= map.get("PRI_OFFER_FEE_EXC_GST");
+            String feePriceIncGST= map.get("PRI_OFFER_FEE_INC_GST");
 
             String begCode= map.get("PRI_BEG_CODE");
             String quoterCode= map.get("PRI_QUOTER_CODE");
             String quoterUname= map.get("PRI_QUOTER_USERNAME");
 
             System.out.println("------------------------------------------------------------------------");
-            System.out.println("offerOwnerPrice         ::   " + offerOwnerPrice);
-            System.out.println("offerDriverPrice        ::   " + offerDriverPrice);
-            System.out.println("offerPrice              ::   " + offerPrice);
-            System.out.println("offerFeePrice           ::   " + offerFeePrice);
+            System.out.println("ownerPriceExcGST         ::   " + ownerPriceExcGST);
+            System.out.println("ownerPriceIncGST         ::   " + ownerPriceIncGST);
+            System.out.println("driverPriceExcGST        ::   " + driverPriceExcGST);
+            System.out.println("driverPriceIncGST        ::   " + driverPriceIncGST);
+            System.out.println("feePriceExcGST           ::   " + feePriceExcGST);
+            System.out.println("feePriceIncGST           ::   " + feePriceIncGST);
             
             System.out.println("BEG CODE          ::   " + begCode);
             System.out.println("QUOTER CODE       ::   " + quoterCode);
             System.out.println("QUOTER USERNAME   ::   " + quoterUname);
             System.out.println("------------------------------------------------------------------------");
+        
         /* Update BEG's prices */
-            Answer begOwnerPrice = new Answer(begCode, begCode, "PRI_OWNER_PRICE", offerOwnerPrice);
-            Answer begDriverPrice = new Answer(begCode, begCode, "PRI_DRIVER_PRICE", offerDriverPrice);
-            Answer begPrice = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
-            Answer begFeePrice = new Answer(begCode, begCode, "PRI_FEE", offerFeePrice);
+            Answer begPriceAnswer = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
+
+            Answer ownerPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
+            Answer ownerPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
+
+            Answer driverPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
+            Answer driverPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
+
+            Answer feePriceExcGstAnswer = new Answer(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
+            Answer feePriceIncGstAnswer = new Answer(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
 
             List<Answer> answerList = new ArrayList<Answer>();	
-            answerList.add(begOwnerPrice);
-            answerList.add(begDriverPrice);
-            answerList.add(begPrice);
-            answerList.add(begFeePrice);
+            answerList.add(begPriceAnswer);
+            answerList.add(ownerPriceExcGSTAnswer);
+            answerList.add(ownerPriceIncGSTAnswer);
+            answerList.add(driverPriceExcGSTAnswer);
+            answerList.add(driverPriceIncGSTAnswer);
+            answerList.add(feePriceExcGstAnswer);
+            answerList.add(feePriceIncGstAnswer);
 
             for (Answer answer : answerList) {
                 answer.setInferred(true);
