@@ -18,10 +18,11 @@ rule "System Event Listener"
         rules : QRules()
      then    
       	rules.header();
+      	System.out.println("🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚🚚");
  
  		rules.println("System Event:"+$m.getData().getCode());
- 		QwandaUtils.apiGet("https://jenkins.outcome-hub.com/generic-webhook-trigger/invoke?token="+System.getenv("JENKINS_CODE"),null);
- 	   
+ 		
+ 		QwandaUtils.apiGetBasicAuth(System.getenv("JENKINS_URL")+"?WEB_URL="+System.getenv("WEB_URL"), System.getenv("JENKINS_USER"), System.getenv("JENKINS_PASS") );
    	    rules.footer();
   
 end

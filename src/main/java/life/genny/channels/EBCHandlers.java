@@ -36,6 +36,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QEventSystemMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.QRules;
@@ -85,6 +86,7 @@ public class EBCHandlers {
 
 		EBConsumers.getFromEvents().subscribe(arg -> {
 			JsonObject payload = processMessage("Event", arg);
+			System.out.println(payload);
 
 			QEventMessage eventMsg = null;
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
@@ -95,6 +97,9 @@ public class EBCHandlers {
 				eventMsg = gson.fromJson(payload.toString(), QEventBtnClickMessage.class);
 			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
 				eventMsg = gson.fromJson(payload.toString(), QEventLinkChangeMessage.class);
+			} else if (payload.getString("event_type").equals("EVT_SYSTEM")) {
+				eventMsg = gson.fromJson(payload.toString(), QEventSystemMessage.class);
+				System.out.println(eventMsg.toString());
 			} else {
 				eventMsg = gson.fromJson(payload.toString(), QEventMessage.class);
 			}
