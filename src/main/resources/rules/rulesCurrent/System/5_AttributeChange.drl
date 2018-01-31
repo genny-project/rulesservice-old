@@ -11,6 +11,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
 
 rule "Listen Attribute Change"
+ruleflow-group 'AttributeChange'
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
         rules : QRules()
