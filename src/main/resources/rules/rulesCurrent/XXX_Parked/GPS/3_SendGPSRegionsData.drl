@@ -11,7 +11,7 @@
    salience 5
    agenda-group "SendLayoutsAndData"
      when
-         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SENT_GPS_REGION")))
+         rules: QRules( isState("IS_LOGGED_IN") && (!isState("SENT_GPS_REGION")))
       then
       	
       	rules.header();

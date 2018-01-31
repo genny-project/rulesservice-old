@@ -993,7 +993,7 @@ public class QRules {
 		try {
 
 			RulesUtils.header(drools.getRule().getName() + " - "
-					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : ""));
+					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "") + showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
 		}
@@ -1002,7 +1002,7 @@ public class QRules {
 	public void footer() {
 		try {
 			RulesUtils.footer(drools.getRule().getName() + " - "
-					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : ""));
+					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "") + showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
 		}
@@ -1401,4 +1401,13 @@ public class QRules {
 
 	}
 
+	public String showStates()
+	{
+		String states = "  ";
+		for (String key : stateMap.keySet())
+		{
+			states+=key+":";
+		}
+		return states;
+	}
 }

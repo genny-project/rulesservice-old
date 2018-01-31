@@ -16,15 +16,14 @@ rule "Send Bucket Layout To Frontend"
     when
         rules: QRules( isState("SEND_BUCKET_DATA") && (!isState("SEND_BUCKET_LAYOUT"))  ) 
      then
-     	RulesUtils.header(drools.getRule().getName());
+     	rules.header();
      	
      	String layout = RulesUtils.getLayout("card.json");
      	
      	/* sending cmd BUCKET_VIEW */
         rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
            
-		/*  rules.clearState("SEND_BUCKET_DATA");  */
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
-	    RulesUtils.footer(drools.getRule().getName());       		      
+	    rules.footer();     		      
 end

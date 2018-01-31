@@ -11,7 +11,7 @@ rule "Send Ch40 BucketData To Frontend"
     salience 7
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("SEND_BUCKET_DATA") ) 
+        rules: QRules( !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY") ) 
      then
      	rules.header();
 	
