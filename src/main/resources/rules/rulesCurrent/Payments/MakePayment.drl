@@ -27,7 +27,9 @@ rule "Make Payment"
 			if(begCode != null && assemblyId != null) {
 		
 				/* Make payment */
-				PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());	      
+				String response = PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());
+				
+				
 				rules.println("Make Payment process ended");  
 			}
 		

@@ -60,9 +60,10 @@ rule "Confirm Offer"
         rules: QRules()
     then
         rules.header();
-        rules.showLoading("Please wait for a moment...");
-        /* Prepare GSON Deserialization */
-            Gson gson = new GsonBuilder()
+        
+        rules.showLoading("Please wait for a moment...");            
+        
+        Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
                 @Override
                 public LocalDateTime deserialize(final JsonElement json, final Type type,
@@ -76,6 +77,7 @@ rule "Confirm Offer"
                 return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
                 }
             }).create();
+            
             Gson gson1 = new Gson();
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
@@ -130,6 +132,7 @@ rule "Confirm Offer"
             String begCode= map.get("PRI_BEG_CODE");
             String quoterCode= map.get("PRI_QUOTER_CODE");
             String quoterUname= map.get("PRI_QUOTER_USERNAME");
+            
 
             System.out.println("------------------------------------------------------------------------");
             System.out.println("ownerPriceExcGST         ::   " + ownerPriceExcGST);

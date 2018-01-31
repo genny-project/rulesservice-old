@@ -60,7 +60,33 @@ rule "Send Ch40 BucketData To Frontend"
      		}
      	}
      	
-     	 rules.setState("SEND_BUCKET_DATA");
+     	/* Send messages to user if they belong to the conversation. TODO: to optimize */
+      	
+      	/* rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); */
+      	
+      	List<BaseEntity> conversations = rules.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+      	List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
+      	
+      	if(conversations != null) {
+      		
+      		for(BaseEntity convo: conversations) {
+          		
+          		List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
+          		if(users != null) {
+          			
+          			for(BaseEntity linkedUser: users) {
+              			
+              			/* if user is a stackholder of this conversation  we send it */
+              			if(linkedUser.getCode().equals(rules.getUser().getCode())) {
+              				userConversations.add(convo);
+              			}
+              		}
+          		}
+          	}
+      	}
+  	
+  		rules.publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
+     	rules.setState("SEND_BUCKET_DATA");
        	   		
 	    rules.footer();       		      
 end
