@@ -9,12 +9,12 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import com.google.gson.Gson;
+
 
 
 rule "Send Sub Layouts To Frontend"
-    no-loop true
-     salience 9
+
+     salience 680
     agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SUBLAYOUT_CHANGE_READY"))  ) 

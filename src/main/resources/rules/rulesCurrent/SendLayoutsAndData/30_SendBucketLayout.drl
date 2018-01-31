@@ -10,8 +10,7 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 import io.vertx.core.json.JsonObject;
 
 rule "Send Bucket Layout To Frontend"
-    no-loop true
-    salience 6
+    salience 660
     agenda-group "SendLayoutsAndData"
     when
         rules: QRules( isState("SEND_BUCKET_DATA") && (!isState("SEND_BUCKET_LAYOUT"))  ) 

@@ -210,8 +210,11 @@ public class RulesLoader {
 			}
 		
 			kieSession.insert(keyValueMap);
-			kieSession.insert(kieSession); // TODO this feels wring
 
+			// Set the focus on the Init agenda group to force proper startup
+			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
+			
+			System.out.println("FIRE RULES");
 			kieSession.fireAllRules();
 
 			kieSession.dispose();

@@ -4,9 +4,10 @@ import life.genny.rules.QRules;
 
 
 rule "Send Layout Change To Frontend"
+
+    salience 699
     no-loop true
-    salience 10
-    agenda-group "SendLayoutsAndData"
+    ruleflow-group "SendLayoutsAndData"
     when
         rules: QRules( !isState("LAYOUT_CHANGE_READY") ) 
      then

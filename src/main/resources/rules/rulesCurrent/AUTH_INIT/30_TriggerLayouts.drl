@@ -5,12 +5,14 @@ import life.genny.rules.QRules;
 
 rule "Trigger Layouts"
     no-loop true
+    salience 570
     when
         rules: QRules( isState("PROJECT_SENT")  && (isState("USER_SENT")) && (!isState("TRIGGER_LAYOUTS")))
      then
      	rules.header();
-     	
+     	rules.setState("TRIGGER_LAYOUTS");
+     	 rules.footer();  
   		drools.setFocus("SendLayoutsAndData");
-		rules.setState("TRIGGER_LAYOUTS");
-	    rules.footer();     		      
+		
+	      		      
 end

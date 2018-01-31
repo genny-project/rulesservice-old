@@ -3,15 +3,17 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 rule "Pre Init"
-	salience 100000
 	no-loop true
+	lock-on-active true
+	ruleflow-group 'Init'
     when
-
-         rules: QRules(!isState("STARTED")) 
+            m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+          rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.header();
         rules.setState("STARTED");
+
         
         rules.footer();
       		      
