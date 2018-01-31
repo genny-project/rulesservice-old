@@ -46,6 +46,7 @@ import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
@@ -816,7 +817,7 @@ public class QRules {
 		if (recipientCodes != null) {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", JsonUtils.toJson(msg) );
 	}
 
 	// public void publishUpdatedLink(final String parentCode, final String
