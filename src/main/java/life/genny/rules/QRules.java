@@ -1297,7 +1297,7 @@ public class QRules {
 			msg.setToken(getToken());
 			publish("cmds", RulesUtils.toJsonObject(msg));
 
-			QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);
+			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionCode);
 			publishCmd(cmdFormView);
 
 		} catch (IOException e) {
