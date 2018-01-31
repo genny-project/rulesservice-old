@@ -49,29 +49,48 @@ rule "Calculate Load Price"
 		String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
 		String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
 		
-		BigDecimal ownerPriceExcGST = new  BigDecimal(0);
-		BigDecimal ownerPriceIncGST = new  BigDecimal(0);
-		BigDecimal driverPriceExcGST = new BigDecimal(0);
-		BigDecimal driverPriceIncGST = new BigDecimal(0);
+		BigDecimal ownerPriceExcGST = new  BigDecimal(1);
+		BigDecimal ownerPriceIncGST = new  BigDecimal(2);
+		BigDecimal driverPriceExcGST = new BigDecimal(3);
+		BigDecimal driverPriceIncGST = new BigDecimal(4);
 
 		/* Get userRole */
-			String userRole = null;
-			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
-				String offerCode = newAnswer.getTargetCode();
-				userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
-			}
+		String userRole = null;
+		if(newAnswer.getTargetCode().startsWith("OFR_")) {			
+			String offerCode = newAnswer.getTargetCode();
+			userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+		}
 
-		if(newAnswer.getTargetCode().startsWith("BEG_") || (newAnswer.getTargetCode().startsWith("OFR_") && userRole == "OWNER")) {
+		System.out.println(" targetCode " + newAnswer.getTargetCode() );
+		System.out.println(" userRole " + userRole );
+
+		if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole.equals("OWNER")) ) {
+			System.out.println("=======================================================================================================");
+			System.out.println("OWNER countering   ::   ");
+			System.out.println(" targetCode" +newAnswer.getTargetCode() );
 			ownerPriceExcGST = answerPrice;
 			ownerPriceIncGST = rules.includeGST(answerPrice);
 			driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
 			driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
+			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
+			System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
+			System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST);
+			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST);
+			System.out.println("=======================================================================================================");
 		}
-		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == "QUOTER" || userRole == null)) {
+		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole.equals("QUOTER") || userRole.equals(null))) {
+			System.out.println("=======================================================================================================");
+			System.out.println("QUOTER countering   ::   ");
 			driverPriceExcGST = answerPrice;
 			driverPriceIncGST = rules.includeGST(answerPrice);
 			ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
 			ownerPriceIncGST = rules.includeGST(ownerPriceExcGST);
+
+			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
+			System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
+			System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST);
+			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST);
+			System.out.println("=======================================================================================================");
 		}
 
 
