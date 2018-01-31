@@ -11,7 +11,7 @@ rule "Answer - Rating "
     then    
        
     	   rules.header();
-	   rules.processAnswerRating(m); 
+	   rules.processAnswerRating(m, "PRI_DRIVER_RATING"); 
        rules.footer();
            
 end

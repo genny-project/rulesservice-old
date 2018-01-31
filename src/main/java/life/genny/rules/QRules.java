@@ -1181,30 +1181,22 @@ public class QRules {
 		}
 	}
 	
-	public void processAnswerRating(QDataAnswerMessage m) {
-		
-		/* this rule is disabled as it creates a loop.... a way to avoid that would be to create a new attribute for the question only */
-		
+	public void processAnswerRating(QDataAnswerMessage m, final String finalAttributeCode) {
 		
 		/* extract answers */
 		Answer[] answers = m.getItems();
 		for (Answer answer : answers) {
 				
-			Long askId = answer.getAskId();
 			String sourceCode = answer.getSourceCode();
 			String targetCode = answer.getTargetCode();
 			answer.setSourceCode(answer.getTargetCode());
 			String attributeCode = answer.getAttributeCode();
 			String value = answer.getValue();
-			Boolean inferred = answer.getInferred();
-			Double weight = answer.getWeight();
-			Boolean expired = answer.getExpired();
-			Boolean refused = answer.getRefused();
 			
 			if(attributeCode.equals("PRI_RATING")) {
 				
 				/* we grab the old value of the rating as well as the current rating */
-				String currentRatingString = getBaseEntityValueAsString(targetCode, attributeCode);
+				String currentRatingString = getBaseEntityValueAsString(targetCode, finalAttributeCode);
 				String numberOfRatingString = getBaseEntityValueAsString(targetCode, "PRI_NUMBER_RATING");
 				
 				if(currentRatingString != null && numberOfRatingString != null) {
@@ -1215,8 +1207,8 @@ public class QRules {
 					
 					/* we increment the number of current ratings */
 					numberOfRating += 1;
-					/* Answer ratingAnswer = new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
-			        publishData(ratingAnswer);  */
+					Answer ratingAnswer = new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
+			        publishData(ratingAnswer);
 			        
 			        /* we compute the new rating */
 			        
@@ -1227,8 +1219,8 @@ public class QRules {
 			        Double newRatingAverage = currentRating / numberOfRating;
 			        newRatingAverage += newRating / numberOfRating;
 					
-					/* Answer newRatingAnswer = new Answer(sourceCode, targetCode, attributeCode, Double.toString(newRatingAverage));
-			        publishData(newRatingAnswer);   */
+					Answer newRatingAnswer = new Answer(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage));
+			        publishData(newRatingAnswer);
 				}
 				
 				/* publishData(answer); */ 
