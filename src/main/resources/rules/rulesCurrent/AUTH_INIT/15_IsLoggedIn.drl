@@ -16,9 +16,9 @@ rule "Is Logged In"
         rules.header();
      	
      	
-  /*      BaseEntity user = rules.getUser();
+        BaseEntity user = rules.getUser();
         rules.println("user exists");
-        rules.println("User "+user+" LOGGED IN"); */
+        rules.println("User "+user+" LOGGED IN"); 
 
   		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
