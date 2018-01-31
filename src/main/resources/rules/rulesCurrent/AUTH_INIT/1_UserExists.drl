@@ -10,7 +10,7 @@ rule "User Exists"
     no-loop true
     when
         m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
-        rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) ) 
+        rules: QRules( (!isState("IS_LOGGED_IN")) ) 
      then
         rules.header();
      	
@@ -22,6 +22,8 @@ rule "User Exists"
   		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
 		drools.setFocus("payments");
+		
+		drools.setFocus("SendLayoutsAndData");
 		
 	    rules.footer();     		      
 end
