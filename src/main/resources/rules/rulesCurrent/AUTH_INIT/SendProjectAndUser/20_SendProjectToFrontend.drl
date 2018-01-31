@@ -7,7 +7,8 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Send PROJECT To Frontend"
     no-loop true
-    salience 570
+    salience 770
+    ruleflow-group 'SendAliases'
     when
          rules: QRules( isState("IS_LOGGED_IN")  && (!isState("PROJECT_SENT")) )
      then

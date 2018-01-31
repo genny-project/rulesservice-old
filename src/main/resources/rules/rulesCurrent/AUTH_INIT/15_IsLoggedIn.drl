@@ -10,7 +10,7 @@ rule "Is Logged In"
 
     when
 
-        rules: QRules( (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
+        rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
 
      then
         rules.header();
@@ -25,7 +25,7 @@ rule "Is Logged In"
  
 /*		drools.setFocus("payments"); */
 		
-
+   	drools.setFocus("SendAliases");
 		
 	    rules.footer();     		      
 end

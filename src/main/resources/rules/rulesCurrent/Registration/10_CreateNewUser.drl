@@ -6,25 +6,26 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Create New User"
 	no-loop true
+	lock-on-active true
+	salience 899
+	ruleflow-group 'Registration'
     when
-        rules: QRules( isState("NO_USER") &&  (!isState("NEW_USER")) ) 
+        rules: QRules( (!isState("TRIGGER_REGISTRATION")) ) 
       then
      	rules.header();
-     	rules.setState("NEW_USER");
-     	rules.clearState("NO_USER");
      	
      	rules.println("Creating User  ");
      	BaseEntity be = rules.createUser();
      	be = rules.getUser();
      	
-     	
-     	rules.clearState("NO_USER");
-        rules.setState("NEW_USER");
-        
-        rules.println("The user created is  ::  "+be.toString() );
-
+     	rules.setState("NEW_USER_CREATED");
+       rules.println("The user created is  ::  "+be.toString() );
+ 
+     	rules.clearState("NEW_REGISTRATION");
+         
+  
   		/* Calling the rule agenda group : NewUser   */
-        drools.setFocus("CheckIfProfileCompleted");
+        drools.setFocus("SendAliases");
   		
 	    rules.footer();   		      
 end

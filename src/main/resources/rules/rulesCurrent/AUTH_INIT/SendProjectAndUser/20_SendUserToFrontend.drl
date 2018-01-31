@@ -5,7 +5,8 @@ import life.genny.rules.QRules;
 
 rule "Send User To Frontend"
     no-loop true
-    salience 580
+    salience 780
+        ruleflow-group 'SendAliases'
     when
         rules: QRules( isState("PROJECT_SENT")  && (!isState("USER_SENT")) )
      then
