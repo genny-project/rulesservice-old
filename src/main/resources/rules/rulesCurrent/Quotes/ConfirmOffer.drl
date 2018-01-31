@@ -176,7 +176,7 @@ rule "Confirm Offer"
 
         /* Update PRI_NEXT_ACTION for OFFER */
             Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkDriver);
-            rules.publishData(actionCode);    
+           // rules.publishData(actionCode);    
 
         /* Update link between BEG and QUOTR as DRIVER */
             System.out.println("\nCREATING DRIVER LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
@@ -191,7 +191,7 @@ rule "Confirm Offer"
             System.out.println("UPDATING weight OF LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
             Link link3 = new Link( begCode, offerCode, linkCode, linkOffer);
             link3.setWeight(0.0);
-            String output3 = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link3),tokenString);
+          //  String output3 = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", gson.toJson(link3),tokenString);
             
         /* Sending updated link of BEG */
             JsonArray updatedLink1 = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
@@ -208,32 +208,32 @@ rule "Confirm Offer"
             
      
 
-        /* Move BEG to GRP_APPROVED */
+        /* Move BEG to GRP_APPROVED 
             String oldGroup = "GRP_NEW_ITEMS";
             String newGroup = "GRP_APPROVED";
-            String linkCode2 = "LNK_CORE";
+            String linkCode2 = "LNK_CORE"; */
             
-            /* Moving the BEG */
+            /* Moving the BEG 
             JsonObject begEntity = new JsonObject();
             begEntity.put("sourceCode", oldGroup);
-            begEntity.put("targetCode", begCode);  /* begCode */
+            begEntity.put("targetCode", begCode); 
             begEntity.put("attributeCode", linkCode2);
 
-            RulesUtils.ruleLogger("EntityLink", begEntity);
+            RulesUtils.ruleLogger("EntityLink", begEntity); */
 
-            String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString);
+           /* String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/" + newGroup, begEntity.toString(), tokenString); */
 
-        /* Sending updated link of BEG'S parent group */
+        /* Sending updated link of BEG'S parent group 
             JsonArray updatedLink2 = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode2, tokenString));
-            /* Creating a data msg */
+            /* Creating a data msg 
                 JsonObject newLink = new JsonObject();
                 newLink.put("msg_type", "DATA_MSG");
                 newLink.put("data_type", "LINK_CHANGE");
                 newLink.put("items", updatedLink2);
                 RulesUtils.ruleLogger("Updated Link", newLink);
-            /* publish new link data */
+            /* publish new link data
                 newLink.put("token", tokenString );
-                rules.publish("cmds", newLink);
+                rules.publish("cmds", newLink); */
 
         /* Call Payment Rule */      
             drools.setFocus("payments");
@@ -249,9 +249,9 @@ rule "Confirm Offer"
                 RulesUtils.println("owner code ::"+userCode);
                 String[] recipientArr = {userCode};
 
-                /* Sending message to BEG OWNER */
+                /* Sending message to BEG OWNER 
                 rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); */
         
             /* QUOTER config */
                 HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -260,19 +260,20 @@ rule "Confirm Offer"
 
                 String[] recipientArrForDriver = {quoterCode};
 
-                /* Sending message to DRIVER */
+                /* Sending message to DRIVER 
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); */
             
         /* Set progression of LOAD delivery to 0 */
                 Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
                 RulesUtils.println(updateProgressAnswer);
                 rules.publishData(updateProgressAnswer);
             
-            /* We ask FE to monitor GPS */
-                rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
-
-        /* sending cmd BUCKETVIEW */
-            drools.setFocus("bucketview"); 
+            
+            /* We ask FE to monitor GPS
+            rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
+       	
+       		sending cmd BUCKETVIEW
+            drools.setFocus("bucketview");  */ 
         rules.footer();
 end

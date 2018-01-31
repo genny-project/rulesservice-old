@@ -47,7 +47,7 @@ rule "TV_SELECT Event"
         			List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode("GRP_USERS","LNK_CORE", 0, 100, false) ;
         			totalList.addAll(users);
         			
-        			rules.publishCmd(totalList, "GRP_ADMIN_USERS", "LNK_CORE");
+        			rules.publishCmd(totalList, grpCode, "LNK_CORE");
         			sendTable = true;
         			
         		}
@@ -65,7 +65,7 @@ rule "TV_SELECT Event"
         	     		totalList.addAll(bucketBegs);
         	     	}
         			
-        			rules.publishCmd(totalList, "GRP_ADMIN_JOBS", "LNK_CORE");
+        			rules.publishCmd(totalList, grpCode, "LNK_CORE");
         			sendTable = true;
         		}
         		

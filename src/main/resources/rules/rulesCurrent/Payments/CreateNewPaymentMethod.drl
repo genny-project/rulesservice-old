@@ -1,0 +1,47 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.Answer;
+
+/* Sorry Adam if you read this */
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
+rule "Create new payment method - user"
+	when 
+		rules: QRules() 
+		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_ADD_NEW_PAYMENT_METHOD" ) 
+	then
+		
+		rules.header();
+			
+		String paymentMethodDataString = $m.getData().getValue();
+		if(paymentMethodDataString != null) {
+			
+			String userCode = rules.getUser().getCode();
+			
+			String userCurrentPaymentMethods = rules.getBaseEntityValueAsString(userCode, "PRI_USER_PAYMENT_METHODS");
+			if(userCurrentPaymentMethods != null) {
+				
+				RulesUtils.println(userCurrentPaymentMethods);
+				
+				JsonObject newPaymentMethod = new JsonObject(paymentMethodDataString);
+				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
+				currentPaymentMethods.add(newPaymentMethod);
+				String finalPaymentMethods = currentPaymentMethods.toString();
+				
+				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
+	            rules.publishData(paymentAnswer);
+			}
+			else {
+				
+				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", "[" + paymentMethodDataString + "]");
+	            rules.publishData(paymentAnswer);
+			}
+		}
+
+		rules.footer();
+
+end
