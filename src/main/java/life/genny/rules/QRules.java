@@ -299,6 +299,15 @@ public class QRules {
 			return true;
 		}
 	}
+	
+	public Boolean isNewUserProfileCompleted() {
+		Boolean status = false;
+		if(getUser() != null) {
+			 status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());
+		}
+		   	
+		return status;
+	}
 
 	public void updateBaseEntityByCode(final String code) {
 		BaseEntity be = null;
@@ -1171,6 +1180,61 @@ public class QRules {
 			e.printStackTrace();
 		}
 	}
+	
+	public void processAnswerRating(QDataAnswerMessage m) {
+		
+		/* this rule is disabled as it creates a loop.... a way to avoid that would be to create a new attribute for the question only */
+		
+		
+		/* extract answers */
+		Answer[] answers = m.getItems();
+		for (Answer answer : answers) {
+				
+			Long askId = answer.getAskId();
+			String sourceCode = answer.getSourceCode();
+			String targetCode = answer.getTargetCode();
+			answer.setSourceCode(answer.getTargetCode());
+			String attributeCode = answer.getAttributeCode();
+			String value = answer.getValue();
+			Boolean inferred = answer.getInferred();
+			Double weight = answer.getWeight();
+			Boolean expired = answer.getExpired();
+			Boolean refused = answer.getRefused();
+			
+			if(attributeCode.equals("PRI_RATING")) {
+				
+				/* we grab the old value of the rating as well as the current rating */
+				String currentRatingString = getBaseEntityValueAsString(targetCode, attributeCode);
+				String numberOfRatingString = getBaseEntityValueAsString(targetCode, "PRI_NUMBER_RATING");
+				
+				if(currentRatingString != null && numberOfRatingString != null) {
+					
+					Double currentRating = Double.parseDouble(currentRatingString);
+					Double numberOfRating = Double.parseDouble(numberOfRatingString);
+					Double newRating = Double.parseDouble(value);
+					
+					/* we increment the number of current ratings */
+					numberOfRating += 1;
+					/* Answer ratingAnswer = new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
+			        publishData(ratingAnswer);  */
+			        
+			        /* we compute the new rating */
+			        
+			        /* because for now we are not storing ALL the previous ratings, 
+			         * we calculate a rolling average
+			         */
+			        
+			        Double newRatingAverage = currentRating / numberOfRating;
+			        newRatingAverage += newRating / numberOfRating;
+					
+					/* Answer newRatingAnswer = new Answer(sourceCode, targetCode, attributeCode, Double.toString(newRatingAverage));
+			        publishData(newRatingAnswer);   */
+				}
+				
+				/* publishData(answer); */ 
+			}
+		}
+	}
 
 	public void processAnswer(QDataAnswerMessage m) {
 
@@ -1195,7 +1259,8 @@ public class QRules {
 //			System.out.println("------------------------------------------------------------------------");
 
 			/* if this answer is actually an address another rule will be triggered */
-			if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
+			/* TODO: this rule should not even be triggered so we should not have to make these checks */
+			if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD") && !attributeCode.contains("_RATING")) {
 
 				/* convert answer to json */
 				String jsonAnswer = RulesUtils.toJson(answer);
@@ -1288,7 +1353,7 @@ public class QRules {
 			msg.setToken(getToken());
 			publish("cmds", RulesUtils.toJsonObject(msg));
 
-			QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);
+			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionCode);
 			publishCmd(cmdFormView);
 
 		} catch (IOException e) {
