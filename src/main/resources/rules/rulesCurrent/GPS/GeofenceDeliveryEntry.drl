@@ -1,0 +1,47 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+
+import java.util.HashMap;
+
+rule "Geofence Enter Delivery Point"
+when
+  $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("DELIVERY"))
+  rules: QRules()
+then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+		
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("ARRIVED AT DELIVERY POINT");
+		
+		String[] recipients = new String[1];
+		recipients[0] = rules.getUser().getCode();
+		
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", begCode);
+		contextMap.put("DRIVER", rules.getUser().getCode());
+		
+		/* Sending message to BEG OWNER */
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "SMS");
+		
+		rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
+		
+		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
+		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
+		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
+
+		RulesUtils.footer(drools.getRule().getName());
+
+end
