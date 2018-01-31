@@ -11,6 +11,7 @@ import life.genny.qwandautils.GPSUtils;
 import life.genny.rules.RulesUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
+import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Map;
 import java.util.HashMap; 
@@ -33,18 +34,15 @@ rule "Owner rate driver and confirm delivery"
       	String dataString = $m.data.getValue();
       	String userCode = rules.getUser().getCode();
         
-      	RulesUtils.println("=================");
-      	
       	/* we grab the job code */
       	String begCode = rules.getBaseEntityValueAsString(userCode, "STT_JOB_IS_RATING");
-      	RulesUtils.println(begCode);
-      	
+
       	 if(begCode != null) {
       		
           	/* TODO: release payment for driver */
 
       		/* we mark the job as marked */
-          	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_BEG");
+          	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
           	
           	/* redirecting user to bucket */
           	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
