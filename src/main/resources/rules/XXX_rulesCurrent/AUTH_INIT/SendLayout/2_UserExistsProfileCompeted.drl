@@ -1,0 +1,20 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "User Exists : Send Layouts if profile completed"
+    no-loop true
+    when
+        rules: QRules( isState("IS_LOGGED_IN") && (!isState("DEFAULT_LAYOUTS_SENT")) ) 
+     then
+        rules.header();
+     	
+        drools.setFocus("SendLayoutsAndData");
+		
+        rules.setState("DEFAULT_LAYOUTS_SENT");
+	    rules.footer();     		      
+end

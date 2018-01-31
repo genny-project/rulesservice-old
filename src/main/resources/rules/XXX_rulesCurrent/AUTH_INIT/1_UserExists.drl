@@ -1,0 +1,34 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "User Exists"
+    no-loop true
+    when
+<<<<<<< HEAD
+        rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN"))  && isState("USER_CHECKED")) 
+=======
+        m : QEventMessage( QEventMessage.getData().getCode().equals("AUTH_INIT") )
+        rules: QRules( (!isState("IS_LOGGED_IN")) ) 
+>>>>>>> 248d039fcde2a8795d489e3f7ab977d354b34409
+     then
+        rules.header();
+     	
+     	
+        BaseEntity user = rules.getUser();
+        rules.println("user exists");
+        rules.println("User "+user+" LOGGED IN");
+
+  		rules.clearState("NO_USER");
+        rules.setState("IS_LOGGED_IN");
+ 
+/*		drools.setFocus("payments"); */
+		
+		drools.setFocus("SendLayoutsAndData");
+		
+	    rules.footer();     		      
+end

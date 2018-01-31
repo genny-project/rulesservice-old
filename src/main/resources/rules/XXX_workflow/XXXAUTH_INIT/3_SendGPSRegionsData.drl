@@ -1,0 +1,29 @@
+ package life.genny.rules;
+
+
+ import life.genny.rules.QRules;
+ import life.genny.qwanda.entity.BaseEntity;
+ import java.util.List;
+ import life.genny.qwanda.message.QEventMessage;
+
+ rule "Send GPS Regions Data"
+   no-loop true
+   salience 5
+   agenda-group "SendLayoutsAndData"
+     when
+         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SENT_GPS_REGION")))
+      then
+      	
+      	rules.header();
+    		
+ 		List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
+ 		for(BaseEntity be: jobsInTransit) {
+ 			
+ 			String begCode = be.getCode();	
+ 			rules.geofenceJob(begCode, rules.getUser().getCode(), 30.0);
+ 		}
+ 		        
+ 		rules.setState("SENT_GPS_REGION");
+ 		
+        rules.footer();      		      
+ end

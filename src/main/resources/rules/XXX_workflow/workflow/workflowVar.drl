@@ -1,0 +1,13 @@
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "WorkflowVar"
+ruleflow-group "SendProjects"
+no-loop
+when
+    myev: QEventMessage()
+then
+    myev.setToken( "I am a Token!" );
+    update( myev );
+    System.out.println("The value returned is: " + myev.getToken() + " for "+myev.getData().getCode());
+end

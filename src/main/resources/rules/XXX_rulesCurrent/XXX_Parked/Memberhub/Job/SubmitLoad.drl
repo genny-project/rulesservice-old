@@ -1,0 +1,94 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.Answer;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.GPSUtils;
+import life.genny.rules.RulesUtils;
+import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.Map;
+import java.util.HashMap; 
+
+import io.vertx.core.json.JsonObject;
+
+import java.time.format.DateTimeFormatter;
+import life.genny.qwanda.DateTimeDeserializer;
+
+/* Rule handling Cancel and Submit Button click in the Create Load  */
+rule "Post Load Cancel/Submit button click"
+    when
+      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
+      rules: QRules()   
+    then
+         rules.setDrools(drools);
+         rules.header();  
+         String qwandaServiceUrl = rules.getQwandaServiceUrl();
+         String tokenString = rules.getToken();      
+         String userCode =  rules.getUser().getCode();
+         System.out.println("The user Code is  ::  " +userCode);
+                
+       /*  Get data.value and decode    */
+        String dataString = $m.data.getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+        String jobCode = dataJson.getString("targetCode");
+        String actionCode = dataJson.getString("action"); 
+        System.out.println("The job code is   :: "+jobCode);
+        
+       if(actionCode.equalsIgnoreCase("submit")) {       
+         
+    	   /*    link current user as load-owner to the Job/BEG     */
+           Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
+           System.out.println(" Added Load Owner to BEG/JOB ");
+           
+           /* We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be triggered in another rule */
+           	String pickupLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LATITUDE");
+           	String pickupLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LONGITUDE");
+           	String deliveryLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
+           	String deliveryLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
+           	
+           	Double totalDistance = GPSUtils.getDistance(pickupLatitudeString, pickupLongitudeString, deliveryLatitudeString, deliveryLongitudeString);
+       		if(totalDistance > 0) {
+       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_METERS", Double.toString(totalDistance));
+           		rules.publishData(totalDistanceAnswer);
+       		}
+       		
+       	 /*    Adding Offer Count to 0   */
+       	  Answer offerCountAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_OFFER_COUNT", "0" );
+       	 /* Publish Answer   */
+       	 rules.publishData(offerCountAns); 
+	    
+          /*     Moving the BEG      */
+           JsonObject begEntity = new JsonObject();
+           begEntity.put("sourceCode","GRP_DRAFTS");
+           begEntity.put("targetCode",jobCode);
+           begEntity.put("attributeCode","LNK_CORE");
+ 	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
+ 	      /*    Send newly created job with its attributes   */        
+           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
+           newJobDetails.put("token", tokenString);
+           System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
+           rules.getEventBus().publish("cmds", newJobDetails); 
+          /* Get the sourceCode(Company code) for this User */
+            BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+         /*     link newly created Job to GRP_LOADS   */
+           String loadCode =  QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", "LNK_BEG", jobCode , "LOAD", false, rules.getToken());
+           Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_"+company.getCode(), null, (double) 1, rules.getToken());
+           System.out.println("The load has been added to the GRP_LOADS ");
+         /*    Calling the rule group : BucketView     */
+          drools.setFocus("BucketView"); 
+      }else if(actionCode.equalsIgnoreCase("cancel")){
+       /*  String status =  rules.removeLink("GRP_DRAFTS", jobCode, "LNK_CORE");
+        System.out.println("Status after removing link  :: " +status);   */
+       /*    Calling the rule group : BucketView     */
+         drools.setFocus("BucketView");       
+      }
+             
+     rules.footer(); 
+        
+end
