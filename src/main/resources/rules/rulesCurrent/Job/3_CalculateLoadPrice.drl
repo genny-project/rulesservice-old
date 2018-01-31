@@ -11,7 +11,6 @@ import java.lang.Double;
 import java.lang.String;
 import java.math.BigDecimal;
 
-
 function Double calculate(String price) {
 
 	Double ownerOriginalPrice = Double.parseDouble(price);
@@ -33,42 +32,10 @@ rule "Calculate Load Price"
 		String beCode = newAnswer.getTargetCode();
 		BigDecimal answerPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
 		BigDecimal fees = new BigDecimal(0);
-
-		/* Calculate Fees*/
-			if (answerPrice.compareTo(BigDecimal.valueOf(0)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(1000)) <= 0) {
-				
-				/* 15% of price if price less than or equal to 1000 */
-				fees = answerPrice.multiply(new BigDecimal("0.15"));
-				
-			} else if (answerPrice.compareTo(BigDecimal.valueOf(1000)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(3000)) <= 0) {
-				/*
-					* 15% + 10% of remaining price if price greater than 1000 and less
-					* than or equal to 3000
-					*/
-				BigDecimal initialFee = new BigDecimal("150");
-				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("1000"));
-				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.1")));
-				
-			} else if (answerPrice.compareTo(BigDecimal.valueOf(3000)) > 0 && answerPrice.compareTo(BigDecimal.valueOf(5000)) <= 0) {
-				/*
-					* 15% + 10% + (7.5% of remaining amount) if price is greater than
-					* 3000 and less than or equal to 5000
-					*/
-				BigDecimal initialFee = new BigDecimal("350");
-				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("3000"));
-				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.075")));
-				
-			} else if (answerPrice.compareTo(BigDecimal.valueOf(5000)) > 0) {
-				/*
-					* 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
-					* than 5000
-					*/
-				BigDecimal initialFee = new BigDecimal("500");
-				BigDecimal negatedAmount = answerPrice.subtract(new BigDecimal("5000"));
-				fees = initialFee.add(negatedAmount.multiply(new BigDecimal("0.05")));
-			}
-			BigDecimal feePriceExcGST = fees;
-			BigDecimal feePriceIncGST = rules.includeGST(fees);
+		fees = rules.calcFee( answerPrice );
+	
+		BigDecimal feePriceExcGST = fees;
+		BigDecimal feePriceIncGST = rules.includeGST(fees);
 
 		String priceCode = $m.getData().getCode();
 		
@@ -103,7 +70,7 @@ rule "Calculate Load Price"
 		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == "QUOTER" || userRole == null)) {
 			driverPriceExcGST = answerPrice;
 			driverPriceIncGST = rules.includeGST(answerPrice);
-			ownerPriceExcGST = driverPriceExcGST.subtract(feePriceExcGST);
+			ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
 			ownerPriceIncGST = rules.includeGST(ownerPriceExcGST);
 		}
 
