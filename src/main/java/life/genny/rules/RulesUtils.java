@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.deser.DateDeserializer;
 import org.javamoney.moneta.Money;
 
 import com.google.gson.Gson;
@@ -28,7 +27,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.reflect.TypeToken;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
@@ -38,6 +36,7 @@ import life.genny.qwanda.MoneyDeserializer;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
 
 public class RulesUtils {
@@ -48,37 +47,6 @@ public class RulesUtils {
 	static public AsyncMap<String, BaseEntity> baseEntityMap;
 
 
-	
-	final static Gson gson2 = new GsonBuilder().registerTypeAdapter(Money.class, new MoneyDeserializer())
-	        .registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
-	          @Override
-	          public LocalDate deserialize(final JsonElement json, final Type type,
-	              final JsonDeserializationContext jsonDeserializationContext)
-	              throws JsonParseException {
-	            return LocalDate.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
-	          }
-
-	          public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
-	              final JsonSerializationContext context) {
-	            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE)); 
-	          }
-	        }).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-		          @Override
-		          public LocalDateTime deserialize(final JsonElement json, final Type type,
-		              final JsonDeserializationContext jsonDeserializationContext)
-		              throws JsonParseException {
-		            return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		          }
-
-		          public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
-		              final JsonSerializationContext context) {
-		            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); 
-		          }
-		        }).create();
-
-   public static  GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(Money.class, new MoneyDeserializer());
-    public static Gson gson = gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer()).setPrettyPrinting()
-    	    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
 
 	
 	public static final String ANSI_RESET = "\u001B[0m";
@@ -218,7 +186,7 @@ public class RulesUtils {
 			String code = "PER_" + uname.toUpperCase();
 			// CHEAT TODO
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code, token);
-			BaseEntity be = gson.fromJson(beJson, BaseEntity.class);
+			BaseEntity be = JsonUtils.fromJson(beJson, BaseEntity.class);
 
 //			if (username != null) {
 //				beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + username+"&pageSize=1", token);
@@ -228,9 +196,9 @@ public class RulesUtils {
 //						token);
 //
 //			}
-//			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
+//			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 //			BaseEntity be = msg.getItems()[0];
-////			List<BaseEntity> bes = Arrays.asList(gson.fromJson(beJson, BaseEntity[].class));
+////			List<BaseEntity> bes = Arrays.asList(JsonUtils.fromJson(beJson, BaseEntity[].class));
 //			BaseEntity be = bes.get(0);
 
 			return be;
@@ -300,7 +268,13 @@ public class RulesUtils {
 			String beJson = getBaseEntityJsonByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode, value);
 			QDataBaseEntityMessage be = fromJson(beJson, QDataBaseEntityMessage.class);
 			
-			List<BaseEntity> items = new ArrayList<BaseEntity>(Arrays.asList(be.getItems())); 
+			List<BaseEntity> items = null;
+			
+			try {
+				items = new ArrayList<BaseEntity>(Arrays.asList(be.getItems()));
+			} catch (Exception e) {
+				println("Error: items is null");
+			} 
 			
 			return items;
 
@@ -345,31 +319,13 @@ public class RulesUtils {
 	
 	public static <T> T fromJson(final String json, Class clazz)
 	{
-	        T item = null;
-	        if (json != null) {
-	                try {
-	                	if (clazz.getSimpleName().equalsIgnoreCase(BaseEntity.class.getSimpleName())) {
-	                		 item = (T)gson2.fromJson(json, clazz);
-	                	} else {
-	                      item = (T)gson.fromJson(json, clazz);
-	                	}
-	                } catch (Exception e) {
-	                     log.error("Bad Deserialisation for "+clazz.getSimpleName());
-	                }
-	        }
-	        return item;
+	     return JsonUtils.fromJson(json, clazz);
 	}
 	
-	public static String toJson2(Object obj)
-	{
-	
-		String ret =  gson.toJson(obj);
-		return ret;
-	}
 	public static String toJson(Object obj)
 	{
 
-		String ret =  gson.toJson(obj);
+		String ret =  JsonUtils.toJson(obj);
 		return ret;
 	}
 	
@@ -382,7 +338,7 @@ public class RulesUtils {
 	
 	public static JsonObject toJsonObject2(Object obj)
 	{
-		String json = toJson2(obj);
+		String json = JsonUtils.toJson(obj);
 		JsonObject jsonObj = new JsonObject(json);
 		return jsonObj;
 	}
@@ -459,7 +415,7 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
@@ -479,7 +435,7 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = gson2.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
@@ -499,7 +455,7 @@ public class RulesUtils {
 			final String token, final String childCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByChildAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, childCode, linkCode);
-			QDataBaseEntityMessage msg = gson.fromJson(beJson, QDataBaseEntityMessage.class);
+			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 			BaseEntity[] beArray = msg.getItems();
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
@@ -547,7 +503,7 @@ public class RulesUtils {
 			try {
 				
 				linkJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/"+linkCode+"/children", token);
-				return gson.fromJson(linkJson, new TypeToken<List<Link>>(){}.getType());
+				return JsonUtils.gson.fromJson(linkJson, new TypeToken<List<Link>>(){}.getType());
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

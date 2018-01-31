@@ -12,6 +12,7 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 
 
 rule "Listen Link Change"
+ruleflow-group 'LinkChange'
     when
         $m: QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" )
         rules : QRules()

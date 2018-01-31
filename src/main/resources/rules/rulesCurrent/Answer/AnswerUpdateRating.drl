@@ -5,6 +5,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QDataAnswerMessage;
 
 rule "Answer - Rating "
+ruleflow-group 'Answer'
     when
         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()))
         rules: QRules()

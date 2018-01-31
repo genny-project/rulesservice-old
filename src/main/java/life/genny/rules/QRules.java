@@ -881,7 +881,7 @@ public class QRules {
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		try {		
-			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
 			  msg = RulesUtils.fromJson(json, QDataAskMessage.class);	
 			
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
@@ -901,7 +901,7 @@ public class QRules {
 		QDataAskMessage msg = null;
 		try {
 			if (autoPushSelections) {
-				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken());
+				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
 
 				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
@@ -910,7 +910,7 @@ public class QRules {
 				QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", qstMsg.getRootQST().getQuestionCode());
 				publishCmd(cmdFormView);
 			} else {
-				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson2(qstMsg), getToken()));
+				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken()));
 				/* QDataAskMessage */
 				questionJson.put("token", getToken());
 				publish("data", questionJson);
@@ -1468,5 +1468,39 @@ public class QRules {
 			states+=key+":";
 		}
 		return states;
+	}
+
+	public BigDecimal calcFee( BigDecimal input ) {
+		BigDecimal RANGE_1 = new BigDecimal(1000);
+		BigDecimal RANGE_2 = new BigDecimal(3000);
+		BigDecimal RANGE_3 = new BigDecimal(5000);
+	
+		BigDecimal FEE_1 = new BigDecimal("0.15");
+		BigDecimal FEE_2 = new BigDecimal("0.10");
+		BigDecimal FEE_3 = new BigDecimal("0.075");
+		BigDecimal FEE_4 = new BigDecimal("0.05");
+	
+		BigDecimal RANGE_1_COMPONENT = input.multiply(FEE_1);
+		BigDecimal RANGE_2_COMPONENT = RANGE_1.multiply(FEE_1);
+		BigDecimal RANGE_3_COMPONENT = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
+		BigDecimal RANGE_4_COMPONENT = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
+	
+		if ( input.compareTo(RANGE_1) <= 0 ) {
+			return RANGE_1_COMPONENT;
+		}
+	
+		if ( input.compareTo(RANGE_1) > 0 && input.compareTo(RANGE_2) <= 0 ) {
+			return RANGE_2_COMPONENT.add(input.subtract(RANGE_1).multiply(FEE_2));
+		}
+	
+		if ( input.compareTo(RANGE_2) > 0 && input.compareTo(RANGE_3) <= 0 ) {
+			return RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(input.subtract(RANGE_2).multiply(FEE_3));
+		}
+	
+		if ( input.compareTo(RANGE_3) > 0 ) {
+			return RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(input.subtract(RANGE_3).multiply(FEE_4));
+		}
+
+		return new BigDecimal(0);
 	}
 }
