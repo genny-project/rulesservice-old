@@ -14,7 +14,7 @@ rule "Send Treeview To Frontend"
      then
      	rules.header();
      	
-      	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 10, true); /* Send tree view */
+      	rules.publishBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 10, true); /* Send tree view */
       	
       	/* Send messages to user if they belong to the conversation. TODO: to optimize */
       	
