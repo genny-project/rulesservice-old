@@ -49,8 +49,6 @@ rule "Owner rate driver and confirm delivery"
           	/* redirecting user to bucket */
           	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
       	}
-      	
-      
-      	
+      	  	
       	rules.footer();
 end
