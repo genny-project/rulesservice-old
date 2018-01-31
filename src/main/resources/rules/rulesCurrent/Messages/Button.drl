@@ -1,0 +1,11 @@
+package com.sample;
+
+import life.genny.qwanda.message.QEventMessage;
+
+
+rule "MsgCommTest-button"
+	when
+		$m : QEventMessage( event_type == "BTN_EVT_BUTTON" )
+    then
+    	System.out.println("Message layout submit event");
+end

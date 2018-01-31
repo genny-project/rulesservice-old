@@ -1,0 +1,34 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+import java.util.HashMap;
+
+
+rule "Geofence Enter Pickup Point"
+	when
+	  $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("PICKUP"))
+	  rules: QRules()
+	then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("ARRIVED AT PICKUP POINT");
+		
+		String[] recipients = new String[1];
+		recipients[0] = rules.getUser().getCode();
+		
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", begCode);
+		contextMap.put("DRIVER", rules.getUser().getCode());
+		
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "SMS");
+
+		RulesUtils.footer(drools.getRule().getName());
+
+end
