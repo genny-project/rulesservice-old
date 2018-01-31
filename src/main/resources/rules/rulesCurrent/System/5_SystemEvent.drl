@@ -14,7 +14,7 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 
 rule "System Event Listener"
     when
-        $m: QEventSystemMessage( event_type == "EVT_SYSTEM" )
+        $m: QEventSystemMessage( event_type == "EVT_SYSTEM"  && QEventSystemMessage.getDeployType() != null)
         rules : QRules()
      then    
       	rules.header();
