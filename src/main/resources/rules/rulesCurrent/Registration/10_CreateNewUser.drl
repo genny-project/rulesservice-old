@@ -10,7 +10,7 @@ rule "Create New User"
 	salience 899
 	ruleflow-group 'Registration'
     when
-        rules: QRules( (!isState("TRIGGER_REGISTRATION")) ) 
+        rules: QRules( isState("NEW_REGISTRATION") && (isState("TRIGGER_REGISTRATION")) ) 
       then
      	rules.header();
      	
