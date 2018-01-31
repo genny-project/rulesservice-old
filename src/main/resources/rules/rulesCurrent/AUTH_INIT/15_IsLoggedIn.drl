@@ -23,7 +23,7 @@ rule "Is Logged In"
   		rules.clearState("NO_USER");
         rules.setState("IS_LOGGED_IN");
  
-/*		drools.setFocus("payments"); */
+		drools.setFocus("payments"); 
 		
    	drools.setFocus("SendAliases");
 		
