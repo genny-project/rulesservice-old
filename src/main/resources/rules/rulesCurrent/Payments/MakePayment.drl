@@ -3,8 +3,13 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.Answer;
-
+import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
 
 rule "Make Payment"
 	when 
@@ -23,14 +28,136 @@ rule "Make Payment"
        		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        		String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
          	
-  
 			if(begCode != null && assemblyId != null) {
 		
 				/* Make payment */
 				String response = PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());
-				
-				
-				rules.println("Make Payment process ended");  
+				if(response != null) {
+					
+					JsonObject responseJson = new JsonObject(response);
+					if(responseJson != null) {
+						
+						String error = responseJson.getString("error");
+						if(error == null) {
+							
+							rules.showLoading("Processing payment...");
+							
+							/* We grab the quoter code */
+							String quoterCode = rules.getBaseEntityValueAsString(begCode, "STT_IN_TRANSIT");
+							String offerCode = rules.getBaseEntityValueAsString(begCode, "STT_HOT_OFFER");
+							
+							if(quoterCode != null) {
+														            
+								/* Allocate QUOTER as Driver */
+								rules.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+								  
+					            /* SEND QUOTER BE to FE */
+					            rules.publishBaseEntityByCode(quoterCode);
+					            
+								/* GET attributes of the OFFER that's being accepted */
+					            JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(rules.getQwandaServiceUrl() + "/qwanda/baseentitys/" + offerCode + "/attributes", rules.getToken()));
+					            RulesUtils.ruleLogger("OFEER Base Entity", offerBe);
+					            
+					            Map<String, String> map = new HashMap<>();
+					           
+					            /* loop to GET attributeCodes and VALUE */
+					            for(Object obj : offerBe) {              
+					                JsonObject offerObj = (JsonObject) obj;
+					                String attributeCode = offerObj.getString("attributeCode");
+					                String attributeValue = offerObj.getString("valueString");
+					                map.put(attributeCode, attributeValue); /* PUT in map */
+					            }
+					                            
+					            String offerPrice = map.get("PRI_OFFER_PRICE");
+
+					            String ownerPriceExcGST= map.get("PRI_OFFER_OWNER_PRICE_EXC_GST");
+					            String ownerPriceIncGST= map.get("PRI_OFFER_OWNER_PRICE_INC_GST");
+					            String driverPriceExcGST= map.get("PRI_OFFER_DRIVER_PRICE_EXC_GST");
+					            String driverPriceIncGST= map.get("PRI_OFFER_DRIVER_PRICE_INC_GST");
+					            String feePriceExcGST= map.get("PRI_OFFER_FEE_EXC_GST");
+					            String feePriceIncGST= map.get("PRI_OFFER_FEE_INC_GST");
+
+					            String quoterUname= map.get("PRI_QUOTER_USERNAME");
+					        
+					            /* Update BEG's prices */
+					            Answer begPriceAnswer = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
+
+					            Answer ownerPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
+					            Answer ownerPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
+
+					            Answer driverPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
+					            Answer driverPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
+
+					            Answer feePriceExcGstAnswer = new Answer(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
+					            Answer feePriceIncGstAnswer = new Answer(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
+
+					            List<Answer> answerList = new ArrayList<Answer>();	
+					            answerList.add(begPriceAnswer);
+					            answerList.add(ownerPriceExcGSTAnswer);
+					            answerList.add(ownerPriceIncGSTAnswer);
+					            answerList.add(driverPriceExcGSTAnswer);
+					            answerList.add(driverPriceIncGSTAnswer);
+					            answerList.add(feePriceExcGstAnswer);
+					            answerList.add(feePriceIncGstAnswer);
+
+					            for (Answer answer : answerList) {
+					                answer.setInferred(true);
+					                rules.publishData(answer);
+					            } 
+					            
+					            /* Update link between BEG and OFFER to weight= 0 */
+					            rules.updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
+					            
+					            /* Move BEG to GRP_APPROVED */
+					            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+					            
+					            /* Update BEG to have DRIVER_CODE as an attribute */
+			        	            Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
+			        	            rules.publishData(beAnswer);  
+					            
+					            /* Send Messages */
+					            
+					            /* Get offerCode, username, userCode, userFullName */
+				                String userCode = rules.getUser().getCode();
+					            String userName = rules.getAsString("preferred_username");
+					            String userFullName = MergeUtil.getFullName(userCode, rules.getToken());
+					            
+				                HashMap<String,String> contextMap = new HashMap<String, String>();
+				                contextMap.put("DRIVER", quoterCode);
+				                contextMap.put("JOB", begCode);  
+				                contextMap.put("QUOTER", quoterCode); 
+				        
+				                String[] recipientArr = { userCode };
+
+				                /* Sending message to BEG OWNER */
+				                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
+				                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); 
+				        
+				                /* QUOTER config */
+				                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+				                contextMapForDriver.put("JOB", begCode);
+				                contextMapForDriver.put("OWNER", userCode);
+
+				                String[] recipientArrForDriver = { quoterCode };
+
+				                /* Sending message to DRIVER */
+				                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+				                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); 
+				            
+				                /* Set progression of LOAD delivery to 0 */
+				                Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+				                RulesUtils.println(updateProgressAnswer);
+				                rules.publishData(updateProgressAnswer);
+					            
+					            /* We ask FE to monitor GPS */
+					            rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
+					       	
+					       		/* sending cmd BUCKETVIEW */
+					            drools.setFocus("bucketview"); 
+							}
+						}
+					}
+				}
 			}
 		
 		}
