@@ -10,7 +10,7 @@ rule "Create New User"
 	salience 899
 	ruleflow-group 'Registration'
     when
-        rules: QRules( isState("NEW_REGISTRATION") && (isState("TRIGGER_REGISTRATION")) ) 
+        rules: QRules( isState("NEW_REGISTRATION") && (isState("TRIGGER_REGISTRATION")) && (!isState("NEW_USER_CREATED"))) 
       then
      	rules.header();
      	
@@ -22,7 +22,7 @@ rule "Create New User"
        rules.println("The user created is  ::  "+be.toString() );
  
      	rules.clearState("NEW_REGISTRATION");
-         
+         rules.setState("NEW_USER_CREATED");
   
   		/* Calling the rule agenda group : NewUser   You're an agenda group! */
         drools.setFocus("SendAliases");

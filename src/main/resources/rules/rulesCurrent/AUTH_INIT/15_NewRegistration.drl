@@ -11,7 +11,7 @@ rule "New Registration"
       then
      	rules.header();
      	
-        	rules.println("user ("+ rules.getAsString("preferred_username")+") is not present");
+        	rules.println("user ("+ rules.getAsString("preferred_username")+") is not present -> Need to REGISTER");
  
 		rules.setState("NEW_REGISTRATION");
  

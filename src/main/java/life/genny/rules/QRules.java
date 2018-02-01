@@ -732,10 +732,6 @@ public class QRules {
 			}
 		}
 
-		if ("data".equals(channel)) {
-			System.out.println("Naughty coding");
-		}
-
 		this.getEventBus().publish(channel, payload);
 	}
 

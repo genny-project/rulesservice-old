@@ -8,6 +8,8 @@ import life.genny.qwanda.message.QCmdMessage;
 
 
 rule "User Logout"
+ruleflow-group 'UserLogout'
+no-loop true
     when
         m : QEventMessage( event_type == "LOGOUT" && data.code == "LOGOUT" )
  		rules: QRules() 
