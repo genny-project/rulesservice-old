@@ -473,7 +473,7 @@ public class QRules {
 
 		BaseEntity be = getBaseEntityByCode(beCode);
 		if (be != null) {
-			publishCmd(be, getToken(), recipientCodes);
+			publishData(be, getToken(), recipientCodes);
 		}
 	}
 
@@ -486,7 +486,7 @@ public class QRules {
 
 		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(),
 				getToken(), parentCode, linkCode);
-		JsonObject obj = new JsonObject(json);
+		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
 		obj.put("token", getToken());
 		publish("cmds", obj);
 	}
@@ -496,7 +496,7 @@ public class QRules {
 
 		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode);
-		JsonObject obj = new JsonObject(json);
+		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
 		obj.put("token", getToken());
 		publish("cmds", obj);
 	}
@@ -718,20 +718,6 @@ public class QRules {
 
 	public void publish(String channel, final Object payload) {
 
-		if (channel.startsWith("debug")) {
-			channel = channel.substring("debug".length());
-		}
-
-		if (payload instanceof JsonObject) {
-			if (payload.toString().contains("year")) {
-				println("BAD JSON");
-			} else {
-				if (payload.toString().contains("year")) {
-					println("BAD JSON");
-				}
-			}
-		}
-
 		this.getEventBus().publish(channel, payload);
 	}
 
@@ -748,6 +734,18 @@ public class QRules {
 		}
 
 		publish("cmds", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
+		
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
+		msg.setToken(getToken());
+		if (recipientsCode != null) {
+			msg.setRecipientCodeArray(recipientsCode);
+		}
+		String json = JsonUtils.toJson(msg);
+		JsonObject vertxJson = new JsonObject(json);
+		publish("cmds", vertxJson);
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -814,6 +812,30 @@ public class QRules {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
 		publish("cmds", JsonUtils.toJson(msg) );
+	}
+	
+	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
+		this.publishData(beList, parentCode, linkCode, null);
+	}
+
+	public void publishData(final BaseEntity be, final String parentCode, final String linkCode,
+			String[] recipientCodes) 
+	{
+		List<BaseEntity> beList = new ArrayList<BaseEntity>();
+		beList.add(be);
+		publishData(beList, parentCode, linkCode, recipientCodes);
+	}
+	
+	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode,
+			String[] recipientCodes) {
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
+		msg.setParentCode(parentCode);
+		msg.setLinkCode(linkCode);
+		msg.setToken(getToken());
+		if (recipientCodes != null) {
+			msg.setRecipientCodeArray(recipientCodes);
+		}
+		publish("data", JsonUtils.toJson(msg) );
 	}
 
 	// public void publishUpdatedLink(final String parentCode, final String

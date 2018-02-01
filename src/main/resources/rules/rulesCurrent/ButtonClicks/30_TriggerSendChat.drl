@@ -14,7 +14,7 @@ rule "Trigger Send Chat"
      then
      	rules.println("TRIGGER SEND_CHAT");
      	rules.setState("SEND_CHAT");
-   		drools.setFocus("Messages");
+   		drools.setFocus("Chat");
 		
 	      		      
 end
