@@ -9,10 +9,8 @@ rule "Trigger Registration"
     when
         rules: QRules(  (isState("NEW_REGISTRATION")) && (!isState("TRIGGER_REGISTRATION")))
      then
-     	rules.header();
-     	rules.setState("TRIGGER_REGISTRATION");
-     	 rules.footer();  
-  		drools.setFocus("Registration");
+      	rules.setState("TRIGGER_REGISTRATION");
+   		drools.setFocus("Registration");
 		
 	      		      
 end
