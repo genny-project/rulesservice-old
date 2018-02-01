@@ -30,7 +30,7 @@ rule "User-Profile Update"
         String actionCode = dataJson.getString("action"); 
   	   if(actionCode.equalsIgnoreCase("submit")) { 
   		   
-             rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));           
+             rules.set("IS_USER_PROFILE_COMPLETE", ( QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken() ) ));           
   /*          rules.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted()); */
            drools.setFocus("layout"); 
         }
