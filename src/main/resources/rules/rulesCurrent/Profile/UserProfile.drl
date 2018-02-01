@@ -9,11 +9,10 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "User-Profile"
     when
-        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" )
+        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" && isState("STARTED"))
        rules: QRules( ) 
     then
-        rules.setDrools(drools);
-        rules.header();
+         rules.header();
   	    String userCode = rules.getUser().getCode();
   	    
         rules.askQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP");

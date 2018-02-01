@@ -11,48 +11,30 @@ import com.sample.*;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
-import life.genny.qwanda.entity.User;
 
-global java.lang.String REACT_APP_QWANDA_API_URL;
-/* global variables for color logs   */
-global java.lang.String LOG_RESET;
-global java.lang.String LOG_RED;
-global java.lang.String LOG_GREEN;
-global java.lang.String LOG_YELLOW;
-global java.lang.String LOG_BLUE;
-global java.lang.String LOG_PURPLE;
-global java.lang.String LOG_CYAN;
-global java.lang.String LOG_WHITE;
-global java.lang.String LOG_BOLD;
+
+
 
 rule "User-Profile Update"
     when
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_PROFILE_GRP" )
-        $map : Map($value: this["token"] != null)
-        $user: User(realm != null)
-        bus: EventBus()
+  
+        rules: QRules( ) 
     then
-        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   User Profile Update " + LOG_RESET);		    
-	    String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-  	    String tokenString = (String)$map.get("token"); 	    
-  	    /*  Get data.value and decode   */
+    	rules.header();
+    	    /*  Get data.value and decode   */
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
-        String userCode = QwandaUtils.getBaseEntityCodeForUserName($user.getUname(),tokenString);
+        String userCode = rules.getUser().getCode();
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
   	   if(actionCode.equalsIgnoreCase("submit")) { 
   		   
-          modify($user){          
-             setIsProfileCompleted(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", tokenString));           
-          }
-           System.out.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted());
+             rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));           
+  /*          rules.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted()); */
            drools.setFocus("layout"); 
         }
 
-        
-        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::    User Profile Update  " + LOG_RESET);
-        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-end
+        rules.footer();
+  end
 
