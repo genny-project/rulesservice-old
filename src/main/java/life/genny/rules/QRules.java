@@ -668,9 +668,11 @@ public class QRules {
 	public void sendParentLinks(final String targetCode, final String linkCode) {
 		JsonArray latestLinks;
 		try {
+			
 			latestLinks = new JsonArray(QwandaUtils.apiGet(
 					getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
 					getToken()));
+			
 			// Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
 

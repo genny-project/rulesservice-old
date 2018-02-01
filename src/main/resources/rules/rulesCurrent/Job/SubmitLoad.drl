@@ -32,6 +32,8 @@ rule "Post Load Cancel/Submit button click"
          String tokenString = rules.getToken();      
          String userCode =  rules.getUser().getCode();
          System.out.println("The user Code is  ::  " +userCode);
+         
+         rules.showLoading("Creating your new load...");
                 
        /*  Get data.value and decode    */
         String dataString = $m.data.getValue();
