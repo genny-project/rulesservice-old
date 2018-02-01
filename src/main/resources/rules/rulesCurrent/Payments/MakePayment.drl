@@ -16,7 +16,7 @@ rule "Make Payment"
 	no-loop true
 	when 
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-	    rules: QRules( (!isState("PAYMENT_DONE")) && isState("PAYMENT_ANSWER") )
+	    rules: QRules( (isState("PAYMENT_ANSWER") && !isState("PAYMENT_DONE")) )
 	then
 		rules.header();
 		
@@ -149,9 +149,9 @@ rule "Make Payment"
 				            
 				            /* We ask FE to monitor GPS */
 				            rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
-				            
-				            rules.clearState("PAYMENT_ANSWER");
+				            	
 				            rules.setState("PAYMENT_DONE");
+				            
 				       		/* sending cmd BUCKETVIEW */
 				            drools.setFocus("SendLayoutsAndData"); 
 						}
