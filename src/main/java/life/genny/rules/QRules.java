@@ -3,6 +3,8 @@ package life.genny.rules;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1496,19 +1498,19 @@ public class QRules {
 		BigDecimal RANGE_4_COMPONENT = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
 	
 		if ( input.compareTo(RANGE_1) <= 0 ) {
-			return RANGE_1_COMPONENT;
+			return RANGE_1_COMPONENT.round(new MathContext(2, RoundingMode.HALF_EVEN));
 		}
 	
 		if ( input.compareTo(RANGE_1) > 0 && input.compareTo(RANGE_2) <= 0 ) {
-			return RANGE_2_COMPONENT.add(input.subtract(RANGE_1).multiply(FEE_2));
+			return (RANGE_2_COMPONENT.add(input.subtract(RANGE_1).multiply(FEE_2))).round(new MathContext(2, RoundingMode.HALF_EVEN));
 		}
 	
 		if ( input.compareTo(RANGE_2) > 0 && input.compareTo(RANGE_3) <= 0 ) {
-			return RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(input.subtract(RANGE_2).multiply(FEE_3));
+			return (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(input.subtract(RANGE_2).multiply(FEE_3))).round(new MathContext(2, RoundingMode.HALF_EVEN));
 		}
 	
 		if ( input.compareTo(RANGE_3) > 0 ) {
-			return RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(input.subtract(RANGE_3).multiply(FEE_4));
+			return (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(input.subtract(RANGE_3).multiply(FEE_4))).round(new MathContext(2, RoundingMode.HALF_EVEN));
 		}
 
 		return new BigDecimal(0);
