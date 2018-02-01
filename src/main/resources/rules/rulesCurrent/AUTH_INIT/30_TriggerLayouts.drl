@@ -7,7 +7,12 @@ rule "Trigger Layouts"
     no-loop true
     salience 570
     when
-        rules: QRules( isState("PROJECT_SENT")  && (isState("USER_SENT")) && (!isState("TRIGGER_LAYOUTS")))
+        rules: QRules( isState("PROJECT_SENT")  &&  
+                         (isState("USER_SENT")) && 
+                         (isState("IS_LOGGED_IN")) && 
+                         (!isState("NEW_REGISTRATION")) &&
+                         (!isState("NEW_USER_CREATED"))  &&
+                         (!isState("TRIGGER_LAYOUTS")) )
      then
      	rules.header();
      	rules.setState("TRIGGER_LAYOUTS");
