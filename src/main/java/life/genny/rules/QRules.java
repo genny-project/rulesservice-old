@@ -1070,12 +1070,17 @@ public class QRules {
 
 	public void processAddressAnswers(QDataAnswerMessage m) {
 
+		// Put this in to stop bad User null error.... TODO
+		if (getUser() == null) {
+			return;
+		}
 		try {
 
 			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
 
 			String qwandaServiceUrl = getQwandaServiceUrl();
+			
 			String userCode = getUser().getCode();
 
 			for (Answer answer : answers) {
