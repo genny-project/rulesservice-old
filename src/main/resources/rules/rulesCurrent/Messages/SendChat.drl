@@ -110,7 +110,7 @@ rule "Send Chat Message"
 		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), textMessage); */
 		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), creator); */
   		    			
-		    			 rules.publishBaseEntityByCode(newMessage.getCode(), recipientCodeArray);
+		    			 rules.publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray);
 
 		       	 	/* rules.publishData(newMessage, recipientCodeArray);	    	 */		
   		    		}

@@ -23,7 +23,21 @@ ruleflow-group 'LinkChange'
  		rules.debug($m);
  		if (link != null) {
  		    rules.println("Link LinkCode="+link.getAttributeCode());
- 		    rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode()); 
+ 		    if (link.getTargetCode().startsWith("BEG_")) {
+ 		    List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(link.getTargetCode(),"LNK_BEG", 0, 20, false) ;
+ 		    List<String> recipients = new ArrayList<String>();
+ 		    for (BaseEntity stakeholder : stakeholders)
+ 		    {
+ 		    		if (stakeholder.getCode().startsWith("PER_")) {
+ 		    			recipients.add(stakeholder.getCode());
+ 		    			System.out.println("Sending to "+stakeholder.getCode());
+ 		    		}
+ 		    }
+ 		    
+ 		   /* rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());  */
+ 		   String[] recipientArray = recipients.toArray(new String[0]);
+ 		   rules.publishCmd($m,recipientArray);
+ 		   }
  		 }
  		
  	   

@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Ask;
+import life.genny.qwanda.CodedEntity;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -45,6 +46,7 @@ import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
@@ -469,17 +471,49 @@ public class QRules {
 		return null;
 	}
 
-	public void publishBaseEntityByCode(final String beCode, final String[] recipientCodes) {
+	public void publishBaseEntityByCode(final String be) {
+		String[] recipientArray = new String[1];
+		recipientArray[0] = be;
+		publishBaseEntityByCode(be, null,
+			     null, recipientArray);
+	}
+	
+	public void publishBaseEntityByCode(final String be, final String parentCode,
+		      final String linkCode, final String[] recipientCodes) {
 
-		BaseEntity be = getBaseEntityByCode(beCode);
-		if (be != null) {
-			publishData(be, getToken(), recipientCodes);
-		}
+		BaseEntity item = getBaseEntityByCode(be);
+		BaseEntity[]  itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode,
+			      linkCode);
+			publishCmd(msg, recipientCodes);
+	
 	}
 
-	public void publishBaseEntityByCode(final String beCode) {
-		this.publishBaseEntityByCode(beCode, null);
+	public <T extends QMessage>  void publishCmd(T msg, final String[] recipientCodes) {
+
+		String json = JsonUtils.toJson(msg);
+		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+		obj.put("token", getToken());
+		publish("cmds", obj);
 	}
+	
+	public <T extends QMessage>  void publishData(T msg, final String[] recipientCodes) {
+
+		String json = JsonUtils.toJson(msg);
+		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+		obj.put("token", getToken());
+		publish("data", obj);
+	}
+	public <T extends QMessage>  void publish(final String busChannel,T msg, final String[] recipientCodes) {
+
+		String json = JsonUtils.toJson(msg);
+		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+		obj.put("token", getToken());
+		publish(busChannel, obj);
+	}
+
+
 
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize, Boolean cache) {
