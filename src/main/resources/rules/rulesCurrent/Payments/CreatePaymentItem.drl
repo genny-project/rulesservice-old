@@ -17,6 +17,7 @@ rule "Create Payment Item"
 		rules: QRules()
 	then
 		rules.header();
+		
 		rules.println("Item creation process started"); 
 		
 		String offerCode = m.getItemCode();
@@ -25,30 +26,21 @@ rule "Create Payment Item"
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
 			
-		
        	String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-       	
        	
        	/* Creating Payment Item */
         String itemId = PaymentUtils.createPaymentItem(BEGCode, assemblyAuthKey, rules.getToken());
         
-				
 		/* Save itemId as an attribute to BEG Group */
 		if(itemId != null && assemblyId!= null) {
 				
-			rules.println("Item is created"); 
 			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
 	        PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), itemIdAnswer, rules.getToken());	   
 	        
 	        /* Saving Assembly authentication tokens as user attributes */
-        	PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
-        	
-        	rules.println("----->Payment gateway questions group publish<-------");
-        	rules.askQuestionFormViewPublish(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
-        	
-        	rules.println("Item creation process ended");	   
-	        
+	        	PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
+	        	rules.askQuestionFormViewPublish(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		
 		rules.footer();			

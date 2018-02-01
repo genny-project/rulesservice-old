@@ -24,10 +24,10 @@ import life.genny.qwanda.DateTimeDeserializer;
 rule "Owner rate driver and confirm delivery"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
-      rules: QRules()   
+      rules: QRules( !isState("RELEASE_PAYMENT"))   
     then
 
-         rules.header();  
+        rules.header();  
       	
       	RulesUtils.println($m.getData().getValue());
       	
@@ -36,11 +36,11 @@ rule "Owner rate driver and confirm delivery"
         
       	/* we grab the job code */
       	String begCode = rules.getBaseEntityValueAsString(userCode, "STT_JOB_IS_RATING");
-
+      	
       	 if(begCode != null) {
-      		
-          	/*Release payment for driver */
-          	 drools.setFocus("payments");
+      		 
+           	/*Release payment for driver */
+      		 rules.setState("RELEASE_PAYMENT");
 
       		/* we mark the job as marked */
           	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  

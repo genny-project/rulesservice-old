@@ -9,14 +9,15 @@ import life.genny.qwandautils.MergeUtil;
 import io.vertx.core.json.JsonObject;
 
 rule "Release Payment"
-	agenda-group "payments"
+	agenda-group "FormSubmit"
 	when 
 		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
-      	rules: QRules()
+      	rules: QRules( isState("RELEASE_PAYMENT") )
 	then
+	
 	 	rules.header();
 		rules.println("Release Payment process started"); 
-		
+		rules.clearState("RELEASE_PAYMENT");
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());

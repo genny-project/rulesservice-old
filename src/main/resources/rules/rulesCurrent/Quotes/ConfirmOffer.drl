@@ -72,14 +72,15 @@ rule "Confirm Offer"
         				String begCode = data.getString("hint");
         				String userCode = rules.getUser().getCode();
         				
-        				rules.showLoading("Loading secure payment gatway...");
+        				if(offerCode != null && begCode != null && userCode != null) {
+        					
+        					rules.showLoading("Loading secure payment gatway...");
+            	            Answer beAnswer = new Answer(begCode, begCode, "STT_HOT_OFFER", offerCode);
+            	            rules.publishData(beAnswer);
 
-        	            /* Update PRI_NEXT_ACTION for OFFER */
-        	            Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "DRIVER");
-        	            rules.publishData(actionCode);    
-
-        	            /* Call Payment Rule */      
-        	            drools.setFocus("payments");
+            	            /* Call Payment Rule */      
+            	            drools.setFocus("payments");
+        				}
         			}
         		}
         		

@@ -1249,22 +1249,18 @@ public class QRules {
 			Boolean expired = answer.getExpired();
 			Boolean refused = answer.getRefused();
 
-			/* TODO: this rule should not even be triggered so we should not have to make these checks */
-			if (!attributeCode.contains("PRI_PAYMENT_METHOD")) {
+			/* convert answer to json */
+			String jsonAnswer = RulesUtils.toJson(answer);
 
-				/* convert answer to json */
-				String jsonAnswer = RulesUtils.toJson(answer);
+			/* convert Answer Json to Answer obj */
+			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 
-				/* convert Answer Json to Answer obj */
-				Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-
-				/* post answers to qwanda-utils */
-				try {
-					QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, getToken());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			/* post answers to qwanda-utils */
+			try {
+				QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, getToken());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -1462,7 +1458,7 @@ public class QRules {
 		return states;
 	}
 
-	public BigDecimal calcFee( BigDecimal input ) {
+	public BigDecimal calcOwnerFee( BigDecimal input ) {
 		BigDecimal RANGE_1 = new BigDecimal(1000);
 		BigDecimal RANGE_2 = new BigDecimal(3000);
 		BigDecimal RANGE_3 = new BigDecimal(5000);
@@ -1491,6 +1487,81 @@ public class QRules {
 	
 		if ( input.compareTo(RANGE_3) > 0 ) {
 			return RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(input.subtract(RANGE_3).multiply(FEE_4));
+		}
+
+		return new BigDecimal(0);
+	}
+
+	public BigDecimal calcDriverFee( BigDecimal input ) {
+		
+		BigDecimal RANGE_1 = new BigDecimal(1000);
+		BigDecimal RANGE_2 = new BigDecimal(3000);
+		BigDecimal RANGE_3 = new BigDecimal(5000);
+
+		BigDecimal FEE_1 = new BigDecimal("0.15");
+		BigDecimal FEE_2 = new BigDecimal("0.10");
+		BigDecimal FEE_3 = new BigDecimal("0.075");
+		BigDecimal FEE_4 = new BigDecimal("0.05");
+
+		BigDecimal ONE = new BigDecimal(1);
+
+		BigDecimal REVERSE_FEE_MULTIPLIER_1 = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
+		BigDecimal REVERSE_FEE_MULTIPLIER_2 = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
+
+		BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1.subtract((RANGE_1).multiply(FEE_1));
+		BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2.subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
+		BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3.subtract(REVERSE_FEE_MULTIPLIER_2).subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
+
+
+		// BigDecimal REVERSE_FEE_MULTIPLIER_1 = ( RANGE_2 - RANGE_1 ) * FEE_2;
+		// BigDecimal REVERSE_FEE_MULTIPLIER_2 = ( RANGE_3 - RANGE_2 ) * FEE_3;
+	  
+		// BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1 - ( RANGE_1 * FEE_1 );
+		// BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
+		// BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3 - REVERSE_FEE_MULTIPLIER_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
+		
+		
+		if ( input.compareTo(REVERSE_FEE_BOUNDARY_1) < 0) {
+
+			BigDecimal subtract = ONE.subtract(FEE_1);
+			BigDecimal divide = ONE.divide(subtract, 2, BigDecimal.ROUND_HALF_UP);
+			return calcOwnerFee( input.multiply(divide));
+		}
+
+		if ( input.compareTo(REVERSE_FEE_BOUNDARY_1) >= 0 && input.compareTo(REVERSE_FEE_BOUNDARY_2) < 0 ) {
+
+			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_1);
+			BigDecimal multiply1 = subtract1.multiply(FEE_2);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = multiply1.add(multiply2);
+			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			return calcOwnerFee(input.multiply(divide2));
+		}
+
+		if ( input.compareTo(REVERSE_FEE_BOUNDARY_2) >= 0 && input.compareTo(REVERSE_FEE_BOUNDARY_3) < 0 ) {
+
+			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_2);
+			BigDecimal multiply1 = subtract1.multiply(FEE_3);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = multiply1.add(multiply2).add(REVERSE_FEE_MULTIPLIER_1);
+			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal division2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			return calcOwnerFee(input.multiply(division2));
+		}
+
+		if ( input.compareTo(REVERSE_FEE_BOUNDARY_3) >= 0 ) {
+
+			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_3);
+			BigDecimal multiply1 = subtract1.multiply(FEE_4);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = (multiply2.add(REVERSE_FEE_MULTIPLIER_1).add(REVERSE_FEE_MULTIPLIER_2).add(multiply1));
+			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			return calcOwnerFee(input.multiply(divide2));
 		}
 
 		return new BigDecimal(0);
