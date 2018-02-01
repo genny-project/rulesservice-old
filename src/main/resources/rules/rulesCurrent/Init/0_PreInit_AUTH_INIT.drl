@@ -10,8 +10,9 @@ rule "Pre Init Auth Init"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
-          rules.setState("EVENT_AUTH_INIT");
+        rules.println("RULE INIT AUTH_INIT: "+m);
+ 
+         rules.setState("EVENT_AUTH_INIT");
         rules.setState("STARTED");
 
         

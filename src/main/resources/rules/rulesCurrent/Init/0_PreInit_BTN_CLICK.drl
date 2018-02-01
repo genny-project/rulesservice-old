@@ -10,11 +10,11 @@ rule "Pre Init Btn Click"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
+        rules.println("RULE INIT BTN_CLICK: "+m);
         rules.setState("EVENT_BTN_CLICK");
         rules.setState("STARTED");
 
+  		drools.setFocus("ButtonClick");
         
-        rules.footer();
       		      
 end

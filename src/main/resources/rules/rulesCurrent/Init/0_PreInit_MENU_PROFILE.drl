@@ -10,11 +10,10 @@ rule "Pre Init Menu Profile"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
-        rules.setState("EVENT_BTN_CLICK");
+        rules.println("RULE INIT MENU_PROFILE: "+m);
+ 
+        rules.setState("EVENT_MENU_PROFILE");
         rules.setState("STARTED");
 
-        
-        rules.footer();
-      		      
+       		      
 end

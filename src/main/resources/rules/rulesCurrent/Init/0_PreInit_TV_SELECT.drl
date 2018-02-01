@@ -10,11 +10,10 @@ rule "Pre Init EVT_TV_SELECT"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
-          rules.setState("EVENT_TV_SELECT");
+        rules.println("RULE INIT TV_SELECT: "+m);
+ 
+         rules.setState("EVENT_TV_SELECT");
         rules.setState("STARTED");
 
-        
-        rules.footer();
-      		      
+       		      
 end

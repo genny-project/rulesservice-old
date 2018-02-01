@@ -10,11 +10,11 @@ rule "Pre Init User Logout"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
-          rules.setState("EVENT_USER_LOGOUT");
+        rules.println("RULE INIT USER_LOGOUT: "+m);
+ 
+        rules.setState("EVENT_USER_LOGOUT");
         rules.setState("STARTED");
 
         drools.setFocus("UserLogout");
-        rules.footer();
-      		      
+       		      
 end

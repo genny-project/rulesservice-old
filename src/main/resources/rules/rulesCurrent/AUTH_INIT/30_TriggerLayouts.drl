@@ -9,9 +9,8 @@ rule "Trigger Layouts"
     when
         rules: QRules( isState("PROJECT_SENT")  && (isState("USER_SENT")) && (!isState("TRIGGER_LAYOUTS")))
      then
-     	rules.header();
+     	rules.println("TRIGGER LAYOUTS");
      	rules.setState("TRIGGER_LAYOUTS");
-     	 rules.footer();  
   		drools.setFocus("SendLayoutsAndData");
 		
 	      		      

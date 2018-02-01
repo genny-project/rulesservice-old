@@ -11,11 +11,11 @@ rule "Pre Init Attribute Change"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
+        rules.println("RULE INIT ATTRIBUTE_CHANGE: "+m);
+ 
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");
         rules.setState("STARTED");
 		
         	drools.setFocus("AttributeChange");
-        rules.footer();
-      		      
+       		      
 end

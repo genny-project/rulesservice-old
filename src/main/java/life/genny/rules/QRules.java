@@ -194,7 +194,7 @@ public class QRules {
 	 */
 	public void setState(String key) {
 		stateMap.put(key.toUpperCase(), true);
-		println("STATE " + key + " SET", RulesUtils.ANSI_RED);
+		//println("STATE " + key + " SET", RulesUtils.ANSI_RED);
 		update();
 	}
 

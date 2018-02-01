@@ -10,11 +10,11 @@ rule "Pre Init Answer"
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
-        rules.header();
+         rules.println("RULE INIT ANSWER: "+m);
+ 
         rules.setState("DATA_ANSWER");
         rules.setState("STARTED");
 		
         	drools.setFocus("Answer");
-        rules.footer();
-      		      
+       		      
 end
