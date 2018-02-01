@@ -24,11 +24,9 @@ ruleflow-group 'Answer'
 				rules.processAddressAnswers($m);
 			}
 			else if(attributeCode.contains("_RATING")) {
-				
-				RulesUtils.println("----------------------");
 				rules.processAnswerRating($m, "PRI_DRIVER_RATING"); 
 			}
-			else if(PaymentUtils.checkIfAnswerContainsPaymentAttribute($m) == true && !rules.isState("PAYMENT_ANSWER")) {
+			else if(attributeCode.contains("PRI_PAYMENT_METHOD") && !rules.isState("PAYMENT_ANSWER")) {
 				rules.setState("PAYMENT_ANSWER");
 				drools.setFocus("makepayment");
 			}

@@ -74,12 +74,22 @@ rule "Confirm Offer"
         				
         				if(offerCode != null && begCode != null && userCode != null) {
         					
-        					rules.showLoading("Loading secure payment gatway...");
-            	            Answer beAnswer = new Answer(begCode, begCode, "STT_HOT_OFFER", offerCode);
-            	            rules.publishData(beAnswer);
+							String userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+							if(!userRole.equals("QUOTER")){
 
-            	            /* Call Payment Rule */      
-            	            drools.setFocus("payments");
+								rules.showLoading("Loading secure payment gatway...");
+								Answer beAnswer = new Answer(begCode, begCode, "STT_HOT_OFFER", offerCode);
+								rules.publishData(beAnswer);
+
+								/* Call Payment Rule */      
+								drools.setFocus("payments");
+								
+							}
+							if(userRole.equals("QUOTER")){
+								/* Update PRI_NEXT_ACTION AS OWNER */
+								Answer nextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
+								rules.publishData(nextAction);  
+							}
         				}
         			}
         		}
