@@ -9,13 +9,32 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 rule "Answer"
 ruleflow-group 'Answer'
     when
-        m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+        $m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
         rules: QRules()
     then    
         rules.header();
-        
-	   rules.processAnswer(m); 
- 
+        	
+        Answer[] answers = $m.getItems();
+		if(answers != null && answers.length > 0) {
+			
+			Answer firstAnswer = answers[0];
+			String attributeCode = firstAnswer.getAttributeCode();
+			
+			if(attributeCode.contains("ADDRESS_FULL")) {
+				rules.processAddressAnswers($m);
+			}
+			else if(attributeCode.contains("_RATING")) {
+				rules.processAnswerRating($m, "PRI_DRIVER_RATING"); 
+			}
+			else if(PaymentUtils.checkIfAnswerContainsPaymentAttribute($m) == true) {
+				rules.setState("PAYMENT_ANSWER");
+				drools.setFocus("makepayment");
+			}
+			else {
+				rules.processAnswer($m); 
+			}	
+		}
+	   
        rules.footer();
            
 end
