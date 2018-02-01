@@ -13,6 +13,7 @@ import java.util.Set;
 
 rule "Make Payment"
 	agenda-group "makepayment"
+	no-loop true
 	when 
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
 	    rules: QRules( isState("PAYMENT_ANSWER") )
@@ -20,7 +21,7 @@ rule "Make Payment"
 		rules.header();
 		
 		rules.println("Make Payment started"); 
-		
+
 		/* Save Payment-related answers as user/BEG attributes */
 		String begCode = PaymentUtils.processPaymentAnswers(rules.getQwandaServiceUrl(), m, rules.getToken());
 	
@@ -30,7 +31,11 @@ rule "Make Payment"
 		if(begCode != null && assemblyId != null) {
 	
 			/* Make payment */
+			rules.showLoading("Processing payment...");
+
 			String response = PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());
+			RulesUtils.println(m.getItems());
+			
 			if(response != null) {
 				
 				JsonObject responseJson = new JsonObject(response);
@@ -38,27 +43,15 @@ rule "Make Payment"
 					
 					String error = responseJson.getString("error");
 					if(error == null) {
-						
-						rules.showLoading("Processing payment...");
-						
+																		
 						/* We grab the quoter code */
-						String quoterCode = rules.getBaseEntityValueAsString(begCode, "STT_IN_TRANSIT");
 						String offerCode = rules.getBaseEntityValueAsString(begCode, "STT_HOT_OFFER");
-						
-						if(quoterCode != null) {
-													            
-							/* Allocate QUOTER as Driver */
-							rules.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-							  
-				            /* SEND QUOTER BE to FE */
-				            rules.publishBaseEntityByCode(quoterCode);
-				            
-							/* GET attributes of the OFFER that's being accepted */
+						if(offerCode != null) {
+							
 				            JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(rules.getQwandaServiceUrl() + "/qwanda/baseentitys/" + offerCode + "/attributes", rules.getToken()));
-				            RulesUtils.ruleLogger("OFEER Base Entity", offerBe);
-				            
-				            Map<String, String> map = new HashMap<>();
-				           
+
+							Map<String, String> map = new HashMap<>();
+					           
 				            /* loop to GET attributeCodes and VALUE */
 				            for(Object obj : offerBe) {              
 				                JsonObject offerObj = (JsonObject) obj;
@@ -75,9 +68,16 @@ rule "Make Payment"
 				            String driverPriceIncGST= map.get("PRI_OFFER_DRIVER_PRICE_INC_GST");
 				            String feePriceExcGST= map.get("PRI_OFFER_FEE_EXC_GST");
 				            String feePriceIncGST= map.get("PRI_OFFER_FEE_INC_GST");
-
-				            String quoterUname= map.get("PRI_QUOTER_USERNAME");
-				        
+				            
+				            String quoterCode= map.get("PRI_QUOTER_CODE");
+				            String quoterUname = map.get("PRI_QUOTER_USERNAME");
+							
+							/* Allocate QUOTER as Driver */
+							rules.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+							  
+				            /* SEND QUOTER BE to FE */
+				            rules.publishBaseEntityByCode(quoterCode);
+				            
 				            /* Update BEG's prices */
 				            Answer begPriceAnswer = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
 
@@ -150,7 +150,9 @@ rule "Make Payment"
 				            
 				            /* We ask FE to monitor GPS */
 				            rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
-				       	
+				            
+				            rules.clearState("PAYMENT_ANSWER");
+
 				       		/* sending cmd BUCKETVIEW */
 				            drools.setFocus("bucketview"); 
 						}

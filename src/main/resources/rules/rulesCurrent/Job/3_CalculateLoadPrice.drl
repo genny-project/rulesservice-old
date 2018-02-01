@@ -28,43 +28,48 @@ rule "Calculate Load Price"
 		rules.header();
 
 		Answer newAnswer = $m.getAnswer();
-
-		String beCode = newAnswer.getTargetCode();
-		BigDecimal answerPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
-		BigDecimal fees = new BigDecimal(0);
-		fees = rules.calcFee( answerPrice );
-	
-		BigDecimal feePriceExcGST = fees;
-		BigDecimal feePriceIncGST = rules.includeGST(fees);
-
-		String priceCode = $m.getData().getCode();
 		
-		String ownerPriceIncGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_INC_GST");
-		String ownerPriceExcGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_EXC_GST");
-
-		String driverPriceIncGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_INC_GST");
-		String driverPriceExcGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_EXC_GST");
-
-
-		String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
-		String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
+		/* BaseEntity Code */
+			String beCode = newAnswer.getTargetCode();
 		
-		BigDecimal ownerPriceExcGST = new  BigDecimal(1);
-		BigDecimal ownerPriceIncGST = new  BigDecimal(2);
-		BigDecimal driverPriceExcGST = new BigDecimal(3);
-		BigDecimal driverPriceIncGST = new BigDecimal(4);
+		/* Price recieved as an answer */
+			BigDecimal answerPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
+
+		/* Price attributeCode and Other price atrributeCode generation */
+			String priceCode = $m.getData().getCode();			
+			String ownerPriceIncGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_INC_GST");
+			String ownerPriceExcGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_EXC_GST");
+			String driverPriceIncGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_INC_GST");
+			String driverPriceExcGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_EXC_GST");
+			String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
+			String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
+		
+			BigDecimal ownerPriceExcGST = new  BigDecimal(1);
+			BigDecimal ownerPriceIncGST = new  BigDecimal(2);
+			BigDecimal driverPriceExcGST = new BigDecimal(3);
+			BigDecimal driverPriceIncGST = new BigDecimal(4);
+
+			BigDecimal fees = new  BigDecimal(0);
+			BigDecimal feePriceExcGST = new  BigDecimal(0); 
+			BigDecimal feePriceIncGST = new  BigDecimal(0); 
 
 		/* Get userRole */
-		String userRole = null;
-		if(newAnswer.getTargetCode().startsWith("OFR_")) {			
-			String offerCode = newAnswer.getTargetCode();
-			userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
-		}
+			String userRole = null;
+			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
+				String offerCode = newAnswer.getTargetCode();
+				userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+			}
 
-		System.out.println(" targetCode " + newAnswer.getTargetCode() );
-		System.out.println(" userRole " + userRole );
+			System.out.println(" targetCode " + newAnswer.getTargetCode() );
+			System.out.println(" userRole " + userRole );
 
-		if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole.equals("OWNER")) ) {
+		if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole != null && userRole.equals("OWNER")) ) {
+
+			/* Owner Fees */
+			fees = rules.calcOwnerFee( answerPrice );		
+			feePriceExcGST = fees;
+			feePriceIncGST = rules.includeGST(fees);
+
 			System.out.println("=======================================================================================================");
 			System.out.println("OWNER countering   ::   ");
 			System.out.println(" targetCode" +newAnswer.getTargetCode() );
@@ -78,7 +83,13 @@ rule "Calculate Load Price"
 			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST);
 			System.out.println("=======================================================================================================");
 		}
-		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole.equals("QUOTER") || userRole.equals(null))) {
+		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
+
+			/* Driver Fees */
+			fees = rules.calcDriverFee( answerPrice );		
+			feePriceExcGST = fees;
+			feePriceIncGST = rules.includeGST(fees);
+
 			System.out.println("=======================================================================================================");
 			System.out.println("QUOTER countering   ::   ");
 			driverPriceExcGST = answerPrice;
