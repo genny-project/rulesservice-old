@@ -15,7 +15,8 @@ import java.util.Set;
 
 
 
-rule "User-Profile Update"
+rule "User-Profile Submit"
+   no-loop true
     when
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_PROFILE_GRP" )
   
@@ -28,9 +29,12 @@ rule "User-Profile Update"
         String userCode = rules.getUser().getCode();
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
+        
   	   if(actionCode.equalsIgnoreCase("submit")) { 
   		   
-             rules.set("IS_USER_PROFILE_COMPLETE", ( QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken() ) ));           
+
+       /*      rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
+             rules.setState("IS_USER_PROFILE_COMPLETE");         
   /*          rules.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted()); */
            drools.setFocus("layout"); 
         }
