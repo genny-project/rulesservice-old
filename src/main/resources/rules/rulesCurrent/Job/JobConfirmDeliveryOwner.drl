@@ -34,9 +34,7 @@ then
 	    	 		for(Link link: links) {
 	    	 			
 	    	 			String linkValue = link.getLinkValue();
-	    	 			
 	    	 			if(linkValue != null && linkValue.equals("DRIVER")) {
-	    	 				
 	    	 				driverCode = link.getTargetCode();
 	    	 			}
 	    	 		}
@@ -44,9 +42,14 @@ then
 	    	 	 		     
 		     if(begCode != null && driverCode != null) {
 		    	 
-		    	 	/* we save the BEG code as an attribute in order to track what jobs are being currently rated against. if this comment does not make sense please refer to the french man. */
+		    	 	/* we save the BEG code as an attribute in order to track what job a driver is being currently rated against. if this comment does not make sense please refer to the french man. */
 		    	 	Answer beAnswer = new Answer(userCode, userCode, "STT_JOB_IS_RATING", begCode);
+		    	 	rules.saveAnswer(beAnswer);
 		        rules.publishData(beAnswer); 
+		        
+		        RulesUtils.println(beAnswer);
+		        RulesUtils.println(beAnswer);
+		        RulesUtils.println("STT_JOB_IS_RATING");
 		    	 
 		    	 	/* we send the questions */
 		    	 	rules.askQuestions(rules.getUser().getCode(), driverCode, "QUE_USER_RATING_GRP", true);

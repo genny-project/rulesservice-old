@@ -1249,22 +1249,18 @@ public class QRules {
 			Boolean expired = answer.getExpired();
 			Boolean refused = answer.getRefused();
 
-			/* TODO: this rule should not even be triggered so we should not have to make these checks */
-			if (!attributeCode.contains("PRI_PAYMENT_METHOD")) {
+			/* convert answer to json */
+			String jsonAnswer = RulesUtils.toJson(answer);
 
-				/* convert answer to json */
-				String jsonAnswer = RulesUtils.toJson(answer);
+			/* convert Answer Json to Answer obj */
+			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 
-				/* convert Answer Json to Answer obj */
-				Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-
-				/* post answers to qwanda-utils */
-				try {
-					QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, getToken());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			/* post answers to qwanda-utils */
+			try {
+				QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, getToken());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
