@@ -3,17 +3,19 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 
-rule "Send Initial User Profile Layout"
+rule "Send Registration Layout"
 	no-loop true
 	salience 4
-    agenda-group "NewUserProfile"
+    agenda-group "Registration"
     when
-        rules: QRules( ) 
+        rules: QRules( isState("ASKED_REGISTRATION")  && (!isState("SEND_REG_LAYOUT")) ) 
       then
      	rules.header();   	
      	rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update.json");
      	rules.sendSublayout("SUB_LAY_WELCOME_NEW_USER", "welcome-new-user.json");
      	rules.sendSublayout("SUB_LAY_INITIAL_PROFILE", "create_user.json");
-     	rules.clearState("NEW_USER");
+ 
+ 		rules.setState("SEND_REG_LAYOUT");
+ 		    	
 	    rules.footer();   		      
 end

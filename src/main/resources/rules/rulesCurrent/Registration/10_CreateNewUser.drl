@@ -6,7 +6,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Create New User"
 	no-loop true
-	lock-on-active true
+
 	salience 899
 	ruleflow-group 'Registration'
     when
@@ -23,6 +23,7 @@ rule "Create New User"
  
      	rules.clearState("NEW_REGISTRATION");
          rules.setState("NEW_USER_CREATED");
+         rules.clearState("PROFILE_CHECK_COMPLETED");
   
   		/* Calling the rule agenda group : NewUser   You're an agenda group! */
         drools.setFocus("SendAliases");
