@@ -7,7 +7,9 @@ rule "Ask Registration"
     		no-loop true
 		ruleflow-group 'Registration'
     when
-        rules: QRules( isState("PROFILE_CHECK_COMPLETED") && (!isState("ASKED_REGISTRATION"))) 
+        rules: QRules( isState("NEW_USER_CREATED") && 
+                        isState("TRIGGER_REGISTRATION") && 
+                        (!isState("ASKED_REGISTRATION"))  ) 
      then
      	rules.header();  		
    	    String userCode = rules.getUser().getCode();
