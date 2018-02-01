@@ -32,6 +32,7 @@ rule "User-Profile Submit"
         
   	   if(actionCode.equalsIgnoreCase("submit")) { 
   		   
+
        /*      rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
              rules.setState("IS_USER_PROFILE_COMPLETE");         
   /*          rules.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted()); */

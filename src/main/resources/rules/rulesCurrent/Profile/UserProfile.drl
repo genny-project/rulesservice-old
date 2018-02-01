@@ -9,7 +9,9 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "User-Profile"
     when
+
         m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE"  )
+
        rules: QRules( isState("STARTED") ) 
     then
          rules.header();
