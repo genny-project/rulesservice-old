@@ -478,9 +478,14 @@ public class RulesUtils {
 			}
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode, stakeholderCode);
 			QDataBaseEntityMessage msg = fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
-			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			if (msg==null) {
+				log.error("Error in fetching BE from Qwanda Service");
+			} else {
+				BaseEntity[] beArray = msg.getItems();
+				ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
+			} 
+			return null; // TODO get exception =s in place
 
 	}
 	
