@@ -28,7 +28,7 @@ ruleflow-group 'Answer'
 			}
 			else if(attributeCode.contains("PRI_PAYMENT_METHOD") && !rules.isState("PAYMENT_ANSWER")) {
 				rules.setState("PAYMENT_ANSWER");
-				/* drools.setFocus("makepayment"); */
+				drools.setFocus("makepayment");
 			}
 			else {
 				rules.processAnswer($m); 
