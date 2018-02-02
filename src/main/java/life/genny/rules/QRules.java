@@ -785,9 +785,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		String json = JsonUtils.toJson(msg);
-		JsonObject vertxJson = new JsonObject(json);
-		publish("cmds", vertxJson);
+		publish("cmds",  RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -836,8 +834,7 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		String json =JsonUtils.toJson(msg);
-		publish("data", json);
+		publish("data",  RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -853,7 +850,7 @@ public class QRules {
 		if (recipientCodes != null) {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
-		publish("cmds", JsonUtils.toJson(msg) );
+		publish("cmds",  RulesUtils.toJsonObject(msg) );
 	}
 	
 	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -877,7 +874,7 @@ public class QRules {
 		if (recipientCodes != null) {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
-		publish("data", JsonUtils.toJson(msg) );
+		publish("data",  RulesUtils.toJsonObject(msg) );
 	}
 
 	// public void publishUpdatedLink(final String parentCode, final String
@@ -902,11 +899,10 @@ public class QRules {
 		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
 	}
 
-	public void publishMsg(final QMSGMessage message) {
+	public void publishMsg(final QMSGMessage msg) {
 
-		JsonObject jsonMessage = JsonObject.mapFrom(message);
-		jsonMessage.put("token", getToken());
-		publish("messages", jsonMessage);
+		msg.setToken(getToken());
+		publish("messages",  RulesUtils.toJsonObject(msg));
 	}
 
 	/*
