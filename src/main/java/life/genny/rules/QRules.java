@@ -488,31 +488,35 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode,
 			      linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
 			publishCmd(msg, recipientCodes);
 	
 	}
 
 	public <T extends QMessage>  void publishCmd(T msg, final String[] recipientCodes) {
 
-		String json = JsonUtils.toJson(msg);
-		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
-		obj.put("token", getToken());
-		publish("cmds", obj);
+//		String json = JsonUtils.toJson(msg);
+//		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+//		obj.put("token", getToken());
+		msg.setToken(getToken());
+		publish("cmds", JsonUtils.toJson(msg));
 	}
 	
 	public <T extends QMessage>  void publishData(T msg, final String[] recipientCodes) {
 
-		String json = JsonUtils.toJson(msg);
-		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
-		obj.put("token", getToken());
-		publish("data", obj);
+//		String json = JsonUtils.toJson(msg);
+//		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+//		obj.put("token", getToken());
+		msg.setToken(getToken());
+		publish("data", JsonUtils.toJson(msg));
 	}
 	public <T extends QMessage>  void publish(final String busChannel,T msg, final String[] recipientCodes) {
 
-		String json = JsonUtils.toJson(msg);
-		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
-		obj.put("token", getToken());
-		publish(busChannel, obj);
+//		String json = JsonUtils.toJson(msg);
+//		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
+//		obj.put("token", getToken());
+		msg.setToken(getToken());
+		publish(busChannel, JsonUtils.toJson(msg));
 	}
 
 
