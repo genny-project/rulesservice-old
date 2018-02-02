@@ -772,7 +772,7 @@ public class QRules {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
 
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds",JsonUtils.toJson(msg));
 	}
 	
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {

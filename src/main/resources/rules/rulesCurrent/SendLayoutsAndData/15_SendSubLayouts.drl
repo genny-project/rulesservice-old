@@ -48,14 +48,8 @@ rule "Send Sub Layouts To Frontend"
 							try {
 								
 								/*    send sublayout to FE    */
-								JsonObject subLayoutObj = new JsonObject();
-						        subLayoutObj.put("msg_type", "DATA_MSG");
-						        subLayoutObj.put("data_type", "SUB_LAYOUT");
-						        subLayoutObj.put("code", name);
-						        subLayoutObj.put("items", subLayoutString);      
-								subLayoutObj.put("token", rules.getToken());
-								
-						        rules.publish("cmds", subLayoutObj);
+								QDataSubLayoutMessage msg = new QDataSubLayoutMessage(name,subLayoutString,rules.getToken());								
+						        rules.publishCmd(msg);
 						        
 							}
 							catch(Exception e) {
