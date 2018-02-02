@@ -9,9 +9,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "User-Profile"
     when
-
-        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE"  )
-
+       m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE"  )
        rules: QRules( isState("STARTED") ) 
     then
          rules.header();
@@ -20,11 +18,17 @@ rule "User-Profile"
         rules.askQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP");
        /*  Get Company Code of the current user   */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
-        String companyCode = company.getCode();
-        rules.println("The Company Code is :: "+companyCode);
-       /*    Send Company asks   */       
-        rules.askQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
-	  /* Send SubLayout  */	
+        if(company != null)
+        {
+            rules.println("Company BE is  :: "+company.toString());
+            String companyCode = company.getCode();
+            rules.println("The Company Code is :: "+companyCode);
+           /*    Send Company asks   */       
+            rules.askQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
+            
+        }
+       
+	   /* Send SubLayout  */	
 		rules.sendSublayout("SUB_USER_PROFILE", "user-profile.json");
          
        rules.footer(); 
