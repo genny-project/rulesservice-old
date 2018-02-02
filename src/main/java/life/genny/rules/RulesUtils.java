@@ -249,7 +249,7 @@ public class RulesUtils {
 			return beJson;
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Error in fetching Base Entity from Qwanda Service");
 		}
 		return null;
 
