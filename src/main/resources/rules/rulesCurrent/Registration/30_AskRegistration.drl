@@ -31,14 +31,16 @@ rule "Ask Registration"
         if(company == null)
         {
            rules.println("Company Not Found, Creating New Company");
-           /*  Creating new base-entity Company    */
+          /*  Creating new base-entity Company    */
            BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
            companyCode = newCompany.getCode();
-           /*  link new person to the Company    */
+           rules.println("The New Company is   :: "+newCompany);
+          /*  link new person to the Company    */
            Link userCompanyLink =  QwandaUtils.createLink(companyCode, userCode, "LNK_STAFF", null, (double) 1, rules.getToken());
       
         }
-         rules.askQuestions(userCode, companyCode, "QUE_NEW_USER_COMPANY_GRP");
+        rules.println("The Users Company code is   ::  "+companyCode);
+        rules.askQuestions(userCode, companyCode, "QUE_NEW_USER_COMPANY_GRP");
 
 		rules.setState("ASKED_REGISTRATION");
 	    rules.footer();     		      

@@ -50,6 +50,8 @@ rule "Save user role to the link with its Company"
              roleValue = "DRIVER";
              Answer userRole = new Answer(userCode, userCode, "PRI_DRIVER" , "true");             
              rules.publishData(userRole);
+             Answer userRoleOwner = new Answer(userCode, userCode, "PRI_OWNER" , "false");             
+            rules.publishData(userRoleOwner);
              
          }
           if(newAnswer.getValue().equals("SEL_OWNER"))
@@ -57,6 +59,8 @@ rule "Save user role to the link with its Company"
              roleValue = "OWNER";
              Answer userRole = new Answer(userCode, userCode, "PRI_OWNER" , "true");             
             rules.publishData(userRole);
+            Answer userRoleDriver = new Answer(userCode, userCode, "PRI_DRIVER" , "false");             
+             rules.publishData(userRoleDriver);
          }
          
          String attributeCode = $m.data.getCode();

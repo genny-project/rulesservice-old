@@ -249,7 +249,7 @@ public class RulesUtils {
 			return beJson;
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Error in fetching Base Entity from Qwanda Service");
 		}
 		return null;
 
@@ -411,17 +411,15 @@ public class RulesUtils {
 	 * @param linkCode
 	 * @return baseEntitys
 	 */
-	public static List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+	public static BaseEntity[] getBaseEntitysArrayByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
 			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
-			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
-			return arrayList;
+			return msg.getItems();
 			
 	}
-	
+
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -434,13 +432,12 @@ public class RulesUtils {
 	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
 
-			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
+			BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,decodedToken,token, parentCode,linkCode);
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
 
 	}
+
 
 	/**
 	 * 
@@ -478,9 +475,14 @@ public class RulesUtils {
 			}
 			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode, stakeholderCode);
 			QDataBaseEntityMessage msg = fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
-			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			if (msg==null) {
+				log.error("Error in fetching BE from Qwanda Service");
+			} else {
+				BaseEntity[] beArray = msg.getItems();
+				ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
+			} 
+			return null; // TODO get exception =s in place
 
 	}
 	
