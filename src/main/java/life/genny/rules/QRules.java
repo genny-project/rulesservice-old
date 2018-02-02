@@ -812,6 +812,13 @@ public class QRules {
 		msg.put("token", getToken());
 		publish("cmds", msg);
 	}
+	
+	public void publishCmd(final QDataMessage msg) {
+		msg.setToken(getToken());
+		publish("cmds", msg);
+	}
+
+
 
 	public void publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
