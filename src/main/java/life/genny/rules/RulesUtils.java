@@ -411,17 +411,15 @@ public class RulesUtils {
 	 * @param linkCode
 	 * @return baseEntitys
 	 */
-	public static List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+	public static BaseEntity[] getBaseEntitysArrayByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
 			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
-			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
-			return arrayList;
+			return msg.getItems();
 			
 	}
-	
+
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -434,13 +432,12 @@ public class RulesUtils {
 	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
 
-			String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
-			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
-			BaseEntity[] beArray = msg.getItems();
+			BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,decodedToken,token, parentCode,linkCode);
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
 
 	}
+
 
 	/**
 	 * 

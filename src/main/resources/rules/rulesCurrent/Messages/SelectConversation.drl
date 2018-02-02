@@ -20,6 +20,10 @@ rule "Select Conversation"
   			
   			JsonObject dataJson = new JsonObject(data);
   		    String conversationCode = dataJson.getString("itemCode");
+  		    
+  		    RulesUtils.println("-----------------");
+  		    RulesUtils.println(conversationCode);
+  		    
   		    if(conversationCode != null) {
   		    		rules.publishBaseEntitysByParentAndLinkCodeWithAttributes(conversationCode, "LNK_MESSAGES", 0, 100, true);
   		    }
