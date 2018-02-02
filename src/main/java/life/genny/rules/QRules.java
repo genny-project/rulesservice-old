@@ -526,19 +526,19 @@ public class QRules {
 
 		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(),
 				getToken(), parentCode, linkCode);
-		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
-		obj.put("token", getToken());
-		publish("cmds", obj);
+		publish("cmds", json);
 	}
 
 	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
-
-		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode);
-		JsonObject obj = JsonUtils.fromJson(json, JsonObject.class);
-		obj.put("token", getToken());
-		publish("cmds", obj);
+		
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray,parentCode, linkCode);
+		msg.setToken(getToken());
+
+		publish("cmds", RulesUtils.toJsonObject(msg));
+
 	}
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
