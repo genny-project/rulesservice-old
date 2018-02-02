@@ -24,6 +24,8 @@ rule "User-Profile Submit"
            rules.setState("USER_PROFILE_COMPLETED");         
 
            drools.setFocus("SendLayoutsAndData"); 
+        }else{
+           drools.setFocus("SendLayoutsAndData"); 
         }
 
         rules.footer();

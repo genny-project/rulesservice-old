@@ -24,15 +24,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.javamoney.moneta.function.PrecisionContextRoundedOperator;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Ask;
-import life.genny.qwanda.CodedEntity;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
@@ -51,10 +48,8 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwanda.DateTimeDeserializer;
 
 public class QRules {
 
@@ -787,9 +782,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		String json = JsonUtils.toJson(msg);
-		JsonObject vertxJson = new JsonObject(json);
-		publish("cmds", vertxJson);
+		publish("cmds",  RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -838,8 +831,7 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		String json =JsonUtils.toJson(msg);
-		publish("data", json);
+		publish("data",  RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -855,7 +847,7 @@ public class QRules {
 		if (recipientCodes != null) {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
-		publish("cmds", JsonUtils.toJson(msg) );
+		publish("cmds",  RulesUtils.toJsonObject(msg) );
 	}
 	
 	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -879,7 +871,7 @@ public class QRules {
 		if (recipientCodes != null) {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
-		publish("data", JsonUtils.toJson(msg) );
+		publish("data",  RulesUtils.toJsonObject(msg) );
 	}
 
 	// public void publishUpdatedLink(final String parentCode, final String
@@ -904,11 +896,10 @@ public class QRules {
 		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
 	}
 
-	public void publishMsg(final QMSGMessage message) {
+	public void publishMsg(final QMSGMessage msg) {
 
-		JsonObject jsonMessage = JsonObject.mapFrom(message);
-		jsonMessage.put("token", getToken());
-		publish("messages", jsonMessage);
+		msg.setToken(getToken());
+		publish("messages",  RulesUtils.toJsonObject(msg));
 	}
 
 	/*
@@ -1631,5 +1622,131 @@ public class QRules {
 		}
 
 		return new BigDecimal(0);
+	}
+	
+	
+	public Money calcDriverFeeInMoney( Money input ) {
+		
+		Money driverFeeInMoney = Money.of(0, DEFAULT_CURRENCY_AUD);
+		
+		BigDecimal inputInBD = new BigDecimal(input.getNumber().intValue());
+		BigDecimal RANGE_1 = new BigDecimal(1000);
+		BigDecimal RANGE_2 = new BigDecimal(3000);
+		BigDecimal RANGE_3 = new BigDecimal(5000);
+
+		BigDecimal FEE_1 = new BigDecimal("0.15");
+		BigDecimal FEE_2 = new BigDecimal("0.10");
+		BigDecimal FEE_3 = new BigDecimal("0.075");
+		BigDecimal FEE_4 = new BigDecimal("0.05");
+
+		BigDecimal ONE = new BigDecimal(1);
+
+		BigDecimal REVERSE_FEE_MULTIPLIER_1 = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
+		BigDecimal REVERSE_FEE_MULTIPLIER_2 = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
+
+		BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1.subtract((RANGE_1).multiply(FEE_1));
+		BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2.subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
+		BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3.subtract(REVERSE_FEE_MULTIPLIER_2).subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
+		
+		
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY_AUD)) < 0) {
+			
+
+			BigDecimal subtract = ONE.subtract(FEE_1);
+			BigDecimal divide = ONE.divide(subtract, 2, BigDecimal.ROUND_HALF_UP);
+
+			driverFeeInMoney = calcOwnerFeeInMoney( input.multiply(divide) );
+						
+		}
+
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY_AUD)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY_AUD)) < 0 ) {
+
+			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_1);
+			BigDecimal multiply1 = subtract1.multiply(FEE_2);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = multiply1.add(multiply2);
+			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal finalInput = inputInBD.multiply(divide2);
+			
+			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD));
+		}
+
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY_AUD)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY_AUD)) < 0 ) {
+
+			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_2);
+			BigDecimal multiply1 = subtract1.multiply(FEE_3);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = multiply1.add(multiply2).add(REVERSE_FEE_MULTIPLIER_1);
+			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal division2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal finalInput = inputInBD.multiply(division2);
+			
+			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD));
+		}
+
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY_AUD)) >= 0 ) {
+
+			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_3);
+			BigDecimal multiply1 = subtract1.multiply(FEE_4);
+			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
+			BigDecimal addition1 = (multiply2.add(REVERSE_FEE_MULTIPLIER_1).add(REVERSE_FEE_MULTIPLIER_2).add(multiply1));
+			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal subtract2 = ONE.subtract(divide1);
+			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal finalInput = inputInBD.multiply(divide2);
+			
+			driverFeeInMoney =  calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD) );
+		}
+
+		return driverFeeInMoney;
+	}
+
+	public Money calcOwnerFeeInMoney(Money input) {
+		
+		
+		BigDecimal inputInBD = new BigDecimal(input.getNumber().toString());
+		
+		Money ownerFeeInMoney = Money.of(0, DEFAULT_CURRENCY_AUD);
+		
+		BigDecimal RANGE_1 = new BigDecimal(1000);
+		BigDecimal RANGE_2 = new BigDecimal(3000);
+		BigDecimal RANGE_3 = new BigDecimal(5000);
+	
+		BigDecimal FEE_1 = new BigDecimal("0.15");
+		BigDecimal FEE_2 = new BigDecimal("0.10");
+		BigDecimal FEE_3 = new BigDecimal("0.075");
+		BigDecimal FEE_4 = new BigDecimal("0.05");
+	
+		BigDecimal RANGE_1_COMPONENT = inputInBD.multiply(FEE_1);
+		BigDecimal RANGE_2_COMPONENT = RANGE_1.multiply(FEE_1);
+		BigDecimal RANGE_3_COMPONENT = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
+		BigDecimal RANGE_4_COMPONENT = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
+	
+		if ( inputInBD.compareTo(RANGE_1) <= 0 ) {
+			
+			BigDecimal ownerFeeInBD = RANGE_1_COMPONENT.round(new MathContext(2, RoundingMode.HALF_EVEN));
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+		}
+	
+		if ( inputInBD.compareTo(RANGE_1) > 0 && inputInBD.compareTo(RANGE_2) <= 0 ) {
+			
+			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(inputInBD.subtract(RANGE_1).multiply(FEE_2))).round(new MathContext(2, RoundingMode.HALF_EVEN));
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+		}
+	
+		if ( inputInBD.compareTo(RANGE_2) > 0 && inputInBD.compareTo(RANGE_3) <= 0 ) {
+			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(inputInBD.subtract(RANGE_2).multiply(FEE_3))).round(new MathContext(2, RoundingMode.HALF_EVEN));
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+		}
+	
+		if ( inputInBD.compareTo(RANGE_3) > 0 ) {
+			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(inputInBD.subtract(RANGE_3).multiply(FEE_4))).round(new MathContext(2, RoundingMode.HALF_EVEN));
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+		}
+
+		return ownerFeeInMoney;
 	}
 }
