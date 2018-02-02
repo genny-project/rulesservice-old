@@ -73,7 +73,7 @@ rule "Make Payment"
 				            String quoterUname = map.get("PRI_QUOTER_USERNAME");
 							
 							/* Allocate QUOTER as Driver */
-							rules.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+							rules.updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 							  
 				            /* SEND QUOTER BE to FE */
 				            rules.publishBaseEntityByCode(quoterCode);

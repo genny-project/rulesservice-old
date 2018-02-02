@@ -14,8 +14,9 @@ rule "Send Bucket Layout To Frontend"
      	String layout = RulesUtils.getLayout("card.json");
      	
      	/* sending cmd BUCKET_VIEW */
-        rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-           
+     	/* rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");  */
+        rules.showLoading("This is a loading text...");
+
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
 	    rules.footer();     		      
