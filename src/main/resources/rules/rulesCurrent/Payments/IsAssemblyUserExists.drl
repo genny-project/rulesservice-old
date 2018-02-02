@@ -1,0 +1,39 @@
+package life.genny.rules;
+
+
+rule "Check if Payments User Exists"
+	agenda-group "payments"
+	no-loop true
+    when
+    	rules: QRules( isState("IS_LOGGED_IN") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
+    then
+     
+     RulesUtils.header(drools.getRule().getName());
+     	     
+     /* get assembly authKey   */
+     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+     
+     /*  Creates assembly userId */
+     String assemblyId = PaymentUtils.getAssemblyId(rules.getToken());
+     
+      /* Check If user already exists in Assembly    */  
+     Boolean isAssemblyUserExists = PaymentUtils.checkIfAssemblyUserExists(assemblyId);
+     rules.println("isAssemblyUserExists::"+isAssemblyUserExists);
+     
+	 if(!isAssemblyUserExists) {
+     			
+     	rules.setState("NEW_ASSEMBLY_USER_CREATION");
+     	drools.setFocus("payments");
+     	
+      }
+      
+     	
+     if(isAssemblyUserExists) {  	
+     
+     	rules.setState("IS_ASSEMBLY_USER_CREATED");
+     
+     }
+	
+
+	  rules.footer();      		      
+end
