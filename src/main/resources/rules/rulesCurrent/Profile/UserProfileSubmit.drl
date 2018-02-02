@@ -1,26 +1,14 @@
 package com.sample;
 
 import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QMessage.MessageData;
-import io.vertx.rxjava.core.eventbus.EventBus;
-import life.genny.qwandautils.QwandaUtils;
 import io.vertx.core.json.JsonObject;
-import com.google.gson.Gson;
-import com.sample.*;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
-
-
-
 
 rule "User-Profile Submit"
    no-loop true
+   ruleflow-group 'FormSubmit'
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_PROFILE_GRP" )
-  
-        rules: QRules( ) 
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_COMPANY_GRP" )
+        rules: QRules( !isState("USER_PROFILE_COMPLETED") ) 
     then
     	rules.header();
     	    /*  Get data.value and decode   */
@@ -31,12 +19,11 @@ rule "User-Profile Submit"
         String actionCode = dataJson.getString("action"); 
         
   	   if(actionCode.equalsIgnoreCase("submit")) { 
-  		   
 
        /*      rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
-             rules.setState("IS_USER_PROFILE_COMPLETE");         
-  /*          rules.println("The profile completed value now is   ::    " + $user.getIsProfileCompleted()); */
-           drools.setFocus("layout"); 
+           rules.setState("USER_PROFILE_COMPLETED");         
+
+           drools.setFocus("SendLayoutsAndData"); 
         }
 
         rules.footer();
