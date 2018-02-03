@@ -1766,9 +1766,8 @@ public class QRules {
 		
 			JsonArray subLayouts = new JsonArray(subLayoutMap);
 			if(subLayouts != null) {
-				
+				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for(int i = 0; i < subLayouts.size(); i++) {
-					
 					JsonObject sublayoutData = subLayouts.getJsonObject(i);
 					String url = sublayoutData.getString("download_url");
 					String name = sublayoutData.getString("name");
@@ -1785,10 +1784,8 @@ public class QRules {
 						if(subLayoutString != null) {
 							
 							try {
-								
-								/*    send sublayout to FE    */
-								QDataSubLayoutMessage msg = new QDataSubLayoutMessage(name,subLayoutString,getToken());								
-						        publishCmd(msg);
+								layoutArray[i] = new Layout(name,subLayoutString);
+
 						        
 							}
 							catch(Exception e) {
@@ -1796,7 +1793,13 @@ public class QRules {
 						}
 					}
 				}
+				/*    send sublayout to FE    */
+				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray,getToken());								
+		        publishCmd(msg);
+
 			}
+			
+		
 		}
 	}
 	
