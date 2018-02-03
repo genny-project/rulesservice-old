@@ -1779,7 +1779,7 @@ public class QRules {
 						
 						/*    grab sublayout from github   */
 
-						println(url);
+						println(i+":"+url);
 						
 						String subLayoutString = QwandaUtils.apiGet(url, null);
 						if(subLayoutString != null) {
