@@ -23,43 +23,7 @@ rule "Send Sub Layouts To Frontend"
 
         rules.header();
   
-  		String subLayoutMap = RulesUtils.getLayout("sublayouts");
- 		if(subLayoutMap != null) {
-		
-			JsonArray subLayouts = new JsonArray(subLayoutMap);
-			if(subLayouts != null) {
-				
-				for(int i = 0; i < subLayouts.size(); i++) {
-					
-					JsonObject sublayoutData = subLayouts.getJsonObject(i);
-					String url = sublayoutData.getString("download_url");
-					String name = sublayoutData.getString("name");
-					name = name.replace(".json", "");
-					name = name.replaceAll("\"", "");
-					
-					if(url != null) {
-						
-						/*    grab sublayout from github   */
-
-						rules.println(url);
-						
-						String subLayoutString = QwandaUtils.apiGet(url, null);
-						if(subLayoutString != null) {
-							
-							try {
-								
-								/*    send sublayout to FE    */
-								QDataSubLayoutMessage msg = new QDataSubLayoutMessage(name,subLayoutString,rules.getToken());								
-						        rules.publishCmd(msg);
-						        
-							}
-							catch(Exception e) {
-							} 
-						}
-					}
-				}
-			}
-		}
+  		rules.sendSubLayouts();
 		
 		rules.setState("SUBLAYOUT_CHANGE_READY");
 		

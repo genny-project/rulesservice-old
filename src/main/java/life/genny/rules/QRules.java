@@ -21,6 +21,7 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
@@ -43,6 +44,7 @@ import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
+import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
@@ -278,12 +280,8 @@ public class QRules {
 		BaseEntity be = null;
 		if (isNull("USER")) {
 			String username = (String) getDecodedTokenMap().get("preferred_username");
-			String uname = QwandaUtils.getNormalisedUsername(username);
-			String code = "PER_" + uname.toUpperCase();
-
 		   	be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
 		    
-		//	be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 			if (be != null) {
 				set("USER", be); // WATCH THIS!!!
 			}
@@ -818,7 +816,11 @@ public class QRules {
 		publish("cmds", msg);
 	}
 
-
+	public void publishCmd(final QDataSubLayoutMessage msg) {
+		msg.setToken(getToken());
+		String json = JsonUtils.toJson(msg);
+		publish("cmds", json);
+	}
 
 	public void publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
@@ -1756,4 +1758,46 @@ public class QRules {
 
 		return ownerFeeInMoney;
 	}
+	
+	public void sendSubLayouts() throws ClientProtocolException, IOException
+	{
+		String subLayoutMap = RulesUtils.getLayout("sublayouts");
+ 		if(subLayoutMap != null) {
+		
+			JsonArray subLayouts = new JsonArray(subLayoutMap);
+			if(subLayouts != null) {
+				
+				for(int i = 0; i < subLayouts.size(); i++) {
+					
+					JsonObject sublayoutData = subLayouts.getJsonObject(i);
+					String url = sublayoutData.getString("download_url");
+					String name = sublayoutData.getString("name");
+					name = name.replace(".json", "");
+					name = name.replaceAll("\"", "");
+					
+					if(url != null) {
+						
+						/*    grab sublayout from github   */
+
+						println(url);
+						
+						String subLayoutString = QwandaUtils.apiGet(url, null);
+						if(subLayoutString != null) {
+							
+							try {
+								
+								/*    send sublayout to FE    */
+								QDataSubLayoutMessage msg = new QDataSubLayoutMessage(name,subLayoutString,getToken());								
+						        publishCmd(msg);
+						        
+							}
+							catch(Exception e) {
+							} 
+						}
+					}
+				}
+			}
+		}
+	}
+	
 }
