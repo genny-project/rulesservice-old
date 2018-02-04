@@ -348,7 +348,7 @@ public class RulesUtils {
 
 		try {
 			String beJson = null;
-			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+parentCode+"/linkcodes/"+linkCode, token);
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+parentCode+"/linkcodes/"+linkCode+"/attributes", token);
 			return beJson;
 
 		} catch (IOException e) {
