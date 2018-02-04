@@ -20,6 +20,7 @@ ruleflow-group 'Answer'
 			Answer firstAnswer = answers[0];
 			String attributeCode = firstAnswer.getAttributeCode();
 			
+				
 			if(attributeCode.contains("ADDRESS_FULL")) {
 				rules.processAddressAnswers($m);
 			}

@@ -279,16 +279,16 @@ public class QRules {
 
 	public BaseEntity getUser() {
 		BaseEntity be = null;
-		if (isNull("USER")) {
+	//	if (isNull("USER")) {
 			String username = (String) getDecodedTokenMap().get("preferred_username");
 		   	be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
 		    
 			if (be != null) {
 				set("USER", be); // WATCH THIS!!!
 			}
-		} else {
-			be = getAsBaseEntity("USER");
-		}
+	//	} else {
+	//		be = getAsBaseEntity("USER");
+	//	}
 
 		return be;
 	}
@@ -348,12 +348,13 @@ public class QRules {
 			}
 		} else {
 
-			if (isNull("BE_" + code.toUpperCase())) {
+	//		if (isNull("BE_" + code.toUpperCase())) {
 				be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 				set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
-			} else {
-				be = getAsBaseEntity("BE_" + code.toUpperCase());
-			}
+	//		} 
+		//else {
+		//		be = getAsBaseEntity("BE_" + code.toUpperCase());
+		//	}
 		}
 		return be;
 	}
@@ -1320,6 +1321,10 @@ public class QRules {
 			String jsonAnswer = RulesUtils.toJson(answer);
 
 			/* convert Answer Json to Answer obj */
+			println("***********"+attributeCode+":"+value);
+			if (attributeCode.contains("PRI_DRIVER")) {
+				println("is Driver");
+			}
 			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 
 			/* post answers to qwanda-utils */
