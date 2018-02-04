@@ -11,6 +11,10 @@ import java.lang.Double;
 import java.lang.String;
 import java.math.BigDecimal;
 
+import org.javamoney.moneta.Money;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+
 function Double calculate(String price) {
 
 	Double ownerOriginalPrice = Double.parseDouble(price);
@@ -33,7 +37,11 @@ rule "Calculate Load Price"
 			String beCode = newAnswer.getTargetCode();
 		
 		/* Price recieved as an answer */
-			BigDecimal answerPrice = new BigDecimal(Double.parseDouble(newAnswer.getValue()));
+					
+			
+			CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");		
+			Money answerPrice = Money.of(Integer.parseInt(newAnswer.getValue()), DEFAULT_CURRENCY_AUD);
+
 
 		/* Price attributeCode and Other price atrributeCode generation */
 			String priceCode = $m.getData().getCode();			
@@ -44,14 +52,14 @@ rule "Calculate Load Price"
 			String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
 			String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
 		
-			BigDecimal ownerPriceExcGST = new  BigDecimal(1);
-			BigDecimal ownerPriceIncGST = new  BigDecimal(2);
-			BigDecimal driverPriceExcGST = new BigDecimal(3);
-			BigDecimal driverPriceIncGST = new BigDecimal(4);
+			Money ownerPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money ownerPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money driverPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money driverPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 
-			BigDecimal fees = new  BigDecimal(0);
-			BigDecimal feePriceExcGST = new  BigDecimal(0); 
-			BigDecimal feePriceIncGST = new  BigDecimal(0); 
+			Money fees = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money feePriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 
 		/* Get userRole */
 			String userRole = null;
@@ -66,15 +74,15 @@ rule "Calculate Load Price"
 		if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole != null && userRole.equals("OWNER")) ) {
 
 			/* Owner Fees */
-			fees = rules.calcOwnerFee( answerPrice );		
+			fees = rules.calcOwnerFeeInMoney( answerPrice );		
 			feePriceExcGST = fees;
-			feePriceIncGST = rules.includeGST(fees);
+			feePriceIncGST = rules.includeGSTMoney(fees);
 
 			System.out.println("=======================================================================================================");
 			System.out.println("OWNER countering   ::   ");
 			System.out.println(" targetCode" +newAnswer.getTargetCode() );
 			ownerPriceExcGST = answerPrice;
-			ownerPriceIncGST = rules.includeGST(answerPrice);
+			ownerPriceIncGST = rules.includeGSTMoney(answerPrice);
 			driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
 			driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
 			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
@@ -86,16 +94,16 @@ rule "Calculate Load Price"
 		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
 
 			/* Driver Fees */
-			fees = rules.calcDriverFee( answerPrice );		
+			fees = rules.calcDriverFeeInMoney( answerPrice );		
 			feePriceExcGST = fees;
-			feePriceIncGST = rules.includeGST(fees);
+			feePriceIncGST = rules.includeGSTMoney(fees);
 
 			System.out.println("=======================================================================================================");
 			System.out.println("QUOTER countering   ::   ");
 			driverPriceExcGST = answerPrice;
-			driverPriceIncGST = rules.includeGST(answerPrice);
+			driverPriceIncGST = rules.includeGSTMoney(answerPrice);
 			ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
-			ownerPriceIncGST = rules.includeGST(ownerPriceExcGST);
+			ownerPriceIncGST = rules.includeGSTMoney(ownerPriceExcGST);
 
 			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
 			System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
