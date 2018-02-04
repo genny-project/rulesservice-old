@@ -11,9 +11,11 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -47,6 +49,7 @@ import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
+import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
@@ -796,6 +799,12 @@ public class QRules {
 		publish("data", RulesUtils.toJsonObject(msg));
 	}
 
+	public void publishData(final Answer answer, final String[] recipientsCode) {
+		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setRecipientCodeArray(recipientsCode);
+		msg.setToken(getToken());
+		publish("data", RulesUtils.toJsonObject(msg));
+	}
 	public void publishCmdToRecipients(final BaseEntity be, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
@@ -1253,6 +1262,65 @@ public class QRules {
 		}
 	}
 	
+	public void processAnswerMessage(QDataAnswerMessage m)
+	{
+				
+				publishData(m);
+
+	}
+	
+	public void processChat(QEventMessage m)
+	{
+		String data = m.getData().getValue();
+		JsonObject dataJson = new JsonObject(data);
+		    String text = dataJson.getString("value");
+		    String chatCode = dataJson.getString("itemCode");
+		    
+		    if(text != null && chatCode != null) {
+	            	
+		    		/* creating new message */
+		    		BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(getUser().getCode() , null, "MSG", getToken()), "message", getQwandaServiceUrl(), getToken());
+    			if(newMessage != null) {  		    			
+		    				
+    				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
+	    			String[] recipientCodeArray = new String[stakeholders.size()];
+	    			
+	    			int counter = 0;
+	    			for(BaseEntity stakeholder: stakeholders) {
+	    				recipientCodeArray[counter] = stakeholder.getCode();
+	    				counter += 1;
+	    			}
+	    			
+ 	    			publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray);
+
+		    			QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken()); 
+	    			
+		    			Answer textMessage = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
+	    			Answer creator = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode());
+	    			Answer items[] = new Answer[2];
+	    			items[0] = textMessage;
+	    			items[1] = creator;
+	    			
+	    			QDataAnswerMessage msg = new QDataAnswerMessage(items);
+	    			msg.setRecipientCodeArray(recipientCodeArray);
+	    			msg.setToken(getToken()); 
+
+	    			String jsonAnswer = JsonUtils.toJson(msg);
+	    			try {
+						QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, getToken());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+	    			
+	    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), textMessage); */
+	    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), creator); */
+		    			
+	       	 	publishData(msg);	    			
+		    		}
+		    }
+		}
+
 	public void processAnswerRating(QDataAnswerMessage m, final String finalAttributeCode) {
 		
 		/* extract answers */

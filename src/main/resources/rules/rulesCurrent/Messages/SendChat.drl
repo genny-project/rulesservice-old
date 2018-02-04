@@ -72,51 +72,10 @@ rule "Send Chat Message"
 		
   		if(data != null) {
   			
-  			JsonObject dataJson = new JsonObject(data);
-  		    String text = dataJson.getString("value");
-  		    String chatCode = dataJson.getString("itemCode");
-  		    
-  		    if(text != null && chatCode != null) {
-  	            	
-  		    		/* creating new message */
-  		    		BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(rules.getUser().getCode() , null, "MSG", rules.getToken()), "message", rules.getQwandaServiceUrl(), rules.getToken());
-	    			if(newMessage != null) {  		    			
-  		    				
-	    				List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-		    			String[] recipientCodeArray = new String[stakeholders.size()];
-		    			
-		    			int counter = 0;
-		    			for(BaseEntity stakeholder: stakeholders) {
-		    				recipientCodeArray[counter] = stakeholder.getCode();
-		    				counter += 1;
-		    			}
-		    			
-	 	    			rules.publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray);
-
-  		    			QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, rules.getToken()); 
-		    			
-  		    			Answer textMessage = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-		    			Answer creator = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", rules.getUser().getCode());
-		    			Answer items[] = new Answer[2];
-		    			items[0] = textMessage;
-		    			items[1] = creator;
-		    			
-		    			QDataAnswerMessage msg = new QDataAnswerMessage(items);
-		    			msg.setRecipientCodeArray(recipientCodeArray);
-		    			msg.setToken(rules.getToken()); 
-
-		    			String jsonAnswer = JsonUtils.toJson(msg);
-		    			QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken()); 
-		    			
-		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), textMessage); */
-		    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), creator); */
-  		    			
-		       	 	/* rules.publishData(newMessage, recipientCodeArray);	    	 */		
-  		    		}
-  		    }
-  		}
+  		rules.processChat(m);
   		
   		rules.setState("SENT_CHAT");
+  		}
      	
      	rules.footer();
 end
