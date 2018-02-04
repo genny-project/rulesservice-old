@@ -1842,7 +1842,14 @@ public class QRules {
 			if(subLayouts != null) {
 				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for(int i = 0; i < subLayouts.size(); i++) {
-					JsonObject sublayoutData = subLayouts.getJsonObject(i);
+					JsonObject sublayoutData = null;
+					
+					try {
+						sublayoutData = subLayouts.getJsonObject(i);
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					String url = sublayoutData.getString("download_url");
 					String name = sublayoutData.getString("name");
 					name = name.replace(".json", "");
