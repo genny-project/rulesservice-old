@@ -1872,6 +1872,18 @@ public class QRules {
 		return ownerFeeInMoney;
 	}
 	
+	public void sendNotification(final String text, final String[] recipientCodes) {
+		sendNotification(text,  recipientCodes, "info"); 
+	}
+	
+	public void sendNotification(final String text, final String[] recipientCodes, final String style) {
+		
+		Layout notificationLayout = new Layout(text, style);
+		QDataSubLayoutMessage data = new QDataSubLayoutMessage(notificationLayout, getToken());
+		data.setRecipientCodeArray(recipientCodes);
+		publishCmd(data);
+	}
+	
 	public void sendSubLayouts() throws ClientProtocolException, IOException
 	{
 		String subLayoutMap = RulesUtils.getLayout("sublayouts");
