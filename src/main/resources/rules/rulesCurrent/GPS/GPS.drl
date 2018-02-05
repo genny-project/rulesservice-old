@@ -48,10 +48,17 @@ rule "Receive GPS Data"
 	    	     		Double totalDistance = Double.parseDouble(totalDistanceString);
 	    	    			Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
 	    	    			percentage = percentage < 0 ? 0 : percentage;
-	    	     				
+	    	     		
+	    	    			/* Update progress of the BEG */
 	    	    			Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", Double.toString(percentage));
-	    	    			RulesUtils.println(updateProgressAnswer);
 	    	    		    rules.publishData(updateProgressAnswer);
+	    	    		    
+	    	    		    /* update position of the beg */
+	    		    		Answer updateLatAnswer = new Answer(be.getCode(), be.getCode(), "PRI_POSITON_LAT", Double.toString(driverLatitude));
+	    	    		    rules.publishData(updateLatAnswer);
+	    	    		    
+	    	    		    Answer updateLngAnswer = new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LON", Double.toString(driverLongitude));
+	    	    		    rules.publishData(updateLngAnswer);
 	     		}
 	    	}
  		    	

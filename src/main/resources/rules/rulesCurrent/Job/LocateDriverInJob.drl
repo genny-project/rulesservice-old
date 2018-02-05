@@ -16,7 +16,20 @@ rule "Locate driver in job"
      	rules.header();
 	    	rules.setState("LOCATE_DRIVER");
 	    	
-	  
+	    	String dataString = $m.getData().getValue();
+	    	if(dataString != null) {
+	    		
+	    		JsonObject data = new JsonObject(dataString);
+	    		if(data != null) {
+	    			
+	    			String begCode = data.getString("itemCode");
+	    			if(begCode != null) {
+	    				
+	    				/* we ask FE to display a map showing live data of BE */
+	    				rules.sendPopupCmd(begCode);
+	    			}
+	    		}
+	    	}
 	    	    	
 	    	rules.footer();       		      
 end
