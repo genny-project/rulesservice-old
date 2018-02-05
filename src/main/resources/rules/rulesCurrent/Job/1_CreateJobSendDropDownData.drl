@@ -24,6 +24,7 @@ rule "Send DropDown Datas"
      if(company != null){
         rules.sendSelectionsWithLinkValue("GRP_LOADS", "LNK_LOAD", company.getCode(), 100);
      }
+     
    /*   Getting list of the load category   */
     rules.sendSelections("GRP_LOAD_CATEGORY", "LNK_CORE", 20);
      
