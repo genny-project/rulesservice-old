@@ -328,7 +328,23 @@ public class RulesUtils {
 	public static BaseEntity getBaseEntityByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String code) {
 
-			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code);
+			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, true);
+			BaseEntity be = fromJson(beJson, BaseEntity.class);
+			
+			return be;
+	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @return baseEntity user for the decodedToken passed
+	 */
+	public static BaseEntity getBaseEntityByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String code, Boolean includeAttributes) {
+
+			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, includeAttributes);
 			BaseEntity be = fromJson(beJson, BaseEntity.class);
 			
 			return be;

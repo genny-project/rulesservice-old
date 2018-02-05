@@ -83,12 +83,12 @@ rule "Post Load Cancel/Submit button click"
            Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_"+company.getCode(), null, (double) 1, rules.getToken());
            System.out.println("The load has been added to the GRP_LOADS ");
          /*    Calling the rule group : BucketView     */
-          drools.setFocus("BucketView"); 
+          drools.setFocus("SendLayoutsAndData"); 
       }else if(actionCode.equalsIgnoreCase("cancel")){
        /*  String status =  rules.removeLink("GRP_DRAFTS", jobCode, "LNK_CORE");
         System.out.println("Status after removing link  :: " +status);   */
        /*    Calling the rule group : BucketView     */
-         drools.setFocus("BucketView");       
+         drools.setFocus("SendLayoutsAndData");       
       }
              
      rules.footer(); 
