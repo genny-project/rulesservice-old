@@ -93,11 +93,15 @@ rule "Submit Offer"
             JsonObject dataJson = new JsonObject(dataString);
 
             String offerCode = dataJson.getString("targetCode");
-            System.out.println("offerCode   ::   "+ offerCode);       
+            System.out.println("offerCode   ::   "+ offerCode);   
+
             String userName = rules.getAsString("preferred_username");
-            System.out.println("username   ::   "+ userName);                 
-            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            System.out.println("username   ::   "+ userName);    
+
+            String userCode =  rules.getUser().getCode();            
+           /* String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString); */
             System.out.println("usercode   ::   "+ userCode);
+            
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             System.out.println("user fullName   ::   "+ userFullName);
         
