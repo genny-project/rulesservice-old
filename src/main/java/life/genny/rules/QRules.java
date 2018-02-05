@@ -68,8 +68,6 @@ public class QRules {
 
 	final static String DEFAULT_STATE = "NEW";
 
-	private static final CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");
-
 	private String token;
 	private EventBus eventBus;
 	private Boolean started = false;
@@ -1564,7 +1562,7 @@ public class QRules {
 	
 	public Money includeGSTMoney(Money price) {
 		
-		Money gstPrice = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money gstPrice = Money.of(0, price.getCurrency());
 
 		/* Including 10% of price for GST */
 
@@ -1580,7 +1578,7 @@ public class QRules {
 	
 	public Money excludeGSTMoney(Money price) {
 		
-		Money gstPrice = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money gstPrice = Money.of(0, price.getCurrency());
 
 		/* Including 10% of price for GST */
 
@@ -1716,7 +1714,9 @@ public class QRules {
 	
 	public Money calcDriverFeeInMoney( Money input ) {
 		
-		Money driverFeeInMoney = Money.of(0, DEFAULT_CURRENCY_AUD);
+		CurrencyUnit DEFAULT_CURRENCY = input.getCurrency();
+		
+		Money driverFeeInMoney = Money.of(0, DEFAULT_CURRENCY);
 		
 		BigDecimal inputInBD = new BigDecimal(input.getNumber().intValue());
 		BigDecimal RANGE_1 = new BigDecimal(1000);
@@ -1738,7 +1738,7 @@ public class QRules {
 		BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3.subtract(REVERSE_FEE_MULTIPLIER_2).subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
 		
 		
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY_AUD)) < 0) {
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY)) < 0) {
 			
 
 			BigDecimal subtract = ONE.subtract(FEE_1);
@@ -1748,7 +1748,7 @@ public class QRules {
 						
 		}
 
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY_AUD)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY_AUD)) < 0 ) {
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY)) < 0 ) {
 
 			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_1);
 			BigDecimal multiply1 = subtract1.multiply(FEE_2);
@@ -1759,10 +1759,10 @@ public class QRules {
 			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
 			BigDecimal finalInput = inputInBD.multiply(divide2);
 			
-			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD));
+			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY));
 		}
 
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY_AUD)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY_AUD)) < 0 ) {
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY)) < 0 ) {
 
 			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_2);
 			BigDecimal multiply1 = subtract1.multiply(FEE_3);
@@ -1773,10 +1773,10 @@ public class QRules {
 			BigDecimal division2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
 			BigDecimal finalInput = inputInBD.multiply(division2);
 			
-			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD));
+			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY));
 		}
 
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY_AUD)) >= 0 ) {
+		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY)) >= 0 ) {
 
 			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_3);
 			BigDecimal multiply1 = subtract1.multiply(FEE_4);
@@ -1787,18 +1787,22 @@ public class QRules {
 			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
 			BigDecimal finalInput = inputInBD.multiply(divide2);
 			
-			driverFeeInMoney =  calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY_AUD) );
+			driverFeeInMoney =  calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY) );
 		}
+		
+		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
+		driverFeeInMoney = Money.of(driverFeeInMoney.getNumber().intValue(), DEFAULT_CURRENCY);
 
 		return driverFeeInMoney;
 	}
 
 	public Money calcOwnerFeeInMoney(Money input) {
 		
+		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
 		
 		BigDecimal inputInBD = new BigDecimal(input.getNumber().toString());
 		
-		Money ownerFeeInMoney = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money ownerFeeInMoney = Money.of(0, DEFAULT_CURRENCY_TYPE);
 		
 		BigDecimal RANGE_1 = new BigDecimal(1000);
 		BigDecimal RANGE_2 = new BigDecimal(3000);
@@ -1817,24 +1821,27 @@ public class QRules {
 		if ( inputInBD.compareTo(RANGE_1) <= 0 ) {
 			
 			BigDecimal ownerFeeInBD = RANGE_1_COMPONENT.round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
 		}
 	
 		if ( inputInBD.compareTo(RANGE_1) > 0 && inputInBD.compareTo(RANGE_2) <= 0 ) {
 			
 			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(inputInBD.subtract(RANGE_1).multiply(FEE_2))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
 		}
 	
 		if ( inputInBD.compareTo(RANGE_2) > 0 && inputInBD.compareTo(RANGE_3) <= 0 ) {
 			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(inputInBD.subtract(RANGE_2).multiply(FEE_3))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
 		}
 	
 		if ( inputInBD.compareTo(RANGE_3) > 0 ) {
 			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(inputInBD.subtract(RANGE_3).multiply(FEE_4))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_AUD);
+			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
 		}
+		
+		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
+		ownerFeeInMoney = Money.of(ownerFeeInMoney.getNumber().intValue(), DEFAULT_CURRENCY_TYPE);
 
 		return ownerFeeInMoney;
 	}
