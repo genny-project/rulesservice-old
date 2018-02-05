@@ -1,0 +1,21 @@
+package life.genny.rules;
+
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+
+rule "Send All Attributes To Frontend"
+
+    when
+         rules: QRules( isState("STARTED") && (!isState("ALL_ATTRIBUTES_SENT")) )
+     then
+     	rules.header();
+
+        rules.sendAllAttributes();
+   
+        rules.println("ALL ATTRIBUTES SENT TO FRONTEND");
+        rules.setState("ALL_ATTRIBUTES_SENT");
+
+	    rules.footer();      		      
+end
