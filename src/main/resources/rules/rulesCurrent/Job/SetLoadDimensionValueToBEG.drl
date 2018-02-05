@@ -46,24 +46,9 @@ rule "Set Load Height to BEG"
     then    
     	    rules.header();
 	    
-         Answer newAnswer = $m.getAnswer();
-         BaseEntity load = rules.getBaseEntityByCode(newAnswer.getSourceCode());
-         System.out.println("The laod value is "+load.toString());
-      
-         RulesUtils.println(" Load Baseentity Upodated  " );
-         System.out.println("The updated laod name after PUT is "+load.getName());
-         RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
-         RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
-         RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
-  
-         String value = newAnswer.getValue();
-         rules.println("The load "+$m.getData().getCode()+ " is    ::"  +value );
-           
-       /* Get the sourceCode(Job code) for this LOAD */
-        BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
-       
-       Answer jobTitleAnswer = new Answer(rules.getUser().getCode() ,job.getCode(),  $m.getData().getCode() ,value);             
-       rules.publishData(jobTitleAnswer);
+	    rules.processDimensions($m);
+	    
+     
        
        rules.footer();
 end

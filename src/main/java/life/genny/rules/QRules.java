@@ -49,6 +49,7 @@ import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
@@ -939,7 +940,7 @@ public class QRules {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				Link first = arrayList.get(0);
 				RulesUtils.println("The parent code is   ::  " + first.getSourceCode());
-				return getBaseEntityByCode(first.getSourceCode());
+				return RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), first.getSourceCode(),false);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1931,5 +1932,27 @@ public class QRules {
 	        
 	        return attributeValueMap;
 	} 
+	
+	public void processDimensions(QEventAttributeValueChangeMessage msg)
+	{
+        Answer newAnswer = msg.getAnswer();
+        BaseEntity load = getBaseEntityByCode(newAnswer.getSourceCode());
+        System.out.println("The laod value is "+load.toString());
+     
+        RulesUtils.println(" Load Baseentity Upodated  " );
+        System.out.println("The updated laod name after PUT is "+load.getName());
+        RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
+        RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
+        RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
+ 
+        String value = newAnswer.getValue();
+        println("The load "+msg.getData().getCode()+ " is    ::"  +value );
+          
+      /* Get the sourceCode(Job code) for this LOAD */
+       BaseEntity job = getParent(newAnswer.getTargetCode(), "LNK_BEG");
+      
+      Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);             
+      publishData(jobTitleAnswer);
+	}
 	
 }
