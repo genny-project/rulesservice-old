@@ -25,7 +25,7 @@ rule "Calculate Load Price"
     	rules : QRules()
     then    
 		rules.header();
-
+		String tokenString = rules.getToken();
 		Answer newAnswer = $m.getAnswer();
 		
 		/* BaseEntity Code */
@@ -40,9 +40,6 @@ rule "Calculate Load Price"
 		/* Price recieved as an answer */		
 			CurrencyUnit DEFAULT_CURRENCY = Monetary.getCurrency(currencyType);		
 			Money answerPrice = Money.of(amountValue, DEFAULT_CURRENCY);
-			
-		
-
 
 		/* Price attributeCode and Other price atrributeCode generation */
 			String priceCode = $m.getData().getCode();			
@@ -66,7 +63,8 @@ rule "Calculate Load Price"
 			String userRole = null;
 			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
 				String offerCode = newAnswer.getTargetCode();
-				userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+				System.out.println(" offerCode BE "+ offerCode);
+				userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
 			}
 
 			System.out.println(" targetCode " + newAnswer.getTargetCode() );
