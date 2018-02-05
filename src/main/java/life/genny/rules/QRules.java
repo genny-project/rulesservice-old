@@ -1897,6 +1897,9 @@ public class QRules {
 		}
 	}
 	
+	/*
+	 * Gets all the attributes and Publishes to the DATA channel
+	 */
 	public void sendAllAttributes() {
 		System.out.println("Sending all the attributes");
 		try {
@@ -1909,5 +1912,24 @@ public class QRules {
 			e.printStackTrace();	
         }
 	}
+	
+	/*
+	 * Gets all the attribute and their value for the given basenentity code
+	 */
+	public Map<String, String> getMapOfAllAttributesValuesForBaseEntity(String beCode){
+		 BaseEntity be = getBaseEntityByCode(beCode);
+	        println("The load is ::"+be );
+	        Set<EntityAttribute> eaSet =  be.getBaseEntityAttributes();
+	        System.out.println("The set of attributes are  :: " +eaSet);
+	        Map<String, String> attributeValueMap = new HashMap<String, String>();
+	        for(EntityAttribute ea : eaSet){
+	        	   String attributeCode = ea.getAttributeCode();
+	        	   System.out.println("The attribute code  is  :: " +attributeCode);
+	           String value =ea.getAsLoopString();
+	           attributeValueMap.put(attributeCode, value);
+	        }
+	        
+	        return attributeValueMap;
+	} 
 	
 }

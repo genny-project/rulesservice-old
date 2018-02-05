@@ -1,5 +1,9 @@
-FROM openjdk:8u151-jre-alpine3.7
+FROM  openjdk:8u151-jre-alpine3.7 
+RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.7/main > /etc/apk/repositories; \
+    echo http://mirror.yandex.ru/mirrors/alpine/v3.7/community >> /etc/apk/repositories
 
+RUN apk update \
+ && apk add --no-cache 
 RUN apk update && apk add jq && apk add bash
 
 ADD target/rulesservice-0.0.1-SNAPSHOT-fat.jar /service.jar

@@ -58,35 +58,34 @@ rule "Handle Load Selection"
          rules.println("The load code is   ::  " +loadCode);
 
         /*  Grab attributes from load and save it to newly load    */
-         JsonArray loadBe = new JsonArray(QwandaUtils.apiGet(rules.getQwandaServiceUrl() + "/qwanda/baseentitys/" + loadCode + "/attributes", rules.getToken()));
-         RulesUtils.ruleLogger("Load DATA", loadBe );
          Map<String, String> map = new HashMap<>();
-        /* loop to GET attributeCodes and VALUE */
-           for(Object obj : loadBe) {
-           JsonObject attributeObj = (JsonObject) obj;
-           String attributeCode = attributeObj.getString("attributeCode");
-           String attributeValue = attributeObj.getString("valueString");
-           map.put(attributeCode, attributeValue); /* PUT in map */
-            }
+         map = rules.getMapOfAllAttributesValuesForBaseEntity(loadCode);
+         
           RulesUtils.ruleLogger(" MAP DATA ",map );
-          Answer[] newAnswers = new Answer[100];
+        /*  Answer[] newAnswers = new Answer[map.size()]; */
             try{
-                int i = 0;
-		    	for (Map.Entry<String, String> entry : map.entrySet())
-		    	{	
-                    Answer answerObj = new Answer(rules.getUser().getCode(), targetCode, entry.getKey(), entry.getValue() );
-                    newAnswers[i] = answerObj;
-                    i++; 
-                  }
-                                
-                }catch (Exception e) {
-                }              
-            QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers);
+              /*  int i = 0; */
+		      	for (Map.Entry<String, String> entry : map.entrySet())
+		      	{	
+		    	       if(!entry.getKey().equals("PRI_IMAGE_URL")){
+                       Answer answerObj = new Answer(rules.getUser().getCode(), targetCode, entry.getKey(), entry.getValue() );
+                        rules.publishData(answerObj);
+                       /* Answer[] answerArray = new Answer[answerObj];
+                        QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers); */
+                        
+                     /*  newAnswers[i] = answerObj; 
+                       i++; */
+                    }
+                  }                 
+               }catch (Exception e) {
+               }              
+           /* QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers);
             String jsonQDataAnswerMessage = JsonUtils.toJson(newLoadAnswers);
-		   rules.println("updated answer json string ::"+jsonQDataAnswerMessage);
+		   rules.println("updated answer json string ::"+jsonQDataAnswerMessage);*/
          /*   Send new answers to api to save it   */ 
-		   QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers/bulk", jsonQDataAnswerMessage, rules.getToken());
+	/*	String response =   QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers/bulk", jsonQDataAnswerMessage, rules.getToken());
            rules.println("The new laod with attribute is ::   "+targetCode.toString());
+           rules.println("The bulk answer post response is ::   "+response); */
             
          rules.footer();
 
