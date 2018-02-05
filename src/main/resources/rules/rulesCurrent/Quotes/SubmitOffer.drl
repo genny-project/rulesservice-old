@@ -99,7 +99,6 @@ rule "Submit Offer"
             System.out.println("username   ::   "+ userName);    
 
             String userCode =  rules.getUser().getCode();            
-           /* String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString); */
             System.out.println("usercode   ::   "+ userCode);
             
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
@@ -110,37 +109,22 @@ rule "Submit Offer"
             String linkQuoter= "QUOTER";  
             String linkOwner = "OWNER";
 
-        /* GET  attributes of the OFFER BE */
-            JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("OFFER DATA   ::   " + offerBe.toString());
-            System.out.println("------------------------------------------------------------------------");
-            
-            Map<String, String> map = new HashMap<>();
-            /* loop to GET attributeCodes and VALUE */
-            for(Object obj : offerBe) {
-                JsonObject offerObj = (JsonObject) obj;
-                String attributeCode = offerObj.getString("attributeCode");
-                String attributeValue = offerObj.getString("valueString");
-                map.put(attributeCode, attributeValue); /* PUT in map */
+        /* GET OFFER BE */
+            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, tokenString);
 
-            }
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("MAP DATA   ::   " + map);
-            System.out.println("------------------------------------------------------------------------");
-            
-            String begCode= map.get("PRI_BEG_CODE");
-            String quoterCode= map.get("PRI_QUOTER_CODE");
-            String quoterUname= map.get("PRI_QUOTER_USERNAME");
-            String quoterFullName= map.get("PRI_QUOTER_FULLNAME");
-            String priOfferCode= map.get("PRI_OFFER_CODE");
+        /* GET  attributes of the OFFER BE */
+            String begCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_BEG_CODE");
+            String quoterCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
+            String quoterUname= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");
+            String quoterFullName= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_FULLNAME");
+            String priOfferCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_CODE");
             
             System.out.println("------------------------------------------------------------------------");
             System.out.println("BEG CODE          ::   " + begCode);
             System.out.println("QUOTER CODE       ::   " + quoterCode);
             System.out.println("QUOTER USERNAME   ::   " + quoterUname);
             System.out.println("QUOTER FULLNAME   ::   " + quoterFullName);
-            System.out.println("PRI OFFER CODE   ::   " + priOfferCode);
+            System.out.println("PRI OFFER CODE    ::   " + priOfferCode);
             System.out.println("------------------------------------------------------------------------");
 
             String templateCode = null;
@@ -288,9 +272,7 @@ rule "Submit Offer"
                 Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
                 link2.setWeight(1.0);
                 String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
-            } 
-            
-            
+            }          
 
         /* SEND OFFER BE    */
             JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
@@ -300,6 +282,8 @@ rule "Submit Offer"
             offerObj.put("token", tokenString);      
             bus.publish("cmds", offerObj);
 
+            /* rules.publishBaseEntityByCode(offerCode); */
+
         /* SEND QUOTER BE */
             JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
             System.out.println("------------------------------------------------------------------------");
@@ -307,6 +291,8 @@ rule "Submit Offer"
             System.out.println("------------------------------------------------------------------------");
             quoterObj.put("token", tokenString);      
             bus.publish("cmds", quoterObj);
+
+            /* rules.publishBaseEntityByCode(offerCode); */
         
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
