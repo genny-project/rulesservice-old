@@ -1,4 +1,4 @@
-FROM openjdk:8u131-jre-alpine
+FROM openjdk:8u151-jre-alpine3.7
 
 RUN apk update && apk add jq && apk add bash
 
