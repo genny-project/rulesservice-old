@@ -29,6 +29,41 @@ rule "Release Payment"
 	    
 		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());
 		     rules.println("Payment is released!"); 
+		     
+		     
+		     /* Send email to Owner and driver */
+		     List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+		     String ownerCode = null;
+		     String driverCode = null;
+		     
+		     for(Link link : linkList) {
+		     	if(link.getLinkValue().equals("OWNER")) {
+		     		ownerCode = link.getTargetCode();
+		     	}
+		     	
+		     	if(link.getLinkValue().equals("DRIVER")) {
+		     		driverCode = link.getTargetCode();
+		     	}
+		     }
+		     
+		     if(ownerCode != null && driverCode != null) {
+		     	
+		     	HashMap<String, String> contextMap = new HashMap<String, String>();
+			 	contextMap.put("JOB", begCode);
+			 	contextMap.put("OWNER", ownerCode);
+			 	contextMap.put("DRIVER", driverCode);
+			 	   
+			 	/* Triggering email to owner */
+			 	String[] messageToOwnerRecipients = new String[1];
+		     	messageToOwnerRecipients[0] = ownerCode;
+		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
+		     	
+		     	/* Triggering email to driver */
+		     	String[] messageToDriverRecipients = new String[1];
+		     	messageToDriverRecipients[0] = driverCode;
+		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");		
+		        	     	
+		     }
 	
 		}
 	rules.footer();	
