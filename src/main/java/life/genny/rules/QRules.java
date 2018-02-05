@@ -1118,12 +1118,22 @@ public class QRules {
 	
 	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode, final String linkValue, final Integer maxItems) {
 
-		JsonObject selectionLists;
+		JsonObject selectionMsg = new JsonObject();
+		selectionMsg.put("msg_type", "DATA_MSG");
+		selectionMsg.put("data_type", "BaseEntity");
+		selectionMsg.put("linkCode", linkValue);
+		selectionMsg.put("parentCode", selectionRootCode);
+		JsonArray selectionLists;
+		
 		try {
-			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
+		/*	Link[] selections = JsonUtils.fromJson(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
+					+ selectionRootCode + "/linkcodes/" + linkCode + "/children/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()), Link.class);
+   		*/
+		  selectionLists = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
 					+ selectionRootCode + "/linkcodes/" + linkCode + "/children/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()));
-			selectionLists.put("token", getToken());
-			publish("cmds", selectionLists);
+			selectionMsg.put("items", selectionLists);
+			selectionMsg.put("token", getToken());
+			publish("cmds", selectionMsg);
 			return true;
 		} catch (IOException e) {
 			log.error("Unable to fetch selections");
