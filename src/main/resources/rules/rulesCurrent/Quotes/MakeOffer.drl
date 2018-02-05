@@ -93,6 +93,6 @@ rule "Make Offer"
                 rules.saveAnswer(answer);             
             }                              
         /* Send Offer Questions */
-            rules.askQuestions(userCode, offerCode, "QUE_OFFER_DETAILS_GRP", false); /* false for form_view*/
+            rules.askQuestions(userCode, offerCode, "QUE_OFFER_DETAILS_GRP", false, true); /* false for form_view*/
         rules.footer();
 end

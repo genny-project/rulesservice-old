@@ -6,7 +6,6 @@ import life.genny.rules.QRules;
 rule "New Registration"
 
     when
-
         rules: QRules( isUserPresent() == false  && (!isState("NEW_REGISTRATION")) && isState("USER_CHECKED")) 
       then
      	rules.header();
