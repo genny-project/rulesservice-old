@@ -20,17 +20,18 @@ rule "TV_SELECT Event"
        	String grpCode = $m.getData().getValue();
         if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") && !grpCode.equals("GRP_ADMIN_USERS") && !grpCode.equals("GRP_ADMIN_JOBS")) {
         		
-	        	String viewType = "LIST_VIEW";
 	        if(grpCode.equals("GRP_DASHBOARD")) {
-	           viewType = "BUCKET_VIEW";
+	        		drools.setFocus("SendLayoutsAndData");
 	         }
-	           	
-	         /* sending cmd LIST_VIEW */
-	    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW",viewType);
-	    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
-	    	     bucketViewJson.put("root", grpCode);
-	    	     bucketViewJson.put("token", rules.getToken());
-	    	     rules.publish("cmds",bucketViewJson);
+	        else {
+	        		
+		        	/* sending cmd LIST_VIEW */
+		    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW", "LIST_VIEW");
+		    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+		    	     bucketViewJson.put("root", grpCode);
+		    	     bucketViewJson.put("token", rules.getToken());
+		    	     rules.publish("cmds",bucketViewJson);
+	        }
         }
         else {
         		

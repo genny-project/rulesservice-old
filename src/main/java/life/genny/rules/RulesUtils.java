@@ -210,6 +210,7 @@ public class RulesUtils {
 
 	}
 
+	
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -219,10 +220,26 @@ public class RulesUtils {
 	 */
 	public static String getBaseEntityJsonByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String code) {
+	return 	getBaseEntityJsonByCode(qwandaServiceUrl,decodedToken,
+				token,code, true);
+	}
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @return baseEntity user for the decodedToken passed
+	 */
+	public static String getBaseEntityJsonByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String code, Boolean includeAttributes) {
 
 		try {
 			String beJson = null;
-			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + code, token);
+			String attributes = "";
+			if (includeAttributes) {
+				attributes = "/attributes";
+			}
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + code+ attributes, token);
 			return beJson;
 
 		} catch (IOException e) {
