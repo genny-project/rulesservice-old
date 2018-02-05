@@ -8,7 +8,7 @@ import life.genny.qwanda.entity.BaseEntity;
 rule "Send All Attributes To Frontend"
 
     when
-         rules: QRules( isState("STARTED") && (!isState("ALL_ATTRIBUTES_SENT")) )
+         rules: QRules( isState("EVENT_AUTH_INIT") && (!isState("ALL_ATTRIBUTES_SENT")) )
      then
      	rules.header();
 
