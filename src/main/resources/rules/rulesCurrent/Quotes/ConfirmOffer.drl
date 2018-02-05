@@ -61,6 +61,7 @@ rule "Confirm Offer"
     then
         
     			rules.header();
+				String tokenString = rules.getToken();
         		
         		String value = $m.getData().getValue();
         		if(value != null) {
@@ -73,8 +74,7 @@ rule "Confirm Offer"
         				String userCode = rules.getUser().getCode();
         				
         				if(offerCode != null && begCode != null && userCode != null) {
-        					
-							String userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+        					String userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
 							if(!userRole.equals("QUOTER")){
 
 								rules.showLoading("Loading secure payment gatway...");

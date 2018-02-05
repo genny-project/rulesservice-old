@@ -175,11 +175,6 @@ rule "Accept Job"
             /* publish new link data */
                 newLink.put("token", tokenString );
                 rules.publish("cmds", newLink);
-        /* TEST 
-            Link[] linkArray = rules.getUpdatedLink(begCode, linkCode);
-            System.out.println( "Link array   ::   " + linkArray.toString() );
-            QDataLinksMessage msg = new QDataLinksMessage(linkArray);
-            rules.publishData(msg); */
         	
         /* Messages */
 
