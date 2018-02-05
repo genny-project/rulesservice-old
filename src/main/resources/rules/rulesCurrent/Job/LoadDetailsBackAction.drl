@@ -47,5 +47,5 @@ rule "Load Details - Back action"
 	     bus: EventBus()
 	     $map : Map($value: this["token"] != null)
 	then
-		drools.setFocus("bucketview"); 
+		drools.setFocus("SendLayoutsAndData"); 
 end
