@@ -1103,6 +1103,24 @@ public class QRules {
 		}
 
 	}
+	
+	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode, final String linkValue, final Integer maxItems) {
+
+		JsonObject selectionLists;
+		try {
+			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
+					+ selectionRootCode + "/linkcodes/" + linkCode + "/children/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()));
+			selectionLists.put("token", getToken());
+			publish("cmds", selectionLists);
+			return true;
+		} catch (IOException e) {
+			log.error("Unable to fetch selections");
+			return false;
+		}
+
+	}
+	
+	
 
 	public void header() {
 		try {

@@ -22,7 +22,7 @@ rule "Send DropDown Datas"
    
    /*      Getting list of loads      */
      if(company != null){
-        rules.sendSelections("GRP_LOADS", "LNK_"+company.getCode(), 100);
+        rules.sendSelectionsWithLinkValue("GRP_LOADS", "LNK_LOAD", company.getCode(), 100);
      }
    /*   Getting list of the load category   */
     rules.sendSelections("GRP_LOAD_CATEGORY", "LNK_CORE", 20);
