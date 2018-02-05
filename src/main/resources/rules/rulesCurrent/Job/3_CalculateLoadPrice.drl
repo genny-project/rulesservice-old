@@ -15,15 +15,10 @@ import org.javamoney.moneta.Money;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 
-function Double calculate(String price) {
-
-	Double ownerOriginalPrice = Double.parseDouble(price);
-    return ownerOriginalPrice;
-}
+import org.json.simple.JSONObject;
 
 /*  Calculate Load Price adding service fee  */
 rule "Calculate Load Price"
-	no-loop true
     when
     	$m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_PRICE")  && getAnswer().getTargetCode().startsWith("BEG_") || 
 												QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_PRICE")  && getAnswer().getTargetCode().startsWith("OFR_") )
@@ -36,11 +31,17 @@ rule "Calculate Load Price"
 		/* BaseEntity Code */
 			String beCode = newAnswer.getTargetCode();
 		
-		/* Price recieved as an answer */
-					
+		/* Get amoiunt value */
+			JSONObject moneyJson = JsonUtils.fromJson(newAnswer.getValue(), JSONObject.class);
 			
-			CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");		
-			Money answerPrice = Money.of(Integer.parseInt(newAnswer.getValue()), DEFAULT_CURRENCY_AUD);
+			Integer amountValue = Integer.parseInt(moneyJson.get("amount").toString());
+			String currencyType = moneyJson.get("currency").toString();
+		
+		/* Price recieved as an answer */		
+			CurrencyUnit DEFAULT_CURRENCY = Monetary.getCurrency(currencyType);		
+			Money answerPrice = Money.of(amountValue, DEFAULT_CURRENCY);
+			
+		
 
 
 		/* Price attributeCode and Other price atrributeCode generation */
@@ -52,14 +53,14 @@ rule "Calculate Load Price"
 			String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
 			String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
 		
-			Money ownerPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
-			Money ownerPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
-			Money driverPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
-			Money driverPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money ownerPriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+			Money ownerPriceIncGST = Money.of(0, DEFAULT_CURRENCY);
+			Money driverPriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+			Money driverPriceIncGST = Money.of(0, DEFAULT_CURRENCY);
 
-			Money fees = Money.of(0, DEFAULT_CURRENCY_AUD);
-			Money feePriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
-			Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+			Money fees = Money.of(0, DEFAULT_CURRENCY);
+			Money feePriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+			Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY);
 
 		/* Get userRole */
 			String userRole = null;
@@ -91,7 +92,7 @@ rule "Calculate Load Price"
 			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST);
 			System.out.println("=======================================================================================================");
 		}
-		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
+		else if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
 
 			/* Driver Fees */
 			fees = rules.calcDriverFeeInMoney( answerPrice );		
@@ -114,28 +115,34 @@ rule "Calculate Load Price"
 
 
 		/* Saving  OWNER_PRICE_INC_GST */
-			Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, String.valueOf(ownerPriceIncGST));          
+			String ownerPriceIncGSTString = "{\"amount\":" + ownerPriceIncGST.getNumber().toString() + ",\"currency\":\""+ownerPriceIncGST.getCurrency().toString()+"\"}";
+			Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, ownerPriceIncGSTString);          
 			rules.publishData(ownerPriceIncGSTAnswer);   
 
 		/* Saving  OWNER_PRICE_EXC_GST */
-			Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, String.valueOf(ownerPriceExcGST));          
+			String ownerPriceExcGSTString = "{\"amount\":" + ownerPriceExcGST.getNumber().toString() + ",\"currency\":\""+ownerPriceExcGST.getCurrency().toString()+"\"}";
+			Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, ownerPriceExcGSTString);          
 			rules.publishData(ownerPriceExcGSTAnswer); 
-
+		
 		/* Saving  DRIVER_PRICE_INC_GST */
-			Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, String.valueOf(driverPriceIncGST));          
-			rules.publishData(driverPriceIncGSTAnswer);   
+			String driverPriceIncGSTString = "{\"amount\":" + driverPriceIncGST.getNumber().toString() + ",\"currency\":\""+driverPriceIncGST.getCurrency().toString()+"\"}";
+			Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, driverPriceIncGSTString);          
+			rules.publishData(driverPriceIncGSTAnswer);  
 
 		/* Saving  DRIVER_PRICE_EXC_GST */
-			Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, String.valueOf(driverPriceExcGST));          
+			String driverPriceExcGSTString = "{\"amount\":" + driverPriceExcGST.getNumber().toString() + ",\"currency\":\""+driverPriceExcGST.getCurrency().toString()+"\"}";
+			Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, driverPriceExcGSTString);          
 			rules.publishData(driverPriceExcGSTAnswer); 
 
 		/* Saving  FEE_INC_GST */
-			Answer feePriceIncGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, String.valueOf(feePriceIncGST));          
-			rules.publishData(feePriceIncGstCodeAnswer);   
-			
+			String feePriceIncGSTString = "{\"amount\":" + feePriceIncGST.getNumber().toString() + ",\"currency\":\""+feePriceIncGST.getCurrency().toString()+"\"}";
+			Answer feePriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, feePriceIncGSTString);          
+			rules.publishData(feePriceIncGSTAnswer);   
+
 		/* Saving  FEE_EXC_GST */
-			Answer feePriceExcGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, String.valueOf(feePriceExcGST));          
-			rules.publishData(feePriceExcGstCodeAnswer); 
+			String feePriceExcGSTString = "{\"amount\":" + feePriceExcGST.getNumber().toString() + ",\"currency\":\""+feePriceExcGST.getCurrency().toString()+"\"}";
+			Answer feePriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, feePriceExcGSTString);         
+			rules.publishData(feePriceExcGSTAnswer); 
 
 		rules.footer();
 end
