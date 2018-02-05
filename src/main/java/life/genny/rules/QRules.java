@@ -664,13 +664,27 @@ public class QRules {
 		}
 		return be;
 	}
-
+	
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 
 		String layout = RulesUtils.getLayout(layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
+	}
+	
+	public void sendPopupLayout(final String layoutCode, final String sublayoutPath, final String root) {
+		
+		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", layoutCode);
+		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
+		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		cmdJobSublayoutJson.put("items", sublayoutString);
+		cmdJobSublayoutJson.put("token", getToken());
+		if (root != null) {
+			cmdJobSublayoutJson.put("root", root);
+		}
+		
+		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
@@ -971,13 +985,15 @@ public class QRules {
 		}
 	}
 
-	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg) {
+	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean isPopup) {
 		return askQuestions(qstMsg, false);
 	}
 	
-	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean autoPushSelections) {
+	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean autoPushSelections, final boolean isPopup) {
+		
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
+		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		try {
 			if (autoPushSelections) {
 				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
@@ -986,7 +1002,7 @@ public class QRules {
 
 				publishData(msg);
 
-				QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", qstMsg.getRootQST().getQuestionCode());
+				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, qstMsg.getRootQST().getQuestionCode());
 				publishCmd(cmdFormView);
 			} else {
 				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken()));
@@ -996,7 +1012,7 @@ public class QRules {
 
 				// Now auto push any selection data
 
-				QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
 				JsonObject json = JsonObject.mapFrom(cmdFormView);
 				json.put("root", qstMsg.getRootQST().getQuestionCode());
 				json.put("token", getToken());
@@ -1015,11 +1031,19 @@ public class QRules {
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
 	}
-
+	
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections) {
+		return askQuestions(sourceCode, targetCode, questionCode, autoPushSelections, false);
+	}
+
+	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
+			final boolean autoPushSelections, final boolean isPopup) {
+		
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
+		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
+		
 		try {
 			if (autoPushSelections) {
 				String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
@@ -1037,9 +1061,10 @@ public class QRules {
 				// }
 				// }
 
-				QCmdViewMessage cmdFormView = new QCmdViewMessage("CMD_VIEW", questionCode);
+				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
 				publishCmd(cmdFormView);
 			} else {
+				
 				questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
 						+ sourceCode + "/asks2/" + questionCode + "/" + targetCode, getToken()));
 				/* QDataAskMessage */
@@ -1048,7 +1073,7 @@ public class QRules {
 
 				// Now auto push any selection data
 
-				QCmdMessage cmdFormView = new QCmdMessage("CMD_VIEW", "FORM_VIEW");
+				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
 				JsonObject json = JsonObject.mapFrom(cmdFormView);
 				json.put("root", questionCode);
 				json.put("token", getToken());

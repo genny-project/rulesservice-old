@@ -49,7 +49,11 @@ rule "TV_SELECT Event"
         			totalList.addAll(users);
         			
         			rules.publishCmd(totalList, grpCode, "LNK_CORE");
-        			sendTable = true;
+        			
+        			/* send list users layout */
+        			rules.sendSublayout("admin-user-list", "layouts/admin_users_channel40.json");
+        			
+        			sendTable = false;
         			
         		}
         		else if(grpCode.equals("GRP_ADMIN_JOBS")) {

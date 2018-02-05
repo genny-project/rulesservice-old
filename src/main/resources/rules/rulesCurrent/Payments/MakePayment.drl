@@ -5,6 +5,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.Answer;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -45,38 +46,30 @@ rule "Make Payment"
 					if(error == null) {
 																		
 						/* We grab the quoter code */
-						String offerCode = rules.getBaseEntityValueAsString(begCode, "STT_HOT_OFFER");
+						String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", rules.getToken());
 						if(offerCode != null) {
-							
-				            JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(rules.getQwandaServiceUrl() + "/qwanda/baseentitys/" + offerCode + "/attributes", rules.getToken()));
+				                          
+				            String offerPrice = MergeUtil.getAttrValue(begCode, "PRI_OFFER_PRICE", rules.getToken());
 
-							Map<String, String> map = new HashMap<>();
-					           
-				            /* loop to GET attributeCodes and VALUE */
-				            for(Object obj : offerBe) {              
-				                JsonObject offerObj = (JsonObject) obj;
-				                String attributeCode = offerObj.getString("attributeCode");
-				                String attributeValue = offerObj.getString("valueString");
-				                map.put(attributeCode, attributeValue); /* PUT in map */
-				            }
-				                            
-				            String offerPrice = map.get("PRI_OFFER_PRICE");
-
-				            String ownerPriceExcGST= map.get("PRI_OFFER_OWNER_PRICE_EXC_GST");
-				            String ownerPriceIncGST= map.get("PRI_OFFER_OWNER_PRICE_INC_GST");
-				            String driverPriceExcGST= map.get("PRI_OFFER_DRIVER_PRICE_EXC_GST");
-				            String driverPriceIncGST= map.get("PRI_OFFER_DRIVER_PRICE_INC_GST");
-				            String feePriceExcGST= map.get("PRI_OFFER_FEE_EXC_GST");
-				            String feePriceIncGST= map.get("PRI_OFFER_FEE_INC_GST");
+				            String ownerPriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_OWNER_PRICE_EXC_GST", rules.getToken());
+				            String ownerPriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_OWNER_PRICE_INC_GST", rules.getToken());
+				            String driverPriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_DRIVER_PRICE_EXC_GST", rules.getToken());
+				            String driverPriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_DRIVER_PRICE_INC_GST", rules.getToken());
+				            String feePriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_FEE_EXC_GST", rules.getToken());
+				            String feePriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_FEE_INC_GST", rules.getToken());
 				            
-				            String quoterCode= map.get("PRI_QUOTER_CODE");
-				            String quoterUname = map.get("PRI_QUOTER_USERNAME");
+				            String quoterCode= MergeUtil.getAttrValue(begCode, "PRI_QUOTER_CODE", rules.getToken());
+				            String quoterUname = MergeUtil.getAttrValue(begCode, "PRI_QUOTER_USERNAME", rules.getToken());
+				            
+				            
 							
 							/* Allocate QUOTER as Driver */
 							rules.updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 							  
 				            /* SEND QUOTER BE to FE */
-				            rules.publishBaseEntityByCode(quoterCode);
+				            String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, rules.getToken());
+				            rules.publish("cmds", dataBeMsg);
+				            
 				            
 				            /* Update BEG's prices */
 				            Answer begPriceAnswer = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
