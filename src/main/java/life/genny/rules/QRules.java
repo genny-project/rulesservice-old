@@ -44,6 +44,7 @@ import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
@@ -852,6 +853,11 @@ public class QRules {
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
 		publish("data",  RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publishData(final QDataAttributeMessage msg) {
+		msg.setToken(getToken());
+		publish("data",  JsonUtils.toJson(msg));
 	}
 
 	public void publishCmd(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
@@ -1882,6 +1888,19 @@ public class QRules {
 			
 		
 		}
+	}
+	
+	public void sendAllAttributes() {
+		System.out.println("Sending all the attributes");
+		try {
+			 String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/attributes", getToken());
+			 QDataAttributeMessage msg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+			 publishData(msg);
+			 System.out.println("All the attributes sent");
+			 
+		} catch(Exception e) {
+			e.printStackTrace();	
+        }
 	}
 	
 }
