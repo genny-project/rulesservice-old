@@ -43,10 +43,6 @@ rule "Post Load Cancel/Submit button click"
         System.out.println("The job code is   :: "+jobCode);
         
        if(actionCode.equalsIgnoreCase("submit")) {       
-         
-    	   /*    link current user as load-owner to the Job/BEG     */
-           Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
-           System.out.println(" Added Load Owner to BEG/JOB ");
            
            /* We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be triggered in another rule */
            	String pickupLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LATITUDE");
