@@ -34,7 +34,7 @@ rule "Calculate Load Price"
 		/* Get amoiunt value */
 			JSONObject moneyJson = JsonUtils.fromJson(newAnswer.getValue(), JSONObject.class);
 			
-			Integer amountValue = Integer.parseInt(moneyJson.get("amount").toString());
+			Double amountValue = Double.parseDouble(moneyJson.get("amount").toString());
 			String currencyType = moneyJson.get("currency").toString();
 		
 		/* Price recieved as an answer */		
