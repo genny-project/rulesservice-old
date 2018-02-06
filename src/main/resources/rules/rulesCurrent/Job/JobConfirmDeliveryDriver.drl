@@ -70,7 +70,7 @@ then
 		     if(begCode != null) {
 		    	 
 		    	 	/* mark job as delivered by driver */
-		        Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "TRUE");
+		        Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
 	            rules.publishData(beAnswer);  
 		    	 	
 		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();

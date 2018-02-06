@@ -704,12 +704,21 @@ public class QRules {
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
-		sendSublayout(layoutCode, sublayoutPath, null);
+		sendSublayout(layoutCode, sublayoutPath, null, false);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
+		sendSublayout(layoutCode, sublayoutPath, root, false);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final boolean isPopup) {
+		sendSublayout(layoutCode, sublayoutPath, null, isPopup);
 	}
 
-	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
-
-		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root, final boolean isPopup) {
+		
+		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
+		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
@@ -1042,7 +1051,17 @@ public class QRules {
 			return msg;
 		}
 	}
-
+	
+	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
+			final boolean autoPushSelections) throws ClientProtocolException, IOException {
+		
+		String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+				+ questionCode + "/" + targetCode, getToken());
+		
+		QDataAskMessage msg = null;
+		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+		publishData(msg);
+	}
 
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
@@ -1052,22 +1071,19 @@ public class QRules {
 			final boolean autoPushSelections) {
 		return askQuestions(sourceCode, targetCode, questionCode, autoPushSelections, false);
 	}
-
+	
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections, final boolean isPopup) {
 		
-		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		
+
 		try {
+			
+			this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
+
 			if (autoPushSelections) {
-				String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-						+ questionCode + "/" + targetCode, getToken());
-
-				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-
-				publishData(msg);
 
 				// Now auto push any selection data
 				// for (Ask ask : msg.getItems()) {
@@ -1079,16 +1095,9 @@ public class QRules {
 
 				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
 				publishCmd(cmdFormView);
+				
 			} else {
 				
-				questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
-						+ sourceCode + "/asks2/" + questionCode + "/" + targetCode, getToken()));
-				/* QDataAskMessage */
-				questionJson.put("token", getToken());
-				publish("data", questionJson);
-
-				// Now auto push any selection data
-
 				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
 				JsonObject json = JsonObject.mapFrom(cmdFormView);
 				json.put("root", questionCode);
@@ -1311,7 +1320,10 @@ public class QRules {
 					System.out.println("updated answer json string ::" + json);
 
 					/* send new answers to api */
-					QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken());
+					/* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken()); */
+					for(Answer an: newAnswers) {
+						publishData(an);
+					}
 				}
 			}
 		} catch (Exception e) {
