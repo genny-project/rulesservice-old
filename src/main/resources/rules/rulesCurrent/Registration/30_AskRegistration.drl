@@ -37,7 +37,9 @@ rule "Ask Registration"
            rules.println("The New Company is   :: "+newCompany);
          /*  link new Company to the GRP_COMPANYS    */
             Link companyGRPCompanyLink =  QwandaUtils.createLink("GRP_COMPANYS", companyCode , "LNK_CORE", null, (double) 1, rules.getToken());
-          /*  link new person to the Company    */
+         /*  link GRP_LOADS to new Company    */ 
+           Link companyGRPLoadLink =  QwandaUtils.createLink(companyCode, "GRP_LOADS" , "LNK_CORE", null, (double) 1, rules.getToken());
+         /*  link new person to the Company    */
            Link userCompanyLink =  QwandaUtils.createLink(companyCode, userCode, "LNK_STAFF", null, (double) 1, rules.getToken());
       
         }
