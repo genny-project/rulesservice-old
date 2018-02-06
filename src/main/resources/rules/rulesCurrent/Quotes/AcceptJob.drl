@@ -71,7 +71,7 @@ rule "Accept Job"
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
-            String linkCreater = "CREATER";
+            String linkCreator = "CREATOR";
 
         /* get BEG PRICEs */           
             System.out.println("BEG Prices   ::   ");
@@ -163,8 +163,8 @@ rule "Accept Job"
             rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
         /* link BEG and QUOTER BE || QUOTER */
             rules.createLink(begCode, userCode, linkCode, linkQuoter, 1.0);       
-        /* link OFFER and QUOTER BE || CREATER */
-            rules.createLink(offerCode, userCode, linkCode, linkCreater, 1.0);       
+        /* link OFFER and QUOTER BE || CREATOR */
+            rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);       
         /* SEND OFFER BE    */
             rules.publishBaseEntityByCode(offerCode);
         /* SEND QUOTER BE */
