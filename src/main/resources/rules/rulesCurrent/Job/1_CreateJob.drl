@@ -44,7 +44,6 @@ rule "Create Job"
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),loadCode, "PRI_AUTHOR", rules.getUser().getCode() );  
       rules.publishData(loadAuthorAns);    	  
     
-    
       /*  link newly created LOAD to JOB/BEG    */
      Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
     

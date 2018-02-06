@@ -27,7 +27,7 @@ then
 		     if(begCode != null) {
 		    	 	
 		    	 	/* mark job as NOT delivered by driver */
-			     Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "FALSE");
+			     Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "false");
 		         rules.publishData(beAnswer);  
 		            
 		    	 	rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");

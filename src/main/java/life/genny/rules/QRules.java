@@ -700,12 +700,21 @@ public class QRules {
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
-		sendSublayout(layoutCode, sublayoutPath, null);
+		sendSublayout(layoutCode, sublayoutPath, null, false);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
+		sendSublayout(layoutCode, sublayoutPath, root, false);
+	}
+	
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final boolean isPopup) {
+		sendSublayout(layoutCode, sublayoutPath, null, isPopup);
 	}
 
-	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
-
-		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", layoutCode);
+	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root, final boolean isPopup) {
+		
+		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
+		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
@@ -1305,7 +1314,10 @@ public class QRules {
 					System.out.println("updated answer json string ::" + json);
 
 					/* send new answers to api */
-					QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken());
+					/* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken()); */
+					for(Answer an: newAnswers) {
+						publishData(an);
+					}
 				}
 			}
 		} catch (Exception e) {
