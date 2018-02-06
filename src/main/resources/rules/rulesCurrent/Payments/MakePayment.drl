@@ -48,21 +48,21 @@ rule "Make Payment"
 						/* We grab the quoter code */
 						String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", rules.getToken());
 						if(offerCode != null) {
-				                          
-				            String offerPrice = MergeUtil.getAttrValue(begCode, "PRI_OFFER_PRICE", rules.getToken());
-
-				            String ownerPriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_OWNER_PRICE_EXC_GST", rules.getToken());
-				            String ownerPriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_OWNER_PRICE_INC_GST", rules.getToken());
-				            String driverPriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_DRIVER_PRICE_EXC_GST", rules.getToken());
-				            String driverPriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_DRIVER_PRICE_INC_GST", rules.getToken());
-				            String feePriceExcGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_FEE_EXC_GST", rules.getToken());
-				            String feePriceIncGST= MergeUtil.getAttrValue(begCode, "PRI_OFFER_FEE_INC_GST", rules.getToken());
 				            
-				            String quoterCode= MergeUtil.getAttrValue(begCode, "PRI_QUOTER_CODE", rules.getToken());
-				            String quoterUname = MergeUtil.getAttrValue(begCode, "PRI_QUOTER_USERNAME", rules.getToken());
+				            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, rules.getToken());
 				            
+				            String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
 				            
-							
+				            String ownerPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_EXC_GST");
+				            String ownerPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_INC_GST");
+				            String driverPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_EXC_GST");
+				            String driverPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
+				            String feePriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_EXC_GST");
+				            String feePriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST"); 
+				            
+				            String quoterCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
+				            String quoterUname = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");           
+	
 							/* Allocate QUOTER as Driver */
 							rules.updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 							  
