@@ -32,9 +32,7 @@ rule "Save user role to the link with its Company"
         rules: QRules()
      then
         rules.header();  
-         String qwandaServiceUrl = rules.getQwandaServiceUrl();
-         String tokenString = rules.getToken();
-         rules.println("Before getting user BE");
+          rules.println("Before getting user BE");
          String userCode = rules.getUser().getCode();
          rules.println("The user Code is  ::  " +userCode);
          rules.println("Print QEventAttributeValueChangeMessage  LINK_ROLE_LISTS ::  "+$m.toString());
@@ -49,18 +47,18 @@ rule "Save user role to the link with its Company"
          {
              roleValue = "DRIVER";
              Answer userRole = new Answer(userCode, userCode, "PRI_DRIVER" , "TRUE");             
-             rules.publishData(userRole);
+             rules.publishData(userRole); 
              Answer userRoleOwner = new Answer(userCode, userCode, "PRI_OWNER" , "FALSE");             
-            rules.publishData(userRoleOwner);
+            rules.publishData(userRoleOwner); 
              
          }
           if(newAnswer.getValue().equals("SEL_OWNER"))
          {
              roleValue = "OWNER";
              Answer userRole = new Answer(userCode, userCode, "PRI_OWNER" , "TRUE");             
-            rules.publishData(userRole);
+            rules.publishData(userRole); 
             Answer userRoleDriver = new Answer(userCode, userCode, "PRI_DRIVER" , "FALSE");             
-             rules.publishData(userRoleDriver);
+            rules.publishData(userRoleDriver); 
          }
          
          String attributeCode = $m.data.getCode();
@@ -70,6 +68,8 @@ rule "Save user role to the link with its Company"
          rules.println("The role type code is   ::  " +newAnswer.getValue());
          rules.println("The role type value is   ::  " +roleValue);
 
+		/* send updated baseentity for the owner */
+
            
        /* Get company code for this user */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
@@ -77,8 +77,9 @@ rule "Save user role to the link with its Company"
        /* Update link with the link Value  */
         rules.println("UPDATING link value OF LINK BETWEEN   ::   " + companyCode + "  &  " + userCode);
         Link updateLink = new Link( companyCode, userCode, "LNK_STAFF", roleValue, (double) 1);
-        String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(updateLink),tokenString);
+        String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
         
+        rules.publishEA($m.getEa());
        rules.footer();  
 
 end

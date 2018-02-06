@@ -2058,4 +2058,8 @@ public class QRules {
 		return dateString;
 	}
 	
+	public void publishEA(final EntityAttribute ea)
+	{
+		System.out.println(ea);
+	}
 }
