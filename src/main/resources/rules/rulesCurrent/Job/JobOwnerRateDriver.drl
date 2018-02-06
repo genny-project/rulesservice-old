@@ -46,7 +46,7 @@ rule "Owner rate driver and confirm delivery"
           	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
           	
           	/* redirecting user to bucket */
-          	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", true);
+          	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
       	}
       	  	
       	rules.footer();

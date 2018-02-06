@@ -1051,7 +1051,17 @@ public class QRules {
 			return msg;
 		}
 	}
-
+	
+	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
+			final boolean autoPushSelections) throws ClientProtocolException, IOException {
+		
+		String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+				+ questionCode + "/" + targetCode, getToken());
+		
+		QDataAskMessage msg = null;
+		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+		publishData(msg);
+	}
 
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
@@ -1061,22 +1071,19 @@ public class QRules {
 			final boolean autoPushSelections) {
 		return askQuestions(sourceCode, targetCode, questionCode, autoPushSelections, false);
 	}
-
+	
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections, final boolean isPopup) {
 		
-		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		
+
 		try {
+			
+			this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
+
 			if (autoPushSelections) {
-				String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-						+ questionCode + "/" + targetCode, getToken());
-
-				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-
-				publishData(msg);
 
 				// Now auto push any selection data
 				// for (Ask ask : msg.getItems()) {
@@ -1088,16 +1095,9 @@ public class QRules {
 
 				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
 				publishCmd(cmdFormView);
+				
 			} else {
 				
-				questionJson = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
-						+ sourceCode + "/asks2/" + questionCode + "/" + targetCode, getToken()));
-				/* QDataAskMessage */
-				questionJson.put("token", getToken());
-				publish("data", questionJson);
-
-				// Now auto push any selection data
-
 				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
 				JsonObject json = JsonObject.mapFrom(cmdFormView);
 				json.put("root", questionCode);
