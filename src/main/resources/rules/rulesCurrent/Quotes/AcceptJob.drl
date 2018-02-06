@@ -118,7 +118,8 @@ rule "Accept Job"
             Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
             Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
             Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
-            Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+            Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner); 
+            Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
             
             List<Answer> answerList = new ArrayList<Answer>();	
             answerList.add(price);
@@ -135,6 +136,7 @@ rule "Accept Job"
             answerList.add(quoterFullName);
             answerList.add(jobCode);
             answerList.add(actionCode);
+            answerList.add(offerDateTime);
 
             /* save attributes */
             int i=1;
