@@ -3,6 +3,11 @@ package life.genny;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
@@ -26,9 +31,7 @@ public class FeeCalculationTest {
 		System.out.println("owner fee in money ::"+ownerFee);
 		
 		System.out.println(ownerFee.getNumber().intValue());
-		assertEquals(150, ownerFee.getNumber().intValue());
-		
-		
+		assertEquals(150, ownerFee.getNumber().intValue());		
 				
 	}
 	
@@ -41,6 +44,18 @@ public class FeeCalculationTest {
 		System.out.println("driver fee ::"+driverFee.getNumber().intValue());
 		System.out.println("driver fee in money ::"+driverFee);
 		assertEquals(170, driverFee.getNumber().intValue());
+	}
+	
+	@Test
+	public void testDateTime() {
+		QRules rules = new QRules(null, null, null);
+		System.out.println(rules.getCurrentLocalDateTime());
+	}
+	
+	@Test
+	public void testDate() {
+		QRules rules = new QRules(null, null, null);
+		System.out.println(rules.getCurrentLocalDate());
 	}
 
 }

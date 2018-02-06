@@ -5,11 +5,15 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -2030,6 +2034,24 @@ public class QRules {
       
       Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);             
       publishData(jobTitleAnswer);
+	}
+	
+	public String getCurrentLocalDateTime() {
+		LocalDateTime date = LocalDateTime.now();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+		String dateString = df.format(datetime);
+		
+		return dateString;
+	}
+	
+	
+	public String getCurrentLocalDate() {
+		LocalDate date = LocalDate.now();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Date currentDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		String dateString = df.format(currentDate);
+		return dateString;
 	}
 	
 }
