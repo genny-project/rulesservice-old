@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.Answer;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
@@ -53,7 +54,7 @@ rule "Make Payment"
 				            
 				            String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
 				            
-				            String ownerPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_EXC_GST");
+					            String ownerPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_EXC_GST");
 				            String ownerPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_INC_GST");
 				            String driverPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_EXC_GST");
 				            String driverPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
