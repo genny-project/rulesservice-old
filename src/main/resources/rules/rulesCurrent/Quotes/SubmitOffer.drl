@@ -263,6 +263,10 @@ rule "Submit Offer"
                     /* rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL"); */
             }
 
+        /* Save OFFER_DATE as answer */
+            Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
+            rules.saveAnswer(offerDateTime);
+
         /* Check if a link exists between USER & OFFER */
             Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
             System.out.println("LINK EXISTS FOR USER & OFFER?  ::    "+ linkUserOffer);
