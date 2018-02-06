@@ -44,8 +44,13 @@ rule "Create Job"
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),loadCode, "PRI_AUTHOR", rules.getUser().getCode() );  
       rules.publishData(loadAuthorAns);    	  
     
-      /*  link newly created LOAD to JOB/BEG    */
-     Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
+    
+     /*  link newly created LOAD to JOB/BEG    */
+       Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
+     
+     /*  link current user as load-owner to the Job/BEG     */
+        Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
+        rules.println(" Added Load Owner to BEG/JOB ");
     
      /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_LOAD_DETAILS_GRP/"+loadCode, rules.getToken()));
