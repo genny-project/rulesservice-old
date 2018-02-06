@@ -58,7 +58,7 @@ rule "Cancel Offer"
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CANCEL_OFFER")
         rules: QRules()
     then
-        RulesUtils.header(drools.getRule().getName());
+        rules.header();
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();  
@@ -68,7 +68,7 @@ rule "Cancel Offer"
             System.out.println("offerCode  ::   "+ offerCode);                    
             String userName = rules.getAsString("preferred_username");
             System.out.println("username   ::   "+ userName);                 
-            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            String userCode =  rules.getUser().getCode();            
             System.out.println("usercode   ::   "+ userCode);
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             System.out.println("user fullName   ::   "+ userFullName);
@@ -78,26 +78,13 @@ rule "Cancel Offer"
             String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
 
-        /* GET attributes of the OFFER that's being declined */
-            JsonArray offerBe = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + offerCode + "/attributes", tokenString));
-            RulesUtils.ruleLogger("OFFER Base Entity", offerBe);
+        /* GET OFFER BE */
+            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, tokenString);
+        
+        /* GET attributes of the OFFER BE */
+            String begCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_BEG_CODE");
+            String quoterCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
             
-            Map<String, String> map = new HashMap<>();
-            /* loop to GET attributeCodes and VALUE */
-            for(Object obj : offerBe) {
-                JsonObject offerObj = (JsonObject) obj;
-                String attributeCode = offerObj.getString("attributeCode");
-                String attributeValue = offerObj.getString("valueString");
-                map.put(attributeCode, attributeValue); /* PUT in map */
-
-            }
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("MAP DATA   ::   " + map);
-            System.out.println("------------------------------------------------------------------------");
-            
-            String begCode= map.get("PRI_BEG_CODE");
-            String quoterCode= map.get("PRI_QUOTER_CODE");
-
             System.out.println("------------------------------------------------------------------------");
             System.out.println("begCode          ::   " + begCode);
             System.out.println("quoterCode       ::   " + quoterCode);
@@ -165,7 +152,7 @@ rule "Cancel Offer"
 			/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS"); */
         	/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");  */
     
-        RulesUtils.footer(drools.getRule().getName());
+        rules.footer();
 end
 
 

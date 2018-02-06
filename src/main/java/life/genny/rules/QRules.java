@@ -5,11 +5,15 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1127,12 +1131,22 @@ public class QRules {
 	
 	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode, final String linkValue, final Integer maxItems) {
 
-		JsonObject selectionLists;
+		JsonObject selectionMsg = new JsonObject();
+		selectionMsg.put("msg_type", "DATA_MSG");
+		selectionMsg.put("data_type", "BaseEntity");
+		selectionMsg.put("linkCode", linkValue);
+		selectionMsg.put("parentCode", selectionRootCode);
+		JsonArray selectionLists;
+		
 		try {
-			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
+		/*	Link[] selections = JsonUtils.fromJson(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
+					+ selectionRootCode + "/linkcodes/" + linkCode + "/children/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()), Link.class);
+   		*/
+		  selectionLists = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/"
 					+ selectionRootCode + "/linkcodes/" + linkCode + "/children/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()));
-			selectionLists.put("token", getToken());
-			publish("cmds", selectionLists);
+			selectionMsg.put("items", selectionLists);
+			selectionMsg.put("token", getToken());
+			publish("cmds", selectionMsg);
 			return true;
 		} catch (IOException e) {
 			log.error("Unable to fetch selections");
@@ -2032,6 +2046,24 @@ public class QRules {
       
       Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);             
       publishData(jobTitleAnswer);
+	}
+	
+	public String getCurrentLocalDateTime() {
+		LocalDateTime date = LocalDateTime.now();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+		String dateString = df.format(datetime);
+		
+		return dateString;
+	}
+	
+	
+	public String getCurrentLocalDate() {
+		LocalDate date = LocalDate.now();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Date currentDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		String dateString = df.format(currentDate);
+		return dateString;
 	}
 	
 }
