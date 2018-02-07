@@ -126,7 +126,11 @@ public class RulesUtils {
 		
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if(host == null) {
-			host = "http://localhost:2223";
+			if (System.getenv("HOSTIP") == null) {
+				host = "http://localhost:2223";
+			} else {
+				host = "http://"+System.getenv("HOSTIP")+":2223";
+			}
 		}
 		
 		if(activateCache == false) {
