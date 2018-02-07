@@ -1453,75 +1453,49 @@ public class QRules {
 		}
 	}
 
+
+	
 	public void processAnswer(QDataAnswerMessage m) {
+
+		/* extract answers */
+		List<Answer> answerList = new ArrayList<Answer>();
 
 		/* extract answers */
 		Answer[] answers = m.getItems();
 		for (Answer answer : answers) {
-
-			Long askId = answer.getAskId();
-			String sourceCode = answer.getSourceCode();
-			String targetCode = answer.getTargetCode();
-			answer.setSourceCode(answer.getTargetCode());
-			String attributeCode = answer.getAttributeCode();
-			String value = answer.getValue();
-			Boolean inferred = answer.getInferred();
-			Double weight = answer.getWeight();
-			Boolean expired = answer.getExpired();
-			Boolean refused = answer.getRefused();
-
-			/* convert answer to json */
-			String jsonAnswer = RulesUtils.toJson(answer);
-
-			/* convert Answer Json to Answer obj */
-			println("***********"+attributeCode+":"+value);
-			if (attributeCode.contains("PRI_DRIVER")) {
-				println("is Driver");
-			}
-			Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-
-			/* post answers to qwanda-utils */
-			try {
-				QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", jsonAnswer, getToken());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			answerList.add(answer);
 		}
+		
+		saveAnswers(answerList);
 	}
 
 	public void processAnswer2(QDataAnswerMessage m) {
 
 		/* extract answers */
-		List<Answer> answers = new ArrayList<Answer>();
+		List<Answer> answerList = new ArrayList<Answer>();
 
 		Answer[] answers2 = m.getItems();
 		for (Answer answer : answers2) {
 			if (answer != null) {
-				Long askId = answer.getAskId();
-				String sourceCode = answer.getSourceCode();
-				String targetCode = answer.getTargetCode();
-				answer.setSourceCode(answer.getTargetCode());
-				String attributeCode = answer.getAttributeCode();
-				String value = answer.getValue();
-				Boolean inferred = answer.getInferred();
-				Double weight = answer.getWeight();
-				Boolean expired = answer.getExpired();
-				Boolean refused = answer.getRefused();
-//				System.out.println("\nAskId: " + askId + "\nSource Code: " + sourceCode + "\nTarget Code: " + targetCode
-//						+ "\nAttribute Code: " + attributeCode + "\nAttribute Value: " + value + " \nInferred: "
-//						+ (inferred ? "TRUE" : "FALSE") + " \nWeight: " + weight);
-//				System.out.println("------------------------------------------------------------------------");
-
+					String attributeCode = answer.getAttributeCode();
+	
 				/* if this answer is actually an address another rule will be triggered */
 				if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
-					answers.add(answer);
+					answerList.add(answer);
 				}
 			} else {
 				println("Answer was null ");
 			}
 		}
 
+		saveAnswers(answerList);
+
+	}
+
+	/**
+	 * @param answers
+	 */
+	private void saveAnswers(List<Answer> answers) {
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
@@ -1532,7 +1506,6 @@ public class QRules {
 		} catch (IOException e) {
 			log.error("Socket error trying to post answer");
 		}
-
 	}
 
 	public void startWorkflow(final String id) {
