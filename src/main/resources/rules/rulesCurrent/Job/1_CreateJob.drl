@@ -24,14 +24,14 @@ rule "Create Job"
      
      String qwandaServiceUrl = rules.getQwandaServiceUrl();
      String userCode =  rules.getUser().getCode();
-     System.out.println("The user Code is  ::  " +userCode);
+     rules.println("The user Code is  ::  " +userCode);
      drools.setFocus("CreateLoad");
      
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "BEG", rules.getToken()), "Base Entity Group", qwandaServiceUrl, rules.getToken());
      String jobCode = beg.getCode();
-     System.out.println("BaseEntity BEG created is   ::  "+beg.toString());
-     System.out.println("The BEG code is   ::  "+jobCode);
+     rules.println("BaseEntity BEG created is   ::  "+beg.toString());
+     rules.println("The BEG code is   ::  "+jobCode);
    
      /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", jobCode, "LNK_CORE", null, (double) 1, rules.getToken());
@@ -57,13 +57,13 @@ rule "Create Job"
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", rules.getToken());
-     System.out.println("QName Json: "+qPostLoad.toString());
+     rules.println("QName Json: "+qPostLoad.toString());
      rules.getEventBus().publish("cmds",qPostLoad);
      
      JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", rules.getToken());
-     System.out.println("QName Json: "+qPostJob.toString());
+     rules.println("QName Json: "+qPostJob.toString());
      rules.getEventBus().publish("cmds",qPostJob);
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
