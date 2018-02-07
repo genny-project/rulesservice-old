@@ -21,7 +21,7 @@ ruleflow-group 'Answer'
 			String attributeCode = firstAnswer.getAttributeCode();
 			
 				
-			if(attributeCode.contains("ADDRESS_FULL")) {
+			if(attributeCode.contains("ADDRESS_JSON")) {
 				rules.processAddressAnswers($m);
 			}
 			else if(attributeCode.contains("_RATING")) {
