@@ -62,6 +62,7 @@ import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 
 public class QRules {
@@ -2062,6 +2063,144 @@ public class QRules {
 	{
 	    BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
 	    return beg;
+	}
+
+	public Money calcOwnerFee(Money input) {
+		
+		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
+		Number inputNum = input.getNumber();
+		
+		Money ownerFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
+		
+		Number RANGE_1= 1000;
+		Number RANGE_2= 3000;
+		Number RANGE_3= 5000;
+
+		Number FEE_1= 0.15;
+		Number FEE_2= 0.10;
+		Number FEE_3= 0.075;
+		Number FEE_4= 0.05;
+		
+		Number RANGE_1_COMPONENT = MoneyHelper.mul(inputNum, FEE_1);
+		Number RANGE_2_COMPONENT = MoneyHelper.mul(RANGE_1, FEE_1);;
+		Number RANGE_3_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_2, RANGE_1), FEE_2);
+		Number RANGE_4_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_3, RANGE_2), FEE_3);
+		
+		if (inputNum.doubleValue() <= RANGE_1.doubleValue()) {
+			// RANGE_1_COMPONENT
+			ownerFee = Money.of(RANGE_1_COMPONENT, DEFAULT_CURRENCY_TYPE);
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_1.doubleValue() && inputNum.doubleValue() <= RANGE_2.doubleValue() ){
+			// RANGE_2_COMPONENT + (input - RANGE_1) * FEE_2
+			ownerFee = MoneyHelper.add(MoneyHelper.mul(MoneyHelper.sub(input, RANGE_1), FEE_2 ), RANGE_2_COMPONENT);
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_2.doubleValue() && inputNum.doubleValue() <= RANGE_3.doubleValue() ) {	
+			//RANGE_2_COMPONENT + RANGE_3_COMPONENT + (input - RANGE_2) * FEE_3
+			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
+			Money subtract = MoneyHelper.sub(input, RANGE_2);
+			Money multiply = MoneyHelper.mul(subtract, FEE_3);
+			Money addition2 = MoneyHelper.add(multiply, addition1);
+			ownerFee = addition2;
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_3.doubleValue() ) {
+			// RANGE_2_COMPONENT + RANGE_3_COMPONENT + RANGE_4_COMPONENT + ( input - RANGE_3 ) * FEE_4
+			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
+			Number addition2 = MoneyHelper.add(addition1, RANGE_4_COMPONENT);
+			Money subtract = MoneyHelper.sub(input, RANGE_3);
+			Money multiply = MoneyHelper.mul(subtract, FEE_4);
+			Money addition3 = MoneyHelper.add(multiply, addition2);
+			ownerFee = addition3;
+		}
+		
+		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
+		ownerFee= MoneyHelper.round(ownerFee);
+		return ownerFee;
+
+	}
+	public Money calcDriverFee(Money input) {
+
+		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
+		Number inputNum = input.getNumber();
+
+		Money driverFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
+		
+		Number RANGE_1= 1000;
+		Number RANGE_2= 3000;
+		Number RANGE_3= 5000;
+
+		Number FEE_1= 0.15;
+		Number FEE_2= 0.10;
+		Number FEE_3= 0.075;
+		Number FEE_4= 0.05;
+
+		Number ONE = 1;
+	  
+		Number REVERSE_FEE_MULTIPLIER_1 = MoneyHelper.mul( MoneyHelper.sub( RANGE_2 ,RANGE_1 ) , FEE_2);
+		Number REVERSE_FEE_MULTIPLIER_2 = MoneyHelper.mul(MoneyHelper.sub( RANGE_3 , RANGE_2 ) , FEE_3);
+	  
+		Number REVERSE_FEE_BOUNDARY_1 = MoneyHelper.sub(RANGE_1 , MoneyHelper.mul( RANGE_1, FEE_1 ));
+		Number REVERSE_FEE_BOUNDARY_2 = MoneyHelper.sub( REVERSE_FEE_MULTIPLIER_1 , MoneyHelper.mul( RANGE_1, FEE_1 ) );
+		Number REVERSE_FEE_BOUNDARY_3 = MoneyHelper.sub(RANGE_3, MoneyHelper.sub(REVERSE_FEE_MULTIPLIER_2, MoneyHelper.sub( REVERSE_FEE_MULTIPLIER_1 , MoneyHelper.mul( RANGE_1, FEE_1 ))));
+
+		if ( inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_1.doubleValue() ) {
+			// return calcOwnerFee( inputNum * (1 / (1 - FEE_1)));
+			Number subtract = MoneyHelper.sub(ONE, FEE_1);
+			Number divide = MoneyHelper.div(ONE, subtract);
+			Money multiply = MoneyHelper.mul(input, divide);
+			driverFee = calcOwnerFee(multiply);
+		}
+
+		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_1.doubleValue() && inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_2.doubleValue() ) {
+			// calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + (( input - REVERSE_FEE_BOUNDARY_1 ) * FEE_2 )) / input )));
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_1);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_2);
+			Number multiply2 = MoneyHelper.mul(FEE_1, REVERSE_FEE_BOUNDARY_1);
+			Money addition1 = MoneyHelper.add(multiply1, multiply2);
+			Money divide1= MoneyHelper.div(addition1, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.div(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input, divide2);
+			driverFee = calcOwnerFee(multiply3);
+		}
+
+		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_2.doubleValue() && inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_3.doubleValue() ) {
+			//calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + REVERSE_FEE_MULTIPLIER_1 + (( input - REVERSE_FEE_BOUNDARY_2 ) * FEE_3 )) / input )))
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_2);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_3);
+			Number multiply2 = MoneyHelper.mul(REVERSE_FEE_BOUNDARY_1, FEE_1);
+			Number addition1 = MoneyHelper.add(multiply2 , REVERSE_FEE_MULTIPLIER_1);
+			Money addition2 = MoneyHelper.add(multiply1 , addition1);
+			Money divide1 = MoneyHelper.div(addition2, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.div(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input,divide2);
+			driverFee = calcOwnerFee(multiply3);
+		}
+
+		if (input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY)) >= 0) {
+			//calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + REVERSE_FEE_MULTIPLIER_1 + REVERSE_FEE_MULTIPLIER_2 + (( input - REVERSE_FEE_BOUNDARY_3 ) * FEE_4 )) / input )))
+			
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_3);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_4);
+
+			Number multiply2 = MoneyHelper.mul(REVERSE_FEE_BOUNDARY_1, FEE_1);
+			Number addition1 = MoneyHelper.add(multiply2 , REVERSE_FEE_MULTIPLIER_1);
+			Number addition2 = MoneyHelper.add(addition1 , REVERSE_FEE_MULTIPLIER_2);
+
+			Money addition3 = MoneyHelper.add(multiply1 , addition2);
+			Money divide1 = MoneyHelper.div(addition3, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.sub(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input,divide2);
+			driverFee = calcOwnerFee(multiply3);
+		}
+		return driverFee;
 	}
 	 
 }
