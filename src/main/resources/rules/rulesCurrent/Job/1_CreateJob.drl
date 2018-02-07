@@ -22,45 +22,40 @@ rule "Create Job"
    then 
      rules.header();
      
-     String qwandaServiceUrl = rules.getQwandaServiceUrl();
-     String userCode =  rules.getUser().getCode();
-     rules.println("The user Code is  ::  " +userCode);
-     drools.setFocus("CreateLoad");
+      drools.setFocus("CreateLoad");
      
     /*     Creating new base-entity BEG for Posting new Job      */
-     BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "BEG", rules.getToken()), "Base Entity Group", qwandaServiceUrl, rules.getToken());
-     String jobCode = beg.getCode();
+     BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "Base Entity Group");
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
-     rules.println("The BEG code is   ::  "+jobCode);
+     rules.println("The BEG code is   ::  "+beg.getCode());
    
      /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
-     Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", jobCode, "LNK_CORE", null, (double) 1, rules.getToken());
+     Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", null, (double) 1, rules.getToken());
     
      /*  Creating new base-entity LOAD    */
-     BaseEntity load = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "LOD", rules.getToken()), "LOAD", qwandaServiceUrl, rules.getToken());
-     String loadCode = load.getCode();
+     BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
      
     /*  Add author to the load    */
-      Answer loadAuthorAns = new Answer(rules.getUser().getCode(),loadCode, "PRI_AUTHOR", rules.getUser().getCode() );  
+      Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
       rules.publishData(loadAuthorAns);    	  
     
     
      /*  link newly created LOAD to JOB/BEG    */
-       Link jobLoadLink =  QwandaUtils.createLink(jobCode, loadCode, "LNK_BEG", "LOAD", (double) 1, rules.getToken());
+       Link jobLoadLink =  QwandaUtils.createLink(beg.getCode(), load.getCode(), "LNK_BEG", "LOAD", (double) 1, rules.getToken());
      
      /*  link current user as load-owner to the Job/BEG     */
-        Link jobOwnerLink =  QwandaUtils.createLink(jobCode, userCode, "LNK_BEG", "OWNER", (double) 1, rules.getToken());
+        Link jobOwnerLink =  QwandaUtils.createLink(beg.getCode(), rules.getUser().getCode(), "LNK_BEG", "OWNER", (double) 1, rules.getToken());
         rules.println(" Added Load Owner to BEG/JOB ");
     
      /*    Getting Post Load Question GRP        */
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_LOAD_DETAILS_GRP/"+loadCode, rules.getToken()));
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", rules.getToken());
      rules.println("QName Json: "+qPostLoad.toString());
      rules.getEventBus().publish("cmds",qPostLoad);
      
-     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
+     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+beg.getCode(), rules.getToken()));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", rules.getToken());
      rules.println("QName Json: "+qPostJob.toString());

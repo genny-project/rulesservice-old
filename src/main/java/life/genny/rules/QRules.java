@@ -2057,4 +2057,11 @@ public class QRules {
 //		String json = JsonUtils.toJson(msg);
 			publishCmd(msg, recipientCodes);
 	}
+	
+	public BaseEntity   createBaseEntityByCode(final String userCode, final String bePrefix, final String name) 
+	{
+	    BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
+	    return beg;
+	}
+	 
 }

@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
 /* Rule handling Cancel and Submit Button click in the Create Load  */
-rule "Post Load Cancel/Submit button click"
+rule "Post Job Cancel/Submit button click"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
       rules: QRules()   
@@ -37,7 +37,7 @@ rule "Post Load Cancel/Submit button click"
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
-        System.out.println("The job code is   :: "+jobCode);
+        rules.println("The job code is   :: "+jobCode);
         
        if(actionCode.equalsIgnoreCase("submit")) {       
            
