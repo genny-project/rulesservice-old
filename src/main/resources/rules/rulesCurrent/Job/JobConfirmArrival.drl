@@ -31,9 +31,6 @@ then
 		         rules.publishData(beAnswer);  
 		            
 		    	 	rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
-		    	 	
-		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
-		    	    contextMap.put("JOB", begCode);
 		    	    
 		    	    /* List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(begCode,"LNK_BEG", 0, 20, false) ;
 		  
@@ -64,6 +61,22 @@ then
 			    	    }
 			    	    
 			    		RulesUtils.println(recipientSet); */
+			    		
+			    		/* Sending SMS */
+			    		List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+		     			String driverCode = null;
+		     
+		     			for(Link link : linkList) {
+		     	
+		     				if(link.getLinkValue().equals("DRIVER")) {
+		     				driverCode = link.getTargetCode();
+		     				}
+		    			 }
+		    			 
+			    		HashMap<String, String> contextMap = new HashMap<String, String>();
+		    	    	contextMap.put("JOB", begCode);
+		    	    	contextMap.put("DRIVER", driverCode);
+			    		
 			    		String[] recipients = new String[1];
 			    		recipients[0] = rules.getUser().getCode();
 			    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS");
