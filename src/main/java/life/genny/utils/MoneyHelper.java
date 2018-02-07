@@ -163,5 +163,32 @@ public class MoneyHelper {
 		
 		return result;
 	}
+	
+	
+	/* SPECIAL CASES - ARITHMETIC OPERATIONS - reversed datatype parameters */
+	
+	public static Money sub(Number num, Money money) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(money != null && num != null) {
+			Number numberFromMoney = money.getNumber();
+			Number resultNumber = num.doubleValue() - numberFromMoney.doubleValue();
+			result = Money.of(resultNumber, money.getCurrency());
+		}
+		
+		return result;
+	}
+	
+	public static Money div(Number num, Money money) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(money != null && num != null) {
+			Number numberFromMoney = money.getNumber();
+			Number resultNumber = num.doubleValue() / numberFromMoney.doubleValue();
+			result = Money.of(resultNumber, money.getCurrency());
+		}
+		
+		return result;
+	}
 
 }
