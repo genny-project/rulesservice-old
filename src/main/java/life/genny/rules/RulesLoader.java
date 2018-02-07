@@ -51,12 +51,12 @@ public class RulesLoader {
 	 * @param vertx
 	 * @return
 	 */
-	public static Future<Void> loadInitialRules(final Vertx vertx, final String rulesDir) {
+	public static Future<Void> loadInitialRules(final String rulesDir) {
 		System.out.println("Loading Rules and workflows!!!");
 		final Future<Void> fut = Future.future();
-		vertx.executeBlocking(exec -> {
+		Vertx.currentContext().owner().executeBlocking(exec -> {
 			setKieBaseCache(new HashMap<String, KieBase>()); // clear
-			List<Tuple2<String, String>> rules = processFile(vertx, rulesDir);
+			List<Tuple2<String, String>> rules = processFile(rulesDir);
 			setupKieRules("rules", rules);
 
 			fut.complete();
@@ -66,7 +66,7 @@ public class RulesLoader {
 		return fut;
 	}
 
-	private static List<Tuple2<String, String>> processFile(final Vertx vertx, String inputFileStr) {
+	private static List<Tuple2<String, String>> processFile(String inputFileStr) {
 		File file = new File(inputFileStr);
 		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
 		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
@@ -74,17 +74,17 @@ public class RulesLoader {
 
 		if (!file.isFile()) {
 			if (!fileName.startsWith("XX")) {
-				final List<String> filesList = vertx.fileSystem().readDirBlocking(inputFileStr);
+				final List<String> filesList = Vertx.currentContext().owner().fileSystem().readDirBlocking(inputFileStr);
 
 				for (final String dirFileStr : filesList) {
-					List<Tuple2<String, String>> childRules = processFile(vertx, dirFileStr); // use directory name as
+					List<Tuple2<String, String>> childRules = processFile(dirFileStr); // use directory name as
 																								// rulegroup
 					rules.addAll(childRules);
 				}
 			}
 			return rules;
 		} else {
-			Buffer buf = vertx.fileSystem().readFileBlocking(inputFileStr);
+			Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
 			try {
 				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that start
 																								// with XX

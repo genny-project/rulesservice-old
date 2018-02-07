@@ -21,9 +21,9 @@ public class Cluster {
     System.out.println("error in the cluster: " + error.getMessage());
   };
 
-  public static Future<Void> joinCluster(final Vertx vertx) {
+  public static Future<Void> joinCluster() {
     final Future<Void> fut = Future.future();
-    vertx.rxClusteredVertx(ClusterConfig.configCluster()).subscribe(registerAllChannels,
+    Vertx.currentContext().owner().rxClusteredVertx(ClusterConfig.configCluster()).subscribe(registerAllChannels,
         clusterError);
     fut.complete();
     return fut;

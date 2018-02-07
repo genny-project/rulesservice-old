@@ -68,7 +68,7 @@ public class EBCHandlers {
 			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
 				if ("RELOAD_RULES_FROM_FILES".equals(payload.getString("code"))) {
 					String rulesDir = payload.getString("rulesDir");
-					RulesLoader.loadInitialRules(Vertx.currentContext().owner(), rulesDir);
+					RulesLoader.loadInitialRules( rulesDir);
 				}
 			}
 
@@ -167,7 +167,7 @@ public class EBCHandlers {
 	}
 
 	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
-		Vertx.vertx().executeBlocking(future -> {
+		Vertx.currentContext().owner().executeBlocking(future -> {
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());

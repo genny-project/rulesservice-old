@@ -62,6 +62,7 @@ import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.utils.VertxUtils;
 
 public class QRules {
 
@@ -356,8 +357,9 @@ public class QRules {
 		} else {
 
 	//		if (isNull("BE_" + code.toUpperCase())) {
-				be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
-				set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
+			be = VertxUtils.readFromDDT(code, getToken());
+		//		be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
+		//		set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
 	//		} 
 		//else {
 		//		be = getAsBaseEntity("BE_" + code.toUpperCase());
@@ -406,7 +408,7 @@ public class QRules {
 
 		List<BaseEntity> bes = null;
 
-		if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
+	//	if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
 
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
 					getToken(), parentCode, linkCode);
@@ -415,9 +417,9 @@ public class QRules {
 				set("BES_" + parentCode.toUpperCase() + "_" + linkCode, bes); // WATCH THIS!!!
 			}
 
-		} else {
-			bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
-		}
+	//	} else {
+	//		bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
+	//	}
 
 		return bes;
 	}
@@ -428,15 +430,15 @@ public class QRules {
 		if (getUser().is("PRI_DRIVER")) {
 			RulesUtils.println("Is True");
 		}
-		if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
+	//	if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl,
 					getDecodedTokenMap(), getToken(), parentCode, linkCode, stakeholderCode);
 			if (cache) {
 				set("BES_" + parentCode.toUpperCase() + "_" + linkCode, bes); // WATCH THIS!!!
 			}
-		} else {
-			bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
-		}
+	//	} else {
+	//		bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
+	//	}
 		return bes;
 	}
 

@@ -8,7 +8,7 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Main Init"
 
     when
-        m : QEventMessage( getData().getCode().equals("AUTH_INIT") )
+        m : QEventMessage( "AUTH_INIT".equals(getData().getCode()) )
         rules: QRules(isState("STARTED") &&  (!isState("USER_CHECKED"))) 
      then     
      	rules.header();

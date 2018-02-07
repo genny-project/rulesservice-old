@@ -6,7 +6,7 @@ rule "Pre Init Auth Init"
 	no-loop true
 	ruleflow-group 'Init'
     when
-          m : QEventMessage( getData().getCode().equals("AUTH_INIT") )
+          m : QEventMessage( "AUTH_INIT".equals(getData().getCode())  )
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
