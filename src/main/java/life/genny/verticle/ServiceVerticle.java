@@ -19,13 +19,13 @@ public class ServiceVerticle extends AbstractVerticle {
 	  public void start() {
 	    System.out.println("Loading initial Rules");
 	    final Future<Void> startFuture = Future.future();
-	    Cluster.joinCluster(vertx).compose(res -> {
+	    Cluster.joinCluster().compose(res -> {
 	      final Future<Void> fut = Future.future();
 	      if (rulesDir == null) {
 	    	  	rulesDir = "rules";
 	      }
 			     
-	      RulesLoader.loadInitialRules(vertx,rulesDir).compose(p -> {
+	      RulesLoader.loadInitialRules(rulesDir).compose(p -> {
 	    	  	Routers.routers(vertx);
 	        fut.complete();
 	      }, fut);
