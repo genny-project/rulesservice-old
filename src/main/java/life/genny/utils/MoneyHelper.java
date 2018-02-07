@@ -1,12 +1,13 @@
 package life.genny.utils;
 
+import javax.money.Monetary;
 import org.javamoney.moneta.Money;
 
 public class MoneyHelper {
 	
 	public static final String DEFAULT_CURRENCY = "AUD";
 	
-	/* ARITHMETIC FUNCTIONS FOR INPUTS IN NUMBER FORMAT */
+	/* ARITHMETIC FUNCTIONS FOR INPUTS IN NUMBER DATATYPE */
 	
 	public static Number add(Number num1, Number num2) {
 		
@@ -51,7 +52,7 @@ public class MoneyHelper {
 		
 	}
 	
-	/* ARITHMETIC FUNCTIONS FOR 1 INPUT IN MONEY, 1 INPUT IN NUMBER */
+	/* ARITHMETIC FUNCTIONS FOR 1 INPUT IN MONEY DATATYPE, 1 INPUT IN NUMBER DATATYPE */
 	
 	public static Money add(Money inputMoney, Number number) {
 		
@@ -120,6 +121,44 @@ public class MoneyHelper {
 		if(inputMoney1 != null && inputMoney2 != null) {
 			
 			result = inputMoney1.subtract(inputMoney2);
+		}
+		
+		return result;
+	}
+	
+	public static Money mul(Money inputMoney1, Money inputMoney2) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(inputMoney1 != null && inputMoney2 != null) {
+			
+			Number numberFromMoney = inputMoney2.getNumber();
+			result = inputMoney1.multiply(numberFromMoney);
+		}
+		
+		return result;
+	}
+	
+	public static Money div(Money inputMoney1, Money inputMoney2) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(inputMoney1 != null && inputMoney2 != null) {
+			
+			Number numberFromMoney = inputMoney2.getNumber();
+			result = inputMoney1.divide(numberFromMoney);
+		}
+		
+		return result;
+	}
+	
+	
+	/* BASIC ROUNDING OFF FUNCTION */
+	
+	public static Money round(Money inputMoney) {
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		
+		if(inputMoney != null) {
+			
+			result = inputMoney.with(Monetary.getDefaultRounding());
 		}
 		
 		return result;
