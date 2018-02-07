@@ -1134,7 +1134,7 @@ public class QRules {
 		JsonObject selectionList;
 		try {
 		
-			selectionList = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
+			selectionList = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys2/"
 					+ selectionRootCode + "/linkcodes/" + linkCode +"/linkValue/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()));
 			
 			selectionList.put("token", getToken());
