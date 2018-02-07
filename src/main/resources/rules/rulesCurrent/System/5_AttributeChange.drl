@@ -18,7 +18,7 @@ ruleflow-group 'AttributeChange'
      then    
       	rules.header();
  
-        rules.publishData(new QDataAnswerMessage($m.getAnswer()));
+       /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
      	rules.publishBE($m.getBe());
    	    rules.footer();
   
