@@ -2070,7 +2070,7 @@ public class QRules {
 		recipientCodes[0] = be.getCode();
 		publishBE(be,recipientCodes);
 	}
-	public void publishBE(final BaseEntity be,String[] recipientCodes)
+	public void publishBE(final BaseEntity be, String[] recipientCodes)
 	{
 		System.out.println(be);
 		BaseEntity[]  itemArray = new BaseEntity[1];
