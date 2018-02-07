@@ -1280,7 +1280,7 @@ public class QRules {
 					}
 
 					/* Store latitude */
-					String newAttCode = attributeCode.replace("JSON", "LATITUDE");
+					String newAttCode = attributeCode.replace("JSON", "LAT");
 					answer.setAttributeCode(newAttCode);
 					Double latitude = addressDataJson.getDouble("latitude");
 					System.out.println(" The latitude value after conversion is  :: " + latitude);
@@ -1296,7 +1296,7 @@ public class QRules {
 					}
 
 					/* Store longitude */
-					newAttCode = attributeCode.replace("JSON", "LONGITUDE");
+					newAttCode = attributeCode.replace("JSON", "LON");
 					answer.setAttributeCode(newAttCode);
 					Double longitude = addressDataJson.getDouble("longitude");
 					System.out.println(" The longitude value after conversion is  :: " + longitude);
