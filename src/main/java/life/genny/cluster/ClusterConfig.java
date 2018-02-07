@@ -63,7 +63,7 @@ public class ClusterConfig {
       options.setEventBusOptions(configEBCluster());
       options.setClustered(true);
     } else {
-      logger.info("Running DEV mode, no cluster");
+      logger.info("Running DEV mode,");
       ClusterManager mgr = null;
       final Config hazelcastConfig = new Config();
       hazelcastConfig.getGroupConfig().setName( hostIP ).setPassword( "app1-pass" );

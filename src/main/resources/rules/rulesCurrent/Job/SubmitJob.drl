@@ -8,6 +8,7 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.Answer;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.rules.RulesUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
@@ -21,18 +22,14 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
 /* Rule handling Cancel and Submit Button click in the Create Load  */
-rule "Post Load Cancel/Submit button click"
+rule "Post Job Cancel/Submit button click"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
       rules: QRules()   
     then
          rules.setDrools(drools);
          rules.header();  
-         String qwandaServiceUrl = rules.getQwandaServiceUrl();
-         String tokenString = rules.getToken();      
-         String userCode =  rules.getUser().getCode();
-         System.out.println("The user Code is  ::  " +userCode);
-         
+           
         /* rules.showLoading("Creating your new load..."); */
                 
        /*  Get data.value and decode    */
@@ -40,7 +37,7 @@ rule "Post Load Cancel/Submit button click"
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
         String actionCode = dataJson.getString("action"); 
-        System.out.println("The job code is   :: "+jobCode);
+        rules.println("The job code is   :: "+jobCode);
         
        if(actionCode.equalsIgnoreCase("submit")) {       
            
@@ -62,27 +59,30 @@ rule "Post Load Cancel/Submit button click"
        	 rules.publishData(offerCountAns); 
 	    
           /*     Moving the BEG      */
-           JsonObject begEntity = new JsonObject();
-           begEntity.put("sourceCode","GRP_DRAFTS");
-           begEntity.put("targetCode",jobCode);
-           begEntity.put("attributeCode","LNK_CORE");
- 	       String output = QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", begEntity.toString(), tokenString);
+            Link link = new Link("GRP_DRAFTS",jobCode,"LNK_CORE");
+ 	       String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), rules.getToken()); 	       
+ 	       
  	      /*    Send newly created job with its attributes   */        
-           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", tokenString));
-           newJobDetails.put("token", tokenString);
-           System.out.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-           rules.getEventBus().publish("cmds", newJobDetails); 
+           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
+           rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
+           rules.publishCmd(newJobDetails); 
+           
           /* Get the sourceCode(Company code) for this User */
             BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+         
          /*     link newly created Job to GRP_LOADS   */
            String loadCode =  QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", "LNK_BEG", jobCode , "LOAD", false, rules.getToken());
            Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, rules.getToken());
-           System.out.println("The load has been added to the GRP_LOADS ");
+           rules.println("The load has been added to the GRP_LOADS ");
+         
          /*    Calling the rule group : BucketView     */
           drools.setFocus("SendLayoutsAndData"); 
-      }else if(actionCode.equalsIgnoreCase("cancel")){
+      }
+      else if(actionCode.equalsIgnoreCase("cancel")){
+      
        /*  String status =  rules.removeLink("GRP_DRAFTS", jobCode, "LNK_CORE");
-        System.out.println("Status after removing link  :: " +status);   */
+        rules.println("Status after removing link  :: " +status);   */
+       
        /*    Calling the rule group : BucketView     */
          drools.setFocus("SendLayoutsAndData");       
       }

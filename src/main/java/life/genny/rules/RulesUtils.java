@@ -38,6 +38,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.utils.VertxUtils;
 
 public class RulesUtils {
 
@@ -126,7 +127,11 @@ public class RulesUtils {
 		
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if(host == null) {
-			host = "http://localhost:2223";
+			if (System.getenv("HOSTIP") == null) {
+				host = "http://localhost:2223";
+			} else {
+				host = "http://"+System.getenv("HOSTIP")+":2223";
+			}
 		}
 		
 		if(activateCache == false) {
@@ -179,14 +184,15 @@ public class RulesUtils {
 	public static BaseEntity getUser(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token) {
 
-		try {
+//		try {
 			String beJson = null;
 			String username = (String) decodedToken.get("preferred_username");
 			String uname = QwandaUtils.getNormalisedUsername(username);
 			String code = "PER_" + uname.toUpperCase();
 			// CHEAT TODO
-			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code, token);
-			BaseEntity be = JsonUtils.fromJson(beJson, BaseEntity.class);
+			BaseEntity be = VertxUtils.readFromDDT(code, token);
+//			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code, token);
+//			BaseEntity be = JsonUtils.fromJson(beJson, BaseEntity.class);
 
 //			if (username != null) {
 //				beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" + username+"&pageSize=1", token);
@@ -203,10 +209,10 @@ public class RulesUtils {
 
 			return be;
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+	//	return null;
 
 	}
 
@@ -328,8 +334,10 @@ public class RulesUtils {
 	public static BaseEntity getBaseEntityByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String code) {
 
-			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, true);
-			BaseEntity be = fromJson(beJson, BaseEntity.class);
+//			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, true);
+//			BaseEntity be = fromJson(beJson, BaseEntity.class);
+			
+			BaseEntity be  = VertxUtils.readFromDDT(code, token);
 			
 			return be;
 	}
@@ -344,9 +352,11 @@ public class RulesUtils {
 	public static BaseEntity getBaseEntityByCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String code, Boolean includeAttributes) {
 
-			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, includeAttributes);
-			BaseEntity be = fromJson(beJson, BaseEntity.class);
-			
+//			String beJson = getBaseEntityJsonByCode(qwandaServiceUrl, decodedToken, token, code, includeAttributes);
+//			BaseEntity be = fromJson(beJson, BaseEntity.class);
+		
+			BaseEntity be  = VertxUtils.readFromDDT(code, token);
+
 			return be;
 	}
 	
@@ -552,5 +562,7 @@ public class RulesUtils {
 //			return arrayList;
 			return linkList;
 	}
+	
+	
 	
 }

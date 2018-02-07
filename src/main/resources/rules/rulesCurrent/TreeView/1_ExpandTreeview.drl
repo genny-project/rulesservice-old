@@ -9,7 +9,7 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Expand TreeView Item"
 
     when
-        m : QEventMessage( getData().getCode().equals("TV_EXPAND") )
+        m : QEventMessage( "TV_EXPAND".equals(getData().getCode()) )
         rules: QRules( ) 
      then
      	
