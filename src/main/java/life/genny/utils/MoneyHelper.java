@@ -1,8 +1,12 @@
 package life.genny.utils;
 
+import org.javamoney.moneta.Money;
+
 public class MoneyHelper {
 	
-	public static Number addNumbers(Number num1, Number num2) {
+	public static final String DEFAULT_CURRENCY = "AUD";
+	
+	public static Number add(Number num1, Number num2) {
 		
 		Number result = 0;
 		if(num1 != null && num2 != null) {
@@ -12,7 +16,7 @@ public class MoneyHelper {
 		return result;
 	}
 	
-	public static Number subtractNumber(Number num1, Number num2) {
+	public static Number sub(Number num1, Number num2) {
 		
 		Number result = 0;
 		if(num1 != null && num2 != null) {
@@ -23,7 +27,7 @@ public class MoneyHelper {
 		
 	}
 	
-	public static Number nultiplyNumber(Number num1, Number num2) {
+	public static Number mul(Number num1, Number num2) {
 		
 		Number result = 0;
 		if(num1 != null && num2 != null) {
@@ -34,7 +38,7 @@ public class MoneyHelper {
 		
 	}
 	
-	public static Number divideNumber(Number num1, Number num2) {
+	public static Number div(Number num1, Number num2) {
 		
 		Number result = 0;
 		if(num1 != null && num2 != null) {
@@ -43,6 +47,18 @@ public class MoneyHelper {
 		
 		return result;
 		
+	}
+	
+	public static Money add(Money inputMoney, Number number) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(inputMoney != null && number != null) {
+			Number numberFromMoney = inputMoney.getNumber();
+			Number resultNumber = add(number, numberFromMoney);
+			result = Money.of(resultNumber, inputMoney.getCurrency());
+		}
+		
+		return result;
 	}
 
 }
