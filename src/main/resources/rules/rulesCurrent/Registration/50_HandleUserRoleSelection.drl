@@ -79,7 +79,7 @@ rule "Save user role to the link with its Company"
         Link updateLink = new Link( companyCode, userCode, "LNK_STAFF", roleValue, (double) 1);
         String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
         
-        rules.publishEA($m.getEa());
+        rules.publishBE($m.getBe());
        rules.footer();  
 
 end

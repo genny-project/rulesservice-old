@@ -2057,9 +2057,22 @@ public class QRules {
 		String dateString = df.format(currentDate);
 		return dateString;
 	}
-	
-	public void publishEA(final EntityAttribute ea)
+
+	public void publishBE(final BaseEntity be)
 	{
-		System.out.println(ea);
+		String[] recipientCodes = new String[1];
+		recipientCodes[0] = be.getCode();
+		publishBE(be,recipientCodes);
+	}
+	public void publishBE(final BaseEntity be,String[] recipientCodes)
+	{
+		System.out.println(be);
+		BaseEntity[]  itemArray = new BaseEntity[1];
+		itemArray[0] = be;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null,
+			      null);
+		msg.setRecipientCodeArray(recipientCodes);
+//		String json = JsonUtils.toJson(msg);
+			publishCmd(msg, recipientCodes);
 	}
 }
