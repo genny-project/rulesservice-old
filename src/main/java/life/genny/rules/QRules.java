@@ -334,6 +334,12 @@ public class QRules {
 		}
 
 	}
+	
+	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode, final String newValue) {
+		
+		Answer newAnswer = new Answer(sourceCode, beCode, attributeCode, newValue);
+		saveAnswer(newAnswer);
+	}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;

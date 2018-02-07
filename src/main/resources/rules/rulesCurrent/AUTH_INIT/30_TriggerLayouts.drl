@@ -14,9 +14,9 @@ rule "Trigger Layouts"
                          (!isState("NEW_USER_CREATED"))  &&
                          (!isState("TRIGGER_LAYOUTS")) )
      then
+     
      	rules.println("TRIGGER LAYOUTS");
      	rules.setState("TRIGGER_LAYOUTS");
   		drools.setFocus("SendLayoutsAndData");
-		
-	      		      
+	
 end
