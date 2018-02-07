@@ -113,5 +113,16 @@ public class MoneyHelper {
 		
 		return result;
 	}
+	
+	public static Money sub(Money inputMoney1, Money inputMoney2) {
+		
+		Money result = Money.of(0, DEFAULT_CURRENCY);
+		if(inputMoney1 != null && inputMoney2 != null) {
+			
+			result = inputMoney1.subtract(inputMoney2);
+		}
+		
+		return result;
+	}
 
 }
