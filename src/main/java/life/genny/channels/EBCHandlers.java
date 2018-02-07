@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
+
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -25,6 +25,8 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
@@ -44,8 +46,10 @@ import life.genny.rules.RulesLoader;
 
 public class EBCHandlers {
 
-	protected static final Logger log = org.apache.logging.log4j.LogManager
-			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+//	protected static final Logger log = org.apache.logging.log4j.LogManager
+//			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	
+	static Logger log = LoggerFactory.getLogger(EBCHandlers.class);
 
 	static Map<String, Object> decodedToken = null;
 	static Set<String> userRoles = null;
@@ -82,7 +86,12 @@ public class EBCHandlers {
 			} else if (payload.getString("event_type").equals("EVT_LINK_CHANGE")) {
 				eventMsg = JsonUtils.fromJson(payload.toString(), QEventLinkChangeMessage.class);
 			} else {
-				eventMsg = JsonUtils.fromJson(payload.toString(), QEventMessage.class);
+				try {
+					eventMsg = JsonUtils.fromJson(payload.toString(), QEventMessage.class);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			processMsg("Event:"+payload.getString("event_type"), eventMsg, eventBus, payload.getString("token"));
 
