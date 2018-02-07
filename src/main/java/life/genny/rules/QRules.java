@@ -1216,6 +1216,11 @@ public class QRules {
 		println(m);
 	}
 
+	public static void main(String...strings) {
+		String st = "{\"street_address\":\"121 Cardigan Street\",\"suburb\":\"Carlton\",\"state\":\"VIC\",\"postal_code\":\"3053\",\"country\":\"AU\",\"full_address\":\"121 Cardigan St, Carlton VIC 3053, Australia\",\"latitude\":-37.8036366,\"longitude\":144.9646391}";
+		JsonObject addressDataJson = new JsonObject(st);
+		System.out.println(addressDataJson.getString("full_address"));
+	}
 	public void processAddressAnswers(QDataAnswerMessage m) {
 
 		// Put this in to stop bad User null error.... TODO
@@ -1241,9 +1246,11 @@ public class QRules {
 				System.out.println("value ::" + value + "attribute code ::" + attributeCode);
 
 				/* if this answer is actually an address another rule will be triggered */
-				if (attributeCode.contains("ADDRESS_FULL")) {
+				if (attributeCode.contains("ADDRESS_JSON")) {
 
 					JsonObject addressDataJson = new JsonObject(value);
+					
+					System.out.println("The Address Json is  :: "+addressDataJson);
 
 					Map<String, String> availableKeys = new HashMap<String, String>();
 					availableKeys.put("full_address", "FULL");
@@ -1261,7 +1268,7 @@ public class QRules {
 
 						if (addressDataJson.containsKey(key)) {
 
-							String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+							String newAttributeCode = attributeCode.replace("JSON", valueEntry);
 							answer.setAttributeCode(newAttributeCode);
 							answer.setValue(addressDataJson.getString(key));
 							String jsonAnswer = RulesUtils.toJson(answer);
@@ -1273,7 +1280,7 @@ public class QRules {
 					}
 
 					/* Store latitude */
-					String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+					String newAttCode = attributeCode.replace("JSON", "LATITUDE");
 					answer.setAttributeCode(newAttCode);
 					Double latitude = addressDataJson.getDouble("latitude");
 					System.out.println(" The latitude value after conversion is  :: " + latitude);
@@ -1289,7 +1296,7 @@ public class QRules {
 					}
 
 					/* Store longitude */
-					newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+					newAttCode = attributeCode.replace("JSON", "LONGITUDE");
 					answer.setAttributeCode(newAttCode);
 					Double longitude = addressDataJson.getDouble("longitude");
 					System.out.println(" The longitude value after conversion is  :: " + longitude);
