@@ -39,7 +39,7 @@ rule "Create Job"
    if(true){
      /*  Creating new base-entity LOAD    */
      BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
-     publishBE(load);
+     rules.publishBE(load);
      
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
