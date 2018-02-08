@@ -43,10 +43,10 @@ rule "Send Ch40 BucketData To Frontend"
     		
      		}
  
-    			if (user.is("PRI_OWNER")) {
+    		/*	if (user.is("PRI_OWNER")) { */
      			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    begs.addAll(ownerbegs);
-     		}
+     		    begs.addAll(ownerbegs); 
+     	/*	} */
  			rules.println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
      		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
      		 
