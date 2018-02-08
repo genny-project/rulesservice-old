@@ -7,7 +7,6 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Is Logged In"
 
-
     when
 
         rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
@@ -21,11 +20,14 @@ rule "Is Logged In"
         rules.println("User "+user+" LOGGED IN"); 
 
   		rules.clearState("NO_USER");
+  		
+  		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
- 
+        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
+        
 		drools.setFocus("payments"); 
 		
-   	drools.setFocus("SendAliases");
+		drools.setFocus("SendAliases");
 		
 	    rules.footer();     		      
 end
