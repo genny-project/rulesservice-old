@@ -19,7 +19,7 @@ rule "Assembly user updation for attribute change - first name"
 		RulesUtils.header(drools.getRule().getName());
         
         String userName = rules.getAsString("preferred_username");
-     	String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken());
+     	String userCode = rules.getUser().getCode();  /* QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken()); */
      	String tokenString = rules.getToken();
         
         /* get assembly authKey   */
