@@ -1364,15 +1364,16 @@ public class QRules {
 	
 	public void processChat(QEventMessage m)
 	{
+		
 		String data = m.getData().getValue();
 		JsonObject dataJson = new JsonObject(data);
-		    String text = dataJson.getString("value");
-		    String chatCode = dataJson.getString("itemCode");
+		String text = dataJson.getString("value");
+		String chatCode = dataJson.getString("itemCode");
 		    
-		    if(text != null && chatCode != null) {
+		if(text != null && chatCode != null) {
 	            	
-		    		/* creating new message */
-		    		BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(getUser().getCode() , null, "MSG", getToken()), "message", getQwandaServiceUrl(), getToken());
+			/* creating new message */
+			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(getUser().getCode() , null, "MSG", getToken()), "message", getQwandaServiceUrl(), getToken());
     			if(newMessage != null) {  		    			
 		    				
     				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
@@ -1384,35 +1385,13 @@ public class QRules {
 	    				counter += 1;
 	    			}
 	    			
- 	    			publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray);
-
-		    			QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken()); 
-	    			
-		    			Answer textMessage = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-	    			Answer creator = new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode());
-	    			Answer items[] = new Answer[2];
-	    			items[0] = textMessage;
-	    			items[1] = creator;
-	    			
-	    			QDataAnswerMessage msg = new QDataAnswerMessage(items);
-	    			msg.setRecipientCodeArray(recipientCodeArray);
-	    			msg.setToken(getToken()); 
-
-	    			String jsonAnswer = JsonUtils.toJson(msg);
-	    			try {
-						QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, getToken());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} 
-	    			
-	    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), textMessage); */
-	    			/* QwandaUtils.postAnswer(rules.getQwandaServiceUrl(), rules.getToken(), creator); */
-		    			
-	       	 	publishData(msg);	    			
-		    		}
-		    }
+ 	    			/*publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray); */
+ 	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
+ 	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode());
+		    		QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken()); 
+    			}
 		}
+	}
 
 	public void processAnswerRating(QDataAnswerMessage m, final String finalAttributeCode) {
 		

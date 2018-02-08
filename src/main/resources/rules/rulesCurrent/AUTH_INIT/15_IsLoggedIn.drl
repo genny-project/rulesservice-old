@@ -23,7 +23,7 @@ rule "Is Logged In"
   		
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
-        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "true");
+        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
         
 		drools.setFocus("payments"); 
 		

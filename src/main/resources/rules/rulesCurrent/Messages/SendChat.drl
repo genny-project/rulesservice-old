@@ -72,9 +72,8 @@ rule "Send Chat Message"
 		
   		if(data != null) {
   			
-  		rules.processChat(m);
-  		
-  		rules.setState("SENT_CHAT");
+  			rules.processChat(m);
+  			rules.setState("SENT_CHAT");
   		}
      	
      	rules.footer();
