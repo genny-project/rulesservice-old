@@ -24,7 +24,7 @@ public class FeeCalculationTest {
 	
 	@Test
 	public void ownerTest() {
-		Money ownerPrice = Money.of(800, DEFAULT_CURRENCY_AUD);
+		Money ownerPrice = Money.of(15000, DEFAULT_CURRENCY_AUD);
 		
 		Money ownerFeeExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 		Money ownerFeeIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
@@ -50,7 +50,7 @@ public class FeeCalculationTest {
 		System.out.println("-------------------------------------------");
 		System.out.println("FEES");
 		System.out.println("ownerFeeExcGST  ::  "+ String.valueOf(ownerFeeExcGST.getNumber().doubleValue()));	
-		System.out.println("ownerFeeIncGST  ::  "+ownerFeeIncGST);
+		System.out.println("ownerFeeIncGST  ::  "+ownerFeeIncGST.getNumber().doubleValue());
 		System.out.println("\n");
 	
 		System.out.println("PRICES");
@@ -63,7 +63,7 @@ public class FeeCalculationTest {
 	
 	//@Test
 	public void driverTest() {
-		Money driverPrice = Money.of(1250, DEFAULT_CURRENCY_AUD);
+		Money driverPrice = Money.of(5500, DEFAULT_CURRENCY_AUD);
 		
 		Money driverFeeExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 		Money driverFeeIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
@@ -89,16 +89,16 @@ public class FeeCalculationTest {
 		System.out.println("DRIVER");
 		System.out.println("-------------------------------------------");
 		System.out.println("FEES");
-		System.out.println("driverFeeExcGST  ::  "+Money.of(driverFeeExcGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));	
-		System.out.println("driverFeeIncGST  ::  "+Money.of(driverFeeIncGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
+		System.out.println("driverFeeExcGST  ::  "+driverFeeExcGST.getNumber().doubleValue() );	
+		System.out.println("driverFeeIncGST  ::  "+driverFeeIncGST.getNumber().doubleValue() );
 		System.out.println("\n");
 	
 		System.out.println("PRICES");
-		System.out.println("driverPrice         ::  "+Money.of(driverPrice.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
-		System.out.println("ownerPriceExcGST   ::  "+Money.of(ownerPriceExcGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
-		System.out.println("ownerPriceIncGST   ::  "+Money.of(ownerPriceIncGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
-		System.out.println("driverPriceExcGST  ::  "+Money.of(driverPriceExcGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
-		System.out.println("driverPriceIncGST  ::  "+Money.of(driverPriceIncGST.getNumber().doubleValue(), DEFAULT_CURRENCY_AUD));
+		System.out.println("driverPrice         ::  "+driverPrice.getNumber().doubleValue() );
+		System.out.println("ownerPriceExcGST   ::  "+ownerPriceExcGST.getNumber().doubleValue() );
+		System.out.println("ownerPriceIncGST   ::  "+ownerPriceIncGST.getNumber().doubleValue() );
+		System.out.println("driverPriceExcGST  ::  "+driverPriceExcGST.getNumber().doubleValue() );
+		System.out.println("driverPriceIncGST  ::  "+driverPriceIncGST.getNumber().doubleValue() );
 	}
 
 }
