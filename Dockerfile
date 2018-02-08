@@ -6,14 +6,12 @@ RUN apk update \
  && apk add --no-cache 
 RUN apk update && apk add jq && apk add bash
 
-ADD target/rulesservice-0.0.1-SNAPSHOT-fat.jar /service.jar
 #ADD cluster.xml /cluster.xml
 
 RUN mkdir /realm
 RUN mkdir /rules
 ADD realm /opt/realm
 ADD docker-entrypoint.sh /docker-entrypoint.sh
-ADD src/main/resources/rules /rules
 
 WORKDIR /
 
@@ -31,3 +29,5 @@ HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD curl -f / http://localho
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 
+ADD target/rulesservice-0.0.1-SNAPSHOT-fat.jar /service.jar
+ADD src/main/resources/rules /rules
