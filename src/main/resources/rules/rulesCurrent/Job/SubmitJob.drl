@@ -71,7 +71,8 @@ rule "Post Job Cancel/Submit button click"
             BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
          
          /*     link newly created Job to GRP_LOADS   */
-           String loadCode =  QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", "LNK_BEG", jobCode , "LOAD", false, rules.getToken());
+          BaseEntity load = rules.getChildren(jobCode, "LNK_BEG", "LOAD");
+           String loadCode = load.getCode();  
            Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, rules.getToken());
            rules.println("The load has been added to the GRP_LOADS ");
          
