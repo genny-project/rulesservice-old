@@ -24,6 +24,7 @@ rule "Create Job"
      
     /*   Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "Base Entity Group");
+     rules.publishBE(beg);
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
      rules.println("The BEG code is   ::  "+beg.getCode());
    
@@ -35,13 +36,14 @@ rule "Create Job"
         Link jobOwnerLink =  QwandaUtils.createLink(beg.getCode(), rules.getUser().getCode(), "LNK_BEG", "OWNER", (double) 1, rules.getToken());
         rules.println(" Added Load Owner to BEG/JOB ");
           
-   if(false){
+   if(true){
      /*  Creating new base-entity LOAD    */
      BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
+     publishBE(load);
      
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
-      rules.publishData(loadAuthorAns);    	  
+      rules.saveAnswer(loadAuthorAns);    	  
     
     
      /*  link newly created LOAD to JOB/BEG    */
@@ -52,16 +54,17 @@ rule "Create Job"
        /*  Adding Offer Count to 0   */
        	  Answer offerCountAns = new Answer(rules.getUser().getCode(),beg.getCode(), "PRI_OFFER_COUNT", "0" ); 	  
         /* Publish Answer   */
-       	 rules.publishData(offerCountAns); 
+       	 rules.saveAnswer(offerCountAns); 
 	    
          /*     Moving the BEG      */
-            Link link = new Link("GRP_DRAFTS",beg.getCode(),"LNK_CORE");
- 	       String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), rules.getToken()); 	       
+    /*        Link link = new Link("GRP_DRAFTS",beg.getCode(),"LNK_CORE");
+ 	       String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), rules.getToken()); 	       */
  	       
- 	      /*    Send newly created job with its attributes   */        
-           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+beg.getCode()+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
+ 	      /*    Send newly created job with its attributes   */   
+ 	      BaseEntity job = rules.getBaseEntityByCode(beg.getCode());     
+      /*     JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+beg.getCode()+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
            rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-           rules.publishCmd(newJobDetails); 
+           rules.publishCmd(newJobDetails); */
            
           /* Get the sourceCode(Company code) for this User */
             BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
