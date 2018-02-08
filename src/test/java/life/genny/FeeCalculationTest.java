@@ -63,7 +63,7 @@ public class FeeCalculationTest {
 	
 	//@Test
 	public void driverTest() {
-		Money driverPrice = Money.of(1234.562323, DEFAULT_CURRENCY_AUD);
+		Money driverPrice = Money.of(1250, DEFAULT_CURRENCY_AUD);
 		
 		Money driverFeeExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 		Money driverFeeIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
