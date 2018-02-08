@@ -36,11 +36,9 @@ rule "Create Payment Item"
 		if(itemId != null && assemblyId!= null) {
 				
 			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
-	        PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), itemIdAnswer, rules.getToken());	   
-	        
-	        /* Saving Assembly authentication tokens as user attributes */
-	        	PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
-	        	rules.askQuestionFormViewPublish(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
+	        PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), itemIdAnswer, rules.getToken());	    
+	   
+	        rules.askQuestionFormViewPublish(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		
 		rules.footer();			
