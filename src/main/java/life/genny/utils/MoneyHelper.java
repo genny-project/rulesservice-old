@@ -71,7 +71,7 @@ public class MoneyHelper {
 		Money result = Money.of(0, DEFAULT_CURRENCY);
 		if(inputMoney != null && number != null) {
 			Number numberFromMoney = inputMoney.getNumber();
-			Number resultNumber = sub(number, numberFromMoney);
+			Number resultNumber = sub(numberFromMoney, number);
 			result = Money.of(resultNumber, inputMoney.getCurrency());
 		}
 		
