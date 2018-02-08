@@ -995,6 +995,29 @@ public class QRules {
 
 		return null;
 	}
+	
+	 /*
+	  * Get children of the source code with the linkcode and linkValue
+	  */
+	 public BaseEntity getChildren(final String sourceCode, final String linkCode, final String linkValue) {
+		 
+		 try {
+				String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
+						+ "/linkcodes/" + linkCode + "/children/"+linkValue, getToken());
+				Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+				if (linkArray.length > 0) {
+					ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
+					Link first = arrayList.get(0);
+					RulesUtils.println("The Child BaseEnity code is   ::  " + first.getTargetCode());
+					return RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), first.getTargetCode(), false);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return null;
+	 }
+	
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
 		List<Link> links = RulesUtils.getLinks(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), parentCode,
