@@ -471,9 +471,9 @@ public class QRules {
 			// newLink.put("data_type", "LINK_CHANGE");
 			// newLink.put("items", updatedLink);
 			// newLink.put("token", getToken() );
-			// System.out.println("-----------------------------------");
-			// System.out.println("Updated Link : "+newLink.toString());
-			// System.out.println("-----------------------------------");
+			// println("-----------------------------------");
+			// println("Updated Link : "+newLink.toString());
+			// println("-----------------------------------");
 			// getEventBus().publish("cmds", newLink);
 
 		} catch (IOException e) {
@@ -1224,11 +1224,6 @@ public class QRules {
 		println(m);
 	}
 
-	public static void main(String...strings) {
-		String st = "{\"street_address\":\"121 Cardigan Street\",\"suburb\":\"Carlton\",\"state\":\"VIC\",\"postal_code\":\"3053\",\"country\":\"AU\",\"full_address\":\"121 Cardigan St, Carlton VIC 3053, Australia\",\"latitude\":-37.8036366,\"longitude\":144.9646391}";
-		JsonObject addressDataJson = new JsonObject(st);
-		System.out.println(addressDataJson.getString("full_address"));
-	}
 	public void processAddressAnswers(QDataAnswerMessage m) {
 
 		// Put this in to stop bad User null error.... TODO
@@ -1251,14 +1246,14 @@ public class QRules {
 				String attributeCode = answer.getAttributeCode();
 				String value = answer.getValue();
 
-				System.out.println("value ::" + value + "attribute code ::" + attributeCode);
+				println("value ::" + value + "attribute code ::" + attributeCode);
 
 				/* if this answer is actually an address another rule will be triggered */
 				if (attributeCode.contains("ADDRESS_JSON")) {
 
 					JsonObject addressDataJson = new JsonObject(value);
 					
-					System.out.println("The Address Json is  :: "+addressDataJson);
+					println("The Address Json is  :: "+addressDataJson);
 
 					Map<String, String> availableKeys = new HashMap<String, String>();
 					availableKeys.put("full_address", "FULL");
@@ -1291,23 +1286,23 @@ public class QRules {
 					String newAttCode = attributeCode.replace("JSON", "LATITUDE");
 					answer.setAttributeCode(newAttCode);
 					Double latitude = addressDataJson.getDouble("latitude");
-					System.out.println(" The latitude value after conversion is  :: " + latitude);
+					println(" The latitude value after conversion is  :: " + latitude);
 
 					if (latitude != null) {
 						answer.setValue(Double.toString(latitude));
 						String jsonAnswer = RulesUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-						System.out.println("The answer object for latitude attribute is  :: " + answerObj.toString());
+						println("The answer object for latitude attribute is  :: " + answerObj.toString());
 						newAnswers[i] = answerObj;
 						i++;
-						System.out.println("The answer object for latitude attribute added to Answer array ");
+						println("The answer object for latitude attribute added to Answer array ");
 					}
 
 					/* Store longitude */
 					newAttCode = attributeCode.replace("JSON", "LONGITUDE");
 					answer.setAttributeCode(newAttCode);
 					Double longitude = addressDataJson.getDouble("longitude");
-					System.out.println(" The longitude value after conversion is  :: " + longitude);
+					println(" The longitude value after conversion is  :: " + longitude);
 
 					if (longitude != null) {
 						answer.setValue(Double.toString(longitude));
@@ -1323,16 +1318,16 @@ public class QRules {
 							list.add(s);
 					}
 
-					System.out.println("---------------------------");
-					System.out.println(list);
+					println("---------------------------");
+				//	println(list);
 					newAnswers = list.toArray(new Answer[list.size()]);
 
-					System.out.println(newAnswers);
+					println(newAnswers);
 
 					/* set new answers */
 					m.setItems(newAnswers);
 					String json = RulesUtils.toJson(m);
-					System.out.println("updated answer json string ::" + json);
+					println("updated answer json string ::" + json);
 
 					/* send new answers to api */
 					/* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken()); */
@@ -1515,7 +1510,7 @@ public class QRules {
 
 			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
-			System.out.println("QDataAskMessage for payments question group ::" + msg);
+			println("QDataAskMessage for payments question group ::" + msg);
 
 			msg.setToken(getToken());
 			publish("cmds", RulesUtils.toJsonObject(msg));
@@ -1954,12 +1949,12 @@ public class QRules {
 	 * Gets all the attributes and Publishes to the DATA channel
 	 */
 	public void sendAllAttributes() {
-		System.out.println("Sending all the attributes");
+		println("Sending all the attributes");
 		try {
 			 String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/attributes", getToken());
 			 QDataAttributeMessage msg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
 			 publishData(msg);
-			 System.out.println("All the attributes sent");
+			 println("All the attributes sent");
 			 
 		} catch(Exception e) {
 			e.printStackTrace();	
@@ -1973,11 +1968,11 @@ public class QRules {
 		 BaseEntity be = getBaseEntityByCode(beCode);
 	        println("The load is ::"+be );
 	        Set<EntityAttribute> eaSet =  be.getBaseEntityAttributes();
-	        System.out.println("The set of attributes are  :: " +eaSet);
+	        println("The set of attributes are  :: " +eaSet);
 	        Map<String, String> attributeValueMap = new HashMap<String, String>();
 	        for(EntityAttribute ea : eaSet){
 	        	   String attributeCode = ea.getAttributeCode();
-	        	   System.out.println("The attribute code  is  :: " +attributeCode);
+	        	   println("The attribute code  is  :: " +attributeCode);
 	           String value =ea.getAsLoopString();
 	           attributeValueMap.put(attributeCode, value);
 	        }
@@ -1989,10 +1984,10 @@ public class QRules {
 	{
         Answer newAnswer = msg.getAnswer();
         BaseEntity load = getBaseEntityByCode(newAnswer.getSourceCode());
-        System.out.println("The laod value is "+load.toString());
+        println("The laod value is "+load.toString());
      
         RulesUtils.println(" Load Baseentity Upodated  " );
-        System.out.println("The updated laod name after PUT is "+load.getName());
+        println("The updated laod name after PUT is "+load.getName());
         RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
         RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
         RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
@@ -2033,7 +2028,7 @@ public class QRules {
 	}
 	public void publishBE(final BaseEntity be, String[] recipientCodes)
 	{
-		System.out.println(be);
+		println(be);
 		BaseEntity[]  itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null,

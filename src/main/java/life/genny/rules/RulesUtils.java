@@ -268,7 +268,7 @@ public class RulesUtils {
 		try {
 			String beJson = null;
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/test2?pageSize=1&" + attributeCode+"="+value, token);
-			println("BE"+beJson);
+		//	println("BE"+beJson);
 			return beJson;
 
 		} catch (IOException e) {
