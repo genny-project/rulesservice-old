@@ -62,6 +62,7 @@ import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 
 public class QRules {
@@ -1631,7 +1632,8 @@ public class QRules {
 			gstPrice = price.add(priceToBeIncluded);
 		}
 
-		return gstPrice;
+		return Money.of(gstPrice.getNumber().doubleValue(), price.getCurrency());
+		//return gstPrice;
 
 	}
 	
@@ -1659,250 +1661,6 @@ public class QRules {
 			states+=key+":";
 		}
 		return states;
-	}
-
-	public BigDecimal calcOwnerFee( BigDecimal input ) {
-		BigDecimal RANGE_1 = new BigDecimal(1000);
-		BigDecimal RANGE_2 = new BigDecimal(3000);
-		BigDecimal RANGE_3 = new BigDecimal(5000);
-	
-		BigDecimal FEE_1 = new BigDecimal("0.15");
-		BigDecimal FEE_2 = new BigDecimal("0.10");
-		BigDecimal FEE_3 = new BigDecimal("0.075");
-		BigDecimal FEE_4 = new BigDecimal("0.05");
-	
-		BigDecimal RANGE_1_COMPONENT = input.multiply(FEE_1);
-		BigDecimal RANGE_2_COMPONENT = RANGE_1.multiply(FEE_1);
-		BigDecimal RANGE_3_COMPONENT = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
-		BigDecimal RANGE_4_COMPONENT = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
-	
-		if ( input.compareTo(RANGE_1) <= 0 ) {
-			return RANGE_1_COMPONENT.round(new MathContext(2, RoundingMode.HALF_EVEN));
-		}
-	
-		if ( input.compareTo(RANGE_1) > 0 && input.compareTo(RANGE_2) <= 0 ) {
-			return (RANGE_2_COMPONENT.add(input.subtract(RANGE_1).multiply(FEE_2))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-		}
-	
-		if ( input.compareTo(RANGE_2) > 0 && input.compareTo(RANGE_3) <= 0 ) {
-			return (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(input.subtract(RANGE_2).multiply(FEE_3))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-		}
-	
-		if ( input.compareTo(RANGE_3) > 0 ) {
-			return (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(input.subtract(RANGE_3).multiply(FEE_4))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-		}
-
-		return new BigDecimal(0);
-	}
-
-	public BigDecimal calcDriverFee( BigDecimal input ) {
-		
-		BigDecimal RANGE_1 = new BigDecimal(1000);
-		BigDecimal RANGE_2 = new BigDecimal(3000);
-		BigDecimal RANGE_3 = new BigDecimal(5000);
-
-		BigDecimal FEE_1 = new BigDecimal("0.15");
-		BigDecimal FEE_2 = new BigDecimal("0.10");
-		BigDecimal FEE_3 = new BigDecimal("0.075");
-		BigDecimal FEE_4 = new BigDecimal("0.05");
-
-		BigDecimal ONE = new BigDecimal(1);
-
-		BigDecimal REVERSE_FEE_MULTIPLIER_1 = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
-		BigDecimal REVERSE_FEE_MULTIPLIER_2 = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
-
-		BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1.subtract((RANGE_1).multiply(FEE_1));
-		BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2.subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
-		BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3.subtract(REVERSE_FEE_MULTIPLIER_2).subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
-
-
-		// BigDecimal REVERSE_FEE_MULTIPLIER_1 = ( RANGE_2 - RANGE_1 ) * FEE_2;
-		// BigDecimal REVERSE_FEE_MULTIPLIER_2 = ( RANGE_3 - RANGE_2 ) * FEE_3;
-	  
-		// BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1 - ( RANGE_1 * FEE_1 );
-		// BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
-		// BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3 - REVERSE_FEE_MULTIPLIER_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
-		
-		
-		if ( input.compareTo(REVERSE_FEE_BOUNDARY_1) < 0) {
-
-			BigDecimal subtract = ONE.subtract(FEE_1);
-			BigDecimal divide = ONE.divide(subtract, 2, BigDecimal.ROUND_HALF_UP);
-			return calcOwnerFee( input.multiply(divide));
-		}
-
-		if ( input.compareTo(REVERSE_FEE_BOUNDARY_1) >= 0 && input.compareTo(REVERSE_FEE_BOUNDARY_2) < 0 ) {
-
-			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_1);
-			BigDecimal multiply1 = subtract1.multiply(FEE_2);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = multiply1.add(multiply2);
-			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			return calcOwnerFee(input.multiply(divide2));
-		}
-
-		if ( input.compareTo(REVERSE_FEE_BOUNDARY_2) >= 0 && input.compareTo(REVERSE_FEE_BOUNDARY_3) < 0 ) {
-
-			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_2);
-			BigDecimal multiply1 = subtract1.multiply(FEE_3);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = multiply1.add(multiply2).add(REVERSE_FEE_MULTIPLIER_1);
-			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal division2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			return calcOwnerFee(input.multiply(division2));
-		}
-
-		if ( input.compareTo(REVERSE_FEE_BOUNDARY_3) >= 0 ) {
-
-			BigDecimal subtract1 = input.subtract(REVERSE_FEE_BOUNDARY_3);
-			BigDecimal multiply1 = subtract1.multiply(FEE_4);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = (multiply2.add(REVERSE_FEE_MULTIPLIER_1).add(REVERSE_FEE_MULTIPLIER_2).add(multiply1));
-			BigDecimal divide1 = addition1.divide(input, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			return calcOwnerFee(input.multiply(divide2));
-		}
-
-		return new BigDecimal(0);
-	}
-	
-	
-	public Money calcDriverFeeInMoney( Money input ) {
-		
-		CurrencyUnit DEFAULT_CURRENCY = input.getCurrency();
-		
-		Money driverFeeInMoney = Money.of(0, DEFAULT_CURRENCY);
-		
-		BigDecimal inputInBD = new BigDecimal(input.getNumber().intValue());
-		BigDecimal RANGE_1 = new BigDecimal(1000);
-		BigDecimal RANGE_2 = new BigDecimal(3000);
-		BigDecimal RANGE_3 = new BigDecimal(5000);
-
-		BigDecimal FEE_1 = new BigDecimal("0.15");
-		BigDecimal FEE_2 = new BigDecimal("0.10");
-		BigDecimal FEE_3 = new BigDecimal("0.075");
-		BigDecimal FEE_4 = new BigDecimal("0.05");
-
-		BigDecimal ONE = new BigDecimal(1);
-
-		BigDecimal REVERSE_FEE_MULTIPLIER_1 = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
-		BigDecimal REVERSE_FEE_MULTIPLIER_2 = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
-
-		BigDecimal REVERSE_FEE_BOUNDARY_1 = RANGE_1.subtract((RANGE_1).multiply(FEE_1));
-		BigDecimal REVERSE_FEE_BOUNDARY_2 = RANGE_2.subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
-		BigDecimal REVERSE_FEE_BOUNDARY_3 = RANGE_3.subtract(REVERSE_FEE_MULTIPLIER_2).subtract(REVERSE_FEE_MULTIPLIER_1).subtract(RANGE_1.multiply(FEE_1));
-		
-		
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY)) < 0) {
-			
-
-			BigDecimal subtract = ONE.subtract(FEE_1);
-			BigDecimal divide = ONE.divide(subtract, 2, BigDecimal.ROUND_HALF_UP);
-
-			driverFeeInMoney = calcOwnerFeeInMoney( input.multiply(divide) );
-						
-		}
-
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_1, DEFAULT_CURRENCY)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY)) < 0 ) {
-
-			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_1);
-			BigDecimal multiply1 = subtract1.multiply(FEE_2);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = multiply1.add(multiply2);
-			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal finalInput = inputInBD.multiply(divide2);
-			
-			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY));
-		}
-
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_2, DEFAULT_CURRENCY)) >= 0 && input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY)) < 0 ) {
-
-			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_2);
-			BigDecimal multiply1 = subtract1.multiply(FEE_3);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = multiply1.add(multiply2).add(REVERSE_FEE_MULTIPLIER_1);
-			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal division2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal finalInput = inputInBD.multiply(division2);
-			
-			driverFeeInMoney = calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY));
-		}
-
-		if ( input.compareTo(Money.of(REVERSE_FEE_BOUNDARY_3, DEFAULT_CURRENCY)) >= 0 ) {
-
-			BigDecimal subtract1 = inputInBD.subtract(REVERSE_FEE_BOUNDARY_3);
-			BigDecimal multiply1 = subtract1.multiply(FEE_4);
-			BigDecimal multiply2 = REVERSE_FEE_BOUNDARY_1.multiply(FEE_1);
-			BigDecimal addition1 = (multiply2.add(REVERSE_FEE_MULTIPLIER_1).add(REVERSE_FEE_MULTIPLIER_2).add(multiply1));
-			BigDecimal divide1 = addition1.divide(inputInBD, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal subtract2 = ONE.subtract(divide1);
-			BigDecimal divide2 = ONE.divide(subtract2, 2, BigDecimal.ROUND_HALF_UP);
-			BigDecimal finalInput = inputInBD.multiply(divide2);
-			
-			driverFeeInMoney =  calcOwnerFeeInMoney( Money.of(finalInput, DEFAULT_CURRENCY) );
-		}
-		
-		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
-		driverFeeInMoney = Money.of(driverFeeInMoney.getNumber().intValue(), DEFAULT_CURRENCY);
-
-		return driverFeeInMoney;
-	}
-
-	public Money calcOwnerFeeInMoney(Money input) {
-		
-		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
-		
-		BigDecimal inputInBD = new BigDecimal(input.getNumber().toString());
-		
-		Money ownerFeeInMoney = Money.of(0, DEFAULT_CURRENCY_TYPE);
-		
-		BigDecimal RANGE_1 = new BigDecimal(1000);
-		BigDecimal RANGE_2 = new BigDecimal(3000);
-		BigDecimal RANGE_3 = new BigDecimal(5000);
-	
-		BigDecimal FEE_1 = new BigDecimal("0.15");
-		BigDecimal FEE_2 = new BigDecimal("0.10");
-		BigDecimal FEE_3 = new BigDecimal("0.075");
-		BigDecimal FEE_4 = new BigDecimal("0.05");
-	
-		BigDecimal RANGE_1_COMPONENT = inputInBD.multiply(FEE_1);
-		BigDecimal RANGE_2_COMPONENT = RANGE_1.multiply(FEE_1);
-		BigDecimal RANGE_3_COMPONENT = RANGE_2.subtract(RANGE_1).multiply(FEE_2);
-		BigDecimal RANGE_4_COMPONENT = RANGE_3.subtract(RANGE_2).multiply(FEE_3);
-	
-		if ( inputInBD.compareTo(RANGE_1) <= 0 ) {
-			
-			BigDecimal ownerFeeInBD = RANGE_1_COMPONENT.round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
-		}
-	
-		if ( inputInBD.compareTo(RANGE_1) > 0 && inputInBD.compareTo(RANGE_2) <= 0 ) {
-			
-			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(inputInBD.subtract(RANGE_1).multiply(FEE_2))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
-		}
-	
-		if ( inputInBD.compareTo(RANGE_2) > 0 && inputInBD.compareTo(RANGE_3) <= 0 ) {
-			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(inputInBD.subtract(RANGE_2).multiply(FEE_3))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
-		}
-	
-		if ( inputInBD.compareTo(RANGE_3) > 0 ) {
-			BigDecimal ownerFeeInBD = (RANGE_2_COMPONENT.add(RANGE_3_COMPONENT).add(RANGE_4_COMPONENT).add(inputInBD.subtract(RANGE_3).multiply(FEE_4))).round(new MathContext(2, RoundingMode.HALF_EVEN));
-			ownerFeeInMoney = Money.of(ownerFeeInBD, DEFAULT_CURRENCY_TYPE);
-		}
-		
-		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
-		ownerFeeInMoney = Money.of(ownerFeeInMoney.getNumber().intValue(), DEFAULT_CURRENCY_TYPE);
-
-		return ownerFeeInMoney;
 	}
 	
 	public void sendNotification(final String text, final String[] recipientCodes) {
@@ -2065,6 +1823,186 @@ public class QRules {
 	{
 	    BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
 	    return beg;
+	}
+
+	public Money calcOwnerFee(Money input) {
+		
+		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
+		Number inputNum = input.getNumber();
+		
+		Money ownerFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
+		
+		Number RANGE_1= 1000;
+		Number RANGE_2= 3000;
+		Number RANGE_3= 5000;
+
+		Number FEE_1= 0.15;
+		Number FEE_2= 0.10;
+		Number FEE_3= 0.075;
+		Number FEE_4= 0.05;
+		
+		Number RANGE_1_COMPONENT = MoneyHelper.mul(inputNum, FEE_1);
+		Number RANGE_2_COMPONENT = MoneyHelper.mul(RANGE_1, FEE_1);;
+		Number RANGE_3_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_2, RANGE_1), FEE_2);
+		Number RANGE_4_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_3, RANGE_2), FEE_3);
+		
+		if (inputNum.doubleValue() <= RANGE_1.doubleValue()) {
+			// RANGE_1_COMPONENT
+			ownerFee = Money.of(RANGE_1_COMPONENT, DEFAULT_CURRENCY_TYPE);
+
+			System.out.println("range 1 ");
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_1.doubleValue() && inputNum.doubleValue() <= RANGE_2.doubleValue() ){
+			// RANGE_2_COMPONENT + (input - RANGE_1) * FEE_2
+			System.out.println(input);
+			Money subtract = MoneyHelper.sub(input, RANGE_1);
+			System.out.println(subtract);
+			Money multiply = MoneyHelper.mul(subtract, FEE_2 );
+			System.out.println(multiply);
+			ownerFee = MoneyHelper.add(multiply, RANGE_2_COMPONENT);
+			System.out.println(ownerFee);
+
+			System.out.println("range 2 ");
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_2.doubleValue() && inputNum.doubleValue() <= RANGE_3.doubleValue() ) {	
+			//RANGE_2_COMPONENT + RANGE_3_COMPONENT + (input - RANGE_2) * FEE_3
+			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
+			Money subtract = MoneyHelper.sub(input, RANGE_2);
+			Money multiply = MoneyHelper.mul(subtract, FEE_3);
+			Money addition2 = MoneyHelper.add(multiply, addition1);
+			ownerFee = addition2;
+
+			System.out.println("range 3 ");
+		}
+	
+		if ( inputNum.doubleValue() > RANGE_3.doubleValue() ) {
+			// RANGE_2_COMPONENT + RANGE_3_COMPONENT + RANGE_4_COMPONENT + ( input - RANGE_3 ) * FEE_4
+			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
+			Number addition2 = MoneyHelper.add(addition1, RANGE_4_COMPONENT);
+			Money subtract = MoneyHelper.sub(input, RANGE_3);
+			Money multiply = MoneyHelper.mul(subtract, FEE_4);
+			Money addition3 = MoneyHelper.add(multiply, addition2);
+			ownerFee = addition3;
+
+			System.out.println("range 4 ");
+		}
+		
+		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
+		ownerFee = MoneyHelper.round(ownerFee);
+		ownerFee = Money.of(ownerFee.getNumber().doubleValue(), DEFAULT_CURRENCY_TYPE);
+
+		Number amount = ownerFee.getNumber().doubleValue();
+		Money fee = Money.of(amount.doubleValue(), DEFAULT_CURRENCY_TYPE);
+		System.out.println("From QRules " + fee);
+		return fee;
+
+	}
+	public Money calcDriverFee(Money input) {
+
+		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
+		Number inputNum = input.getNumber();
+
+		Money driverFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
+		
+		Number RANGE_1= 1000;
+		Number RANGE_2= 3000;
+		Number RANGE_3= 5000;
+
+		Number FEE_1= 0.15;
+		Number FEE_2= 0.10;
+		Number FEE_3= 0.075;
+		Number FEE_4= 0.05;
+
+		Number ONE = 1;
+		
+		// const REVERSE_FEE_MULTIPLIER_1 = ( RANGE_2 - RANGE_1 ) * FEE_2;
+		// const REVERSE_FEE_MULTIPLIER_2 = ( RANGE_3 - RANGE_2 ) * FEE_3;
+
+		Number subtract01 = MoneyHelper.sub( RANGE_2 ,RANGE_1 );
+		Number subtract02 = MoneyHelper.sub( RANGE_3 ,RANGE_2 );
+			Number REVERSE_FEE_MULTIPLIER_1 = MoneyHelper.mul( subtract01 , FEE_2);
+			Number REVERSE_FEE_MULTIPLIER_2 = MoneyHelper.mul( subtract02 , FEE_3);
+
+		// const REVERSE_FEE_BOUNDARY_1 = RANGE_1 - ( RANGE_1 * FEE_1 );
+		// const REVERSE_FEE_BOUNDARY_2 = RANGE_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
+		// const REVERSE_FEE_BOUNDARY_3 = RANGE_3 - REVERSE_FEE_MULTIPLIER_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
+		
+		Number multiply01 = MoneyHelper.mul( RANGE_1, FEE_1 );
+			Number REVERSE_FEE_BOUNDARY_1 = MoneyHelper.sub(RANGE_1, multiply01);
+
+		Number subtract03 = MoneyHelper.sub( RANGE_2 ,REVERSE_FEE_MULTIPLIER_1 );
+			Number REVERSE_FEE_BOUNDARY_2 = MoneyHelper.sub(subtract03, multiply01);
+
+		Number subtract04 = MoneyHelper.sub( RANGE_3 ,REVERSE_FEE_MULTIPLIER_2 );
+		Number subtract05 = MoneyHelper.sub(subtract04 , REVERSE_FEE_MULTIPLIER_1);
+			Number REVERSE_FEE_BOUNDARY_3 = MoneyHelper.sub(subtract05, multiply01);
+
+		if ( inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_1.doubleValue() ) {
+			// return calcOwnerFee( inputNum * (1 / (1 - FEE_1)));
+			Number subtract = MoneyHelper.sub(ONE, FEE_1);
+			Number divide = MoneyHelper.div(ONE, subtract);
+			Money multiply = MoneyHelper.mul(input, divide);
+			driverFee = calcOwnerFee(multiply);
+
+			System.out.println("zone 1 ");
+		}
+
+		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_1.doubleValue() && inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_2.doubleValue() ) {
+			// calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + (( input - REVERSE_FEE_BOUNDARY_1 ) * FEE_2 )) / input )));
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_1);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_2);
+			Number multiply2 = MoneyHelper.mul(FEE_1, REVERSE_FEE_BOUNDARY_1);
+			Money addition1 = MoneyHelper.add(multiply1, multiply2);
+			Money divide1= MoneyHelper.div(addition1, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.div(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input, divide2);
+			driverFee = calcOwnerFee(multiply3);
+
+			System.out.println("zone 2 ");
+		}
+
+		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_2.doubleValue() && inputNum.doubleValue() < REVERSE_FEE_BOUNDARY_3.doubleValue() ) {
+			//calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + REVERSE_FEE_MULTIPLIER_1 + (( input - REVERSE_FEE_BOUNDARY_2 ) * FEE_3 )) / input )))
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_2);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_3);
+			Number multiply2 = MoneyHelper.mul(REVERSE_FEE_BOUNDARY_1, FEE_1);
+			Number addition1 = MoneyHelper.add(multiply2 , REVERSE_FEE_MULTIPLIER_1);
+			Money addition2 = MoneyHelper.add(multiply1 , addition1);
+			Money divide1 = MoneyHelper.div(addition2, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.div(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input,divide2);
+			driverFee = calcOwnerFee(multiply3);
+
+			System.out.println("zone 3 ");
+		}
+
+		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_3.doubleValue() ) {
+			//calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + REVERSE_FEE_MULTIPLIER_1 + REVERSE_FEE_MULTIPLIER_2 + (( input - REVERSE_FEE_BOUNDARY_3 ) * FEE_4 )) / input )))
+			
+			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_3);
+			Money multiply1 = MoneyHelper.mul(subtract1, FEE_4);
+
+			Number multiply2 = MoneyHelper.mul(REVERSE_FEE_BOUNDARY_1, FEE_1);
+			Number addition1 = MoneyHelper.add(multiply2 , REVERSE_FEE_MULTIPLIER_1);
+			Number addition2 = MoneyHelper.add(addition1 , REVERSE_FEE_MULTIPLIER_2);
+
+			Money addition3 = MoneyHelper.add(multiply1 , addition2);
+			Money divide1 = MoneyHelper.div(addition3, input);
+			Money subtract2 = MoneyHelper.sub(ONE, divide1);
+			Money divide2 = MoneyHelper.div(ONE, subtract2);
+
+			Money multiply3 = MoneyHelper.mul(input,divide2);
+			driverFee = calcOwnerFee(multiply3);
+
+			System.out.println("zone 4 ");
+		}
+		return driverFee;
 	}
 	 
 }
