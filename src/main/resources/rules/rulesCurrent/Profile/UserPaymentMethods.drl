@@ -1,0 +1,19 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Payment Methods user"
+    when
+        m : QEventMessage( event_type == "PAYMENT_METHODS" && data.code == "PAYMENT_METHODS" )
+ 		rules: QRules() 
+    then
+       
+    		rules.header();
+        
+        String userCode = rules.getUser().getCode();
+        rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
+ 		rules.sendSublayout("PAYMENT_METHODS", "user-profile-payment-methods.json");
+        
+		rules.footer();      
+end 
