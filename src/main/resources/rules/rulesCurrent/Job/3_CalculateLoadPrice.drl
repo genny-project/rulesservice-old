@@ -63,6 +63,13 @@ rule "Calculate Load Price"
 			Money feePriceExcGST = Money.of(0, DEFAULT_CURRENCY);
 			Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY);
 
+			String ownerPriceIncGSTString = null;
+			String ownerPriceExcGSTString = null;
+			String driverPriceIncGSTString = null;
+			String driverPriceExcGSTString = null;
+			String feePriceIncGSTString = null; 
+			String feePriceExcGSTString = null; 
+
 		/* Get userRole */
 			String userRole = null;
 			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
@@ -74,76 +81,83 @@ rule "Calculate Load Price"
 			System.out.println("targetCode   ::   " + newAnswer.getTargetCode() );
 			System.out.println("userRole     ::    " + userRole );
 
-		if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole != null && userRole.equals("OWNER")) ) {
+		/* Check if the amount is  not null or not negative */	
+			if( amountValue != null && amountValue >= 0){
 
-			/* Owner Fees */
-			fees = rules.calcOwnerFee( answerPrice );		
-			feePriceExcGST = fees;
-			feePriceIncGST = rules.includeGSTMoney(fees);
+				if( newAnswer.getTargetCode().startsWith("BEG_") || ( newAnswer.getTargetCode().startsWith("OFR_") && userRole != null && userRole.equals("OWNER")) ) {
 
-			System.out.println("=======================================================================================================");
-			System.out.println("OWNER countering   ::   ");
-			System.out.println(" targetCode" +newAnswer.getTargetCode() );
-			ownerPriceExcGST = answerPrice;
-			ownerPriceIncGST = rules.includeGSTMoney(answerPrice);
-			driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
-			driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
-			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
-			System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
-			System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST.getNumber().doubleValue());
-			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST.getNumber().doubleValue());
-			System.out.println("=======================================================================================================");
-		}
-		else if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
+					/* Owner Fees */
+					fees = rules.calcOwnerFee( answerPrice );		
+					feePriceExcGST = fees;
+					feePriceIncGST = rules.includeGSTMoney(fees);
 
-			/* Driver Fees */
-			fees = rules.calcDriverFee( answerPrice );		
-			feePriceExcGST = fees;
-			feePriceIncGST = rules.includeGSTMoney(fees);
+					System.out.println("=======================================================================================================");
+					System.out.println("OWNER countering   ::   ");
+					System.out.println(" targetCode" +newAnswer.getTargetCode() );
+					ownerPriceExcGST = answerPrice;
+					ownerPriceIncGST = rules.includeGSTMoney(answerPrice);
+					driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
+					driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
+					System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
+					System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
+					System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST.getNumber().doubleValue());
+					System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST.getNumber().doubleValue());
+					System.out.println("=======================================================================================================");
+				}
+				else if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
 
-			System.out.println("=======================================================================================================");
-			System.out.println("QUOTER countering   ::   ");
-			driverPriceExcGST = answerPrice;
-			driverPriceIncGST = rules.includeGSTMoney(answerPrice);
-			ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
-			ownerPriceIncGST = rules.includeGSTMoney(ownerPriceExcGST);
+					/* Driver Fees */
+					fees = rules.calcDriverFee( answerPrice );		
+					feePriceExcGST = fees;
+					feePriceIncGST = rules.includeGSTMoney(fees);
 
-			System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
-			System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
-			System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST.getNumber().doubleValue());
-			System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST.getNumber().doubleValue());
-			System.out.println("=======================================================================================================");
-		}
+					System.out.println("=======================================================================================================");
+					System.out.println("QUOTER countering   ::   ");
+					driverPriceExcGST = answerPrice;
+					driverPriceIncGST = rules.includeGSTMoney(answerPrice);
+					ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
+					ownerPriceIncGST = rules.includeGSTMoney(ownerPriceExcGST);
 
-		/* Saving  OWNER_PRICE_INC_GST */ 
-			String ownerPriceIncGSTString = QwandaUtils.getMoneyString(ownerPriceIncGST);
-			Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, ownerPriceIncGSTString);          
-			rules.publishData(ownerPriceIncGSTAnswer);   
+					System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
+					System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
+					System.out.println("driverPriceIncGST   ::   " + driverPriceIncGST.getNumber().doubleValue());
+					System.out.println("driverPriceExcGST   ::   " + driverPriceExcGST.getNumber().doubleValue());
+					System.out.println("=======================================================================================================");
+				}
 
-		/* Saving  OWNER_PRICE_EXC_GST */ 
-			String ownerPriceExcGSTString = QwandaUtils.getMoneyString(ownerPriceExcGST);
-			Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, ownerPriceExcGSTString);          
-			rules.publishData(ownerPriceExcGSTAnswer); 
-		
-		/* Saving  DRIVER_PRICE_INC_GST */ 
-			String driverPriceIncGSTString = QwandaUtils.getMoneyString(driverPriceIncGST);
-			Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, driverPriceIncGSTString);          
-			rules.publishData(driverPriceIncGSTAnswer);  
+				/* Get amount values in String */
+				ownerPriceIncGSTString = QwandaUtils.getMoneyString(ownerPriceIncGST);
+				ownerPriceExcGSTString = QwandaUtils.getMoneyString(ownerPriceExcGST);
+				driverPriceIncGSTString = QwandaUtils.getMoneyString(driverPriceIncGST);
+				driverPriceExcGSTString = QwandaUtils.getMoneyString(driverPriceExcGST);
+				feePriceIncGSTString = QwandaUtils.getMoneyString(feePriceIncGST);
+				feePriceExcGSTString = QwandaUtils.getMoneyString(feePriceExcGST);
+			}
 
-		/* Saving  DRIVER_PRICE_EXC_GST */ 
-			String driverPriceExcGSTString = QwandaUtils.getMoneyString(driverPriceExcGST);
-			Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, driverPriceExcGSTString);          
-			rules.publishData(driverPriceExcGSTAnswer); 
+		/* Save PRICES as Answer */
+			/* Saving  OWNER_PRICE_INC_GST */ 
+				Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, ownerPriceIncGSTString);          
+				rules.publishData(ownerPriceIncGSTAnswer);   
 
-		/* Saving  FEE_INC_GST */ 
-			String feePriceIncGSTString = QwandaUtils.getMoneyString(feePriceIncGST);
-			Answer feePriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, feePriceIncGSTString);          
-			rules.publishData(feePriceIncGSTAnswer);   
+			/* Saving  OWNER_PRICE_EXC_GST */ 
+				Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, ownerPriceExcGSTString);          
+				rules.publishData(ownerPriceExcGSTAnswer); 
+			
+			/* Saving  DRIVER_PRICE_INC_GST */ 
+				Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, driverPriceIncGSTString);          
+				rules.publishData(driverPriceIncGSTAnswer);  
 
-		/* Saving  FEE_EXC_GST */ 
-			String feePriceExcGSTString = QwandaUtils.getMoneyString(feePriceExcGST);
-			Answer feePriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, feePriceExcGSTString);         
-			rules.publishData(feePriceExcGSTAnswer); 
+			/* Saving  DRIVER_PRICE_EXC_GST */ 
+				Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, driverPriceExcGSTString);          
+				rules.publishData(driverPriceExcGSTAnswer); 
 
+			/* Saving  FEE_INC_GST */ 
+				Answer feePriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, feePriceIncGSTString);          
+				rules.publishData(feePriceIncGSTAnswer);   
+
+			/* Saving  FEE_EXC_GST */ 
+				Answer feePriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, feePriceExcGSTString);         
+				rules.publishData(feePriceExcGSTAnswer); 
 		rules.footer();
+		
 end

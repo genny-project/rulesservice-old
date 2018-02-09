@@ -30,7 +30,7 @@ rule "Create Payment Item"
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
        	
        	/* Creating Payment Item */
-        String itemId = PaymentUtils.createPaymentItem(BEGCode, assemblyAuthKey, rules.getToken());
+        String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
         
 		/* Save itemId as an attribute to BEG Group */
 		if(itemId != null && assemblyId!= null) {
