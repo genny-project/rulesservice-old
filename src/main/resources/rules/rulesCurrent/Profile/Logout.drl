@@ -9,14 +9,14 @@ import life.genny.qwanda.message.QCmdMessage;
 global java.lang.String REACT_APP_QWANDA_API_URL;
 
 
-rule "Logout"
+rule "User Logout"
     when
         m : QEventMessage( event_type == "LOGOUT" && data.code == "LOGOUT" )
- 		rules: QRules() 
+ 		rules: QRules( isState("STARTED") ) 
     then
         rules.header();
         
         rules.publishCmd(new QCmdMessage("CMD_LOGOUT","LOGOUT"));
         
 		rules.footer();      
-end
+end 

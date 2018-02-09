@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "User go online event"
+    when
+  		rules: QRules( isState("IS_LOGGED_IN") && (!isState("GONE_ONLINE")) ) 
+    then
+        
+    		rules.header();
+        
+        rules.setState("GONE_ONLINE");
+        
+        /*Sending a toast message as soon as a user logs in */
+        String[] recipientArr = {rules.getUser().getCode()};
+        HashMap<String,String> contextMap = new HashMap<String, String>();
+        rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_WELCOME_TOAST", "TOAST");
+        
+        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
+        
+		rules.footer();      
+end
