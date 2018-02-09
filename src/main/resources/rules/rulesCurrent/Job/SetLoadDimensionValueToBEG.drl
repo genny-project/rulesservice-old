@@ -40,8 +40,8 @@ rule "Set Load Height to BEG"
 
    ruleflow-group 'AttributeChange'
     when
-    $m: QEventAttributeValueChangeMessage( (QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_HEIGHT") || QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_LENGTH") 
-               ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WEIGHT") ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WIDTH")) && getAnswer().getTargetCode().startsWith("LOD_") )
+    $m: QEventAttributeValueChangeMessage( (QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_HEIGHT_MM") || QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_LENGTH_MM") 
+               ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WEIGHT_KG") ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WIDTH_MM")) && getAnswer().getTargetCode().startsWith("LOD_") )
     	rules : QRules()
     then    
     	    rules.header();
