@@ -8,6 +8,8 @@ import life.genny.qwanda.Answer;
 /* Sorry Adam if you read this */
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
 
 rule "Create new payment method - user"
 	when 
@@ -18,9 +20,15 @@ rule "Create new payment method - user"
 		rules.header();
 			
 		String paymentMethodDataString = $m.getData().getValue();
+		
+		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+		
+		rules.println("Payment method string1 ::"+paymentMethodDataString);
 		if(paymentMethodDataString != null) {
-			
+			rules.println("Payment method string2 ::"+paymentMethodDataString);
 			String userCode = rules.getUser().getCode();
+			RulesUtils.println(paymentMethodDataString);
 			
 			String userCurrentPaymentMethods = rules.getBaseEntityValueAsString(userCode, "PRI_USER_PAYMENT_METHODS");
 			if(userCurrentPaymentMethods != null) {
@@ -36,10 +44,14 @@ rule "Create new payment method - user"
 	            rules.publishData(paymentAnswer);
 			}
 			else {
-				
+				rules.println("Payment method string ::"+paymentMethodDataString);
+				RulesUtils.println("Payment method string ::"+paymentMethodDataString);
 				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", "[" + paymentMethodDataString + "]");
 	            rules.publishData(paymentAnswer);
+	           	
 			}
+			
+			 PaymentUtils.disburseAccount(assemblyId, paymentMethodDataString, assemblyAuthKey);
 		}
 
 		rules.footer();
