@@ -43,10 +43,10 @@ rule "Send Ch40 BucketData To Frontend"
     		
      		}
  
-    		/*	if (user.is("PRI_OWNER")) { */
+    			if (user.is("PRI_OWNER")) {
      			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(ownerbegs); 
-     	/*	} */
+     		}
  			rules.println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
      		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
      		 
@@ -59,6 +59,16 @@ rule "Send Ch40 BucketData To Frontend"
      	 		}
      		}
      	}
+     	/* Sending Draft Datas  for the Owners */
+     	if (user.is("PRI_OWNER")) {
+     			/* List<BaseEntity> draftBegs = new ArrayList<BaseEntity>(); */
+     			List<BaseEntity> ownerDraftBegs = rules.getBaseEntitysByParentAndLinkCode("GRP_DRAFTS","LNK_CORE", 0, 500, false, user.getCode()) ;
+     		    rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
+     		    /*  draftBegs.addAll(ownerbegs);
+     		    for (BaseEntity beg : ownerDraftBegs) {
+     		        rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
+     		    } */
+     		}
      	
      	/* Send messages to user if they belong to the conversation. TODO: to optimize */
       	
