@@ -7,7 +7,7 @@ import life.genny.qwanda.message.QEventMessage;
 rule "User go offline event"
     when
         m : QEventMessage( event_type == "USER_GO_OFFLINE")
- 		rules: QRules() 
+ 		rules: QRules( isState("STARTED") ) 
     then
         
     		rules.header();
