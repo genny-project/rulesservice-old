@@ -4,13 +4,14 @@ import life.genny.rules.QRules;
 
 import life.genny.qwanda.message.QEventMessage;
 
-rule "User go offline event"
+rule "User go online event"
     when
-        m : QEventMessage( event_type == "USER_GO_OFFLINE")
- 		rules: QRules() 
+  		rules: QRules( isState("IS_LOGGED_IN") && (!isState("GONE_ONLINE")) ) 
     then
         
     		rules.header();
+        
+        rules.setState("GONE_ONLINE");
         
         /*Sending a toast message as soon as a user logs in */
         String[] recipientArr = {rules.getUser().getCode()};
