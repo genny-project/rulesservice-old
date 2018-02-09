@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Scanner;
 
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
@@ -24,7 +25,13 @@ public class FeeCalculationTest {
 	
 	@Test
 	public void ownerTest() {
-		Money ownerPrice = Money.of(15000, DEFAULT_CURRENCY_AUD);
+		
+		Scanner scanner = new Scanner( System.in );
+		System.out.print( "Enter OWNER Price   ::   " );
+		String ownerPriceString = scanner.nextLine();
+		
+		Double ownerPriceDouble = Double.parseDouble(ownerPriceString);
+		Money ownerPrice = Money.of(ownerPriceDouble, DEFAULT_CURRENCY_AUD);
 		
 		Money ownerFeeExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 		Money ownerFeeIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
@@ -48,6 +55,7 @@ public class FeeCalculationTest {
 		System.out.println("-------------------------------------------");
 		System.out.println("OWNER");
 		System.out.println("-------------------------------------------");
+		
 		System.out.println("FEES");
 		System.out.println("ownerFeeExcGST  ::  "+ String.valueOf(ownerFeeExcGST.getNumber().doubleValue()));	
 		System.out.println("ownerFeeIncGST  ::  "+ownerFeeIncGST.getNumber().doubleValue());
@@ -61,9 +69,15 @@ public class FeeCalculationTest {
 		System.out.println("driverPriceIncGST  ::  "+driverPriceIncGST.getNumber().doubleValue());
 	}
 	
-	//@Test
+	@Test
 	public void driverTest() {
-		Money driverPrice = Money.of(5500, DEFAULT_CURRENCY_AUD);
+		
+		Scanner scanner = new Scanner( System.in );
+		System.out.print( "Enter DRIVER Price   ::   " );
+		String ownerPriceString = scanner.nextLine();
+		
+		Double driverPriceDouble = Double.parseDouble(ownerPriceString);
+		Money driverPrice = Money.of(driverPriceDouble, DEFAULT_CURRENCY_AUD);
 		
 		Money driverFeeExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
 		Money driverFeeIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
