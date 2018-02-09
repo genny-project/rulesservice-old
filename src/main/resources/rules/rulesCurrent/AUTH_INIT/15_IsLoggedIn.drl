@@ -23,6 +23,12 @@ rule "Is Logged In"
   		
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
+        
+        /*Sending a toast message as soon as a user logs in */
+        String[] recipientArr = {rules.getUser().getCode()};
+        HashMap<String,String> contextMap = new HashMap<String, String>();
+        rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_WELCOME_TOAST", "TOAST");
+        
         rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
         
 		drools.setFocus("payments"); 

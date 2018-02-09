@@ -193,7 +193,7 @@ rule "Accept Job"
                 RulesUtils.println("owner code ::"+ownerCode);
                 String[] recipientArr = {ownerCode};
                 
-                /* Sending toast message to frontend */
+                /* Sending toast message to owner frontend */
                 rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
                 
 
@@ -210,12 +210,16 @@ rule "Accept Job"
                 contextMapForDriver.put("QUOTER", userCode);
             
                 String[] recipientArrForDriver = {userCode};
+                
+                /* Sending toast message to driver frontend */
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
+                
 
                 /* Sending message to QUOTER */
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL");
                 
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");  
+                  
 
         /* Send BUCKETVIEW Cmd */
             drools.setFocus("bucketview"); 

@@ -1408,6 +1408,8 @@ public class QRules {
  	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
  	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode());
 		    		QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken()); 
+		    		BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
+		    		publishBE(chatBE);
     			}
 		}
 	}

@@ -25,7 +25,7 @@ rule "Create Job"
       drools.setFocus("CreateLoad");
      
     /*     Creating new base-entity BEG for Posting new Job      */
-     BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "Base Entity Group");
+     BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "New Load");
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
      rules.println("The BEG code is   ::  "+beg.getCode());
    
