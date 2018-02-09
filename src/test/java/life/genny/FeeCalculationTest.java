@@ -23,7 +23,7 @@ public class FeeCalculationTest {
 	private static final CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");
 	
 	
-	@Test
+	//@Test
 	public void ownerTest() {
 		
 		Scanner scanner = new Scanner( System.in );
@@ -69,7 +69,7 @@ public class FeeCalculationTest {
 		System.out.println("driverPriceIncGST  ::  "+driverPriceIncGST.getNumber().doubleValue());
 	}
 	
-	@Test
+	//@Test
 	public void driverTest() {
 		
 		Scanner scanner = new Scanner( System.in );
