@@ -41,7 +41,7 @@ rule "Receive GPS Data"
 	     			String begCode = be.getCode();	     			
 	     			String deliveryLatitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
 	     			String deliveryLongitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
-	     			String totalDistanceString = rules.getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_METERS");
+	     			String totalDistanceString = rules.getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_M");
 	     			
 	     			/* Call Google Maps API to know how far the driver is */
 	    	     		Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString, deliveryLongitudeString);

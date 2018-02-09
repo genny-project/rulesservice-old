@@ -49,7 +49,7 @@ rule "Post Job Cancel/Submit button click"
            	
            	Double totalDistance = GPSUtils.getDistance(pickupLatitudeString, pickupLongitudeString, deliveryLatitudeString, deliveryLongitudeString);
        		if(totalDistance > 0) {
-       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_METERS", Double.toString(totalDistance));
+       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", Double.toString(totalDistance));
            		rules.publishData(totalDistanceAnswer);
        		}
        		
