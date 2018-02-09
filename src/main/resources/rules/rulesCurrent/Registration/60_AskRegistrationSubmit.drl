@@ -15,6 +15,12 @@ rule "Ask Registration - Profile Submit"
       then
      	rules.header();
      	
+     	BaseEntity be = rules.getUser();
+     	
+     	/*  saving the attribute PRI_IS_PROFILE_COMPLETED as FALSE for the new user */
+        rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
+     	rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
+     	
         /*  Send Layouts and Bucket Datas    */
         drools.setFocus("SendLayoutsAndData");
         
