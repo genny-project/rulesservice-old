@@ -28,7 +28,15 @@ rule "Check if Payments User Exists"
       }
       
      	
-     if(isAssemblyUserExists) {  	
+     if(isAssemblyUserExists) {  
+     
+      	String assemblyUserId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+      	
+      	/* If user already exists in assembly, but its not saved in our system as a user attribute */
+      	if(assemblyUserId == null) {
+      		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
+    		PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
+      	}	
      
      	rules.setState("IS_ASSEMBLY_USER_CREATED");
      

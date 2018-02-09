@@ -1,17 +1,9 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.Answer;
-import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+
 
 rule "Create Assembly Tokens"
 	agenda-group "payments"
