@@ -35,7 +35,7 @@ rule "Create Payments Assembly Company"
 			/* Save companyId as an attribute for the user */
 			RulesUtils.println("create payment company response -"+companyId);
 			if(companyId != null) {
-			
+				
     	 		Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
     	 		PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyCompanyIdAnswer, rules.getToken());
      			RulesUtils.println("Assembly Company created");
