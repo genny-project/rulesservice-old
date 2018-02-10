@@ -10,12 +10,12 @@ rule "Send Ch40 BucketData To Frontend"
     salience 670
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY") ) 
+        rules: QRules( !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY") && isRealm("mentormatch") ) 
      then
      	rules.header();
 	
-		/* Show loading indicator */
-		  rules.showLoading("Loading your interface..."); 
+		 /* Show loading indicator */
+		 rules.showLoading("Loading your interface..."); 
      	
      	 BaseEntity user = rules.getUser();
       		
@@ -29,46 +29,6 @@ rule "Send Ch40 BucketData To Frontend"
      	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
   		 rules.println(buckets);
-     	 
-     	for (BaseEntity bucket : buckets ) 
-     	{
-     		rules.println(bucket);
-     		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
-     			begs.addAll(driverbegs);
-     		} else {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    begs.addAll(driverbegs);
-    		
-     		}
- 
-    			if (user.is("PRI_OWNER")) {
-     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    begs.addAll(ownerbegs); 
-     		}
- 			rules.println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
-     		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
-     		 
-     		 
-     		for (BaseEntity beg : begs) {
-     			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
-     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
-     			for (BaseEntity begKid : begKids) {   	 			
-     	 			rules.println(bucket.getCode()+":"+begKid.getCode());
-     	 		}
-     		}
-     	}
-     	/* Sending Draft Datas  for the Owners */
-     	if (user.is("PRI_OWNER")) {
-     			/* List<BaseEntity> draftBegs = new ArrayList<BaseEntity>(); */
-     			List<BaseEntity> ownerDraftBegs = rules.getBaseEntitysByParentAndLinkCode("GRP_DRAFTS","LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
-     		    /*  draftBegs.addAll(ownerbegs);
-     		    for (BaseEntity beg : ownerDraftBegs) {
-     		        rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
-     		    } */
-     		}
      	
      	/* Send messages to user if they belong to the conversation. TODO: to optimize */
       	

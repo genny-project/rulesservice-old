@@ -14,7 +14,7 @@ rule "Send PROJECT To Frontend"
      then
      	rules.header();
      	
-     	BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM",rules.getAsString("realm"));
+     	BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM", rules.getAsString("realm"));
      	rules.println("Project "+project);
      	  
         rules.publishCmd(project,"PROJECT");

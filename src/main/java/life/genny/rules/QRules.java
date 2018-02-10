@@ -187,6 +187,20 @@ public class QRules {
 	public void setDecodedTokenMap(Map<String, Object> decodedTokenMap) {
 		this.decodedTokenMap = decodedTokenMap;
 	}
+	
+	/**
+	 * @return current realm
+	 */
+	public String realm() {
+		return getAsString("realm").toLowerCase();
+	}
+	
+	/**
+	 * @return the realm
+	 */
+	public boolean isRealm(final String realm) {
+		return this.realm().equals(realm);
+	}
 
 	/**
 	 * @return the state

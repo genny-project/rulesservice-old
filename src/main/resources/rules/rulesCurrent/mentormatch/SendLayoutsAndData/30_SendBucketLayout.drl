@@ -7,15 +7,14 @@ rule "Send Bucket Layout To Frontend"
     salience 660
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("SEND_BUCKET_DATA") && (!isState("SEND_BUCKET_LAYOUT"))  ) 
+        rules: QRules( isState("SEND_BUCKET_DATA") && (!isState("SEND_BUCKET_LAYOUT")) && isRealm("channel40") ) 
      then
      	rules.header();
      	
      	String layout = RulesUtils.getLayout("card.json");
      	
      	/* sending cmd BUCKET_VIEW */
-     	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");  
-       /* rules.showLoading("This is a loading text..."); */
+     	/* rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD"); */  
 
 		rules.setState("SEND_BUCKET_LAYOUT");
 		

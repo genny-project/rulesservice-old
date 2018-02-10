@@ -9,7 +9,7 @@ import life.genny.qwandautils.QwandaUtils;
 rule "Geofence Exit Pickup Point"
 	when
 	  $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.code.contains("PICKUP"))
-	  rules: QRules()
+	  rules: QRules( isRealm("channel40") )
 	then
     
 		RulesUtils.header(drools.getRule().getName());

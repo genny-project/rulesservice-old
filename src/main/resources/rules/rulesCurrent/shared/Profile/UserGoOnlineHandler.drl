@@ -12,7 +12,8 @@ rule "User go online event"
     		rules.header();
         
         rules.setState("GONE_ONLINE");
-        
+        	
+        /* TODO: thisis ch40 stuff. to be separated into a new function */
         /*Sending a toast message as soon as a user logs in */
         String[] recipientArr = {rules.getUser().getCode()};
         HashMap<String,String> contextMap = new HashMap<String, String>();

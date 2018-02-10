@@ -1,0 +1,642 @@
+Feb 10, 2018 3:11:12 PM io.vertx.core.impl.launcher.commands.RunCommand
+INFO: Starting clustering...
+Feb 10, 2018 3:11:12 PM io.vertx.core.impl.launcher.commands.RunCommand
+INFO: No cluster-host specified so using address 10.1.1.193
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/Users/loriscampanile/.m2/repository/ch/qos/logback/logback-classic/1.2.1/logback-classic-1.2.1.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/Users/loriscampanile/.m2/repository/org/slf4j/slf4j-simple/1.7.2/slf4j-simple-1.7.2.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelectorStaticBinder]
+Feb 10, 2018 3:11:15 PM com.hazelcast.config.AbstractXmlConfigHelper
+WARNING: Name of the hazelcast schema location incorrect using default
+Feb 10, 2018 3:11:15 PM com.hazelcast.instance.DefaultAddressPicker
+INFO: [LOCAL] [dev] [3.6.3] Prefer IPv4 stack is true.
+Feb 10, 2018 3:11:16 PM com.hazelcast.instance.DefaultAddressPicker
+INFO: [LOCAL] [dev] [3.6.3] Picked Address[10.1.1.193]:5702, using socket ServerSocket[addr=/0:0:0:0:0:0:0:0,localport=5702], bind any local is true
+Feb 10, 2018 3:11:16 PM com.hazelcast.system
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Hazelcast 3.6.3 (20160527 - 08b28c3) starting at Address[10.1.1.193]:5702
+Feb 10, 2018 3:11:16 PM com.hazelcast.system
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
+Feb 10, 2018 3:11:16 PM com.hazelcast.system
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Configured Hazelcast Serialization version : 1
+Feb 10, 2018 3:11:17 PM com.hazelcast.spi.OperationService
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Backpressure is disabled
+Feb 10, 2018 3:11:17 PM com.hazelcast.spi.impl.operationexecutor.classic.ClassicOperationExecutor
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Starting with 2 generic operation threads and 4 partition operation threads.
+Feb 10, 2018 3:11:22 PM com.hazelcast.instance.Node
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Creating MulticastJoiner
+Feb 10, 2018 3:11:22 PM com.hazelcast.core.LifecycleService
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Address[10.1.1.193]:5702 is STARTING
+Feb 10, 2018 3:11:23 PM com.hazelcast.nio.tcp.nonblocking.NonBlockingIOThreadingModel
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] TcpIpConnectionManager configured with Non Blocking IO-threading model: 3 input threads and 3 output threads
+Feb 10, 2018 3:11:24 PM com.hazelcast.cluster.impl.MulticastJoiner
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Trying to join to discovered node: Address[10.1.1.193]:5701
+Feb 10, 2018 3:11:24 PM com.hazelcast.nio.tcp.InitConnectionTask
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Connecting to /10.1.1.193:5701, timeout: 0, bind-any: true
+Feb 10, 2018 3:11:24 PM com.hazelcast.nio.tcp.TcpIpConnectionManager
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Established socket connection between /10.1.1.193:65454 and /10.1.1.193:5701
+Feb 10, 2018 3:11:25 PM com.hazelcast.partition.InternalPartitionService
+WARNING: [10.1.1.193]:5702 [dev] [3.6.3] Ignoring received partition table, startup is not completed yet. Sender: Address[10.1.1.193]:5701
+Feb 10, 2018 3:11:25 PM com.hazelcast.cluster.ClusterService
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] 
+
+Members [2] {
+	Member [10.1.1.193]:5701
+	Member [10.1.1.193]:5702 this
+}
+
+Feb 10, 2018 3:11:27 PM com.hazelcast.core.LifecycleService
+INFO: [10.1.1.193]:5702 [dev] [3.6.3] Address[10.1.1.193]:5702 is STARTED
+Feb 10, 2018 3:11:30 PM io.vertx.core.impl.BlockedThreadChecker
+WARNING: Thread Thread[vert.x-eventloop-thread-0,5,main] has been blocked for 2021 ms, time limit is 2000
+Feb 10, 2018 3:11:31 PM io.vertx.core.impl.BlockedThreadChecker
+WARNING: Thread Thread[vert.x-eventloop-thread-0,5,main] has been blocked for 3024 ms, time limit is 2000
+Feb 10, 2018 3:11:32 PM io.vertx.core.impl.BlockedThreadChecker
+WARNING: Thread Thread[vert.x-eventloop-thread-0,5,main] has been blocked for 4027 ms, time limit is 2000
+Loading initial Rules
+15:11:33.299 [vert.x-eventloop-thread-1] INFO  life.genny.cluster.ClusterConfig - Running DEV mode,
+Starting Clustered Vertx
+Feb 10, 2018 3:11:33 PM io.vertx.core.impl.VertxImpl
+WARNING: You're already on a Vert.x context, are you sure you want to create a new Vertx instance?
+Feb 10, 2018 3:11:33 PM com.hazelcast.instance.DefaultAddressPicker
+INFO: [LOCAL] [10.1.1.193] [3.6.3] Prefer IPv4 stack is true.
+Feb 10, 2018 3:11:33 PM com.hazelcast.instance.DefaultAddressPicker
+INFO: [LOCAL] [10.1.1.193] [3.6.3] Picked Address[10.1.1.193]:5704, using socket ServerSocket[addr=/0:0:0:0:0:0:0:0,localport=5704], bind any local is true
+Feb 10, 2018 3:11:33 PM com.hazelcast.system
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Hazelcast 3.6.3 (20160527 - 08b28c3) starting at Address[10.1.1.193]:5704
+Feb 10, 2018 3:11:33 PM com.hazelcast.system
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
+Feb 10, 2018 3:11:33 PM com.hazelcast.system
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Configured Hazelcast Serialization version : 1
+Feb 10, 2018 3:11:33 PM com.hazelcast.spi.OperationService
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Backpressure is disabled
+Feb 10, 2018 3:11:33 PM com.hazelcast.spi.impl.operationexecutor.classic.ClassicOperationExecutor
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Starting with 2 generic operation threads and 4 partition operation threads.
+Feb 10, 2018 3:11:33 PM com.hazelcast.instance.Node
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Creating MulticastJoiner
+Feb 10, 2018 3:11:33 PM com.hazelcast.core.LifecycleService
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Address[10.1.1.193]:5704 is STARTING
+Feb 10, 2018 3:11:33 PM com.hazelcast.nio.tcp.nonblocking.NonBlockingIOThreadingModel
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] TcpIpConnectionManager configured with Non Blocking IO-threading model: 3 input threads and 3 output threads
+Feb 10, 2018 3:11:33 PM com.hazelcast.cluster.impl.MulticastJoiner
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Trying to join to discovered node: Address[10.1.1.193]:5703
+Feb 10, 2018 3:11:33 PM com.hazelcast.nio.tcp.InitConnectionTask
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Connecting to /10.1.1.193:5703, timeout: 0, bind-any: true
+Feb 10, 2018 3:11:33 PM com.hazelcast.nio.tcp.TcpIpConnectionManager
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Established socket connection between /10.1.1.193:65511 and /10.1.1.193:5703
+Loading Rules and workflows!!!
+Feb 10, 2018 3:11:35 PM io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer
+INFO: Succeeded in deploying verticle
+Loading in Rule:Clear.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/Clear.drl
+Loading in Rule:CacheMiss.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/CacheMiss.drl
+Loading in Rule:FacebookRedirect.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/FacebookRedirect.drl
+Loading in Rule:30_SendBucketLayout.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/mentormatch/SendLayoutsAndData/30_SendBucketLayout.drl
+Loading in Rule:20_SendBucketDataToFrontend2.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/mentormatch/SendLayoutsAndData/20_SendBucketDataToFrontend2.drl
+Loading in BPMN:SendChat.bpmn of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/Workflows/SendChat.bpmn
+Loading in Rule:0_PreInit_AUTH_INIT.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_AUTH_INIT.drl
+Loading in Rule:0_PreInit_BTN_CLICK.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_BTN_CLICK.drl
+Loading in Rule:0_PreInit_USER_LOGOUT.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_USER_LOGOUT.drl
+Loading in Rule:0_PreInit_ATTRIBUTE_CHANGE.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_ATTRIBUTE_CHANGE.drl
+Loading in Rule:0_PreInit_LINK_CHANGE.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_LINK_CHANGE.drl
+Loading in Rule:0_PreInit_FORM_SUBMIT.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_FORM_SUBMIT.drl
+Loading in Rule:0_PreInit_MENU_PROFILE.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_MENU_PROFILE.drl
+Loading in Rule:0_PreInit_TV_SELECT.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_TV_SELECT.drl
+Loading in Rule:0_PreInit_ANSWER.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Init/0_PreInit_ANSWER.drl
+Loading in Rule:40_SendRegistrationLayout.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Registration/40_SendRegistrationLayout.drl
+Loading in Rule:10_CreateNewUser.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Registration/10_CreateNewUser.drl
+Loading in Rule:20_CheckIfProfileCompleted.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Registration/20_CheckIfProfileCompleted.drl
+Loading in Rule:60_AskRegistrationSubmit.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Registration/60_AskRegistrationSubmit.drl
+Loading in Rule:30_AskRegistration.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Registration/30_AskRegistration.drl
+Loading in Rule:CreatePaymentTokens.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/CreatePaymentTokens.drl
+Loading in Rule:NewPaymentsUser.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/NewPaymentsUser.drl
+Loading in Rule:CreateNewPaymentMethod.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/CreateNewPaymentMethod.drl
+Loading in Rule:IsAssemblyCompanyCreated.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/IsAssemblyCompanyCreated.drl
+Loading in Rule:CreatePaymentItem.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/CreatePaymentItem.drl
+Loading in Rule:IsAssemblyUserExists.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/IsAssemblyUserExists.drl
+Loading in Rule:EmailAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/EmailAttributeChange.drl
+Loading in Rule:LastNameAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/LastNameAttributeChange.drl
+Loading in Rule:PhoneNumberAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/PhoneNumberAttributeChange.drl
+Loading in Rule:PostCodeAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/PostCodeAttributeChange.drl
+Loading in Rule:StateAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/StateAttributeChange.drl
+Loading in Rule:FirstNameAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/FirstNameAttributeChange.drl
+Loading in Rule:CountryAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/CountryAttributeChange.drl
+Loading in Rule:AddressLineAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/AssemblyAttributeChange/AddressLineAttributeChange.drl
+Loading in Rule:CreateCompany.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Payments/CreateCompany.drl
+Loading in Rule:SMS.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/SMS.drl
+Loading in Rule:SendChat.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/SendChat.drl
+Loading in Rule:SelectConversation.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/SelectConversation.drl
+Loading in Rule:Email.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/Email.drl
+Loading in Rule:MessageCommTest.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/MessageCommTest.drl
+Loading in Rule:CreateNewConversation.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Messages/CreateNewConversation.drl
+Loading in Rule:Answer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Answer/Answer.drl
+Loading in Rule:10_SendLayoutChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/SendLayoutsAndData/10_SendLayoutChange.drl
+Loading in Rule:15_SendSubLayouts.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/SendLayoutsAndData/15_SendSubLayouts.drl
+Loading in Rule:10_MainInit.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/10_MainInit.drl
+Loading in Rule:15_IsLoggedIn.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/15_IsLoggedIn.drl
+Loading in Rule:15_NewRegistration.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/15_NewRegistration.drl
+Loading in Rule:30_TriggerRegistration.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/30_TriggerRegistration.drl
+Loading in Rule:11_SendAllAttributesToFrontend.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/11_SendAllAttributesToFrontend.drl
+Loading in Rule:30_TriggerLayouts.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/30_TriggerLayouts.drl
+Loading in Rule:20_SendUserCompanyToFrontend.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/SendProjectAndUser/20_SendUserCompanyToFrontend.drl
+Loading in Rule:20_SendUserToFrontend.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/SendProjectAndUser/20_SendUserToFrontend.drl
+Loading in Rule:20_SendProjectToFrontend.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/AUTH_INIT/SendProjectAndUser/20_SendProjectToFrontend.drl
+Loading in Rule:ResetUserPassword.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Admin/ResetUserPassword.drl
+Loading in Rule:30_TriggerSendChat.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/ButtonClicks/30_TriggerSendChat.drl
+Loading in Rule:Logout.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/Logout.drl
+Loading in Rule:UserGoOnlineHandler.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/UserGoOnlineHandler.drl
+Loading in Rule:TestAdmin.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/TestAdmin.drl
+Loading in Rule:UserProfile.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/UserProfile.drl
+Loading in Rule:UserGoOfflineHandler.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/UserGoOfflineHandler.drl
+Loading in Rule:UserProfileSubmit.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/UserProfileSubmit.drl
+Loading in Rule:profile.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/profile.drl
+Loading in Rule:UserPaymentMethods.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/UserPaymentMethods.drl
+Loading in Rule:Accounts.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/shared/Profile/Accounts.drl
+Loading in Rule:5_AttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/System/5_AttributeChange.drl
+Loading in Rule:5_LinkChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/System/5_LinkChange.drl
+Loading in Rule:5_SystemEvent.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/System/5_SystemEvent.drl
+Loading in Rule:50_HandleUserRoleSelection.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Registration/50_HandleUserRoleSelection.drl
+Loading in Rule:ReleasePayment.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Payments/ReleasePayment.drl
+Loading in Rule:MakePayment.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Payments/MakePayment.drl
+Loading in Rule:30_SendBucketLayout.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/SendLayoutsAndData/30_SendBucketLayout.drl
+Loading in Rule:20_SendBucketDataToFrontend2.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/SendLayoutsAndData/20_SendBucketDataToFrontend2.drl
+Loading in Rule:GeofenceExitDelivery.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/GPS/GeofenceExitDelivery.drl
+Loading in Rule:GeofenceDeliveryEntry.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/GPS/GeofenceDeliveryEntry.drl
+Loading in Rule:GPS.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/GPS/GPS.drl
+Loading in Rule:GeofencePickupEntry.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/GPS/GeofencePickupEntry.drl
+Loading in Rule:GeofenceExitPickup.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/GPS/GeofenceExitPickup.drl
+Loading in Rule:BucketViewCmd.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/BucketViewCmd.drl
+Loading in Rule:ShowOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/ShowOffer.drl
+Loading in Rule:AcceptJob.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/AcceptJob.drl
+Loading in Rule:MakeOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/MakeOffer.drl
+Loading in Rule:CancelOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/CancelOffer.drl
+Loading in Rule:AcceptOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/AcceptOffer.drl
+Loading in Rule:SendMessage.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/SendMessage.drl
+Loading in Rule:CounterOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/CounterOffer.drl
+Loading in Rule:SendQuote.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/SendQuote.drl
+Loading in Rule:SubmitOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/SubmitOffer.drl
+Loading in Rule:ConfirmOffer.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Quotes/ConfirmOffer.drl
+Loading in Rule:CreateNewLoadItemSUBMIT.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Load_Items/CreateNewLoadItemSUBMIT.drl
+Loading in Rule:CreateNewLoadItem.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Load_Items/CreateNewLoadItem.drl
+Loading in Rule:1_SelectTreeViewMessages.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/TreeView/1_SelectTreeViewMessages.drl
+Loading in Rule:1_SelectTreeItemCmd.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/TreeView/1_SelectTreeItemCmd.drl
+Loading in Rule:2_SelectTreeViewDraftItems.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/TreeView/2_SelectTreeViewDraftItems.drl
+Loading in Rule:1_ExpandTreeview.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/TreeView/1_ExpandTreeview.drl
+Loading in Rule:ContractTreeviewItems.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/TreeView/ContractTreeviewItems.drl
+Loading in Rule:3_CalculateLoadPrice.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/3_CalculateLoadPrice.drl
+Loading in Rule:SubmitJob.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/SubmitJob.drl
+Loading in Rule:LocateDriverInJob.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/LocateDriverInJob.drl
+Loading in Rule:3_LoadTitleAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/3_LoadTitleAttributeChange.drl
+Loading in Rule:JobOwnerRateDriver.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/JobOwnerRateDriver.drl
+Loading in Rule:JobConfirmDeliveryDriver.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/JobConfirmDeliveryDriver.drl
+Loading in Rule:1_CreateJob.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/1_CreateJob.drl
+Loading in Rule:ShowJobDetails.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/ShowJobDetails.drl
+Loading in Rule:3_LoadDescriptionAttributeChange.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/3_LoadDescriptionAttributeChange.drl
+Loading in Rule:2_EditJob.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/2_EditJob.drl
+Loading in Rule:LoadDetailsBackAction.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/LoadDetailsBackAction.drl
+Loading in Rule:JobConfirmDeliveryOwner.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/JobConfirmDeliveryOwner.drl
+Loading in Rule:SetLoadDimensionValueToBEG.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/SetLoadDimensionValueToBEG.drl
+Loading in Rule:TakeNote.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/TakeNote.drl
+Loading in Rule:HandleLoadSelection.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/HandleLoadSelection.drl
+Loading in Rule:1_CreateJobSendDropDownData.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/1_CreateJobSendDropDownData.drl
+Loading in Rule:JobConfirmPickup.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/JobConfirmPickup.drl
+Loading in Rule:HandleLoadCategorySelection.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/HandleLoadCategorySelection.drl
+Loading in Rule:JobConfirmArrival.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/channel40/Job/JobConfirmArrival.drl
+Loading in Rule:GenderInference.drl of /Users/loriscampanile/Documents/Business/Genny/rulesservice/.vertx/file-cache-72278372-3f92-4fd9-af89-05f0721053a8/rules/rulesCurrent/Memberhub/GenderInference.drl
+***** Setting up RulesGroup: rules -> [Clear.drl:CacheMiss.drl:FacebookRedirect.drl:30_SendBucketLayout.drl:20_SendBucketDataToFrontend2.drl:SendChat.bpmn:0_PreInit_AUTH_INIT.drl:0_PreInit_BTN_CLICK.drl:0_PreInit_USER_LOGOUT.drl:0_PreInit_ATTRIBUTE_CHANGE.drl:0_PreInit_LINK_CHANGE.drl:0_PreInit_FORM_SUBMIT.drl:0_PreInit_MENU_PROFILE.drl:0_PreInit_TV_SELECT.drl:0_PreInit_ANSWER.drl:40_SendRegistrationLayout.drl:10_CreateNewUser.drl:20_CheckIfProfileCompleted.drl:60_AskRegistrationSubmit.drl:30_AskRegistration.drl:CreatePaymentTokens.drl:NewPaymentsUser.drl:CreateNewPaymentMethod.drl:IsAssemblyCompanyCreated.drl:CreatePaymentItem.drl:IsAssemblyUserExists.drl:EmailAttributeChange.drl:LastNameAttributeChange.drl:PhoneNumberAttributeChange.drl:PostCodeAttributeChange.drl:StateAttributeChange.drl:FirstNameAttributeChange.drl:CountryAttributeChange.drl:AddressLineAttributeChange.drl:CreateCompany.drl:SMS.drl:SendChat.drl:SelectConversation.drl:Email.drl:MessageCommTest.drl:CreateNewConversation.drl:Answer.drl:10_SendLayoutChange.drl:15_SendSubLayouts.drl:10_MainInit.drl:15_IsLoggedIn.drl:15_NewRegistration.drl:30_TriggerRegistration.drl:11_SendAllAttributesToFrontend.drl:30_TriggerLayouts.drl:20_SendUserCompanyToFrontend.drl:20_SendUserToFrontend.drl:20_SendProjectToFrontend.drl:ResetUserPassword.drl:30_TriggerSendChat.drl:Logout.drl:UserGoOnlineHandler.drl:TestAdmin.drl:UserProfile.drl:UserGoOfflineHandler.drl:UserProfileSubmit.drl:profile.drl:UserPaymentMethods.drl:Accounts.drl:5_AttributeChange.drl:5_LinkChange.drl:5_SystemEvent.drl:50_HandleUserRoleSelection.drl:ReleasePayment.drl:MakePayment.drl:30_SendBucketLayout.drl:20_SendBucketDataToFrontend2.drl:GeofenceExitDelivery.drl:GeofenceDeliveryEntry.drl:GPS.drl:GeofencePickupEntry.drl:GeofenceExitPickup.drl:BucketViewCmd.drl:ShowOffer.drl:AcceptJob.drl:MakeOffer.drl:CancelOffer.drl:AcceptOffer.drl:SendMessage.drl:CounterOffer.drl:SendQuote.drl:SubmitOffer.drl:ConfirmOffer.drl:CreateNewLoadItemSUBMIT.drl:CreateNewLoadItem.drl:1_SelectTreeViewMessages.drl:1_SelectTreeItemCmd.drl:2_SelectTreeViewDraftItems.drl:1_ExpandTreeview.drl:ContractTreeviewItems.drl:3_CalculateLoadPrice.drl:SubmitJob.drl:LocateDriverInJob.drl:3_LoadTitleAttributeChange.drl:JobOwnerRateDriver.drl:JobConfirmDeliveryDriver.drl:1_CreateJob.drl:ShowJobDetails.drl:3_LoadDescriptionAttributeChange.drl:2_EditJob.drl:LoadDetailsBackAction.drl:JobConfirmDeliveryOwner.drl:SetLoadDimensionValueToBEG.drl:TakeNote.drl:HandleLoadSelection.drl:1_CreateJobSendDropDownData.drl:JobConfirmPickup.drl:HandleLoadCategorySelection.drl:JobConfirmArrival.drl:GenderInference.drl]
+Feb 10, 2018 3:11:39 PM com.hazelcast.cluster.ClusterService
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] 
+
+Members [2] {
+	Member [10.1.1.193]:5703
+	Member [10.1.1.193]:5704 this
+}
+
+Feb 10, 2018 3:11:41 PM com.hazelcast.instance.Node
+WARNING: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Config seed port is 5701 and cluster size is 2. Some of the ports seem occupied!
+Feb 10, 2018 3:11:41 PM com.hazelcast.core.LifecycleService
+INFO: [10.1.1.193]:5704 [10.1.1.193] [3.6.3] Address[10.1.1.193]:5704 is STARTED
+15:12:09.470 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 9, 57): cvc-complex-type.2.4.b: The content of element 'bpmn2:interface' is not complete. One of '{"http://www.omg.org/spec/BPMN/20100524/MODEL":documentation, "http://www.omg.org/spec/BPMN/20100524/MODEL":extensionElements, "http://www.omg.org/spec/BPMN/20100524/MODEL":operation}' is expected.
+15:12:09.499 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 35, 28): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.502 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 60, 30): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onEntry-script'.
+15:12:09.502 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 60, 30): cvc-complex-type.2.4.b: The content of element 'tns:onEntry-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.503 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 61, 28): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.506 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 91, 30): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onEntry-script'.
+15:12:09.506 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 91, 30): cvc-complex-type.2.4.b: The content of element 'tns:onEntry-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.507 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 92, 29): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.507 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 92, 29): cvc-complex-type.2.4.b: The content of element 'tns:onExit-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.510 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 116, 30): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onEntry-script'.
+15:12:09.513 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 116, 30): cvc-complex-type.2.4.b: The content of element 'tns:onEntry-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.513 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 117, 29): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.513 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 117, 29): cvc-complex-type.2.4.b: The content of element 'tns:onExit-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.516 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 140, 30): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onEntry-script'.
+15:12:09.517 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 140, 30): cvc-complex-type.2.4.b: The content of element 'tns:onEntry-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.517 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 141, 29): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.517 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 141, 29): cvc-complex-type.2.4.b: The content of element 'tns:onExit-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.519 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 164, 30): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onEntry-script'.
+15:12:09.520 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 164, 30): cvc-complex-type.2.4.b: The content of element 'tns:onEntry-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.520 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 165, 29): cvc-complex-type.4: Attribute 'scriptFormat' must appear on element 'tns:onExit-script'.
+15:12:09.521 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 165, 29): cvc-complex-type.2.4.b: The content of element 'tns:onExit-script' is not complete. One of '{"http://www.jboss.org/drools":script}' is expected.
+15:12:09.541 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 288, 45): cvc-id.2: There are multiple occurrences of ID value 'BPMNLabel_9'.
+15:12:09.541 [vert.x-worker-thread-2] ERROR o.d.core.xml.ExtensibleXmlParser - (null: 288, 45): cvc-attribute.3: The value 'BPMNLabel_9' of attribute 'id' on element 'bpmndi:BPMNLabel' is not valid with respect to its type, 'ID'.
+line 20:41 mismatched character '<EOF>' expecting '\n'
+15:12:10.218 [vert.x-worker-thread-2] INFO  o.d.c.k.b.impl.KieRepositoryImpl - KieModule was added: MemoryKieModule[releaseId=org.default:artifact:1.0.0-SNAPSHOT]
+Put rules KieBase into Custom Cache
+rules installed
+Feb 10, 2018 3:12:11 PM io.vertx.core.http.impl.HttpServerImpl
+SEVERE: java.net.BindException: Address already in use
+Feb 10, 2018 3:12:15 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+15:12:16.145 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:AUTH_INIT
+RULE INIT AUTH_INIT: QEventMessage [event_type=AUTH_INIT, data= MessageData [code=AUTH_INIT   null]]
+
+TERMINATED ::  Pre Init Auth Init - Init  NEW:STARTED:EVENT_AUTH_INIT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Send All Attributes To Frontend - MAIN  NEW:STARTED:EVENT_AUTH_INIT:
+
+Sending all the attributes
+15:12:16.569 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/attributes:
+All the attributes sent
+ALL ATTRIBUTES SENT TO FRONTEND
+
+TERMINATED ::  Send All Attributes To Frontend - MAIN  NEW:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Main Init - MAIN  NEW:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+
+Feb 10, 2018 3:12:19 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> DATA :channel40
+15:12:19.150 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/test2?pageSize=1&PRI_USERNAME=user2:
+Checked User is [id=88, created=2018-02-10T04:10:28, updated=null, name=Adam Crow][code=PER_USER2]
+
+TERMINATED ::  Main Init - MAIN  NEW:USER_CHECKED:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Is Logged In - MAIN  NEW:USER_CHECKED:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+
+user exists
+User [id=88, created=2018-02-10T04:10:28, updated=null, name=Adam Crow][code=PER_USER2] LOGGED IN
+STATE NO_USER CLEARED
+
+TERMINATED ::  Is Logged In - MAIN  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Send PROJECT To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:
+
+15:12:20.298 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/test2?pageSize=1&PRI_REALM=channel40:
+Project [id=89, created=2018-02-10T04:10:28, updated=null, name=Channel 40][code=PRJ_CHANNEL40]
+PROJECT SENT TO FRONTEND
+
+TERMINATED ::  Send PROJECT To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:PROJECT_SENT:
+=======================================================================================================
+Feb 10, 2018 3:12:20 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  Send User To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:PROJECT_SENT:
+
+USER PER_USER2 SENT TO FRONTEND
+
+TERMINATED ::  Send User To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Send User Company To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:USER_SENT:PROJECT_SENT:
+
+15:12:20.644 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/entityentitys/PER_USER2/linkcodes/LNK_STAFF/parents:
+Feb 10, 2018 3:12:20 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+The parent code is   ::  CPY_COMPANY1
+Cache MISS for CPY_COMPANY1
+15:12:21.042 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/CPY_COMPANY1:
+Company BE is  :: [id=8, created=2018-02-10T04:10:26, updated=null, name=Company1 Group Pvt Ltd][code=CPY_COMPANY1]
+The Company Code is :: CPY_COMPANY1
+Company CPY_COMPANY1 SENT TO FRONTEND
+
+TERMINATED ::  Send User Company To Frontend - SendAliases  NEW:USER_CHECKED:IS_LOGGED_IN:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+Feb 10, 2018 3:12:21 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  Check if Payments User Exists
+
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+15:12:21.323 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.PaymentUtils - GET:http://localhost:3456/assembly/users/eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9:
+assembly user string ::{"errors":{"token":["is not authorized"]}}
+isAssemblyUserExists::false
+
+TERMINATED ::  Check if Payments User Exists - payments  NEW:USER_CHECKED:IS_LOGGED_IN:USER_COMPANY_SENT:NEW_ASSEMBLY_USER_CREATION:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  New Payments User
+
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+15:12:24.188 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+user obj ::{"personalInfo":{"firstName":"Gayatri","lastName":"Raghavan"},"contactInfo":{"mobile":"61468497227","email":"rpgayatri@gmail.com"},"location":{"country":"AU"},"id":"eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9"}
+http request payments ::http://localhost:3456/assembly/users
+Feb 10, 2018 3:12:28 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+assembly ID created in our system ::eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9
+Assembly Company created
+
+TERMINATED ::  New Payments User - payments  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:USER_COMPANY_SENT:NEW_ASSEMBLY_USER_CREATION:STARTED:ALL_ATTRIBUTES_SENT:EVENT_AUTH_INIT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Is Payments Assembly Company Exists
+
+15:12:28.997 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+
+TERMINATED ::  Is Payments Assembly Company Exists
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Create Payments Assembly Company
+
+15:12:29.221 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+Company not found for user..So creating a Company now..
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+15:12:29.388 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+15:12:30.734 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.PaymentUtils - Company object ::{"contactInfo":{},"location":{"country":"AU"},"user":{"id":"eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9"}}
+http request payments ::http://localhost:3456/assembly/companies
+create payment company response -null
+
+TERMINATED ::  Create Payments Assembly Company
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Create Assembly Tokens
+
+15:12:31.778 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+15:12:32.008 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+http request payments ::http://localhost:3456/assembly/tokens
+
+TERMINATED ::  Create Assembly Tokens
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Create Payments Assembly Company
+
+15:12:33.436 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+Company not found for user..So creating a Company now..
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+15:12:33.547 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+15:12:33.800 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.PaymentUtils - Company object ::{"contactInfo":{},"location":{"country":"AU"},"user":{"id":"eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9"}}
+http request payments ::http://localhost:3456/assembly/companies
+create payment company response -null
+
+TERMINATED ::  Create Payments Assembly Company
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Is Payments Assembly Company Exists
+
+15:12:34.832 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+
+TERMINATED ::  Is Payments Assembly Company Exists
+=======================================================================================================
+=======================================================================================================
+EXECUTED ::  Create Payments Assembly Company
+
+15:12:34.965 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+Company not found for user..So creating a Company now..
+decoded token object ::{"sub":"be28bb06-ccf3-4c74-a638-2a354bbcdf5c","resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"allowed-origins":["http://social:8080","http://localhost:8080","http://localhost:8280","http://messages:8080","http://localhost:5000","http://localhost:15000","http://bridge:8088","http://localhost:3000","http://rulesservice:8080","https://localhost:8080"],"iss":"http://10.1.1.193:8180/auth/realms/genny","typ":"Bearer","preferred_username":"user2","given_name":"Alyson","nonce":"95b34154-e652-4f31-8798-6d0b0874a292","aud":"genny","acr":"1","nbf":0,"realm_access":{"roles":["uma_authorization","user"]},"azp":"genny","auth_time":1518235928,"name":"Alyson Genny2","exp":1518253934,"session_state":"12897dd7-dae4-4b35-8a5f-1ec5c71b2936","iat":1518235934,"family_name":"Genny2","jti":"a1e793cc-9125-46f2-84cc-72075c7690cd","email":"second.genny@genny.live"}
+15:12:35.367 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/PER_USER2:
+15:12:35.578 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.PaymentUtils - Company object ::{"contactInfo":{},"location":{"country":"AU"},"user":{"id":"eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9"}}
+http request payments ::http://localhost:3456/assembly/companies
+create payment company response -null
+
+TERMINATED ::  Create Payments Assembly Company
+=======================================================================================================
+TRIGGER LAYOUTS
+=======================================================================================================
+EXECUTED ::  Send Layout Change To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:EVENT_AUTH_INIT:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:
+
+Trying to load url.....
+https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json
+15:12:36.709 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/layouts/layout1.json:
+LAY_DEFAULT SENT TO FRONTEND
+
+TERMINATED ::  Send Layout Change To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+Feb 10, 2018 3:12:37 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  Send Sub Layouts To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:
+
+Trying to load url.....
+https://api.github.com/repos/genny-project/layouts/contents/sublayouts
+15:12:37.521 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://api.github.com/repos/genny-project/layouts/contents/sublayouts:
+Feb 10, 2018 3:12:37 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:37 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+0:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/DRIVER.json
+15:12:38.735 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/DRIVER.json:
+1:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/LOAD-ITEM.json
+15:12:39.110 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/LOAD-ITEM.json:
+2:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/LOAD.json
+15:12:39.476 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/LOAD.json:
+3:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OFFER-ACCEPTED.json
+15:12:39.827 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OFFER-ACCEPTED.json:
+4:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OFFER.json
+15:12:40.166 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OFFER.json:
+5:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OWNER.json
+15:12:40.505 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/OWNER.json:
+6:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/address-dropoff-display.json
+15:12:40.858 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/address-dropoff-display.json:
+7:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/address-pickup-display.json
+15:12:41.250 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/address-pickup-display.json:
+8:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/card.json
+15:12:41.599 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/card.json:
+9:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list-item-conversation.json
+15:12:41.944 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list-item-conversation.json:
+10:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list-item-website.json
+15:12:42.313 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list-item-website.json:
+11:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list_item.json
+15:12:42.658 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/list_item.json:
+12:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/load-action-buttons.json
+15:12:43.020 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/load-action-buttons.json:
+13:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/map-display.json
+15:12:43.369 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/map-display.json:
+14:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/price-display.json
+15:12:43.735 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/price-display.json:
+15:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/quote-received.json
+15:12:44.094 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/sublayouts/quote-received.json:
+
+TERMINATED ::  Send Sub Layouts To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:
+=======================================================================================================
+Feb 10, 2018 3:12:44 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  Send Ch40 BucketData To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:
+
+15:12:44.704 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_ROOT/linkcodes/LNK_CORE/attributes:
+Feb 10, 2018 3:12:44 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+[[id=109, created=2018-02-10T04:10:28, updated=null, name=Admin][code=GRP_ADMIN], [id=108, created=2018-02-10T04:10:28, updated=null, name=Loads][code=GRP_DASHBOARD], [id=56, created=2018-02-10T04:10:27, updated=null, name=Draft Loads][code=GRP_DRAFTS], [id=63, created=2018-02-10T04:10:28, updated=null, name=Messages][code=GRP_MESSAGES]]
+15:12:45.180 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_ADMIN/linkcodes/LNK_CORE/attributes:
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+15:12:45.479 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_DASHBOARD/linkcodes/LNK_CORE/attributes:
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+[[id=105, created=2018-02-10T04:10:28, updated=null, name=Accepted Quotes][code=GRP_APPROVED], [id=47, created=2018-02-10T04:10:27, updated=null, name=Delivered][code=GRP_COMPLETED], [id=27, created=2018-02-10T04:10:27, updated=null, name=In Transit][code=GRP_IN_TRANSIT], [id=21, created=2018-02-10T04:10:26, updated=null, name=Loads][code=GRP_NEW_ITEMS], [id=10, created=2018-02-10T04:10:26, updated=null, name=Paid][code=GRP_PAID]]
+[id=105, created=2018-02-10T04:10:28, updated=null, name=Accepted Quotes][code=GRP_APPROVED]
+Is True
+15:12:45.914 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_APPROVED/linkcodes/LNK_CORE/attributes/PER_USER2:
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+Feb 10, 2018 3:12:45 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+FETCHED 0 JOBS FOR PER_USER2
+[id=47, created=2018-02-10T04:10:27, updated=null, name=Delivered][code=GRP_COMPLETED]
+Is True
+Feb 10, 2018 3:12:46 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+15:12:46.410 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_COMPLETED/linkcodes/LNK_CORE/attributes/PER_USER2:
+Feb 10, 2018 3:12:47 PM org.javamoney.moneta.DefaultMonetaryContextFactory createMonetaryContextNonNullConfig
+INFO: Using custom MathContext: precision=256, roundingMode=HALF_EVEN
+FETCHED 1 JOBS FOR PER_USER2
+Feb 10, 2018 3:12:47 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+15:12:47.256 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/BEG_0000001/linkcodes/LNK_BEG/attributes:
+GRP_COMPLETED:LOD_LOAD1Feb 10, 2018 3:12:47 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+
+GRP_COMPLETED:PER_USER1
+GRP_COMPLETED:PER_USER2
+[id=27, created=2018-02-10T04:10:27, updated=null, name=In Transit][code=GRP_IN_TRANSIT]
+Is True
+15:12:47.819 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_IN_TRANSIT/linkcodes/LNK_CORE/attributes/PER_USER2:
+FETCHED 1 JOBS FOR PER_USER2
+15:12:48.499 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/BEG_0000005/linkcodes/LNK_BEG/attributes:
+Feb 10, 2018 3:12:48 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+GRP_IN_TRANSIT:LOD_LOAD4
+GRP_IN_TRANSIT:PER_USER1
+GRP_IN_TRANSIT:PER_USER2
+[id=21, created=2018-02-10T04:10:26, updated=null, name=Loads][code=GRP_NEW_ITEMS]
+15:12:48.843 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_NEW_ITEMS/linkcodes/LNK_CORE/attributes:
+Feb 10, 2018 3:12:48 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+FETCHED 2 JOBS FOR PER_USER2
+15:12:49.261 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/BEG_0000002/linkcodes/LNK_BEG/attributes:
+Feb 10, 2018 3:12:49 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+GRP_NEW_ITEMS:LOD_LOAD2
+GRP_NEW_ITEMS:PER_USER1
+15:12:49.508 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/BEG_0000003/linkcodes/LNK_BEG/attributes:
+Feb 10, 2018 3:12:49 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+GRP_NEW_ITEMS:LOD_LOAD5
+GRP_NEW_ITEMS:PER_USER3
+[id=10, created=2018-02-10T04:10:26, updated=null, name=Paid][code=GRP_PAID]
+Is True
+Feb 10, 2018 3:12:49 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+15:12:49.705 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_PAID/linkcodes/LNK_CORE/attributes/PER_USER2:
+FETCHED 0 JOBS FOR PER_USER2
+Feb 10, 2018 3:12:49 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+15:12:49.891 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/GRP_MESSAGES/linkcodes/LNK_CHAT/attributes:
+15:12:50.484 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:http://localhost:8280/qwanda/baseentitys/CHT_CHAT1/linkcodes/LNK_USER/attributes:
+
+TERMINATED ::  Send Ch40 BucketData To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:SEND_BUCKET_DATA:
+=======================================================================================================
+Feb 10, 2018 3:12:50 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  Send Bucket Layout To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:USER_SENT:PROJECT_SENT:SEND_BUCKET_DATA:
+
+Trying to load url.....
+https://raw.githubusercontent.com/genny-project/layouts/master/card.json
+15:12:50.646 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/card.json:
+Trying to load url.....
+https://raw.githubusercontent.com/genny-project/layouts/master/dashboard_channel40.json
+15:12:50.997 [vert.x-worker-thread-3] DEBUG life.genny.qwandautils.QwandaUtils - GET:https://raw.githubusercontent.com/genny-project/layouts/master/dashboard_channel40.json:
+
+TERMINATED ::  Send Bucket Layout To Frontend - SendLayoutsAndData  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:SEND_BUCKET_LAYOUT:USER_SENT:PROJECT_SENT:SEND_BUCKET_DATA:
+=======================================================================================================
+Feb 10, 2018 3:12:51 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+=======================================================================================================
+EXECUTED ::  User go online event - MAIN  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:SEND_BUCKET_LAYOUT:USER_SENT:PROJECT_SENT:SEND_BUCKET_DATA:
+
+15:12:51.395 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.MessageUtils - ------------------------------------------------------------------------
+15:12:51.396 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.MessageUtils - MESSAGE TO OWNER   ::   {"msg_type":"MSG_MESSAGE","token":null,"template_code":"MSG_CH40_WELCOME_TOAST","msgMessageType":"TOAST","recipientArr":["PER_USER2"],"messageContextMap":{}}
+15:12:51.396 [vert.x-worker-thread-3] INFO  life.genny.qwandautils.MessageUtils - ------------------------------------------------------------------------
+Feb 10, 2018 3:12:51 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+
+TERMINATED ::  User go online event - MAIN  IS_ASSEMBLY_USER_CREATED:NEW:USER_CHECKED:IS_LOGGED_IN:GONE_ONLINE:NEW_ASSEMBLY_USER_CREATION:NEW_ASSEMBLY_COMPANY_CREATED:SUBLAYOUT_CHANGE_READY:EVENT_AUTH_INIT:LAYOUT_CHANGE_READY:TRIGGER_LAYOUTS:IS_ASSEMBLY_TOKEN_CREATED:USER_COMPANY_SENT:STARTED:ALL_ATTRIBUTES_SENT:SEND_BUCKET_LAYOUT:USER_SENT:PROJECT_SENT:SEND_BUCKET_DATA:
+=======================================================================================================
+15:12:51.893 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:EVT_ATTRIBUTE_VALUE_CHANGE
+RULE INIT ATTRIBUTE_CHANGE: PER_USER2:PER_USER2:PRI_ASSEMBLY_USER_ID: old->fbf38b0d-90a7-423c-9d96-f7a892c05418: new->eyJ1c2VyQ29kZSI6IlBFUl9VU0VSMiJ9 token=eyJhbGciOiJSUz...ehhNyoyOyezgw
+=======================================================================================================
+EXECUTED ::  Listen Attribute Change - AttributeChange  NEW:STARTED:EVT_ATTRIBUTE_VALUE_CHANGE:
+
+[id=null, created=2018-02-10T04:12:28.675, updated=null, name=Adam Crow][code=PER_USER2]
+
+TERMINATED ::  Listen Attribute Change - AttributeChange  NEW:STARTED:EVT_ATTRIBUTE_VALUE_CHANGE:
+=======================================================================================================Feb 10, 2018 3:12:52 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+
+15:12:52.007 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.060 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.082 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.112 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.135 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.160 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.200 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.220 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.231 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.242 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.247 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.259 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.268 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:TV_EXPAND
+15:12:52.294 [vert.x-worker-thread-3] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:EVT_ATTRIBUTE_VALUE_CHANGE
+RULE INIT ATTRIBUTE_CHANGE: PER_USER2:PER_USER2:PRI_ONLINE: old->null: new->TRUE token=eyJhbGciOiJSUz...ehhNyoyOyezgw
+=======================================================================================================
+EXECUTED ::  Listen Attribute Change - AttributeChange  NEW:STARTED:EVT_ATTRIBUTE_VALUE_CHANGE:
+
+[id=null, created=2018-02-10T04:12:51.763, updated=null, name=Adam Crow][code=PER_USER2]
+
+TERMINATED ::  Listen Attribute Change - AttributeChange  NEW:STARTED:EVT_ATTRIBUTE_VALUE_CHANGE:
+=======================================================================================================Feb 10, 2018 3:12:52 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> SERVICE COMMAND :channel40
+
+Feb 10, 2018 3:13:50 PM life.genny.channels.EBCHandlers
+INFO: EVENT-BUS >> EVENT :channel40
+15:13:50.846 [vert.x-worker-thread-7] INFO  life.genny.rules.RulesLoader - ######  The realm name is:  #####  channel40
+FIRE RULES Event:USER_GO_OFFLINE

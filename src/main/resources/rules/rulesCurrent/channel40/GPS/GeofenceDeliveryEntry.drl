@@ -15,16 +15,13 @@ import java.util.HashMap;
 rule "Geofence Enter Delivery Point"
 when
   $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("DELIVERY"))
-  rules: QRules()
+  rules: QRules( isRealm("channel40") )
 then
     
 		RulesUtils.header(drools.getRule().getName());
   
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
-		
-		RulesUtils.println("---- ACTION ----");
-		RulesUtils.println("ARRIVED AT DELIVERY POINT");
 		
 		String[] recipients = new String[1];
 		recipients[0] = rules.getUser().getCode();
