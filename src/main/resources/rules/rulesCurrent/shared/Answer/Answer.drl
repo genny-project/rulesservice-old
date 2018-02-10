@@ -24,7 +24,7 @@ ruleflow-group 'Answer'
 			if(attributeCode.contains("ADDRESS_JSON")) {
 				rules.processAddressAnswers($m);
 			}
-			else if(attributeCode.contains("_RATING")) {
+			else if(attributeCode.contains("PRI_RATING")) {
 				rules.processAnswerRating($m, "PRI_DRIVER_RATING"); 
 			}
 			else if(attributeCode.equals("PRI_MESSAGE")) {
