@@ -199,7 +199,7 @@ public class QRules {
 	 * @return the realm
 	 */
 	public boolean isRealm(final String realm) {
-		return this.realm().equalsIgnoreCase(realm));
+		return this.realm().equalsIgnoreCase(realm);
 	}
 
 	/**
