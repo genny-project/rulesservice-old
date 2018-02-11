@@ -12,7 +12,8 @@ import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.QwandaUtils;;
 
 public class VertxUtils {
 
@@ -93,7 +94,14 @@ public class VertxUtils {
 		} else {
 			// fetch normally
 			System.out.println("Cache MISS for " + code);
-			be = MergeUtil.getBaseEntityForAttr(code, token);
+			try {
+				be = MergeUtil.getBaseEntityForAttr(code, token);
+			} catch (Exception e) {
+				// Okay, this is bad. Usually the code is not in the database but in keycloak
+				// So lets leave it to the rules to sort out... (new user)
+				return null;
+				
+			}
 			if ((cachedEnabled)||(System.getenv("GENNY_DEV") != null) ) {
 				writeCachedJson(code, JsonUtils.toJson(be));
 			}
