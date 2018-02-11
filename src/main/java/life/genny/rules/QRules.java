@@ -373,8 +373,8 @@ public class QRules {
 		} else {
 
 	//		if (isNull("BE_" + code.toUpperCase())) {
-			//be = VertxUtils.readFromDDT(code, getToken());
-				be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
+			be = VertxUtils.readFromDDT(code, getToken());
+			//	be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 		//		set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
 	//		} 
 		//else {
