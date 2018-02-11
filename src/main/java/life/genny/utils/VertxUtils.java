@@ -15,6 +15,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
+import static java.lang.System.out;;
 
 public class VertxUtils {
 
@@ -22,10 +23,29 @@ public class VertxUtils {
 
 	static Map<String, String> localMap = new HashMap<String, String>(); // until we work it out
 
-	static public JsonObject readCachedJson(final String key) {
+	private static Vertx vertxContext;
+	
+	/**
+   * @return the vertxContext
+   */
+  public static Vertx getVertxContext() {
+    return vertxContext;
+  }
+
+  /**
+   * @param vertxContext the vertxContext to set
+   */
+  public static void setVertxContext(Vertx vertxContext) {
+    VertxUtils.vertxContext = vertxContext;
+  }
+
+  static public JsonObject readCachedJson(final String key) {
+	  
+
 		CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
 
-		SharedData sd = Vertx.currentContext().owner().sharedData();
+		SharedData sd = getVertxContext().sharedData();
+
 		if (System.getenv("GENNY_DEV") == null) {
 			if (!cachedEnabled) {
 				fut.complete(new JsonObject().put("status", "error").put("value", "Cache Disabled"));
