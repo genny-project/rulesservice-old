@@ -56,7 +56,6 @@ public class EBCHandlers {
 	private static Map<String, User> usersSession = new HashMap<String, User>();
 
 	static String rulesDir = System.getenv("RULES_DIR");
-	static String projectRealm = System.getenv("PROJECT_REALM");
 
 
 	static String token;
@@ -160,7 +159,7 @@ public class EBCHandlers {
 	}
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
-		log.info("EVENT-BUS >> " + messageType.toUpperCase() + " :" + projectRealm);
+		log.info("EVENT-BUS >> " + messageType.toUpperCase() );
 
 		final JsonObject payload = new JsonObject(arg.body().toString());
 		return payload;
@@ -171,14 +170,16 @@ public class EBCHandlers {
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
-			
-			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
-			
+	
 			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
 			String fullName = adecodedTokenMap.get("name").toString();
 			String realm = adecodedTokenMap.get("realm").toString();
 			String accessRoles = adecodedTokenMap.get("realm_access").toString();
-			
+
+			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
+			qRules.set("realm", realm);
+
+
 			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
 	
 

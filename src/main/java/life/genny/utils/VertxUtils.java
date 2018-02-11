@@ -8,14 +8,11 @@ import java.util.concurrent.ExecutionException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.http.HttpServerRequest;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
-import io.vertx.rxjava.ext.web.RoutingContext;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
-import static java.lang.System.out;;
+import life.genny.qwandautils.MergeUtil;;
 
 public class VertxUtils {
 

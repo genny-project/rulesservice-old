@@ -3,8 +3,6 @@ package life.genny.rules;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,14 +21,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.money.CurrencyUnit;
-import javax.money.Monetary;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
-import org.javamoney.moneta.function.PrecisionContextRoundedOperator;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -378,7 +373,7 @@ public class QRules {
 		} else {
 
 	//		if (isNull("BE_" + code.toUpperCase())) {
-		//	be = VertxUtils.readFromDDT(code, getToken());
+			//be = VertxUtils.readFromDDT(code, getToken());
 				be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 		//		set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
 	//		} 
@@ -392,24 +387,17 @@ public class QRules {
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
-		if (isNull("BE_" + attributeCode.toUpperCase() + "_" + value)) {
 			be = RulesUtils.getBaseEntityByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(),
 					attributeCode, value);
-			set("BE_" + attributeCode.toUpperCase() + "_" + value, be); // WATCH THIS!!!
-		} else {
-			be = getAsBaseEntity("BE_" + attributeCode.toUpperCase() + "_" + value);
-		}
 		return be;
 	}
 
 	public List<BaseEntity> getBaseEntitysByAttributeAndValue(final String attributeCode, final String value) {
 
 		List<BaseEntity> bes = null;
-		if (isNull("BE_" + attributeCode.toUpperCase() + "_" + value)) {
 			bes = RulesUtils.getBaseEntitysByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(),
 					attributeCode, value);
-			set("BE_" + attributeCode.toUpperCase() + "_" + value, bes); // WATCH THIS!!!
-		}
+
 
 		return bes;
 	}

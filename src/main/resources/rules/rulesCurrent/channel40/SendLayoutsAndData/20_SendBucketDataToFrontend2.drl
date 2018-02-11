@@ -10,9 +10,12 @@ rule "Send Ch40 BucketData To Frontend"
     salience 670
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("STARTED") && !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY") && isRealm("channel40") ) 
+        rules: QRules(  !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY") ) 
      then
      	rules.header();
+     	
+     	rules.setState("SEND_BUCKET_DATA");
+ 
 	
 		/* Show loading indicator */
 		  rules.showLoading("Loading your interface..."); 
@@ -96,7 +99,6 @@ rule "Send Ch40 BucketData To Frontend"
       	}
   	
   		rules.publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
-     	rules.setState("SEND_BUCKET_DATA");
        	   		
 	    rules.footer();       		      
 end
