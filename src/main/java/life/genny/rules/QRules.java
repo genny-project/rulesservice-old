@@ -299,7 +299,9 @@ public class QRules {
 		BaseEntity be = null;
 	//	if (isNull("USER")) {
 			String username = (String) getDecodedTokenMap().get("preferred_username");
-		   	be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
+			String code = "PER_"+QwandaUtils.getNormalisedUsername(username).toUpperCase();
+			be = getBaseEntityByCode(code);
+			//be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
 		    
 			if (be != null) {
 				set("USER", be); // WATCH THIS!!!
