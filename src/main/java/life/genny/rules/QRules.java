@@ -356,23 +356,6 @@ public class QRules {
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
-		if (System.getenv("API_PORT") != null) {
-			try {
-				be = QwandaUtils.apiGetCodedEntity(code, BaseEntity.class, getToken());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} // remember to update upon be changes
-			if (be == null) {
-				be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
-				try {
-					QwandaUtils.apiPutCodedEntity(be, getToken());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		} else {
 
 	//		if (isNull("BE_" + code.toUpperCase())) {
 			be = VertxUtils.readFromDDT(code, getToken());
@@ -382,7 +365,7 @@ public class QRules {
 		//else {
 		//		be = getAsBaseEntity("BE_" + code.toUpperCase());
 		//	}
-		}
+		//}
 		return be;
 	}
 
