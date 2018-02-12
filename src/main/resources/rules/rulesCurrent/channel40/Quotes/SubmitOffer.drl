@@ -28,7 +28,6 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
-import io.vertx.rxjava.core.eventbus.EventBus;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
@@ -57,10 +56,6 @@ import java.time.format.DateTimeFormatter;
 rule "Submit Offer"
     when
        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DETAILS_GRP" ) 
-       bus:EventBus()
-       $user: User(realm != null)
-       $map : Map($value: this["token"] != null)
-       $map1 : Map($value1: this["realm"] != null)
        rules: QRules()
     then
         rules.header();
@@ -85,8 +80,8 @@ rule "Submit Offer"
             gson1 = gsonBuilder.create();
 
         /* Prepare Token & qwandaServiceUrl */
-            String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-            String tokenString = (String)$map.get("token");        
+            String qwandaServiceUrl = rules.getQwandaServiceUrl();
+            String tokenString = rules.getToken();        
         
         /* Get offerCode, username, userCode, userFullName */
             String dataString = $m.getData().getValue();
@@ -261,6 +256,7 @@ rule "Submit Offer"
         /* Check if a link exists between USER & OFFER */
             Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
             System.out.println("LINK EXISTS FOR USER & OFFER?  ::    "+ linkUserOffer);
+
         /* link BEG and QUOTER BE || QUOTER */
             if(!linkUserOffer){
                 System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
@@ -269,25 +265,25 @@ rule "Submit Offer"
                 String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
             }          
 
-        /* SEND OFFER BE    */
+        /* SEND OFFER BE    
             JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
             System.out.println("------------------------------------------------------------------------");
             System.out.println("UPDATED OFFER BE   ::  " + offerObj.toString());
             System.out.println("------------------------------------------------------------------------");
             offerObj.put("token", tokenString);      
-            bus.publish("cmds", offerObj);
+            bus.publish("cmds", offerObj);*/
 
-            /* rules.publishBaseEntityByCode(offerCode); */
+            rules.publishBaseEntityByCode(offerCode); 
 
-        /* SEND QUOTER BE */
+        /* SEND QUOTER BE 
             JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
             System.out.println("------------------------------------------------------------------------");
             System.out.println("QUOTER BE   ::  " + quoterObj.toString());
             System.out.println("------------------------------------------------------------------------");
             quoterObj.put("token", tokenString);      
-            bus.publish("cmds", quoterObj);
+            bus.publish("cmds", quoterObj);*/
 
-            /* rules.publishBaseEntityByCode(offerCode); */
+            rules.publishBaseEntityByCode(quoterCode); 
         
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
@@ -301,7 +297,7 @@ rule "Submit Offer"
                 System.out.println("------------------------------------------------------------------------");
             /* publish new link data */
                 newLink.put("token", tokenString );
-                bus.publish("cmds", newLink);
+                rules.publish("cmds", newLink);
 
         /* Sending message if offer exists*/
 

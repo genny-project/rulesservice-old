@@ -1613,6 +1613,7 @@ public class QRules {
 		return link;
 	}
 
+	
 	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
 
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
@@ -1838,13 +1839,13 @@ public class QRules {
 		
 		Money ownerFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
 		
-		Number RANGE_1= 1000;
-		Number RANGE_2= 3000;
-		Number RANGE_3= 5000;
+		Number RANGE_1 = 999.99;
+		Number RANGE_2 = 2999.99;
+		Number RANGE_3 = 4999.99;
 
 		Number FEE_1= 0.15;
-		Number FEE_2= 0.10;
-		Number FEE_3= 0.075;
+		Number FEE_2= 0.125;
+		Number FEE_3= 0.09;
 		Number FEE_4= 0.05;
 		
 		Number RANGE_1_COMPONENT = MoneyHelper.mul(inputNum, FEE_1);
@@ -1912,13 +1913,13 @@ public class QRules {
 
 		Money driverFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
 		
-		Number RANGE_1= 1000;
-		Number RANGE_2= 3000;
-		Number RANGE_3= 5000;
+		Number RANGE_1 = 999.99;
+		Number RANGE_2 = 2999.99;
+		Number RANGE_3 = 4999.99;
 
 		Number FEE_1= 0.15;
-		Number FEE_2= 0.10;
-		Number FEE_3= 0.075;
+		Number FEE_2= 0.125;
+		Number FEE_3= 0.09;
 		Number FEE_4= 0.05;
 
 		Number ONE = 1;
@@ -1928,8 +1929,8 @@ public class QRules {
 
 		Number subtract01 = MoneyHelper.sub( RANGE_2 ,RANGE_1 );
 		Number subtract02 = MoneyHelper.sub( RANGE_3 ,RANGE_2 );
-			Number REVERSE_FEE_MULTIPLIER_1 = MoneyHelper.mul( subtract01 , FEE_2);
-			Number REVERSE_FEE_MULTIPLIER_2 = MoneyHelper.mul( subtract02 , FEE_3);
+		Number REVERSE_FEE_MULTIPLIER_1 = MoneyHelper.mul( subtract01 , FEE_2);
+		Number REVERSE_FEE_MULTIPLIER_2 = MoneyHelper.mul( subtract02 , FEE_3);
 
 		// const REVERSE_FEE_BOUNDARY_1 = RANGE_1 - ( RANGE_1 * FEE_1 );
 		// const REVERSE_FEE_BOUNDARY_2 = RANGE_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );

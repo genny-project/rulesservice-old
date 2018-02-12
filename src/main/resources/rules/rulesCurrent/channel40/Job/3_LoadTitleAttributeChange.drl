@@ -18,7 +18,7 @@ rule "Load Title Attribute Change"
     	    rules.header();
 	    
          Answer newAnswer = $m.getAnswer();
-         BaseEntity load = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+         BaseEntity load = rules.getBaseEntityByCode(newAnswer.getTargetCode());
          System.out.println("The load value is "+load.toString());
          load.setName(newAnswer.getValue());
          rules.println("The updated laod name before PUT "+load.getName());

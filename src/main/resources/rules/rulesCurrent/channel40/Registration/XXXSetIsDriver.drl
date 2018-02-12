@@ -1,0 +1,27 @@
+package life.genny.rules;
+
+import life.genny.qwandautils.MergeUtil;
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+
+rule "Set Is Driver"
+
+    when
+        rules: QRules(isState("IS_LOGGED_IN") && !isState("IS_OWNER") && !isState("IS_DRIVER") )  
+     then
+        rules.header();
+        /* GET token AND userCode */
+        String tokenString = rules.getToken();  
+        String userCode =  rules.getUser().getCode();    
+
+     	String driver = MergeUtil.getAttrValue(userCode, "PRI_DRIVER", tokenString);
+        System.out.println("Driver    ::   "+ driver);
+        
+        if( driver != null && driver.equals("TRUE")){
+            rules.setState("IS_DRIVER");
+            System.out.println("State   ::   IS_DRIVER");
+        }	
+	    rules.footer();     		      
+end
