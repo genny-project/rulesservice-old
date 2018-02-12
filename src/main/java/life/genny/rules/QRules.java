@@ -1413,7 +1413,20 @@ public class QRules {
 			String targetCode = answer.getTargetCode();
 			answer.setSourceCode(answer.getTargetCode());
 			String value = answer.getValue();
-			this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, value);
+			if(value != null) {
+			
+				JsonArray imagesJson = new JsonArray(value);
+				if(imagesJson != null) {
+					
+					JsonObject firstImage = imagesJson.getJsonObject(0);
+					if(firstImage != null) {
+						
+						this.println(firstImage);
+						String jsonStringImage = firstImage.getString("uploadURL");						
+						this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, jsonStringImage);
+					}
+				}
+			}
 		}
 	}
 
@@ -1443,8 +1456,7 @@ public class QRules {
 					
 					/* we increment the number of current ratings */
 					numberOfRating += 1;
-					Answer ratingAnswer = new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
-			        publishData(ratingAnswer);
+			        this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
 			        
 			        /* we compute the new rating */
 			        
@@ -1454,9 +1466,8 @@ public class QRules {
 			        
 			        Double newRatingAverage = currentRating / numberOfRating;
 			        newRatingAverage += newRating / numberOfRating;
-					
-					Answer newRatingAnswer = new Answer(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage));
-			        publishData(newRatingAnswer);
+			        this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage));
+
 				}
 				
 				/* publishData(answer); */ 
