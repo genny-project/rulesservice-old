@@ -103,7 +103,7 @@ rule "Cancel Offer"
                 offerCount = 0;
             }else {                 
                 offerCount = Integer.parseInt(offerCountString);
-                if(offerCount >= 0){
+                if(offerCount > 0){
                     offerCount = offerCount - 1;
                     System.out.println("Offer Count is   ::   " + offerCount);
                 }
