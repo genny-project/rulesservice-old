@@ -1788,7 +1788,7 @@ public class QRules {
        BaseEntity job = getParent(newAnswer.getTargetCode(), "LNK_BEG");
       
       Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);             
-      publishData(jobTitleAnswer);
+      saveAnswer(jobTitleAnswer);
 	}
 	
 	public String getCurrentLocalDateTime() {
