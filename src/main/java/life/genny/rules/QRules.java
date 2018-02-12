@@ -1360,7 +1360,8 @@ public class QRules {
 					/* send new answers to api */
 					/* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken()); */
 					for(Answer an: newAnswers) {
-						publishData(an);
+						//publishData(an);
+						saveAnswer(an);
 					}
 				}
 			}
