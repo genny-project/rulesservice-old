@@ -123,7 +123,7 @@ public class RulesUtils {
 		// System.getenv("LAYOUT_CACHE_HOST");
 		//http://localhost:2223
 		
-		Boolean activateCache = false;
+		Boolean activateCache = true;
 		
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if(host == null) {

@@ -50,15 +50,11 @@ rule "Receive GPS Data"
 	    	    			percentage = percentage < 0 ? 0 : percentage;
 	    	     		
 	    	    			/* Update progress of the BEG */
-	    	    			Answer updateProgressAnswer = new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
-	    	    		    rules.publishData(updateProgressAnswer);
-	    	    		    
+	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
+
 	    	    		    /* update position of the beg */
-	    		    		Answer updateLatAnswer = new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LAT", driverLatitude);
-	    	    		    rules.publishData(updateLatAnswer);
-	    	    		    
-	    	    		    Answer updateLngAnswer = new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LON", driverLongitude);
-	    	    		    rules.publishData(updateLngAnswer);
+	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LAT", driverLatitude);
+	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LON", driverLongitude);
 	     		}
 	    	}
  		    	
