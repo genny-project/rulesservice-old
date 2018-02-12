@@ -1613,6 +1613,7 @@ public class QRules {
 		return link;
 	}
 
+	
 	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
 
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);

@@ -1,38 +1,15 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
-import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QEventLinkChangeMessage;
-import life.genny.qwanda.entity.EntityEntity;
-import com.google.gson.Gson;
+
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
-import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MergeUtil;
-import life.genny.rules.RulesUtils;
-import life.genny.qwanda.entity.User;
-import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
-import java.util.Map;
-import java.util.HashMap; 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
-import java.time.format.DateTimeFormatter;
-import life.genny.qwanda.DateTimeDeserializer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
+
+
 
 
 /*   Rule to handle load category selection   */
@@ -41,52 +18,30 @@ rule "Handle Load Category Selection"
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
         rules: QRules()
      then
-        RulesUtils.header(drools.getRule().getName());
+        rules.header();
         
-       /* Prepare GSON Deserialization  */
-         GsonBuilder gsonBuilder = new GsonBuilder();
-         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-         Gson gson = gsonBuilder.create();          
-      
-       /*  Prepare Token & qwandaServiceUrl    */
-         String qwandaServiceUrl = rules.getQwandaServiceUrl();
-         String tokenString = rules.getToken();
-       /*  Get Username and userCode    */
-         String userName = rules.getAsString("preferred_username");   
-         System.out.println("The user name is  ::  " +userName);
-         String userCode =  QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
-         System.out.println("The user Code is  ::  " +userCode);
-         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+          rules.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
  
        /*  Collect load code from answer  */
-         Answer newAnswer = $m.getAnswer();
-         System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
-         System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
-         String targetCode = newAnswer.getTargetCode();
-         String sourceCode = newAnswer.getSourceCode();
-         String loadCategoryCode = newAnswer.getValue();
+         Answer answer = $m.getAnswer();
+         rules.println("The created value  ::  "+answer.getCreatedDate());
+         rules.println("Answer from QEventAttributeValueChangeMessage  ::  "+answer.toString());
+         String targetCode = answer.getTargetCode();
+         String sourceCode = answer.getSourceCode();
+         String loadCategoryCode = answer.getValue();
          String attributeCode = $m.data.getCode();
-         System.out.println("The target BE code is   ::  " +targetCode);
-         System.out.println("The source BE code is   ::  " +sourceCode);
-         System.out.println("The attribute code is   ::  " +attributeCode);
-         System.out.println("The load type code is   ::  " +loadCategoryCode);
-           BaseEntity loadType = MergeUtil.getBaseEntityForAttr(loadCategoryCode, tokenString);
-          String loadCategoryTypeValue = loadType.getName();
-         System.out.println("The load type value is   ::  " +loadCategoryTypeValue);
-       /* creating new Answer */
-         String jsonAnswerStr = gson.toJson(newAnswer);
-         System.out.println("The answer in string format :: "+jsonAnswerStr);
-         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-         jsonAnswer.put("value",loadCategoryTypeValue);
-         jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
-         jsonAnswer.put("inferred",true);
-         System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
-         String jsonAnswerMessage = gson.toJson(jsonAnswer);
-       /*  Saving Answer   */
-	     QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswerMessage, tokenString);
-       /* Print Answer */
-         System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+jsonAnswerMessage);      
-        
-         RulesUtils.footer(drools.getRule().getName());
+         rules.println("The target BE code is   ::  " +targetCode);
+         rules.println("The source BE code is   ::  " +sourceCode);
+         rules.println("The attribute code is   ::  " +attributeCode);
+         rules.println("The load type code is   ::  " +loadCategoryCode);
+         
+         BaseEntity loadType = rules.getBaseEntityFByCode(loadCategoryCode);
+           
+        /* creating new Answer */
+       Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
+       newAnswer.setInferred(true);
+       
+  		rules.saveAnswer(newAnswer);        
+         rules.footer();
 
 end
