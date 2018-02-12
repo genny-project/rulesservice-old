@@ -31,13 +31,14 @@ rule "Create Payment Item"
        	
        	/* Creating Payment Item */
         String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
-        
+        System.out.println("AssemblyId="+assemblyId);
+		
 		/* Save itemId as an attribute to BEG Group */
 		if(itemId != null && assemblyId!= null) {
-				
+			
+			System.out.println("Saving Answer");
 			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
-	        PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), itemIdAnswer, rules.getToken());	    
-	   
+	        rules.saveAnswer(itemIdAnswer);	    
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		
