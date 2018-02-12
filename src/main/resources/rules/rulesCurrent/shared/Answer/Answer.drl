@@ -19,14 +19,21 @@ ruleflow-group 'Answer'
 			
 			Answer firstAnswer = answers[0];
 			String attributeCode = firstAnswer.getAttributeCode();
-			
 				
 			if(attributeCode.contains("ADDRESS_JSON")) {
 				rules.processAddressAnswers($m);
 			}
+			
+			/* === TODO: this is channel40 specific code. should be moved to ch40 folder === */
 			else if(attributeCode.contains("PRI_RATING")) {
 				rules.processAnswerRating($m, "PRI_DRIVER_RATING"); 
 			}
+			else if(attributeCode.contains("PRI_LOAD_IMAGE")) {
+				rules.processImageUpload($m, "PRI_IMAGE_URL");
+				rules.processAnswer($m);
+			}
+			/*==============*/
+			
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m); 
 			}

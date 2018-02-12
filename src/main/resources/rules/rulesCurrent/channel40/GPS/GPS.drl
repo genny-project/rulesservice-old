@@ -53,8 +53,8 @@ rule "Receive GPS Data"
 	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
 
 	    	    		    /* update position of the beg */
-	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LAT", driverLatitude);
-	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LON", driverLongitude);
+	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude);
+	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
 	     		}
 	    	}
  		    	

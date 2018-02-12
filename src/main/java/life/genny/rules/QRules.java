@@ -1417,6 +1417,21 @@ public class QRules {
     			}
 		}
 	}
+	
+	public void processImageUpload(QDataAnswerMessage m, final String finalAttributeCode) {
+		
+		/* we save the first photo as the icon of the BaseEntity */
+		Answer[] answers = m.getItems();
+		if(answers.length > 0) {
+			
+			Answer answer = answers[0];
+			String sourceCode = answer.getSourceCode();
+			String targetCode = answer.getTargetCode();
+			answer.setSourceCode(answer.getTargetCode());
+			String value = answer.getValue();
+			this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, value);
+		}
+	}
 
 	public void processAnswerRating(QDataAnswerMessage m, final String finalAttributeCode) {
 		
