@@ -10,7 +10,7 @@ rule "Answer"
 ruleflow-group 'Answer'
     when
         $m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-        rules: QRules()
+        rules: QRules( isState("STARTED") && !isState("ANSWER_PROCESSED"))
     then    
         rules.header();
         	
@@ -39,6 +39,7 @@ ruleflow-group 'Answer'
 			}	
 		}
 	   
+	   rules.setState("ANSWER_PROCESSED");
        rules.footer();
            
 end
