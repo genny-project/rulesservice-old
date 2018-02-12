@@ -37,7 +37,8 @@ rule "Load Title Attribute Change"
         BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
        
        Answer jobTitleAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_TITLE" ,loadTitle);             
-       rules.publishData(jobTitleAnswer);
+       //rules.publishData(jobTitleAnswer);
+       rules.saveAnswer(jobTitleAnswer);
         
        rules.footer();
        

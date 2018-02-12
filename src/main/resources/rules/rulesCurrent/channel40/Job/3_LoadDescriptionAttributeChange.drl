@@ -16,7 +16,7 @@ rule "Load Description Attribute Change"
       $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_DESCRIPTION") && getAnswer().getTargetCode().startsWith("LOD_") )
       rules : QRules()
     then    
-	    RulesUtils.header(drools.getRule().getName());
+	     rules.header();  
 	    
         /*     Collect load code from answer    */
          Answer newAnswer = $m.getAnswer();
@@ -30,8 +30,9 @@ rule "Load Description Attribute Change"
        BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
        
        Answer jobDescriptionAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), newAnswer.getAttributeCode() ,loadDescription);          	    
-       rules.publishData(jobDescriptionAnswer);
+       //rules.publishData(jobDescriptionAnswer);
+       rules.saveAnswer(jobDescriptionAnswer);
         
-       RulesUtils.footer(drools.getRule().getName());
+       rules.footer();
 end
 
