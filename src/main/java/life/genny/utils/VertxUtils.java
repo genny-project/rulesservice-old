@@ -1,9 +1,12 @@
 package life.genny.utils;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
@@ -16,10 +19,13 @@ import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;;
 
 public class VertxUtils {
+	
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+
 
 	static boolean cachedEnabled = false;
 
-	static Map<String, String> localMap = new HashMap<String, String>(); // until we work it out
 
 	private static Vertx vertxContext;
 	
@@ -95,10 +101,11 @@ public class VertxUtils {
 			// fetch normally
 			System.out.println("Cache MISS for " + code);
 			try {
-				be = MergeUtil.getBaseEntityForAttr(code, token);
+				be = QwandaUtils.getBaseEntityByCode(code, token);
 			} catch (Exception e) {
 				// Okay, this is bad. Usually the code is not in the database but in keycloak
 				// So lets leave it to the rules to sort out... (new user)
+				log.error("BE "+code+" is NOT IN CACHE OR DB");
 				return null;
 				
 			}
