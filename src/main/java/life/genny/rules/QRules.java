@@ -690,9 +690,9 @@ public class QRules {
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
 	}
 	
-	public void sendPopupCmd(final String root) {
+	public void sendPopupCmd(final String cmd_view, final String root) {
 		
-		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", "MAP_VIEW");
+		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", cmd_view);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {

@@ -44,11 +44,8 @@ rule "Set Load Height to BEG"
                ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WEIGHT_KG") ||  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LOAD_WIDTH_MM")) && getAnswer().getTargetCode().startsWith("LOD_") )
     	rules : QRules()
     then    
-    	    rules.header();
-	    
-	    rules.processDimensions($m);
-	    
-     
-       
+    	   
+    	   rules.header(); 
+	   rules.processDimensions($m); 
        rules.footer();
 end

@@ -26,7 +26,7 @@ rule "Locate driver in job"
 	    			if(begCode != null) {
 	    				
 	    				/* we ask FE to display a map showing live data of BE */
-	    				rules.sendPopupCmd(begCode);
+	    				rules.sendPopupCmd("MAP_VIEW", begCode);
 	    			}
 	    		}
 	    	}
