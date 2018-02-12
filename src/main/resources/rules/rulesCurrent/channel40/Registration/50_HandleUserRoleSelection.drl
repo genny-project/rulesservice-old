@@ -28,11 +28,10 @@ import java.time.format.DateTimeFormatter;
 
 rule "Save user role to the link with its Company"
     when
-        $m: QEventAttributeValueChangeMessage( (!isState("SAVE_USER_ROLE_TO_LINK")) &&  event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
-        rules: QRules()
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
+        rules: QRules( !isState("USER_TYPE_SAVED") )
      then
         rules.header();  
-        rules.setState("SAVE_USER_ROLE_TO_LINK")
           rules.println("Before getting user BE");
          String userCode = rules.getUser().getCode();
          rules.println("The user Code is  ::  " +userCode);
@@ -83,6 +82,9 @@ rule "Save user role to the link with its Company"
         String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
         
         rules.publishBE($m.getBe());
-       rules.footer();  
+        
+        rules.setState("USER_TYPE_SAVED");
+        
+        rules.footer();  
 
 end
