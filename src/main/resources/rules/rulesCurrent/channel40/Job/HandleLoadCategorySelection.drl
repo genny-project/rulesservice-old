@@ -35,7 +35,7 @@ rule "Handle Load Category Selection"
          rules.println("The attribute code is   ::  " +attributeCode);
          rules.println("The load type code is   ::  " +loadCategoryCode);
          
-         BaseEntity loadType = rules.getBaseEntityFByCode(loadCategoryCode);
+         BaseEntity loadType = rules.getBaseEntityByCode(loadCategoryCode);
            
         /* creating new Answer */
        Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
