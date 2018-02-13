@@ -23,15 +23,27 @@ rule "New Payments User"
      
      			
      /* logic to create assembly user & set the payments userProfileExists flag  */
-     PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, rules.getToken()); 
+     String responseAssemblyUserId = PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, rules.getToken());
+       
+     if(responseAssemblyUserId != null) {
+     
+     	/* Creates a new attribute for assembly user ID */
+    	 	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", responseAssemblyUserId);
+     	PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
+     	rules.println("assembly ID created in our system ::"+responseAssemblyUserId); 
+     
+     } 
+     
+     /* Creation of assembly user will fail if user-email already exists in assembly! So fetching the existing assembly user ID here */
+     if(responseAssemblyUserId == null) {
      	
-     /* Creates a new attribute for assembly user ID */
-     Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", assemblyId);
-     PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
-    	
-     rules.println("assembly ID created in our system ::"+assemblyId);
-     RulesUtils.println("Assembly Company created");
-     	    
+     	String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
+  	
+     	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
+     	PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
+     	rules.println("assembly ID created in our system ::"+existingAssemblyId); 
+     }
+     	 	    
      rules.setState("IS_ASSEMBLY_USER_CREATED");
      drools.setFocus("payments");
  
