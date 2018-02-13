@@ -1364,9 +1364,7 @@ public class QRules {
 	
 	public void processAnswerMessage(QDataAnswerMessage m)
 	{
-				
-				publishData(m);
-
+		publishData(m);
 	}
 	
 	public void processChat(QEventMessage m)
