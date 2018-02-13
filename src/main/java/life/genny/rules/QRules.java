@@ -954,6 +954,11 @@ public class QRules {
 		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
 	}
 
+	public void publishCmd(final QEventLinkChangeMessage cmdMsg) {
+		cmdMsg.setToken(getToken());
+		publish("cmds",  RulesUtils.toJsonObject(cmdMsg));
+	}
+	
 	public void publishMsg(final QMSGMessage msg) {
 
 		msg.setToken(getToken());
@@ -1482,6 +1487,8 @@ public class QRules {
 		Answer[] answers = m.getItems();
 		for (Answer answer : answers) {
 			answerList.add(answer);
+			println("ANSWER:"+answer);
+
 		}
 		
 		saveAnswers(answerList);

@@ -123,7 +123,12 @@ public class RulesUtils {
 		// System.getenv("LAYOUT_CACHE_HOST");
 		//http://localhost:2223
 		
-		Boolean activateCache = true;
+		Boolean activateCache = null;
+		if (System.getenv("GENNY_DEV") == null) {
+		activateCache = true;
+		} else {
+			activateCache = false;
+		}
 		
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if(host == null) {
