@@ -21,13 +21,17 @@ rule "Create Payment Item"
 		rules.println("Item creation process started"); 
 		
 		String offerCode = m.getItemCode();
-		
+		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+       	
+       	/* Save tokens */
+       	if(assemblyId != null) {
+       		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
+       	}
+			
 		/*Getting BEG code from offerCode that has been confirmed */
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
-			
-       	String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
        	
        	/* Creating Payment Item */
         String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());

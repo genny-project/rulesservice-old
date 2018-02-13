@@ -10,6 +10,15 @@ rule "Payment Methods user"
     then
        
     		rules.header();
+    		
+    		/* Save token answers */
+    		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+       	
+       	if(assemblyId != null) {
+       		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
+       	}
+    		
         
         String userCode = rules.getUser().getCode();
         rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
