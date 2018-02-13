@@ -14,35 +14,34 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 rule "Listen Link Change"
 ruleflow-group 'LinkChange'
     when
-        $m: QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" )
-        rules : QRules()
+        $m: QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && link != null )
+        rules : QRules( isState("STARTED") && (!isState("LINK_CHANGE")) )
      then    
       	rules.header();
- 
+ 		rules.setState("LINK_CHANGE");
+ 		
  		Link link = $m.getLink(); 
  		rules.debug($m);
- 		if (link != null) {
  		    rules.println("Link LinkCode="+link.getAttributeCode());
 
  		    if (link.getTargetCode().startsWith("BEG_")) {
- 		    List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(link.getTargetCode(),"LNK_BEG", 0, 20, false) ;
- 		    List<String> recipients = new ArrayList<String>();
- 		    for (BaseEntity stakeholder : stakeholders)
- 		    {
- 		    		if (stakeholder.getCode().startsWith("PER_")) {
- 		    			recipients.add(stakeholder.getCode());
- 		    			System.out.println("Sending to "+stakeholder.getCode());
- 		    		}
- 		    }
+ 		   	 	List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(link.getTargetCode(),"LNK_BEG", 0, 20, false) ;
+ 		    		List<String> recipients = new ArrayList<String>();
+ 		    		for (BaseEntity stakeholder : stakeholders)
+ 		    		{
+ 		    			if (stakeholder.getCode().startsWith("PER_")) {
+ 		    				recipients.add(stakeholder.getCode());
+ 		    				rules.println("Sending to "+stakeholder.getCode());
+ 		    			}
+ 		   		 }
  		    
- 		   /* rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());  */
- 		   String[] recipientArray = recipients.toArray(new String[0]);
- 		   rules.publishCmd($m,recipientArray);
+ 		   		/* rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());  */
+ 		   		String[] recipientArray = recipients.toArray(new String[0]);
+ 		   		rules.publishCmd($m,recipientArray);
  		   }
 
  		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode()); 
 
- 		 }
  	   
    	    rules.footer();
   
