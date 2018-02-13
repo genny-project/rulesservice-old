@@ -13,8 +13,8 @@ rule "Send PROJECT To Frontend"
          rules: QRules( isState("IS_LOGGED_IN")  && (!isState("PROJECT_SENT")) )
      then
      	rules.header();
-     	
-     	BaseEntity project = rules.getBaseEntityByAttributeAndValue("PRI_REALM", rules.getAsString("realm"));
+     	String projectCode = "PRJ_"+rules.getAsString("realm").toUpperCase();
+     	BaseEntity project = rules.getBaseEntityByCode(projectCode);
      	rules.println("Project "+project);
      	  
         rules.publishCmd(project,"PROJECT");
