@@ -94,8 +94,8 @@ rule "Calculate Load Price"
 					System.out.println("=======================================================================================================");
 					System.out.println("OWNER countering   ::   ");
 					System.out.println(" targetCode" +newAnswer.getTargetCode() );
-					ownerPriceExcGST = answerPrice;
-					ownerPriceIncGST = rules.includeGSTMoney(answerPrice);
+					ownerPriceIncGST = answerPrice;
+					ownerPriceExcGST = rules.excludeGSTMoney(ownerPriceIncGST);
 					driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
 					driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
 					System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());

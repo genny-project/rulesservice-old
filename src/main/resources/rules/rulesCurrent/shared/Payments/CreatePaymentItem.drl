@@ -34,15 +34,21 @@ rule "Create Payment Item"
 		RulesUtils.println("BEG CODE ::"+BEGCode);
        	
        	/* Creating Payment Item */
-        String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
-        System.out.println("AssemblyId="+assemblyId);
+       	String paymentItemId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ITEM_ID", rules.getToken());
+       	if(paymentItemId == null) {
+       	
+       		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
+       	 	System.out.println("Payment item Id="+itemId);
+        		System.out.println("Saving Answer");
+			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
+	    		rules.saveAnswer(itemIdAnswer);
+       	}
+        	    
 		
 		/* Save itemId as an attribute to BEG Group */
-		if(itemId != null && assemblyId != null) {
-			
-			System.out.println("Saving Answer");
-			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
-	        rules.saveAnswer(itemIdAnswer);	    
+		/* Ugly way of checking */
+		String recheckPaymentId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ITEM_ID", rules.getToken());
+		if(recheckPaymentId != null && assemblyId != null) {
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		

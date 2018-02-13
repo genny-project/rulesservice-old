@@ -406,6 +406,21 @@ public class RulesUtils {
 
 	}
 	
+	public static String getBaseEntitysJsonByParentAndLinkCode(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode, final Integer pageStart, final Integer pageSize) {
+
+		try {
+			String beJson = null;
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+parentCode+"/linkcodes/"+linkCode+"/attributes?pageStart="+pageStart+"&pageSize="+pageSize, token);
+			return beJson;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+	
 	public static String getBaseEntitysJsonByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
 			final String token, final String parentCode, final String linkCode) {
 
@@ -450,6 +465,7 @@ public class RulesUtils {
 		return null;
 
 	}
+	
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -463,6 +479,26 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode);
+			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+			return msg.getItems();
+			
+	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param pageStart
+	 * @param pageSize
+	 * @return baseEntitys
+	 */
+	public static BaseEntity[] getBaseEntitysArrayByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode, final Integer pageStart, final Integer pageSize) {
+
+			String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode, linkCode,pageStart,pageSize);
 			QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 			return msg.getItems();
 			
@@ -481,6 +517,26 @@ public class RulesUtils {
 			final String token, final String parentCode, final String linkCode) {
 
 			BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,decodedToken,token, parentCode,linkCode);
+			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
+			return arrayList;
+
+	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param pageStart
+	 * @param pageSize
+	 * @return baseEntitys
+	 */
+	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributes(final String qwandaServiceUrl, Map<String, Object> decodedToken,
+			final String token, final String parentCode, final String linkCode, final Integer pageStart, final Integer pageSize) {
+
+			BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,decodedToken,token, parentCode,linkCode,pageStart,pageSize );
 			ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray)); 
 			return arrayList;
 
