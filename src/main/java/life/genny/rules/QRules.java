@@ -405,11 +405,9 @@ public class QRules {
 	//	if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
 
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
-					getToken(), parentCode, linkCode);
+					getToken(), parentCode, linkCode, pageStart, pageSize);
 
-			if (cache) {
-				set("BES_" + parentCode.toUpperCase() + "_" + linkCode, bes); // WATCH THIS!!!
-			}
+			
 
 	//	} else {
 	//		bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
