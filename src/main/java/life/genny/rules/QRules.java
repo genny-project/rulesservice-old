@@ -1824,7 +1824,7 @@ public class QRules {
 	public void publishBE(final BaseEntity be)
 	{
 		String[] recipientCodes = new String[1];
-		recipientCodes[0] = be.getCode();
+		recipientCodes[0] = getUser().getCode();
 		publishBE(be,recipientCodes);
 	}
 	public void publishBE(final BaseEntity be, String[] recipientCodes)
