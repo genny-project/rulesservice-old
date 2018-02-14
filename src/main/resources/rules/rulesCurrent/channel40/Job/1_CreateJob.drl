@@ -34,14 +34,14 @@ rule "Create Job"
     
     /*  Add PRI_DROPOFF_DATETIME and set to null   */
       Answer loadDropOffDateTimeAns = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_DROPOFF_DATETIME", "null");  
-      rules.publishData(loadDropOffDateTimeAns);
+      rules.saveAnswer(loadDropOffDateTimeAns);
     
     /*  Creating new base-entity LOAD    */
       BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
      
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
-      rules.publishData(loadAuthorAns);    	  
+      rules.saveAnswer(loadAuthorAns); 	  
     
     
     /*  link newly created LOAD to JOB/BEG    */
