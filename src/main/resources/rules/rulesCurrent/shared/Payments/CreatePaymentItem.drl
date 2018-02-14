@@ -44,11 +44,13 @@ rule "Create Payment Item"
 	    		rules.saveAnswer(itemIdAnswer);
        	}
         	    
-		
-		/* Save itemId as an attribute to BEG Group */
 		/* Ugly way of checking */
-		String recheckPaymentId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ITEM_ID", rules.getToken());
-		if(recheckPaymentId != null && assemblyId != null) {
+		String paymentIdAttributeValue = rules.getBaseEntityValueAsString(BEGCode, "PRI_ITEM_ID");
+		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
+		
+		if(paymentIdAttributeValue != null && assemblyId != null) {
+			RulesUtils.println("BEG CODE ::"+BEGCode);
+			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		
