@@ -23,18 +23,14 @@ rule "Create Payment Item"
 		String offerCode = m.getItemCode();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
-       	
-       	/* Save tokens */
-       	if(assemblyId != null) {
-       		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
-       	}
+      
 			
 		/*Getting BEG code from offerCode that has been confirmed */
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
        	
        	/* Creating Payment Item */
-       	String paymentItemId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ITEM_ID", rules.getToken());
+       	String paymentItemId = rules.getBaseEntityValueAsString(BEGCode, "PRI_ITEM_ID");
        	if(paymentItemId == null) {
        	
        		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
@@ -44,11 +40,13 @@ rule "Create Payment Item"
 	    		rules.saveAnswer(itemIdAnswer);
        	}
         	    
-		
-		/* Save itemId as an attribute to BEG Group */
 		/* Ugly way of checking */
-		String recheckPaymentId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ITEM_ID", rules.getToken());
-		if(recheckPaymentId != null && assemblyId != null) {
+		String paymentIdAttributeValue = rules.getBaseEntityValueAsString(BEGCode, "PRI_ITEM_ID");
+		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
+		
+		if(paymentIdAttributeValue != null && assemblyId != null) {
+			RulesUtils.println("BEG CODE ::"+BEGCode);
+			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
 		
