@@ -1,8 +1,9 @@
 package life.genny.utils;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.ParameterizedType;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -15,7 +16,6 @@ import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;;
 
 public class VertxUtils {
@@ -25,30 +25,40 @@ public class VertxUtils {
 
 
 	static boolean cachedEnabled = false;
-
-
-	private static Vertx vertxContext;
 	
-	/**
-   * @return the vertxContext
-   */
-  public static Vertx getVertxContext() {
-    return vertxContext;
-  }
+	public enum ESubscriptionType {
+	    DIRECT,
+	    TRIGGER;
 
-  /**
-   * @param vertxContext the vertxContext to set
-   */
-  public static void setVertxContext(Vertx vertxContext) {
-    VertxUtils.vertxContext = vertxContext;
-  }
+	}
 
+
+  static public  <T>  T  getObject(final String realm, final String keyPrefix, final String key, final Class clazz)
+  {
+	  T item = null;
+	  JsonObject json = readCachedJson(realm+":"+keyPrefix+":"+key);
+	  if (json.getString("status").equalsIgnoreCase("ok")) {
+	  String data = json.getString("value");
+	  	item = (T) JsonUtils.fromJson(data, clazz);
+	  	return item;
+	  }
+	  else {
+		  return null;
+	  }
+  }
+  
+  static public  void  putObject(final String realm, final String keyPrefix, final String key, final Object obj)
+  {
+	String data = JsonUtils.toJson(obj);
+	writeCachedJson(realm+":"+keyPrefix+":"+key,data);
+  }
+	
   static public JsonObject readCachedJson(final String key) {
 	  
 
 		CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
 
-		SharedData sd = getVertxContext().sharedData();
+		SharedData sd =  Vertx.currentContext().owner().sharedData();
 
 		if (System.getenv("GENNY_DEV") == null) {
 			if (!cachedEnabled) {
@@ -154,4 +164,22 @@ public class VertxUtils {
 		return null;
 	}
 
+	
+	
+	public void subscribe(final String realm, final String subscriptionCode, final String userCode)
+	{
+		Set set = new HashSet<String>() { }; // create a specific sub-class
+		final Class<? extends Set> setClass = set.getClass();
+		final ParameterizedType genericSuperclass = (ParameterizedType) setClass.getGenericSuperclass();
+		Class elementType = (Class) genericSuperclass.getActualTypeArguments()[0];
+		// Subscribe to a code
+		Set<String> subscriberSet = getObject(realm,"SUB",subscriptionCode,elementType);
+		if (subscriberSet == null) {
+			// create 
+			subscriberSet = new HashSet<String>();
+		}
+		subscriberSet.add(userCode);
+		putObject(realm,"SUB",subscriptionCode,subscriberSet);
+	}
+	
 }
