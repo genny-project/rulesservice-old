@@ -29,25 +29,29 @@ rule "Create Job"
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
      rules.println("The BEG code is   ::  "+beg.getCode());
    
-     /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
-     Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", null, (double) 1, rules.getToken());
+    /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
+      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", null, (double) 1, rules.getToken());
     
-     /*  Creating new base-entity LOAD    */
-     BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
+    /*  Add PRI_DROPOFF_DATETIME and set to null   */
+      Answer loadDropOffDateTimeAns = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_DROPOFF_DATETIME", "null");  
+      rules.saveAnswer(loadDropOffDateTimeAns);
+    
+    /*  Creating new base-entity LOAD    */
+      BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
      
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
-      rules.publishData(loadAuthorAns);    	  
+      rules.saveAnswer(loadAuthorAns); 	  
     
     
-     /*  link newly created LOAD to JOB/BEG    */
+    /*  link newly created LOAD to JOB/BEG    */
        Link jobLoadLink =  QwandaUtils.createLink(beg.getCode(), load.getCode(), "LNK_BEG", "LOAD", (double) 1, rules.getToken());
      
-     /*  link current user as load-owner to the Job/BEG     */
+    /*  link current user as load-owner to the Job/BEG     */
         Link jobOwnerLink =  QwandaUtils.createLink(beg.getCode(), rules.getUser().getCode(), "LNK_BEG", "OWNER", (double) 1, rules.getToken());
         rules.println(" Added Load Owner to BEG/JOB ");
     
-     /*    Getting Post Load Question GRP        */
+    /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
      qPostLoad.put("aliasCode", $m.data.getCode());
