@@ -23,6 +23,15 @@ rule "Create new payment method - user"
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+       	
+       	/* Save tokens */
+       	if(assemblyId != null) {
+       	
+       		RulesUtils.println("Refreshing tokens");
+       		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
+       		
+       		
+       	}
 		
 		rules.println("Payment method string1 ::"+paymentMethodDataString);
 		if(paymentMethodDataString != null) {

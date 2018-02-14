@@ -2,6 +2,8 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+import life.genny.qwandautils.PaymentUtils;
 
 rule "Payment Methods user"
     when
@@ -16,6 +18,7 @@ rule "Payment Methods user"
        	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
        	
        	if(assemblyId != null) {
+       		RulesUtils.println("assembly ID is not null and about to refresh the tokens");
        		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
        	}
     		
