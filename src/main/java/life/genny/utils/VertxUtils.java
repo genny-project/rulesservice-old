@@ -15,6 +15,7 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;;
 
@@ -168,18 +169,36 @@ public class VertxUtils {
 	
 	public void subscribe(final String realm, final String subscriptionCode, final String userCode)
 	{
+		final String SUB = "SUB";
 		Set set = new HashSet<String>() { }; // create a specific sub-class
 		final Class<? extends Set> setClass = set.getClass();
 		final ParameterizedType genericSuperclass = (ParameterizedType) setClass.getGenericSuperclass();
 		Class elementType = (Class) genericSuperclass.getActualTypeArguments()[0];
 		// Subscribe to a code
-		Set<String> subscriberSet = getObject(realm,"SUB",subscriptionCode,elementType);
+		Set<String> subscriberSet = getObject(realm,SUB,subscriptionCode,elementType);
 		if (subscriberSet == null) {
 			// create 
 			subscriberSet = new HashSet<String>();
 		}
 		subscriberSet.add(userCode);
-		putObject(realm,"SUB",subscriptionCode,subscriberSet);
+		putObject(realm,SUB,subscriptionCode,subscriberSet);
+	}
+	
+	public void subscribeEvent(final String realm, final String subscriptionCode, final QEventMessage msg)
+	{
+		final String SUBEVT = "SUBEVT";
+		Set set = new HashSet<QEventMessage>() { }; // create a specific sub-class
+		final Class<? extends Set> setClass = set.getClass();
+		final ParameterizedType genericSuperclass = (ParameterizedType) setClass.getGenericSuperclass();
+		Class elementType = (Class) genericSuperclass.getActualTypeArguments()[0];
+		// Subscribe to a code
+		Set<QEventMessage> subscriberSet = getObject(realm,SUBEVT,subscriptionCode,elementType);
+		if (subscriberSet == null) {
+			// create 
+			subscriberSet = new HashSet<QEventMessage>();
+		}
+		subscriberSet.add(msg);
+		putObject(realm,SUBEVT,subscriptionCode,subscriberSet);
 	}
 	
 }
