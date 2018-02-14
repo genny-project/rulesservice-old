@@ -56,10 +56,32 @@ rule "Send Ch40 BucketData To Frontend"
      		 
      		for (BaseEntity beg : begs) {
      			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
-     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
-     			for (BaseEntity begKid : begKids) {   	 			
+     			List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
+      			for (BaseEntity begKid : begKids) {   	 		
+      				if (begKid.getCode().startsWith("OFR_")) {
+      					if (user.is("PRI_OWNER")) {
+      					//	Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
+      					//	if (quoterCode.isPresent()) {
+      					//		if (user.getCode().equals(quoterCode.get())) {
+      					//			filteredKids.add(begKid);
+      					//		}
+      					//	}
+      					} 
+      					if (user.is("PRI_DRIVER")) {
+      						Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
+      						if (quoterCode.isPresent()) {
+      							if (user.getCode().equals(quoterCode.get())) {
+      								filteredKids.add(begKid);
+      							}
+      						}
+      					}
+      				}	else {
+      					filteredKids.add(begKid);
+      				}
      	 			rules.println(bucket.getCode()+":"+begKid.getCode());
      	 		}
+    			
+     			rules.publishCmd(filteredKids,beg.getCode(),"LNK_BEG");
      		}
      	}
      	/* Sending Draft Datas  for the Owners */
