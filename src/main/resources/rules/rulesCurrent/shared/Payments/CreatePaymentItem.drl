@@ -13,8 +13,8 @@ import life.genny.qwandautils.MergeUtil;
 rule "Create Payment Item"
 	agenda-group "payments"
 	when 
-		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER") 
-		rules: QRules()
+		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER" )
+		rules: QRules( !isState("CREATED_PAYMENT_ITEM") )
 	then
 		rules.header();
 		
@@ -34,8 +34,8 @@ rule "Create Payment Item"
        	if(paymentItemId == null) {
        	
        		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
-       	 	System.out.println("Payment item Id="+itemId);
-        		System.out.println("Saving Answer");
+       	 	rules.println("Payment item Id="+itemId);
+        		rules.println("Saving Answer");
 			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
 	    		rules.saveAnswer(itemIdAnswer);
        	}
@@ -49,6 +49,6 @@ rule "Create Payment Item"
 			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
 		}	
-		
+		rules.setState("CREATED_PAYMENT_ITEM");
 		rules.footer();			
 end 

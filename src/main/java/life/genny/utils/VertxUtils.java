@@ -33,7 +33,7 @@ public class VertxUtils {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 
-	static boolean cachedEnabled = false;
+	static boolean cachedEnabled = true;
 	
 	public enum ESubscriptionType {
 	    DIRECT,
