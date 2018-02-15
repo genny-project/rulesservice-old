@@ -56,11 +56,13 @@ rule "Release Payment"
 			 	/* Triggering email to owner */
 			 	String[] messageToOwnerRecipients = new String[1];
 		     	messageToOwnerRecipients[0] = ownerCode;
+		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
 		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
 		     	
 		     	/* Triggering email to driver */
 		     	String[] messageToDriverRecipients = new String[1];
 		     	messageToDriverRecipients[0] = driverCode;
+		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
 		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");		
 		        	     	
 		     }

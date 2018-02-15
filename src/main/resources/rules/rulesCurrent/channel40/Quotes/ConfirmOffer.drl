@@ -104,10 +104,12 @@ rule "Confirm Offer"
 								String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
 								RulesUtils.println("owner code ::"+ownerCode);
 								String[] recipientArr = {ownerCode};
-
-								/* Sending message to BEG OWNER */
-								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "SMS"); 
-								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "EMAIL"); 
+								
+								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "TOAST"); 
+								
+								/* Sending message to BEG OWNER - disabled */
+								/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "SMS"); 
+								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "EMAIL"); */
 							
 							/* QUOTER config */
 								HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -117,10 +119,12 @@ rule "Confirm Offer"
 								contextMapForDriver.put("QUOTER", userCode);
 							
 								String[] recipientArrForDriver = {userCode};
-
-								/* Sending message to QUOTER */
-								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "SMS"); 
-								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "EMAIL"); 
+								
+								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "TOAST");
+								
+								/* Sending message to QUOTER - disabled */
+								/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "SMS"); 
+								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "EMAIL"); */
 					}
 				}
 			}

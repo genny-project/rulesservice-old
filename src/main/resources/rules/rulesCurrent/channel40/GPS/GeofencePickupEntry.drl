@@ -27,7 +27,9 @@ rule "Geofence Enter Pickup Point"
 		contextMap.put("JOB", begCode);
 		contextMap.put("DRIVER", rules.getUser().getCode());
 		
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "TOAST");
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "SMS");
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "EMAIL");
 
 		RulesUtils.footer(drools.getRule().getName());
 

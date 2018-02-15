@@ -129,7 +129,7 @@ rule "Cancel Offer"
             rules.publish("cmds", newLink1);
 
         /* Messages */
-            /* Sending message to OWNER */
+            /* Sending message to OWNER; DISABLED */
                 HashMap<String,String> contextMap = new HashMap<String, String>();
                 contextMap.put("JOB", begCode); 
                 contextMap.put("OFFER", offerCode); 
@@ -138,18 +138,21 @@ rule "Cancel Offer"
                 String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
                 RulesUtils.println("owner code ::"+ownerCode);
                 String[] recipientArr = {ownerCode};
-        
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS"); 
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL"); 
+        			
+        			rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "TOAST");
+                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS"); 
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL"); */
          
             /* Sending message to DRIVER */  
+            
                 HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
                 contextMapForDriver.put("JOB", begCode);
                 contextMapForDriver.put("OWNER", ownerCode);
                 contextMapForDriver.put("OFFER", offerCode);
             
                 String[] recipientArrForDriver = {quoterCode};
-            
+            	
+            		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
         rules.footer();
