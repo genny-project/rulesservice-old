@@ -37,6 +37,8 @@ rule "Owner rate driver and confirm delivery"
       	/* we grab the job code */
       	String begCode = rules.getBaseEntityValueAsString(userCode, "STT_JOB_IS_RATING");
       	
+      	RulesUtils.println("begcode:"+begCode);
+      	
       	 if(begCode != null) {
       		 
            	/*Release payment for driver */

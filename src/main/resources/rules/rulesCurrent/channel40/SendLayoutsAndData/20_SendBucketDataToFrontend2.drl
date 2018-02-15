@@ -76,7 +76,7 @@ rule "Send Ch40 BucketData To Frontend"
       					   VertxUtils.subscribe(rules.realm(), begKid.getCode(), user.getCode()); 
       					} 
       					if (user.is("PRI_DRIVER")) {
-      						Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
+      						Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
       						if (quoterCode.isPresent()) {
       							if (user.getCode().equals(quoterCode.get())) {
       								filteredKids.add(begKid);
