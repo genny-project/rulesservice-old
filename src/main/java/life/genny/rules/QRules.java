@@ -1858,7 +1858,10 @@ public class QRules {
 	}
 	public void publishBE(final BaseEntity be, String[] recipientCodes)
 	{
-		println(be);
+		println("PUBLISHBE:"+be.getCode());
+		if (be.getCode().equals("BEG_0000002")) {
+			System.out.println("dummy");
+		}
 		BaseEntity[]  itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null,
