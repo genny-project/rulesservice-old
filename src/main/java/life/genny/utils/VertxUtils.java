@@ -119,7 +119,7 @@ public class VertxUtils {
 	static public JsonObject writeCachedJson(final String key, final String value) {
 		CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
 
-		SharedData sd = Vertx.currentContext().owner().sharedData();
+		SharedData sd = getVertxContext().sharedData();
 		if (System.getenv("GENNY_DEV") == null) {
 
 			sd.getClusterWideMap("shared_data", (AsyncResult<AsyncMap<String, String>> res) -> {
