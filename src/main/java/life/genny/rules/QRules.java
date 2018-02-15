@@ -2069,9 +2069,13 @@ public class QRules {
 		for (EntityEntity ee : links) {
 			Link link  = ee.getLink();
 			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
-			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			if (recipientArray!=null) {
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			}
 			String[] recipientArray2 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
-			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
+			if (recipientArray2!=null) {
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
+			}
 		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
@@ -2083,9 +2087,13 @@ public class QRules {
 		Link link = msg.getLink();
 		Set<String> recipientCodesSet = new HashSet<String>();
 			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
-			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			if (recipientArray!=null) {
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			}
 			String[] recipientArray2 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
-			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
+			if (recipientArray2!=null) {
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
+			}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
