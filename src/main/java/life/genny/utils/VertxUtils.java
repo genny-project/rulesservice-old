@@ -1,17 +1,22 @@
 package life.genny.utils;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.eventbus.MessageProducer;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import life.genny.qwanda.entity.BaseEntity;
@@ -32,6 +37,9 @@ public class VertxUtils {
 	    TRIGGER;
 
 	}
+	
+	static Map<String,String> localCache = new ConcurrentHashMap<String,String>();
+	static Map<String,MessageProducer<JsonObject>> localMessageProducerCache = new ConcurrentHashMap<String,MessageProducer<JsonObject>>();
 
 
   static public  <T>  T  getObject(final String realm, final String keyPrefix, final String key, final Class clazz)
@@ -91,7 +99,8 @@ public class VertxUtils {
 				e.printStackTrace();
 			}
 		} else {
-			String ret = (String) sd.getLocalMap("shared_data").get(key);
+			String ret = (String) localCache.get(key);
+		//	String ret = (String) sd.getLocalMap("shared_data").get(key);
 			JsonObject result = null;
 			if (ret != null) {
 				result = new JsonObject().put("status", "ok").put("value", ret);
@@ -158,6 +167,7 @@ public class VertxUtils {
 			}
 
 		} else {
+			localCache.put(key, value);
 			sd.getLocalMap("shared_data").put(key, value);
 			JsonObject ok = new JsonObject().put("status", "ok");
 			return ok;
@@ -165,40 +175,73 @@ public class VertxUtils {
 		return null;
 	}
 
-	
-	
 	public void subscribe(final String realm, final String subscriptionCode, final String userCode)
 	{
 		final String SUB = "SUB";
-		Set set = new HashSet<String>() { }; // create a specific sub-class
-		final Class<? extends Set> setClass = set.getClass();
-		final ParameterizedType genericSuperclass = (ParameterizedType) setClass.getGenericSuperclass();
-		Class elementType = (Class) genericSuperclass.getActualTypeArguments()[0];
 		// Subscribe to a code
-		Set<String> subscriberSet = getObject(realm,SUB,subscriptionCode,elementType);
-		if (subscriberSet == null) {
-			// create 
-			subscriberSet = new HashSet<String>();
-		}
+		Set<String> subscriberSet = getSetString(realm,SUB,subscriptionCode);
 		subscriberSet.add(userCode);
-		putObject(realm,SUB,subscriptionCode,subscriberSet);
+		putSetString(realm,SUB,subscriptionCode,subscriberSet);
+	}
+	
+	public String[] getSubscribers(final String realm, final String subscriptionCode)
+	{
+		final String SUB = "SUB";
+		// Subscribe to a code
+		String[] resultArray = getObject(realm,SUB,subscriptionCode,String[].class);
+		return resultArray;
+		
 	}
 	
 	public void subscribeEvent(final String realm, final String subscriptionCode, final QEventMessage msg)
 	{
 		final String SUBEVT = "SUBEVT";
-		Set set = new HashSet<QEventMessage>() { }; // create a specific sub-class
-		final Class<? extends Set> setClass = set.getClass();
-		final ParameterizedType genericSuperclass = (ParameterizedType) setClass.getGenericSuperclass();
-		Class elementType = (Class) genericSuperclass.getActualTypeArguments()[0];
 		// Subscribe to a code
-		Set<QEventMessage> subscriberSet = getObject(realm,SUBEVT,subscriptionCode,elementType);
-		if (subscriberSet == null) {
-			// create 
-			subscriberSet = new HashSet<QEventMessage>();
-		}
-		subscriberSet.add(msg);
-		putObject(realm,SUBEVT,subscriptionCode,subscriberSet);
+		Set<String> subscriberSet = getSetString(realm,SUBEVT,subscriptionCode);
+		subscriberSet.add(JsonUtils.toJson(msg));
+		putSetString(realm,SUBEVT,subscriptionCode,subscriberSet);
 	}
 	
+	public QEventMessage[] getSubscribedEvents(final String realm, final String subscriptionCode)
+	{
+		final String SUBEVT = "SUBEVT";
+		// Subscribe to a code
+		String[] resultArray = getObject(realm,SUBEVT,subscriptionCode,String[].class);
+		QEventMessage[] msgs = new QEventMessage[resultArray.length];
+		int i=0;
+		for (String result : resultArray) {
+			msgs[i] = JsonUtils.fromJson(result, QEventMessage.class);
+			i++;
+		}
+		return msgs;
+	}
+	
+	static public Set<String> getSetString(final String realm, final String keyPrefix, final String key)
+	{
+		String[] resultArray = getObject(realm,keyPrefix,key,String[].class);
+		if (resultArray == null) {
+			return new HashSet<String>();
+		}
+		return Sets.newHashSet(resultArray);
+	}
+	
+	  static public  void  putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
+		  String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
+		  putObject(realm, keyPrefix, key, strArray);
+
+	  }
+
+	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
+		
+		localMessageProducerCache.put(sessionState, toSessionChannel);
+		
+	}
+	
+	public static  MessageProducer<JsonObject> getMessageProducer(String sessionState) {
+		
+		return localMessageProducerCache.get(sessionState);
+		
+	}
+	  
+
 }
