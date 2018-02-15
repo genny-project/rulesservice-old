@@ -18,6 +18,7 @@ public class Cluster {
     EBProducers.registerAllProducers(eb);
     EBCHandlers.registerHandlers(eb);
 	ClusterMap.setVertxContext(vertx);
+
   };
 
   static Action1<Throwable> clusterError = error -> {
