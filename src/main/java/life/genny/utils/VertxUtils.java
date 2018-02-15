@@ -1,7 +1,9 @@
 package life.genny.utils;
 
+
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -175,7 +177,7 @@ public class VertxUtils {
 		return null;
 	}
 
-	public void subscribe(final String realm, final String subscriptionCode, final String userCode)
+	static public void subscribe(final String realm, final String subscriptionCode, final String userCode)
 	{
 		final String SUB = "SUB";
 		// Subscribe to a code
@@ -184,7 +186,18 @@ public class VertxUtils {
 		putSetString(realm,SUB,subscriptionCode,subscriberSet);
 	}
 	
-	public String[] getSubscribers(final String realm, final String subscriptionCode)
+	static public void subscribe(final String realm, final List<BaseEntity> watchList, final String userCode)
+	{
+		final String SUB = "SUB";
+		// Subscribe to a code
+		for (BaseEntity be : watchList) {
+			Set<String> subscriberSet = getSetString(realm,SUB,be.getCode());
+			subscriberSet.add(userCode);
+			putSetString(realm,SUB,be.getCode(),subscriberSet);
+		}
+	}
+	
+	static public String[] getSubscribers(final String realm, final String subscriptionCode)
 	{
 		final String SUB = "SUB";
 		// Subscribe to a code
@@ -193,7 +206,7 @@ public class VertxUtils {
 		
 	}
 	
-	public void subscribeEvent(final String realm, final String subscriptionCode, final QEventMessage msg)
+	static public void subscribeEvent(final String realm, final String subscriptionCode, final QEventMessage msg)
 	{
 		final String SUBEVT = "SUBEVT";
 		// Subscribe to a code
@@ -202,7 +215,7 @@ public class VertxUtils {
 		putSetString(realm,SUBEVT,subscriptionCode,subscriberSet);
 	}
 	
-	public QEventMessage[] getSubscribedEvents(final String realm, final String subscriptionCode)
+	static public QEventMessage[] getSubscribedEvents(final String realm, final String subscriptionCode)
 	{
 		final String SUBEVT = "SUBEVT";
 		// Subscribe to a code

@@ -24,7 +24,7 @@ ruleflow-group 'LinkChange'
  		rules.debug($m);
  		    rules.println("Link LinkCode="+link.getAttributeCode());
 
- 		    if (link.getTargetCode().startsWith("BEG_")) {
+ 	/*	    if (link.getTargetCode().startsWith("BEG_")) {
  		   	 	List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(link.getTargetCode(),"LNK_BEG", 0, 20, false) ;
  		    		List<String> recipients = new ArrayList<String>();
  		    		for (BaseEntity stakeholder : stakeholders)
@@ -35,13 +35,14 @@ ruleflow-group 'LinkChange'
  		    			}
  		   		 }
  		    
- 		   		/* rules.sendParentLinks(link.getTargetCode(),link.getAttributeCode());  */
  		   		String[] recipientArray = recipients.toArray(new String[0]);
  		   		rules.publishCmd($m,recipientArray);
  		   }
 
  		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode()); 
-
+	*/
+		String[] recipientCodes = rules.getRecipientCodes(link);
+		rules.publishCmd($m,recipientCodes);
  	   
    	    rules.footer();
   

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,9 @@ import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
 
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
@@ -37,6 +41,7 @@ import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -1919,7 +1924,7 @@ public class QRules {
 		return fee;
 
 	}
-	public Money calcDriverFee(Money input) {
+	public Money calcDriverFee(Money input) { //TODO, why is this here?
 
 		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
 		Number inputNum = input.getNumber();
@@ -2025,4 +2030,29 @@ public class QRules {
 		return driverFee;
 	}
 	 
+	public String[] getRecipientCodes(final QEventAttributeValueChangeMessage msg) {
+		String[] results = null;
+		
+		Set<EntityEntity> links = msg.getBe().getLinks();
+		Set<String> recipientCodesSet = new HashSet<String>();
+		for (EntityEntity ee : links) {
+			Link link  = ee.getLink();
+			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+		}
+		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
+		return results;
+	}
+	
+	public String[] getRecipientCodes(final QEventLinkChangeMessage msg) {
+		String[] results = null;
+		
+		Link link = msg.getLink();
+		Set<String> recipientCodesSet = new HashSet<String>();
+			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
+		return results;
+	}
+	
 }
