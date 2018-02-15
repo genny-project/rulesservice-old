@@ -14,13 +14,14 @@ rule "Listen Attribute Change"
 ruleflow-group 'AttributeChange'
     when
         $m: QEventAttributeValueChangeMessage(  )
-        rules : QRules()
+        rules : QRules( isState("IS_STARTED")  && (!isState("ATTRIBUTE_CHANGE")))
      then    
       	rules.header();
  
        /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
         String[] recipientCodes = rules.getRecipientCodes($m);
      	rules.publishBE($m.getBe(),recipientCodes);
+     	 rules.setState("ATTRIBUTE_CHANGE");
    	    rules.footer();
   
 end

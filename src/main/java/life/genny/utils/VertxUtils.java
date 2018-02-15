@@ -144,7 +144,7 @@ public class VertxUtils {
 	static public JsonObject writeCachedJson(final String key, final String value) {
 		CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
 
-		SharedData sd = Vertx.currentContext().owner().sharedData();
+		SharedData sd = ClusterMap.getVertxContext().sharedData();
 		if (System.getenv("GENNY_DEV") == null) {
 
 			sd.getClusterWideMap("shared_data", (AsyncResult<AsyncMap<String, String>> res) -> {
@@ -215,6 +215,9 @@ public class VertxUtils {
 		final String SUB = "SUB";
 		// Subscribe to a code
 		String[] resultArray = getObject(realm,SUB,subscriptionCode,String[].class);
+		if (resultArray == null) {
+			resultArray = new String[0];
+		}
 		return resultArray;
 		
 	}
@@ -233,6 +236,9 @@ public class VertxUtils {
 		final String SUBEVT = "SUBEVT";
 		// Subscribe to a code
 		String[] resultArray = getObject(realm,SUBEVT,subscriptionCode,String[].class);
+		if (resultArray == null) {
+			return new QEventMessage[0];
+		}
 		QEventMessage[] msgs = new QEventMessage[resultArray.length];
 		int i=0;
 		for (String result : resultArray) {

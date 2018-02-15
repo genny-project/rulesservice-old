@@ -2039,6 +2039,8 @@ public class QRules {
 			Link link  = ee.getLink();
 			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
 			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			String[] recipientArray2 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
@@ -2051,6 +2053,8 @@ public class QRules {
 		Set<String> recipientCodesSet = new HashSet<String>();
 			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
 			recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			String[] recipientArray2 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
