@@ -959,9 +959,33 @@ public class QRules {
 		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
 	}
 
-	public void publishCmd(final QEventLinkChangeMessage cmdMsg) {
-		cmdMsg.setToken(getToken());
-		publish("cmds",  RulesUtils.toJsonObject(cmdMsg));
+	public void publishCmd(final QEventLinkChangeMessage cmdMsg, final String[]  recipientsCode) {
+		
+		Link link = cmdMsg.getLink();
+		
+		JsonArray links= new JsonArray();
+		JsonObject linkJson = new JsonObject();
+		links.add(linkJson);
+		linkJson.put("sourceCode",link.getSourceCode() );
+		linkJson.put("targetCode", link.getTargetCode());
+		linkJson.put("attributeCode", link.getAttributeCode());
+		linkJson.put("linkValue", link.getLinkValue());
+		linkJson.put("weight", link.getWeight());
+		
+		
+		JsonArray recipients = new JsonArray();
+		for (String recipientCode : recipientsCode) {
+			recipients.add(recipientCode);
+		}
+		
+		JsonObject newLink = new JsonObject();
+					newLink.put("msg_type", "DATA_MSG");
+					newLink.put("data_type", "LINK_CHANGE");
+					newLink.put("recipientCodeArray", recipients);
+					newLink.put("items", links);
+					newLink.put("token", getToken() );
+					// getEventBus().publish("cmds", newLink);
+			publish("data",  newLink);
 	}
 	
 	public void publishMsg(final QMSGMessage msg) {
@@ -1525,7 +1549,7 @@ public class QRules {
 	/**
 	 * @param answers
 	 */
-	private void saveAnswers(List<Answer> answers) {
+	public void saveAnswers(List<Answer> answers) {
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
@@ -1834,7 +1858,10 @@ public class QRules {
 	}
 	public void publishBE(final BaseEntity be, String[] recipientCodes)
 	{
-		println(be);
+		println("PUBLISHBE:"+be.getCode());
+		if (be.getCode().equals("BEG_0000002")) {
+			System.out.println("dummy");
+		}
 		BaseEntity[]  itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null,

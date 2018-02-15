@@ -14,7 +14,7 @@ rule "Listen Attribute Change"
 ruleflow-group 'AttributeChange'
     when
         $m: QEventAttributeValueChangeMessage(  )
-        rules : QRules( isState("IS_STARTED")  && (!isState("ATTRIBUTE_CHANGE")))
+        rules : QRules( isState("STARTED")  && (!isState("ATTRIBUTE_CHANGE")))
      then    
       	rules.header();
  
