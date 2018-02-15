@@ -198,8 +198,8 @@ rule "Accept Job"
                 
 
                 /* Sending message to BEG OWNER */
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); 
+                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
+                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); */
                 
             
             /* QUOTER config */
@@ -216,8 +216,8 @@ rule "Accept Job"
                 
 
                 /* Sending message to QUOTER */
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL");
+                /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); */
                 
                   
 
