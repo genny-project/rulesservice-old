@@ -1858,6 +1858,10 @@ public class QRules {
 	}
 	public void publishBE(final BaseEntity be, String[] recipientCodes)
 	{
+		if (recipientCodes==null || recipientCodes.length==0) {
+			recipientCodes=new String[1];
+			recipientCodes[0] = getUser().getCode();
+		}
 		println("PUBLISHBE:"+be.getCode());
 		if (be.getCode().equals("BEG_0000002")) {
 			System.out.println("dummy");
