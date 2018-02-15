@@ -44,6 +44,8 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import life.genny.utils.VertxUtils;
+
 
 rule "Accept Job"
     no-loop true
@@ -97,7 +99,13 @@ rule "Accept Job"
 
         /* Create Offer BE */
             BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
+       		
             RulesUtils.ruleLogger("OFFER Base Entity", offer);
+            
+            /* Send beg to owner */
+            
+            
+            
             /* Get Offer Code */
             String offerCode= offer.getCode();
             System.out.println("OFFER CODE   ::   "+offerCode);
@@ -140,11 +148,8 @@ rule "Accept Job"
             answerList.add(offerDateTime);
 
             /* save attributes */
-            int i=1;
-            for (Answer answer : answerList) {
-                rules.saveAnswer(answer);
-            } 
-
+            rules.saveAnswers(answerList);
+ 
         /* Update the number of offers for BEG */ 
             Integer offerCount = 0;
             String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
@@ -159,16 +164,23 @@ rule "Accept Job"
             Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
             rules.saveAnswer(offerCountAnswer);               
 
+       /* Determine the recipient code */
+        String[] recipients = VertxUtils.getSubscribers(rules.realm(),begCode);  
+ 
+      /* SEND OFFER BE    */
+            rules.publishBaseEntityByCode(offerCode, begCode,"LNK_BEG",recipients);
+        /* SEND QUOTER BE */
+            rules.publishBaseEntityByCode(userCode,begCode,"LNK_BEG",recipients);
+  
         /* link BEG and OFFER BE || OFFER */
             rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
         /* link BEG and QUOTER BE || QUOTER */
             rules.createLink(begCode, userCode, linkCode, linkQuoter, 1.0);       
         /* link OFFER and QUOTER BE || CREATOR */
-            rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);       
-        /* SEND OFFER BE    */
-            rules.publishBaseEntityByCode(offerCode);
-        /* SEND QUOTER BE */
-            rules.publishBaseEntityByCode(userCode);
+            rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);   
+            
+         
+            
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
             /* Creating a data msg */
@@ -179,7 +191,9 @@ rule "Accept Job"
                 RulesUtils.ruleLogger("Updated Link of BEG", newLink);
             /* publish new link data */
                 newLink.put("token", tokenString );
-                rules.publish("cmds", newLink);
+             /*   rules.publish("cmds", newLink); */
+        	
+        		
         	
         /* Messages */
 
