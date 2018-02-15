@@ -73,6 +73,7 @@ rule "Send Ch40 BucketData To Frontend"
       					//			filteredKids.add(begKid);
       					//		}
       					//	}
+      					filteredKids.add(begKid);
       					   VertxUtils.subscribe(rules.realm(), begKid.getCode(), user.getCode()); 
       					} 
       					if (user.is("PRI_DRIVER")) {
