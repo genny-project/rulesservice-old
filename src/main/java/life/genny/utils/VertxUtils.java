@@ -198,6 +198,16 @@ public class VertxUtils {
 		}
 	}
 	
+	static public void subscribe(final String realm, final BaseEntity be, final String userCode)
+	{
+		final String SUB = "SUB";
+		// Subscribe to a code
+			Set<String> subscriberSet = getSetString(realm,SUB,be.getCode());
+			subscriberSet.add(userCode);
+			putSetString(realm,SUB,be.getCode(),subscriberSet);
+
+	}
+	
 	static public String[] getSubscribers(final String realm, final String subscriptionCode)
 	{
 		final String SUB = "SUB";

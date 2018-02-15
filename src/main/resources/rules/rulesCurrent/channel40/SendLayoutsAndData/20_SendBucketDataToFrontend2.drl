@@ -5,6 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
+import life.genny.utils.VertxUtils;
 
 
 rule "Send Ch40 BucketData To Frontend"
@@ -41,12 +42,12 @@ rule "Send Ch40 BucketData To Frontend"
      		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
-     			 subscribe(rules.realm(), bucket, user.getCode());  /* monitor anything in first bucket */
+     			 VertxUtils.subscribe(rules.realm(), bucket, user.getCode());  /* monitor anything in first bucket */
      		} else {
      			if (user.is("PRI_DRIVER")) {
      			   List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		       begs.addAll(driverbegs);
-     		       subscribe(rules.realm(), driverbegs, user.getCode());  
+     		       VertxUtils.subscribe(rules.realm(), driverbegs, user.getCode());  
      		    }
     		
      		}
@@ -54,7 +55,7 @@ rule "Send Ch40 BucketData To Frontend"
     			if (user.is("PRI_OWNER")) {
      			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(ownerbegs); 
-     		    subscribe(rules.realm(), ownerbegs, user.getCode());  
+     		    VertxUtils.subscribe(rules.realm(), ownerbegs, user.getCode());  
      		}
  			rules.println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
      		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
@@ -72,14 +73,14 @@ rule "Send Ch40 BucketData To Frontend"
       					//			filteredKids.add(begKid);
       					//		}
       					//	}
-      					   subscribe(rules.realm(), begKid.getCode(), user.getCode()); 
+      					   VertxUtils.subscribe(rules.realm(), begKid.getCode(), user.getCode()); 
       					} 
       					if (user.is("PRI_DRIVER")) {
       						Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
       						if (quoterCode.isPresent()) {
       							if (user.getCode().equals(quoterCode.get())) {
       								filteredKids.add(begKid);
-      								subscribe(rules.realm(), begKid.getCode(), user.getCode());  
+      								VertxUtils.subscribe(rules.realm(), begKid.getCode(), user.getCode());  
   
       							}
       						}

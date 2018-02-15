@@ -41,7 +41,7 @@ ruleflow-group 'LinkChange'
 
  		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode()); 
 	*/
-		String[] recipientCodes = rules.getRecipientCodes(link);
+		String[] recipientCodes = rules.getRecipientCodes($m);
 		rules.publishCmd($m,recipientCodes);
  	   
    	    rules.footer();
