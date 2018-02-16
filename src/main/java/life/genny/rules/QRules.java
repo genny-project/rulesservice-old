@@ -1413,7 +1413,7 @@ public class QRules {
 	public void saveAnswer(Answer answer) {
 
 		try {
-			updateCachedBaseEntity(answer);
+		//	updateCachedBaseEntity(answer);
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", RulesUtils.toJson(answer), getToken());
 			// Now update the Cache
 
@@ -1595,7 +1595,7 @@ public class QRules {
 		items = answers.toArray(items);
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
-		updateCachedBaseEntity(answers);
+	//	updateCachedBaseEntity(answers);
 
 		String jsonAnswer = RulesUtils.toJson(msg);
 		try {
