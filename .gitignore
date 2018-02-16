@@ -3,6 +3,7 @@ target/
 .project
 .settings
 .vertx
+.DS_Store
 logs
 pom.xml.tag
 pom.xml.releaseBackup
