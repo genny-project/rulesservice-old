@@ -4,6 +4,8 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
+import life.genny.utils.VertxUtils;
 
 
 rule "Send Ch40 BucketData To Frontend"
@@ -17,88 +19,7 @@ rule "Send Ch40 BucketData To Frontend"
      	rules.setState("SEND_BUCKET_DATA");
  
 	
-		/* Show loading indicator */
-		  rules.showLoading("Loading your interface..."); 
-     	
-     	 BaseEntity user = rules.getUser();
-      		
-     	 List<BaseEntity> root = rules.getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
-    	 	 rules.publishCmd(root,"GRP_ROOT","LNK_CORE");
- 		 rules.println(root);
- 		 
- 		 List<BaseEntity> admin = rules.getBaseEntitysByParentAndLinkCode("GRP_ADMIN","LNK_CORE", 0, 20, false) ;
-    	 	 rules.publishCmd(admin,"GRP_ADMIN","LNK_CORE");
- 		 
-     	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
-     	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
-  		 rules.println(buckets);
-     	 
-     	for (BaseEntity bucket : buckets ) 
-     	{
-     		rules.println(bucket);
-     		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
-     			begs.addAll(driverbegs);
-     		} else {
-     			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    begs.addAll(driverbegs);
-    		
-     		}
- 
-    			if (user.is("PRI_OWNER")) {
-     			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    begs.addAll(ownerbegs); 
-     		}
- 			rules.println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
-     		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
-     		 
-     		 
-     		for (BaseEntity beg : begs) {
-     			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
-     			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
-     			for (BaseEntity begKid : begKids) {   	 			
-     	 			rules.println(bucket.getCode()+":"+begKid.getCode());
-     	 		}
-     		}
-     	}
-     	/* Sending Draft Datas  for the Owners */
-     	if (user.is("PRI_OWNER")) {
-     			/* List<BaseEntity> draftBegs = new ArrayList<BaseEntity>(); */
-     			List<BaseEntity> ownerDraftBegs = rules.getBaseEntitysByParentAndLinkCode("GRP_DRAFTS","LNK_CORE", 0, 500, false, user.getCode()) ;
-     		    rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
-     		    /*  draftBegs.addAll(ownerbegs);
-     		    for (BaseEntity beg : ownerDraftBegs) {
-     		        rules.publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
-     		    } */
-     		}
-     	
-     	/* Send messages to user if they belong to the conversation. TODO: to optimize */
-      	
-      	/* rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); */
-      	
-      	List<BaseEntity> conversations = rules.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
-      	List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
-      	
-      	if(conversations != null) {
-      		
-      		for(BaseEntity convo: conversations) {
-          		
-          		List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
-          		if(users != null) {
-          			
-          			for(BaseEntity linkedUser: users) {
-              			
-              			/* if user is a stackholder of this conversation  we send it */
-              			if(linkedUser.getCode().equals(rules.getUser().getCode())) {
-              				userConversations.add(convo);
-              			}
-              		}
-          		}
-          	}
-      	}
-  	
-  		rules.publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
+		rules.sendLayoutsAndData();
        	   		
 	    rules.footer();       		      
 end

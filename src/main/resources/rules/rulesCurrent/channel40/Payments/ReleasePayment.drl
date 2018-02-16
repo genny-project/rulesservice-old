@@ -9,14 +9,15 @@ import life.genny.qwandautils.MergeUtil;
 import io.vertx.core.json.JsonObject;
 
 rule "Release Payment"
-	agenda-group "FormSubmit"
 	when 
 		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
-      	rules: QRules( isState("RELEASE_PAYMENT") )
+      	rules: QRules( isState("RELEASE_PAYMENT") && !isState("PAYMENT_DONE"))
 	then
 	
 	 	rules.header();
+	 	
 		rules.println("Release Payment process started"); 
+		rules.setState("PAYMENT_DONE");
 		rules.clearState("RELEASE_PAYMENT");
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
@@ -27,9 +28,7 @@ rule "Release Payment"
 		
   		if(begCode != null && assemblyId != null) {
 	    
-		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());
-		     rules.println("Payment is released!"); 
-		     
+		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());		     
 		     
 		     /* Send email to Owner and driver */
 		     List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
@@ -56,11 +55,13 @@ rule "Release Payment"
 			 	/* Triggering email to owner */
 			 	String[] messageToOwnerRecipients = new String[1];
 		     	messageToOwnerRecipients[0] = ownerCode;
+		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
 		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
 		     	
 		     	/* Triggering email to driver */
 		     	String[] messageToDriverRecipients = new String[1];
 		     	messageToDriverRecipients[0] = driverCode;
+		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
 		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");		
 		        	     	
 		     }

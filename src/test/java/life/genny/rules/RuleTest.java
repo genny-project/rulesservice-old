@@ -106,6 +106,7 @@ public class RuleTest {
 						String ruleText = getFileAsText(listOfFiles[i]);
 						KieHelper kieHelper = new KieHelper();
 						kieHelper.addContent(ruleText, ResourceType.DRL);
+						
 						Results results = kieHelper.verify();
 						for (Message message : results.getMessages()) {
 							log.error(">> Message ({}): {}", message.getLevel(), message.getText());

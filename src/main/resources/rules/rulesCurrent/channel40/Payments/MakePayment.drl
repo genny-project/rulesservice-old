@@ -121,9 +121,10 @@ rule "Make Payment"
 			                contextMap.put("QUOTER", quoterCode); 
 			        
 			                String[] recipientArr = { userCode };
-
-			                /* Sending message to BEG OWNER */
-			                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS");
+							
+							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
+			                /* Sending message to BEG OWNER - SMS Disabled, Email enabled to owner */
+			                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS"); */
 			                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); 
 			        
 			                /* QUOTER config */
@@ -133,7 +134,8 @@ rule "Make Payment"
 
 			                String[] recipientArrForDriver = { quoterCode };
 
-			                /* Sending message to DRIVER */
+			                /* Sending message to DRIVER - Email and sms enabled */
+			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
 			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
 			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); 
 			            

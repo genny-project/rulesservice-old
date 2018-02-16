@@ -55,9 +55,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 rule "Confirm Offer"
+	no-loop true
     when
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER")
-        rules: QRules()
+        rules: QRules( !isState("CONFIRMED_OFFER") )
     then
 		rules.header();
 		String tokenString = rules.getToken();
@@ -67,6 +68,8 @@ rule "Confirm Offer"
 		String linkQuoter= "QUOTER";  
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
+		
+		rules.setState("CONFIRMED_OFFER");
 		
 		String value = $m.getData().getValue();
 		if(value != null) {
@@ -80,6 +83,7 @@ rule "Confirm Offer"
 				
 				if(offerCode != null && begCode != null && userCode != null) {
 					String userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
+					
 					if(!userRole.equals("QUOTER")){
 
 						rules.showLoading("Loading secure payment gateway...");
@@ -89,7 +93,7 @@ rule "Confirm Offer"
 						drools.setFocus("payments");
 						
 					}
-					if(userRole.equals("QUOTER")) {
+					else if(userRole.equals("QUOTER")) {
 						
 						/* Update PRI_NEXT_ACTION AS OWNER */
 						rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
@@ -104,10 +108,12 @@ rule "Confirm Offer"
 								String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
 								RulesUtils.println("owner code ::"+ownerCode);
 								String[] recipientArr = {ownerCode};
-
-								/* Sending message to BEG OWNER */
-								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "SMS"); 
-								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "EMAIL"); 
+								
+								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "TOAST"); 
+								
+								/* Sending message to BEG OWNER - disabled */
+								/* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "SMS"); 
+								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "EMAIL"); */
 							
 							/* QUOTER config */
 								HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -117,10 +123,12 @@ rule "Confirm Offer"
 								contextMapForDriver.put("QUOTER", userCode);
 							
 								String[] recipientArrForDriver = {userCode};
-
-								/* Sending message to QUOTER */
-								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "SMS"); 
-								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "EMAIL"); 
+								
+								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "TOAST");
+								
+								/* Sending message to QUOTER - disabled */
+								/* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "SMS"); 
+								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "EMAIL"); */
 					}
 				}
 			}

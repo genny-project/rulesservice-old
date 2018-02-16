@@ -53,9 +53,9 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-rule "Submit Offer"
+rule "Submit Offer Driver"
     when
-       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DETAILS_GRP" ) 
+       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DRIVER_GRP" ) 
        rules: QRules()
     then
         rules.header();
@@ -144,9 +144,8 @@ rule "Submit Offer"
                             RulesUtils.println("owner code ::"+ownerCode);
                             String[] counterRecipientArr = {ownerCode};
 
-							rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "TOAST");
-                            /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
-                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL"); */
+                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
+                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL");
                         
                             HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
                             counterContextMapForDriver.put("JOB", begCode);
@@ -154,47 +153,13 @@ rule "Submit Offer"
                             counterContextMapForDriver.put("OFFER", priOfferCode);
                     
                             String[] counterRecipientArrForDriver = {quoterCode};
-							
-							rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "TOAST");
-                            /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");
-                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
+
+                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");
+                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL");
 
                             /* Update PRI_NEXT_ACTION = OWNER */ 
                                 Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
                                 rules.saveAnswer(offerActionAnswer1);
-                        }
-                
-                    /* Owner is giving counter offer; disabling email/sms for counter-offer */
-                        if(!userCode.equals(quoterCode)) {
-                            RulesUtils.println("Owner is giving counter offer");
-                            
-                            HashMap<String,String> contextMap = new HashMap<String, String>();
-                            contextMap.put("QUOTER",quoterCode);
-                            contextMap.put("JOB", begCode);  
-                            contextMap.put("OFFER", priOfferCode); 
-                
-                            String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                            RulesUtils.println("Owner sending counter offer! Owner code ::"+ownerCode);
-                            String[] recipientArr = {ownerCode};
-							
-							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
-                            /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
-                            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL"); */
-                        
-                            HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
-                            contextMapForDriver.put("JOB", begCode);
-                            contextMapForDriver.put("OWNER", ownerCode);
-                            contextMapForDriver.put("OFFER", priOfferCode);
-                    
-                            String[] recipientArrForDriver = {quoterCode};
-                    
-                    		    rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
-                            /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS"); 
-                            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL"); */
-
-                            /* Update PRI_NEXT_ACTION = OWNER */ 
-                                Answer offerActionAnswer2 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
-                                rules.saveAnswer(offerActionAnswer2);
                         }
                 }   
             
@@ -241,9 +206,7 @@ rule "Submit Offer"
 
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); 
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");  
-                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         
-                        /* Toast to driver, email/sms to driver disabled */
                         HashMap<String,String> noLinkContextMapForDriver = new HashMap<String, String>();
                         noLinkContextMapForDriver.put("JOB", begCode);
                         noLinkContextMapForDriver.put("OWNER", ownerCode);
@@ -251,10 +214,9 @@ rule "Submit Offer"
                         noLinkContextMapForDriver.put("QUOTER", quoterCode);
                     
                         String[] noLinkRecipientArrForDriver = {quoterCode};
-						
-						rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "TOAST");
-                        /* rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
-                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL"); */
+
+                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
+                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
                 }
 
         /* Save OFFER_DATE as answer */
@@ -271,27 +233,15 @@ rule "Submit Offer"
                 Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
                 link2.setWeight(1.0);
                 String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
-            }          
+            }        
+
+        /* Determine the recipient code */
+            String[] recipients = VertxUtils.getSubscribers(rules.realm(),begCode);  
 
         /* SEND OFFER BE    */
-            JsonObject offerObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_OFFER_CODE=" + offerCode, tokenString));
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("UPDATED OFFER BE   ::  " + offerObj.toString());
-            System.out.println("------------------------------------------------------------------------");
-            offerObj.put("token", tokenString);      
-            rules.publish("cmds", offerObj);
-
-           /* rules.publishBaseEntityByCode(offerCode); */
-
+            rules.publishBaseEntityByCode(offerCode, begCode,"LNK_BEG",recipients);
         /* SEND QUOTER BE */
-            JsonObject quoterObj = new JsonObject(QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+ begCode +"/linkcodes/"+ linkCode +"/attributes?PRI_USERNAME=" + userCode, tokenString));
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("QUOTER BE   ::  " + quoterObj.toString());
-            System.out.println("------------------------------------------------------------------------");
-            quoterObj.put("token", tokenString);      
-            rules.publish("cmds", quoterObj);
-
-            /*rules.publishBaseEntityByCode(quoterCode); */
+            rules.publishBaseEntityByCode(quoterCode,begCode,"LNK_BEG",recipients);
         
         /* Sending updated link of BEG */
             JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
@@ -314,3 +264,4 @@ rule "Submit Offer"
         drools.setFocus("bucketview");        
         rules.footer();
 end
+

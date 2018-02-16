@@ -60,8 +60,7 @@ rule "Counter Offer"
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_COUNTER_OFFER")
         rules: QRules()
     then
-
-        RulesUtils.header(drools.getRule().getName());
+        rules.header();
          /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
@@ -70,7 +69,7 @@ rule "Counter Offer"
             System.out.println("offerCode  ::   "+ offerCode);                    
             String userName = rules.getAsString("preferred_username");
             System.out.println("username   ::   "+ userName);                 
-            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
+            String userCode = rules.getUser().getCode();           
             System.out.println("usercode   ::   "+ userCode);
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             System.out.println("user fullName   ::   "+ userFullName);
@@ -79,8 +78,15 @@ rule "Counter Offer"
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
 
-        /* Send Offer Questions */
-            rules.askQuestions(userCode, offerCode, "QUE_OFFER_DETAILS_GRP", false, true); /* false for form_view*/
+            /* Get userRole */
+			String userRole = null;
+            userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
 
-        RulesUtils.footer(drools.getRule().getName());
+            if(userRole != null && userRole.equals("OWNER")){
+                rules.askQuestions(userCode, offerCode, "QUE_OFFER_OWNER_GRP", false, true); /* false for form_view*/
+            }
+            if(userRole == null || userRole.equals("QUOTER")){
+                rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+            } 
+        rules.footer();
 end

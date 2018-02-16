@@ -13,7 +13,7 @@ import life.genny.qwandautils.MergeUtil;
 rule "Assembly user updation for attribute change - last name"
     when
     	m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LASTNAME") ) 
-    	rules: QRules()
+    	rules: QRules( isState("STARTED"))
     then    
 		rules.header();
         
