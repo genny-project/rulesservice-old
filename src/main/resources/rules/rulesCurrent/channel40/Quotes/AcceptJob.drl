@@ -169,7 +169,7 @@ rule "Accept Job"
        /* Determine the recipient code */
         String[] recipients = VertxUtils.getSubscribers(rules.realm(),begCode);  
  
-      /* SEND OFFER BE    */
+        /* SEND OFFER BE    */
             rules.publishBaseEntityByCode(offerCode, begCode,"LNK_BEG",recipients);
         /* SEND QUOTER BE */
             rules.publishBaseEntityByCode(userCode,begCode,"LNK_BEG",recipients);
