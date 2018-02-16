@@ -1461,7 +1461,7 @@ public class QRules {
 	}
 
 	public void processAnswerRating(QDataAnswerMessage m, final String finalAttributeCode) {
-		
+
 		/* extract answers */
 		Answer[] answers = m.getItems();
 		for (Answer answer : answers) {
@@ -1472,11 +1472,17 @@ public class QRules {
 			String attributeCode = answer.getAttributeCode();
 			String value = answer.getValue();
 			
-			if(attributeCode.equals("PRI_RATING")) {
+			if(attributeCode.equals("PRI_RATING_RAW")) {
 				
+				/*  Saving PRI_RATING attribute */
+				 this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_RATING",value);
+								
 				/* we grab the old value of the rating as well as the current rating */
 				String currentRatingString = getBaseEntityValueAsString(targetCode, finalAttributeCode);
 				String numberOfRatingString = getBaseEntityValueAsString(targetCode, "PRI_NUMBER_RATING");
+				
+				if(currentRatingString == null) currentRatingString = "0";
+				if(numberOfRatingString == null) numberOfRatingString = "0";
 				
 				if(currentRatingString != null && numberOfRatingString != null) {
 					
