@@ -17,7 +17,11 @@ rule "Create New User"
      	rules.println("Creating User  ");
      	BaseEntity be = rules.createUser();
      	be = rules.getUser();
-     	
+      
+      /*  saving the default profile image   */
+        rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IMAGE_URL", 
+                 "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ");
+        
       /*  saving the attribute PRI_IS_PROFILE_COMPLETED as FALSE for the new user */
         rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
      	rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "FALSE");
