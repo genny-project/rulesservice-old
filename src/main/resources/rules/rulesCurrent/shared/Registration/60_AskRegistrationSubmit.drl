@@ -11,18 +11,17 @@ rule "Ask Registration - Profile Submit"
     ruleflow-group 'FormSubmit'
     when
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )
-        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") ) 
+        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") )
       then
-     	rules.header();
-     	
-     	BaseEntity be = rules.getUser();
-     	
+
+		rules.header();
+
      	/*  saving the attribute PRI_IS_PROFILE_COMPLETED as FALSE for the new user */
         rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
-     	rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
-     	
+     	rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
+
         /*  Send Layouts and Bucket Datas    */
         drools.setFocus("SendLayoutsAndData");
-        
-	    rules.footer();   		      
+
+	    rules.footer();
 end
