@@ -624,6 +624,7 @@ public class QRules {
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
+			set("USER",be);
 			println("New User Created " + be);
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
