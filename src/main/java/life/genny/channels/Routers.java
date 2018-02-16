@@ -3,6 +3,7 @@ package life.genny.channels;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.ext.web.Router;
+import life.genny.bridge.RouterHandlers;
 
 
 public class Routers {
@@ -14,7 +15,7 @@ public class Routers {
     final Router router = Router.router(vertx);
 
     router.route().handler(RouterHandlers.cors());
-    router.route(HttpMethod.POST, "/write/:param1/:param2").handler(RouterHandlers::apiMapPutHandler);
+    router.route(HttpMethod.POST, "/write").handler(RouterHandlers::apiMapPutHandler);
     router.route(HttpMethod.GET, "/read/:param1").handler(RouterHandlers::apiMapGetHandler);
     router.route(HttpMethod.GET, "/version").handler(VersionHandler::apiGetVersionHandler);
 
