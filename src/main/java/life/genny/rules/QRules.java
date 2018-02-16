@@ -42,6 +42,7 @@ import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -302,18 +303,10 @@ public class QRules {
 
 	public BaseEntity getUser() {
 		BaseEntity be = null;
-	//	if (isNull("USER")) {
 			String username = (String) getDecodedTokenMap().get("preferred_username");
 			String code = "PER_"+QwandaUtils.getNormalisedUsername(username).toUpperCase();
 			be = getBaseEntityByCode(code);
-			//be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
-		    
-			if (be != null) {
-				set("USER", be); // WATCH THIS!!!
-			}
-	//	} else {
-	//		be = getAsBaseEntity("USER");
-	//	}
+
 
 		return be;
 	}
@@ -335,23 +328,7 @@ public class QRules {
 		return status;
 	}
 
-	public void updateBaseEntityByCode(final String code) {
-		BaseEntity be = null;
-		be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 
-		if (System.getenv("API_PORT") != null) {
-			try {
-				QwandaUtils.apiPutCodedEntity(be, getToken());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-
-			set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
-		}
-
-	}
 	
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode, final String newValue) {
 		
@@ -362,15 +339,7 @@ public class QRules {
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
 
-	//		if (isNull("BE_" + code.toUpperCase())) {
 			be = VertxUtils.readFromDDT(code, getToken());
-			//	be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
-		//		set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
-	//		} 
-		//else {
-		//		be = getAsBaseEntity("BE_" + code.toUpperCase());
-		//	}
-		//}
 		return be;
 	}
 
@@ -660,6 +629,7 @@ public class QRules {
 		try {
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
 					keycloakId);
+			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
 			println("New User Created " + be);
 		} catch (IOException e) {
@@ -1251,6 +1221,7 @@ public class QRules {
 	 */
 	public String updateBaseEntity(BaseEntity be) {
 		try {
+			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			return QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys", RulesUtils.toJson(be),
 					getToken());
 		} catch (Exception e) {
@@ -1385,10 +1356,61 @@ public class QRules {
 		}
 	}
 
+	public BaseEntity updateCachedBaseEntity(final Answer answer)
+	{
+		BaseEntity cachedBe = this.getBaseEntityByCode(answer.getTargetCode());
+		// Add an attribute if not already there
+		try {
+			answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
+			cachedBe.addAnswer(answer);
+			VertxUtils.writeCachedJson(answer.getTargetCode(), JsonUtils.toJson(cachedBe));
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cachedBe;
+	}
+	
+	public BaseEntity updateCachedBaseEntity(final List<Answer> answers)
+	{
+		Answer firstanswer = null;
+		if (answers != null) {
+			if (!answers.isEmpty()) {
+				firstanswer = answers.get(0);
+			}
+		}
+		BaseEntity cachedBe = null;
+		
+		if (firstanswer!=null ) { 
+			cachedBe = this.getBaseEntityByCode(firstanswer.getTargetCode());
+		} else {
+			return null;
+		}
+		
+		for (Answer answer : answers) {
+		
+		// Add an attribute if not already there
+		try {
+			answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
+			cachedBe.addAnswer(answer);
+		
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+		VertxUtils.writeCachedJson(cachedBe.getCode(), JsonUtils.toJson(cachedBe));
+		return cachedBe;
+	}
+	
 	public void saveAnswer(Answer answer) {
 
 		try {
+			updateCachedBaseEntity(answer);
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", RulesUtils.toJson(answer), getToken());
+			// Now update the Cache
+			
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -1560,6 +1582,8 @@ public class QRules {
 		items = answers.toArray(items);
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
+		updateCachedBaseEntity(answers);
+		
 		String jsonAnswer = RulesUtils.toJson(msg);
 		try {
 			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, token);
@@ -1787,8 +1811,8 @@ public class QRules {
 	public void sendAllAttributes() {
 		println("Sending all the attributes");
 		try {
-			 String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/attributes", getToken());
-			 QDataAttributeMessage msg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+			
+			QDataAttributeMessage msg = RulesUtils.loadAllAttributesIntoCache(getToken());
 			 publishData(msg);
 			 println("All the attributes sent");
 			 
@@ -1884,6 +1908,7 @@ public class QRules {
 	public BaseEntity   createBaseEntityByCode(final String userCode, final String bePrefix, final String name) 
 	{
 	    BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
+	    VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
 	    return beg;
 	}
 
@@ -2103,5 +2128,123 @@ public class QRules {
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
+	
+	public void sendLayoutsAndData()
+	{
+		/* Show loading indicator */
+		  showLoading("Loading your interface..."); 
+   	
+   	 BaseEntity user = getUser();
+    		
+   	 List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
+  	 	 publishCmd(root,"GRP_ROOT","LNK_CORE");
+		 println(root);
+		 
+		 List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN","LNK_CORE", 0, 20, false) ;
+  	 	 publishCmd(admin,"GRP_ADMIN","LNK_CORE");
+		 
+   	 List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+   	 publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
+		 println(buckets);
+   	 
+   	for (BaseEntity bucket : buckets ) 
+   	{
+   		println(bucket);
+   		List<BaseEntity> begs = new ArrayList<BaseEntity>();
+   		if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+   			List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
+   			begs.addAll(driverbegs);
+   			 VertxUtils.subscribe(realm(), bucket, user.getCode());  /* monitor anything in first bucket */
+   		} else {
+   			if (user.is("PRI_DRIVER")) {
+   			   List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
+   		       begs.addAll(driverbegs);
+   		       VertxUtils.subscribe(realm(), driverbegs, user.getCode());  
+   		    }
+  		
+   		}
+
+  			if (user.is("PRI_OWNER")) {
+   			List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
+   		    begs.addAll(ownerbegs); 
+   		    VertxUtils.subscribe(realm(), ownerbegs, user.getCode());  
+   		}
+			println("FETCHED "+begs.size()+" JOBS FOR "+user.getCode());
+   		 publishCmd(begs,bucket.getCode(),"LNK_CORE");
+   		 
+   		 
+   		for (BaseEntity beg : begs) {
+   			List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
+   			List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
+    			for (BaseEntity begKid : begKids) {   	 		
+    				if (begKid.getCode().startsWith("OFR_")) {
+    					if (user.is("PRI_OWNER")) {
+    					//	Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
+    					//	if (quoterCode.isPresent()) {
+    					//		if (user.getCode().equals(quoterCode.get())) {
+    					//			filteredKids.add(begKid);
+    					//		}
+    					//	}
+    					filteredKids.add(begKid);
+    					   VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode()); 
+    					} 
+    					if (user.is("PRI_DRIVER")) {
+    						Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
+    						if (quoterCode.isPresent()) {
+    							if (user.getCode().equals(quoterCode.get())) {
+    								filteredKids.add(begKid);
+    								VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());  
+
+    							}
+    						}
+    					}
+    				}	else {
+    					filteredKids.add(begKid);
+    				}
+   	 			println(bucket.getCode()+":"+begKid.getCode());
+   	 		}
+  				
+   			publishCmd(filteredKids,beg.getCode(),"LNK_BEG");
+   		}
+   	}
+   	/* Sending Draft Datas  for the Owners */
+   	if (user.is("PRI_OWNER")) {
+   			/* List<BaseEntity> draftBegs = new ArrayList<BaseEntity>(); */
+   			List<BaseEntity> ownerDraftBegs = getBaseEntitysByParentAndLinkCode("GRP_DRAFTS","LNK_CORE", 0, 500, false, user.getCode()) ;
+   		    publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
+   		    /*  draftBegs.addAll(ownerbegs);
+   		    for (BaseEntity beg : ownerDraftBegs) {
+   		        publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
+   		    } */
+   		}
+   	
+   	/* Send messages to user if they belong to the conversation. TODO: to optimize */
+    	
+    	/* publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES","LNK_CHAT", 0, 100, true); */
+    	
+    	List<BaseEntity> conversations = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+    	List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
+    	
+    	if(conversations != null) {
+    		
+    		for(BaseEntity convo: conversations) {
+        		
+        		List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
+        		if(users != null) {
+        			
+        			for(BaseEntity linkedUser: users) {
+            			
+            			/* if user is a stackholder of this conversation  we send it */
+            			if(linkedUser.getCode().equals(getUser().getCode())) {
+            				userConversations.add(convo);
+            			}
+            		}
+        		}
+        	}
+    	}
+	
+		publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
+	}
+	
 	
 }
