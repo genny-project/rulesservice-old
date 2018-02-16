@@ -3,7 +3,6 @@ package life.genny.channels;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.ext.web.Router;
-import life.genny.bridge.RouterHandlers;
 
 
 public class Routers {
