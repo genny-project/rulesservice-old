@@ -192,12 +192,12 @@ public class VertxUtils {
 
 	static public BaseEntity readFromDDT(final String code, final String token) {
 		BaseEntity be = null;
-		JsonObject json = readCachedJson(code);
-		if ("ok".equals(json.getString("status"))) {
-			be = JsonUtils.fromJson(json.getString("value"), BaseEntity.class);
-		} else {
-			// fetch normally
-			System.out.println("Cache MISS for " + code);
+//		JsonObject json = readCachedJson(code);
+//		if ("ok".equals(json.getString("status"))) {
+//			be = JsonUtils.fromJson(json.getString("value"), BaseEntity.class);
+//		} else {
+//			// fetch normally
+//			System.out.println("Cache MISS for " + code);
 			try {
 				be = QwandaUtils.getBaseEntityByCode(code, token);
 			} catch (Exception e) {
@@ -207,10 +207,10 @@ public class VertxUtils {
 				return null;
 				
 			}
-			if ((cachedEnabled)||(System.getenv("GENNY_DEV") != null) ) {
-				writeCachedJson(code, JsonUtils.toJson(be));
-			}
-		}
+//			if ((cachedEnabled)||(System.getenv("GENNY_DEV") != null) ) {
+//				writeCachedJson(code, JsonUtils.toJson(be));
+//			}
+//		}
 		return be;
 	}
 
