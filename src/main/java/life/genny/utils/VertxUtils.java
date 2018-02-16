@@ -304,34 +304,4 @@ public class VertxUtils {
 		return localMessageProducerCache.get(sessionState);
 
 	}
-
-
-	static public Set<String> getSetString(final String realm, final String keyPrefix, final String key)
-	{
-		String[] resultArray = getObject(realm,keyPrefix,key,String[].class);
-		if (resultArray == null) {
-			return new HashSet<String>();
-		}
-		return Sets.newHashSet(resultArray);
-	}
-
-	  static public  void  putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
-		  String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
-		  putObject(realm, keyPrefix, key, strArray);
-
-	  }
-
-	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
-
-		localMessageProducerCache.put(sessionState, toSessionChannel);
-
-	}
-
-	public static  MessageProducer<JsonObject> getMessageProducer(String sessionState) {
-
-		return localMessageProducerCache.get(sessionState);
-
-	}
-
-
 }

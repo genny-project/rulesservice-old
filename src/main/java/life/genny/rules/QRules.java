@@ -187,14 +187,14 @@ public class QRules {
 	public void setDecodedTokenMap(Map<String, Object> decodedTokenMap) {
 		this.decodedTokenMap = decodedTokenMap;
 	}
-	
+
 	/**
 	 * @return current realm
 	 */
 	public String realm() {
 		return getAsString("realm").toLowerCase();
 	}
-	
+
 	/**
 	 * @return the realm
 	 */
@@ -307,7 +307,7 @@ public class QRules {
 			String code = "PER_"+QwandaUtils.getNormalisedUsername(username).toUpperCase();
 			be = getBaseEntityByCode(code);
 			//be = getBaseEntityByAttributeAndValue("PRI_USERNAME",username);
-		    
+
 			if (be != null) {
 				set("USER", be); // WATCH THIS!!!
 			}
@@ -325,13 +325,13 @@ public class QRules {
 			return true;
 		}
 	}
-	
+
 	public Boolean isNewUserProfileCompleted() {
 		Boolean status = false;
 		if(getUser() != null) {
 			 status =  QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP", getToken());
 		}
-		   	
+
 		return status;
 	}
 
@@ -352,9 +352,9 @@ public class QRules {
 		}
 
 	}
-	
+
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode, final String newValue) {
-		
+
 		Answer newAnswer = new Answer(sourceCode, beCode, attributeCode, newValue);
 		saveAnswer(newAnswer);
 	}
@@ -366,7 +366,7 @@ public class QRules {
 			be = VertxUtils.readFromDDT(code, getToken());
 			//	be = RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code);
 		//		set("BE_" + code.toUpperCase(), be); // WATCH THIS!!!
-	//		} 
+	//		}
 		//else {
 		//		be = getAsBaseEntity("BE_" + code.toUpperCase());
 		//	}
@@ -412,7 +412,7 @@ public class QRules {
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
 					getToken(), parentCode, linkCode, pageStart, pageSize);
 
-			
+
 
 	//	} else {
 	//		bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
@@ -480,7 +480,7 @@ public class QRules {
 		publishBaseEntityByCode(be, null,
 			     null, recipientArray);
 	}
-	
+
 	public void publishBaseEntityByCode(final String be, final String parentCode,
 		      final String linkCode, final String[] recipientCodes) {
 
@@ -491,7 +491,7 @@ public class QRules {
 			      linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
 			publishCmd(msg, recipientCodes);
-	
+
 	}
 
 	public <T extends QMessage>  void publishCmd(T msg, final String[] recipientCodes) {
@@ -502,7 +502,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("cmds", JsonUtils.toJson(msg));
 	}
-	
+
 	public <T extends QMessage>  void publishData(T msg, final String[] recipientCodes) {
 
 //		String json = JsonUtils.toJson(msg);
@@ -534,7 +534,7 @@ public class QRules {
 			Integer pageStart, Integer pageSize, Boolean cache) {
 		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode);
-		
+
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray,parentCode, linkCode);
 		msg.setToken(getToken());
 
@@ -553,7 +553,7 @@ public class QRules {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param BaseEntity
 	 *            object
 	 * @param attributeCode
@@ -661,13 +661,14 @@ public class QRules {
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
 					keycloakId);
 			be = getUser();
+			set("USER",be);
 			println("New User Created " + be);
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
 		return be;
 	}
-	
+
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 
 		String layout = RulesUtils.getLayout(layoutPath);
@@ -675,21 +676,21 @@ public class QRules {
 		publishCmd(layoutCmd);
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
 	}
-	
+
 	public void sendPopupCmd(final String cmd_view, final String root) {
-		
+
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", cmd_view);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
 			cmdJobSublayoutJson.put("root", root);
 		}
-		
+
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
-	
+
 	public void sendPopupLayout(final String layoutCode, final String sublayoutPath, final String root) {
-		
+
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
@@ -698,24 +699,24 @@ public class QRules {
 		if (root != null) {
 			cmdJobSublayoutJson.put("root", root);
 		}
-		
+
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
 		sendSublayout(layoutCode, sublayoutPath, null, false);
 	}
-	
+
 	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root) {
 		sendSublayout(layoutCode, sublayoutPath, root, false);
 	}
-	
+
 	public void sendSublayout(final String layoutCode, final String sublayoutPath, final boolean isPopup) {
 		sendSublayout(layoutCode, sublayoutPath, null, isPopup);
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath, final String root, final boolean isPopup) {
-		
+
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
@@ -742,15 +743,15 @@ public class QRules {
 	}
 
 	public void sendParentLinks(final String targetCode, final String linkCode) {
-		
+
 		JsonArray latestLinks;
-		
+
 		try {
-			
+
 			latestLinks = new JsonArray(QwandaUtils.apiGet(
 					getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
 					getToken()));
-			
+
 			// Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
 
@@ -806,7 +807,7 @@ public class QRules {
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
-		
+
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
 		if (recipientsCode != null) {
@@ -815,9 +816,9 @@ public class QRules {
 
 		publish("cmds",JsonUtils.toJson(msg));
 	}
-	
+
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
-		
+
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
 		if (recipientsCode != null) {
@@ -859,7 +860,7 @@ public class QRules {
 		msg.put("token", getToken());
 		publish("cmds", msg);
 	}
-	
+
 	public void publishCmd(final QDataMessage msg) {
 		msg.setToken(getToken());
 		publish("cmds", msg);
@@ -891,7 +892,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data",  RulesUtils.toJsonObject(msg));
 	}
-	
+
 	public void publishData(final QDataAttributeMessage msg) {
 		msg.setToken(getToken());
 		publish("data",  JsonUtils.toJson(msg));
@@ -912,19 +913,19 @@ public class QRules {
 		}
 		publish("cmds",  RulesUtils.toJsonObject(msg) );
 	}
-	
+
 	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode) {
 		this.publishData(beList, parentCode, linkCode, null);
 	}
 
 	public void publishData(final BaseEntity be, final String parentCode, final String linkCode,
-			String[] recipientCodes) 
+			String[] recipientCodes)
 	{
 		List<BaseEntity> beList = new ArrayList<BaseEntity>();
 		beList.add(be);
 		publishData(beList, parentCode, linkCode, recipientCodes);
 	}
-	
+
 	public void publishData(final List<BaseEntity> beList, final String parentCode, final String linkCode,
 			String[] recipientCodes) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beList.toArray(new BaseEntity[0]));
@@ -960,9 +961,9 @@ public class QRules {
 	}
 
 	public void publishCmd(final QEventLinkChangeMessage cmdMsg, final String[]  recipientsCode) {
-		
+
 		Link link = cmdMsg.getLink();
-		
+
 		JsonArray links= new JsonArray();
 		JsonObject linkJson = new JsonObject();
 		links.add(linkJson);
@@ -971,13 +972,13 @@ public class QRules {
 		linkJson.put("attributeCode", link.getAttributeCode());
 		linkJson.put("linkValue", link.getLinkValue());
 		linkJson.put("weight", link.getWeight());
-		
-		
+
+
 		JsonArray recipients = new JsonArray();
 		for (String recipientCode : recipientsCode) {
 			recipients.add(recipientCode);
 		}
-		
+
 		JsonObject newLink = new JsonObject();
 					newLink.put("msg_type", "DATA_MSG");
 					newLink.put("data_type", "LINK_CHANGE");
@@ -987,7 +988,7 @@ public class QRules {
 					// getEventBus().publish("cmds", newLink);
 			publish("data",  newLink);
 	}
-	
+
 	public void publishMsg(final QMSGMessage msg) {
 
 		msg.setToken(getToken());
@@ -1015,12 +1016,12 @@ public class QRules {
 
 		return null;
 	}
-	
+
 	 /*
 	  * Get children of the source code with the linkcode and linkValue
 	  */
 	 public BaseEntity getChildren(final String sourceCode, final String linkCode, final String linkValue) {
-		 
+
 		 try {
 				String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
 						+ "/linkcodes/" + linkCode + "/children/"+linkValue, getToken());
@@ -1037,22 +1038,22 @@ public class QRules {
 
 			return null;
 	 }
-	
+
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
 		List<Link> links = RulesUtils.getLinks(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), parentCode,
 				linkCode);
 		return links;
 	}
-	
-	
+
+
 	public QDataAskMessage getAskQuestions(final QDataQSTMessage qstMsg) {
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
-		try {		
+		try {
 			   String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/asks/qst", RulesUtils.toJson(qstMsg), getToken());
-			  msg = RulesUtils.fromJson(json, QDataAskMessage.class);	
-			
+			  msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
 
 			return msg;
@@ -1064,9 +1065,9 @@ public class QRules {
 	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean isPopup) {
 		return askQuestions(qstMsg, false);
 	}
-	
+
 	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean autoPushSelections, final boolean isPopup) {
-		
+
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
@@ -1102,13 +1103,13 @@ public class QRules {
 			return msg;
 		}
 	}
-	
+
 	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections) throws ClientProtocolException, IOException {
-		
+
 		String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 				+ questionCode + "/" + targetCode, getToken());
-		
+
 		QDataAskMessage msg = null;
 		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 		publishData(msg);
@@ -1117,21 +1118,21 @@ public class QRules {
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 		return askQuestions(sourceCode, targetCode, questionCode, false);
 	}
-	
+
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections) {
 		return askQuestions(sourceCode, targetCode, questionCode, autoPushSelections, false);
 	}
-	
+
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections, final boolean isPopup) {
-		
+
 		QDataAskMessage msg = null;
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
-		
+
 
 		try {
-			
+
 			this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
 
 			if (autoPushSelections) {
@@ -1146,9 +1147,9 @@ public class QRules {
 
 				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
 				publishCmd(cmdFormView);
-				
+
 			} else {
-				
+
 				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
 				JsonObject json = JsonObject.mapFrom(cmdFormView);
 				json.put("root", questionCode);
@@ -1179,15 +1180,15 @@ public class QRules {
 		}
 
 	}
-	
+
 	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode, final String linkValue, final Integer maxItems) {
 
 		JsonObject selectionList;
 		try {
-		
+
 			selectionList = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys2/"
 					+ selectionRootCode + "/linkcodes/" + linkCode +"/linkValue/"+linkValue+"?pageStart=0&pageSize=" + maxItems, getToken()));
-			
+
 			selectionList.put("token", getToken());
 			publish("cmds", selectionList);
 			return true;
@@ -1197,8 +1198,8 @@ public class QRules {
 		}
 
 	}
-	
-	
+
+
 
 	public void header() {
 		try {
@@ -1244,9 +1245,9 @@ public class QRules {
 
 	/*
 	 * @param BaseEntity
-	 * 
+	 *
 	 * @param token
-	 * 
+	 *
 	 * @return status
 	 */
 	public String updateBaseEntity(BaseEntity be) {
@@ -1279,7 +1280,7 @@ public class QRules {
 			Answer[] answers = m.getItems();
 
 			String qwandaServiceUrl = getQwandaServiceUrl();
-			
+
 			String userCode = getUser().getCode();
 
 			for (Answer answer : answers) {
@@ -1295,7 +1296,7 @@ public class QRules {
 				if (attributeCode.contains("ADDRESS_JSON")) {
 
 					JsonObject addressDataJson = new JsonObject(value);
-					
+
 					println("The Address Json is  :: "+addressDataJson);
 
 					Map<String, String> availableKeys = new HashMap<String, String>();
@@ -1393,66 +1394,66 @@ public class QRules {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void processAnswerMessage(QDataAnswerMessage m)
 	{
 		publishData(m);
 	}
-	
+
 	public void processChat(QEventMessage m)
 	{
-		
+
 		String data = m.getData().getValue();
 		JsonObject dataJson = new JsonObject(data);
 		String text = dataJson.getString("value");
 		String chatCode = dataJson.getString("itemCode");
-		    
+
 		if(text != null && chatCode != null) {
-	            	
+
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(getUser().getCode() , null, "MSG", getToken()), "message", getQwandaServiceUrl(), getToken());
-    			if(newMessage != null) {  		    			
-		    				
+    			if(newMessage != null) {
+
     				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
 	    			String[] recipientCodeArray = new String[stakeholders.size()];
-	    			
+
 	    			int counter = 0;
 	    			for(BaseEntity stakeholder: stakeholders) {
 	    				recipientCodeArray[counter] = stakeholder.getCode();
 	    				counter += 1;
 	    			}
-	    			
+
  	    			/*publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES", recipientCodeArray); */
  	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
  	    			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode());
-		    		QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken()); 
+		    		QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
 		    		BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 		    		publishBE(chatBE);
     			}
 		}
 	}
-	
+
 	public void processImageUpload(QDataAnswerMessage m, final String finalAttributeCode) {
-		
+
 		/* we save the first photo as the icon of the BaseEntity */
 		Answer[] answers = m.getItems();
 		if(answers.length > 0) {
-			
+
 			Answer answer = answers[0];
 			String sourceCode = answer.getSourceCode();
 			String targetCode = answer.getTargetCode();
 			answer.setSourceCode(answer.getTargetCode());
 			String value = answer.getValue();
 			if(value != null) {
-			
+
 				JsonArray imagesJson = new JsonArray(value);
 				if(imagesJson != null) {
-					
+
 					JsonObject firstImage = imagesJson.getJsonObject(0);
 					if(firstImage != null) {
-						
+
 						this.println(firstImage);
-						String jsonStringImage = firstImage.getString("uploadURL");						
+						String jsonStringImage = firstImage.getString("uploadURL");
 						this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, jsonStringImage);
 					}
 				}
@@ -1465,54 +1466,54 @@ public class QRules {
 		/* extract answers */
 		Answer[] answers = m.getItems();
 		for (Answer answer : answers) {
-				
+
 			String sourceCode = answer.getSourceCode();
 			String targetCode = answer.getTargetCode();
 			answer.setSourceCode(answer.getTargetCode());
 			String attributeCode = answer.getAttributeCode();
 			String value = answer.getValue();
-			
+
 			if(attributeCode.equals("PRI_RATING_RAW")) {
-				
+
 				/*  Saving PRI_RATING attribute */
 				 this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_RATING",value);
-								
+
 				/* we grab the old value of the rating as well as the current rating */
 				String currentRatingString = getBaseEntityValueAsString(targetCode, finalAttributeCode);
 				String numberOfRatingString = getBaseEntityValueAsString(targetCode, "PRI_NUMBER_RATING");
-				
+
 				if(currentRatingString == null) currentRatingString = "0";
 				if(numberOfRatingString == null) numberOfRatingString = "0";
-				
+
 				if(currentRatingString != null && numberOfRatingString != null) {
-					
+
 					Double currentRating = Double.parseDouble(currentRatingString);
 					Double numberOfRating = Double.parseDouble(numberOfRatingString);
 					Double newRating = Double.parseDouble(value);
-					
+
 					/* we increment the number of current ratings */
 					numberOfRating += 1;
 			        this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating));
-			        
+
 			        /* we compute the new rating */
-			        
-			        /* because for now we are not storing ALL the previous ratings, 
+
+			        /* because for now we are not storing ALL the previous ratings,
 			         * we calculate a rolling average
 			         */
-			        
+
 			        Double newRatingAverage = currentRating / numberOfRating;
 			        newRatingAverage += newRating / numberOfRating;
 			        this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage));
 
 				}
-				
-				/* publishData(answer); */ 
+
+				/* publishData(answer); */
 			}
 		}
 	}
 
 
-	
+
 	public void processAnswer(QDataAnswerMessage m) {
 
 		/* extract answers */
@@ -1525,7 +1526,7 @@ public class QRules {
 			println("ANSWER:"+answer);
 
 		}
-		
+
 		saveAnswers(answerList);
 	}
 
@@ -1538,7 +1539,7 @@ public class QRules {
 		for (Answer answer : answers2) {
 			if (answer != null) {
 					String attributeCode = answer.getAttributeCode();
-	
+
 				/* if this answer is actually an address another rule will be triggered */
 				if (!attributeCode.contains("ADDRESS_FULL") && !attributeCode.contains("PRI_PAYMENT_METHOD")) {
 					answerList.add(answer);
@@ -1661,7 +1662,7 @@ public class QRules {
 		return link;
 	}
 
-	
+
 	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
 
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
@@ -1674,16 +1675,16 @@ public class QRules {
 		}
 		return link;
 	}
-	
+
 	public Money includeGSTMoney(Money price) {
-		
+
 		Money gstPrice = Money.of(0, price.getCurrency());
 
 		/* Including 10% of price for GST */
 
 		if (price.compareTo(gstPrice) > 0) {
-			
-			Money priceToBeIncluded = price.multiply(0.1);		
+
+			Money priceToBeIncluded = price.multiply(0.1);
 			gstPrice = price.add(priceToBeIncluded);
 		}
 
@@ -1691,16 +1692,16 @@ public class QRules {
 		//return gstPrice;
 
 	}
-	
+
 	public Money excludeGSTMoney(Money price) {
-		
+
 		Money gstPrice = Money.of(0, price.getCurrency());
 
 		/* Including 10% of price for GST */
 
 		if (price.compareTo(gstPrice) > 0) {
-			
-			Money priceToBeIncluded = price.multiply(0.1);		
+
+			Money priceToBeIncluded = price.multiply(0.1);
 			gstPrice = price.subtract(priceToBeIncluded);
 		}
 
@@ -1717,30 +1718,30 @@ public class QRules {
 		}
 		return states;
 	}
-	
+
 	public void sendNotification(final String text, final String[] recipientCodes) {
-		sendNotification(text,  recipientCodes, "info"); 
+		sendNotification(text,  recipientCodes, "info");
 	}
-	
+
 	public void sendNotification(final String text, final String[] recipientCodes, final String style) {
-		
+
 		Layout notificationLayout = new Layout(text, style);
 		QDataSubLayoutMessage data = new QDataSubLayoutMessage(notificationLayout, getToken());
 		data.setRecipientCodeArray(recipientCodes);
 		publishCmd(data);
 	}
-	
+
 	public void sendSubLayouts() throws ClientProtocolException, IOException
 	{
 		String subLayoutMap = RulesUtils.getLayout("sublayouts");
  		if(subLayoutMap != null) {
-		
+
 			JsonArray subLayouts = new JsonArray(subLayoutMap);
 			if(subLayouts != null) {
 				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for(int i = 0; i < subLayouts.size(); i++) {
 					JsonObject sublayoutData = null;
-					
+
 					try {
 						sublayoutData = subLayouts.getJsonObject(i);
 					} catch (Exception e1) {
@@ -1751,36 +1752,36 @@ public class QRules {
 					String name = sublayoutData.getString("name");
 					name = name.replace(".json", "");
 					name = name.replaceAll("\"", "");
-					
+
 					if(url != null) {
-						
+
 						/*    grab sublayout from github   */
 
 						println(i+":"+url);
-						
+
 						String subLayoutString = QwandaUtils.apiGet(url, null);
 						if(subLayoutString != null) {
-							
+
 							try {
 								layoutArray[i] = new Layout(name,subLayoutString);
 
-						        
+
 							}
 							catch(Exception e) {
-							} 
+							}
 						}
 					}
 				}
 				/*    send sublayout to FE    */
-				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray,getToken());								
+				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray,getToken());
 		        publishCmd(msg);
 
 			}
-			
-		
+
+
 		}
 	}
-	
+
 	/*
 	 * Gets all the attributes and Publishes to the DATA channel
 	 */
@@ -1791,12 +1792,12 @@ public class QRules {
 			 QDataAttributeMessage msg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
 			 publishData(msg);
 			 println("All the attributes sent");
-			 
+
 		} catch(Exception e) {
-			e.printStackTrace();	
+			e.printStackTrace();
         }
 	}
-	
+
 	/*
 	 * Gets all the attribute and their value for the given basenentity code
 	 */
@@ -1812,42 +1813,42 @@ public class QRules {
 	           String value =ea.getAsLoopString();
 	           attributeValueMap.put(attributeCode, value);
 	        }
-	        
+
 	        return attributeValueMap;
-	} 
-	
+	}
+
 	public void processDimensions(QEventAttributeValueChangeMessage msg)
 	{
         Answer newAnswer = msg.getAnswer();
         BaseEntity load = getBaseEntityByCode(newAnswer.getSourceCode());
         println("The laod value is "+load.toString());
-     
+
         RulesUtils.println(" Load Baseentity Upodated  " );
         println("The updated laod name after PUT is "+load.getName());
         RulesUtils.println(" Inside the Load Title Attribute Change  rule  "   );
         RulesUtils.println("The created value  ::  "+newAnswer.getCreatedDate());
         RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
- 
+
         String value = newAnswer.getValue();
         println("The load "+msg.getData().getCode()+ " is    ::"  +value );
-          
+
       /* Get the sourceCode(Job code) for this LOAD */
        BaseEntity job = getParent(newAnswer.getTargetCode(), "LNK_BEG");
-      
-      Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);             
+
+      Answer jobTitleAnswer = new Answer(getUser().getCode() ,job.getCode(),  msg.getData().getCode() ,value);
       saveAnswer(jobTitleAnswer);
 	}
-	
+
 	public String getCurrentLocalDateTime() {
 		LocalDateTime date = LocalDateTime.now();
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
 		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
 		String dateString = df.format(datetime);
-		
+
 		return dateString;
 	}
-	
-	
+
+
 	public String getCurrentLocalDate() {
 		LocalDate date = LocalDate.now();
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -1880,20 +1881,20 @@ public class QRules {
 //		String json = JsonUtils.toJson(msg);
 			publishCmd(msg, recipientCodes);
 	}
-	
-	public BaseEntity   createBaseEntityByCode(final String userCode, final String bePrefix, final String name) 
+
+	public BaseEntity   createBaseEntityByCode(final String userCode, final String bePrefix, final String name)
 	{
 	    BaseEntity beg = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
 	    return beg;
 	}
 
 	public Money calcOwnerFee(Money input) {
-		
+
 		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
 		Number inputNum = input.getNumber();
-		
+
 		Money ownerFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
-		
+
 		Number RANGE_1 = 999.99;
 		Number RANGE_2 = 2999.99;
 		Number RANGE_3 = 4999.99;
@@ -1902,19 +1903,19 @@ public class QRules {
 		Number FEE_2= 0.125;
 		Number FEE_3= 0.09;
 		Number FEE_4= 0.05;
-		
+
 		Number RANGE_1_COMPONENT = MoneyHelper.mul(inputNum, FEE_1);
 		Number RANGE_2_COMPONENT = MoneyHelper.mul(RANGE_1, FEE_1);;
 		Number RANGE_3_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_2, RANGE_1), FEE_2);
 		Number RANGE_4_COMPONENT = MoneyHelper.mul( MoneyHelper.sub(RANGE_3, RANGE_2), FEE_3);
-		
+
 		if (inputNum.doubleValue() <= RANGE_1.doubleValue()) {
 			// RANGE_1_COMPONENT
 			ownerFee = Money.of(RANGE_1_COMPONENT, DEFAULT_CURRENCY_TYPE);
 
 			System.out.println("range 1 ");
 		}
-	
+
 		if ( inputNum.doubleValue() > RANGE_1.doubleValue() && inputNum.doubleValue() <= RANGE_2.doubleValue() ){
 			// RANGE_2_COMPONENT + (input - RANGE_1) * FEE_2
 			System.out.println(input);
@@ -1927,8 +1928,8 @@ public class QRules {
 
 			System.out.println("range 2 ");
 		}
-	
-		if ( inputNum.doubleValue() > RANGE_2.doubleValue() && inputNum.doubleValue() <= RANGE_3.doubleValue() ) {	
+
+		if ( inputNum.doubleValue() > RANGE_2.doubleValue() && inputNum.doubleValue() <= RANGE_3.doubleValue() ) {
 			//RANGE_2_COMPONENT + RANGE_3_COMPONENT + (input - RANGE_2) * FEE_3
 			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
 			Money subtract = MoneyHelper.sub(input, RANGE_2);
@@ -1938,7 +1939,7 @@ public class QRules {
 
 			System.out.println("range 3 ");
 		}
-	
+
 		if ( inputNum.doubleValue() > RANGE_3.doubleValue() ) {
 			// RANGE_2_COMPONENT + RANGE_3_COMPONENT + RANGE_4_COMPONENT + ( input - RANGE_3 ) * FEE_4
 			Number addition1 = MoneyHelper.add(RANGE_2_COMPONENT, RANGE_3_COMPONENT);
@@ -1950,7 +1951,7 @@ public class QRules {
 
 			System.out.println("range 4 ");
 		}
-		
+
 		/* To prevent exponential values from appearing in amount. Not 1.7E+2, We need 170 */
 		ownerFee = MoneyHelper.round(ownerFee);
 		ownerFee = Money.of(ownerFee.getNumber().doubleValue(), DEFAULT_CURRENCY_TYPE);
@@ -1967,7 +1968,7 @@ public class QRules {
 		Number inputNum = input.getNumber();
 
 		Money driverFee = Money.of(0, DEFAULT_CURRENCY_TYPE);
-		
+
 		Number RANGE_1 = 999.99;
 		Number RANGE_2 = 2999.99;
 		Number RANGE_3 = 4999.99;
@@ -1978,7 +1979,7 @@ public class QRules {
 		Number FEE_4= 0.05;
 
 		Number ONE = 1;
-		
+
 		// const REVERSE_FEE_MULTIPLIER_1 = ( RANGE_2 - RANGE_1 ) * FEE_2;
 		// const REVERSE_FEE_MULTIPLIER_2 = ( RANGE_3 - RANGE_2 ) * FEE_3;
 
@@ -1990,7 +1991,7 @@ public class QRules {
 		// const REVERSE_FEE_BOUNDARY_1 = RANGE_1 - ( RANGE_1 * FEE_1 );
 		// const REVERSE_FEE_BOUNDARY_2 = RANGE_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
 		// const REVERSE_FEE_BOUNDARY_3 = RANGE_3 - REVERSE_FEE_MULTIPLIER_2 - REVERSE_FEE_MULTIPLIER_1 - ( RANGE_1 * FEE_1 );
-		
+
 		Number multiply01 = MoneyHelper.mul( RANGE_1, FEE_1 );
 			Number REVERSE_FEE_BOUNDARY_1 = MoneyHelper.sub(RANGE_1, multiply01);
 
@@ -2046,7 +2047,7 @@ public class QRules {
 
 		if ( inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_3.doubleValue() ) {
 			//calcFee(( input ) * (1 / (1 - (( REVERSE_FEE_BOUNDARY_1 * FEE_1 ) + REVERSE_FEE_MULTIPLIER_1 + REVERSE_FEE_MULTIPLIER_2 + (( input - REVERSE_FEE_BOUNDARY_3 ) * FEE_4 )) / input )))
-			
+
 			Money subtract1 = MoneyHelper.sub(input, REVERSE_FEE_BOUNDARY_3);
 			Money multiply1 = MoneyHelper.mul(subtract1, FEE_4);
 
@@ -2066,10 +2067,10 @@ public class QRules {
 		}
 		return driverFee;
 	}
-	 
+
 	public String[] getRecipientCodes(final QEventAttributeValueChangeMessage msg) {
 		String[] results = null;
-		
+
 		Set<EntityEntity> links = msg.getBe().getLinks();
 		Set<String> recipientCodesSet = new HashSet<String>();
 		for (EntityEntity ee : links) {
@@ -2086,10 +2087,10 @@ public class QRules {
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
-	
+
 	public String[] getRecipientCodes(final QEventLinkChangeMessage msg) {
 		String[] results = null;
-		
+
 		Link link = msg.getLink();
 		Set<String> recipientCodesSet = new HashSet<String>();
 			String[] recipientArray = VertxUtils.getSubscribers(realm(), link.getTargetCode());
@@ -2103,5 +2104,5 @@ public class QRules {
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
-	
+
 }
