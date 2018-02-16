@@ -43,9 +43,7 @@ then
 		     if(begCode != null && driverCode != null) {
 		    	 
 		    	 	/* we save the BEG code as an attribute in order to track what job a driver is being currently rated against. if this comment does not make sense please refer to the french man. */
-		    	 	Answer beAnswer = new Answer(userCode, userCode, "STT_JOB_IS_RATING", begCode);
-		    	 	rules.saveAnswer(beAnswer);
-		        rules.publishData(beAnswer); 
+		        rules.updateBaseEntityAttribute(userCode, userCode, "STT_JOB_IS_RATING", begCode);
 		    	 
 		    	 	/* we send the questions */
 		    	 	rules.sendQuestions(rules.getUser().getCode(), driverCode, "QUE_USER_RATING_GRP", true);

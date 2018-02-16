@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.HashMap; 
 import life.genny.qwanda.Answer;
 import io.vertx.core.json.JsonObject;
-import life.genny.qwandautils.MergeUtil;
 
 import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwandautils.MergeUtil;
 
 rule "Owner rate driver and confirm delivery"
     when
@@ -36,8 +36,7 @@ rule "Owner rate driver and confirm delivery"
       	String userCode = rules.getUser().getCode();
         
       	/* we grab the job code */
-      	String begCode = MergeUtil.getAttrValue(userCode, "STT_JOB_IS_RATING", rules.getToken());
-      	
+      	String begCode = MergeUtil.getAttrValue(userCode, "STT_JOB_IS_RATING", rules.getToken());     
       	/* String begCode = rules.getBaseEntityValueAsString(userCode, "STT_JOB_IS_RATING"); */
       	
       	RulesUtils.println("begcode:"+begCode);
@@ -48,7 +47,7 @@ rule "Owner rate driver and confirm delivery"
       		 rules.setState("RELEASE_PAYMENT");
 
       		/* we mark the job as marked */
-          	rules.moveBaseEntity(begCode.toString(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
+          	rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
           	
           	/* redirecting user to bucket */
           	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
