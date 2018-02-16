@@ -1338,7 +1338,7 @@ public class QRules {
 						println("The answer object for latitude attribute is  :: " + answerObj.toString());
 						newAnswers[i] = answerObj;
 						i++;
-						println("The answer object for latitude attribute added to Answer array ");
+						//println("The answer object for latitude attribute added to Answer array ");
 					}
 
 					/* Store longitude */
@@ -1370,7 +1370,7 @@ public class QRules {
 					/* set new answers */
 					m.setItems(newAnswers);
 					String json = RulesUtils.toJson(m);
-					println("updated answer json string ::" + json);
+				//	println("updated answer json string ::" + json);
 
 					/* send new answers to api */
 					/* QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json, getToken()); */
