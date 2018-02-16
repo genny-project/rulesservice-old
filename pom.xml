@@ -15,7 +15,7 @@
 	</licenses>
 
 	<properties>
-                <qwanda-utils.version>1.0.3</qwanda-utils.version>
+                <qwanda-utils.version>1.0.4</qwanda-utils.version>
 		<log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.4.2</vertx.version>
 
@@ -40,6 +40,11 @@
 		</repository>
 	</repositories>
 	<dependencies>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-redis-client</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

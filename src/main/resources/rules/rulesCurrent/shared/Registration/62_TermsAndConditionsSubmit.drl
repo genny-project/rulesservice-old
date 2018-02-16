@@ -1,0 +1,27 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule "User Registration Final Form Submit"
+   no-loop true
+   salience 550
+   ruleflow-group 'FormSubmit'
+    when
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_TC_GRP" )
+        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") && (!isState("REGISTRATION_COMPLETED")) ) 
+     then
+     	rules.header();  		
+   	    String userCode = rules.getUser().getCode();
+   	
+  		/*  saving the attribute PRI_IS_PROFILE_COMPLETED as FALSE for the new user */
+        rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
+     	rules.updateBaseEntityAttribute(userCode, userCode, "PRI_IS_PROFILE_COMPLETED", "TRUE");
+     	
+     	rules.setState("REGISTRATION_COMPLETED");
+     	
+        /*  Send Layouts and Bucket Datas    */
+        drools.setFocus("SendLayoutsAndData");
+
+	    rules.footer();     		      
+end

@@ -32,7 +32,10 @@ ruleflow-group 'Answer'
 				rules.processAnswer($m);
 			}
 			/*==============*/
-			
+			else if(attributeCode.contains("PRI_USER_PROFILE_PICTURE")) {
+				rules.processImageUpload($m, "PRI_IMAGE_URL");
+				rules.processAnswer($m);
+			}
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m); 
 			}

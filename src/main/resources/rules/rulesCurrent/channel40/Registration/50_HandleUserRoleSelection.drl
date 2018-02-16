@@ -44,11 +44,13 @@ rule "Save user role to the link with its Company"
          if(newAnswer.getValue().equals("SEL_DRIVER"))
          {
              roleValue = "DRIVER";
-             Answer userRole = new Answer(userCode, userCode, "PRI_DRIVER" , "TRUE");  
+             Answer userRole = new Answer(userCode, userCode, "PRI_DRIVER" , "TRUE");
+               userRole.setWeight(1.0);
              rules.setState("IS_DRIVER");           
              //rules.publishData(userRole); 
              rules.saveAnswer(userRole);
-             Answer userRoleOwner = new Answer(userCode, userCode, "PRI_OWNER" , "FALSE");             
+             Answer userRoleOwner = new Answer(userCode, userCode, "PRI_OWNER" , "FALSE");       
+             userRoleOwner.setWeight(0.0);      
             //rules.publishData(userRoleOwner); 
             rules.saveAnswer(userRoleOwner);
              
@@ -56,11 +58,14 @@ rule "Save user role to the link with its Company"
           if(newAnswer.getValue().equals("SEL_OWNER"))
          {
             roleValue = "OWNER";
-            Answer userRole = new Answer(userCode, userCode, "PRI_OWNER" , "TRUE");      
+            Answer userRole = new Answer(userCode, userCode, "PRI_OWNER" , "TRUE");
+            userRole.setWeight(1.0);      
             rules.setState("IS_OWNER");       
             //rules.publishData(userRole);
               rules.saveAnswer(userRole); 
-            Answer userRoleDriver = new Answer(userCode, userCode, "PRI_DRIVER" , "FALSE");             
+            Answer userRoleDriver = new Answer(userCode, userCode, "PRI_DRIVER" , "FALSE");
+            userRoleDriver.setWeight(0.0);
+                         
             //rules.publishData(userRoleDriver);
              rules.saveAnswer(userRoleDriver);  
          }

@@ -31,7 +31,9 @@ then
 		contextMap.put("DRIVER", rules.getUser().getCode());
 		
 		/* Sending message to BEG OWNER */
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "TOAST");
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "SMS");
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "EMAIL");
 		
 		rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
 		
