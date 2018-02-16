@@ -11,11 +11,13 @@ import io.vertx.core.json.JsonObject;
 rule "Release Payment"
 	when 
 		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
-      	rules: QRules( isState("RELEASE_PAYMENT") )
+      	rules: QRules( isState("RELEASE_PAYMENT") && !isState("PAYMENT_DONE"))
 	then
 	
 	 	rules.header();
+	 	
 		rules.println("Release Payment process started"); 
+		rules.setState("PAYMENT_DONE");
 		rules.clearState("RELEASE_PAYMENT");
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
@@ -26,9 +28,7 @@ rule "Release Payment"
 		
   		if(begCode != null && assemblyId != null) {
 	    
-		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());
-		     rules.println("Payment is released!"); 
-		     
+		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());		     
 		     
 		     /* Send email to Owner and driver */
 		     List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
