@@ -14,7 +14,7 @@ rule "Company ABN Value Entered"
 
     when
     $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ABN") )
-    	rules : QRules()
+    	rules : QRules( isState("STARTED"))
     then    
     	    rules.header();
 	    

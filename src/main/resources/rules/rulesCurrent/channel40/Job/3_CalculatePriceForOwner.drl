@@ -21,7 +21,7 @@ rule "Calculate Price for Owner"
     when
     	$m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("OFR_") ||
 												QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("BEG_") )
-    	rules : QRules( getUser().is("PRI_OWNER") )
+    	rules : QRules( isState("IS_LOGGED_IN") && getUser().is("PRI_OWNER") )
     then    
 		rules.header();
 		String tokenString = rules.getToken();
