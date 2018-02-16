@@ -132,36 +132,6 @@ rule "Submit Offer Owner"
             
             /* COUNTER OFFER HAPPENING */
                 if(linkBegOffer) {     
-                    /* Driver is giving counter-offer */
-                        if(userCode.equals(quoterCode)) {
-                            RulesUtils.println("Driver is giving counter offer");
-                            HashMap<String,String> counterContextMap = new HashMap<String, String>();
-                            counterContextMap.put("QUOTER",quoterCode);
-                            counterContextMap.put("JOB", begCode);  
-                            counterContextMap.put("OFFER", priOfferCode); 
-                
-                            String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                            RulesUtils.println("owner code ::"+ownerCode);
-                            String[] counterRecipientArr = {ownerCode};
-
-                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
-                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL");
-                        
-                            HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
-                            counterContextMapForDriver.put("JOB", begCode);
-                            counterContextMapForDriver.put("OWNER", ownerCode);
-                            counterContextMapForDriver.put("OFFER", priOfferCode);
-                    
-                            String[] counterRecipientArrForDriver = {quoterCode};
-
-                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");
-                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL");
-
-                            /* Update PRI_NEXT_ACTION = OWNER */ 
-                                Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                                rules.saveAnswer(offerActionAnswer1);
-                        }
-                
                     /* Owner is giving counter offer */
                         if(!userCode.equals(quoterCode)) {
                             RulesUtils.println("Owner is giving counter offer");
@@ -192,62 +162,6 @@ rule "Submit Offer Owner"
                                 rules.saveAnswer(offerActionAnswer2);
                         }
                 }   
-            
-            /* SUBMIT OFFER HAPPENING */
-                if(!linkBegOffer) {
-                    RulesUtils.println("Driver is submiting an offer");
-                    linkExists = false;
-                    /* link BEG and OFFER BE || OFFER */
-                        System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + offerCode);
-                        Link link1 = new Link( begCode, offerCode, linkCode, linkOffer);
-                        link1.setWeight(.01);
-                        String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link1),tokenString);
-
-                    /* link OFFER and QUOTER BE || CREATOR */
-                        rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);       
-
-                    /* Update the number of offers for BEG */ 
-                        Integer offerCount = 0;
-                        String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
-                        if(offerCountString == null) { 
-                            offerCount = 1;
-                        }else {                 
-                            offerCount = Integer.parseInt(offerCountString);
-                            offerCount = offerCount + 1;
-                            System.out.println("Offer Count is   ::   " + offerCount);
-                        }
-
-                        Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
-                        rules.saveAnswer(offerCountAnswer);
-                    
-                    /* Update PRI_NEXT_ACTION = OWNER */ 
-                        Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                        rules.saveAnswer(offerActionAnswer3);
-
-                    /* Driver is making-offer for first time */
-                        HashMap<String,String> noLinkContextMap = new HashMap<String, String>();
-                        noLinkContextMap.put("QUOTER",quoterCode);
-                        noLinkContextMap.put("JOB", begCode); 
-                        noLinkContextMap.put("OFFER", offerCode); 
-                
-                        String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                        RulesUtils.println("owner code ::"+ownerCode);
-                        String[] noLinkRecipientArr = {ownerCode};
-
-                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); 
-                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");  
-                        
-                        HashMap<String,String> noLinkContextMapForDriver = new HashMap<String, String>();
-                        noLinkContextMapForDriver.put("JOB", begCode);
-                        noLinkContextMapForDriver.put("OWNER", ownerCode);
-                        noLinkContextMapForDriver.put("OFFER", offerCode);
-                        noLinkContextMapForDriver.put("QUOTER", quoterCode);
-                    
-                        String[] noLinkRecipientArrForDriver = {quoterCode};
-
-                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
-                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
-                }
 
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
@@ -286,9 +200,6 @@ rule "Submit Offer Owner"
             /* publish new link data */
                 newLink.put("token", tokenString );
                 rules.publish("cmds", newLink);
-
-        /* Sending message if offer exists*/
-
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview");        
