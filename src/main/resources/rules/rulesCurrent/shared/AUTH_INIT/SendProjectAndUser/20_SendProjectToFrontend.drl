@@ -8,9 +8,9 @@ import life.genny.qwanda.entity.BaseEntity;
 rule "Send PROJECT To Frontend"
     no-loop true
     salience 770
-    ruleflow-group 'SendAliases'
+    ruleflow-group 'SendProject'
     when
-         rules: QRules( isState("IS_LOGGED_IN")  && (!isState("PROJECT_SENT")) )
+         rules: QRules( isState("ALL_ATTRIBUTES_SENT")  && (!isState("PROJECT_SENT")) )
      then
      	rules.header();
      	String projectCode = "PRJ_"+rules.getAsString("realm").toUpperCase();

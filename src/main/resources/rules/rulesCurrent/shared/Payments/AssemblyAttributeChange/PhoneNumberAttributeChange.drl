@@ -14,7 +14,7 @@ import life.genny.qwandautils.MergeUtil;
 rule "Assembly user updation for attribute change - Mobile"
     when
     	m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_MOBILE") ) 
-    	rules: QRules()
+    	rules: QRules( isState("STARTED"))
     then    
 		RulesUtils.header(drools.getRule().getName());
         

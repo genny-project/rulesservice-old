@@ -13,7 +13,7 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Create new payment method - user"
 	when 
-		rules: QRules( !isState("CREATED_PAYMENT_METHOD") ) 
+		rules: QRules( isState("IS_LOGGED_IN") &&  !isState("CREATED_PAYMENT_METHOD") ) 
 		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_ADD_NEW_PAYMENT_METHOD" ) 
 	then
 		

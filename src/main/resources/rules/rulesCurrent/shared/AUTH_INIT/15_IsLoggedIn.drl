@@ -24,10 +24,10 @@ rule "Is Logged In"
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
         
+        	drools.setFocus("SendAliases");
         
 		drools.setFocus("payments"); 
 		
-		drools.setFocus("SendAliases");
 		
 	    rules.footer();     		      
 end

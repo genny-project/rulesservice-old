@@ -17,5 +17,6 @@ rule "Send All Attributes To Frontend"
         rules.println("ALL ATTRIBUTES SENT TO FRONTEND");
         rules.setState("ALL_ATTRIBUTES_SENT");
 
+   		drools.setFocus("SendProject");
 	    rules.footer();      		      
 end
