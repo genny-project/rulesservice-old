@@ -38,8 +38,7 @@ rule "Create new payment method - user"
 			rules.println("Payment method string2 ::"+paymentMethodDataString);
 			String userCode = rules.getUser().getCode();
 			RulesUtils.println(paymentMethodDataString);
-			
-			String userCurrentPaymentMethods = rules.getBaseEntityValueAsString(userCode, "PRI_USER_PAYMENT_METHODS");
+			String userCurrentPaymentMethods = MergeUtil.getAttrValue(userCode, "PRI_USER_PAYMENT_METHODS", rules.getToken());
 			if(userCurrentPaymentMethods != null) {
 				
 				RulesUtils.println(userCurrentPaymentMethods);

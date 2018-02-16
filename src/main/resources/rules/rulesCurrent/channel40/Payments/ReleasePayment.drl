@@ -9,7 +9,6 @@ import life.genny.qwandautils.MergeUtil;
 import io.vertx.core.json.JsonObject;
 
 rule "Release Payment"
-	agenda-group "FormSubmit"
 	when 
 		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
       	rules: QRules( isState("RELEASE_PAYMENT") )
