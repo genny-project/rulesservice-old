@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 import org.javamoney.moneta.Money;
@@ -33,8 +34,10 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.MoneyDeserializer;
+import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
@@ -63,7 +66,8 @@ public class RulesUtils {
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
 
-
+	static public Map<String,Attribute> attributeMap = new ConcurrentHashMap<String,Attribute>();
+	static public QDataAttributeMessage attributesMsg = null;
 	
 	public static String executeRuleLogger(final String status, final String module, final String topColour,
 			final String bottomColour) {
@@ -624,6 +628,30 @@ public class RulesUtils {
 			return linkList;
 	}
 	
-	
+	public static QDataAttributeMessage loadAllAttributesIntoCache(final String token)
+	{
+		try {
+			
+			 String json = VertxUtils.readCachedJson("attributes").toString();
+			 if ((json == null) || (json.contains("error"))){
+				 json = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
+				  VertxUtils.writeCachedJson("attributes", json);
+				  attributesMsg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+				  Attribute[]  attributeArray = attributesMsg.getItems();
+				  
+				  for (Attribute attribute : attributeArray ) {
+					  attributeMap.put(attribute.getCode(), attribute);
+				  }
+				  println("All the attributes have been loaded in");
+				  
+			 }
+			
+			
+			 return attributesMsg;
+		} catch(Exception e) {
+			e.printStackTrace();	
+       }
+		return null;
+	}
 	
 }
