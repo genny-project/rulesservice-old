@@ -143,9 +143,10 @@ rule "Submit Offer Owner"
                             String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
                             RulesUtils.println("Owner sending counter offer! Owner code ::"+ownerCode);
                             String[] recipientArr = {ownerCode};
-
-                            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
-                            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL");
+							
+							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
+                            /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
+                            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL"); */
                         
                             HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
                             contextMapForDriver.put("JOB", begCode);
@@ -154,8 +155,9 @@ rule "Submit Offer Owner"
                     
                             String[] recipientArrForDriver = {quoterCode};
                     
-                            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS"); 
-                            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL"); 
+                    			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
+                            /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS"); 
+                            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL"); */
 
                             /* Update PRI_NEXT_ACTION = OWNER */ 
                                 Answer offerActionAnswer2 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
