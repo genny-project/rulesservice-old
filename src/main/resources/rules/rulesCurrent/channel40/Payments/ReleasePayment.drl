@@ -5,8 +5,8 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
-
-import io.vertx.core.json.JsonObject;
+import java.util.HashMap;
+import life.genny.rules.RulesUtils;
 
 rule "Release Payment"
 	when 
@@ -26,46 +26,72 @@ rule "Release Payment"
        	String begCode = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "STT_JOB_IS_RATING");
       	RulesUtils.println("Beg code in release payment ::"+begCode);
 		
-  		if(begCode != null && assemblyId != null) {
-	    
-		     PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());		     
+  		if(begCode != null && assemblyId != null) {	 	   
+		     Boolean isPaymentReleaseSuccess = PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());
 		     
-		     /* Send email to Owner and driver */
 		     List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
-		     String ownerCode = null;
-		     String driverCode = null;
+		     	String ownerCode = null;
+		     	String driverCode = null;
 		     
-		     for(Link link : linkList) {
-		     	if(link.getLinkValue().equals("OWNER")) {
+		     	for(Link link : linkList) {
+		     		if(link.getLinkValue().equals("OWNER")) {
 		     		ownerCode = link.getTargetCode();
-		     	}
+		     		}
 		     	
-		     	if(link.getLinkValue().equals("DRIVER")) {
+		     		if(link.getLinkValue().equals("DRIVER")) {
 		     		driverCode = link.getTargetCode();
+		     		}
 		     	}
-		     }
 		     
-		     if(ownerCode != null && driverCode != null) {
+		     
+		     
+		     if(isPaymentReleaseSuccess) {
+		     
+		    	 	if(ownerCode != null && driverCode != null) {
+		    	 		HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("JOB", begCode);
+			 		contextMap.put("OWNER", ownerCode);
+			 		contextMap.put("DRIVER", driverCode);
+			 		
+			 		String[] messageToOwnerRecipients = new String[1];
+		     		messageToOwnerRecipients[0] = ownerCode;
+		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
+		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
+		     		
+		     		String[] messageToDriverRecipients = new String[1];
+		     		messageToDriverRecipients[0] = driverCode;
+		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
+		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
+		     		
+		     		/* we mark the job as marked */
+          			rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
+          	
+          			/* redirecting user to bucket */
+          			rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+		     	}
 		     	
-		     	HashMap<String, String> contextMap = new HashMap<String, String>();
-			 	contextMap.put("JOB", begCode);
-			 	contextMap.put("OWNER", ownerCode);
-			 	contextMap.put("DRIVER", driverCode);
-			 	   
-			 	/* Triggering email to owner */
-			 	String[] messageToOwnerRecipients = new String[1];
-		     	messageToOwnerRecipients[0] = ownerCode;
-		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
-		     	rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
-		     	
-		     	/* Triggering email to driver */
-		     	String[] messageToDriverRecipients = new String[1];
-		     	messageToDriverRecipients[0] = driverCode;
-		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
-		     	rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");		
-		        	     	
-		     }
-	
+		    } 
+		    else {
+		    
+		    		if(ownerCode != null && driverCode != null) {
+		    		
+		    			RulesUtils.println("Release payment failed::"+begCode);
+		    			HashMap<String, String> contextMap1 = new HashMap<String, String>();
+					contextMap1.put("JOB", begCode);
+			 		contextMap1.put("OWNER", ownerCode);
+			 		contextMap1.put("DRIVER", driverCode);
+			 		
+			 		String[] messageToOwnerRecipients1 = new String[1];
+		     		messageToOwnerRecipients1[0] = ownerCode;
+			 				   					   			
+			 		rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
+			 		
+			 		/* redirecting user to bucket */
+          			rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+		  		 }   
+		    			
+		    	}		     
+		     		     
 		}
 	rules.footer();	
 end

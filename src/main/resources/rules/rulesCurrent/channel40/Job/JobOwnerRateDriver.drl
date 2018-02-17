@@ -46,12 +46,6 @@ rule "Owner rate driver and confirm delivery"
       		 
            	/*Release payment for driver */
       		 rules.setState("RELEASE_PAYMENT");
-
-      		/* we mark the job as marked */
-          	rules.moveBaseEntity(begCode.toString(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");  
-          	
-          	/* redirecting user to bucket */
-          	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
       	}
       	  	
       	rules.footer();

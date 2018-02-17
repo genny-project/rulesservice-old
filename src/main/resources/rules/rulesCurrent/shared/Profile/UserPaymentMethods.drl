@@ -8,7 +8,7 @@ import life.genny.qwandautils.PaymentUtils;
 rule "Payment Methods user"
     when
         m : QEventMessage( event_type == "PAYMENT_METHODS" && data.code == "PAYMENT_METHODS" )
- 		rules: QRules( !isState("USER_PAYMENT_METHOD_CREATED") ) 
+ 		rules: QRules () 
     then
        
     		rules.header();
@@ -21,13 +21,10 @@ rule "Payment Methods user"
        		RulesUtils.println("assembly ID is not null and about to refresh the tokens");
        		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
        	}
-    		
         
         String userCode = rules.getUser().getCode();
         rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
  		rules.sendSublayout("PAYMENT_METHODS", "user-profile-payment-methods.json");
- 		
- 		rules.setState("USER_PAYMENT_METHOD_CREATED");
         
 		rules.footer();      
 end 
