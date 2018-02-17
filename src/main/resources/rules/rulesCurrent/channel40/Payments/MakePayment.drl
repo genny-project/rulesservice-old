@@ -96,8 +96,6 @@ rule "Make Payment"
 				            /* Update link between BEG and OFFER to weight= 0 */
 				            rules.updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
 				            
-				            /* Move BEG to GRP_APPROVED */
-				            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
 				            
 				            /* Update BEG to have DRIVER_CODE as an attribute */
 		        	            Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
@@ -158,7 +156,13 @@ rule "Make Payment"
 			   				rules.publishData(updateProgressAnswer);
 				            
 							/* We ask FE to monitor GPS */
-			   				rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0); 
+			   				rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0);  
+			   				
+			   				 /* Move BEG to GRP_APPROVED */
+				            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE"); 
+          	
+          					/* redirecting user to bucket */
+          					rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
 			   			}
 				
 			
