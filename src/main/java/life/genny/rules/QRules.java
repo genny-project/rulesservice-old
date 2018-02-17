@@ -1606,6 +1606,8 @@ public class QRules {
 	//	updateCachedBaseEntity(answers);
 
 		String jsonAnswer = RulesUtils.toJson(msg);
+		jsonAnswer.replace("\\\"", "\"");
+		
 		try {
 			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, token);
 		} catch (IOException e) {
@@ -1905,7 +1907,17 @@ public class QRules {
 			recipientCodes[0] = getUser().getCode();
 		}
 		println("PUBLISHBE:" + be.getCode());
-		if (be.getCode().equals("BEG_0000002")) {
+		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
+			Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
+			System.out.println("Money="+mon);
+			BigDecimal bd = new BigDecimal(mon.getNumber().toString());
+			Money hacked = Money.of(bd, mon.getCurrency());
+			ea.setValueMoney(hacked);
+			break;
+			}
+		}
+		if (be.containsEntityAttribute("PRI_OWNER_PRICE_INC_GST")) {
 			System.out.println("dummy");
 		}
 		BaseEntity[] itemArray = new BaseEntity[1];
@@ -2278,4 +2290,11 @@ public class QRules {
 		publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
 	}
 
+	public void addAttributes(BaseEntity be)
+	{
+		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			ea.setAttribute(RulesUtils.attributeMap.get(ea.getAttributeCode()));
+		}
+	}
+	
 }

@@ -20,6 +20,7 @@ ruleflow-group 'AttributeChange'
  
        /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
         String[] recipientCodes = rules.getRecipientCodes($m);
+        rules.addAttributes($m.getBe());
      	rules.publishBE($m.getBe(),recipientCodes);
      	 rules.setState("ATTRIBUTE_CHANGE");
    	    rules.footer();

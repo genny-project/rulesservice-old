@@ -78,10 +78,10 @@ rule "Calculate Price for Driver"
                         System.out.println("=======================================================================================================");
                         System.out.println("QUOTER quoting     ::   ");
                         System.out.println("targetCode         ::   " +newAnswer.getTargetCode() );
-                        System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
-                        System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
-                        System.out.println("driverPriceIncGST  ::   " + driverPriceIncGST.getNumber().doubleValue());
-                        System.out.println("driverPriceExcGST  ::   " + driverPriceExcGST.getNumber().doubleValue());
+                        System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
+                        System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
+                        System.out.println("driverPriceIncGST  ::   " + driverPriceIncGST);
+                        System.out.println("driverPriceExcGST  ::   " + driverPriceExcGST);
                         System.out.println("=======================================================================================================");
                         /* Get amount values in String */
                             String ownerPriceIncGSTString = QwandaUtils.getMoneyString(ownerPriceIncGST);
