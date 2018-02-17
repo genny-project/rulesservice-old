@@ -12,27 +12,27 @@ import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
 
 rule "Create new payment method - user"
-	when 
-		rules: QRules() 
-		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_ADD_NEW_PAYMENT_METHOD" ) 
+
+	when
+		rules: QRules( isState("IS_LOGGED_IN") &&  !isState("CREATED_PAYMENT_METHOD") )
+		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_ADD_NEW_PAYMENT_METHOD" )
+
 	then
-		
+
 		rules.header();
-			
+
 		String paymentMethodDataString = $m.getData().getValue();
-		
+
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-       	
+
        	/* Save tokens */
        	if(assemblyId != null) {
-       	
+
        		RulesUtils.println("Refreshing tokens");
        		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
-       		
-       		
        	}
-		
+
 		rules.println("Payment method string1 ::"+paymentMethodDataString);
 		if(paymentMethodDataString != null) {
 			rules.println("Payment method string2 ::"+paymentMethodDataString);
@@ -40,29 +40,44 @@ rule "Create new payment method - user"
 			RulesUtils.println(paymentMethodDataString);
 			String userCurrentPaymentMethods = MergeUtil.getAttrValue(userCode, "PRI_USER_PAYMENT_METHODS", rules.getToken());
 			if(userCurrentPaymentMethods != null) {
-				
+
 				RulesUtils.println(userCurrentPaymentMethods);
-				
+
 				JsonObject newPaymentMethod = new JsonObject(paymentMethodDataString);
 				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
 				currentPaymentMethods.add(newPaymentMethod);
 				String finalPaymentMethods = currentPaymentMethods.toString();
-				
+
 				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
+<<<<<<< HEAD
 				PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), paymentAnswer, rules.getToken());
+=======
+	            rules.saveAnswer(paymentAnswer);
+>>>>>>> master
 			}
 			else {
 				rules.println("Payment method string ::"+paymentMethodDataString);
 				RulesUtils.println("Payment method string ::"+paymentMethodDataString);
 				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", "[" + paymentMethodDataString + "]");
+<<<<<<< HEAD
 				PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), paymentAnswer, rules.getToken());
 	            /* rules.publishData(paymentAnswer); */
 	           	
+=======
+	            rules.saveAnswer(paymentAnswer);
+
+>>>>>>> master
 			}
-			
+
 			 PaymentUtils.disburseAccount(assemblyId, paymentMethodDataString, assemblyAuthKey);
 		}
+<<<<<<< HEAD
 		
+=======
+
+		rules.setState("CREATED_PAYMENT_METHOD");
+
+>>>>>>> master
 		rules.footer();
 
 end

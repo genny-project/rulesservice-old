@@ -31,33 +31,33 @@ import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;;
 
 public class VertxUtils {
-	
+
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	private static String hostIP = System.getenv("HOSTIP") != null ? System.getenv("HOSTIP") : "127.0.0.1";
 
 	static boolean cachedEnabled = true;
-	
+
 	public enum ESubscriptionType {
 	    DIRECT,
 	    TRIGGER;
 
 	}
-	
+
 	static Map<String,String> localCache = new ConcurrentHashMap<String,String>();
 	static Map<String,MessageProducer<JsonObject>> localMessageProducerCache = new ConcurrentHashMap<String,MessageProducer<JsonObject>>();
 
 //	static RedisOptions config = null;
 //	static RedisClient redis;
-//	
+//
 //	static public void init() {
 //	config = new RedisOptions()
 //			  .setHost(hostIP);
-//	
+//
 //	redis = RedisClient.create(ClusterMap.getVertxContext(), config);
 //	}
-	
+
   static public  <T>  T  getObject(final String realm, final String keyPrefix, final String key, final Class clazz)
   {
 	  T item = null;
@@ -71,15 +71,15 @@ public class VertxUtils {
 		  return null;
 	  }
   }
-  
+
   static public  void  putObject(final String realm, final String keyPrefix, final String key, final Object obj)
   {
 	String data = JsonUtils.toJson(obj);
 	writeCachedJson(realm+":"+keyPrefix+":"+key,data);
   }
-	
+
   static public JsonObject readCachedJson(final String key) {
-	  
+
 //	  CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
 //	  redis.get(key, res -> {
 //		  if (res.succeeded()) {
@@ -90,7 +90,7 @@ public class VertxUtils {
 //	      }
 //		});
 
-		
+
 
 //		SharedData sd = ClusterMap.getVertxContext().sharedData();
 //
@@ -138,10 +138,10 @@ public class VertxUtils {
 //		}
 //		return null;
 	}
-  
+
 	static public JsonObject writeCachedJson(final String key, final String value) {
 //		CompletableFuture<JsonObject> fut = new CompletableFuture<JsonObject>();
-//		
+//
 //	    redis.set(key, value, r -> {
 //	        if (r.succeeded()) {
 ////	          System.out.println("key stored");
@@ -190,6 +190,7 @@ public class VertxUtils {
 	}
 
 
+
 	static public BaseEntity readFromDDT(final String code, final String token) {
 		BaseEntity be = null;
 //		JsonObject json = readCachedJson(code);
@@ -205,7 +206,7 @@ public class VertxUtils {
 				// So lets leave it to the rules to sort out... (new user)
 				log.error("BE "+code+" is NOT IN CACHE OR DB");
 				return null;
-				
+
 			}
 //			if ((cachedEnabled)||(System.getenv("GENNY_DEV") != null) ) {
 //				writeCachedJson(code, JsonUtils.toJson(be));
@@ -223,7 +224,7 @@ public class VertxUtils {
 		subscriberSet.add(userCode);
 		putSetString(realm,SUB,subscriptionCode,subscriberSet);
 	}
-	
+
 	static public void subscribe(final String realm, final List<BaseEntity> watchList, final String userCode)
 	{
 		final String SUB = "SUB";
@@ -234,7 +235,7 @@ public class VertxUtils {
 			putSetString(realm,SUB,be.getCode(),subscriberSet);
 		}
 	}
-	
+
 	static public void subscribe(final String realm, final BaseEntity be, final String userCode)
 	{
 		final String SUB = "SUB";
@@ -244,16 +245,16 @@ public class VertxUtils {
 			putSetString(realm,SUB,be.getCode(),subscriberSet);
 
 	}
-	
+
 	static public String[] getSubscribers(final String realm, final String subscriptionCode)
 	{
 		final String SUB = "SUB";
 		// Subscribe to a code
 		String[] resultArray = getObject(realm,SUB,subscriptionCode,String[].class);
 		return resultArray;
-		
+
 	}
-	
+
 	static public void subscribeEvent(final String realm, final String subscriptionCode, final QEventMessage msg)
 	{
 		final String SUBEVT = "SUBEVT";
@@ -262,7 +263,7 @@ public class VertxUtils {
 		subscriberSet.add(JsonUtils.toJson(msg));
 		putSetString(realm,SUBEVT,subscriptionCode,subscriberSet);
 	}
-	
+
 	static public QEventMessage[] getSubscribedEvents(final String realm, final String subscriptionCode)
 	{
 		final String SUBEVT = "SUBEVT";
@@ -276,7 +277,7 @@ public class VertxUtils {
 		}
 		return msgs;
 	}
-	
+
 	static public Set<String> getSetString(final String realm, final String keyPrefix, final String key)
 	{
 		String[] resultArray = getObject(realm,keyPrefix,key,String[].class);
@@ -285,7 +286,7 @@ public class VertxUtils {
 		}
 		return Sets.newHashSet(resultArray);
 	}
-	
+
 	  static public  void  putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
 		  String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
 		  putObject(realm, keyPrefix, key, strArray);
@@ -293,16 +294,14 @@ public class VertxUtils {
 	  }
 
 	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
-		
-		localMessageProducerCache.put(sessionState, toSessionChannel);
-		
-	}
-	
-	public static  MessageProducer<JsonObject> getMessageProducer(String sessionState) {
-		
-		return localMessageProducerCache.get(sessionState);
-		
-	}
-	  
 
+		localMessageProducerCache.put(sessionState, toSessionChannel);
+
+	}
+
+	public static  MessageProducer<JsonObject> getMessageProducer(String sessionState) {
+
+		return localMessageProducerCache.get(sessionState);
+
+	}
 }

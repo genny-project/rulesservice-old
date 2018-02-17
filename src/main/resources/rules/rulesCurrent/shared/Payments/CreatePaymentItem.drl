@@ -12,43 +12,43 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Create Payment Item"
 	agenda-group "payments"
-	when 
+	when
 		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER" )
 		rules: QRules( !isState("CREATED_PAYMENT_ITEM") )
 	then
 		rules.header();
-		
-		rules.println("Item creation process started"); 
-		
+
+		rules.println("Item creation process started");
+
 		String offerCode = m.getItemCode();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
-      
-			
+
+
 		/*Getting BEG code from offerCode that has been confirmed */
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
-       	
+
        	/* Creating Payment Item */
        	String paymentItemId = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
        	if(paymentItemId == null) {
-       	
+
        		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
        	 	rules.println("Payment item Id="+itemId);
         		rules.println("Saving Answer");
-			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);        
+			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
 	    		rules.saveAnswer(itemIdAnswer);
        	}
-        	    
+
 		/* Ugly way of checking */
 		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
 		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
-		
+
 		if(paymentIdAttributeValue != null && assemblyId != null) {
 			RulesUtils.println("BEG CODE ::"+BEGCode);
 			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
-	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP"); 
-		}	
+	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
+		}
 		rules.setState("CREATED_PAYMENT_ITEM");
-		rules.footer();			
-end 
+		rules.footer();
+end

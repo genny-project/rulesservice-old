@@ -302,15 +302,22 @@ public class QRules {
 	}
 
 	public BaseEntity getUser() {
+
 		BaseEntity be = null;
 		String username = (String) getDecodedTokenMap().get("preferred_username");
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		be = getBaseEntityByCode(code);
 
+		/* if this situation happens it just means that QRules has not registered the user yet. setting it. */
+		if(isNull("USER") && be != null) {
+			set("USER",be);
+		}
+
 		return be;
 	}
 
 	public Boolean isUserPresent() {
+
 		if (isNull("USER")) {
 			return false;
 		} else {
@@ -515,7 +522,7 @@ public class QRules {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param BaseEntity
 	 *            object
 	 * @param attributeCode
@@ -1215,9 +1222,9 @@ public class QRules {
 
 	/*
 	 * @param BaseEntity
-	 * 
+	 *
 	 * @param token
-	 * 
+	 *
 	 * @return status
 	 */
 	public String updateBaseEntity(BaseEntity be) {
@@ -1367,7 +1374,7 @@ public class QRules {
 			answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
 			if (answer.getAttribute()==null) {
 				log.error("Null Attribute");
-			} else 
+			} else
 			cachedBe.addAnswer(answer);
 			VertxUtils.writeCachedJson(answer.getTargetCode(), JsonUtils.toJson(cachedBe));
 		} catch (BadDataException e) {
@@ -1399,7 +1406,7 @@ public class QRules {
 				answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
 				if (answer.getAttribute()==null) {
 					log.error("Null Attribute");
-				} else 
+				} else
 				cachedBe.addAnswer(answer);
 
 			} catch (BadDataException e) {
@@ -1599,6 +1606,8 @@ public class QRules {
 	//	updateCachedBaseEntity(answers);
 
 		String jsonAnswer = RulesUtils.toJson(msg);
+		jsonAnswer.replace("\\\"", "\"");
+		
 		try {
 			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, token);
 		} catch (IOException e) {
@@ -1898,7 +1907,17 @@ public class QRules {
 			recipientCodes[0] = getUser().getCode();
 		}
 		println("PUBLISHBE:" + be.getCode());
-		if (be.getCode().equals("BEG_0000002")) {
+		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
+			Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
+			System.out.println("Money="+mon);
+			BigDecimal bd = new BigDecimal(mon.getNumber().toString());
+			Money hacked = Money.of(bd, mon.getCurrency());
+			ea.setValueMoney(hacked);
+			break;
+			}
+		}
+		if (be.containsEntityAttribute("PRI_OWNER_PRICE_INC_GST")) {
 			System.out.println("dummy");
 		}
 		BaseEntity[] itemArray = new BaseEntity[1];
@@ -2271,4 +2290,11 @@ public class QRules {
 		publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
 	}
 
+	public void addAttributes(BaseEntity be)
+	{
+		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			ea.setAttribute(RulesUtils.attributeMap.get(ea.getAttributeCode()));
+		}
+	}
+	
 }
