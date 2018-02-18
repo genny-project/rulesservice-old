@@ -2439,7 +2439,7 @@ public class QRules {
 		}
 	}
 
-	public void updateGOPS(QDataGPSMessage m) {
+	public void updateGPS(QDataGPSMessage m) {
 		GPS driverPosition = m.getItems()[0];
 		String driverLatitude = driverPosition.getLatitude();
 		String driverLongitude = driverPosition.getLongitude();
