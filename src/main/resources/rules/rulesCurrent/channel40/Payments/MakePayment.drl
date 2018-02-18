@@ -39,12 +39,7 @@ rule "Make Payment"
 
 			Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());
 			RulesUtils.println("isMakePaymentSucceeded ::"+isMakePaymentSucceeded);
-<<<<<<< HEAD
-					
-=======
 
-
->>>>>>> de82733d5262bd1ebb265774848e850f770c9d84
 
 						/* We grab the quoter code */
 						String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", rules.getToken());
@@ -73,20 +68,12 @@ rule "Make Payment"
 
 				            /* Update BEG's prices */
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", offerPrice);
-<<<<<<< HEAD
+
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
-=======
 
-							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
-							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
-
-							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
-							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
-
->>>>>>> de82733d5262bd1ebb265774848e850f770c9d84
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
 							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
 
@@ -94,7 +81,6 @@ rule "Make Payment"
 				            rules.updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
 
 				            /* Update BEG to have DRIVER_CODE as an attribute */
-<<<<<<< HEAD
 		        	            Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
 		        	            rules.saveAnswer(beAnswer); 
 		        	            
@@ -102,10 +88,6 @@ rule "Make Payment"
 
 				            /* Move BEG to GRP_APPROVED */
 				            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-=======
-							rules.updateBaseEntityAttribute(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
->>>>>>> de82733d5262bd1ebb265774848e850f770c9d84
-
 
 				            /* Send Messages */
 
