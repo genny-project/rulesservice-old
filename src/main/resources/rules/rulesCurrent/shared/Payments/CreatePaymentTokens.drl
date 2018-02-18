@@ -16,19 +16,15 @@ rule "Create Assembly Tokens"
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
 
-		String assemblyCardToken = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", rules.getToken());
 		
-		if(assemblyId != null && assemblyCardToken == null) {
+		if(assemblyId != null) {
 		
 			/* Saving Assembly authentication tokens as user attributes */
  			PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
-     	    rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
+     	    
 		}
 		
-		if(assemblyId != null && assemblyCardToken != null) {
-			rules.setState("IS_ASSEMBLY_TOKEN_CREATED");	
-		}
-		
+		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
 		RulesUtils.footer(drools.getRule().getName());
     	
 end
