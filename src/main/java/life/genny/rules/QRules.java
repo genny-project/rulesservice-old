@@ -36,6 +36,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
@@ -67,6 +68,7 @@ import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
+import life.genny.qwanda.message.QDataGPSMessage;
 
 public class QRules {
 
@@ -2313,23 +2315,23 @@ public class QRules {
 			/* We grab the quoter code */
 			String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", getToken());
 			if (offerCode != null) {
-				
+
 				/* Make payment */
 				showLoading("Processing payment...");
 
-				Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(getQwandaServiceUrl(), offerCode, begCode, assemblyAuthKey, getToken());
+				Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(getQwandaServiceUrl(), offerCode, begCode,
+						assemblyAuthKey, getToken());
 				RulesUtils.println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
 
 				BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, getToken());
 				String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
-
 
 				/* Get offerCode, username, userCode, userFullName */
 				String userCode = getUser().getCode();
 				String userName = getAsString("preferred_username");
 				String userFullName = MergeUtil.getFullName(userCode, getToken());
 
-				if (!isMakePaymentSucceeded) {	
+				if (!isMakePaymentSucceeded) {
 
 					RulesUtils.println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2341,13 +2343,13 @@ public class QRules {
 
 					/* Need to display error toast if make payment fails */
 					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
-					
+
 					/* sending cmd BUCKETVIEW */
 					drools.setFocus("SendLayoutsAndData");
 				}
 
 				if (isMakePaymentSucceeded) {
-					
+
 					String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
 
 					String ownerPriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
@@ -2372,11 +2374,10 @@ public class QRules {
 					updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
 					updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
 
-
 					/* Update BEG to have DRIVER_CODE as an attribute */
 					Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
 					saveAnswer(beAnswer);
-					
+
 					RulesUtils.println("Sending success toast since make payment succeeded");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("DRIVER", quoterCode);
@@ -2385,10 +2386,10 @@ public class QRules {
 
 					String[] recipientArr = { userCode };
 
-					/* Need to display success toast if make payment succeeds
-					 *  */
+					/*
+					 * Need to display success toast if make payment succeeds
+					 */
 					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-					
 
 					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
 					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
@@ -2401,13 +2402,15 @@ public class QRules {
 					String[] recipientArrForDriver = { quoterCode };
 
 					/* Sending message to DRIVER - Email and sms enabled */
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
+							"TOAST");
 					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-					
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
+							"EMAIL");
+
 					/* Update link between BEG and OFFER to weight= 0 */
 					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
-					
+
 					/* Allocate QUOTER as Driver */
 					updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 
@@ -2421,19 +2424,60 @@ public class QRules {
 
 					/* We ask FE to monitor GPS */
 					geofenceJob(begCode, getUser().getCode(), 10.0);
-					
+
 					/* Move BEG to GRP_APPROVED */
 					moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-					
+
 					/* sending cmd BUCKETVIEW */
 					drools.setFocus("SendLayoutsAndData");
-						
-				}		
+
+				}
 
 				setState("PAYMENT_DONE");
-				
+
 			}
 		}
+	}
+
+	public void updateGOPS(QDataGPSMessage m) {
+		GPS driverPosition = m.getItems()[0];
+		String driverLatitude = driverPosition.getLatitude();
+		String driverLongitude = driverPosition.getLongitude();
+
+		if (driverLatitude != null && driverLongitude != null) {
+
+			try {
+				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
+						getUser().getCode());
+				RulesUtils.println(jobsInTransit.toString());
+
+				for (BaseEntity be : jobsInTransit) {
+
+					String begCode = be.getCode();
+					String deliveryLatitudeString = getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
+					String deliveryLongitudeString = getBaseEntityValueAsString(begCode,
+							"PRI_DROPOFF_ADDRESS_LONGITUDE");
+					String totalDistanceString = getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_M");
+
+					/* Call Google Maps API to know how far the driver is */
+					Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString,
+							deliveryLongitudeString);
+					Double totalDistance = Double.parseDouble(totalDistanceString);
+					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
+					percentage = percentage < 0 ? 0 : percentage;
+
+					/* Update progress of the BEG */
+					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
+
+					/* update position of the beg */
+					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude);
+					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
+				}
+			} catch (NumberFormatException e) {
+				log.error("GPS Error " + m);
+			}
+		}
+
 	}
 
 }

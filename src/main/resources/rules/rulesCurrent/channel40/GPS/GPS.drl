@@ -26,36 +26,8 @@ rule "Receive GPS Data"
 	    rules: QRules( isRealm("channel40") )
      then
      	     			
-        BaseEntity user = rules.getUser();
-        GPS driverPosition = m.getItems()[0];
-	    	String driverLatitude = driverPosition.getLatitude();
-	    	String driverLongitude = driverPosition.getLongitude();
-	    	
-	    	if(driverLatitude != null && driverLongitude != null) {
-	    		
-	    		    List<BaseEntity> jobsInTransit = rules.getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT", rules.getUser().getCode());
-	     		RulesUtils.println(jobsInTransit.toString());
-	     			
-	     		for(BaseEntity be: jobsInTransit) {
-	     			
-	     			String begCode = be.getCode();	     			
-	     			String deliveryLatitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
-	     			String deliveryLongitudeString = rules.getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
-	     			String totalDistanceString = rules.getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_M");
-	     			
-	     			/* Call Google Maps API to know how far the driver is */
-	    	     		Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString, deliveryLongitudeString);
-	    	     		Double totalDistance = Double.parseDouble(totalDistanceString);
-	    	    			Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
-	    	    			percentage = percentage < 0 ? 0 : percentage;
-	    	     		
-	    	    			/* Update progress of the BEG */
-	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
+ 	    		
+	  	rules.updateGPS(m);
 
-	    	    		    /* update position of the beg */
-	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude);
-	    	    		    rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
-	     		}
-	    	}
  		    	
 end
