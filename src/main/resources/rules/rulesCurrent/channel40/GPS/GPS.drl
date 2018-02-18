@@ -26,10 +26,8 @@ rule "Receive GPS Data"
 	    rules: QRules( isRealm("channel40") )
      then
      	     			
-        BaseEntity user = rules.getUser();
-        GPS driverPosition = m.getItems()[0];
-	    		
-	  	rules.updateGPS(driverPosition);
+ 	    		
+	  	rules.updateGPS(m);
 
  		    	
 end
