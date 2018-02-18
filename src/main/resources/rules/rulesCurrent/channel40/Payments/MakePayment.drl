@@ -17,21 +17,22 @@ import java.util.Set;
 rule "Make Payment"
 	agenda-group "makepayment"
 	no-loop true
-	when 
+	when
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
 	    rules: QRules( (isState("PAYMENT_ANSWER") && !isState("PAYMENT_DONE")) )
 	then
 		rules.header();
-		
-		rules.println("Make Payment started"); 
+
+		rules.println("Make Payment started");
 
 		/* Save Payment-related answers as user/BEG attributes */
 		String begCode = PaymentUtils.processPaymentAnswers(rules.getQwandaServiceUrl(), m, rules.getToken());
-	
+
    		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
    		String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-     	
+
 		if(begCode != null && assemblyId != null) {
+<<<<<<< HEAD
 					
 				
 																		
@@ -46,28 +47,28 @@ rule "Make Payment"
 							RulesUtils.println("isMakePaymentSucceeded ::"+isMakePaymentSucceeded);
 				            
 				            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, rules.getToken());
-				            
+
 				            String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
-				            
+
 					        String ownerPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_EXC_GST");
 				            String ownerPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_OWNER_PRICE_INC_GST");
 				            String driverPriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_EXC_GST");
 				            String driverPriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
 				            String feePriceExcGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_EXC_GST");
-				            String feePriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST"); 
-				            
+				            String feePriceIncGST= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
+
 				            String quoterCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
-				            String quoterUname = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");           
-	
+				            String quoterUname = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");
+
 							/* Allocate QUOTER as Driver */
 							rules.updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-							  
+
 				            /* SEND QUOTER BE to FE */
 				            String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, rules.getToken());
 				            rules.publish("cmds", dataBeMsg);
-				            
-				            
+
 				            /* Update BEG's prices */
+
 				            Answer ownerPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
 				            Answer ownerPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
 
@@ -89,52 +90,64 @@ rule "Make Payment"
 				                answer.setInferred(true);
 				                rules.publishData(answer);
 				            } 
-				            
+
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
+
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
+
 				            /* Update link between BEG and OFFER to weight= 0 */
 				            rules.updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
-				            
-				            
+
 				            /* Update BEG to have DRIVER_CODE as an attribute */
 		        	            Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
-		        	            rules.publishData(beAnswer); 
+		        	            rules.saveAnswer(beAnswer); 
 		        	            
-				            
+				           
+
+				            /* Move BEG to GRP_APPROVED */
+				            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+
 				            /* Send Messages */
-				            
+
 				            /* Get offerCode, username, userCode, userFullName */
 			                String userCode = rules.getUser().getCode();
 				            String userName = rules.getAsString("preferred_username");
 				            String userFullName = MergeUtil.getFullName(userCode, rules.getToken());
-				            
+
 				            if(!isMakePaymentSucceeded) {
-				            
+
 				            		RulesUtils.println("Sending error toast since make payment failed");
 				            		HashMap<String,String> contextMap = new HashMap<String, String>();
 			                		contextMap.put("DRIVER", quoterCode);
-			               		contextMap.put("JOB", begCode);  
-			                		contextMap.put("QUOTER", quoterCode); 
-			        
+			               		contextMap.put("JOB", begCode);
+			                		contextMap.put("QUOTER", quoterCode);
+
 			                		String[] recipientArr = { userCode };
-				            
+
 								/*Need to display error toast if make payment fails */
 								rules.sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 							}
-							
+
 							if(isMakePaymentSucceeded) {
 							}
-				            
+
+
 			                HashMap<String,String> contextMap = new HashMap<String, String>();
 			                contextMap.put("DRIVER", quoterCode);
-			                contextMap.put("JOB", begCode);  
-			                contextMap.put("QUOTER", quoterCode); 
-			        
+			                contextMap.put("JOB", begCode);
+			                contextMap.put("QUOTER", quoterCode);
+
 			                String[] recipientArr = { userCode };
-							
+
 							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
 			                /* Sending message to BEG OWNER - SMS Disabled, Email enabled to owner */
 			                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "SMS"); */
-			                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL"); 
-			        
+			                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+
 			                /* QUOTER config */
 			                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
 			                contextMapForDriver.put("JOB", begCode);
@@ -145,25 +158,30 @@ rule "Make Payment"
 			                /* Sending message to DRIVER - Email and sms enabled */
 			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
 			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL"); 
-			            
-			                
-							/* Set progression of LOAD delivery to 0 */
-			  				Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-			   				rules.publishData(updateProgressAnswer);
-				            
-							/* We ask FE to monitor GPS */
-			   				rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0);  
-			   				
+
+
+			                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+
+			                /* Set progression of LOAD delivery to 0 */
+			                Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+			                rules.saveAnswer(updateProgressAnswer);
+
+				            /* We ask FE to monitor GPS */
+				            rules.geofenceJob(begCode, rules.getUser().getCode(), 10.0);
 			   				 /* Move BEG to GRP_APPROVED */
 				            rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE"); 
-          	
-          					/* redirecting user to bucket */
-          					rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
-			   			}
-				
-			
+ 
+				            rules.setState("PAYMENT_DONE");
+
+				       		/* sending cmd BUCKETVIEW */
+				            drools.setFocus("SendLayoutsAndData");
+						}
+					}
+				}
+			}
+
+
 		}
-		
-		rules.footer();	
+
+		rules.footer();
 end
