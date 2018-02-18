@@ -2321,37 +2321,7 @@ public class QRules {
 				RulesUtils.println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
 
 				BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, getToken());
-
-				String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
-
-				String ownerPriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
-						"PRI_OFFER_OWNER_PRICE_EXC_GST");
-				String ownerPriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
-						"PRI_OFFER_OWNER_PRICE_INC_GST");
-				String driverPriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
-						"PRI_OFFER_DRIVER_PRICE_EXC_GST");
-				String driverPriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
-						"PRI_OFFER_DRIVER_PRICE_INC_GST");
-				String feePriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_EXC_GST");
-				String feePriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
-
 				String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
-
-				/* Update BEG's prices */
-				updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", offerPrice);
-
-				updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
-				updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
-				updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
-				updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
-
-				updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
-				updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
-
-
-				/* Update BEG to have DRIVER_CODE as an attribute */
-				Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
-				saveAnswer(beAnswer);
 
 
 				/* Get offerCode, username, userCode, userFullName */
@@ -2359,7 +2329,7 @@ public class QRules {
 				String userName = getAsString("preferred_username");
 				String userFullName = MergeUtil.getFullName(userCode, getToken());
 
-				if (!isMakePaymentSucceeded) {
+				if (!isMakePaymentSucceeded) {	
 
 					RulesUtils.println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2371,9 +2341,42 @@ public class QRules {
 
 					/* Need to display error toast if make payment fails */
 					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
+					
+					/* sending cmd BUCKETVIEW */
+					drools.setFocus("SendLayoutsAndData");
 				}
 
 				if (isMakePaymentSucceeded) {
+					
+					String offerPrice = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_PRICE");
+
+					String ownerPriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
+							"PRI_OFFER_OWNER_PRICE_EXC_GST");
+					String ownerPriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
+							"PRI_OFFER_OWNER_PRICE_INC_GST");
+					String driverPriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
+							"PRI_OFFER_DRIVER_PRICE_EXC_GST");
+					String driverPriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe,
+							"PRI_OFFER_DRIVER_PRICE_INC_GST");
+					String feePriceExcGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_EXC_GST");
+					String feePriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
+
+					/* Update BEG's prices */
+					updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", offerPrice);
+
+					updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
+					updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
+					updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
+					updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
+
+					updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
+					updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
+
+
+					/* Update BEG to have DRIVER_CODE as an attribute */
+					Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
+					saveAnswer(beAnswer);
+					
 					RulesUtils.println("Sending success toast since make payment succeeded");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("DRIVER", quoterCode);
@@ -2385,57 +2388,47 @@ public class QRules {
 					/* Need to display success toast if make payment succeeds
 					 *  */
 					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-				}
+					
 
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("DRIVER", quoterCode);
-				contextMap.put("JOB", begCode);
-				contextMap.put("QUOTER", quoterCode);
+					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
+					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
 
-				String[] recipientArr = { userCode };
+					/* QUOTER config */
+					HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+					contextMapForDriver.put("JOB", begCode);
+					contextMapForDriver.put("OWNER", userCode);
 
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
-				/* Sending message to BEG OWNER - SMS Disabled, Email enabled to owner */
-				/*
-				 * sendMessage("", recipientArr, contextMap,"MSG_CH40_CONFIRM_QUOTE_OWNER",
-				 * "SMS");
-				 */
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+					String[] recipientArrForDriver = { quoterCode };
 
-				/* QUOTER config */
-				HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-				contextMapForDriver.put("JOB", begCode);
-				contextMapForDriver.put("OWNER", userCode);
+					/* Sending message to DRIVER - Email and sms enabled */
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+					
+					/* Update link between BEG and OFFER to weight= 0 */
+					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
+					
+					/* Allocate QUOTER as Driver */
+					updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 
-				String[] recipientArrForDriver = { quoterCode };
+					/* SEND QUOTER BE to FE */
+					String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, getToken());
+					publish("cmds", dataBeMsg);
 
-				/* Sending message to DRIVER - Email and sms enabled */
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-				
-				/* Update link between BEG and OFFER to weight= 0 */
-				updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
-				
-				/* Allocate QUOTER as Driver */
-				updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+					/* Set progression of LOAD delivery to 0 */
+					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+					saveAnswer(updateProgressAnswer);
 
-				/* SEND QUOTER BE to FE */
-				String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, getToken());
-				publish("cmds", dataBeMsg);
-
-				/* Set progression of LOAD delivery to 0 */
-				Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-				saveAnswer(updateProgressAnswer);
-
-				/* We ask FE to monitor GPS */
-				geofenceJob(begCode, getUser().getCode(), 10.0);
-				
-				/* Move BEG to GRP_APPROVED */
-				moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-				
-				/* sending cmd BUCKETVIEW */
-				drools.setFocus("SendLayoutsAndData");
+					/* We ask FE to monitor GPS */
+					geofenceJob(begCode, getUser().getCode(), 10.0);
+					
+					/* Move BEG to GRP_APPROVED */
+					moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+					
+					/* sending cmd BUCKETVIEW */
+					drools.setFocus("SendLayoutsAndData");
+						
+				}		
 
 				setState("PAYMENT_DONE");
 				
