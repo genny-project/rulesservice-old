@@ -32,18 +32,18 @@ rule "Make Payment"
    		String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
      	
 		if(begCode != null && assemblyId != null) {
-	
-			/* Make payment */
-			rules.showLoading("Processing payment...");
-
-			Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(begCode, assemblyAuthKey, rules.getToken());
-			RulesUtils.println("isMakePaymentSucceeded ::"+isMakePaymentSucceeded);
 					
 				
 																		
 						/* We grab the quoter code */
 						String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", rules.getToken());
 						if(offerCode != null) {
+						
+							/* Make payment */
+							rules.showLoading("Processing payment...");
+	
+							Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(offerCode, begCode, assemblyAuthKey, rules.getToken());
+							RulesUtils.println("isMakePaymentSucceeded ::"+isMakePaymentSucceeded);
 				            
 				            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, rules.getToken());
 				            
@@ -68,8 +68,6 @@ rule "Make Payment"
 				            
 				            
 				            /* Update BEG's prices */
-				            Answer begPriceAnswer = new Answer(begCode, begCode, "PRI_PRICE", offerPrice);
-
 				            Answer ownerPriceExcGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
 				            Answer ownerPriceIncGSTAnswer = new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
 
@@ -80,7 +78,6 @@ rule "Make Payment"
 				            Answer feePriceIncGstAnswer = new Answer(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
 
 				            List<Answer> answerList = new ArrayList<Answer>();	
-				            answerList.add(begPriceAnswer);
 				            answerList.add(ownerPriceExcGSTAnswer);
 				            answerList.add(ownerPriceIncGSTAnswer);
 				            answerList.add(driverPriceExcGSTAnswer);
