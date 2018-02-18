@@ -2310,15 +2310,15 @@ public class QRules {
 
 		if (begCode != null && assemblyId != null) {
 
-			/* Make payment */
-			showLoading("Processing payment...");
-
-			Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(begCode, assemblyAuthKey, getToken());
-			RulesUtils.println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
-
 			/* We grab the quoter code */
 			String offerCode = MergeUtil.getAttrValue(begCode, "STT_HOT_OFFER", getToken());
 			if (offerCode != null) {
+				
+				/* Make payment */
+				showLoading("Processing payment...");
+
+				Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(getQwandaServiceUrl(), offerCode, begCode, assemblyAuthKey, getToken());
+				RulesUtils.println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
 
 				BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, getToken());
 
@@ -2336,14 +2336,6 @@ public class QRules {
 				String feePriceIncGST = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
 
 				String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
-				String quoterUname = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");
-
-				/* Allocate QUOTER as Driver */
-				updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-				/* SEND QUOTER BE to FE */
-				String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, getToken());
-				publish("cmds", dataBeMsg);
 
 				/* Update BEG's prices */
 				updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", offerPrice);
@@ -2356,17 +2348,11 @@ public class QRules {
 				updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
 				updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
 
-				/* Update link between BEG and OFFER to weight= 0 */
-				updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
 
 				/* Update BEG to have DRIVER_CODE as an attribute */
 				Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
 				saveAnswer(beAnswer);
 
-				/* Move BEG to GRP_APPROVED */
-				moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-
-				/* Send Messages */
 
 				/* Get offerCode, username, userCode, userFullName */
 				String userCode = getUser().getCode();
@@ -2388,6 +2374,17 @@ public class QRules {
 				}
 
 				if (isMakePaymentSucceeded) {
+					RulesUtils.println("Sending success toast since make payment succeeded");
+					HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("DRIVER", quoterCode);
+					contextMap.put("JOB", begCode);
+					contextMap.put("QUOTER", quoterCode);
+
+					String[] recipientArr = { userCode };
+
+					/* Need to display success toast if make payment succeeds
+					 *  */
+					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
 				}
 
 				HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2415,8 +2412,17 @@ public class QRules {
 				/* Sending message to DRIVER - Email and sms enabled */
 				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
 				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-
 				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+				
+				/* Update link between BEG and OFFER to weight= 0 */
+				updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
+				
+				/* Allocate QUOTER as Driver */
+				updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+
+				/* SEND QUOTER BE to FE */
+				String dataBeMsg = PaymentUtils.publishBaseEntityByCode(quoterCode, getToken());
+				publish("cmds", dataBeMsg);
 
 				/* Set progression of LOAD delivery to 0 */
 				Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
@@ -2424,13 +2430,15 @@ public class QRules {
 
 				/* We ask FE to monitor GPS */
 				geofenceJob(begCode, getUser().getCode(), 10.0);
+				
 				/* Move BEG to GRP_APPROVED */
 				moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-
-				setState("PAYMENT_DONE");
-
+				
 				/* sending cmd BUCKETVIEW */
 				drools.setFocus("SendLayoutsAndData");
+
+				setState("PAYMENT_DONE");
+				
 			}
 		}
 	}
