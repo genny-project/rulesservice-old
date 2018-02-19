@@ -8,6 +8,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
+import java.util.HashMap;
 
 
 rule "Create Payment Item"
@@ -35,9 +36,23 @@ rule "Create Payment Item"
 
        		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
        	 	rules.println("Payment item Id="+itemId);
-        		rules.println("Saving Answer");
-			Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
-	    		rules.saveAnswer(itemIdAnswer);
+       	 	
+       	 	if(itemId != null) {
+       	 		rules.println("Saving Answer");
+				Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
+	    			rules.saveAnswer(itemIdAnswer);
+       	 	} 
+       	 	else {
+       	 		HashMap<String,String> contextMap = new HashMap<String, String>();
+       	 		contextMap.put("JOB",BEGCode);
+       	 		
+       	 		String[] recipientArray = {rules.getUser().getCode()};
+       	 		
+       	 		rules.sendMessage("", recipientArray, contextMap,"MSG_CH40_ITEM_CREATION_FAILED", "TOAST");
+       	 		
+       	 		rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+       	 	}
+        		
        	}
 
 		/* Ugly way of checking */
