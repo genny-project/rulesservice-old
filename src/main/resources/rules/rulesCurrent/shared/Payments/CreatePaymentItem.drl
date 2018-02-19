@@ -36,10 +36,11 @@ rule "Create Payment Item"
   			String oneTimeTransactionToken = null;
        		oneTimeTransactionToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
 						Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
-						rules.publishData(cardTokenAnswer);
+						rules.publishCmd(cardTokenAnswer);
 
 						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
-						rules.publishData(bankTokenAnswer);
+						rules.publishCmd(bankTokenAnswer);
+						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionToken);
        	}
 
        	/* Creating Payment Item */
