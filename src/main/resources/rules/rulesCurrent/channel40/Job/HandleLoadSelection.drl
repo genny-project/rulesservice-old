@@ -28,8 +28,7 @@ rule "Handle Load Selection"
          rules: QRules()
      then
          rules.header();
-        
-   
+          
         /*     Collect load code from answer    */
          Answer newAnswer = $m.getAnswer();
          rules.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
@@ -70,7 +69,6 @@ rule "Handle Load Selection"
            rules.println("The new laod with attribute is ::   "+targetCode.toString());
            rules.println("The bulk answer post response is ::   "+response); */
         
-        /*  Copying */
             
          rules.footer();
 
