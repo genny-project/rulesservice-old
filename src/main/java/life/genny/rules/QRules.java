@@ -1865,15 +1865,8 @@ public class QRules {
 
 	public void processDimensions(QEventAttributeValueChangeMessage msg) {
 		Answer newAnswer = msg.getAnswer();
-		BaseEntity load = getBaseEntityByCode(newAnswer.getSourceCode());
+		BaseEntity load = getBaseEntityByCode(newAnswer.getTargetCode());
 		println("The laod value is " + load.toString());
-
-		RulesUtils.println(" Load Baseentity Upodated  ");
-		println("The updated laod name after PUT is " + load.getName());
-		RulesUtils.println(" Inside the Load Title Attribute Change  rule  ");
-		RulesUtils.println("The created value  ::  " + newAnswer.getCreatedDate());
-		RulesUtils.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "
-				+ newAnswer.toString());
 
 		String value = newAnswer.getValue();
 		println("The load " + msg.getData().getCode() + " is    ::" + value);
@@ -1881,8 +1874,8 @@ public class QRules {
 		/* Get the sourceCode(Job code) for this LOAD */
 		BaseEntity job = getParent(newAnswer.getTargetCode(), "LNK_BEG");
 
-		Answer jobTitleAnswer = new Answer(getUser().getCode(), job.getCode(), msg.getData().getCode(), value);
-		saveAnswer(jobTitleAnswer);
+		Answer jobDimensionAnswer = new Answer(getUser().getCode(), job.getCode(), msg.getData().getCode(), value);
+		saveAnswer(jobDimensionAnswer);
 	}
 
 	public String getCurrentLocalDateTime() {
