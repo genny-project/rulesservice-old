@@ -35,11 +35,11 @@ rule "Create Payment Item"
        		RulesUtils.println("Refreshing tokens");
   			String oneTimeTransactionToken = null;
        		oneTimeTransactionToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
-						Answer cardTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
-						rules.publishCmd(cardTokenAnswer);
+						Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
+						rules.publishData(cardTokenAnswer);
 
-						Answer bankTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
-						rules.publishCmd(bankTokenAnswer);
+						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
+						rules.publishData(bankTokenAnswer);
        	}
 
        	/* Creating Payment Item */

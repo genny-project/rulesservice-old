@@ -5,7 +5,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
 import life.genny.qwandautils.PaymentUtils;
 
-rule "Payment Methods user"
+rule "User Payments Methods"
     when
         m : QEventMessage( event_type == "PAYMENT_METHODS" && data.code == "PAYMENT_METHODS" )
  		rules: QRules( !isState("USER_PAYMENT_METHOD_CREATED") )
@@ -23,11 +23,11 @@ rule "Payment Methods user"
        		RulesUtils.println("Refreshing tokens");
   			String oneTimeTransactionToken = null;
        		oneTimeTransactionToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
-						Answer cardTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
-						rules.publishCmd(cardTokenAnswer);
+						Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
+						rules.publishData(cardTokenAnswer);
 
-						Answer bankTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
-						rules.publishCmd(bankTokenAnswer);
+						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
+						rules.publishData(bankTokenAnswer);
        	}
        	
         String userCode = rules.getUser().getCode();
