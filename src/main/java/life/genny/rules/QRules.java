@@ -2292,7 +2292,12 @@ public class QRules {
 
 	public void addAttributes(BaseEntity be) {
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-			ea.setAttribute(RulesUtils.attributeMap.get(ea.getAttributeCode()));
+			if (ea != null) {
+				Attribute attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
+				if (attribute != null) {
+					ea.setAttribute(attribute);
+				}
+			}
 		}
 	}
 
