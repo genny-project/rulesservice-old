@@ -71,15 +71,6 @@ then
 		    	 
 		    	 	/* mark job as delivered by driver */
 	            rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
-		    	 	
-		    	 	HashMap<String, String> contextMap = new HashMap<String, String>();
-			    contextMap.put("JOB", begCode);
-			    
-			    String[] recipients = new String[1];
-		    		recipients[0] = rules.getUser().getCode();
-		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DELIVERED", "TOAST");
-		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DELIVERED", "SMS");
-		    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DELIVERED", "EMAIL");
 		     }
 		}
 
