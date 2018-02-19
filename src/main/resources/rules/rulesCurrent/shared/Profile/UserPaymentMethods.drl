@@ -21,6 +21,7 @@ rule "User Payments Methods"
        	if(assemblyId != null) {
 
        		RulesUtils.println("Refreshing tokens");
+
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
        		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
@@ -30,6 +31,9 @@ rule "User Payments Methods"
 
 						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
 						rules.publishData(bankTokenAnswer);
+						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
+						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
+
        	}
        	
         String userCode = rules.getUser().getCode();

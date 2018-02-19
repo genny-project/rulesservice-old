@@ -866,6 +866,12 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
+	
+	public void publishCmd(final Answer answer) {
+		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setToken(getToken());
+		publish("cmds", JsonUtils.toJson(msg));
+	}
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
