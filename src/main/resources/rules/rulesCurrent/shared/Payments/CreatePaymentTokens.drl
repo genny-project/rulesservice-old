@@ -18,9 +18,17 @@ rule "Create Assembly Tokens"
 
 		
 		if(assemblyId != null) {
-		
-			/* Saving Assembly authentication tokens as user attributes */
- 			PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey); 
+			RulesUtils.println("Refreshing tokens");
+  			String oneTimeTransactionCardToken = null;
+  			String oneTimeTransactionBankToken = null;
+       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
+       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+			
+			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
+			rules.publishData(cardTokenAnswer);
+
+			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
+			rules.publishData(bankTokenAnswer);
      	    
 		}
 		
