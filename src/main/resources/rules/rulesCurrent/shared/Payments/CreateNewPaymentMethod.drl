@@ -30,7 +30,13 @@ rule "Create new payment method - user"
        	if(assemblyId != null) {
 
        		RulesUtils.println("Refreshing tokens");
-       		PaymentUtils.saveTokenAnswers(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
+  			String oneTimeTransactionToken = null;
+       		oneTimeTransactionToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey);
+						Answer cardTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionToken);
+						rules.publishCmd(cardTokenAnswer);
+
+						Answer bankTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionToken);
+						rules.publishCmd(bankTokenAnswer);
        	}
 
 		rules.println("Payment method string1 ::"+paymentMethodDataString);
