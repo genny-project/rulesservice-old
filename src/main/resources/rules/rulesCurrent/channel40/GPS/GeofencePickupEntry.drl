@@ -9,7 +9,7 @@ import java.util.HashMap;
 rule "Geofence Enter Pickup Point"
 	when
 	  $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("PICKUP"))
-	  rules: QRules( isRealm("channel40") )
+	  rules: QRules()
 	then
     
 		RulesUtils.header(drools.getRule().getName());

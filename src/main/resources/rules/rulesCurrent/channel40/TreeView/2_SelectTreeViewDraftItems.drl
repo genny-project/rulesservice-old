@@ -7,7 +7,7 @@ import life.genny.rules.QRules;
 rule "TV_SELECT Draft Jobs"
      when
        $m : QEventMessage( event_type == "TV_SELECT" && data.getValue().startsWith("BEG_") )
-      rules: QRules( isState("EVENT_TV_SELECT") && isRealm("channel40"))
+      rules: QRules( isState("EVENT_TV_SELECT"))
      then
        	
      rules.header();

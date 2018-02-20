@@ -23,7 +23,7 @@ rule "Receive GPS Data"
 	
     when
 	    m : QDataGPSMessage()
-	    rules: QRules( isRealm("channel40") )
+	    rules: QRules()
      then
      	     			
  	    		
