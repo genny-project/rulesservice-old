@@ -2406,11 +2406,9 @@ public class QRules {
 					String[] recipientArrForDriver = { quoterCode };
 
 					/* Sending message to DRIVER - Email and sms enabled */
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
-							"TOAST");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER","TOAST");
 					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
-							"EMAIL");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER","EMAIL");
 
 					/* Update link between BEG and OFFER to weight= 0 */
 					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 0.0);
