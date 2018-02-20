@@ -211,12 +211,6 @@ rule "Accept Job"
                 
                 /* Sending toast message to owner frontend */
                 rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
-                
-
-                /* Sending message to BEG OWNER */
-                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "SMS"); 
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "EMAIL"); */
-                
             
             /* QUOTER config */
                 HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
@@ -230,13 +224,6 @@ rule "Accept Job"
                 /* Sending toast message to driver frontend */
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
                 
-
-                /* Sending message to QUOTER */
-                /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "SMS"); 
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "EMAIL"); */
-                
-                  
-
         /* Send BUCKETVIEW Cmd */
             drools.setFocus("bucketview"); 
         rules.footer();

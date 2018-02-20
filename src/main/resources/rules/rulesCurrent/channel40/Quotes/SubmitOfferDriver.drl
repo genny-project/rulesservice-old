@@ -145,8 +145,6 @@ rule "Submit Offer Driver"
                             String[] counterRecipientArr = {ownerCode};
 
 							rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "TOAST");
-                            /* rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "SMS");
-                            rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "EMAIL"); */
                         
                             HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
                             counterContextMapForDriver.put("JOB", begCode);
@@ -156,8 +154,6 @@ rule "Submit Offer Driver"
                             String[] counterRecipientArrForDriver = {quoterCode};
 							
 							rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "TOAST");
-                            /* rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "SMS");
-                            rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "EMAIL"); */
 
                             /* Update PRI_NEXT_ACTION = OWNER */ 
                                 Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
@@ -197,6 +193,7 @@ rule "Submit Offer Driver"
                         rules.saveAnswer(offerActionAnswer3);
 
                     /* Driver is making-offer for first time */
+                    	    RulesUtils.println("Owner gets email/sms/toast since Driver has given quote");
                         HashMap<String,String> noLinkContextMap = new HashMap<String, String>();
                         noLinkContextMap.put("QUOTER",quoterCode);
                         noLinkContextMap.put("JOB", begCode); 
@@ -208,7 +205,7 @@ rule "Submit Offer Driver"
 						
 					   rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); 
-                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");  
+                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
                         
                         HashMap<String,String> noLinkContextMapForDriver = new HashMap<String, String>();
                         noLinkContextMapForDriver.put("JOB", begCode);
@@ -219,8 +216,6 @@ rule "Submit Offer Driver"
                         String[] noLinkRecipientArrForDriver = {quoterCode};
 						
 					    rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "TOAST");	
-                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "SMS");
-                        rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "EMAIL");
                 }
 
         /* Save OFFER_DATE as answer */
