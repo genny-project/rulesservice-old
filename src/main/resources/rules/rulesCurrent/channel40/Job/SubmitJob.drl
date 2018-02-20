@@ -44,6 +44,13 @@ rule "Post Job Cancel/Submit button click"
            	String deliveryLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
            	String deliveryLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
            	
+          /*  Add author to the load    */
+            Answer jobLatAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LATITUDE",  pickupLatitudeString);  
+            rules.saveAnswer(jobLatAns); 	 
+            Answer jobLonAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LONGITUDE",  pickupLongitudeString);  
+            rules.saveAnswer(jobLonAns);
+            
+           	
            	Double totalDistance = GPSUtils.getDistance(pickupLatitudeString, pickupLongitudeString, deliveryLatitudeString, deliveryLongitudeString);
        		if(totalDistance > 0) {
        			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", Double.toString(totalDistance));
@@ -98,7 +105,7 @@ rule "Post Job Cancel/Submit button click"
                 
 
              /* Sending message to BEG OWNER */
-                rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "SMS"); 
+               /* rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "SMS");  */
                 rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
         
          /*  Calling the rule group : BucketView     */
