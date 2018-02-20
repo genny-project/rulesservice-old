@@ -2196,9 +2196,8 @@ public class QRules {
 			
 		 List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		 List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-		    /* Hiding GRP_DRAFTS if user us a Driver */
+		    /* Removing GRP_DRAFTS be if user is a Driver */
 			if (user.is("PRI_DRIVER")) {
-			    /*updateLink("GRP_ROOT", "GRP_DRAFTS", "LNK_CORE", (double)0); */
 				for (BaseEntity be : root) {
 				    if(be.getCode().equalsIgnoreCase("GRP_DRAFTS")) {
 				      	toRemove.add(be);
