@@ -353,6 +353,7 @@ public class QRules {
 		BaseEntity be = null;
 
 		be = VertxUtils.readFromDDT(code, getToken());
+		addAttributes(be);
 		return be;
 	}
 
@@ -361,6 +362,7 @@ public class QRules {
 		BaseEntity be = null;
 		be = RulesUtils.getBaseEntityByAttributeAndValue(qwandaServiceUrl, getDecodedTokenMap(), getToken(),
 				attributeCode, value);
+		addAttributes(be);
 		return be;
 	}
 
@@ -1917,18 +1919,21 @@ public class QRules {
 	}
 
 	public void publishBE(final BaseEntity be) {
+		addAttributes(be);
 		String[] recipientCodes = new String[1];
 		recipientCodes[0] = be.getCode();
 		publishBE(be, recipientCodes);
 	}
 
 	public void publishBE(final BaseEntity be, String[] recipientCodes) {
+		addAttributes(be);
 		if (recipientCodes == null || recipientCodes.length == 0) {
 			recipientCodes = new String[1];
 			recipientCodes[0] = getUser().getCode();
 		}
 		println("PUBLISHBE:" + be.getCode());
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			
 			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
 				Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
 				System.out.println("Money=" + mon);
@@ -1952,6 +1957,7 @@ public class QRules {
 	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
 		BaseEntity beg = QwandaUtils.createBaseEntityByCode(
 				QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
+		addAttributes(beg);
 		VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
 		return beg;
 	}
