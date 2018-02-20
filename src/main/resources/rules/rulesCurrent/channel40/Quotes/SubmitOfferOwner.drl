@@ -144,10 +144,8 @@ rule "Submit Offer Owner"
                             RulesUtils.println("Owner sending counter offer! Owner code ::"+ownerCode);
                             String[] recipientArr = {ownerCode};
 							
-							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
-                            /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "SMS");
-                            rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "EMAIL"); */
-                        
+						    rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
+                   
                             HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
                             contextMapForDriver.put("JOB", begCode);
                             contextMapForDriver.put("OWNER", ownerCode);
@@ -156,9 +154,7 @@ rule "Submit Offer Owner"
                             String[] recipientArrForDriver = {quoterCode};
                     
                     			rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
-                            /* rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "SMS"); 
-                            rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_COUNTER_OFFER_OTD", "EMAIL"); */
-
+                        
                             /* Update PRI_NEXT_ACTION = OWNER */ 
                                 Answer offerActionAnswer2 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
                                 rules.saveAnswer(offerActionAnswer2);
@@ -202,6 +198,7 @@ rule "Submit Offer Owner"
             /* publish new link data */
                 newLink.put("token", tokenString );
                 rules.publish("cmds", newLink);
+                
 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("bucketview");        

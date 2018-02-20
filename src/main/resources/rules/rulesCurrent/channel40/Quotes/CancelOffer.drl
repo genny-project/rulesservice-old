@@ -140,9 +140,7 @@ rule "Cancel Offer"
                 String[] recipientArr = {ownerCode};
         			
         			rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "TOAST");
-                /* rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "SMS"); 
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "EMAIL"); */
-         
+      
             /* Sending message to DRIVER */  
             
                 HashMap<String,String> contextMapForDriver = new HashMap<String, String>();

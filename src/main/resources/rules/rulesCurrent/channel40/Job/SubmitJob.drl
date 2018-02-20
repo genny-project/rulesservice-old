@@ -105,7 +105,6 @@ rule "Post Job Cancel/Submit button click"
                 
 
              /* Sending message to BEG OWNER */
-               /* rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "SMS");  */
                 rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
         
          /*  Calling the rule group : BucketView     */
