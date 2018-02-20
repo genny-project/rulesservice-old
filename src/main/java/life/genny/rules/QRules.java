@@ -1733,6 +1733,21 @@ public class QRules {
 		}
 		return link;
 	}
+	
+	public Link updateLink(String groupCode, String targetCode, String linkCode, Double weight) {
+
+		log.info("UPDATING LINK between " + groupCode + "and" + targetCode);
+		Link link = new Link(groupCode, targetCode, linkCode);
+		link.setWeight(weight);
+		try {
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", RulesUtils.toJson(link), getToken());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return link;
+	}
+	
+
 
 	public Money includeGSTMoney(Money price) {
 
@@ -2178,11 +2193,26 @@ public class QRules {
 		showLoading("Loading your interface...");
 
 		BaseEntity user = getUser();
-
-		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		publishCmd(root, "GRP_ROOT", "LNK_CORE");
-		println(root);
-
+			
+		 List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		 List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+		    /* Hiding GRP_DRAFTS if user us a Driver */
+			if (user.is("PRI_DRIVER")) {
+			    /*updateLink("GRP_ROOT", "GRP_DRAFTS", "LNK_CORE", (double)0); */
+				for (BaseEntity be : root) {
+				    if(be.getCode().equalsIgnoreCase("GRP_DRAFTS")) {
+				      	toRemove.add(be);
+				      	println("GRP_DRAFTS is being added to remove list");
+				    }
+				 root.removeAll(toRemove);  
+				 println("GRP_DRAFTS being removed from root");
+				}
+				println("GRP_DRAFTS removed from root");
+			}
+		 publishCmd(root, "GRP_ROOT", "LNK_CORE");
+		 println(root);
+			
+		
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
