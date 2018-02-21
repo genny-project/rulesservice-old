@@ -15,7 +15,7 @@ rule "User-Profile"
          rules.header();
   	    String userCode = rules.getUser().getCode();
   	    
-        rules.askQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP");
+        rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
        /*  Get Company Code of the current user   */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
         if(company != null)
@@ -24,12 +24,19 @@ rule "User-Profile"
             String companyCode = company.getCode();
             rules.println("The Company Code is :: "+companyCode);
            /*    Send Company asks   */       
-            rules.askQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
+            rules.sendQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP", false);
             
         }
-       
+        
+        /*  Send Bank Details asks   */ 
+          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+        /*  Send User Documents asks   */ 
+          rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
+          
 	   /* Send SubLayout  */	
 		rules.sendSublayout("SUB_USER_PROFILE", "user-profile.json");
+		
+		
          
        rules.footer(); 
 end
