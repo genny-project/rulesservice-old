@@ -22,11 +22,10 @@ import io.vertx.core.json.JsonObject;
 rule "Post Job Cancel/Submit button click"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
-      rules: QRules()   
+      rules: QRules( !isState("NEW_JOB_SAVED") )   
     then
-         rules.setDrools(drools);
          rules.header();  
-           
+         rules.setState("NEW_JOB_SAVED"); 
         /* rules.showLoading("Creating your new load..."); */
                 
        /*  Get data.value and decode    */
