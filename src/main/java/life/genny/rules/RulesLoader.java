@@ -357,8 +357,8 @@ public class RulesLoader {
 		globals.add(Tuple.of("LOG_WHITE", WHITE));
 		globals.add(Tuple.of("LOG_BOLD", BOLD));
 		globals.add(Tuple.of("REACT_APP_QWANDA_API_URL", qwandaApiUrl));
-		globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
-		globals.add(Tuple.of("KEYCLOAKIP", hostIp));
+//		globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
+//		globals.add(Tuple.of("KEYCLOAKIP", hostIp));
 		return globals;
 	}
 }

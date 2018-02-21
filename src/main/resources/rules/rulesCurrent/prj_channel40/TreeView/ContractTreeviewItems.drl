@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
-global java.lang.String REACT_APP_VERTX_URL;
+
 global java.lang.String KEYCLOAKIP;
  
    
