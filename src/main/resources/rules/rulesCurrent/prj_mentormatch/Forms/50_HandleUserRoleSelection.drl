@@ -61,10 +61,6 @@ rule "Handle user role mentormatch"
          rules.setState("IS_MENTOR");
 
          String attributeCode = $m.data.getCode();
-         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
-         String companyCode = company.getCode();
-         Link updateLink = new Link( companyCode, userCode, "LNK_STAFF", roleValue, (double) 1);
-         String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
          rules.publishBE($m.getBe());
          rules.setState("USER_TYPE_SAVED");
          rules.footer();
