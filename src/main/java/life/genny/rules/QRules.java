@@ -623,27 +623,27 @@ public class QRules {
 	public void sendMentorMatchLayoutsAndData() {
 
 		BaseEntity user = getUser();
-		
+
 		if(user != null) {
-			
+
 			String mentorValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTOR");
 			String menteeValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTEE");
 
 			Boolean isMentor = mentorValue != null && (mentorValue.equals("TRUE") || user.is("PRI_MENTOR"));
 			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || user.is("PRI_MENTEE"));
-			
+
 			String profile_completed = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
 			this.println(profile_completed);
 			this.println(isMentor);
 			this.println(isMentee);
 
 			if(profile_completed == null && !isMentor && !isMentee) {
-				
+
 				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
 				this.askQuestions(getUser().getCode(),getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
 			}
 			else {
-				
+
 				if(isMentor || isMentee) {
 
 					/* Show loading indicator */
@@ -676,7 +676,7 @@ public class QRules {
 							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
 							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
 							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
-							this.sendSelections("GRP_MENTOR_ATTRIBUTES", "LNK_CORE", 20);
+							this.sendSelections("GRP_MENTORS_ATTRIBUTES", "LNK_CORE", 20);
 							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
 							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
 							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
@@ -690,7 +690,7 @@ public class QRules {
 					}
 				}
 				else {
-					
+
 					this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
 					this.askQuestions(getUser().getCode(),getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
 				}
@@ -699,7 +699,7 @@ public class QRules {
 	}
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
-		
+
 		if(recipientArray != null && recipientArray.length > 0) {
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
 					getToken());
@@ -707,7 +707,7 @@ public class QRules {
 		} else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
-		
+
 	}
 
 	public BaseEntity createUser() {
@@ -954,7 +954,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
-	
+
 	public void publishCmd(final Answer answer) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
 		msg.setToken(getToken());
@@ -1821,7 +1821,7 @@ public class QRules {
 		}
 		return link;
 	}
-	
+
 	public Link updateLink(String groupCode, String targetCode, String linkCode, Double weight) {
 
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode);
@@ -1834,7 +1834,7 @@ public class QRules {
 		}
 		return link;
 	}
-	
+
 
 
 	public Money includeGSTMoney(Money price) {
@@ -2019,7 +2019,7 @@ public class QRules {
 		}
 		println("PUBLISHBE:" + be.getCode());
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-			
+
 			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
 				Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
 				System.out.println("Money=" + mon);
@@ -2285,7 +2285,7 @@ public class QRules {
 		showLoading("Loading your interface...");
 
 		BaseEntity user = getUser();
-			
+
 		 List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		 List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		    /* Removing GRP_DRAFTS be if user is a Driver */
@@ -2295,15 +2295,15 @@ public class QRules {
 				      	toRemove.add(be);
 				      	println("GRP_DRAFTS is being added to remove list");
 				    }
-				 root.removeAll(toRemove);  
+				 root.removeAll(toRemove);
 				 println("GRP_DRAFTS being removed from root");
 				}
 				println("GRP_DRAFTS removed from root");
 			}
 		 publishCmd(root, "GRP_ROOT", "LNK_CORE");
 		 println(root);
-			
-		
+
+
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
