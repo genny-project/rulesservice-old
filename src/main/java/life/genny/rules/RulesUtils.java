@@ -634,6 +634,7 @@ public class RulesUtils {
 			
 			 String json = VertxUtils.readCachedJson("attributes").toString();
 			 if ((json == null) || (json.contains("error"))){
+				 println("LOADING ATTRIBUTES!");
 				 json = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
 				  VertxUtils.writeCachedJson("attributes", json);
 				  attributesMsg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
@@ -644,6 +645,8 @@ public class RulesUtils {
 				  }
 				  println("All the attributes have been loaded in");
 				  
+			 } else {
+				 println("Attributes Already loaded");
 			 }
 			
 			

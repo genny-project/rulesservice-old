@@ -353,7 +353,11 @@ public class QRules {
 		BaseEntity be = null;
 
 		be = VertxUtils.readFromDDT(code, getToken());
-		addAttributes(be);
+		if (be == null) {
+			println("ERROR - be ("+code+") fetched is NULL ");
+		} else {
+			addAttributes(be);
+		}
 		return be;
 	}
 
