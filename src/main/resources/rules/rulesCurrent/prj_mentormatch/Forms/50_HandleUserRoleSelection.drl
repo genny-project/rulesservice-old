@@ -59,9 +59,6 @@ rule "Handle user role mentormatch"
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTOR", booleanValueMentor);
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTEE", booleanValueMentee);
          rules.setState("IS_MENTOR");
-
-         String attributeCode = $m.data.getCode();
-         rules.publishBE($m.getBe());
          rules.setState("USER_TYPE_SAVED");
          rules.footer();
 
