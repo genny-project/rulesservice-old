@@ -6,8 +6,10 @@ import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.apache.logging.log4j.Logger;
@@ -25,6 +27,7 @@ import org.kie.internal.io.ResourceFactory;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vertx.core.json.DecodeException;
 import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
@@ -56,8 +59,15 @@ public class RulesLoader {
 		final Future<Void> fut = Future.future();
 		Vertx.currentContext().owner().executeBlocking(exec -> {
 			setKieBaseCache(new HashMap<String, KieBase>()); // clear
-			List<Tuple2<String, String>> rules = processFile(rulesDir);
-			setupKieRules("rules", rules);
+			// List<Tuple2<String, String>> rules = processFile(rulesDir);
+			// setupKieRules("rules", rules);
+
+			List<Tuple3<String, String, String>> rules = processFileRealms("genny", rulesDir);
+
+			Set<String> realms = getRealms(rules);
+			for (String realm : realms) {
+				setupKieRules(realm, rules);
+			}
 
 			fut.complete();
 		}, failed -> {
@@ -74,11 +84,12 @@ public class RulesLoader {
 
 		if (!file.isFile()) {
 			if (!fileName.startsWith("XX")) {
-				final List<String> filesList = Vertx.currentContext().owner().fileSystem().readDirBlocking(inputFileStr);
+				final List<String> filesList = Vertx.currentContext().owner().fileSystem()
+						.readDirBlocking(inputFileStr);
 
 				for (final String dirFileStr : filesList) {
 					List<Tuple2<String, String>> childRules = processFile(dirFileStr); // use directory name as
-																								// rulegroup
+																						// rulegroup
 					rules.addAll(childRules);
 				}
 			}
@@ -118,14 +129,77 @@ public class RulesLoader {
 		return null;
 	}
 
-	public static void setupKieRules(final String rulesGroup, final List<Tuple2<String, String>> rules) {
-		StringJoiner sj = new StringJoiner(":", "[", "]");
-		for (Tuple2<String, String> rule : rules) {
-			sj.add(rule._1);
-		}
-		String ruleNames = sj.toString();
+	private static List<Tuple3<String, String, String>> processFileRealms(final String realm, String inputFileStr) {
+		File file = new File(inputFileStr);
+		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
+		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
+		List<Tuple3<String, String, String>> rules = new ArrayList<Tuple3<String, String, String>>();
 
-		System.out.println("***** Setting up RulesGroup: " + rulesGroup + " -> " + ruleNames);
+		if (!file.isFile()) { // DIRECTORY
+			if (!fileName.startsWith("XX")) {
+				String localRealm = realm;
+				if (fileName.startsWith("prj_") || fileName.startsWith("PRJ_")) {
+					localRealm = fileName.substring("prj_".length()).toLowerCase(); // extract realm name
+				}
+				final List<String> filesList = Vertx.currentContext().owner().fileSystem()
+						.readDirBlocking(inputFileStr);
+
+				for (final String dirFileStr : filesList) {
+					List<Tuple3<String, String, String>> childRules = processFileRealms(localRealm, dirFileStr); // use
+																													// directory
+																													// name
+																													// as
+					// rulegroup
+					rules.addAll(childRules);
+				}
+			}
+			return rules;
+		} else {
+			Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
+			try {
+				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that start
+																								// with XX
+					final String ruleText = buf.toString();
+
+					Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
+					System.out.println(realm + " Loading in Rule:" + rule._1 + " of " + inputFileStr);
+					rules.add(rule);
+				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
+																										// that start
+																										// with XX
+					final String bpmnText = buf.toString();
+
+					Tuple3<String, String, String> bpmn = (Tuple.of(realm, fileName + "." + fileNameExt, bpmnText));
+					System.out.println(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+					rules.add(bpmn);
+				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files that
+																									// start with XX
+					final String xlsText = buf.toString();
+
+					Tuple3<String, String, String> xls = (Tuple.of(realm, fileName + "." + fileNameExt, xlsText));
+					System.out.println(realm + " Loading in XLS:" + xls._1 + " of " + inputFileStr);
+					rules.add(xls);
+				}
+				return rules;
+			} catch (final DecodeException dE) {
+
+			}
+
+		}
+		return null;
+	}
+
+	public static Set<String> getRealms(final List<Tuple3<String, String, String>> rules) {
+		Set<String> realms = new HashSet<String>();
+
+		for (Tuple3<String, String, String> rule : rules) {
+			String realm = rule._1;
+			realms.add(realm);
+		}
+		return realms;
+	}
+
+	public static void setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
 
 		try {
 			// load up the knowledge base
@@ -137,27 +211,29 @@ public class RulesLoader {
 			// Charset.forName("UTF-8"));
 			// System.out.println("Read New Rules set from File");
 
-			for (final Tuple2<String, String> rule : rules) {
-				if (rule._1.endsWith(".drl")) {
-					final String inMemoryDrlFileName = "src/main/resources/" + rule._1;
-					kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
-							.setResourceType(ResourceType.DRL));
-				}
-				if (rule._1.endsWith(".bpmn")) {
-					final String inMemoryDrlFileName = "src/main/resources/" + rule._1;
-					kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
-							.setResourceType(ResourceType.BPMN2));
-				} else if (rule._1.endsWith(".xls")) {
-					final String inMemoryDrlFileName = "src/main/resources/" + rule._1;
-					// Needs t handle byte[]
-					// kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new
-					// FileReader(rule._2))
-					// .setResourceType(ResourceType.DTABLE));
+			for (final Tuple3<String, String, String> rule : rules) {
+				if (rule._1.equalsIgnoreCase("genny") || rule._1.equalsIgnoreCase(realm)) {
+					if (rule._2.endsWith(".drl")) {
+						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
+						kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))
+								.setResourceType(ResourceType.DRL));
+					}
+					if (rule._2.endsWith(".bpmn")) {
+						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
+						kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))
+								.setResourceType(ResourceType.BPMN2));
+					} else if (rule._2.endsWith(".xls")) {
+						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
+						// Needs t handle byte[]
+						// kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new
+						// FileReader(rule._2))
+						// .setResourceType(ResourceType.DTABLE));
 
-				} else {
-					final String inMemoryDrlFileName = "src/main/resources/" + rule._1;
-					kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._2))
-							.setResourceType(ResourceType.DRL));
+					} else {
+						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
+						kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))
+								.setResourceType(ResourceType.DRL));
+					}
 				}
 
 			}
@@ -172,12 +248,12 @@ public class RulesLoader {
 			final KieBase kbase = kContainer.newKieBase(kbconf);
 
 			System.out.println("Put rules KieBase into Custom Cache");
-			if (getKieBaseCache().containsKey(rulesGroup)) {
-				getKieBaseCache().remove(rulesGroup);
-				System.out.println(rulesGroup + " removed");
+			if (getKieBaseCache().containsKey(realm)) {
+				getKieBaseCache().remove(realm);
+				System.out.println(realm + " removed");
 			}
-			getKieBaseCache().put(rulesGroup, kbase);
-			System.out.println(rulesGroup + " installed");
+			getKieBaseCache().put(realm, kbase);
+			System.out.println(realm + " rules installed");
 
 		} catch (final Throwable t) {
 			t.printStackTrace();
@@ -208,12 +284,12 @@ public class RulesLoader {
 			for (final Object fact : facts) {
 				kieSession.insert(fact);
 			}
-		
+
 			kieSession.insert(keyValueMap);
 
 			// Set the focus on the Init agenda group to force proper startup
 			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
-			
+
 			kieSession.fireAllRules();
 
 			kieSession.dispose();
