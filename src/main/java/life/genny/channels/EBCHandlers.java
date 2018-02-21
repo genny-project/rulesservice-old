@@ -1,28 +1,16 @@
 package life.genny.channels;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Type;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
+import org.apache.commons.lang3.StringUtils;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -92,7 +80,7 @@ public class EBCHandlers {
 					e.printStackTrace();
 				}
 			}
-			processMsg("Event:"+payload.getString("event_type"), eventMsg, eventBus, payload.getString("token"));
+			processMsg("Event:"+payload.getString("event_type"), payload.getString("ruleGroup"),eventMsg, eventBus, payload.getString("token"));
 
 		});
 
@@ -107,6 +95,7 @@ public class EBCHandlers {
 				// Is it a Rule?
 				if (payload.getString("data_type").equals(Rule.class.getSimpleName())) {
 					JsonArray ja = payload.getJsonArray("items");
+					String ruleGroup = ja.getJsonObject(0).getString("ruleGroup");
 					String ruleText = ja.getJsonObject(0).getString("rule");
 					String ruleCode = ja.getJsonObject(0).getString("code");
 					// QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
@@ -116,14 +105,14 @@ public class EBCHandlers {
 					}
 
 					String rulesGroup = rulesDir;
-					List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
-					rules.add(Tuple.of(ruleCode, ruleText));
+					List<Tuple3<String,String, String>> rules = new ArrayList<Tuple3<String,String, String>>();
+					rules.add(Tuple.of(ruleGroup,ruleCode, ruleText));
 
 					RulesLoader.setupKieRules(rulesGroup, rules);
 				} else if (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
 					try {
 						dataMsg = JsonUtils.fromJson(payload.toString(), QDataAnswerMessage.class);
-						processMsg("Data:"+dataMsg.getData_type(), dataMsg, eventBus, payload.getString("token"));
+						processMsg("Data:"+dataMsg.getData_type(), payload.getString("ruleGroup"),dataMsg, eventBus, payload.getString("token"));
 					} catch (com.google.gson.JsonSyntaxException e) {
 						log.error("BAD Syntax converting to json from " + dataMsg);
 						JsonObject json = new JsonObject(payload.toString());
@@ -132,7 +121,7 @@ public class EBCHandlers {
 						jsonArray.add(answerData);
 						json.put("items", jsonArray);
 						dataMsg = JsonUtils.fromJson(json.toString(), QDataAnswerMessage.class);
-						processMsg("Data:"+dataMsg.getData_type(), dataMsg, eventBus, payload.getString("token"));
+						processMsg("Data:"+dataMsg.getData_type(), payload.getString("ruleGroup"), dataMsg, eventBus, payload.getString("token"));
 					}
 				}
 				else if (payload.getString("data_type").equals(GPS.class.getSimpleName())) {
@@ -140,7 +129,7 @@ public class EBCHandlers {
 					QDataGPSMessage dataGPSMsg = null;
 					try {
 						dataGPSMsg = JsonUtils.fromJson(payload.toString(), QDataGPSMessage.class);
-						processMsg("GPS", dataGPSMsg, eventBus, payload.getString("token"));
+						processMsg("GPS", payload.getString("ruleGroup"), dataGPSMsg, eventBus, payload.getString("token"));
 					} 
 					catch (com.google.gson.JsonSyntaxException e) {
 						
@@ -151,7 +140,7 @@ public class EBCHandlers {
 						jsonArray.add(answerData);
 						json.put("items", jsonArray);
 						dataGPSMsg = JsonUtils.fromJson(json.toString(), QDataGPSMessage.class);
-						processMsg("GPS:"+dataGPSMsg.getData_type(), dataGPSMsg, eventBus, payload.getString("token"));
+						processMsg("GPS:"+dataGPSMsg.getData_type(), payload.getString("ruleGroup"), dataGPSMsg, eventBus, payload.getString("token"));
 					}
 				}
 			}
@@ -165,7 +154,7 @@ public class EBCHandlers {
 		return payload;
 	}
 
-	public static void processMsg(final String msgType,final Object msg, final EventBus eventBus, final String token) {
+	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
@@ -200,10 +189,11 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-			System.out.println("FIRE RULES "+msgType);
+			System.out.println("FIRE RULES ("+realm+") "+msgType);
 
+			String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {
-				RulesLoader.executeStatefull("rules", eventBus, globals, facts, keyvalue);
+				RulesLoader.executeStatefull(realm, eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

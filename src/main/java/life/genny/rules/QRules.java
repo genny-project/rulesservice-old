@@ -620,6 +620,83 @@ public class QRules {
 		}
 	}
 
+	public void sendMentorMatchLayoutsAndData() {
+
+		BaseEntity user = getUser();
+		
+		if(user != null) {
+			
+			String mentorValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTOR");
+			String menteeValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTEE");
+
+			Boolean isMentor = mentorValue != null && (mentorValue.equals("TRUE") || user.is("PRI_MENTOR"));
+			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || user.is("PRI_MENTEE"));
+			
+			String profile_completed = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
+			this.println(profile_completed);
+			this.println(isMentor);
+			this.println(isMentee);
+
+			if(profile_completed == null && !isMentor && !isMentee) {
+				
+				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
+				this.askQuestions(getUser().getCode(),getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
+			}
+			else {
+				
+				if(isMentor || isMentee) {
+
+					/* Show loading indicator */
+					showLoading("Loading your interface...");
+
+					String mentor_profile_status = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
+					Boolean hasCompletedProfile = mentor_profile_status != null && (mentor_profile_status.equals("TRUE") || user.is("PRI_MENTORMATCH_PROFILE_COMPLETED"));
+
+					if(!hasCompletedProfile) {
+
+						// we send questions for mentors
+						if(isMentor) {
+
+							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
+							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
+							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
+							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
+							this.sendSelections("GRP_MENTEES_ATTRIBUTES", "LNK_CORE", 20);
+							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
+							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
+							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
+							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTOR_GRP");
+						}
+						// we send questions for mentees
+						else if(isMentee) {
+
+							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
+							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
+							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
+							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
+							this.sendSelections("GRP_MENTOR_ATTRIBUTES", "LNK_CORE", 20);
+							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
+							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
+							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
+							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
+						}
+					}
+					else {
+						this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+					}
+				}
+				else {
+					
+					this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
+					this.askQuestions(getUser().getCode(),getUser().getCode(),"QUE_NEW_USER_PROFILE_GRP");
+				}
+			}
+		}
+	}
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
 		

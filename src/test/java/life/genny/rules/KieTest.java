@@ -23,6 +23,7 @@ import org.kie.internal.utils.KieHelper;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channels.EBCHandlers;
 
@@ -81,9 +82,9 @@ public  void setupKieSessionTest()
 	    rule += "\n";
 	    
 	String rulesGroup = "GRP_RULES_TEST";
-	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
+	List<Tuple3<String,String,String>> rules = new ArrayList<Tuple3<String,String,String>>();
 	
-	rules.add(Tuple.of("rule1.drl",rule));
+	rules.add(Tuple.of("genny","rule1.drl",rule));
 	
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
 	 List<?> list = new ArrayList<Object>();
@@ -107,7 +108,7 @@ public  void setupKieSessionTest()
 	 Map<String, String> keyvalue = new HashMap<String, String>();
      keyvalue.put("token", null);
      
-	RulesLoader.executeStatefull(rulesGroup, eb , globals, facts, keyvalue) ;
+	RulesLoader.executeStatefull(rulesGroup,eb , globals, facts, keyvalue) ;
 
 	
 	    assertThat( list.size(), is(3) );
@@ -132,11 +133,11 @@ public  void setupKieSessionTest()
 	    rule += "\n";
 	    
 	String rulesGroup = "GRP_RULES_TEST";
-	List<Tuple2<String,String>> rules = new ArrayList<Tuple2<String,String>>();
+	List<Tuple3<String,String,String>> rules = new ArrayList<Tuple3<String,String,String>>();
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
 	EventBus eb = null;
 	
-	rules.add(Tuple.of("rule2.drl",rule));
+	rules.add(Tuple.of("genny","rule2.drl",rule));
 	
 	 List<?> list = new ArrayList<Object>();
 	 globals.add(Tuple.of("list",list));
