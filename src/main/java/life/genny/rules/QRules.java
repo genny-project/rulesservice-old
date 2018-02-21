@@ -616,10 +616,15 @@ public class QRules {
 
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
-
-		JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
-				getToken());
-		this.getEventBus().publish("messages", message);
+		
+		if(recipientArray != null && recipientArray.length > 0) {
+			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
+					getToken());
+			this.getEventBus().publish("messages", message);
+		} else {
+			log.error("Recipient array is null and so message cant be sent");
+		}
+		
 	}
 
 	public BaseEntity createUser() {

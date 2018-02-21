@@ -101,6 +101,7 @@ rule "Post Job Cancel/Submit button click"
                 
              /* Sending toast message to owner frontend */
                 rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+                rules.sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "SMS");
                 
 
              /* Sending message to BEG OWNER */
