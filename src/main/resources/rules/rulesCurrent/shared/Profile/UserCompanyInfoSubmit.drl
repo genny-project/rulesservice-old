@@ -4,33 +4,35 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import io.vertx.core.json.JsonObject;
 
-rule "User-Profile Submit"
+rule "User-Company Info Submit"
    no-loop true
    ruleflow-group 'FormSubmit'
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_PROFILE_GRP" )
-        rules: QRules( !isState("USER_PROFILE_UPDATED") ) 
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_COMPANY_GRP" )
+        rules: QRules( !isState("COMPANY_INFO_UPDATED") ) 
     then
        rules.header();
     	    /*  Get data.value and decode   */
          String dataString = $m.data.getValue();
          JsonObject dataJson = new JsonObject(dataString);
          String userCode = rules.getUser().getCode();
-         String jobCode = dataJson.getString("targetCode");
+         String companyCode = dataJson.getString("targetCode");
          String actionCode = dataJson.getString("action"); 
         
-  	   //  if(actionCode.equalsIgnoreCase("submit")) { 
+  	    // if(actionCode.equalsIgnoreCase("submit")) { 
 
            /* rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
-           rules.setState("USER_PROFILE_UPDATED"); 
-           drools.setFocus("SendLayoutsAndData"); 
-      /*     HashMap<String,String> contextMap = new HashMap<String, String>();
-           String[] recipients  = {userCode};    */ 
+           rules.setState("COMPANY_INFO_UPDATED");
+            
+           drools.setFocus("SendLayoutsAndData");
+            
+        /*   HashMap<String,String> contextMap = new HashMap<String, String>();
+           String[] recipients  = {userCode};    */
           // rules.sendNotification("success", recipientCodes, "Profile Updated!");
           /* Sending toast message */
-      /*      rules.sendMessage("", recipients, contextMap, "TST_PROFILE_UPDATED", "TOAST");  */
+         /*   rules.sendMessage("", recipients, contextMap, "TST_COMPANY_INFO_UPDATED", "TOAST");*/
            
-       //  }
+         //}
 
         rules.footer();
   end
