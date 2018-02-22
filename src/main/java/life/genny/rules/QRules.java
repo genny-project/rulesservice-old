@@ -1,7 +1,9 @@
+
 package life.genny.rules;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -2601,6 +2603,63 @@ public class QRules {
 			}
 		}
 
+	}
+
+	public void clearBaseEntityAttr(String userCode){
+		BaseEntity be =getBaseEntityByCode(userCode);
+		System.out.println("be   ::   " + be);
+		
+		Set<EntityAttribute> attributes = be.getBaseEntityAttributes();
+		System.out.println("Size all   ::   " + attributes.size());
+        Set<EntityAttribute> removeAttributes = new HashSet<EntityAttribute>();
+        
+		for(EntityAttribute attribute : attributes) {
+			
+			 switch(attribute.getAttributeCode()) {
+				
+				case("PRI_UUID") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_FIRSTNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_LASTNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_EMAIL") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_USERNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_KEYCLOAK_UUID") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_FB_BASIC") :
+					removeAttributes.add(attribute);
+					break;
+			}
+				
+		}
+		 System.out.println("before removing   ::   "+attributes.toString());
+		 System.out.println("Size toRemove   ::   " + removeAttributes.size());
+	     System.out.println("Removing attrs   ::   "+removeAttributes.toString());
+		 attributes.removeAll(removeAttributes);
+		 System.out.println("after removing   ::   "+attributes.toString());
+		 System.out.println("Size afterRemoved   ::   " + attributes.size());
+		 
+		 be.setBaseEntityAttributes(attributes);
+		 
+		 QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		 beMsg.setDelete(true);
+		 publishData(beMsg);
+		
 	}
 
 }
