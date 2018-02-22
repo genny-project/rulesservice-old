@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
 
 rule "Send Layout Change To Frontend - Memberhub"
 
-    salience 699
+    salience 697
     no-loop true
     ruleflow-group "SendLayoutsAndData"
     when
