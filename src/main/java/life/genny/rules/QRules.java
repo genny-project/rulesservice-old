@@ -702,6 +702,11 @@ public class QRules {
 			String templateCode, String messageType) {
 
 		if(recipientArray != null && recipientArray.length > 0) {
+			
+			/* Adding project code to context */
+			String projectCode = "PRJ_"+getAsString("realm").toUpperCase();
+			contextMap.put("PROJECT", projectCode);
+			
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
 					getToken());
 			this.getEventBus().publish("messages", message);
