@@ -16,11 +16,11 @@ ruleflow-group 'LinkChange'
     when
         $m: QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" && link != null )
         rules : QRules( isState("STARTED") && (!isState("LINK_CHANGE")) )
-     then    
+     then
       	rules.header();
  		rules.setState("LINK_CHANGE");
- 		
- 		Link link = $m.getLink(); 
+
+ 		Link link = $m.getLink();
  		rules.debug($m);
  		    rules.println("Link LinkCode="+link.getAttributeCode());
 
@@ -34,16 +34,16 @@ ruleflow-group 'LinkChange'
  		    				rules.println("Sending to "+stakeholder.getCode());
  		    			}
  		   		 }
- 		    
+
  		   		String[] recipientArray = recipients.toArray(new String[0]);
  		   		rules.publishCmd($m,recipientArray);
  		   }
 
- 		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode()); 
+ 		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode());
 	*/
 		String[] recipientCodes = rules.getRecipientCodes($m);
 		rules.publishCmd($m,recipientCodes);
- 	   
+
    	    rules.footer();
-  
+
 end
