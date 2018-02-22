@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -2601,6 +2602,34 @@ public class QRules {
 			}
 		}
 
+	}
+	
+	/*    Send Mobile Verification Code   */
+	public void sendMobileVerificationPasscode( final String userCode) {
+	
+	    String[] recipients  = {userCode};
+	    int verificationCode = generateVerificationCode();
+   		
+	    Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", Integer.toString(verificationCode));
+	    saveAnswer(verificationCodeAns);
+	    
+        HashMap<String,String> contextMap = new HashMap<String, String>();
+        contextMap.put("USER", userCode); 
+
+        println("The String Array is ::"+Arrays.toString(recipients));
+        
+        /* Sending sms message to user */
+        sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
+          
+		
+	}
+	
+	public int generateVerificationCode() {
+		
+	  //String verificationCode = String.format("%04d", random.nextInt(10000));
+	  Random random = new Random();
+     // return String.format("%04d", random.nextInt(10000));
+	  return random.nextInt(10000);
 	}
 
 }
