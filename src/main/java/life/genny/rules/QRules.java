@@ -2620,16 +2620,23 @@ public class QRules {
         
         /* Sending sms message to user */
         sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
-          
-		
+          		
 	}
 	
-	public int generateVerificationCode() {
-		
+	public int generateVerificationCode() {		
 	  //String verificationCode = String.format("%04d", random.nextInt(10000));
 	  Random random = new Random();
      // return String.format("%04d", random.nextInt(10000));
 	  return random.nextInt(10000);
+	}
+	
+	public boolean verifyPassCode(final String userCode, final String userPassCode) {
+		
+		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
+			return true;
+		}
+		else
+			return false;
 	}
 
 }
