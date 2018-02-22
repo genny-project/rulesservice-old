@@ -1,7 +1,9 @@
+
 package life.genny.rules;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -2297,14 +2299,13 @@ public class QRules {
 		    /* Removing GRP_DRAFTS be if user is a Driver */
 			if (user.is("PRI_DRIVER")) {
 				for (BaseEntity be : root) {
-				    if(be.getCode().equalsIgnoreCase("GRP_DRAFTS")) {
+				    if(be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN") ) {
 				      	toRemove.add(be);
-				      	println("GRP_DRAFTS is being added to remove list");
+				      	println("GRP_DRAFTS & GRP_BIN has been added to remove list");
 				    }
-				 root.removeAll(toRemove);
-				 println("GRP_DRAFTS being removed from root");
 				}
-				println("GRP_DRAFTS removed from root");
+				root.removeAll(toRemove);
+				println("GRP_DRAFTS & GRP_BIN have been removed from root");
 			}
 		 publishCmd(root, "GRP_ROOT", "LNK_CORE");
 		 println(root);
@@ -2313,8 +2314,10 @@ public class QRules {
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
-		List<BaseEntity> bin = getBaseEntitysByParentAndLinkCode("GRP_BIN", "LNK_CORE", 0, 20, false);
-		publishCmd(bin, "GRP_BIN", "LNK_CORE");
+	    if (!user.is("PRI_DRIVER")) {
+		  List<BaseEntity> bin = getBaseEntitysByParentAndLinkCode("GRP_BIN", "LNK_CORE", 0, 20, false);
+		  publishCmd(bin, "GRP_BIN", "LNK_CORE");
+	    }
 
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
@@ -2645,6 +2648,63 @@ public class QRules {
 		}
 		else
 			return false;
+	}
+
+	public void clearBaseEntityAttr(String userCode){
+		BaseEntity be =getBaseEntityByCode(userCode);
+		System.out.println("be   ::   " + be);
+
+		Set<EntityAttribute> attributes = be.getBaseEntityAttributes();
+		System.out.println("Size all   ::   " + attributes.size());
+        Set<EntityAttribute> removeAttributes = new HashSet<EntityAttribute>();
+
+		for(EntityAttribute attribute : attributes) {
+
+			 switch(attribute.getAttributeCode()) {
+
+				case("PRI_UUID") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_FIRSTNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_LASTNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_EMAIL") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_USERNAME") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_KEYCLOAK_UUID") :
+					removeAttributes.add(attribute);
+					break;
+
+				case("PRI_FB_BASIC") :
+					removeAttributes.add(attribute);
+					break;
+			}
+
+		}
+		 System.out.println("before removing   ::   "+attributes.toString());
+		 System.out.println("Size toRemove   ::   " + removeAttributes.size());
+	     System.out.println("Removing attrs   ::   "+removeAttributes.toString());
+		 attributes.removeAll(removeAttributes);
+		 System.out.println("after removing   ::   "+attributes.toString());
+		 System.out.println("Size afterRemoved   ::   " + attributes.size());
+
+		 be.setBaseEntityAttributes(attributes);
+
+		 QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		 beMsg.setDelete(true);
+		 publishData(beMsg);
+
 	}
 
 }

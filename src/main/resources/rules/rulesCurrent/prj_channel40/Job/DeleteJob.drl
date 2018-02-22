@@ -19,7 +19,8 @@ rule "Delete job"
 		String begCode = $m.getData().getValue();
 	   /*     Moving the BEG      */
           Link link = new Link("GRP_NEW_ITEMS", begCode, "LNK_CORE");
- 	      String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_BIN", JsonUtils.toJson(link), rules.getToken()); 
+          rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_BIN", "LNK_CORE");
+           
 		rules.setState("JOB_MOVED_TO_BIN");
 		
 		drools.setFocus("SendLayoutsAndData"); 
