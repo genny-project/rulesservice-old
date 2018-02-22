@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -703,6 +704,11 @@ public class QRules {
 			String templateCode, String messageType) {
 
 		if(recipientArray != null && recipientArray.length > 0) {
+			
+			/* Adding project code to context */
+			String projectCode = "PRJ_"+getAsString("realm").toUpperCase();
+			contextMap.put("PROJECT", projectCode);
+			
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
 					getToken());
 			this.getEventBus().publish("messages", message);
@@ -2308,6 +2314,9 @@ public class QRules {
 
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
+		
+		List<BaseEntity> bin = getBaseEntitysByParentAndLinkCode("GRP_BIN", "LNK_CORE", 0, 20, false);
+		publishCmd(bin, "GRP_BIN", "LNK_CORE");
 
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
@@ -2603,6 +2612,41 @@ public class QRules {
 			}
 		}
 
+	}
+	
+	/*    Send Mobile Verification Code   */
+	public void sendMobileVerificationPasscode( final String userCode) {
+	
+	    String[] recipients  = {userCode};
+	    int verificationCode = generateVerificationCode();
+   		
+	    Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", Integer.toString(verificationCode));
+	    saveAnswer(verificationCodeAns);
+	    
+        HashMap<String,String> contextMap = new HashMap<String, String>();
+        contextMap.put("USER", userCode); 
+
+        println("The String Array is ::"+Arrays.toString(recipients));
+        
+        /* Sending sms message to user */
+        sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
+          		
+	}
+	
+	public int generateVerificationCode() {		
+	  //String verificationCode = String.format("%04d", random.nextInt(10000));
+	  Random random = new Random();
+     // return String.format("%04d", random.nextInt(10000));
+	  return random.nextInt(10000);
+	}
+	
+	public boolean verifyPassCode(final String userCode, final String userPassCode) {
+		
+		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
+			return true;
+		}
+		else
+			return false;
 	}
 
 	public void clearBaseEntityAttr(String userCode){
