@@ -2435,6 +2435,14 @@ public class QRules {
 				Attribute attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
 				if (attribute != null) {
 					ea.setAttribute(attribute);
+				} else {
+					RulesUtils.loadAllAttributesIntoCache(getToken());
+					attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
+					if (attribute != null) {
+						ea.setAttribute(attribute);
+					} else {
+						log.error("Cannot get Attributes");
+					}
 				}
 			}
 		}
