@@ -6,10 +6,10 @@ import life.genny.rules.QRules;
 rule "Ask Terms and Conditions On Form Submit"
    no-loop true
    salience 560
-   ruleflow-group 'FormSubmit'
+  /* ruleflow-group 'FormSubmit' */
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )
-        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") && !isState("ASKED_TC") ) 
+      /*  $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )  */
+        rules: QRules( isState("STARTED") && isState("PASSCODE_VERIFICATION_SUCCESS") && !isState("ASKED_TC") ) 
      then
      	rules.header();  		
    	    String userCode = rules.getUser().getCode();
