@@ -4,18 +4,18 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import io.vertx.core.json.JsonObject;
 
-rule "User-Profile Submit - mentormatch"
+rule "Terms and conditions Submit - mentormatch"
    no-loop true
    ruleflow-group 'FormSubmit'
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP")
-        rules: QRules( !isState("USER_PROFILE_COMPLETED") )
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_TC_GRP")
+        rules: QRules( !isState("ACCEPTED_TERMS_AND_CONDITIONS") )
     then
 
         rules.header();
 
         rules.setState("USER_PROFILE_COMPLETED");
+        rules.setState("ACCEPTED_TERMS_AND_CONDITIONS");
         drools.setFocus("SendLayoutsAndData");
-
         rules.footer();
   end
