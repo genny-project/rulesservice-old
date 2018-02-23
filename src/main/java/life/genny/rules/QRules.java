@@ -476,7 +476,7 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
-		publishCmd(msg, recipientCodes);
+		publishData(msg, recipientCodes);
 
 	}
 
