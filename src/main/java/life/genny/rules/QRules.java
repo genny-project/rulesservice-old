@@ -2619,8 +2619,8 @@ public class QRules {
 	public void sendMobileVerificationPasscode( final String userCode) {
 
 	    String[] recipients  = {userCode};
-	    int verificationCode = generateVerificationCode();
-
+	    int verificationCode = generateVerificationCode1();
+	    //println("The verification code is ::"+verificationCode);
 	    Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", Integer.toString(verificationCode));
 	    saveAnswer(verificationCodeAns);
 
@@ -2633,16 +2633,39 @@ public class QRules {
         sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
 
 	}
-
-	public int generateVerificationCode() {
-	  //String verificationCode = String.format("%04d", random.nextInt(10000));
-	  Random random = new Random();
-     // return String.format("%04d", random.nextInt(10000));
-	  return random.nextInt(10000);
+	
+	/* Generate Random number */
+	public int generateRandomCode()  {
+		return (new Random()).nextInt(10000);
+	}
+	
+	/* Check if the generated number is 4 digit number  */
+	public Boolean checkRandomNumberRange(int no) {
+		Boolean isRangeValid = false;
+		if( no <= 0000 && no > 10000 )
+			isRangeValid = true;
+		return isRangeValid;
+	}
+	
+    /* generate 4 digit verification passcode */
+	public int generateVerificationCode1() {
+	   //String verificationCode = String.format("%04d", random.nextInt(10000));
+	   Random random = new Random();
+	   int randomInt = generateRandomCode();
+       // return String.format("%04d", random.nextInt(10000))
+	    while(checkRandomNumberRange(randomInt = generateRandomCode()) == true) {
+		    return randomInt;
+	    }
+	  return randomInt;
+	
 	}
 
+	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
 
+		//println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
+		//println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
+		
 		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
 			return true;
 		}
