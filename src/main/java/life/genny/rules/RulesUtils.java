@@ -633,7 +633,7 @@ public class RulesUtils {
 		try {
 			
 			 String json = VertxUtils.readCachedJson("attributes").toString();
-			 if ((json == null) || (json.contains("error"))){
+			 if ((json == null) || (json.contains("rror"))){
 				 println("LOADING ATTRIBUTES!");
 				 json = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
 				  VertxUtils.writeCachedJson("attributes", json);

@@ -60,16 +60,20 @@ rule "Post Job Cancel/Submit button click"
        	   Answer offerCountAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_OFFER_COUNT", "0" );
        	 /* Publish Answer   */
        	   rules.saveAnswer(offerCountAns); 
+
+         /* Determine the recipient code */
+            String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");  
+	    
+	    	      /*    Send newly created job with its attributes  to all drivers so that it exists before link change */        
+           BaseEntity newJobDetails =  rules.getBaseEntityByCode(jobCode);
+           rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
+           rules.publishData(newJobDetails,recipients); 
 	    
           /*     Moving the BEG      */
             Link link = new Link("GRP_DRAFTS",jobCode,"LNK_CORE");
  	       String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), rules.getToken()); 	       
  	       
- 	      /*    Send newly created job with its attributes   */        
-           JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
-           rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-           rules.publishData(newJobDetails); 
-           
+            
           /* Get the sourceCode(Company code) for this User */
             BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
          
@@ -79,9 +83,7 @@ rule "Post Job Cancel/Submit button click"
            Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, rules.getToken());
            rules.println("The load has been added to the GRP_LOADS ");
            
-          /* Determine the recipient code */
-            String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");  
-
+ 
         /* SEND LOAD BE    */
             rules.publishBaseEntityByCode(loadCode, jobCode,"LNK_BEG", recipients);
         /* SEND JOB BE */
