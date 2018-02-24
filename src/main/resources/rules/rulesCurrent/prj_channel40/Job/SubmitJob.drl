@@ -87,11 +87,12 @@ rule "Post Job Cancel/Submit button click"
         /* SEND LOAD BE    */
             rules.publishBaseEntityByCode(loadCode, jobCode,"LNK_BEG", recipients);
         /* SEND JOB BE */
-            rules.publishBaseEntityByCode(jobCode, jobCode,"LNK_BEG", recipients);
+           rules.println(recipients);
+            rules.publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS","LNK_CORE", recipients);
         /* Get the parent GRP of GRP_NEW_ITEMS */
             BaseEntity parentGrp = rules.getParent("GRP_NEW_ITEMS", "LNK_CORE");   
         /* SEND GRP_NEW_ITEMS BE */
-            rules.publishBaseEntityByCode("GRP_NEW_ITEMS", parentGrp.getCode(),"LNK_CORE",recipients);
+       /*     rules.publishBaseEntityByCode("GRP_NEW_ITEMS", parentGrp.getCode(),"LNK_CORE",recipients); */
         
         /* Sending Messages */
 
