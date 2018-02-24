@@ -68,7 +68,7 @@ rule "Post Job Cancel/Submit button click"
  	      /*    Send newly created job with its attributes   */        
            JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+jobCode+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
            rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
-           rules.publishCmd(newJobDetails); 
+           rules.publishData(newJobDetails); 
            
           /* Get the sourceCode(Company code) for this User */
             BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
