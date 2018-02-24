@@ -59,6 +59,7 @@ import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
@@ -324,6 +325,13 @@ public class QRules {
 		}
 
 		return be;
+	}
+	
+	public String getFullName(final BaseEntity be)
+	{
+		String fullName = be.getLoopValue("PRI_FIRSTNAME","")+" "+be.getLoopValue("PRI_LASTNAME","");
+		fullName = fullName.trim();
+		return fullName;
 	}
 
 	public Boolean isUserPresent() {
@@ -959,6 +967,13 @@ public class QRules {
 
 	public void publishData(final Answer answer) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
+		msg.setToken(getToken());
+		publish("data", JsonUtils.toJson(msg));
+	}
+	
+	public void publishData(final List<Answer> answerList) {
+		Answer[] answerArray = answerList.toArray(new Answer[answerList.size()]);
+		QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
@@ -2715,4 +2730,137 @@ public class QRules {
 
 	}
 
+	public void acceptJob(QEventBtnClickMessage m)
+	{
+	      /* Get beg.getCode(), username, userCode, userFullName */
+   		BaseEntity beg = getBaseEntityByCode(m.getItemCode());   // Get Baseentity once so we don't need to keep fetching...
+        println("beg.getCode()  ::   "+ beg.getCode());   
+                                     
+        String userName = getAsString("preferred_username");
+        println("username   ::   "+ userName);                 
+        String userCode = getUser().getCode();
+        println("usercode   ::   "+ getUser().getCode());
+        String userFullName= getFullName(getUser());
+        println("user fullName   ::   "+ userFullName);
+    
+        String linkCode= "LNK_BEG";
+        String linkOffer= "OFFER";
+        String linkQuoter= "QUOTER";
+        String linkOwner = "OWNER";
+        String linkCreator = "CREATOR";
+
+    /* get BEG PRICEs */           
+        println("BEG Prices   ::   ");
+        
+        Money begPrice = beg.getLoopValue("PRI_PRICE",Money.of(0.00,"AUD"));       
+        Money ownerPriceExcGST = beg.getLoopValue("PRI_OWNER_PRICE_EXC_GST",Money.of(0.00,"AUD"));       
+        Money ownerPriceIncGST = beg.getLoopValue( "PRI_OWNER_PRICE_INC_GST",Money.of(0.00,"AUD"));       
+        Money driverPriceExcGST = beg.getLoopValue("PRI_DRIVER_PRICE_EXC_GST",Money.of(0.00,"AUD"));       
+        Money driverPriceIncGST = beg.getLoopValue("PRI_DRIVER_PRICE_INC_GST",Money.of(0.00,"AUD"));       
+        Money feePriceExcGST = beg.getLoopValue("PRI_FEE_EXC_GST",Money.of(0.00,"AUD"));       
+        Money feePriceIncGST = beg.getLoopValue("PRI_FEE_INC_GST",Money.of(0.00,"AUD"));       
+
+    /* Create Offer BE */
+        BaseEntity offer = createBaseEntityByCode(getUser().getCode() , "OFR", "Offer");
+   		
+        RulesUtils.ruleLogger("OFFER Base Entity", offer);
+        
+        /* Send beg to driver and owner should see it as part of beg link */
+        VertxUtils.subscribe(realm(),offer,getUser().getCode());
+        
+        /* Get Offer Code */
+        println("OFFER CODE   ::   "+offer.getCode());
+    
+    /* Save attributes for OFFER as answer          */
+        List<Answer> answerList = new ArrayList<Answer>();	
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_PRICE", JsonUtils.toJson(begPrice)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
+
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_CODE", offer.getCode()));
+        answerList.add(new Answer(getUser(), offer, "PRI_QUOTER_CODE", getUser().getCode()));
+        answerList.add(new Answer(getUser(), offer, "PRI_QUOTER_USERNAME", userName));
+        answerList.add(new Answer(getUser(), offer, "PRI_QUOTER_FULLNAME", userFullName));
+        answerList.add(new Answer(getUser(), offer, "PRI_BEG_CODE", beg.getCode()));
+        answerList.add(new Answer(getUser(), offer, "PRI_NEXT_ACTION", linkOwner));
+        answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DATE", getCurrentLocalDateTime()));
+
+		publishData(answerList);
+		saveAnswers(answerList);
+		
+
+    /* Update the number of offers for BEG */ 
+        Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT",0);
+        offerCount = offerCount + 1;
+        println("Offer Count is   ::   " + offerCount);
+        saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));               
+
+   /* Determine the recipient code */
+    String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());  
+
+    /* SEND OFFER BE    */
+        publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG",recipients);
+    /* SEND QUOTER BE */
+        publishBaseEntityByCode(getUser().getCode(),beg.getCode(),"LNK_BEG",recipients);
+
+    /* link BEG and OFFER BE || OFFER */
+        createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
+    /* link BEG and QUOTER BE || QUOTER */
+        createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);       
+    /* link OFFER and QUOTER BE || CREATOR */
+        createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);   
+        
+     
+        
+    /* Sending updated link of BEG */
+        try {
+			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + beg.getCode() + "/linkcodes/" + linkCode + "/children", getToken()));
+			/* Creating a data msg */
+			    JsonObject newLink = new JsonObject();
+			    newLink.put("msg_type", "DATA_MSG");
+			    newLink.put("data_type", "LINK_CHANGE");
+			    newLink.put("items", updatedLink);
+			    RulesUtils.ruleLogger("Updated Link of BEG", newLink);
+			/* publish new link data */
+			    newLink.put("token", getToken() );
+			 /*   publish("cmds", newLink); */
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    		
+    	
+    /* Messages */
+
+        /* OWNER config */
+            HashMap<String,String> contextMap = new HashMap<String, String>();
+            contextMap.put("QUOTER",getUser().getCode());
+            contextMap.put("JOB", beg.getCode()); 
+            contextMap.put("OFFER", offer.getCode()); 
+    
+            String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+            RulesUtils.println("owner code ::"+ownerCode);
+            String[] recipientArr = {ownerCode};
+            
+            /* Sending toast message to owner frontend */
+            sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
+        
+        /* QUOTER config */
+            HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+            contextMapForDriver.put("JOB", beg.getCode());
+            contextMapForDriver.put("OWNER", ownerCode);
+            contextMapForDriver.put("OFFER", offer.getCode());
+            contextMapForDriver.put("QUOTER", getUser().getCode());
+        
+            String[] recipientArrForDriver = {getUser().getCode()};
+            
+            /* Sending toast message to driver frontend */
+            sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
+	}
+	
 }

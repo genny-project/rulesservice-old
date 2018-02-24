@@ -64,7 +64,7 @@ public class RulesUtils {
 	public static final String ANSI_BOLD = "\u001b[1m";
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
+	public static final Boolean devMode = System.getenv("DEV_MODE") == null ? false : true;
 
 	static public Map<String,Attribute> attributeMap = new ConcurrentHashMap<String,Attribute>();
 	static public QDataAttributeMessage attributesMsg = null;
