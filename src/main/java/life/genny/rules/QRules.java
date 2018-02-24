@@ -1083,6 +1083,35 @@ public class QRules {
 		publish("data", newLink);
 	}
 
+	public void publishData(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
+
+		Link link = cmdMsg.getLink();
+
+		JsonArray links = new JsonArray();
+		JsonObject linkJson = new JsonObject();
+		links.add(linkJson);
+		linkJson.put("sourceCode", link.getSourceCode());
+		linkJson.put("targetCode", link.getTargetCode());
+		linkJson.put("attributeCode", link.getAttributeCode());
+		linkJson.put("linkValue", link.getLinkValue());
+		linkJson.put("weight", link.getWeight());
+
+		JsonArray recipients = new JsonArray();
+		for (String recipientCode : recipientsCode) {
+			recipients.add(recipientCode);
+		}
+
+		JsonObject newLink = new JsonObject();
+		newLink.put("msg_type", "DATA_MSG");
+		newLink.put("data_type", "EVT_LINK_CHANGE");
+		newLink.put("recipientCodeArray", recipients);
+		newLink.put("items", links);
+		newLink.put("token", getToken());
+		// getEventBus().publish("cmds", newLink);
+		publish("data", newLink);
+	}
+
+	
 	public void publishMsg(final QMSGMessage msg) {
 
 		msg.setToken(getToken());
@@ -2044,11 +2073,11 @@ public class QRules {
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
 
 			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
-				Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
-				System.out.println("Money=" + mon);
-				BigDecimal bd = new BigDecimal(mon.getNumber().toString());
-				Money hacked = Money.of(bd, mon.getCurrency());
-				ea.setValueMoney(hacked);
+	//			Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
+				System.out.println("Money=" +ea.getValueMoney());
+	//			BigDecimal bd = new BigDecimal(mon.getNumber().toString());
+	//			Money hacked = Money.of(bd, mon.getCurrency());
+	//			ea.setValueMoney(hacked);
 				break;
 			}
 		}
@@ -2060,7 +2089,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null, null);
 		msg.setRecipientCodeArray(recipientCodes);
 		// String json = JsonUtils.toJson(msg);
-		publishCmd(msg, recipientCodes);
+		publishData(msg, recipientCodes);
 	}
 
 	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
