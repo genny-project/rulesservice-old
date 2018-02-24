@@ -200,7 +200,7 @@ public class VertxUtils {
 //			// fetch normally
 //			System.out.println("Cache MISS for " + code);
 			try {
-				be = QwandaUtils.getBaseEntityByCode(code, token);
+				be = QwandaUtils.getBaseEntityByCodeWithAttributes(code, token);
 			} catch (Exception e) {
 				// Okay, this is bad. Usually the code is not in the database but in keycloak
 				// So lets leave it to the rules to sort out... (new user)
