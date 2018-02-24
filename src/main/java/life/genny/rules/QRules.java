@@ -1100,30 +1100,34 @@ public class QRules {
 
 	public void publishData(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
 
-		Link link = cmdMsg.getLink();
-
-		JsonArray links = new JsonArray();
-		JsonObject linkJson = new JsonObject();
-		links.add(linkJson);
-		linkJson.put("sourceCode", link.getSourceCode());
-		linkJson.put("targetCode", link.getTargetCode());
-		linkJson.put("attributeCode", link.getAttributeCode());
-		linkJson.put("linkValue", link.getLinkValue());
-		linkJson.put("weight", link.getWeight());
-
 		JsonArray recipients = new JsonArray();
 		for (String recipientCode : recipientsCode) {
 			recipients.add(recipientCode);
 		}
 
-		JsonObject newLink = new JsonObject();
-		newLink.put("msg_type", "DATA_MSG");
-		newLink.put("data_type", "EVT_LINK_CHANGE");
-		newLink.put("recipientCodeArray", recipients);
-		newLink.put("items", links);
-		newLink.put("token", getToken());
-		// getEventBus().publish("cmds", newLink);
-		publish("data", newLink);
+		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
+		json.put("recipientCodeArray", recipients);
+		
+//		Link link = cmdMsg.getLink();
+//
+//		JsonArray links = new JsonArray();
+//		JsonObject linkJson = new JsonObject();
+//		links.add(linkJson);
+//		linkJson.put("sourceCode", link.getSourceCode());
+//		linkJson.put("targetCode", link.getTargetCode());
+//		linkJson.put("attributeCode", link.getAttributeCode());
+//		linkJson.put("linkValue", link.getLinkValue());
+//		linkJson.put("weight", link.getWeight());
+//
+//
+//		JsonObject newLink = new JsonObject();
+//		newLink.put("msg_type", "DATA_MSG");
+//		newLink.put("data_type", "EVT_LINK_CHANGE");
+//		newLink.put("recipientCodeArray", recipients);
+//		newLink.put("items", links);
+//		newLink.put("token", getToken());
+//		// getEventBus().publish("cmds", newLink);
+		publish("data", json);
 	}
 
 
