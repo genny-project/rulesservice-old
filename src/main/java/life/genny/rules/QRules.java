@@ -326,7 +326,7 @@ public class QRules {
 
 		return be;
 	}
-	
+
 	public String getFullName(final BaseEntity be)
 	{
 		String fullName = be.getLoopValue("PRI_FIRSTNAME","")+" "+be.getLoopValue("PRI_LASTNAME","");
@@ -644,7 +644,7 @@ public class QRules {
 
 				/* Show loading indicator */
 				showLoading("Loading your interface...");
-				this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
 			}
 		}
 	}
@@ -985,7 +985,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
-	
+
 	public void publishData(final List<Answer> answerList) {
 		Answer[] answerArray = answerList.toArray(new Answer[answerList.size()]);
 		QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
@@ -1126,7 +1126,7 @@ public class QRules {
 		publish("data", newLink);
 	}
 
-	
+
 	public void publishMsg(final QMSGMessage msg) {
 
 		msg.setToken(getToken());
@@ -2778,45 +2778,45 @@ public class QRules {
 	{
 	      /* Get beg.getCode(), username, userCode, userFullName */
    		BaseEntity beg = getBaseEntityByCode(m.getItemCode());   // Get Baseentity once so we don't need to keep fetching...
-        println("beg.getCode()  ::   "+ beg.getCode());   
-                                     
+        println("beg.getCode()  ::   "+ beg.getCode());
+
         String userName = getAsString("preferred_username");
-        println("username   ::   "+ userName);                 
+        println("username   ::   "+ userName);
         String userCode = getUser().getCode();
         println("usercode   ::   "+ getUser().getCode());
         String userFullName= getFullName(getUser());
         println("user fullName   ::   "+ userFullName);
-    
+
         String linkCode= "LNK_BEG";
         String linkOffer= "OFFER";
         String linkQuoter= "QUOTER";
         String linkOwner = "OWNER";
         String linkCreator = "CREATOR";
 
-    /* get BEG PRICEs */           
+    /* get BEG PRICEs */
         println("BEG Prices   ::   ");
-        
-        Money begPrice = beg.getLoopValue("PRI_PRICE",Money.of(0.00,"AUD"));       
-        Money ownerPriceExcGST = beg.getLoopValue("PRI_OWNER_PRICE_EXC_GST",Money.of(0.00,"AUD"));       
-        Money ownerPriceIncGST = beg.getLoopValue( "PRI_OWNER_PRICE_INC_GST",Money.of(0.00,"AUD"));       
-        Money driverPriceExcGST = beg.getLoopValue("PRI_DRIVER_PRICE_EXC_GST",Money.of(0.00,"AUD"));       
-        Money driverPriceIncGST = beg.getLoopValue("PRI_DRIVER_PRICE_INC_GST",Money.of(0.00,"AUD"));       
-        Money feePriceExcGST = beg.getLoopValue("PRI_FEE_EXC_GST",Money.of(0.00,"AUD"));       
-        Money feePriceIncGST = beg.getLoopValue("PRI_FEE_INC_GST",Money.of(0.00,"AUD"));       
+
+        Money begPrice = beg.getLoopValue("PRI_PRICE",Money.of(0.00,"AUD"));
+        Money ownerPriceExcGST = beg.getLoopValue("PRI_OWNER_PRICE_EXC_GST",Money.of(0.00,"AUD"));
+        Money ownerPriceIncGST = beg.getLoopValue( "PRI_OWNER_PRICE_INC_GST",Money.of(0.00,"AUD"));
+        Money driverPriceExcGST = beg.getLoopValue("PRI_DRIVER_PRICE_EXC_GST",Money.of(0.00,"AUD"));
+        Money driverPriceIncGST = beg.getLoopValue("PRI_DRIVER_PRICE_INC_GST",Money.of(0.00,"AUD"));
+        Money feePriceExcGST = beg.getLoopValue("PRI_FEE_EXC_GST",Money.of(0.00,"AUD"));
+        Money feePriceIncGST = beg.getLoopValue("PRI_FEE_INC_GST",Money.of(0.00,"AUD"));
 
     /* Create Offer BE */
         BaseEntity offer = createBaseEntityByCode(getUser().getCode() , "OFR", "Offer");
-   		
+
         RulesUtils.ruleLogger("OFFER Base Entity", offer);
-        
+
         /* Send beg to driver and owner should see it as part of beg link */
         VertxUtils.subscribe(realm(),offer,getUser().getCode());
-        
+
         /* Get Offer Code */
         println("OFFER CODE   ::   "+offer.getCode());
-    
+
     /* Save attributes for OFFER as answer          */
-        List<Answer> answerList = new ArrayList<Answer>();	
+        List<Answer> answerList = new ArrayList<Answer>();
         answerList.add(new Answer(getUser(), offer, "PRI_OFFER_PRICE", JsonUtils.toJson(begPrice)));
         answerList.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
         answerList.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
@@ -2835,16 +2835,16 @@ public class QRules {
 
 		publishData(answerList);
 		saveAnswers(answerList);
-		
 
-    /* Update the number of offers for BEG */ 
+
+    /* Update the number of offers for BEG */
         Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT",0);
         offerCount = offerCount + 1;
         println("Offer Count is   ::   " + offerCount);
-        saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));               
+        saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
 
    /* Determine the recipient code */
-    String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());  
+    String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());
 
     /* SEND OFFER BE    */
     String[] offerRecipients = VertxUtils.getSubscribers(realm(),offer.getCode());
@@ -2855,12 +2855,12 @@ public class QRules {
     /* link BEG and OFFER BE || OFFER */
         createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
     /* link BEG and QUOTER BE || QUOTER */
-        createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);       
+        createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);
     /* link OFFER and QUOTER BE || CREATOR */
-        createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);   
-        
-     
-        
+        createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);
+
+
+
     /* Sending updated link of BEG */
         try {
 			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + beg.getCode() + "/linkcodes/" + linkCode + "/children", getToken()));
@@ -2877,35 +2877,35 @@ public class QRules {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-    		
-    	
+
+
+
     /* Messages */
 
         /* OWNER config */
             HashMap<String,String> contextMap = new HashMap<String, String>();
             contextMap.put("QUOTER",getUser().getCode());
-            contextMap.put("JOB", beg.getCode()); 
-            contextMap.put("OFFER", offer.getCode()); 
-    
+            contextMap.put("JOB", beg.getCode());
+            contextMap.put("OFFER", offer.getCode());
+
             String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
             RulesUtils.println("owner code ::"+ownerCode);
             String[] recipientArr = {ownerCode};
-            
+
             /* Sending toast message to owner frontend */
             sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
-        
+
         /* QUOTER config */
             HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
             contextMapForDriver.put("JOB", beg.getCode());
             contextMapForDriver.put("OWNER", ownerCode);
             contextMapForDriver.put("OFFER", offer.getCode());
             contextMapForDriver.put("QUOTER", getUser().getCode());
-        
+
             String[] recipientArrForDriver = {getUser().getCode()};
-            
+
             /* Sending toast message to driver frontend */
             sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
-	
+
 }
