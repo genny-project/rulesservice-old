@@ -484,7 +484,7 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
-		publishCmd(msg, recipientCodes);
+		publishData(msg, recipientCodes);
 
 	}
 
@@ -2832,9 +2832,10 @@ public class QRules {
     String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());  
 
     /* SEND OFFER BE    */
-        publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG",recipients);
+    String[] offerRecipients = VertxUtils.getSubscribers(realm(),offer.getCode());
+        publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG",offerRecipients);
     /* SEND QUOTER BE */
-        publishBaseEntityByCode(getUser().getCode(),beg.getCode(),"LNK_BEG",recipients);
+    /*    publishBaseEntityByCode(getUser().getCode(),beg.getCode(),"LNK_BEG",recipients); */
 
     /* link BEG and OFFER BE || OFFER */
         createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
