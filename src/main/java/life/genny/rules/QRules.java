@@ -623,6 +623,24 @@ public class QRules {
 		}
 	}
 
+	public void sendInternMatchLayoutsAndData() {
+
+		BaseEntity user = getUser();
+
+		if(user != null) {
+
+			String internValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
+			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
+
+			if(isIntern) {
+
+				/* Show loading indicator */
+				showLoading("Loading your interface...");
+				this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+			}
+		}
+	}
+
 	public void sendMentorMatchLayoutsAndData() {
 
 		BaseEntity user = getUser();
@@ -636,9 +654,6 @@ public class QRules {
 			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || user.is("PRI_MENTEE"));
 
 			String profile_completed = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
-			this.println(profile_completed);
-			this.println(isMentor);
-			this.println(isMentee);
 
 			if(profile_completed == null && !isMentor && !isMentee) {
 
