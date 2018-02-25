@@ -36,13 +36,13 @@ ruleflow-group 'LinkChange'
  		   		 }
 
  		   		String[] recipientArray = recipients.toArray(new String[0]);
- 		   		rules.publishCmd($m,recipientArray);
+ 		   		rules.publisData($m,recipientArray);
  		   }
 
  		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode());
 	*/
 		String[] recipientCodes = rules.getRecipientCodes($m);
-		rules.publishCmd($m,recipientCodes);
+		rules.publishData($m,recipientCodes);
 
    	    rules.footer();
 

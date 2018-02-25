@@ -1,7 +1,6 @@
 package life.genny.rules;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -10,10 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import org.apache.logging.log4j.Logger;
-import org.drools.core.base.DefaultKnowledgeHelper;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
@@ -23,7 +20,6 @@ import org.kie.api.builder.Message;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
-import org.kie.internal.io.ResourceFactory;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;

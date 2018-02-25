@@ -15,6 +15,7 @@ import life.genny.qwanda.Link;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.User;
+import org.javamoney.moneta.Money;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
@@ -28,7 +29,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QBaseMSGMessageType;
 
-import io.vertx.rxjava.core.eventbus.EventBus;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
@@ -55,174 +56,8 @@ rule "Accept Job"
     then
         rules.header();
         rules.showLoading("Please wait for a moment...");
-        /* Prepare Token & qwandaServiceUrl */
-            String qwandaServiceUrl = rules.getQwandaServiceUrl();
-            String tokenString = rules.getToken();
-        
-        /* Get begCode, username, userCode, userFullName */
-            String begCode = $m.getItemCode();
-            System.out.println("begCode  ::   "+ begCode);                    
-            String userName = rules.getAsString("preferred_username");
-            System.out.println("username   ::   "+ userName);                 
-            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
-            System.out.println("usercode   ::   "+ userCode);
-            String userFullName= MergeUtil.getFullName(userCode, tokenString);
-            System.out.println("user fullName   ::   "+ userFullName);
-        
-            String linkCode= "LNK_BEG";
-            String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";
-            String linkOwner = "OWNER";
-            String linkCreator = "CREATOR";
-
-        /* get BEG PRICEs */           
-            System.out.println("BEG Prices   ::   ");
-            
-            String begPrice = MergeUtil.getAttrValue(begCode, "PRI_PRICE", tokenString);       
-            System.out.println("PRI_PRICE   ::   "+begPrice);
-
-            String ownerPriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE_EXC_GST", tokenString);       
-            System.out.println("Owner Price no GST   ::   "+ownerPriceExcGST);
-            String ownerPriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_OWNER_PRICE_INC_GST", tokenString);       
-            System.out.println("Owner Price with GST   ::   "+ownerPriceIncGST);
-
-            String driverPriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE_EXC_GST", tokenString);       
-            System.out.println("Driver Price no GST   ::   "+driverPriceExcGST);
-            String driverPriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_DRIVER_PRICE_INC_GST", tokenString);       
-            System.out.println("Driver Price with GST   ::   "+driverPriceIncGST);
-
-            String feePriceExcGST = MergeUtil.getAttrValue(begCode, "PRI_FEE_EXC_GST", tokenString);       
-            System.out.println("fee Price no GST   ::   "+feePriceExcGST);
-            String feePriceIncGST = MergeUtil.getAttrValue(begCode, "PRI_FEE_INC_GST", tokenString);       
-            System.out.println("fee Price with GST   ::   "+feePriceIncGST);
-
-
-        /* Create Offer BE */
-            BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
-       		
-            RulesUtils.ruleLogger("OFFER Base Entity", offer);
-            
-            /* Send beg to owner */
-            
-            
-            
-            /* Get Offer Code */
-            String offerCode= offer.getCode();
-            System.out.println("OFFER CODE   ::   "+offerCode);
-        
-        /* Save attributes for OFFER as answer          */
-            Answer price = new Answer(userCode, offerCode, "PRI_OFFER_PRICE", begPrice);
-
-            Answer ownerPriceExcGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
-            Answer ownerPriceIncGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST", ownerPriceIncGST);
-
-            Answer driverPriceExcGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
-            Answer driverPriceIncGSTAnswer = new Answer(userCode, offerCode, "PRI_OFFER_DRIVER_PRICE_INC_GST", driverPriceIncGST);
-
-            Answer feePriceExcGstCodeAnswer = new Answer(userCode, offerCode, "PRI_OFFER_FEE_EXC_GST", feePriceExcGST);
-            Answer feePriceIncGstCodeAnswer = new Answer(userCode, offerCode, "PRI_OFFER_FEE_INC_GST", feePriceIncGST);
-
-            Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
-            Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
-            Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
-            Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
-            Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
-            Answer actionCode = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner); 
-            Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
-            
-            List<Answer> answerList = new ArrayList<Answer>();	
-            answerList.add(price);
-            answerList.add(ownerPriceExcGSTAnswer);
-            answerList.add(ownerPriceIncGSTAnswer);
-            answerList.add(driverPriceExcGSTAnswer);
-            answerList.add(driverPriceIncGSTAnswer);
-            answerList.add(feePriceExcGstCodeAnswer);
-            answerList.add(feePriceIncGstCodeAnswer);
-
-            answerList.add(offercode);
-            answerList.add(quoterCode);
-            answerList.add(quoterUname);
-            answerList.add(quoterFullName);
-            answerList.add(jobCode);
-            answerList.add(actionCode);
-            answerList.add(offerDateTime);
-
-            /* save attributes */
-            for (Answer answer : answerList) {
-                rules.publishData(answer);             
-            }
- 
-        /* Update the number of offers for BEG */ 
-            Integer offerCount = 0;
-            String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
-            if(offerCountString == null) { 
-                offerCount = 1;
-            }else {                 
-                offerCount = Integer.parseInt(offerCountString);
-                offerCount = offerCount + 1;
-                System.out.println("Offer Count is   ::   " + offerCount);
-            }
-
-            Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
-            rules.saveAnswer(offerCountAnswer);               
-
-       /* Determine the recipient code */
-        String[] recipients = VertxUtils.getSubscribers(rules.realm(),begCode);  
- 
-        /* SEND OFFER BE    */
-            rules.publishBaseEntityByCode(offerCode, begCode,"LNK_BEG",recipients);
-        /* SEND QUOTER BE */
-            rules.publishBaseEntityByCode(userCode,begCode,"LNK_BEG",recipients);
-  
-        /* link BEG and OFFER BE || OFFER */
-            rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
-        /* link BEG and QUOTER BE || QUOTER */
-            rules.createLink(begCode, userCode, linkCode, linkQuoter, 1.0);       
-        /* link OFFER and QUOTER BE || CREATOR */
-            rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);   
-            
          
-            
-        /* Sending updated link of BEG */
-            JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
-            /* Creating a data msg */
-                JsonObject newLink = new JsonObject();
-                newLink.put("msg_type", "DATA_MSG");
-                newLink.put("data_type", "LINK_CHANGE");
-                newLink.put("items", updatedLink);
-                RulesUtils.ruleLogger("Updated Link of BEG", newLink);
-            /* publish new link data */
-                newLink.put("token", tokenString );
-             /*   rules.publish("cmds", newLink); */
-        	
-        		
-        	
-        /* Messages */
-
-            /* OWNER config */
-                HashMap<String,String> contextMap = new HashMap<String, String>();
-                contextMap.put("QUOTER",userCode);
-                contextMap.put("JOB", begCode); 
-                contextMap.put("OFFER", offerCode); 
-        
-                String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                RulesUtils.println("owner code ::"+ownerCode);
-                String[] recipientArr = {ownerCode};
-                
-                /* Sending toast message to owner frontend */
-                rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
-            
-            /* QUOTER config */
-                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
-                contextMapForDriver.put("JOB", begCode);
-                contextMapForDriver.put("OWNER", ownerCode);
-                contextMapForDriver.put("OFFER", offerCode);
-                contextMapForDriver.put("QUOTER", userCode);
-            
-                String[] recipientArrForDriver = {userCode};
-                
-                /* Sending toast message to driver frontend */
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
+  		rules.acceptJob($m);
                 
         /* Send BUCKETVIEW Cmd */
             drools.setFocus("bucketview"); 
