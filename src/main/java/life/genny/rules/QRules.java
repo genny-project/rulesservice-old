@@ -1107,27 +1107,28 @@ public class QRules {
 
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
-		
-//		Link link = cmdMsg.getLink();
-//
-//		JsonArray links = new JsonArray();
-//		JsonObject linkJson = new JsonObject();
-//		links.add(linkJson);
-//		linkJson.put("sourceCode", link.getSourceCode());
-//		linkJson.put("targetCode", link.getTargetCode());
-//		linkJson.put("attributeCode", link.getAttributeCode());
-//		linkJson.put("linkValue", link.getLinkValue());
-//		linkJson.put("weight", link.getWeight());
-//
-//
-//		JsonObject newLink = new JsonObject();
-//		newLink.put("msg_type", "DATA_MSG");
-//		newLink.put("data_type", "EVT_LINK_CHANGE");
-//		newLink.put("recipientCodeArray", recipients);
-//		newLink.put("items", links);
-//		newLink.put("token", getToken());
-//		// getEventBus().publish("cmds", newLink);
-		publish("data", json);
+
+		Link link = cmdMsg.getLink();
+
+		JsonArray links = new JsonArray();
+		JsonObject linkJson = new JsonObject();
+		links.add(linkJson);
+		linkJson.put("sourceCode", link.getSourceCode());
+		linkJson.put("targetCode", link.getTargetCode());
+		linkJson.put("attributeCode", link.getAttributeCode());
+		linkJson.put("linkValue", link.getLinkValue());
+		linkJson.put("weight", link.getWeight());
+
+
+		JsonObject newLink = new JsonObject();
+		newLink.put("msg_type", "DATA_MSG");
+		newLink.put("data_type", "EVT_LINK_CHANGE");
+		newLink.put("recipientCodeArray", recipients);
+		newLink.put("items", links);
+		newLink.put("token", getToken());
+		// getEventBus().publish("cmds", newLink);
+		publish("data", newLink);
+		publish("data",json);
 	}
 
 
@@ -2868,15 +2869,12 @@ public class QRules {
     /* Sending updated link of BEG */
         try {
 			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + beg.getCode() + "/linkcodes/" + linkCode + "/children", getToken()));
-			/* Creating a data msg */
 			    JsonObject newLink = new JsonObject();
 			    newLink.put("msg_type", "DATA_MSG");
 			    newLink.put("data_type", "LINK_CHANGE");
 			    newLink.put("items", updatedLink);
 			    RulesUtils.ruleLogger("Updated Link of BEG", newLink);
-			/* publish new link data */
 			    newLink.put("token", getToken() );
-			 /*   publish("cmds", newLink); */
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
