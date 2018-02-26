@@ -1113,8 +1113,12 @@ public class QRules {
 	public void publishData(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
 
 		JsonArray recipients = new JsonArray();
+		if (recipientsCode!=null) {
 		for (String recipientCode : recipientsCode) {
-			recipients.add(recipientCode);
+			if (recipientCode!=null) {
+				recipients.add(recipientCode);
+			}
+		}
 		}
 
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
@@ -2359,6 +2363,16 @@ public class QRules {
 		String[] recipientArray2 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
 		if (recipientArray2 != null) {
 			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
+		}
+		
+		Link oldlink = msg.getOldLink();
+		String[] recipientArrayOld = VertxUtils.getSubscribers(realm(), oldlink.getTargetCode());
+		if (recipientArray != null) {
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArrayOld));
+		}
+		String[] recipientArray2Old = VertxUtils.getSubscribers(realm(), oldlink.getSourceCode());
+		if (recipientArray2 != null) {
+			recipientCodesSet.addAll(Sets.newHashSet(recipientArray2Old));
 		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
