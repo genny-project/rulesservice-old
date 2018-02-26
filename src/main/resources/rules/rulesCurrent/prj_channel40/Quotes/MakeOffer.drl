@@ -56,10 +56,10 @@ rule "Make Offer"
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
             System.out.println("begCode  ::   "+ begCode);                    
+            String userCode = rules.getUser().getCode();
+            System.out.println("userCode   ::   "+ userCode);
             String userName = rules.getAsString("preferred_username");
             System.out.println("username   ::   "+ userName);                 
-            String userCode = QwandaUtils.getBaseEntityCodeForUserName(userName, tokenString);
-            System.out.println("usercode   ::   "+ userCode);
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             System.out.println("user fullName   ::   "+ userFullName);
         
