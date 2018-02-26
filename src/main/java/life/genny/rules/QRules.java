@@ -2351,7 +2351,19 @@ public class QRules {
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
-
+	
+	public void subscribeUserToBaseEntityCode(String userCode, String beCode) {
+		VertxUtils.subscribe(realm(), beCode, userCode);
+	}
+	
+	public void subscribeUserToBaseEntity(String userCode, BaseEntity be) {
+		VertxUtils.subscribe(realm(), be, userCode);
+	}
+	
+	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
+		VertxUtils.subscribe(realm(), bes, userCode);
+	}
+	
 	public void sendLayoutsAndData() {
 		/* Show loading indicator */
 		showLoading("Loading your interface...");
@@ -2804,14 +2816,14 @@ public class QRules {
 
 	public void acceptJob(QEventBtnClickMessage m)
 	{
-	      /* Get beg.getCode(), username, userCode, userFullName */
+      /* Get beg.getCode(), username, userCode, userFullName */
    		BaseEntity beg = getBaseEntityByCode(m.getItemCode());   // Get Baseentity once so we don't need to keep fetching...
         println("beg.getCode()  ::   "+ beg.getCode());
 
-        String userName = getAsString("preferred_username");
-        println("username   ::   "+ userName);
         String userCode = getUser().getCode();
         println("usercode   ::   "+ getUser().getCode());
+        String userName = getAsString("preferred_username");
+        println("username   ::   "+ userName);
         String userFullName= getFullName(getUser());
         println("user fullName   ::   "+ userFullName);
 
@@ -2820,6 +2832,8 @@ public class QRules {
         String linkQuoter= "QUOTER";
         String linkOwner = "OWNER";
         String linkCreator = "CREATOR";
+        
+        String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
 
     /* get BEG PRICEs */
         println("BEG Prices   ::   ");
@@ -2834,14 +2848,12 @@ public class QRules {
 
     /* Create Offer BE */
         BaseEntity offer = createBaseEntityByCode(getUser().getCode() , "OFR", "Offer");
-
+        println("OFFER CODE   ::   " + offer.getCode());
         RulesUtils.ruleLogger("OFFER Base Entity", offer);
 
-        /* Send beg to driver and owner should see it as part of beg link */
-        VertxUtils.subscribe(realm(),offer,getUser().getCode());
-
-        /* Get Offer Code */
-        println("OFFER CODE   ::   "+offer.getCode());
+    /* owner and driver subscribing to offer BE */
+        VertxUtils.subscribe(realm(), offer, getUser().getCode());
+        VertxUtils.subscribe(realm(), offer, ownerCode);
 
     /* Save attributes for OFFER as answer          */
         List<Answer> answerList = new ArrayList<Answer>();
@@ -2861,7 +2873,6 @@ public class QRules {
         answerList.add(new Answer(getUser(), offer, "PRI_NEXT_ACTION", linkOwner));
         answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DATE", getCurrentLocalDateTime()));
 
-		publishData(answerList);
 		saveAnswers(answerList);
 
 
@@ -2872,13 +2883,8 @@ public class QRules {
         saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
 
    /* Determine the recipient code */
-    String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());
-
-    /* SEND OFFER BE    */
-    String[] offerRecipients = VertxUtils.getSubscribers(realm(),offer.getCode());
-        publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG",offerRecipients);
-    /* SEND QUOTER BE */
-    /*    publishBaseEntityByCode(getUser().getCode(),beg.getCode(),"LNK_BEG",recipients); */
+        String[] recipients = VertxUtils.getSubscribers(realm(),beg.getCode());
+        System.out.println("BEG subscribers   ::   " + Arrays.toString(recipients));
 
     /* link BEG and OFFER BE || OFFER */
         createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
@@ -2886,24 +2892,14 @@ public class QRules {
         createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);
     /* link OFFER and QUOTER BE || CREATOR */
         createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);
-
-
-
-    /* Sending updated link of BEG */
-        try {
-			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + beg.getCode() + "/linkcodes/" + linkCode + "/children", getToken()));
-			    JsonObject newLink = new JsonObject();
-			    newLink.put("msg_type", "DATA_MSG");
-			    newLink.put("data_type", "LINK_CHANGE");
-			    newLink.put("items", updatedLink);
-			    RulesUtils.ruleLogger("Updated Link of BEG", newLink);
-			    newLink.put("token", getToken() );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-
+        
+    /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+        String[] offerRecipients = VertxUtils.getSubscribers(realm(),offer.getCode());
+        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+        
+        publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG", offerRecipients);
+        publishBaseEntityByCode(getUser().getCode(), beg.getCode(),"LNK_BEG", offerRecipients);
+        publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
     /* Messages */
 
@@ -2913,7 +2909,7 @@ public class QRules {
             contextMap.put("JOB", beg.getCode());
             contextMap.put("OFFER", offer.getCode());
 
-            String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+            ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
             RulesUtils.println("owner code ::"+ownerCode);
             String[] recipientArr = {ownerCode};
 
