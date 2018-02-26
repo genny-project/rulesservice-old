@@ -2671,6 +2671,7 @@ public class QRules {
 	}
 
 	public void updateGPS(QDataGPSMessage m) {
+		println("###### GPS: "+m);
 		GPS driverPosition = m.getItems()[0];
 		String driverLatitude = driverPosition.getLatitude();
 		String driverLongitude = driverPosition.getLongitude();
