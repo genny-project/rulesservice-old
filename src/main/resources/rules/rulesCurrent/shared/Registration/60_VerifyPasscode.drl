@@ -1,0 +1,37 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule " Verify Passcode"
+   no-loop true
+   salience 560
+   ruleflow-group 'ButtonClick'
+    when
+        $m : QEventMessage( event_type =="BTN_CLICK" && data.code == "EVT_PASSCODE_VALIDATION" ) 
+        rules: QRules( isState("STARTED") && !isState("PASSCODE_VERIFICATION_COMPLETED") ) 
+     then
+     	rules.header();  		
+   	    String userCode = rules.getUser().getCode();
+   	    rules.println("The passcode verification result is:: " +rules.verifyPassCode(userCode, $m.getData().getValue()));
+   	    
+   	    if( rules.verifyPassCode(userCode, $m.getData().getValue()) ){
+   	        rules.setState("PASSCODE_VERIFICATION_SUCCESS");
+   	        
+   	        Answer verificationCompletedAns = new Answer(userCode, userCode, "PRI_MOBILE_VERIFICATION_COMPLETED", "TRUE");
+	        rules.saveAnswer(verificationCompletedAns);
+   	     }
+   	     else
+   	     {
+   	         rules.setState("PASSCODE_VERIFICATION_FAILED");
+   	         HashMap<String,String> contextMap = new HashMap<String, String>();
+             String[] recipients  = {userCode};
+             /* Sending toast message */
+             rules.sendMessage("", recipients, contextMap, "TST_PASSCODE_VERIFICATION_FAILURE", "TOAST");
+             /* Send layout again */
+             rules.sendSublayout("SUB_LAY_PASSCODE_VERIFICATION", "shared/confirm-mobile-code.json");
+   	     }
+
+		rules.setState("PASSCODE_VERIFICATION_COMPLETED");
+	    rules.footer();     		      
+end

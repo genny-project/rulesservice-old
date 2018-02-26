@@ -16,9 +16,11 @@ rule "Send Mobile Verification Passcode"
    	
   		rules.sendMobileVerificationPasscode(userCode);
   		
-  		/*  TODO: Send Account Verification Layout  */
-  		
-
+  		/* Send Account Verification Layout  */
+  		rules.println("Sending Passcode View");
+  	    rules.sendSublayout("SUB_LAY_PASSCODE_VERIFICATION", "shared/confirm-mobile-code.json");
+  		rules.println("Passcode View Sent");
+         
 		rules.setState("ASKED_MOBILE_VERIFICATION");
 	    rules.footer();     		      
 end
