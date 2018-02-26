@@ -115,18 +115,14 @@ rule "Cancel Offer"
         /* Update link between BEG and OFFER to weight= 0 */
             rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);       
         
-        /* Sending updated link of BEG */
-            JsonArray updatedLink1 = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
-            /* Creating a data msg */
-            JsonObject newLink1 = new JsonObject();
-            newLink1.put("msg_type", "DATA_MSG");
-            newLink1.put("data_type", "LINK_CHANGE");
-            newLink1.put("items", updatedLink1);
-
-            RulesUtils.ruleLogger("Updated Link of BEG", newLink1);
-            /* publish new link data */
-            newLink1.put("token", tokenString );
-            rules.publish("cmds", newLink1);
+		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offerBe.getCode());
+	        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+	        
+	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
+        		rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
+        		rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
+        		rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
         /* Messages */
             /* Sending message to OWNER; DISABLED */
@@ -150,7 +146,7 @@ rule "Cancel Offer"
             
                 String[] recipientArrForDriver = {quoterCode};
             	
-            		rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
+            	    rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
                 rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
         rules.footer();
