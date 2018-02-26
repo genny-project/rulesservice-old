@@ -372,6 +372,18 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
+		BaseEntity be = null;
+
+		be = VertxUtils.readFromDDT(code, withAttributes,getToken());
+		if (be == null) {
+			println("ERROR - be ("+code+") fetched is NULL ");
+		} else {
+			addAttributes(be);
+		}
+		return be;
+	}
+
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
@@ -2782,6 +2794,8 @@ public class QRules {
         String linkQuoter= "QUOTER";
         String linkOwner = "OWNER";
         String linkCreator = "CREATOR";
+        String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+
 
     /* get BEG PRICEs */           
         println("BEG Prices   ::   ");
@@ -2801,6 +2815,7 @@ public class QRules {
         
         /* Send beg to driver and owner should see it as part of beg link */
         VertxUtils.subscribe(realm(),offer,getUser().getCode());
+        VertxUtils.subscribe(realm(),offer,ownerCode);
         
         /* Get Offer Code */
         println("OFFER CODE   ::   "+offer.getCode());
@@ -2875,7 +2890,7 @@ public class QRules {
             contextMap.put("JOB", beg.getCode()); 
             contextMap.put("OFFER", offer.getCode()); 
     
-            String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+ /*           String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken()); */
             RulesUtils.println("owner code ::"+ownerCode);
             String[] recipientArr = {ownerCode};
             
@@ -2895,4 +2910,28 @@ public class QRules {
             sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
 	
+	
+	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m)
+	{
+	      /*  Collect load code from answer  */
+        Answer answer = m.getAnswer();
+        println("The created value  ::  "+answer.getCreatedDate());
+        println("Answer from QEventAttributeValueChangeMessage  ::  "+answer.toString());
+        String targetCode = answer.getTargetCode();
+        String sourceCode = answer.getSourceCode();
+        String loadCategoryCode = answer.getValue();
+        String attributeCode = m.data.getCode();
+        println("The target BE code is   ::  " +targetCode);
+        println("The source BE code is   ::  " +sourceCode);
+        println("The attribute code is   ::  " +attributeCode);
+        println("The load type code is   ::  " +loadCategoryCode);
+        
+        BaseEntity loadType = getBaseEntityByCode(loadCategoryCode,false);  // no attributes
+          
+       /* creating new Answer */
+      Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
+      newAnswer.setInferred(true);
+      
+ 		saveAnswer(newAnswer);        
+	}
 }
