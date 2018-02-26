@@ -202,8 +202,12 @@ rule "Submit Offer Driver"
                         String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
                         RulesUtils.println("owner code ::"+ownerCode);
                         String[] noLinkRecipientArr = {ownerCode};
+                        
+                  	/* owner and driver subscribing to offer BE */
+				        VertxUtils.subscribe(rules.realm(), offerBe, userCode);
+				        VertxUtils.subscribe(rules.realm(), offerBe, ownerCode);
 						
-					   rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
+					    rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); 
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
                         
@@ -229,38 +233,19 @@ rule "Submit Offer Driver"
         /* link BEG and QUOTER BE || QUOTER */
             if(!linkUserOffer){
                 System.out.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
-                Link link2 = new Link( begCode, quoterCode, linkCode, linkQuoter);
-                link2.setWeight(1.0);
-                String output2 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(link2),tokenString);
+    				rules.createLink(begCode, quoterCode, linkCode, linkQuoter, 1.0);
             }        
-
-        /* Determine the recipient code */
-            String[] recipients = VertxUtils.getSubscribers(rules.realm(),begCode);  
-
-        /* SEND OFFER BE    */
-            rules.publishBaseEntityByCode(offerCode, begCode,"LNK_BEG",recipients);
-        /* SEND QUOTER BE */
-            rules.publishBaseEntityByCode(quoterCode,begCode,"LNK_BEG",recipients);
-        
-        /* Sending updated link of BEG */
-            JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + begCode + "/linkcodes/" + linkCode + "/children", tokenString));
-            /* Creating a data msg */
-                JsonObject newLink = new JsonObject();
-                newLink.put("msg_type", "DATA_MSG");
-                newLink.put("data_type", "LINK_CHANGE");
-                newLink.put("items", updatedLink);
-                System.out.println("------------------------------------------------------------------------");
-                System.out.println("Updated Link   ::  "+newLink.toString());
-                System.out.println("------------------------------------------------------------------------");
-            /* publish new link data */
-                newLink.put("token", tokenString );
-                rules.publish("cmds", newLink);
-
-        /* Sending message if offer exists*/
-
-
+            
+        /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offerBe.getCode());
+	        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+	        
+	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
+        		rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
+        		rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+	        
         /* Send BUCKETVIEW Cmd */
-        drools.setFocus("bucketview");        
+        		drools.setFocus("bucketview");        
         rules.footer();
 end
 
