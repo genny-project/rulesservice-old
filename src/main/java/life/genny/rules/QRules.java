@@ -2813,6 +2813,18 @@ public class QRules {
 		 publishData(beMsg);
 
 	}
+	
+	/* Sends BaseEntity Message to all the recipients with delete - true */
+	public void clearBaseEntity(String baseEntityCode, String[] recipientCodes){
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		System.out.println("The baseentity to be removed from FE is   ::   " + be);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		beMsg.setRecipientCodeArray(recipientCodes);	
+		println("The QDataBaseEntityMessage to be deleted ::"+JsonUtils.toJson(beMsg));
+		publishData(beMsg, recipientCodes);
+	
+	}
 
 	public void acceptJob(QEventBtnClickMessage m)
 	{
