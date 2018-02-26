@@ -26,7 +26,7 @@ rule "Receive GPS Data"
 	    rules: QRules()
      then
      	     			
- 	    		
+ 	    	rules.setDrools(drools);	
 	  	rules.updateGPS(m);
 
  		    	

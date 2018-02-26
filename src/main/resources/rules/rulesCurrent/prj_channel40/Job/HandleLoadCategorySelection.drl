@@ -22,26 +22,8 @@ rule "Handle Load Category Selection"
         
           rules.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
  
-       /*  Collect load code from answer  */
-         Answer answer = $m.getAnswer();
-         rules.println("The created value  ::  "+answer.getCreatedDate());
-         rules.println("Answer from QEventAttributeValueChangeMessage  ::  "+answer.toString());
-         String targetCode = answer.getTargetCode();
-         String sourceCode = answer.getSourceCode();
-         String loadCategoryCode = answer.getValue();
-         String attributeCode = $m.data.getCode();
-         rules.println("The target BE code is   ::  " +targetCode);
-         rules.println("The source BE code is   ::  " +sourceCode);
-         rules.println("The attribute code is   ::  " +attributeCode);
-         rules.println("The load type code is   ::  " +loadCategoryCode);
-         
-         BaseEntity loadType = rules.getBaseEntityByCode(loadCategoryCode);
-           
-        /* creating new Answer */
-       Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
-       newAnswer.setInferred(true);
-       
-  		rules.saveAnswer(newAnswer);        
+ 		rules.processLoadTypeAnswer($m);
+ 		
          rules.footer();
 
 end
