@@ -24,7 +24,7 @@ rule "Release Payment"
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
        	
-       	BaseEntity beg = rules.getBaseEntityByCodeWithAttributes(rules.getUser().getCode());
+       	BaseEntity beg = rules.getBaseEntityByCode(rules.getUser().getCode());
        	String begCode = beg.getValue("STT_JOB_IS_RATING",null);
        	String ownerCode = beg.getValue("PRI_AUTHOR",null);
        	
