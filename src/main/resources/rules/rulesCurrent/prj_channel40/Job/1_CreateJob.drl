@@ -26,6 +26,10 @@ rule "Create Job"
      
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "New Load");
+       /*  Add author to the job    */
+      Answer jobAuthorAns = new Answer(rules.getUser().getCode(),beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
+      rules.saveAnswer(jobAuthorAns);
+      
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
      rules.println("The BEG code is   ::  "+beg.getCode());
    

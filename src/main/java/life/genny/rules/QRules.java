@@ -2864,8 +2864,14 @@ public class QRules {
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
 
-		String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),
-				linkOwner, false, getToken());
+		Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR"); 
+		String ownerCode = null;
+		
+		if (optOwnerCode.isPresent()) {
+			ownerCode = optOwnerCode.get();
+		} else {
+			ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),linkOwner, false, getToken()); 
+		}
 
 		/* get BEG PRICEs */
 		println("BEG Prices   ::   ");
