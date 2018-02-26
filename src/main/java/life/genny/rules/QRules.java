@@ -651,11 +651,22 @@ public class QRules {
 
 			String internValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
 			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
-
+			
+			/* Show loading indicator */
+			showLoading("Loading your interface...");
+			
 			if(isIntern) {
 
-				/* Show loading indicator */
-				showLoading("Loading your interface...");
+				List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
+				publishCmd(root,"GRP_ROOT","LNK_CORE");
+				println(root);
+
+				List<BaseEntity> internships = getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS", "LNK_CORE", 0, 50, false);
+				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
+				
+				List<BaseEntity> companies = getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50, false);
+				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
+
 				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
 			}
 		}
@@ -2363,19 +2374,19 @@ public class QRules {
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
-	
+
 	public void subscribeUserToBaseEntityCode(String userCode, String beCode) {
 		VertxUtils.subscribe(realm(), beCode, userCode);
 	}
-	
+
 	public void subscribeUserToBaseEntity(String userCode, BaseEntity be) {
 		VertxUtils.subscribe(realm(), be, userCode);
 	}
-	
+
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
-	
+
 	public void sendLayoutsAndData() {
 		/* Show loading indicator */
 		showLoading("Loading your interface...");
@@ -2730,12 +2741,12 @@ public class QRules {
         sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
 
 	}
-	
+
 	/* Generate Random number */
 	public int generateRandomCode()  {
 		return (new Random()).nextInt(10000);
 	}
-	
+
 	/* Check if the generated number is 4 digit number  */
 	public Boolean checkRandomNumberRange(int no) {
 		Boolean isRangeValid = false;
@@ -2743,7 +2754,7 @@ public class QRules {
 			isRangeValid = true;
 		return isRangeValid;
 	}
-	
+
     /* generate 4 digit verification passcode */
 	public int generateVerificationCode1() {
 	   //String verificationCode = String.format("%04d", random.nextInt(10000));
@@ -2754,7 +2765,7 @@ public class QRules {
 		    return randomInt;
 	    }
 	  return randomInt;
-	
+
 	}
 
 	/* Verify the user entered passcode with the one in DB  */
@@ -2762,7 +2773,7 @@ public class QRules {
 
 		//println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
 		//println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
-		
+
 		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
 			return true;
 		}
@@ -2877,11 +2888,11 @@ public class QRules {
         println("OFFER CODE   ::   " + offer.getCode());
         RulesUtils.ruleLogger("OFFER Base Entity", offer);
 
-        
+
         /* Send beg to driver and owner should see it as part of beg link */
         VertxUtils.subscribe(realm(),offer,getUser().getCode());
         VertxUtils.subscribe(realm(),offer,ownerCode);
-        
+
 
     /* Save attributes for OFFER as answer          */
         List<Answer> answerList = new ArrayList<Answer>();
@@ -2920,11 +2931,11 @@ public class QRules {
         createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);
     /* link OFFER and QUOTER BE || CREATOR */
         createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);
-        
+
     /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
         String[] offerRecipients = VertxUtils.getSubscribers(realm(),offer.getCode());
         System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
-        
+
         publishBaseEntityByCode(offer.getCode(), beg.getCode(),"LNK_BEG", offerRecipients);
         publishBaseEntityByCode(getUser().getCode(), beg.getCode(),"LNK_BEG", offerRecipients);
         publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
@@ -2958,8 +2969,8 @@ public class QRules {
             sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
 
-	
-	
+
+
 	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m)
 	{
 	      /*  Collect load code from answer  */
@@ -2974,14 +2985,14 @@ public class QRules {
         println("The source BE code is   ::  " +sourceCode);
         println("The attribute code is   ::  " +attributeCode);
         println("The load type code is   ::  " +loadCategoryCode);
-        
+
         BaseEntity loadType = getBaseEntityByCode(loadCategoryCode,false);  // no attributes
-          
+
        /* creating new Answer */
       Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
       newAnswer.setInferred(true);
-      
- 		saveAnswer(newAnswer);        
+
+ 		saveAnswer(newAnswer);
 	}
 
 }
