@@ -189,7 +189,33 @@ public class VertxUtils {
 //		return null;
 	}
 
+	static public BaseEntity readFromDDT(final String code, final boolean withAttributes, final String token) {
+		BaseEntity be = null;
+//		JsonObject json = readCachedJson(code);
+//		if ("ok".equals(json.getString("status"))) {
+//			be = JsonUtils.fromJson(json.getString("value"), BaseEntity.class);
+//		} else {
+//			// fetch normally
+//			System.out.println("Cache MISS for " + code);
+			try {
+				if (withAttributes) {
+				be = QwandaUtils.getBaseEntityByCodeWithAttributes(code, token);
+				} else {
+					be = QwandaUtils.getBaseEntityByCode(code, token);
+				}
+			} catch (Exception e) {
+				// Okay, this is bad. Usually the code is not in the database but in keycloak
+				// So lets leave it to the rules to sort out... (new user)
+				log.error("BE "+code+" is NOT IN CACHE OR DB "+e.getLocalizedMessage());
+				return null;
 
+			}
+//			if ((cachedEnabled)||(System.getenv("GENNY_DEV") != null) ) {
+//				writeCachedJson(code, JsonUtils.toJson(be));
+//			}
+//		}
+		return be;
+	}
 
 	static public BaseEntity readFromDDT(final String code, final String token) {
 		BaseEntity be = null;
