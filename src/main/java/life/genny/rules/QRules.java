@@ -372,6 +372,18 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
+		BaseEntity be = null;
+
+		be = VertxUtils.readFromDDT(code, withAttributes,getToken());
+		if (be == null) {
+			println("ERROR - be ("+code+") fetched is NULL ");
+		} else {
+			addAttributes(be);
+		}
+		return be;
+	}
+
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
@@ -2659,6 +2671,7 @@ public class QRules {
 	}
 
 	public void updateGPS(QDataGPSMessage m) {
+		println("###### GPS: "+m);
 		GPS driverPosition = m.getItems()[0];
 		String driverLatitude = driverPosition.getLatitude();
 		String driverLongitude = driverPosition.getLongitude();
@@ -2693,7 +2706,7 @@ public class QRules {
 					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
 				}
 			} catch (NumberFormatException e) {
-				log.error("GPS Error " + m);
+				println("GPS Error " + m);
 			}
 		}
 
@@ -2844,8 +2857,9 @@ public class QRules {
         String linkQuoter= "QUOTER";
         String linkOwner = "OWNER";
         String linkCreator = "CREATOR";
-        
+
         String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+
 
     /* get BEG PRICEs */
         println("BEG Prices   ::   ");
@@ -2863,9 +2877,11 @@ public class QRules {
         println("OFFER CODE   ::   " + offer.getCode());
         RulesUtils.ruleLogger("OFFER Base Entity", offer);
 
-    /* owner and driver subscribing to offer BE */
-        VertxUtils.subscribe(realm(), offer, getUser().getCode());
-        VertxUtils.subscribe(realm(), offer, ownerCode);
+        
+        /* Send beg to driver and owner should see it as part of beg link */
+        VertxUtils.subscribe(realm(),offer,getUser().getCode());
+        VertxUtils.subscribe(realm(),offer,ownerCode);
+        
 
     /* Save attributes for OFFER as answer          */
         List<Answer> answerList = new ArrayList<Answer>();
@@ -2918,10 +2934,11 @@ public class QRules {
         /* OWNER config */
             HashMap<String,String> contextMap = new HashMap<String, String>();
             contextMap.put("QUOTER",getUser().getCode());
+
             contextMap.put("JOB", beg.getCode());
             contextMap.put("OFFER", offer.getCode());
 
-            ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(), linkOwner, false, getToken());
+
             RulesUtils.println("owner code ::"+ownerCode);
             String[] recipientArr = {ownerCode};
 
@@ -2939,6 +2956,32 @@ public class QRules {
 
             /* Sending toast message to driver frontend */
             sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
+	}
+
+	
+	
+	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m)
+	{
+	      /*  Collect load code from answer  */
+        Answer answer = m.getAnswer();
+        println("The created value  ::  "+answer.getCreatedDate());
+        println("Answer from QEventAttributeValueChangeMessage  ::  "+answer.toString());
+        String targetCode = answer.getTargetCode();
+        String sourceCode = answer.getSourceCode();
+        String loadCategoryCode = answer.getValue();
+        String attributeCode = m.data.getCode();
+        println("The target BE code is   ::  " +targetCode);
+        println("The source BE code is   ::  " +sourceCode);
+        println("The attribute code is   ::  " +attributeCode);
+        println("The load type code is   ::  " +loadCategoryCode);
+        
+        BaseEntity loadType = getBaseEntityByCode(loadCategoryCode,false);  // no attributes
+          
+       /* creating new Answer */
+      Answer newAnswer = new Answer(answer.getSourceCode(),answer.getTargetCode(),"PRI_LOAD_TYPE",loadType.getName());
+      newAnswer.setInferred(true);
+      
+ 		saveAnswer(newAnswer);        
 	}
 
 }
