@@ -2705,7 +2705,7 @@ public class QRules {
 					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
 				}
 			} catch (NumberFormatException e) {
-				log.error("GPS Error " + m);
+				println("GPS Error " + m);
 			}
 		}
 
