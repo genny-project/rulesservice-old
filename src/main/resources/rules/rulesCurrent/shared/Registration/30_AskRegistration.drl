@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 
 
 rule "Ask Registration"
-    		no-loop true
+    	no-loop true
 		ruleflow-group 'Registration'
     when
         rules: QRules( isState("NEW_USER_CREATED") &&
