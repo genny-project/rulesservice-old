@@ -2755,7 +2755,7 @@ public class QRules {
 		println("The String Array is ::" + Arrays.toString(recipients));
 
 		/* Sending sms message to user */
-		sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
+		sendMessage("", recipients, contextMap, "GNY_USER_VERIFICATION", "SMS");
 
 	}
 
