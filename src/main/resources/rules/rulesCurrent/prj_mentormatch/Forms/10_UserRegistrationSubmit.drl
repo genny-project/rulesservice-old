@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
      no-loop true
      salience 560
       when
-          $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP" )
+          $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH" )
           rules: QRules( isState("STARTED") )
        then
 

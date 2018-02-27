@@ -1,0 +1,97 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
+import java.util.HashMap;
+import life.genny.rules.RulesUtils;
+
+rule "Release Payment"
+	when
+		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
+      	rules: QRules( isState("RELEASE_PAYMENT") && !isState("PAYMENT_DONE"))
+	then
+
+	 	rules.header();
+
+		rules.println("Release Payment process started");
+		rules.setState("PAYMENT_DONE");
+		rules.clearState("RELEASE_PAYMENT");
+
+		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+
+       	BaseEntity beg = rules.getBaseEntityByCode(rules.getUser().getCode());
+       	String begCode = beg.getValue("STT_JOB_IS_RATING",null);
+       	String ownerCode = beg.getValue("PRI_AUTHOR", null);
+
+      	RulesUtils.println("Beg code in release payment ::"+begCode);
+
+  		if(begCode != null && assemblyId != null) {
+
+			Boolean isPaymentReleaseSuccess = PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken());
+
+		    List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+	     	String driverCode = null;
+
+	     	for(Link link : linkList) {
+	     		if(link.getLinkValue().equals("DRIVER")) {
+	     			driverCode = link.getTargetCode();
+	     		}
+	     	}
+
+	     	if(isPaymentReleaseSuccess) {
+
+	    	 	if(ownerCode != null && driverCode != null) {
+	    	 		HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("JOB", begCode);
+			 		contextMap.put("OWNER", ownerCode);
+			 		contextMap.put("DRIVER", driverCode);
+
+			 		String[] messageToOwnerRecipients = new String[1];
+		     		messageToOwnerRecipients[0] = ownerCode;
+		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
+		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
+
+		     		String[] messageToDriverRecipients = new String[1];
+		     		messageToDriverRecipients[0] = driverCode;
+		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
+		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
+
+		     		/* we mark the job as marked */
+          			rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
+
+          			/* redirecting user to bucket */
+          			rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+	     		}
+		    }
+		    else {
+
+		    		if(ownerCode != null) {
+
+			    		RulesUtils.println("Release payment failed::"+begCode);
+			    		HashMap<String, String> contextMap1 = new HashMap<String, String>();
+						contextMap1.put("JOB", begCode);
+				 		contextMap1.put("OWNER", ownerCode);
+
+						if(driverCode != null) {
+							contextMap1.put("DRIVER", driverCode);
+						}
+
+				 		String[] messageToOwnerRecipients1 = new String[1];
+			     		messageToOwnerRecipients1[0] = ownerCode;
+
+				 		rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
+
+				 		/* redirecting user to bucket */
+	          			rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+		  		    }
+
+		    	}
+
+		}
+	rules.footer();
+end
