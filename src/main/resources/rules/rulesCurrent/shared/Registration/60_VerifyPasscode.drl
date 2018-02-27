@@ -27,7 +27,7 @@ rule " Verify Passcode"
    	         HashMap<String,String> contextMap = new HashMap<String, String>();
              String[] recipients  = {userCode};
              /* Sending toast message */
-             rules.sendMessage("", recipients, contextMap, "TST_PASSCODE_VERIFICATION_FAILURE", "TOAST");
+             rules.sendMessage("", recipients, contextMap, "GNY_PASSCODE_VERIFICATION_FAILURE", "TOAST");
              /* Send layout again */
              rules.sendSublayout("SUB_LAY_PASSCODE_VERIFICATION", "shared/confirm-mobile-code.json");
    	     }
