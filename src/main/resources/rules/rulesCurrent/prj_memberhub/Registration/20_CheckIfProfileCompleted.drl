@@ -1,0 +1,69 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.QuestionSourceTarget;
+import life.genny.qwanda.message.QDataQSTMessage;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import life.genny.qwandautils.MergeUtil;
+
+rule "Check if Profile Completed - Memberhub"
+    no-loop true
+    agenda-group "CheckIfProfileCompleted"
+    salience 8
+    when
+        rules: QRules( !isState("PROFILE_CHECK_COMPLETED") )
+     then
+     	rules.header();
+   	    String userCode = rules.getUser().getCode();
+
+        QuestionSourceTarget rootQst = new QuestionSourceTarget("QUE_NEW_USER_PROFILE_GRP", userCode, userCode);
+        QuestionSourceTarget comapnyQst = null;
+        BaseEntity userCompany = null;
+        /*  Check if user is already added to the company   */
+        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
+        String companyCode = "";
+        if(company != null)
+        {
+           rules.println("Company Found");
+           rules.println("Company BE is  :: "+company.toString());
+           companyCode = company.getCode();
+           userCompany = company;
+           comapnyQst = new QuestionSourceTarget("QUE_NEW_USER_COMPANY_GRP", userCode, companyCode);
+        }
+        else
+        {
+           /*  Creating new base-entity Company    */
+           BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
+           companyCode = newCompany.getCode();
+           /*  link new person to the Company    */
+           Link userCompanyLink =  QwandaUtils.createLink(companyCode, userCode, "LNK_STAFF", null, (double) 1, rules.getToken());
+           comapnyQst = new QuestionSourceTarget("QUE_NEW_USER_COMPANY_GRP", userCode, companyCode);
+           userCompany = newCompany;
+        }
+
+        QuestionSourceTarget[] qstArray = {rootQst, comapnyQst};
+   	    QDataQSTMessage qstMsg = new QDataQSTMessage(rootQst, qstArray);
+   	    QDataAskMessage asks = rules.getAskQuestions(qstMsg);
+   	    rules.set("QUE_NEW_USER_PROFILE_GRP", qstMsg);
+
+        List<BaseEntity> baseEntityList = Arrays.asList(rules.getUser(),userCompany);
+
+        String isProfileCompleted = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", rules.getToken());
+
+        if( isProfileCompleted == "TRUE" && QwandaUtils.isMandatoryFieldsCompleted((QDataAskMessage)rules.get("QUE_NEW_USER_PROFILE_GRP"), baseEntityList) )
+        {
+            rules.setState("PROFILE_COMPLETED");
+            drools.setFocus("SendLayoutsAndData");
+        }
+        else {
+           rules.setState("PROFILE_NOT_COMPLETED");
+           drools.setFocus("NewUserProfile");
+        }
+
+        rules.setState("PROFILE_CHECK_COMPLETED");
+
+	    rules.footer();
+end
