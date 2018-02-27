@@ -1,0 +1,31 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
+import java.util.HashMap;
+import life.genny.rules.RulesUtils;
+
+rule "Display Dashboard"
+	when 
+		$m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_RATING_GRP" )
+      	rules: QRules( !isState("DRIVER_RATING_DONE") )
+	then
+	
+	 	rules.header();
+	 	rules.setState("DRIVER_RATING_DONE");
+	 	BaseEntity user = rules.getUser();
+	 	
+	    String begCode = user.getValue("STT_JOB_IS_RATING", null);
+	 	/* we mark the job as marked */
+       rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE"); 
+	 	
+	  /* redirecting user to bucket */
+        rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+        
+	 	rules.footer();
+	 	
+end

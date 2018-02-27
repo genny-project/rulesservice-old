@@ -3029,5 +3029,43 @@ public class QRules {
 
 		saveAnswer(newAnswer);
 	}
+	
+	
+	public void sendRating(String data) throws ClientProtocolException, IOException {
+	
+		
+  		if(data != null) {
+		
+		     JsonObject dataJson = new JsonObject(data);
+		     String begCode = dataJson.getString("itemCode");
+		     String userCode = getUser().getCode();
+		     String driverCode = null;
+		     
+		     /* we get all the linked BEs to beg */
+		     List<Link> links = getLinks(begCode, "LNK_BEG");
+	    	 	 if(links != null) {
+	    	 		 
+	    	 		for(Link link: links) {
+	    	 			
+	    	 			String linkValue = link.getLinkValue();
+	    	 			if(linkValue != null && linkValue.equals("DRIVER")) {
+	    	 				driverCode = link.getTargetCode();
+	    	 			}
+	    	 		}
+	    	 	 }
+	    	 	 		     
+		     if(begCode != null && driverCode != null) {
+		    	 
+		    	 	/* we save the BEG code as an attribute in order to track what job a driver is being currently rated against. if this comment does not make sense please refer to the french man. */
+		        updateBaseEntityAttribute(userCode, userCode, "STT_JOB_IS_RATING", begCode);
+		    	 
+		    	 	/* we send the questions */
+		    	 	sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", true);
+		    	 	
+		    	 	/* we send the layout */
+		    	   sendSublayout("driver-rating", "rate-driver.json", driverCode, true);
+		     }
+		}
+	}
 
 }
