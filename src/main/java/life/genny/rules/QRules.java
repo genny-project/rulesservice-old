@@ -383,6 +383,18 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getBaseEntityByCodeWithAttributes(final String code) {
+		BaseEntity be = null;
+
+		be = VertxUtils.readFromDDT(code, true, getToken());
+		if (be == null) {
+			println("ERROR - be (" + code + ") fetched is NULL ");
+		} else {
+			addAttributes(be);
+		}
+		return be;
+	}
+	
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
@@ -651,10 +663,21 @@ public class QRules {
 			String internValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
 			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
 
-			if (isIntern) {
+			/* Show loading indicator */
+			showLoading("Loading your interface...");
 
-				/* Show loading indicator */
-				showLoading("Loading your interface...");
+			if(isIntern) {
+
+				List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
+				publishCmd(root,"GRP_ROOT","LNK_CORE");
+				println(root);
+
+				List<BaseEntity> internships = getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS", "LNK_CORE", 0, 50, false);
+				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
+
+				List<BaseEntity> companies = getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50, false);
+				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
+
 				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
 			}
 		}
@@ -2743,7 +2766,7 @@ public class QRules {
 		println("The String Array is ::" + Arrays.toString(recipients));
 
 		/* Sending sms message to user */
-		sendMessage("", recipients, contextMap, "TST_USER_VERIFICATION", "SMS");
+		sendMessage("", recipients, contextMap, "GNY_USER_VERIFICATION", "SMS");
 
 	}
 
@@ -2752,7 +2775,7 @@ public class QRules {
 		return (new Random()).nextInt(10000);
 	}
 
-	/* Check if the generated number is 4 digit number */
+	/* Check if the generated number is 4 digit number  */
 	public Boolean checkRandomNumberRange(int no) {
 		Boolean isRangeValid = false;
 		if (no <= 0000 && no > 10000)
@@ -2760,29 +2783,26 @@ public class QRules {
 		return isRangeValid;
 	}
 
-	/* generate 4 digit verification passcode */
+    /* generate 4 digit verification passcode */
 	public int generateVerificationCode1() {
-		// String verificationCode = String.format("%04d", random.nextInt(10000));
-		Random random = new Random();
-		int randomInt = generateRandomCode();
-		// return String.format("%04d", random.nextInt(10000))
-		while (checkRandomNumberRange(randomInt = generateRandomCode()) == true) {
-			return randomInt;
-		}
-		return randomInt;
+	   //String verificationCode = String.format("%04d", random.nextInt(10000));
+	   Random random = new Random();
+	   int randomInt = generateRandomCode();
+       // return String.format("%04d", random.nextInt(10000))
+	    while(checkRandomNumberRange(randomInt = generateRandomCode()) == true) {
+		    return randomInt;
+	    }
+	  return randomInt;
 
 	}
 
-	/* Verify the user entered passcode with the one in DB */
+	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
 
-		// println("The Passcode in DB is
-		// ::"+Integer.parseInt(getBaseEntityValueAsString(userCode,
-		// "PRI_VERIFICATION_CODE")));
-		// println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
+		//println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
+		//println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
 
-		if (Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer
-				.parseInt(userPassCode)) {
+		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
 			return true;
 		} else
 			return false;
@@ -2844,6 +2864,15 @@ public class QRules {
 		publishData(beMsg);
 
 	}
+	
+	/* sets delete field to true so that FE removes the BE from their store  */
+	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+	    beMsg.setDelete(true);
+	    publishData(beMsg,recipients);
+		   
+	}
 
 	public void acceptJob(QEventBtnClickMessage m) {
 		/* Get beg.getCode(), username, userCode, userFullName */
@@ -2864,13 +2893,13 @@ public class QRules {
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
 
-		Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR"); 
+		Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
 		String ownerCode = null;
-		
+
 		if (optOwnerCode.isPresent()) {
 			ownerCode = optOwnerCode.get();
 		} else {
-			ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),linkOwner, false, getToken()); 
+			ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),linkOwner, false, getToken());
 		}
 
 		/* get BEG PRICEs */
