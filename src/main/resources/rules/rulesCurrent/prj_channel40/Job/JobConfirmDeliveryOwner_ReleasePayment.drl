@@ -27,6 +27,7 @@ then
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
        	
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/Job/JobConfirmDeliveryOwner_ReleasePayment.drl
        	/*BaseEntity user = rules.getBaseEntityByCode(rules.getUser().getCode());  */
        	BaseEntity user = rules.getUser();
        	rules.println("The User BEG is ::"+user);
@@ -38,6 +39,11 @@ then
 		String begCode = dataJson.getString("itemCode");
        	
        	String ownerCode = user.getCode();
+=======
+       	BaseEntity beg = rules.getBaseEntityByCode(rules.getUser().getCode());
+       	String begCode = beg.getValue("STT_JOB_IS_RATING",null);
+       	String ownerCode = beg.getValue("PRI_AUTHOR",null);
+>>>>>>> 2569b67... Update ReleasePayment.drl:src/main/resources/rules/rulesCurrent/prj_channel40/Payments/ReleasePayment.drl
        	
       	RulesUtils.println("Beg code in release payment ::"+begCode);
       	String isRealeasePaymentDone = rules.getBaseEntityValueAsString(begCode, "PRI_IS_RELEASE_PAYMENT_DONE");
@@ -125,9 +131,14 @@ then
 		    	}		     
 		     		     
 		}
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/Job/JobConfirmDeliveryOwner_ReleasePayment.drl
 		
 		}
 		
 	   rules.footer();
 
 end
+=======
+	rules.footer();	
+end
+>>>>>>> 2569b67... Update ReleasePayment.drl:src/main/resources/rules/rulesCurrent/prj_channel40/Payments/ReleasePayment.drl
