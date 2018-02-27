@@ -700,7 +700,7 @@ public class QRules {
 			if (profile_completed == null && !isMentor && !isMentee) {
 
 				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP");
+				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
 			} else {
 
 				if (isMentor || isMentee) {
