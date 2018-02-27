@@ -16,6 +16,7 @@ ruleflow-group 'Answer'
         	
         Answer[] answers = $m.getItems();
 		if(answers != null && answers.length > 0) {
+			
 			Answer firstAnswer = answers[0];
 			String attributeCode = firstAnswer.getAttributeCode();
 				
