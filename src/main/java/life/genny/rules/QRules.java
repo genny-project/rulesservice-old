@@ -677,7 +677,7 @@ public class QRules {
 			if (profile_completed == null && !isMentor && !isMentee) {
 
 				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP");
+				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
 			} else {
 
 				if (isMentor || isMentee) {
@@ -2864,13 +2864,13 @@ public class QRules {
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
 
-		Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR"); 
+		Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
 		String ownerCode = null;
-		
+
 		if (optOwnerCode.isPresent()) {
 			ownerCode = optOwnerCode.get();
 		} else {
-			ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),linkOwner, false, getToken()); 
+			ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, beg.getCode(),linkOwner, false, getToken());
 		}
 
 		/* get BEG PRICEs */
