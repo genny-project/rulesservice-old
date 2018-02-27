@@ -394,7 +394,7 @@ public class QRules {
 		}
 		return be;
 	}
-	
+
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
@@ -751,7 +751,7 @@ public class QRules {
 				} else {
 
 					this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-					this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP");
+					this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
 				}
 			}
 		}
@@ -2864,14 +2864,14 @@ public class QRules {
 		publishData(beMsg);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store  */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 	    beMsg.setDelete(true);
 	    publishData(beMsg,recipients);
-		   
+
 	}
 
 	public void acceptJob(QEventBtnClickMessage m) {
