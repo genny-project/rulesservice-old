@@ -18,9 +18,11 @@ rule "Calculate Price for Driver"
     no-loop true
     when
         $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_DRIVER_PRICE_EXC_GST")  && getAnswer().getTargetCode().startsWith("OFR_") )
-        rules : QRules()
+        rules : QRules( isStarted("STARTED") && !isState("CALCULATE_DRIVER_PRICE") )
     then    
+    
         rules.header();
+        rules.setState("CALCULATE_DRIVER_PRICE");
         
         if(rules.getUser() != null && rules.getUser().is("PRI_DRIVER")) {
         		

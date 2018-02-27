@@ -18,9 +18,10 @@ rule "Calculate Price for Owner"
     when
         $m: QEventAttributeValueChangeMessage(  (QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("OFR_")) ||
                                                 (QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("BEG_")) )
-        rules : QRules()
+        rules : QRules ( isStarted("STARTED") && !isState("CALCULATE_OWNER_PRICE") )
     then    
         rules.header();
+        rules.setState("CALCULATE_OWNER_PRICE");
         
         if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
         		
