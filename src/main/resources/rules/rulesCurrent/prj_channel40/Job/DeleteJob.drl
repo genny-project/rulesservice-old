@@ -13,45 +13,47 @@ rule "Delete job"
 		$m: QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_DELETE_BEG")
 		rules: QRules(!isState("JOB_MOVED_TO_BIN"))
 	then
-		
+
 		rules.header();
-		
+
 		String begCode = $m.getData().getValue();
 	   /*     Moving the BEG      */
           Link link = new Link("GRP_NEW_ITEMS", begCode, "LNK_CORE");
           rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_BIN", "LNK_CORE");
-          
+
+       /* Get all the recipients code */
           String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
-        
-       /* SEND JOB BE */
-          rules.publishBaseEntityByCode(begCode, "GRP_BIN","LNK_CORE", recipients);  
+       /* Get the list of drivers only  */
           List<String> driverList = new ArrayList<String>();
-            
-          for (String s: recipients) { 
-          BaseEntity user = rules.getBaseEntityByCode(s);
-             if (user.is("PRI_DRIVER")){
-                   rules.println("This is the driver BE ::"+s);
-                   driverList.add(s); 
-               }
-           }
-           String [] driverRecipients = driverList.toArray(new String[driverList.size()]);
-           BaseEntity load = rules.getChildren(begCode, "LNK_BEG", "LOAD");
-           rules.clearBaseEntity(load.getCode(), driverRecipients);
-           rules.clearBaseEntity(begCode, driverRecipients);
-           
-           /* Sending Messages */
-                HashMap<String,String> contextMap = new HashMap<String, String>();
-                contextMap.put("JOB", begCode);
-                contextMap.put("OWNER", rules.getUser().getCode()); 
-        
-               /* rules.println("The String Array is ::"+Arrays.toString(driverRecipients));*/
-                
-             /* Sending toast message to owner frontend */
-                rules.sendMessage("", driverRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
-          
+            for(String s: recipients)
+            {
+               BaseEntity user = rules.getBaseEntityByCode(s);
+                if (user.is("PRI_DRIVER") ) {
+                     driverList.add(s);
+                 }
+
+            }
+        /* Converting list to Array   */
+          String [] driversArray = driverList.toArray(new String[driverList.size()]);
+       /* Remove Job from the Bucket of the Drivers */
+       rules.clearBaseEntity(begCode, driversArray);
+
+
+       /* Sending Messages */
+
+           HashMap<String,String> contextMap = new HashMap<String, String>();
+           contextMap.put("JOB", begCode);
+           contextMap.put("OWNER", rules.getUser().getCode());
+
+           rules.println("The String Array is ::"+Arrays.toString(driversArray));
+
+           /* Sending toast message to owner frontend */
+            rules.sendMessage("", driversArray, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
+
+
 		rules.setState("JOB_MOVED_TO_BIN");
-		
-		drools.setFocus("SendLayoutsAndData"); 
-		
+
+		drools.setFocus("SendLayoutsAndData");
+
 	    rules.footer();
 end
