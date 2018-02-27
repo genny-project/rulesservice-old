@@ -4,11 +4,12 @@ import life.genny.rules.QRules;
 rule "Check if Profile Completed - Mentormatch"
     no-loop true
     agenda-group "CheckIfProfileCompleted"
-    salience 8
+    salience 950
     when
         rules: QRules( !isState("PROFILE_CHECK_COMPLETED") )
      then
      	rules.header();
+        rules.clearState("NEW_USER_CREATED");
         rules.sendReloadPage();
 	    rules.footer();
 end
