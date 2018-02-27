@@ -2699,6 +2699,13 @@ public class QRules {
 
 					/* sending cmd BUCKETVIEW */
 					drools.setFocus("SendLayoutsAndData");
+					
+					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+				        String[] offerRecipients = VertxUtils.getSubscribers(realm(),offerBe.getCode());
+				        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+				        
+			        		publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
+			        		publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
 				}
 
