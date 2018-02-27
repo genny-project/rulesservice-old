@@ -56,9 +56,10 @@ import java.time.format.DateTimeFormatter;
 rule "Submit Offer Driver"
     when
        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DRIVER_GRP" ) 
-       rules: QRules()
+       rules: QRules(!isState("DRIVER_OFFER_MADE"))
     then
         rules.header();
+        rules.setState("DRIVER_OFFER_MADE");
         /* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
