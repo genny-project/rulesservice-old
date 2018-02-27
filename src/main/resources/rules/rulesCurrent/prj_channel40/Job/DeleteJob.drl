@@ -20,6 +20,36 @@ rule "Delete job"
 	   /*     Moving the BEG      */
           Link link = new Link("GRP_NEW_ITEMS", begCode, "LNK_CORE");
           rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_BIN", "LNK_CORE");
+         
+       /* Get all the recipients code */
+          String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS"); 
+       /* Get the list of drivers only  */ 
+          List<String> driverList = new ArrayList<String>();
+            for(String s: recipients)
+            {
+               BaseEntity user = rules.getBaseEntityByCode(s);
+                if (user.is("PRI_DRIVER") ) {
+                     driverList.add(s);
+                 }
+       
+            }
+        /* Converting list to Array   */
+          String [] driversArray = driverList.toArray(new String[driverList.size()]);    
+       /* Remove Job from the Bucket of the Drivers */
+       rules.clearBaseEntity(begCode, driversArray);
+       
+          
+       /* Sending Messages */
+
+           HashMap<String,String> contextMap = new HashMap<String, String>();
+           contextMap.put("JOB", begCode);
+           contextMap.put("OWNER", rules.getUser().getCode()); 
+        
+           rules.println("The String Array is ::"+Arrays.toString(driversArray));
+                
+           /* Sending toast message to owner frontend */
+            rules.sendMessage("", driversArray, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
+          
            
 		rules.setState("JOB_MOVED_TO_BIN");
 		
