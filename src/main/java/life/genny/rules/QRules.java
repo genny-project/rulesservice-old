@@ -2793,7 +2793,7 @@ public class QRules {
 	/* Check if the generated number is 4 digit number  */
 	public Boolean checkRandomNumberRange(int no) {
 		Boolean isRangeValid = false;
-		if (no <= 0000 && no > 10000)
+		if (no <= 1000 && no > 10000)
 			isRangeValid = true;
 		return isRangeValid;
 	}
