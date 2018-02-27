@@ -60,6 +60,7 @@ import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
@@ -683,6 +684,12 @@ public class QRules {
 		}
 	}
 
+	public void sendReloadPage() {
+
+		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
+		this.publishCmd(cmdReload);
+	}
+
 	public void sendMentorMatchLayoutsAndData() {
 
 		BaseEntity user = getUser();
@@ -701,6 +708,7 @@ public class QRules {
 
 				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
 				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
+
 			} else {
 
 				if (isMentor || isMentee) {
@@ -2699,11 +2707,11 @@ public class QRules {
 
 					/* sending cmd BUCKETVIEW */
 					drools.setFocus("SendLayoutsAndData");
-					
+
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 				        String[] offerRecipients = VertxUtils.getSubscribers(realm(),offerBe.getCode());
 				        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
-				        
+
 			        		publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 			        		publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
@@ -3029,39 +3037,39 @@ public class QRules {
 
 		saveAnswer(newAnswer);
 	}
-	
-	
+
+
 	public void sendRating(String data) throws ClientProtocolException, IOException {
-	
-		
+
+
   		if(data != null) {
-		
+
 		     JsonObject dataJson = new JsonObject(data);
 		     String begCode = dataJson.getString("itemCode");
 		     String userCode = getUser().getCode();
 		     String driverCode = null;
-		     
+
 		     /* we get all the linked BEs to beg */
 		     List<Link> links = getLinks(begCode, "LNK_BEG");
 	    	 	 if(links != null) {
-	    	 		 
+
 	    	 		for(Link link: links) {
-	    	 			
+
 	    	 			String linkValue = link.getLinkValue();
 	    	 			if(linkValue != null && linkValue.equals("DRIVER")) {
 	    	 				driverCode = link.getTargetCode();
 	    	 			}
 	    	 		}
 	    	 	 }
-	    	 	 		     
+
 		     if(begCode != null && driverCode != null) {
-		    	 
+
 		    	 	/* we save the BEG code as an attribute in order to track what job a driver is being currently rated against. if this comment does not make sense please refer to the french man. */
 		        updateBaseEntityAttribute(userCode, userCode, "STT_JOB_IS_RATING", begCode);
-		    	 
+
 		    	 	/* we send the questions */
 		    	 	sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", true);
-		    	 	
+
 		    	 	/* we send the layout */
 		    	   sendSublayout("driver-rating", "rate-driver.json", driverCode, true);
 		     }
