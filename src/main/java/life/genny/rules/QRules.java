@@ -2787,27 +2787,28 @@ public class QRules {
 
 	/* Generate Random number */
 	public int generateRandomCode() {
-		return (new Random()).nextInt(10000);
+		int randomCode = (new Random()).nextInt(10000);
+		return randomCode;
 	}
 
 	/* Check if the generated number is 4 digit number  */
 	public Boolean checkRandomNumberRange(int no) {
 		Boolean isRangeValid = false;
-		if (no <= 1000 && no > 10000)
+		if (no >= 1000 && no < 10000)
 			isRangeValid = true;
 		return isRangeValid;
 	}
 
     /* generate 4 digit verification passcode */
 	public int generateVerificationCode1() {
-	   //String verificationCode = String.format("%04d", random.nextInt(10000));
-	   Random random = new Random();
-	   int randomInt = generateRandomCode();
+	   int randomInt = 0;
+	   int passCode = 9301;
        // return String.format("%04d", random.nextInt(10000))
-	    while(checkRandomNumberRange(randomInt = generateRandomCode()) == true) {
-		    return randomInt;
-	    }
-	  return randomInt;
+		while (checkRandomNumberRange(randomInt = generateRandomCode())) {
+			passCode = randomInt;
+			break;
+		}
+	  return passCode;
 
 	}
 
