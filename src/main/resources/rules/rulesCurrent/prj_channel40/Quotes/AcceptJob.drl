@@ -52,12 +52,13 @@ rule "Accept Job"
     no-loop true
     when
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_ACCEPT_JOB")
-        rules: QRules()
+        rules: QRules(!isState("JOB_ACCEPTED"))
     then
         rules.header();
         rules.showLoading("Please wait for a moment...");
          
   		rules.acceptJob($m);
+  		rules.setState("JOB_ACCEPTED");
                 
         /* Send BUCKETVIEW Cmd */
             drools.setFocus("bucketview"); 
