@@ -511,7 +511,7 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
-	
+
 	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -661,6 +661,23 @@ public class QRules {
 					if (cmd != null) {
 						this.publishCmd(cmd);
 					}
+				}
+			}
+		}
+	}
+
+	public void showInternship(QEventBtnClickMessage m) {
+
+		/* this answer will always have 1 item */
+		String value = m.getData().getValue();
+		if(value != null) {
+
+			JsonObject data = new JsonObject(value);
+			if(data != null) {
+
+				String itemCode = data.getString("itemCode");
+				if(itemCode != null) {
+					this.sendSublayout("INTERNSHIP_DETAILS", "internships/details.json", itemCode);
 				}
 			}
 		}
@@ -1493,11 +1510,6 @@ public class QRules {
 			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
 			List<Answer> newAnswerList = new ArrayList<Answer>();
-
-			String qwandaServiceUrl = getQwandaServiceUrl();
-
-			String userCode = getUser().getCode();
-			
 
 			for (Answer answer : answers) {
 
