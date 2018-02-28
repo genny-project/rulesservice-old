@@ -679,7 +679,7 @@ public class QRules {
 				List<BaseEntity> companies = getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50, false);
 				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
 
-				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
+				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
 			}
 		}
 	}
@@ -754,7 +754,7 @@ public class QRules {
 							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
 						}
 					} else {
-						this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+						this.sendSublayout("finish", "dashboard_mentormatch.json");
 					}
 				} else {
 
@@ -808,8 +808,13 @@ public class QRules {
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
+		this.sendLayout(layoutCode, layoutPath, realm());
+	}
 
-		String layout = RulesUtils.getLayout(layoutPath);
+	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
+
+		println("Loading layout: " + folderName + "/" + layoutPath);
+		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
@@ -859,12 +864,14 @@ public class QRules {
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		println("Loading url: " + realm() + "/" + sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
 			cmdJobSublayoutJson.put("root", root);
 		}
+
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 
@@ -2009,12 +2016,14 @@ public class QRules {
 		publishCmd(data);
 	}
 
-	public void sendSubLayouts() throws ClientProtocolException, IOException {
-		String subLayoutMap = RulesUtils.getLayout("sublayouts");
+	private void sendSublayouts(final String realm) throws ClientProtocolException, IOException {
+
+		String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
 		if (subLayoutMap != null) {
 
 			JsonArray subLayouts = new JsonArray(subLayoutMap);
 			if (subLayouts != null) {
+
 				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for (int i = 0; i < subLayouts.size(); i++) {
 					JsonObject sublayoutData = null;
@@ -2022,9 +2031,9 @@ public class QRules {
 					try {
 						sublayoutData = subLayouts.getJsonObject(i);
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+
 					String url = sublayoutData.getString("download_url");
 					String name = sublayoutData.getString("name");
 					name = name.replace(".json", "");
@@ -2033,7 +2042,6 @@ public class QRules {
 					if (url != null) {
 
 						/* grab sublayout from github */
-
 						println(i + ":" + url);
 
 						String subLayoutString = QwandaUtils.apiGet(url, null);
@@ -2041,7 +2049,6 @@ public class QRules {
 
 							try {
 								layoutArray[i] = new Layout(name, subLayoutString);
-
 							} catch (Exception e) {
 							}
 						}
@@ -2050,10 +2057,13 @@ public class QRules {
 				/* send sublayout to FE */
 				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
 				publishCmd(msg);
-
 			}
-
 		}
+	}
+
+	public void sendSubLayouts() throws ClientProtocolException, IOException {
+		this.sendSublayouts("shared");
+		this.sendSublayouts(realm());
 	}
 
 	/*
@@ -2784,13 +2794,13 @@ public class QRules {
 		sendMessage("", recipients, contextMap, "GNY_USER_VERIFICATION", "SMS");
 
 	}
-    
+
 	/* Generate 4 digit random passcode  */
-	public String generateVerificationCode() {	 
+	public String generateVerificationCode() {
 	        return String.format("%04d", (new Random()).nextInt(10000));
 	}
 
-  
+
 
 	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
