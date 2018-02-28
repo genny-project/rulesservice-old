@@ -52,6 +52,26 @@ rule "Submit Offer Driver"
        rules: QRules(!isState("DRIVER_OFFER_MADE"))
     then
         rules.header();
+        rules.setState("DRIVER_OFFER_MADE");
+        /* Prepare GSON Deserialization */
+            Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+                @Override
+                public LocalDateTime deserialize(final JsonElement json, final Type type,
+                    final JsonDeserializationContext jsonDeserializationContext)
+                    throws JsonParseException {
+                return LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+
+                public JsonElement serialize(final LocalDateTime date, final Type typeOfSrc,
+                    final JsonSerializationContext context) {
+                return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                }
+            }).create();
+            Gson gson1 = new Gson();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+            gson1 = gsonBuilder.create();
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
