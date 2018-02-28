@@ -4,6 +4,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwandautils.MergeUtil;
 
 
 rule "Listen Attribute Change - PRI_DRIVER_CONFIRMED_DELIVERY"
@@ -16,10 +17,16 @@ ruleflow-group 'AttributeChange'
  
        /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
         String[] recipientCodes = rules.getRecipientCodes($m);
+        String jobCode = $m.getBe().getCode();
+       
+        String offerCode = MergeUtil.getAttrValue(jobCode, "STT_HOT_OFFER", rules.getToken());
+        BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, rules.getToken());
+		String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
         
         HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("JOB", $m.getBe().getCode());
-			    		
+		contextMap.put("JOB", jobCode);
+		contextMap.put("DRIVER", quoterCode);
+				    		
 		rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "TOAST");
 		rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "SMS");
 		rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "EMAIL");
