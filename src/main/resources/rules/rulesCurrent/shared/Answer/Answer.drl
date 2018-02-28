@@ -15,13 +15,15 @@ ruleflow-group 'Answer'
         rules.header();
         	
         Answer[] answers = $m.getItems();
+        List<Answer> answersToSave = new ArrayList<Answer>();
+        
 		if(answers != null && answers.length > 0) {
 			
 			Answer firstAnswer = answers[0];
 			String attributeCode = firstAnswer.getAttributeCode();
 				
 			if(attributeCode.contains("ADDRESS_JSON")) {
-				rules.processAddressAnswers($m);
+				answersToSave.addAll(rules.processAddressAnswers($m));
 			}
 			
 			/* === TODO: this is channel40 specific code. should be moved to ch40 folder === */
@@ -30,12 +32,12 @@ ruleflow-group 'Answer'
 			}
 			else if(attributeCode.contains("PRI_LOAD_IMAGE")) {
 				rules.processImageUpload($m, "PRI_IMAGE_URL");
-				rules.processAnswer($m);
+				answersToSave.addAll(rules.processAnswer($m));
 			}
 			/*==============*/
 			else if(attributeCode.contains("PRI_USER_PROFILE_PICTURE")) {
 				rules.processImageUpload($m, "PRI_IMAGE_URL");
-				rules.processAnswer($m);
+				answersToSave.addAll(rules.processAnswer($m));
 			}
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m); 
@@ -45,9 +47,11 @@ ruleflow-group 'Answer'
 				drools.setFocus("makepayment");
 			}
 			else {
-				rules.processAnswer($m); 
+				answersToSave.addAll(rules.processAnswer($m)); 
 			}	
 		}
+	   
+	   rules.saveAnswers(answersToSave);
 	   
 	   rules.setState("ANSWER_PROCESSED");
        rules.footer();
