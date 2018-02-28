@@ -10,19 +10,15 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
 
-rule "Listen Attribute Change2"
+rule "Listen Attribute Change"
 ruleflow-group 'AttributeChange'
     when
-        $m: QEventAttributeValueChangeMessage( data == null  || data.code == null )
-        rules : QRules( isState("STARTED")  && (!isState("ATTRIBUTE_CHANGE2")))
+        $m: QEventAttributeValueChangeMessage(   )
+     rules : QRules( isState("STARTED")  && (!isState("ATTRIBUTE_CHANGE2")))
      then    
       	rules.header();
- 
-       /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
-        String[] recipientCodes = rules.getRecipientCodes($m);
-        rules.addAttributes($m.getBe());
-     	rules.fireAttributeChanges($m);
-     	 rules.setState("ATTRIBUTE_CHANGE2");
+      	
+ 		rules.listenAttributeChange($m);
    	    rules.footer();
   
 end
