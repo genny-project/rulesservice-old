@@ -1570,7 +1570,7 @@ public class QRules {
 
 					/* send new answers to api */
 					/*
-					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json,
+					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk2", json,
 					 * getToken());
 					 */
 					for (Answer an : newAnswers) {
@@ -1826,7 +1826,7 @@ public class QRules {
 		jsonAnswer.replace("\\\"", "\"");
 
 		try {
-			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, token);
+			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk2", jsonAnswer, token);
 		} catch (IOException e) {
 			log.error("Socket error trying to post answer");
 		}
@@ -2723,47 +2723,46 @@ public class QRules {
 		}
 	}
 
-	public void updateGPS(QDataGPSMessage m) {
-		println("###### GPS: " + m);
-		GPS driverPosition = m.getItems()[0];
-		String driverLatitude = driverPosition.getLatitude();
-		String driverLongitude = driverPosition.getLongitude();
+    public void updateGPS(QDataGPSMessage m) {
+        println("###### GPS: " + m);
+        GPS driverPosition = m.getItems()[0];
+        Double driverLatitude = driverPosition.getLatitude();
+        Double driverLongitude = driverPosition.getLongitude();
 
-		if (driverLatitude != null && driverLongitude != null) {
+        if (driverLatitude != null && driverLongitude != null) {
 
-			try {
-				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
-						getUser().getCode());
-				RulesUtils.println(jobsInTransit.toString());
+                try {
+                        List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
+                                        getUser().getCode());
+                        RulesUtils.println(jobsInTransit.toString());
 
-				for (BaseEntity be : jobsInTransit) {
+                        for (BaseEntity be : jobsInTransit) {
 
-					String begCode = be.getCode();
-					String deliveryLatitudeString = getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
-					String deliveryLongitudeString = getBaseEntityValueAsString(begCode,
-							"PRI_DROPOFF_ADDRESS_LONGITUDE");
-					String totalDistanceString = getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_M");
+                                Double deliveryLatitude = be.getValue("PRI_DROPOFF_ADDRESS_LATITUDE",0.0);
+                                Double deliveryLongitude = be.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE",0.0);
+                                Double totalDistance = be.getValue("PRI_TOTAL_DISTANCE_M",0.0);
 
-					/* Call Google Maps API to know how far the driver is */
-					Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString,
-							deliveryLongitudeString);
-					Double totalDistance = Double.parseDouble(totalDistanceString);
-					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
-					percentage = percentage < 0 ? 0 : percentage;
+                                /* Call Google Maps API to know how far the driver is */
+                                Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitude,
+                                                deliveryLongitude);
+                                Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
+                                percentage = percentage < 0 ? 0 : percentage;
 
-					/* Update progress of the BEG */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
+                                /* Update progress of the BEG */
+                                updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
 
-					/* update position of the beg */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude);
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
-				}
-			} catch (NumberFormatException e) {
-				println("GPS Error " + m);
-			}
-		}
+                                /* update position of the beg */
+                                List<Answer> answers = new ArrayList<Answer>();
+                                answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude+""));
+                                answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude+""));
+                                saveAnswers(answers);
+                        }
+                } catch (NumberFormatException e) {
+                        println("GPS Error " + m);
+                }
+        }
 
-	}
+}
 
 	/* Send Mobile Verification Code */
 	public void sendMobileVerificationPasscode(final String userCode) {
