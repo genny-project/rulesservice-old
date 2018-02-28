@@ -862,7 +862,7 @@ public class QRules {
 			final boolean isPopup) {
 
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
-		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view,create_load.json layoutCode);
+		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		println("Loading url: " + realm() + "/" + sublayoutPath);
 		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
