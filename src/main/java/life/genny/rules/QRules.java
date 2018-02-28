@@ -808,8 +808,12 @@ public class QRules {
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
+		this.sendLayout(layoutCode, layoutPath, realm());
+	}
 
-		String layout = RulesUtils.getLayout(layoutPath);
+	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
+
+		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
@@ -865,6 +869,7 @@ public class QRules {
 		if (root != null) {
 			cmdJobSublayoutJson.put("root", root);
 		}
+
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 
@@ -2004,12 +2009,14 @@ public class QRules {
 		publishCmd(data);
 	}
 
-	public void sendSubLayouts() throws ClientProtocolException, IOException {
-		String subLayoutMap = RulesUtils.getLayout("sublayouts");
+	private void sendSublayouts(final String realm) throws ClientProtocolException, IOException {
+
+		String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
 		if (subLayoutMap != null) {
 
 			JsonArray subLayouts = new JsonArray(subLayoutMap);
 			if (subLayouts != null) {
+
 				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for (int i = 0; i < subLayouts.size(); i++) {
 					JsonObject sublayoutData = null;
@@ -2017,9 +2024,9 @@ public class QRules {
 					try {
 						sublayoutData = subLayouts.getJsonObject(i);
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+
 					String url = sublayoutData.getString("download_url");
 					String name = sublayoutData.getString("name");
 					name = name.replace(".json", "");
@@ -2028,7 +2035,6 @@ public class QRules {
 					if (url != null) {
 
 						/* grab sublayout from github */
-
 						println(i + ":" + url);
 
 						String subLayoutString = QwandaUtils.apiGet(url, null);
@@ -2036,7 +2042,6 @@ public class QRules {
 
 							try {
 								layoutArray[i] = new Layout(name, subLayoutString);
-
 							} catch (Exception e) {
 							}
 						}
@@ -2045,10 +2050,13 @@ public class QRules {
 				/* send sublayout to FE */
 				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
 				publishCmd(msg);
-
 			}
-
 		}
+	}
+
+	public void sendSubLayouts() throws ClientProtocolException, IOException {
+		this.sendSublayouts("shared");
+		this.sendSublayouts(realm());
 	}
 
 	/*

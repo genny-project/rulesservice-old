@@ -8,14 +8,16 @@ rule "Send Registration Layout"
 	salience 4
     agenda-group "Registration"
     when
-        rules: QRules( isState("ASKED_REGISTRATION")  && (!isState("SEND_REG_LAYOUT")) ) 
+        rules: QRules( isState("ASKED_REGISTRATION")  && (!isState("SEND_REG_LAYOUT")) )
       then
-     	rules.header();   	
-     	rules.sendLayout("LAY_FULL_SCREEN","layouts/initial-profile-update.json");
-     	rules.sendSublayout("SUB_LAY_WELCOME_NEW_USER", "welcome-new-user.json");
-     	rules.sendSublayout("SUB_LAY_INITIAL_PROFILE", "create_user.json");
- 
+
+     	rules.header();
+
+		rules.sendLayout("LAY_FULL_SCREEN", "initial-profile-update.json", "shared");
+     	rules.sendSublayout("SUB_LAY_WELCOME_NEW_USER", "welcome-new-user.json", "shared");
+     	rules.sendSublayout("SUB_LAY_INITIAL_PROFILE", "create_user.json", "shared");
+
  		rules.setState("SEND_REG_LAYOUT");
- 		    	
-	    rules.footer();   		      
+
+	    rules.footer();
 end
