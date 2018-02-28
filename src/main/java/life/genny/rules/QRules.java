@@ -679,7 +679,7 @@ public class QRules {
 				List<BaseEntity> companies = getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50, false);
 				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
 
-				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
+				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
 			}
 		}
 	}
@@ -754,7 +754,7 @@ public class QRules {
 							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
 						}
 					} else {
-						this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+						this.sendSublayout("finish", "dashboard_mentormatch.json");
 					}
 				} else {
 
@@ -813,6 +813,7 @@ public class QRules {
 
 	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
 
+		println("Loading layout: " + folderName + "/" + layoutPath);
 		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
@@ -863,7 +864,8 @@ public class QRules {
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		println("Loading url: " + realm() + "/" + sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
@@ -2790,13 +2792,13 @@ public class QRules {
 		sendMessage("", recipients, contextMap, "GNY_USER_VERIFICATION", "SMS");
 
 	}
-    
+
 	/* Generate 4 digit random passcode  */
-	public String generateVerificationCode() {	 
+	public String generateVerificationCode() {
 	        return String.format("%04d", (new Random()).nextInt(10000));
 	}
 
-  
+
 
 	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
