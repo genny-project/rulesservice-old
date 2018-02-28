@@ -1470,13 +1470,14 @@ public class QRules {
 		println(m);
 	}
 
-	public void processAddressAnswers(QDataAnswerMessage m) {
+	public List<Answer> processAddressAnswers(QDataAnswerMessage m) {
 
 		// Put this in to stop bad User null error.... TODO
 		if (getUser() == null) {
-			return;
+			return new ArrayList<Answer>();
 		}
 		try {
+			List<Answer> resultAnswers = new ArrayList<Answer>();
 
 			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
@@ -1484,6 +1485,7 @@ public class QRules {
 			String qwandaServiceUrl = getQwandaServiceUrl();
 
 			String userCode = getUser().getCode();
+			
 
 			for (Answer answer : answers) {
 
@@ -1582,13 +1584,15 @@ public class QRules {
 					 */
 					for (Answer an : newAnswers) {
 						// publishData(an);
-						saveAnswer(an);
+						resultAnswers.add(an);
 					}
 				}
 			}
+			return resultAnswers;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return new ArrayList<Answer>();
 	}
 
 	public BaseEntity updateCachedBaseEntity(final Answer answer) {
@@ -1780,20 +1784,21 @@ public class QRules {
 		}
 	}
 
-	public void processAnswer(QDataAnswerMessage m) {
+	public List<Answer> processAnswer(QDataAnswerMessage m) {
 
 		/* extract answers */
-		List<Answer> answerList = new ArrayList<Answer>();
+		List<Answer> answerList = new ArrayList<Answer>(Arrays.asList(m.getItems())); ;
 
-		/* extract answers */
-		Answer[] answers = m.getItems();
-		for (Answer answer : answers) {
-			answerList.add(answer);
-			println("ANSWER:" + answer);
+//		/* extract answers */
+//		Answer[] answers = m.getItems();
+//		for (Answer answer : answers) {
+//			answerList.add(answer);
+//		//	println("ANSWER:" + answer);
+//
+//		}
 
-		}
-
-		saveAnswers(answerList);
+		//saveAnswers(answerList);
+		return answerList;
 	}
 
 	public void processAnswer2(QDataAnswerMessage m) {
@@ -2141,7 +2146,7 @@ public class QRules {
 			recipientCodes = new String[1];
 			recipientCodes[0] = getUser().getCode();
 		}
-		println("PUBLISHBE:" + be.getCode());
+		println("PUBLISHBE:" + be.getCode()+" with "+be.getBaseEntityAttributes().size()+" attribute changes");
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
 
 			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
@@ -2152,9 +2157,6 @@ public class QRules {
 				// ea.setValueMoney(hacked);
 				break;
 			}
-		}
-		if (be.containsEntityAttribute("PRI_OWNER_PRICE_INC_GST")) {
-			System.out.println("dummy");
 		}
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = be;
