@@ -9,18 +9,18 @@ rule "Send Mobile Verification Passcode"
    ruleflow-group 'FormSubmit'
     when
         $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_NEW_USER_COMPANY_GRP" )
-        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") && !isState("ASKED_MOBILE_VERIFICATION") ) 
+        rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("STARTED") && !isState("ASKED_MOBILE_VERIFICATION") )
      then
-     	rules.header();  		
+     	rules.header();
    	    String userCode = rules.getUser().getCode();
-   	
+
   		rules.sendMobileVerificationPasscode(userCode);
-  		
+
   		/* Send Account Verification Layout  */
   		rules.println("Sending Passcode View");
-  	    rules.sendSublayout("SUB_LAY_PASSCODE_VERIFICATION", "shared/confirm-mobile-code.json");
+  	    rules.sendSublayout("SUB_LAY_PASSCODE_VERIFICATION", "confirm-mobile-code.json");
   		rules.println("Passcode View Sent");
-         
+
 		rules.setState("ASKED_MOBILE_VERIFICATION");
-	    rules.footer();     		      
+	    rules.footer();
 end

@@ -75,9 +75,8 @@ public class EBCHandlers {
 			} else {
 				try {
 					eventMsg = JsonUtils.fromJson(payload.toString(), QEventMessage.class);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (NoClassDefFoundError e) {
+					log.error("No class def found ["+payload.toString()+"]");
 				}
 			}
 			processMsg("Event:"+payload.getString("event_type"), payload.getString("ruleGroup"),eventMsg, eventBus, payload.getString("token"));
