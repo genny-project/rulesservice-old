@@ -26,6 +26,7 @@ then
 
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+
        	/*BaseEntity user = rules.getBaseEntityByCode(rules.getUser().getCode());  */
        	BaseEntity user = rules.getUser();
        	rules.println("The User BEG is ::"+user);
@@ -37,7 +38,6 @@ then
 		String begCode = dataJson.getString("itemCode");
 
        	String ownerCode = user.getCode();
-
       	RulesUtils.println("Beg code in release payment ::"+begCode);
       	String isRealeasePaymentDone = rules.getBaseEntityValueAsString(begCode, "PRI_IS_RELEASE_PAYMENT_DONE");
 
@@ -128,3 +128,4 @@ then
 
 	   rules.footer();
 end
+>>>>>>> 7c1f7d5... merge
