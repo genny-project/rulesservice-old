@@ -679,7 +679,7 @@ public class QRules {
 				List<BaseEntity> companies = getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50, false);
 				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
 
-				this.sendSublayout("intern-homepage", "internmatch/homepage/dashboard_intern.json");
+				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
 			}
 		}
 	}
@@ -754,7 +754,7 @@ public class QRules {
 							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
 						}
 					} else {
-						this.sendSublayout("finish", "layouts/dashboard_mentormatch.json");
+						this.sendSublayout("finish", "dashboard_mentormatch.json");
 					}
 				} else {
 
@@ -808,8 +808,13 @@ public class QRules {
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
+		this.sendLayout(layoutCode, layoutPath, realm());
+	}
 
-		String layout = RulesUtils.getLayout(layoutPath);
+	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
+
+		println("Loading layout: " + folderName + "/" + layoutPath);
+		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
@@ -859,12 +864,14 @@ public class QRules {
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		println("Loading url: " + realm() + "/" + sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
 			cmdJobSublayoutJson.put("root", root);
 		}
+
 		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
 	}
 
@@ -1570,7 +1577,7 @@ public class QRules {
 
 					/* send new answers to api */
 					/*
-					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk", json,
+					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk2", json,
 					 * getToken());
 					 */
 					for (Answer an : newAnswers) {
@@ -1826,7 +1833,7 @@ public class QRules {
 		jsonAnswer.replace("\\\"", "\"");
 
 		try {
-			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, token);
+			QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/answers/bulk2", jsonAnswer, token);
 		} catch (IOException e) {
 			log.error("Socket error trying to post answer");
 		}
@@ -2004,12 +2011,14 @@ public class QRules {
 		publishCmd(data);
 	}
 
-	public void sendSubLayouts() throws ClientProtocolException, IOException {
-		String subLayoutMap = RulesUtils.getLayout("sublayouts");
+	private void sendSublayouts(final String realm) throws ClientProtocolException, IOException {
+
+		String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
 		if (subLayoutMap != null) {
 
 			JsonArray subLayouts = new JsonArray(subLayoutMap);
 			if (subLayouts != null) {
+
 				Layout[] layoutArray = new Layout[subLayouts.size()];
 				for (int i = 0; i < subLayouts.size(); i++) {
 					JsonObject sublayoutData = null;
@@ -2017,9 +2026,9 @@ public class QRules {
 					try {
 						sublayoutData = subLayouts.getJsonObject(i);
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+
 					String url = sublayoutData.getString("download_url");
 					String name = sublayoutData.getString("name");
 					name = name.replace(".json", "");
@@ -2028,7 +2037,6 @@ public class QRules {
 					if (url != null) {
 
 						/* grab sublayout from github */
-
 						println(i + ":" + url);
 
 						String subLayoutString = QwandaUtils.apiGet(url, null);
@@ -2036,7 +2044,6 @@ public class QRules {
 
 							try {
 								layoutArray[i] = new Layout(name, subLayoutString);
-
 							} catch (Exception e) {
 							}
 						}
@@ -2045,10 +2052,13 @@ public class QRules {
 				/* send sublayout to FE */
 				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
 				publishCmd(msg);
-
 			}
-
 		}
+	}
+
+	public void sendSubLayouts() throws ClientProtocolException, IOException {
+		this.sendSublayouts("shared");
+		this.sendSublayouts(realm());
 	}
 
 	/*
@@ -2723,56 +2733,54 @@ public class QRules {
 		}
 	}
 
-	public void updateGPS(QDataGPSMessage m) {
-		println("###### GPS: " + m);
-		GPS driverPosition = m.getItems()[0];
-		String driverLatitude = driverPosition.getLatitude();
-		String driverLongitude = driverPosition.getLongitude();
+    public void updateGPS(QDataGPSMessage m) {
+        println("###### GPS: " + m);
+        GPS driverPosition = m.getItems()[0];
+        Double driverLatitude = driverPosition.getLatitude();
+        Double driverLongitude = driverPosition.getLongitude();
 
-		if (driverLatitude != null && driverLongitude != null) {
+        if (driverLatitude != null && driverLongitude != null) {
 
-			try {
-				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
-						getUser().getCode());
-				RulesUtils.println(jobsInTransit.toString());
+                try {
+                        List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
+                                        getUser().getCode());
+                        RulesUtils.println(jobsInTransit.toString());
 
-				for (BaseEntity be : jobsInTransit) {
+                        for (BaseEntity be : jobsInTransit) {
 
-					String begCode = be.getCode();
-					String deliveryLatitudeString = getBaseEntityValueAsString(begCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
-					String deliveryLongitudeString = getBaseEntityValueAsString(begCode,
-							"PRI_DROPOFF_ADDRESS_LONGITUDE");
-					String totalDistanceString = getBaseEntityValueAsString(begCode, "PRI_TOTAL_DISTANCE_M");
+                                Double deliveryLatitude = be.getValue("PRI_DROPOFF_ADDRESS_LATITUDE",0.0);
+                                Double deliveryLongitude = be.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE",0.0);
+                                Double totalDistance = be.getValue("PRI_TOTAL_DISTANCE_M",0.0);
 
-					/* Call Google Maps API to know how far the driver is */
-					Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitudeString,
-							deliveryLongitudeString);
-					Double totalDistance = Double.parseDouble(totalDistanceString);
-					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
-					percentage = percentage < 0 ? 0 : percentage;
+                                /* Call Google Maps API to know how far the driver is */
+                                Double distance = GPSUtils.getDistance(driverLatitude, driverLongitude, deliveryLatitude,
+                                                deliveryLongitude);
+                                Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
+                                percentage = percentage < 0 ? 0 : percentage;
 
-					/* Update progress of the BEG */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
+                                /* Update progress of the BEG */
+                                updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
 
-					/* update position of the beg */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude);
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude);
-				}
-			} catch (NumberFormatException e) {
-				println("GPS Error " + m);
-			}
-		}
+                                /* update position of the beg */
+                                List<Answer> answers = new ArrayList<Answer>();
+                                answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude+""));
+                                answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude+""));
+                                saveAnswers(answers);
+                        }
+                } catch (NumberFormatException e) {
+                        println("GPS Error " + m);
+                }
+        }
 
-	}
+}
 
 	/* Send Mobile Verification Code */
 	public void sendMobileVerificationPasscode(final String userCode) {
 
 		String[] recipients = { userCode };
-		int verificationCode = generateVerificationCode1();
+		String verificationCode = generateVerificationCode();
 		// println("The verification code is ::"+verificationCode);
-		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE",
-				Integer.toString(verificationCode));
+		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		saveAnswer(verificationCodeAns);
 
 		HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2785,31 +2793,12 @@ public class QRules {
 
 	}
 
-	/* Generate Random number */
-	public int generateRandomCode() {
-		return (new Random()).nextInt(10000);
+	/* Generate 4 digit random passcode  */
+	public String generateVerificationCode() {
+	        return String.format("%04d", (new Random()).nextInt(10000));
 	}
 
-	/* Check if the generated number is 4 digit number  */
-	public Boolean checkRandomNumberRange(int no) {
-		Boolean isRangeValid = false;
-		if (no <= 1000 && no > 10000)
-			isRangeValid = true;
-		return isRangeValid;
-	}
 
-    /* generate 4 digit verification passcode */
-	public int generateVerificationCode1() {
-	   //String verificationCode = String.format("%04d", random.nextInt(10000));
-	   Random random = new Random();
-	   int randomInt = generateRandomCode();
-       // return String.format("%04d", random.nextInt(10000))
-	    while(checkRandomNumberRange(randomInt = generateRandomCode()) == true) {
-		    return randomInt;
-	    }
-	  return randomInt;
-
-	}
 
 	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {

@@ -9,11 +9,10 @@ rule "TV_SELECT Messages Event"
        $m : QEventMessage( event_type == "TV_SELECT" && getData().getValue() == "GRP_MESSAGES")
        rules: QRules()
      then
-       	
+
      rules.header();
-       	
-     rules.sendSublayout("messages-layout", "layouts/messages-layout.json");
+
+     rules.sendSublayout("messages-layout", "messages-layout.json");
 
      rules.footer();
 end
-

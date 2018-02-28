@@ -9,13 +9,13 @@ rule "Send Layout Change To Frontend - Memberhub"
     no-loop true
     ruleflow-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("LAYOUT_CHANGE_READY") && isRealm("memberhub")) 
+        rules: QRules( !isState("LAYOUT_CHANGE_READY") && isRealm("memberhub"))
      then
      	rules.header();
 
      	String userCode = rules.getUser().getCode();
-        rules.sendLayout("LAY_DEFAULT", "layouts/memberhub.json");
-        
+        rules.sendLayout("LAY_DEFAULT", "layout.json");
+
         rules.sendQuestions(userCode, userCode, "QUE_MEMBERHUB_GRP", false); /* false for form_view*/
         rules.setState("MEMBERHUB_QUESTIONS_READY");
 
@@ -47,6 +47,6 @@ rule "Send Layout Change To Frontend - Memberhub"
         /* Send begs */
         rules.publishBaseEntityByCode(homeLoanCode);
         rules.publishBaseEntityByCode(holidayCode);
-		
-	    rules.footer();    		      
+
+	    rules.footer();
 end

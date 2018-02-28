@@ -11,7 +11,7 @@ rule "Send Layout Change To Frontend - Intermatch"
 
      	rules.header();
 
-        rules.sendLayout("LAY_DEFAULT", "layouts/layout1.json");
+        rules.sendLayout("LAY_DEFAULT", "layout.json");
         rules.setState("LAYOUT_CHANGE_READY");
 
 	    rules.footer();
