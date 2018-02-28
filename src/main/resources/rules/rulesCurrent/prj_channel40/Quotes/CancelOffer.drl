@@ -56,9 +56,10 @@ import java.time.format.DateTimeFormatter;
 rule "Cancel Offer"
     when
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CANCEL_OFFER")
-        rules: QRules()
+         rules: QRules( !isState("CANCELLED_OFFER") )
     then
         rules.header();
+        rules.setState("CANCELLED_OFFER");
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();  

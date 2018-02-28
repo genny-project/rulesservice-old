@@ -48,34 +48,34 @@ import java.time.format.DateTimeFormatter;
 
 rule "Submit Offer Driver"
     when
-       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DRIVER_GRP" ) 
-       rules: QRules()
+       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DRIVER_GRP" )
+       rules: QRules(!isState("DRIVER_OFFER_MADE"))
     then
         rules.header();
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
-            String tokenString = rules.getToken();        
-        
+            String tokenString = rules.getToken();
+
         /* Get offerCode, username, userCode, userFullName */
             String dataString = $m.getData().getValue();
             JsonObject dataJson = new JsonObject(dataString);
 
             String offerCode = dataJson.getString("targetCode");
-            rules.println("offerCode   ::   "+ offerCode);   
+            rules.println("offerCode   ::   "+ offerCode);
 
             String userName = rules.getAsString("preferred_username");
-            rules.println("username   ::   "+ userName);    
+            rules.println("username   ::   "+ userName);
 
-            String userCode =  rules.getUser().getCode();            
+            String userCode =  rules.getUser().getCode();
             rules.println("usercode   ::   "+ userCode);
-            
+
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             rules.println("user fullName   ::   "+ userFullName);
-        
+
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";  
+            String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
             String linkCreator = "CREATOR";
 
@@ -88,7 +88,7 @@ rule "Submit Offer Driver"
             String quoterUname= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_USERNAME");
             String quoterFullName= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_FULLNAME");
             String priOfferCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_CODE");
-            
+
             rules.println("------------------------------------------------------------------------");
             rules.println("BEG CODE          ::   " + begCode);
             rules.println("QUOTER CODE       ::   " + quoterCode);
@@ -99,42 +99,42 @@ rule "Submit Offer Driver"
 
             String templateCode = null;
             Boolean linkExists = false;
-            
+
         /* Check if a link exists between BEG & OFFER */
             Boolean linkBegOffer = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, offerCode, tokenString );
-            rules.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);        
-            
+            rules.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);
+
             /* COUNTER OFFER HAPPENING */
-                if(linkBegOffer) {     
+                if(linkBegOffer) {
                     /* Driver is giving counter-offer */
                         if(userCode.equals(quoterCode)) {
                             RulesUtils.println("Driver is giving counter offer");
                             HashMap<String,String> counterContextMap = new HashMap<String, String>();
                             counterContextMap.put("QUOTER",quoterCode);
-                            counterContextMap.put("JOB", begCode);  
-                            counterContextMap.put("OFFER", priOfferCode); 
-                
+                            counterContextMap.put("JOB", begCode);
+                            counterContextMap.put("OFFER", priOfferCode);
+
                             String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
                             RulesUtils.println("owner code ::"+ownerCode);
                             String[] counterRecipientArr = {ownerCode};
 
 							rules.sendMessage("", counterRecipientArr, counterContextMap,"MSG_CH40_COUNTER_OFFER_FROM_DTO", "TOAST");
-                        
+
                             HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
                             counterContextMapForDriver.put("JOB", begCode);
                             counterContextMapForDriver.put("OWNER", ownerCode);
                             counterContextMapForDriver.put("OFFER", priOfferCode);
-                    
+
                             String[] counterRecipientArrForDriver = {quoterCode};
-							
+
 							rules.sendMessage("", counterRecipientArrForDriver, counterContextMapForDriver,"MSG_CH40_COUNTER_OFFER_FROM_DTD", "TOAST");
 
-                            /* Update PRI_NEXT_ACTION = OWNER */ 
+                            /* Update PRI_NEXT_ACTION = OWNER */
                                 Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
                                 rules.saveAnswer(offerActionAnswer1);
                         }
-                }   
-            
+                }
+
             /* SUBMIT OFFER HAPPENING */
                 if(!linkBegOffer) {
                     RulesUtils.println("Driver is submiting an offer");
@@ -146,14 +146,14 @@ rule "Submit Offer Driver"
                         String output1 = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link1),tokenString);
 
                     /* link OFFER and QUOTER BE || CREATOR */
-                        rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);       
+                        rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);
 
-                    /* Update the number of offers for BEG */ 
+                    /* Update the number of offers for BEG */
                         Integer offerCount = 0;
                         String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
-                        if(offerCountString == null) { 
+                        if(offerCountString == null) {
                             offerCount = 1;
-                        }else {                 
+                        }else {
                             offerCount = Integer.parseInt(offerCountString);
                             offerCount = offerCount + 1;
                             rules.println("Offer Count is   ::   " + offerCount);
@@ -161,8 +161,8 @@ rule "Submit Offer Driver"
 
                         Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
                         rules.saveAnswer(offerCountAnswer);
-                    
-                    /* Update PRI_NEXT_ACTION = OWNER */ 
+
+                    /* Update PRI_NEXT_ACTION = OWNER */
                         Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
                         rules.saveAnswer(offerActionAnswer3);
 
@@ -170,30 +170,30 @@ rule "Submit Offer Driver"
                     	    RulesUtils.println("Owner gets email/sms/toast since Driver has given quote");
                         HashMap<String,String> noLinkContextMap = new HashMap<String, String>();
                         noLinkContextMap.put("QUOTER",quoterCode);
-                        noLinkContextMap.put("JOB", begCode); 
-                        noLinkContextMap.put("OFFER", offerCode); 
-                
+                        noLinkContextMap.put("JOB", begCode);
+                        noLinkContextMap.put("OFFER", offerCode);
+
                         String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
                         RulesUtils.println("owner code ::"+ownerCode);
                         String[] noLinkRecipientArr = {ownerCode};
-                        
+
                   	/* owner and driver subscribing to offer BE */
 				        VertxUtils.subscribe(rules.realm(), offerBe, userCode);
 				        VertxUtils.subscribe(rules.realm(), offerBe, ownerCode);
-						
+
 					    rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
-                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL"); 
+                        rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
                         rules.sendMessage("", noLinkRecipientArr, noLinkContextMap,"MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
-                        
+
                         HashMap<String,String> noLinkContextMapForDriver = new HashMap<String, String>();
                         noLinkContextMapForDriver.put("JOB", begCode);
                         noLinkContextMapForDriver.put("OWNER", ownerCode);
                         noLinkContextMapForDriver.put("OFFER", offerCode);
                         noLinkContextMapForDriver.put("QUOTER", quoterCode);
-                    
+
                         String[] noLinkRecipientArrForDriver = {quoterCode};
-						
-					    rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "TOAST");	
+
+					    rules.sendMessage("", noLinkRecipientArrForDriver, noLinkContextMapForDriver,"MSG_CH40_SUBMIT_QUOTE_DRIVER", "TOAST");
                 }
 
         /* Save OFFER_DATE as answer */
@@ -208,18 +208,17 @@ rule "Submit Offer Driver"
             if(!linkUserOffer){
                 rules.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
     				rules.createLink(begCode, quoterCode, linkCode, linkQuoter, 1.0);
-            }        
-            
+            }
+
         /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offerBe.getCode());
 	        rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
-	        
+
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
         		rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
         		rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
-	        
+
         /* Send BUCKETVIEW Cmd */
-        		drools.setFocus("bucketview");        
+        		drools.setFocus("bucketview");
         rules.footer();
 end
-

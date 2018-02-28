@@ -56,9 +56,10 @@ import java.time.format.DateTimeFormatter;
 rule "Submit Offer Owner"
     when
        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_OWNER_GRP" ) 
-       rules: QRules()
+       rules: QRules(!isState("OWNER_OFFER_MADE"))
     then
         rules.header();
+        rules.setState("OWNER_OFFER_MADE");
         /* Prepare GSON Deserialization */
             Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
