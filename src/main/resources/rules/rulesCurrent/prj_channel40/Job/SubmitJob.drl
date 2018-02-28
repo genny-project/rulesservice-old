@@ -19,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 
 
 /* Rule handling Cancel and Submit Button click in the Create Load  */
-rule "Post Job Cancel/Submit button click"
+rule "Submit Job"
     when
       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
       rules: QRules( !isState("NEW_JOB_SAVED") )   
@@ -32,27 +32,28 @@ rule "Post Job Cancel/Submit button click"
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
+        BaseEntity job = rules.getBaseEntityByCode(jobCode);
         String actionCode = dataJson.getString("action"); 
         rules.println("The job code is   :: "+jobCode);
         
        if(actionCode.equalsIgnoreCase("submit")) {       
            
            /* We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be triggered in another rule */
-           	String pickupLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LATITUDE");
-           	String pickupLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_PICKUP_ADDRESS_LONGITUDE");
-           	String deliveryLatitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LATITUDE");
-           	String deliveryLongitudeString = rules.getBaseEntityValueAsString(jobCode, "PRI_DROPOFF_ADDRESS_LONGITUDE");
+           	Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE",0.0);
+           	Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE",0.0);
+           	Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE",0.0);
+           	Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE",0.0);
            	
           /*  Add author to the load    */
-            Answer jobLatAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LATITUDE",  pickupLatitudeString);  
-            rules.saveAnswer(jobLatAns); 	 
-            Answer jobLonAns = new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LONGITUDE",  pickupLongitudeString);  
-            rules.saveAnswer(jobLonAns);
+          List<Answer> answers = new ArrayList<Answer>();
+            answers.add(new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LATITUDE",  pickupLatitude+""));  
+            answers.add(new Answer(rules.getUser().getCode(),jobCode, "PRI_POSITION_LONGITUDE",  pickupLongitude+""));  
+            rules.saveAnswers(answers);
             
            	
-           	Double totalDistance = GPSUtils.getDistance(pickupLatitudeString, pickupLongitudeString, deliveryLatitudeString, deliveryLongitudeString);
+           	Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude, deliveryLongitude);
        		if(totalDistance > 0) {
-       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", Double.toString(totalDistance));
+       			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance+"");
            		rules.saveAnswer(totalDistanceAnswer);
        		}
        		
