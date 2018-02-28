@@ -41,6 +41,7 @@ import java.time.format.DateTimeFormatter;
 import life.genny.qwanda.DateTimeDeserializer;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
+import life.genny.rules.QRules;
 
 
 
@@ -51,6 +52,7 @@ rule "Show Offer Details"
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
+		rules: QRules()
 	then
 		System.out.println(QwandaUtils.executeRuleLogger("Show Offer Details"));
         /* Prepare Token & qwandaServiceUrl */
