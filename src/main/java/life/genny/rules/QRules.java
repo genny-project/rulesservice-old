@@ -511,6 +511,17 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
+	
+	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode,
+			final String[] recipientCodes) {
+
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+
+	}
 
 	public <T extends QMessage> void publishCmd(T msg, final String[] recipientCodes) {
 
@@ -2974,8 +2985,8 @@ public class QRules {
 		System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
 
 		publishBaseEntityByCode(offer.getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
-		publishBaseEntityByCode(getUser().getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
-		publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+		publishBaseEntityByCode(getUser(), beg.getCode(), "LNK_BEG", offerRecipients);
+		publishBaseEntityByCode(beg, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 		/* Messages */
 
