@@ -68,11 +68,11 @@ rule "Make Offer"
             String linkQuoter= "QUOTER";
 
         /* Create Offer BE */
-            BaseEntity offer = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "OFR", tokenString ), "Offer", qwandaServiceUrl, tokenString);
+            BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
             RulesUtils.ruleLogger("OFFER Base Entity", offer);
             /* Get Offer Code */
             String offerCode= offer.getCode();
-            System.out.println("offerCode   ::   "+offerCode);
+            rules.println("offerCode   ::   "+offerCode);
             
         /* Save attributes for OFFER as answer */
             Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
@@ -88,10 +88,10 @@ rule "Make Offer"
             answerList.add(quoterFullName);
             answerList.add(jobCode);
 
+			rules.saveAnswers(answerList);
+
             /* save attributes as answer */
-            for (Answer answer : answerList) {
-                rules.publishData(answer);             
-            }                              
+            rules.publishData(answerList);             
         /* Send Offer Questions */
             rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
         rules.footer();
