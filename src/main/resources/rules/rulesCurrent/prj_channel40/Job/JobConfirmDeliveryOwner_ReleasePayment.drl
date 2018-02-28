@@ -26,7 +26,6 @@ then
 
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-
        	/*BaseEntity user = rules.getBaseEntityByCode(rules.getUser().getCode());  */
        	BaseEntity user = rules.getUser();
        	rules.println("The User BEG is ::"+user);
