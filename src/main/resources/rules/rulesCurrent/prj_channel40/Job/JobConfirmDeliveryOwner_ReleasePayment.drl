@@ -38,6 +38,7 @@ then
 		String begCode = dataJson.getString("itemCode");
 
        	String ownerCode = user.getCode();
+
       	RulesUtils.println("Beg code in release payment ::"+begCode);
       	String isRealeasePaymentDone = rules.getBaseEntityValueAsString(begCode, "PRI_IS_RELEASE_PAYMENT_DONE");
 
@@ -128,4 +129,3 @@ then
 
 	   rules.footer();
 end
->>>>>>> 7c1f7d5... merge
