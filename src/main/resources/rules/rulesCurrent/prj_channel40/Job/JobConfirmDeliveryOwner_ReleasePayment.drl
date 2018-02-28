@@ -38,7 +38,6 @@ then
 
        	String ownerCode = user.getCode();
 
-
       	RulesUtils.println("Beg code in release payment ::"+begCode);
       	String isRealeasePaymentDone = rules.getBaseEntityValueAsString(begCode, "PRI_IS_RELEASE_PAYMENT_DONE");
 
