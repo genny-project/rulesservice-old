@@ -9,14 +9,11 @@ rule "Send Layout Change To Frontend - Channel 40"
     no-loop true
     ruleflow-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("LAYOUT_CHANGE_READY") ) 
+        rules: QRules( !isState("LAYOUT_CHANGE_READY") )
      then
      	rules.header();
-     	
-        rules.sendLayout("LAY_DEFAULT","layouts/layout1.json");
-           
+
+        rules.sendLayout("LAY_DEFAULT", "layout.json");
         rules.setState("LAYOUT_CHANGE_READY");
- 
-		
-	    rules.footer();    		      
+	    rules.footer();
 end
