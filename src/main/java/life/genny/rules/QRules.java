@@ -1492,6 +1492,7 @@ public class QRules {
 
 			Answer[] newAnswers = new Answer[50];
 			Answer[] answers = m.getItems();
+			List<Answer> newAnswerList = new ArrayList<Answer>();
 
 			String qwandaServiceUrl = getQwandaServiceUrl();
 
@@ -1535,8 +1536,8 @@ public class QRules {
 							answer.setValue(addressDataJson.getString(key));
 							String jsonAnswer = RulesUtils.toJson(answer);
 							Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-							newAnswers[i] = answerObj;
-							i++;
+							newAnswerList.add(answerObj);
+						
 						}
 
 					}
@@ -1552,8 +1553,8 @@ public class QRules {
 						String jsonAnswer = RulesUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 						println("The answer object for latitude attribute is  :: " + answerObj.toString());
-						newAnswers[i] = answerObj;
-						i++;
+						newAnswerList.add(answerObj);
+						
 						// println("The answer object for latitude attribute added to Answer array ");
 					}
 
@@ -1567,25 +1568,25 @@ public class QRules {
 						answer.setValue(Double.toString(longitude));
 						String jsonAnswer = RulesUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
-						newAnswers[i] = answerObj;
+						newAnswerList.add( answerObj);
 						i++;
 					}
 
-					ArrayList<Answer> list = new ArrayList<Answer>();
-					for (Answer s : newAnswers) {
-						if (s != null)
-							list.add(s);
-					}
+//					ArrayList<Answer> list = new ArrayList<Answer>();
+//					for (Answer s : newAnswers) {
+//						if (s != null)
+//							list.add(s);
+//					}
 
 					println("---------------------------");
 					// println(list);
-					newAnswers = list.toArray(new Answer[list.size()]);
+				//	newAnswers = list.toArray(new Answer[list.size()]);
 
-					println(newAnswers);
+				//	println(newAnswers);
 
 					/* set new answers */
-					m.setItems(newAnswers);
-					String json = RulesUtils.toJson(m);
+				//	m.setItems(newAnswers);
+				//	String json = RulesUtils.toJson(m);
 					// println("updated answer json string ::" + json);
 
 					/* send new answers to api */
@@ -1593,10 +1594,10 @@ public class QRules {
 					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk2", json,
 					 * getToken());
 					 */
-					for (Answer an : newAnswers) {
+				//	for (Answer an : newAnswers) {
 						// publishData(an);
-						resultAnswers.add(an);
-					}
+						resultAnswers.addAll(newAnswerList);
+				//	}
 				}
 			}
 			return resultAnswers;
