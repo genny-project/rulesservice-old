@@ -2769,10 +2769,9 @@ public class QRules {
 	public void sendMobileVerificationPasscode(final String userCode) {
 
 		String[] recipients = { userCode };
-		int verificationCode = generateVerificationCode1();
+		String verificationCode = generateVerificationCode();
 		// println("The verification code is ::"+verificationCode);
-		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE",
-				Integer.toString(verificationCode));
+		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		saveAnswer(verificationCodeAns);
 
 		HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2784,33 +2783,13 @@ public class QRules {
 		sendMessage("", recipients, contextMap, "GNY_USER_VERIFICATION", "SMS");
 
 	}
-
-	/* Generate Random number */
-	public int generateRandomCode() {
-		int randomCode = (new Random()).nextInt(10000);
-		return randomCode;
+    
+	/* Generate 4 digit random passcode  */
+	public String generateVerificationCode() {	 
+	        return String.format("%04d", (new Random()).nextInt(10000));
 	}
 
-	/* Check if the generated number is 4 digit number  */
-	public Boolean checkRandomNumberRange(int no) {
-		Boolean isRangeValid = false;
-		if (no >= 1000 && no < 10000)
-			isRangeValid = true;
-		return isRangeValid;
-	}
-
-    /* generate 4 digit verification passcode */
-	public int generateVerificationCode1() {
-	   int randomInt = 0;
-	   int passCode = 9301;
-       // return String.format("%04d", random.nextInt(10000))
-		while (checkRandomNumberRange(randomInt = generateRandomCode())) {
-			passCode = randomInt;
-			break;
-		}
-	  return passCode;
-
-	}
+  
 
 	/* Verify the user entered passcode with the one in DB  */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
