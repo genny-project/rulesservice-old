@@ -3094,8 +3094,106 @@ public class QRules {
 			QEventAttributeValueChangeMessage msg = new QEventAttributeValueChangeMessage(pojo,
 					m.getOldValue(), m.getToken());
 			msg.getData().setCode(ea.getAttributeCode());
+			msg.getData().setId(-1L);
+			msg.setBe(be);
 			this.getEventBus().publish("events", JsonUtils.toJson(msg));
 		}
+	}
+	
+	public void saveJob(BaseEntity job)
+	{
+		String jobCode = job.getCode();
+        /* We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be triggered in another rule */
+       	Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE",0.0);
+       	Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE",0.0);
+       	Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE",0.0);
+       	Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE",0.0);
+       	
+      /*  Add author to the load    */
+      List<Answer> answers = new ArrayList<Answer>();
+        answers.add(new Answer(getUser().getCode(),jobCode, "PRI_POSITION_LATITUDE",  pickupLatitude+""));  
+        answers.add(new Answer(getUser().getCode(),jobCode, "PRI_POSITION_LONGITUDE",  pickupLongitude+""));  
+        saveAnswers(answers);
+        
+       	
+       	Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude, deliveryLongitude);
+   		if(totalDistance > 0) {
+   			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance+"");
+       		saveAnswer(totalDistanceAnswer);
+   		}
+   		
+   	 /*    Adding Offer Count to 0   */
+   	   Answer offerCountAns = new Answer(getUser().getCode(),jobCode, "PRI_OFFER_COUNT", "0" );
+   	 /* Publish Answer   */
+   	   saveAnswer(offerCountAns); 
+
+     /* Determine the recipient code */
+        String[] recipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");  
+    
+    	      /*    Send newly created job with its attributes  to all drivers so that it exists before link change */        
+       BaseEntity newJobDetails =  getBaseEntityByCode(jobCode);
+       println("The newly submitted Job details     ::     "+newJobDetails.toString());
+       publishData(newJobDetails,recipients); 
+    
+      /*     Moving the BEG      */
+        Link link = new Link("GRP_DRAFTS",jobCode,"LNK_CORE");
+	       try {
+			String output = QwandaUtils.apiPostEntity(getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 	       
+	       
+        
+      /* Get the sourceCode(Company code) for this User */
+        BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
+     
+     /*     link newly created Job to GRP_LOADS   */
+       BaseEntity load = getChildren(jobCode, "LNK_BEG", "LOAD");
+       String loadCode = load.getCode();  
+       Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, getToken());
+       println("The load has been added to the GRP_LOADS ");
+       
+
+    /* SEND LOAD BE    */
+        publishBaseEntityByCode(loadCode, jobCode,"LNK_BEG", recipients);
+    /* SEND JOB BE */
+       println(recipients);
+        publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS","LNK_CORE", recipients);
+    /* Get the parent GRP of GRP_NEW_ITEMS */
+        BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");   
+    /* SEND GRP_NEW_ITEMS BE */
+   /*     publishBaseEntityByCode("GRP_NEW_ITEMS", parentGrp.getCode(),"LNK_CORE",recipients); */
+    
+    /* Sending Messages */
+
+            HashMap<String,String> contextMap = new HashMap<String, String>();
+            contextMap.put("JOB", jobCode);
+            contextMap.put("OWNER", getUser().getCode()); 
+    
+            println("The String Array is ::"+Arrays.toString(recipients));
+            
+         /* Sending toast message to owner frontend */
+            sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+            
+
+         /* Sending message to BEG OWNER */
+            sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+	}
+	
+	public void listenAttributeChange(QEventAttributeValueChangeMessage m)
+	{
+		if ((m.getData() != null)&&(m.getData().getCode()!=null)) {
+			println(m.getData().getCode());
+		}
+		if ((m.getData() != null)&&("DUMMY".equals(m.getData().getCode()))) {
+		      /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
+			  String[] recipientCodes = getRecipientCodes(m);
+		        addAttributes(m.getBe());
+		        publishBE(m.getBe(),recipientCodes);
+		         setState("ATTRIBUTE_CHANGE2");
+		     	fireAttributeChanges(m);
+		     	}
 	}
 	
 }
