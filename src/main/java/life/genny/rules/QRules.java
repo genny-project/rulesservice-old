@@ -3078,4 +3078,24 @@ public class QRules {
 		}
 	}
 
+	public void fireAttributeChanges(QEventAttributeValueChangeMessage m)
+	{
+		Answer a = m.getAnswer();
+		BaseEntity be = m.getBe();
+		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			Answer pojo = new Answer(a.getSourceCode(), a.getTargetCode(),
+					ea.getAttributeCode(), ea.getAsLoopString());
+			pojo.setWeight(ea.getWeight());
+			pojo.setInferred(ea.getInferred());
+			pojo.setExpired(a.getExpired());
+			pojo.setRefused(a.getRefused());
+			//pojo.setAskId(answer.getAskId());
+
+			QEventAttributeValueChangeMessage msg = new QEventAttributeValueChangeMessage(pojo,
+					m.getOldValue(), m.getToken());
+			msg.getData().setCode(ea.getAttributeCode());
+			this.getEventBus().publish("events", JsonUtils.toJson(msg));
+		}
+	}
+	
 }
