@@ -2970,6 +2970,7 @@ public class QRules {
 		println("Offer Count is   ::   " + offerCount);
 		saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
 
+		
 		/* Determine the recipient code */
 		String[] recipients = VertxUtils.getSubscribers(realm(), beg.getCode());
 		System.out.println("BEG subscribers   ::   " + Arrays.toString(recipients));
@@ -2983,11 +2984,11 @@ public class QRules {
 
 		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 		String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
-		System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
+		println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
 
 		publishBaseEntityByCode(offer.getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
-		publishBaseEntityByCode(getUser(), beg.getCode(), "LNK_BEG", offerRecipients);
-		publishBaseEntityByCode(beg, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+		publishBaseEntityByCode(getUser().getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
+		publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 		/* Messages */
 
