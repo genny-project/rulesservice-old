@@ -13,7 +13,7 @@ ruleflow-group 'Answer'
         rules: QRules( isState("STARTED") && !isState("ANSWER_PROCESSED"))
     then    
         rules.header();
-        	
+        	 rules.setState("ANSWER_PROCESSED");
         Answer[] answers = $m.getItems();
         List<Answer> answersToSave = new ArrayList<Answer>();
         
@@ -53,7 +53,7 @@ ruleflow-group 'Answer'
 	   
 	   rules.saveAnswers(answersToSave);
 	   
-	   rules.setState("ANSWER_PROCESSED");
+	  
        rules.footer();
            
 end
