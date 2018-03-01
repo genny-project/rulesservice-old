@@ -194,7 +194,7 @@ rule "Submit Offer Driver"
                         noLinkContextMap.put("OFFER", offerCode);
 
                         String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                        RulesUtils.println("owner code ::"+ownerCode);
+                        rules.println("owner code ::"+ownerCode);
                         String[] noLinkRecipientArr = {ownerCode};
 
                   	/* owner and driver subscribing to offer BE */
