@@ -97,7 +97,7 @@ rule "Submit Offer Owner"
          /* GET BEG BE */
             BaseEntity beg = rules.getBaseEntityByCode(begCode);
 
-          /* GET ownerCode */
+        /* GET ownerCode */
             Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
             String ownerCode = null;
 
@@ -108,24 +108,6 @@ rule "Submit Offer Owner"
                 ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
                 rules.println("ownerCode   ::   " + ownerCode);
             }
-
-        /* Prepare Recipient Array for Owner & Driver */
-            String [] recipientArrForOwner = {ownerCode};
-            String [] recipientArrForDriver = {quoterCode};
-            
-            rules.println("Owner is giving counter offer");
-            HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
-            counterContextMapForOwner.put("JOB", begCode);  
-            counterContextMapForOwner.put("OFFER", priOfferCode); 
-            counterContextMapForOwner.put("QUOTER",quoterCode);
-            counterContextMapForOwner.put("OWNER", ownerCode);
-            rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
-    
-            HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
-            counterContextMapForDriver.put("JOB", begCode);
-            counterContextMapForDriver.put("OWNER", ownerCode);
-            counterContextMapForDriver.put("OFFER", priOfferCode);
-            rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
         
         /* Update PRI_NEXT_ACTION = OWNER */ 
             Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
@@ -143,8 +125,29 @@ rule "Submit Offer Owner"
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+
+         /* Messages */
+             /* Prepare Recipient Array for Owner & Driver */
+                String [] recipientArrForOwner = {ownerCode};
+                String [] recipientArrForDriver = {quoterCode};
+
+            /* Sending message to OWNER */
+                HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
+                counterContextMapForOwner.put("JOB", begCode);  
+                counterContextMapForOwner.put("OFFER", offerCode); 
+                counterContextMapForOwner.put("QUOTER",quoterCode);
+                counterContextMapForOwner.put("OWNER", ownerCode);
+                rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
+
+             /* Sending message to DRIVER */  
+                HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
+                counterContextMapForDriver.put("JOB", begCode);
+                counterContextMapForDriver.put("OFFER", offerCode);
+                counterContextMapForDriver.put("QUOTER", quoterCode);
+                counterContextMapForDriver.put("OWNER", ownerCode);
+                rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
         		
         /* Send BUCKETVIEW Cmd */
-        	drools.setFocus("SendLayoutsAndData");        
+        drools.setFocus("SendLayoutsAndData");        
         rules.footer();
 end

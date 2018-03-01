@@ -46,22 +46,26 @@ import java.time.format.DateTimeFormatter;
 rule "Make Offer"
     when
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_MAKE_OFFER")
-        rules: QRules()
+        rules: QRules(!isState("SUBMIT_QUOTE"))
     then
         rules.header();
+        rules.setState("SUBMIT_QUOTE");
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
 
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
-            System.out.println("begCode  ::   "+ begCode);                    
+            rules.println("begCode  ::   "+ begCode);    
+
             String userCode = rules.getUser().getCode();
-            System.out.println("userCode   ::   "+ userCode);
+            rules.println("userCode   ::   "+ userCode);
+
             String userName = rules.getAsString("preferred_username");
-            System.out.println("username   ::   "+ userName);                 
-            String userFullName= MergeUtil.getFullName(userCode, tokenString);
-            System.out.println("user fullName   ::   "+ userFullName);
+            rules.println("username   ::   "+ userName);         
+
+            String userFullName = rules.getFullName(rules.getUser());
+		    rules.println("user fullName   ::   " + userFullName);
         
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
@@ -89,9 +93,8 @@ rule "Make Offer"
             answerList.add(jobCode);
 
 			rules.saveAnswers(answerList);
+            rules.publishData(answerList);         
 
-            /* save attributes as answer */
-            rules.publishData(answerList);             
         /* Send Offer Questions */
             rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
         rules.footer();
