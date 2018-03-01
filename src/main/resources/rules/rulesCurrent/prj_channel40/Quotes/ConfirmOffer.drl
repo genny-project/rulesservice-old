@@ -81,6 +81,10 @@ rule "Confirm Offer"
 				String begCode = data.getString("hint");
 				String userCode = rules.getUser().getCode();
 				
+				/* GET offerRecipients */
+					String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(), offerCode);
+					rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));			
+				
 				if(offerCode != null && begCode != null && userCode != null) {
 					String userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
 					
@@ -88,16 +92,22 @@ rule "Confirm Offer"
 
 						rules.showLoading("Loading secure payment gateway...");
 						rules.updateBaseEntityAttribute(begCode, begCode, "STT_HOT_OFFER", offerCode);
+						
+						/* SEND (BEG) BaseEntitys to recipients */
+							rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 						/* Call Payment Rule */      
-						drools.setFocus("payments");
+							drools.setFocus("payments");
 						
 					}
 					else if(userRole.equals("QUOTER")) {
-						
-						/* Update PRI_NEXT_ACTION AS OWNER */
-						rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
-						
+            				
+            				/* Update PRI_NEXT_ACTION AS OWNER */
+							rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
+													
+						/* SEND (OFFER) BaseEntitys to recipients */
+							rules.publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
+	
 						/* Messages */
 							/* OWNER config */
 								HashMap<String,String> contextMap = new HashMap<String, String>();
