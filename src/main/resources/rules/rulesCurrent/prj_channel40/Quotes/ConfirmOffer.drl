@@ -65,78 +65,88 @@ rule "Confirm Offer"
 
 		String linkCode= "LNK_BEG";
 		String linkOffer= "OFFER";
-		String linkQuoter= "QUOTER";  
+		String linkQuoter= "QUOTER";
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
-		
+
 		rules.setState("CONFIRMED_OFFER");
-		
+
 		String value = $m.getData().getValue();
 		if(value != null) {
-			
+
 			JsonObject data = new JsonObject(value);
 			if(data != null) {
-				
+
 				String offerCode = data.getString("itemCode");
 				String begCode = data.getString("hint");
 				String userCode = rules.getUser().getCode();
-				
+
 				/* GET offerRecipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(), offerCode);
-					rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));			
-				
+					rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
+
 				if(offerCode != null && begCode != null && userCode != null) {
+
 					String userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
-					
-					if(!userRole.equals("QUOTER")){
+					if(!userRole.equals("QUOTER")) {
 
 						rules.showLoading("Loading secure payment gateway...");
 						rules.updateBaseEntityAttribute(begCode, begCode, "STT_HOT_OFFER", offerCode);
-						
-						/* SEND (BEG) BaseEntitys to recipients */
+
+						/* we calculate the payment price for the BEG */
+						String ownerOfferPrice = rules.getBaseEntityValueAsString(offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST");
+						if(ownerOfferPrice != null) {
+
+							/* copy OFR price as temporary price for the BEG */
+							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_JOB_PAYMENT_PRICE", ownerOfferPrice);
+
+							/* SEND (BEG) BaseEntitys to recipients */
 							rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
-						/* Call Payment Rule */      
+							/* Call Payment Rule */
 							drools.setFocus("payments");
-						
+						}
+						else {
+
+						}
 					}
 					else if(userRole.equals("QUOTER")) {
-            				
-            				/* Update PRI_NEXT_ACTION AS OWNER */
-							rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
-													
+
+        				/* Update PRI_NEXT_ACTION AS OWNER */
+						rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
+
 						/* SEND (OFFER) BaseEntitys to recipients */
-							rules.publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-	
+						rules.publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
+
 						/* Messages */
-							/* OWNER config */
-								HashMap<String,String> contextMap = new HashMap<String, String>();
-								contextMap.put("QUOTER",userCode);
-								contextMap.put("JOB", begCode); 
-								contextMap.put("OFFER", offerCode); 
-						
-								String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-								RulesUtils.println("owner code ::"+ownerCode);
-								String[] recipientArr = {ownerCode};
-								
-								rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "TOAST"); 
-							
-							/* QUOTER config */
-								HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
-								contextMapForDriver.put("JOB", begCode);
-								contextMapForDriver.put("OWNER", ownerCode);
-								contextMapForDriver.put("OFFER", offerCode);
-								contextMapForDriver.put("QUOTER", userCode);
-							
-								String[] recipientArrForDriver = {userCode};
-								
-								rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "TOAST");
-								
+						/* OWNER config */
+							HashMap<String,String> contextMap = new HashMap<String, String>();
+							contextMap.put("QUOTER",userCode);
+							contextMap.put("JOB", begCode);
+							contextMap.put("OFFER", offerCode);
+
+							String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
+							RulesUtils.println("owner code ::"+ownerCode);
+							String[] recipientArr = {ownerCode};
+
+							rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_NEGOTIATE_ACCEPT_OWNER", "TOAST");
+
+						/* QUOTER config */
+							HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+							contextMapForDriver.put("JOB", begCode);
+							contextMapForDriver.put("OWNER", ownerCode);
+							contextMapForDriver.put("OFFER", offerCode);
+							contextMapForDriver.put("QUOTER", userCode);
+
+							String[] recipientArrForDriver = {userCode};
+
+							rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_NEGOTIATE_ACCEPT_DRIVER", "TOAST");
+
 					}
 				}
 			}
 		}
-		
-	
+
+
 rules.footer();
 end
