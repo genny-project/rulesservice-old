@@ -84,16 +84,27 @@ rule "Cancel Offer"
             String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE" , null);
             rules.println("begCode          ::   " + begCode);
             rules.println("quoterCode       ::   " + quoterCode);
-            
+
+        /* GET BEG BE */
+            BaseEntity beg = rules.getBaseEntityByCode(begCode);           
+
+        /* GET ownerCode */
+            Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
+            String ownerCode = null;
+
+            if(optOwnerCode.isPresent()) {
+                ownerCode = optOwnerCode.get();
+                rules.println("PRI_AUTHOR   ::   " + ownerCode);
+            }else {
+                ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
+                rules.println("ownerCode   ::   " + ownerCode);
+            }
 
         /* Update PRI_NEXT_ACTION = null */ 
             rules.saveAnswer(new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE"));
 
 		/* Update link between BEG and OFFER to weight= 0.0 */
-            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);  
-            
-		/* GET BEG BaseEntity */
-			BaseEntity beg = rules.getBaseEntityByCode(begCode);		
+            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);  	
 			
 		/* Update the number of offerCount for BEG */
 			Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
@@ -108,35 +119,31 @@ rule "Cancel Offer"
 	        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
 	        
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
-        		rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
-        		rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
-        		rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+            rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
         /* Messages */
-            /* Sending message to OWNER; DISABLED */
-                HashMap<String,String> contextMap = new HashMap<String, String>();
-                contextMap.put("JOB", begCode); 
-                contextMap.put("OFFER", offerCode); 
-                contextMap.put("QUOTER", quoterCode);
-            
-                String ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, tokenString);
-                RulesUtils.println("owner code ::"+ownerCode);
-                String[] recipientArr = {ownerCode};
-        			
-        			rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_CANCEL_OFFER_OWNER", "TOAST");
+             /* Prepare Recipient Array for Owner & Driver */
+                String [] recipientArrForOwner = {ownerCode};
+                String [] recipientArrForDriver = {quoterCode};
+                
+            /* Sending message to OWNER */
+                HashMap<String,String> contextMapForOwner = new HashMap<String, String>();
+                contextMapForOwner.put("JOB", begCode); 
+                contextMapForOwner.put("OFFER", offerCode); 
+                contextMapForOwner.put("QUOTER", quoterCode);
+                contextMapForOwner.put("OWNER", ownerCode);        			
+                rules.sendMessage("", recipientArrForOwner, contextMapForOwner, "MSG_CH40_CANCEL_OFFER_OWNER", "TOAST");
       
-            /* Sending message to DRIVER */  
-            
+            /* Sending message to DRIVER */              
                 HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
                 contextMapForDriver.put("JOB", begCode);
                 contextMapForDriver.put("OWNER", ownerCode);
-                contextMapForDriver.put("OFFER", offerCode);
-            
-                String[] recipientArrForDriver = {quoterCode};
-            	
-            	    rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
-                rules.sendMessage("", recipientArrForDriver, contextMapForDriver,"MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
+                contextMapForDriver.put("OFFER", offerCode);	
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
         rules.footer();
 end
 
