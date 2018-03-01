@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Random;
 import java.util.Scanner;
 
 import javax.money.CurrencyUnit;
@@ -115,4 +116,16 @@ public class FeeCalculationTest {
 		System.out.println("driverPriceIncGST  ::  "+driverPriceIncGST.getNumber().doubleValue() );
 	}
 
+	@Test
+	public void generatePasscodeTest() {
+		QRules rules = new QRules(null, null, null);
+		for(int i=0; i<= 100; i++) {
+		  System.out.println("The passcode is::"+rules.generateVerificationCode());
+		  
+		}
+		System.out.println(String.format("%04d", 0));
+		System.out.println(String.format("%04d", 12));
+		System.out.println(String.format("%04d", 123));
+		System.out.println(String.format("%04d", 1234));
+	}
 }
