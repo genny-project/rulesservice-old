@@ -32,43 +32,32 @@ rule "Handle Load Selection"
         /*     Collect load code from answer    */
          Answer newAnswer = $m.getAnswer();
          rules.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
-         String targetCode = newAnswer.getTargetCode();
-         String sourceCode = newAnswer.getSourceCode();
-         String loadCode = newAnswer.getValue();
-         rules.println("The target BE code is   ::  " +targetCode);
-         rules.println("The source BE code is   ::  " +sourceCode);
-         rules.println("The load code is   ::  " +loadCode);
+         String newLoadCode = newAnswer.getTargetCode();
+         String loadTemplateCode = newAnswer.getValue();
+         rules.println("The loadList BE code is   ::  " +newLoadCode);
+         rules.println("The owner BE code is   ::  " +rules.getUser().getCode());
+         rules.println("The loadTemplate code is   ::  " +loadTemplateCode);
 
         /*  Grab attributes from load and save it to newly load    */
          Map<String, String> map = new HashMap<>();
-         map = rules.getMapOfAllAttributesValuesForBaseEntity(loadCode);
+         map = rules.getMapOfAllAttributesValuesForBaseEntity(loadTemplateCode);
          
           RulesUtils.ruleLogger(" MAP DATA ",map );
-        /*  Answer[] newAnswers = new Answer[map.size()]; */
+          List<Answer> answers = new ArrayList<Answer>();
             try{
-              /*  int i = 0; */
 		      	for (Map.Entry<String, String> entry : map.entrySet())
 		      	{	
-		    	       //if(!entry.getKey().equals("PRI_IMAGE_URL")){
-                       Answer answerObj = new Answer(rules.getUser().getCode(), targetCode, entry.getKey(), entry.getValue() );
-                        rules.saveAnswer(answerObj);
-                       /* Answer[] answerArray = new Answer[answerObj];
-                        QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers); */
-                        
-                     /*  newAnswers[i] = answerObj; 
-                       i++; */
-                   // }
-                  }                 
+                       Answer answerObj = new Answer(rules.getUser().getCode(), newLoadCode, entry.getKey(), entry.getValue() );
+                       answers.add(answerObj);
+                  }   
+                  answers.add(new Answer(rules.getUser().getCode(), newLoadCode, "LNK_LOAD_LISTS",loadTemplateCode));
+                  rules.saveAnswers(answers);              
                }catch (Exception e) {
                }              
-           /* QDataAnswerMessage newLoadAnswers = new QDataAnswerMessage(newAnswers);
-            String jsonQDataAnswerMessage = JsonUtils.toJson(newLoadAnswers);
-		   rules.println("updated answer json string ::"+jsonQDataAnswerMessage);*/
-         /*   Send new answers to api to save it   */ 
-	      /*	String response =   QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/answers/bulk", jsonQDataAnswerMessage, rules.getToken());
-           rules.println("The new laod with attribute is ::   "+targetCode.toString());
-           rules.println("The bulk answer post response is ::   "+response); */
-        
+           rules.println("The new laod with attribute is ::   "+newLoadCode.toString());
+           BaseEntity newLoad = rules.getBaseEntityByCode(newLoadCode);
+        	rules.publishBE(newLoad);
+
             
          rules.footer();
 
