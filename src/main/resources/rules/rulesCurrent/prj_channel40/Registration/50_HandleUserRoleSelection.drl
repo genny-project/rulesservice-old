@@ -29,8 +29,8 @@ rule "Save user role to the link with its Company"
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
         rules: QRules( !isState("USER_TYPE_SAVED") )
      then
-        rules.header();  
-          rules.println("Before getting user BE");
+         rules.header();  
+        
          String userCode = rules.getUser().getCode();
          rules.println("The user Code is  ::  " +userCode);
          rules.println("Print QEventAttributeValueChangeMessage  LINK_ROLE_LISTS ::  "+$m.toString());
@@ -47,11 +47,9 @@ rule "Save user role to the link with its Company"
              Answer userRole = new Answer(userCode, userCode, "PRI_DRIVER" , "TRUE");
                userRole.setWeight(1.0);
              rules.setState("IS_DRIVER");           
-             //rules.publishData(userRole); 
              rules.saveAnswer(userRole);
              Answer userRoleOwner = new Answer(userCode, userCode, "PRI_OWNER" , "FALSE");       
-             userRoleOwner.setWeight(0.0);      
-            //rules.publishData(userRoleOwner); 
+             userRoleOwner.setWeight(0.0);       
             rules.saveAnswer(userRoleOwner);
              
          }
@@ -61,13 +59,10 @@ rule "Save user role to the link with its Company"
             Answer userRole = new Answer(userCode, userCode, "PRI_OWNER" , "TRUE");
             userRole.setWeight(1.0);      
             rules.setState("IS_OWNER");       
-            //rules.publishData(userRole);
-              rules.saveAnswer(userRole); 
+            rules.saveAnswer(userRole); 
             Answer userRoleDriver = new Answer(userCode, userCode, "PRI_DRIVER" , "FALSE");
             userRoleDriver.setWeight(0.0);
-                         
-            //rules.publishData(userRoleDriver);
-             rules.saveAnswer(userRoleDriver);  
+            rules.saveAnswer(userRoleDriver);  
          }
          
          String attributeCode = $m.data.getCode();
@@ -76,9 +71,6 @@ rule "Save user role to the link with its Company"
          rules.println("The attribute code is   ::  " +attributeCode);
          rules.println("The role type code is   ::  " +newAnswer.getValue());
          rules.println("The role type value is   ::  " +roleValue);
-
-		/* send updated baseentity for the owner */
-
            
        /* Get company code for this user */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
@@ -88,7 +80,7 @@ rule "Save user role to the link with its Company"
         Link updateLink = new Link( companyCode, userCode, "LNK_STAFF", roleValue, (double) 1);
         String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
         
-        rules.publishBE($m.getBe());
+        rules.publishBE(rules.getUser());
         
         rules.setState("USER_TYPE_SAVED");
         
