@@ -64,60 +64,47 @@ rule "Cancel Offer"
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();  
                  
-        /* Get offerCode, username, userCode, userFullName */
+        /* Get offerCode, userCode */
             String offerCode = $m.getItemCode();
-            System.out.println("offerCode  ::   "+ offerCode);                    
-            String userName = rules.getAsString("preferred_username");
-            System.out.println("username   ::   "+ userName);                 
+            rules.println("offerCode  ::   "+ offerCode);      
+                                
             String userCode =  rules.getUser().getCode();            
-            System.out.println("usercode   ::   "+ userCode);
-            String userFullName= MergeUtil.getFullName(userCode, tokenString);
-            System.out.println("user fullName   ::   "+ userFullName);
+            rules.println("usercode   ::   "+ userCode);     
         
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
 
-        /* GET OFFER BE */
-            BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, tokenString);
+        /* GET OFFER BaseEntity */
+            BaseEntity offer =  rules.getBaseEntityByCode(offerCode);
         
-        /* GET attributes of the OFFER BE */
-            String begCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_BEG_CODE");
-            String quoterCode= MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
+        /* GET attributes of the OFFER BE */            
+            String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
+            String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE" , null);
+            rules.println("begCode          ::   " + begCode);
+            rules.println("quoterCode       ::   " + quoterCode);
             
-            System.out.println("------------------------------------------------------------------------");
-            System.out.println("begCode          ::   " + begCode);
-            System.out.println("quoterCode       ::   " + quoterCode);
-            System.out.println("------------------------------------------------------------------------");
 
         /* Update PRI_NEXT_ACTION = null */ 
-            String noneCode= "NONE";
-            Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", noneCode);
-            rules.saveAnswer(offerActionAnswer);               
-            RulesUtils.println("Saving PRI_NEXT_ACTION Answer   ::   "+ offerActionAnswer);
+            rules.saveAnswer(new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE"));
 
-        /* Update the number of offers for BEG */ 
-            Integer offerCount = 0;
-            String offerCountString= MergeUtil.getAttrValue(begCode, "PRI_OFFER_COUNT", tokenString);
-            if(offerCountString == null) { 
-                offerCount = 0;
-            }else {                 
-                offerCount = Integer.parseInt(offerCountString);
-                if(offerCount > 0){
-                    offerCount = offerCount - 1;
-                    System.out.println("Offer Count is   ::   " + offerCount);
-                }
-            }
-
-            Answer offerCountAnswer = new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString());
-            rules.saveAnswer(offerCountAnswer);                              
-
-        /* Update link between BEG and OFFER to weight= 0 */
-            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);       
-        
+		/* Update link between BEG and OFFER to weight= 0.0 */
+            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);  
+            
+		/* GET BEG BaseEntity */
+			BaseEntity beg = rules.getBaseEntityByCode(begCode);		
+			
+		/* Update the number of offerCount for BEG */
+			Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
+			if(offerCount > 0){
+				offerCount = offerCount - 1;		
+			}
+			rules.println("Offer Count is   ::   " + offerCount);
+			rules.saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));	
+    
 		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
-	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offerBe.getCode());
+	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
 	        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
 	        
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
