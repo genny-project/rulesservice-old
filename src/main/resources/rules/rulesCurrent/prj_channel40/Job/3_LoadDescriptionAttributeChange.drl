@@ -14,9 +14,10 @@ rule "Load Description Attribute Change"
 
     when
       $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_DESCRIPTION") && getAnswer().getTargetCode().startsWith("LOD_") )
-      rules : QRules()
+      rules : QRules( isState("STARTED") &&  !isState("LD_DESC_CHG"))
     then    
 	     rules.header();  
+	    rules.setState("LD_DESC_CHG");
 	    
         /*     Collect load code from answer    */
          Answer newAnswer = $m.getAnswer();

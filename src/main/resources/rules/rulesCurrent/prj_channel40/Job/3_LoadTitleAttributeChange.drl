@@ -13,10 +13,10 @@ rule "Load Title Attribute Change"
 /*  Update Jobs title based on Loads name value change  */
     when
     $m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_NAME")  && getAnswer().getTargetCode().startsWith("LOD_") )
-    	rules : QRules()
+    	rules : QRules( isState("STARTED") &&  !isState("LD_TITLE_CHG"))
     then    
     	    rules.header();
-	    
+	    rules.setState("LD_TITLE_CHG");
          Answer newAnswer = $m.getAnswer();
          BaseEntity load = $m.getBe();
         // BaseEntity load = rules.getBaseEntityByCode(newAnswer.getTargetCode());
@@ -26,7 +26,7 @@ rule "Load Title Attribute Change"
          rules.println("The updated laod name before PUT "+load.getName());
          /* Update Load BaseEntity   */
          rules.updateBaseEntity(load);
-         RulesUtils.println(" Load Baseentity Updated  " );
+         rules.println(" Load Baseentity Updated  " );
          rules.println("The updated laod name after PUT is "+load.getName());
          rules.println(" Inside the Load Title Attribute Change  rule  "   );
          rules.println("The created value  ::  "+newAnswer.getCreatedDate());
@@ -42,11 +42,9 @@ rule "Load Title Attribute Change"
          //rules.publishData(jobTitleAnswer);
          rules.saveAnswer(jobTitleAnswer);
          
-       /* update the name of the job be  */
-         job.setName(loadTitle);
-         
-       /* Update Load BaseEntity   */
-         rules.updateBaseEntity(job);
+           Answer jobNameAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_NAME" ,loadTitle);             
+         //rules.publishData(jobTitleAnswer);
+         rules.saveAnswer(jobNameAnswer);
         
         rules.footer();
        
