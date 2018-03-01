@@ -462,19 +462,21 @@ public class QRules {
 	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
 			final String linkCode) {
 
-		JsonObject begEntity = new JsonObject();
-		begEntity.put("sourceCode", sourceCode);
-		begEntity.put("targetCode", baseEntityCode);
-		begEntity.put("attributeCode", linkCode);
+//		JsonObject begEntity = new JsonObject();
+//		begEntity.put("sourceCode", sourceCode);
+//		begEntity.put("targetCode", baseEntityCode);
+//		begEntity.put("attributeCode", linkCode);
+		
+		Link link = new Link(sourceCode, baseEntityCode, linkCode);
 
 		try {
 
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, begEntity.toString(),
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, JsonUtils.toJson(link),
 					getToken());
 
-			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(
-					qwandaServiceUrl + "/qwanda/entityentitys/" + baseEntityCode + "/linkcodes/" + linkCode,
-					getToken()));
+//			JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(
+//					qwandaServiceUrl + "/qwanda/entityentitys/" + baseEntityCode + "/linkcodes/" + linkCode,
+//					getToken()));
 
 			// Creating a data msg
 			// JsonObject newLink = new JsonObject();
@@ -2898,6 +2900,15 @@ public class QRules {
 	/* sets delete field to true so that FE removes the BE from their store  */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+	    beMsg.setDelete(true);
+	    publishData(beMsg,recipients);
+
+	}
+	
+	/* sets delete field to true so that FE removes the BE from their store  */
+	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
+		BaseEntity be = new BaseEntity(baseEntityCode,"FastBE");
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 	    beMsg.setDelete(true);
 	    publishData(beMsg,recipients);
