@@ -31,55 +31,24 @@ then
 		         rules.publishData(beAnswer);  
 		            
 		    	 	rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
-		    	    
-		    	    /* List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(begCode,"LNK_BEG", 0, 20, false) ;
-		  
-		    	    if(begKids != null) {
-		    	    		
-			    	    	Set<String> recipientSet = new HashSet<String>();
-				    	    
-			    		for (BaseEntity kid : begKids) {
-			    			
-			    	    		List<Link> links = rules.getLinks(kid.getCode(), "LNK_BEG");
-			    	    		 RulesUtils.println("Got LINKS");
-			    	    		 RulesUtils.println(links);
-			    	    		if(links != null) {
-			    	    			
-			    	    			for (Link link : links) {
-				    	    				
-			    			    	    RulesUtils.println(link.getLinkValue());
 
-			    	    				contextMap.put(link.getLinkValue(), link.getTargetCode());
-				    	    			
-			    	    				RulesUtils.println("TargetCode: ", link.getTargetCode());
-			    	    				RulesUtils.println(link.getTargetCode().startsWith("PER_"));
-			    	    				if (link.getTargetCode().startsWith("PER_")) {
-				    	    				recipientSet.add(link.getTargetCode());
-				    	    			} 
-				    	    		}
-			    	    		}
-			    	    }
-			    	    
-			    		RulesUtils.println(recipientSet); */
-			    		
-			    		/* Sending SMS */
-			    		List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
-		     			String driverCode = null;
-		     
-		     			for(Link link : linkList) {
-		     	
-		     				if(link.getLinkValue().equals("DRIVER")) {
-		     				driverCode = link.getTargetCode();
-		     				}
-		    			 }
+			    	BaseEntity jobBe = rules.getBaseEntityByCode(begCode);
+			    	String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
+        			BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+        			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
+        			String ownerCode = jobBe.getValue("PRI_AUTHOR",null);
+        
+        			HashMap<String, String> contextMap = new HashMap<String, String>();
+				contextMap.put("JOB", begCode);
+				contextMap.put("DRIVER", quoterCode);
+				
+				String[] recipientCodes = {ownerCode};
+				    		
+				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "TOAST");
+				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "SMS");
+				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "EMAIL");
 		    			 
-			    		HashMap<String, String> contextMap = new HashMap<String, String>();
-		    	    	contextMap.put("JOB", begCode);
-		    	    	contextMap.put("DRIVER", driverCode);
-			    		
-			    		String[] recipients = new String[1];
-			    		recipients[0] = rules.getUser().getCode();
-			    		rules.sendMessage(begCode, recipients, contextMap, "MSG_CH40_DRIVER_IN_TRANSIT", "SMS");
+			    	
 		    	    }
 		     }
 		

@@ -10,7 +10,7 @@ import life.genny.qwandautils.MergeUtil;
 rule "Listen Attribute Change - PRI_DRIVER_CONFIRMED_DELIVERY"
 ruleflow-group 'AttributeChange'
     when
-        $m: QEventAttributeValueChangeMessage( answer.attributeCode == "PRI_DRIVER_CONFIRMED_DELIVERY" )
+        $m: QEventAttributeValueChangeMessage( data.getCode() == "PRI_DRIVER_CONFIRMED_DELIVERY" )
         rules : QRules( isState("ATTRIBUTE_CHANGE") && !isState("SENT_DELIVERY_MESSAGES") )
      then    
       	rules.header();
@@ -18,10 +18,15 @@ ruleflow-group 'AttributeChange'
        /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
         String[] recipientCodes = rules.getRecipientCodes($m);
         String jobCode = $m.getBe().getCode();
+        
+        BaseEntity jobBe = $m.getBe();
+        String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
+        BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+        String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
        
-        String offerCode = MergeUtil.getAttrValue(jobCode, "STT_HOT_OFFER", rules.getToken());
+        /* String offerCode = MergeUtil.getAttrValue(jobCode, "STT_HOT_OFFER", rules.getToken());
         BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, rules.getToken());
-		String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE");
+		String quoterCode = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_QUOTER_CODE"); */
         
         HashMap<String, String> contextMap = new HashMap<String, String>();
 		contextMap.put("JOB", jobCode);
