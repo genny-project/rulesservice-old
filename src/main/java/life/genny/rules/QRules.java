@@ -2851,7 +2851,7 @@ public class QRules {
 		//println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
 		//println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
 
-		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
+		if(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE").equals(userPassCode) ) {
 			return true;
 		} else
 			return false;
