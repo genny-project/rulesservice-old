@@ -23,6 +23,7 @@ import com.google.gson.JsonSerializationContext;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.json.JsonArray;
 
 rule "Handle user role mentormatch"
     when
@@ -37,24 +38,75 @@ rule "Handle user role mentormatch"
          Answer newAnswer = $m.getAnswer();
          String targetCode = newAnswer.getTargetCode();
          String sourceCode = newAnswer.getSourceCode();
-         String roleValue = "";
 
          String booleanValueMentor = "FALSE";
          String booleanValueMentee = "FALSE";
 
-         if(newAnswer.getValue().equals("SEL_MENTOR"))
-         {
-             roleValue = "MENTOR";
-             booleanValueMentor = "TRUE";
-             booleanValueMentee = "FALSE";
+         String answerValue = newAnswer.getValue();
+
+         try {
+
+             // if new answer is a JSON object stringified it means the user is both a mentor AND a mentee
+             JsonArray answerJson = new JsonArray(answerValue);
+             if(answerJson != null && answerValue.startsWith("[")) {
+
+                rules.println(answerValue);
+
+                Boolean isMentor = false;
+                Boolean isMentee = false;
+
+                for (Object role : answerJson) {
+
+                    String roleCode = (String)role;
+                    rules.println(roleCode);
+
+                    if(roleCode.equals("SEL_MENTOR")) {
+                        isMentor = true;
+                    }
+                    if(roleCode.equals("SEL_MENTEE")) {
+                        isMentee = true;
+                    }
+         		}
+
+                booleanValueMentor = isMentor ? "TRUE" : "FALSE";
+                booleanValueMentee = isMentee ? "TRUE" : "FALSE";
+             }
+             else {
+
+                 // otherwise it is only one of them
+                 if(newAnswer.getValue().equals("SEL_MENTOR"))
+                 {
+                     booleanValueMentor = "TRUE";
+                     booleanValueMentee = "FALSE";
+                 }
+
+                 if(newAnswer.getValue().equals("SEL_MENTEE"))
+                 {
+                    booleanValueMentor = "FALSE";
+                    booleanValueMentee = "TRUE";
+                 }
+             }
+         }
+         catch(Exception e) {
+
+             rules.println("SINGLE SELECTION");
+
+             // otherwise it is only one of them
+             if(newAnswer.getValue().equals("SEL_MENTOR"))
+             {
+                 booleanValueMentor = "TRUE";
+                 booleanValueMentee = "FALSE";
+             }
+
+             if(newAnswer.getValue().equals("SEL_MENTEE"))
+             {
+                booleanValueMentor = "FALSE";
+                booleanValueMentee = "TRUE";
+             }
          }
 
-         if(newAnswer.getValue().equals("SEL_MENTEE"))
-         {
-            roleValue = "MENTEE";
-            booleanValueMentor = "FALSE";
-            booleanValueMentee = "TRUE";
-         }
+         rules.println(booleanValueMentee);
+         rules.println(booleanValueMentor);
 
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTOR", booleanValueMentor);
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTEE", booleanValueMentee);

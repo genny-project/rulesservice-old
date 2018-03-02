@@ -729,8 +729,8 @@ public class QRules {
 			String mentorValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTOR");
 			String menteeValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTEE");
 
-			Boolean isMentor = mentorValue != null && (mentorValue.equals("TRUE") || user.is("PRI_MENTOR"));
-			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || user.is("PRI_MENTEE"));
+			Boolean isMentor = mentorValue != null && (mentorValue.equals("TRUE") || mentorValue.equals("true"));
+			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || menteeValue.equals("true"));
 
 			String profile_completed = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
 
@@ -754,7 +754,7 @@ public class QRules {
 					if (!hasCompletedProfile) {
 
 						// we send questions for mentors
-						if (isMentor) {
+						if (isMentor && !isMentee) {
 
 							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
 							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
@@ -769,7 +769,7 @@ public class QRules {
 							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTOR_GRP");
 						}
 						// we send questions for mentees
-						else if (isMentee) {
+						else if (isMentee && !isMentor) {
 
 							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
 							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
@@ -783,6 +783,23 @@ public class QRules {
 							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
 							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
 						}
+						// we send the super form
+						else if(isMentee && isMentor) {
+
+							this.sendSelections("GRP_MENTEES_ATTRIBUTES", "LNK_CORE", 20);
+							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
+							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
+							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
+							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
+							this.sendSelections("GRP_MENTORS_ATTRIBUTES", "LNK_CORE", 20);
+							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
+							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
+							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
+							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
+							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTOR_MENTEE_GRP");
+						}
+
 					} else {
 						this.sendSublayout("finish", "dashboard_mentormatch.json");
 					}
