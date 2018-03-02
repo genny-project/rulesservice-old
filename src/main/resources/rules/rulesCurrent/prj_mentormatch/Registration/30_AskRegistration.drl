@@ -11,6 +11,7 @@ rule "Ask Registration"
                         (!isState("ASKED_REGISTRATION"))  )
      then
      	rules.header();
+
    	    String userCode = rules.getUser().getCode();
    		rules.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
 
