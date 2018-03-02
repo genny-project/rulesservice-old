@@ -466,7 +466,7 @@ public class QRules {
 //		begEntity.put("sourceCode", sourceCode);
 //		begEntity.put("targetCode", baseEntityCode);
 //		begEntity.put("attributeCode", linkCode);
-		
+
 		Link link = new Link(sourceCode, baseEntityCode, linkCode);
 
 		try {
@@ -2905,7 +2905,7 @@ public class QRules {
 	    publishData(beMsg,recipients);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store  */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode,"FastBE");
