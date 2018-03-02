@@ -18,7 +18,6 @@ rule "Create Payment Item"
 		rules: QRules( !isState("CREATED_PAYMENT_ITEM") )
 	then
 		rules.header();
-
 		rules.println("Item creation process started");
 
 		String offerCode = m.getItemCode();
@@ -67,8 +66,7 @@ rule "Create Payment Item"
        	 		String[] recipientArray = {rules.getUser().getCode()};
        	 		
        	 		rules.sendMessage("", recipientArray, contextMap,"MSG_CH40_ITEM_CREATION_FAILED", "TOAST");
-       	 		
-       	 		rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+       	 		drools.setFocus("SendLayoutsAndData");
        	 	}
         		
        	}
