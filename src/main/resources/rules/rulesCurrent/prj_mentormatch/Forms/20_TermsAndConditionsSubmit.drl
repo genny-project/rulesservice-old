@@ -16,7 +16,6 @@ rule "Terms and conditions Submit - mentormatch"
 
         rules.setState("USER_PROFILE_COMPLETED");
         rules.setState("ACCEPTED_TERMS_AND_CONDITIONS");
-        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_MENTORMATCH_PROFILE_COMPLETED", "TRUE");
         drools.setFocus("SendLayoutsAndData");
         rules.footer();
   end
