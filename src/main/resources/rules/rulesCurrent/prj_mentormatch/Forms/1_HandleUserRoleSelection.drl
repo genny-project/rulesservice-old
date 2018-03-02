@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 rule "Handle user role mentormatch"
     when
         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
-        rules: QRules( !isState("USER_TYPE_SAVED"))
+        rules: QRules( isState("STARTED") && !isState("ROLE_SELECTED") )
      then
 
      	rules.header();
@@ -58,8 +58,7 @@ rule "Handle user role mentormatch"
 
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTOR", booleanValueMentor);
          rules.updateBaseEntityAttribute(userCode, userCode, "PRI_MENTEE", booleanValueMentee);
-         rules.setState("IS_MENTOR");
-         rules.setState("USER_TYPE_SAVED");
+         rules.setState("ROLE_SELECTED");
          rules.footer();
 
 end

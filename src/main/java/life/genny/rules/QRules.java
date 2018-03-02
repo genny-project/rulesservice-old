@@ -466,7 +466,7 @@ public class QRules {
 //		begEntity.put("sourceCode", sourceCode);
 //		begEntity.put("targetCode", baseEntityCode);
 //		begEntity.put("attributeCode", linkCode);
-		
+
 		Link link = new Link(sourceCode, baseEntityCode, linkCode);
 
 		try {
@@ -2834,7 +2834,7 @@ public class QRules {
 		//println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
 		//println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
 
-		if(Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")) == Integer.parseInt(userPassCode) ) {
+		if(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE").equals(userPassCode) ) {
 			return true;
 		} else
 			return false;
@@ -2905,7 +2905,7 @@ public class QRules {
 	    publishData(beMsg,recipients);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store  */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode,"FastBE");
