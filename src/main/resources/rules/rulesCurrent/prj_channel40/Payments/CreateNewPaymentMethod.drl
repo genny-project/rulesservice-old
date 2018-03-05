@@ -62,6 +62,7 @@ rule "Create new payment method - user"
 				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
 
 	            rules.saveAnswer(paymentAnswer);
+	            rules.publishData(paymentAnswer);
 
 			}
 			else {
@@ -70,8 +71,7 @@ rule "Create new payment method - user"
 				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", "[" + paymentMethodDataString + "]");
 
 	            rules.saveAnswer(paymentAnswer);
-
-
+	            rules.publishData(paymentAnswer);
 			}
 
 			 PaymentUtils.disburseAccount(assemblyId, paymentMethodDataString, assemblyAuthKey);
