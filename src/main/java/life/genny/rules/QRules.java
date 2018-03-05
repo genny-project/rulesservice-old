@@ -701,7 +701,9 @@ public class QRules {
 
 				List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT","LNK_CORE", 0, 20, false) ;
 				publishCmd(root,"GRP_ROOT","LNK_CORE");
-				println(root);
+
+				List<BaseEntity> dashboard = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
+				publishCmd(dashboard,"GRP_DASHBOARD","LNK_CORE");
 
 				List<BaseEntity> internships = getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS", "LNK_CORE", 0, 50, false);
 				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
@@ -870,6 +872,18 @@ public class QRules {
 	public void sendPopupCmd(final String cmd_view, final String root) {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", cmd_view);
+		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
+		cmdJobSublayoutJson.put("token", getToken());
+		if (root != null) {
+			cmdJobSublayoutJson.put("root", root);
+		}
+
+		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+	}
+
+	public void sendViewCmd(final String cmd_view, final String root) {
+
+		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_VIEW", cmd_view);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
