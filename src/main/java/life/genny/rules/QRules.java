@@ -2675,22 +2675,22 @@ public class QRules {
 
 					if (isMakePaymentSucceeded) {
 						/* GET attributes of OFFER BE*/
-							String offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
-							String ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
-							String ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-							String driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
-							String driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-							String feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
-							String feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
+							Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
+							Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
+							Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+							Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
+							Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+							Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
+							Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
 
 						/* Update BEG's prices with offer's prices */
-							updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", offerPrice);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", ownerPriceExcGST);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", ownerPriceIncGST);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", driverPriceExcGST);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", driverPriceIncGST);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", feePriceExcGST);
-							updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", feePriceIncGST);
+							updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", QwandaUtils.getMoneyString(ownerPriceExcGST));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", QwandaUtils.getMoneyString(ownerPriceIncGST));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", QwandaUtils.getMoneyString(driverPriceExcGST));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", QwandaUtils.getMoneyString(driverPriceIncGST));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", QwandaUtils.getMoneyString(feePriceExcGST));
+							updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", QwandaUtils.getMoneyString(feePriceIncGST));
 
 						/* Update BEG to have DRIVER_CODE as an attribute */
 							Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
@@ -2705,7 +2705,6 @@ public class QRules {
 							String[] recipientArr = { userCode };
 
 						/* TOAST :: PAYMENT SUCCESS */
-							sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
 							sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "TOAST");
 							sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
 
@@ -2744,12 +2743,9 @@ public class QRules {
 						/* Move BEG to GRP_APPROVED */
 							moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
 
-						/* sending cmd BUCKETVIEW */
-							drools.setFocus("SendLayoutsAndData");
-
 						/* GET all the driver subsribers */
-							String[] begRecipients = VertxUtils.getSubscribers(realm(), beg.getCode());
-							System.out.println("BEG subscribers   ::   " + Arrays.toString(begRecipients));
+							String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+							System.out.println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
 
 						/* Unsubscribing other drivers from the BEG */
 							String[] recipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
@@ -2766,13 +2762,23 @@ public class QRules {
 							for (String unsubscribeCode : unsubscribeSet) {
 								unsubscribeArr[i] = unsubscribeCode;
 								System.out.println("unsubscribe arr code:" + unsubscribeCode);
+								i++;
 							}
 							VertxUtils.unsubscribe(realm(), begCode, unsubscribeSet);
 							clearBaseEntity(begCode, unsubscribeArr);
 
 						/* Send two colums to alll the drivers for update */
-							publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", begRecipients);
-							publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", begRecipients);
+							//publishBaseEntityByCode("GRP_APPROVED", begCode, "LNK_CORE", begRecipients);
+							
+							publishBaseEntityByCode("GRP_DASHBOARD", "GRP_NEW_ITEMS", "LNK_CORE", begRecipients);
+							publishBaseEntityByCode("GRP_DASHBOARD", "GRP_APPROVED", "LNK_CORE", begRecipients);
+							
+						/* sending cmd BUCKETVIEW */
+							drools.setFocus("SendLayoutsAndData");
+							
+							sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+							
+							
 					}
 					setState("PAYMENT_DONE");
 
@@ -2787,7 +2793,7 @@ public class QRules {
         Double driverLongitude = driverPosition.getLongitude();
 
         if (driverLatitude != null && driverLongitude != null) {
-
+        	
                 try {
                         List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
                                         getUser().getCode());
