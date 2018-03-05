@@ -25,7 +25,7 @@ rule "Delete job"
 		rules.fastClearBaseEntity(begCode, allBegRecipients);
 
 	   /*     Moving the BEG      */
-          rules.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_BIN", "LNK_CORE");
+          rules.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_BIN", "LNK_CORE", rules.getUser().getCode());
 
        /* Sending Messages */
 
