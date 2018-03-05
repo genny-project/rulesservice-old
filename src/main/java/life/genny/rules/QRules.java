@@ -495,6 +495,23 @@ public class QRules {
 
 		return null;
 	}
+	
+	public String moveBaseEntitySetLinkValue(final String baseEntityCode, final String sourceCode, final String targetCode,
+			final String linkCode, final String linkValue) {
+
+		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
+
+		try {
+
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, JsonUtils.toJson(link),
+					getToken());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
 	public void publishBaseEntityByCode(final String be) {
 		String[] recipientArray = new String[1];
