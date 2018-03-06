@@ -277,9 +277,8 @@ public class VertxUtils {
 		final String SUB = "SUB";
 		// Subscribe to a code
 		Set<String> subscriberSet = getSetString(realm,SUB,subscriptionCode);
-		System.out.println("subscribe set ::"+subscriberSet);
 		subscriberSet.removeAll(userSet);
-		System.out.println("after unsubscription, subscribe set ::"+subscriberSet);
+
 		putSetString(realm,SUB,subscriptionCode,subscriberSet);
 	}
 
