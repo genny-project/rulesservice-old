@@ -2049,6 +2049,44 @@ public class QRules {
 			}
 		}
 	}
+	
+	public void processChat2(QEventMessage m) {
+
+		String data = m.getData().getValue();
+		JsonObject dataJson = new JsonObject(data);
+		String text = dataJson.getString("value");
+		String chatCode = dataJson.getString("itemCode");
+
+		if (text != null && chatCode != null) {
+
+			/* creating new message */
+			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
+					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+					getQwandaServiceUrl(), getToken());
+			if (newMessage != null) {
+
+				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
+				String[] recipientCodeArray = new String[stakeholders.size()];
+
+				int counter = 0;
+				for (BaseEntity stakeholder : stakeholders) {
+					recipientCodeArray[counter] = stakeholder.getCode();
+					counter += 1;
+				}
+
+				/*
+				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
+				 * recipientCodeArray);
+				 */
+				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
+				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
+						getUser().getCode());
+				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
+				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
+				publishBE(chatBE);
+			}
+		}
+	}
 
 	public void processImageUpload(QDataAnswerMessage m, final String finalAttributeCode) {
 
