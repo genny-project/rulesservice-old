@@ -3241,7 +3241,9 @@ public class QRules {
 			e.printStackTrace();
 		}
 
-
+	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_STATUS", "#FFA500");
+	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_"+getUser().getCode(), "#5CB85C");
+	   
       /* Get the sourceCode(Company code) for this User */
         BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
 
@@ -3251,6 +3253,7 @@ public class QRules {
        Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, getToken());
        println("The load has been added to the GRP_LOADS ");
 
+       
 
     /* SEND LOAD BE    */
         publishBaseEntityByCode(loadCode, jobCode,"LNK_BEG", recipients);
