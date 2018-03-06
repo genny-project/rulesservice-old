@@ -13,6 +13,7 @@ import org.javamoney.moneta.Money;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import org.json.simple.JSONObject;
+import java.util.ArrayList;
 
 rule "Calculate Price for Driver"
     no-loop true
@@ -92,12 +93,16 @@ rule "Calculate Price for Driver"
                             String driverPriceExcGSTString = QwandaUtils.getMoneyString(driverPriceExcGST);
                             String feePriceIncGSTString = QwandaUtils.getMoneyString(feePriceIncGST);
                             String feePriceExcGSTString = QwandaUtils.getMoneyString(feePriceExcGST);
-                        /* Save PRICES as Answer */
-                            rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString);
-                            rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
-                            rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString);
-                            rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString);
-                            rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString);
+                            
+                            /* Save PRICES as Answer */
+                            List<Answer> answers = new ArrayList<Answer>();
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString));
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
+                            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
+                            rules.saveAnswers(answers);
                     }
                 }
         }

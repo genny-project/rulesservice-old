@@ -119,12 +119,12 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
 
             /* Save PRICES as Answer */
             List<Answer> answers = new ArrayList<Answer>();
-            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString)):
-            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString)):
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString)):
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString)):
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString)):
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString)):
+            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
             rules.saveAnswers(answers);
         }
     }
