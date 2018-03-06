@@ -1,5 +1,15 @@
 package life.genny.rules;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import life.genny.rules.RulesUtils;
 import life.genny.utils.VertxUtils;
 import life.genny.rules.QRules;
@@ -65,19 +75,22 @@ rule "Create Conversation"
 
 			/* Conversation exists */
 			if(foundConversation == true) {
-				rules.println("Chat Code   ::   " + chatCode);
-				rules.showLoading("Loading Chat History ...");
-				if(chatCode != null) rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
+				if(chatCode != null){
+					rules.println("Chat Exists   ::   TRUE" );
+					rules.println("OLD CHAT CODE   ::   " + chatCode);
+					rules.showLoading("Loading Chat History ...");
+				 	rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
+				}
 			}
 			else {
 				rules.showLoading("Creating a new conversation...");
-			
+				rules.println("Chat Exists   ::   FALSE" );
 				/* GET beg BE */
 					BaseEntity beg = rules.getBaseEntityByCode(begCode);	
 				
 				/* Create chat BE */
 					BaseEntity chat = rules.createBaseEntityByCode(userCode, "CHT", "Chat");
-					rules.println("CHAT CODE   ::   " + chat.getCode());
+					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
 					RulesUtils.ruleLogger("CHAT BaseEntity", chat);
 				
 				/* Subscribe Users to chat BaseEntity */
