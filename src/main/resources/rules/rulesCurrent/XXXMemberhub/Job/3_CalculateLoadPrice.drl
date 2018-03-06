@@ -110,12 +110,12 @@ rule "Calculate Load Price"
 
 
 		List<Answer> answers = new ArrayList<Answer>();
-		answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, String.valueOf(ownerPriceIncGST))):
-		answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, String.valueOf(ownerPriceExcGST))):
-		answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, String.valueOf(driverPriceIncGST))):
-		answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, String.valueOf(driverPriceExcGST))):
-		answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, String.valueOf(feePriceIncGST))):
-		answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, String.valueOf(feePriceExcGST))):
+		answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, String.valueOf(ownerPriceIncGST)));
+		answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, String.valueOf(ownerPriceExcGST)));
+		answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, String.valueOf(driverPriceIncGST)));
+		answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, String.valueOf(driverPriceExcGST)));
+		answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, String.valueOf(feePriceIncGST)));
+		answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, String.valueOf(feePriceExcGST)));
 		rules.saveAnswers(answers);
 
 		rules.footer();
