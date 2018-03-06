@@ -271,6 +271,16 @@ public class VertxUtils {
 			putSetString(realm,SUB,be.getCode(),subscriberSet);
 
 	}
+	
+	static public void unsubscribe(final String realm, final String subscriptionCode, final Set<String> userSet)
+	{
+		final String SUB = "SUB";
+		// Subscribe to a code
+		Set<String> subscriberSet = getSetString(realm,SUB,subscriptionCode);
+		subscriberSet.removeAll(userSet);
+
+		putSetString(realm,SUB,subscriptionCode,subscriberSet);
+	}
 
 	static public String[] getSubscribers(final String realm, final String subscriptionCode)
 	{
