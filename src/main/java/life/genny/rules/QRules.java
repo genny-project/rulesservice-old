@@ -2834,8 +2834,12 @@ public class QRules {
 								
 								 /* Update PRI_NEXT_ACTION = OWNER */
 			                    Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
-			                    saveAnswer(begNextAction);   
-								
+			                    saveAnswer(begNextAction);
+			                    
+							/* Update the Job status   */
+			                  updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
+			             	  updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_"+getUser().getCode(), Status.NEEDS_NO_ACTION.value());
+			                    
 							/* sending cmd BUCKETVIEW */
 								drools.setFocus("SendLayoutsAndData");
 								
@@ -3100,6 +3104,14 @@ public class QRules {
 		publishBaseEntityByCode(getUser().getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
 		publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
+		
+	    /* set Status of the job */
+		   /*  get Owner of the job  */
+	       BaseEntity owner = getChildren(beg.getCode(), "LNK_BEG", "OWNER");
+		   //updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS", "#FFA500");
+		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+getUser().getCode(), Status.NEEDS_NO_ACTION.value());
+		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+owner.getCode(), Status.NEEDS_ACTION.value() );
+		   
 		/* Messages */
 
 		/* OWNER config */
@@ -3123,6 +3135,8 @@ public class QRules {
 		contextMapForDriver.put("QUOTER", getUser().getCode());
 
 		String[] recipientArrForDriver = { getUser().getCode() };
+		
+	
 
 		/* Sending toast message to driver frontend */
 		sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
@@ -3255,9 +3269,10 @@ public class QRules {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_STATUS", "#FFA500");
-	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_"+getUser().getCode(), "#5CB85C");
+       
+	   /* set Status of the job */
+	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_ACTION.value());
+	   updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_"+getUser().getCode(), Status.NEEDS_NO_ACTION.value());
 	   
       /* Get the sourceCode(Company code) for this User */
         BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
