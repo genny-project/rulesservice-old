@@ -14,6 +14,7 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import org.json.simple.JSONObject;
 import java.util.ArrayList;
+import life.genny.qwandautils.JsonUtils;
 
 rule "Calculate Price for Owner"
 when
@@ -28,7 +29,7 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
 
     String tokenString = rules.getToken();
     Answer newAnswer = $m.getAnswer();
-    System.out.println("Am i owner ?" + rules.getUser().is("PRI_OWNER"));
+    rules.println("Am i owner ?" + rules.getUser().is("PRI_OWNER"));
     /* BaseEntity Code */
     String begCode = newAnswer.getTargetCode();
 
@@ -84,11 +85,17 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
     String userRole = null;
     if(isOffer) {
         String offerCode = newAnswer.getTargetCode();
-        System.out.println(" offerCode BE "+ offerCode);
-        userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
+        BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+        rules.println(" offerCode BE "+ offerCode);
+        
+        /* userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);  */
+        
+        /* Next action has to be performed by the other party */
+        userRole = offerBe.getValue("PRI_NEXT_ACTION", null);
+        
     }
-    System.out.println("targetCode   ::   " + newAnswer.getTargetCode() );
-    System.out.println("userRole     ::    " + userRole );
+    rules.println("targetCode   ::   " + newAnswer.getTargetCode() );
+    rules.println("userRole     ::    " + userRole );
     /* Check if the amount is  not null or not negative */
     if( amountValue != null && amountValue >= 0){
         if( newAnswer.getTargetCode().startsWith("BEG_") || ( isOffer && userRole != null && userRole.equals("OWNER")) ) {
@@ -100,31 +107,28 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
             ownerPriceExcGST = rules.excludeGSTMoney(ownerPriceIncGST);
             driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
             driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
-            System.out.println("=======================================================================================================");
-            System.out.println("OWNER quoting      ::   ");
-            System.out.println("targetCode         ::   " +newAnswer.getTargetCode() );
-            System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
-            System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
-            System.out.println("driverPriceIncGST  ::   " + driverPriceIncGST.getNumber().doubleValue());
-            System.out.println("driverPriceExcGST  ::   " + driverPriceExcGST.getNumber().doubleValue());
-            System.out.println("=======================================================================================================");
+            rules.println("=======================================================================================================");
+            rules.println("OWNER quoting      ::   ");
+            rules.println("targetCode         ::   " +newAnswer.getTargetCode() );
+            rules.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
+            rules.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
+            rules.println("driverPriceIncGST  ::   " + driverPriceIncGST.getNumber().doubleValue());
+            rules.println("driverPriceExcGST  ::   " + driverPriceExcGST.getNumber().doubleValue());
+            rules.println("=======================================================================================================");
 
-            /* Get amount values in String */
-            String ownerPriceIncGSTString = QwandaUtils.getMoneyString(ownerPriceIncGST);
-            String ownerPriceExcGSTString = QwandaUtils.getMoneyString(ownerPriceExcGST);
-            String driverPriceIncGSTString = QwandaUtils.getMoneyString(driverPriceIncGST);
-            String driverPriceExcGSTString = QwandaUtils.getMoneyString(driverPriceExcGST);
-            String feePriceIncGSTString = QwandaUtils.getMoneyString(feePriceIncGST);
-            String feePriceExcGSTString = QwandaUtils.getMoneyString(feePriceExcGST);
 
             /* Save PRICES as Answer */
             List<Answer> answers = new ArrayList<Answer>();
-            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
+            
+            Answer owIncGST = new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, JsonUtils.toJson(ownerPriceIncGST));
+            owIncGST.setChangeEvent(false);
+            
+            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, JsonUtils.toJson(ownerPriceExcGST)));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, JsonUtils.toJson(driverPriceIncGST)));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, JsonUtils.toJson(driverPriceExcGST)));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, JsonUtils.toJson(feePriceIncGST)));
+            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, JsonUtils.toJson(feePriceExcGST)));
+            answers.add(owIncGST);
             rules.saveAnswers(answers);
         }
     }
