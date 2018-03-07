@@ -440,6 +440,21 @@ public class QRules {
 
 		return bes;
 	}
+	
+	public List<BaseEntity> getBaseEntitysByParentLinkCodeAndLinkValue(final String parentCode, final String linkCode,
+			final String linkValue, Integer pageStart, Integer pageSize, Boolean cache) {
+
+		List<BaseEntity> bes = null;
+		
+		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeAndLinkValueWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
+				getToken(), parentCode, linkCode, linkValue, pageStart, pageSize);
+		
+		/*bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
+				getToken(), parentCode, linkCode, pageStart, pageSize); */
+
+
+		return bes;
+	}
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache, final String stakeholderCode) {
@@ -2533,7 +2548,13 @@ public class QRules {
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
 		if (!user.is("PRI_DRIVER")) {
-			List<BaseEntity> bin = getBaseEntitysByParentAndLinkCode("GRP_BIN", "LNK_CORE", 0, 20, false);
+			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0, 20, false);
+			for (BaseEntity be : bin) {
+				System.out.println(">>>>>  Printing the begCodes  >>>>");
+				System.out.println(be.getCode());
+				System.out.println(">>>>>       >>>>");
+				
+			}
 			publishCmd(bin, "GRP_BIN", "LNK_CORE");
 		}
 
@@ -3253,7 +3274,8 @@ public class QRules {
        Link newLoadLinkToLoadList =  QwandaUtils.createLink("GRP_LOADS",loadCode , "LNK_LOAD", company.getCode(), (double) 1, getToken());
        println("The load has been added to the GRP_LOADS ");
 
-       
+    /* Subscribe user to the job  */
+       VertxUtils.subscribe(realm(), jobCode, getUser().getCode());
 
     /* SEND LOAD BE    */
         publishBaseEntityByCode(loadCode, jobCode,"LNK_BEG", recipients);
