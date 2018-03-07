@@ -3,6 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.RulesUtils;
+import life.genny.rules.Status;
 import io.vertx.core.json.JsonObject;
 
 import java.util.HashMap;
@@ -47,6 +48,10 @@ then
 				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "TOAST");
 				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "SMS");
 				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "EMAIL");
+				
+				/* Update the Job status   */
+			       rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
+			       rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_NO_ACTION.value());
 		    			 
 			    	
 		    	    }
