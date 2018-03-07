@@ -2684,9 +2684,10 @@ public class QRules {
 	public void makePayment(QDataAnswerMessage m) {
 		/* Save Payment-related answers as user/BEG attributes */
 			String userCode = getUser().getCode();
+			BaseEntity userBe = getBaseEntityByCode(userCode);
 			String begCode = PaymentUtils.processPaymentAnswers(getQwandaServiceUrl(), m, getToken());
 			String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-			String assemblyId = MergeUtil.getAttrValue(getUser().getCode(), "PRI_ASSEMBLY_USER_ID", getToken());
+			String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 
 			if (begCode != null && assemblyId != null) {
 				/* GET beg Base Entity */
@@ -2730,13 +2731,23 @@ public class QRules {
 								Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
 
 							/* Update BEG's prices with offer's prices */
-								updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice));
+								/*updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice));
 								updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", QwandaUtils.getMoneyString(ownerPriceExcGST));
 								updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", QwandaUtils.getMoneyString(ownerPriceIncGST));
 								updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", QwandaUtils.getMoneyString(driverPriceExcGST));
 								updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", QwandaUtils.getMoneyString(driverPriceIncGST));
 								updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST", QwandaUtils.getMoneyString(feePriceExcGST));
-								updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", QwandaUtils.getMoneyString(feePriceIncGST));
+								updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST", QwandaUtils.getMoneyString(feePriceIncGST));*/
+								List<Answer> answers = new ArrayList<Answer>();
+					            answers.add(new Answer(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice)));
+					            answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", QwandaUtils.getMoneyString(ownerPriceExcGST)));
+					            answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", QwandaUtils.getMoneyString(ownerPriceIncGST)));
+					            answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", QwandaUtils.getMoneyString(driverPriceExcGST)));
+					            answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", QwandaUtils.getMoneyString(driverPriceIncGST)));
+					            answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", QwandaUtils.getMoneyString(feePriceExcGST)));
+					            answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", QwandaUtils.getMoneyString(feePriceIncGST)));
+					            saveAnswers(answers);
+								
 
 							/* Update BEG to have DRIVER_CODE as an attribute */
 								Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
@@ -2771,6 +2782,9 @@ public class QRules {
 
 							/* Allocate QUOTER as Driver */
 								updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+								
+							/* Create link - CREATOR for the offer */
+								createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", "CREATOR", 1.0);
 
 							/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 								String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3055,8 +3069,12 @@ public class QRules {
 		answerList.add(new Answer(getUser(), offer, "PRI_OFFER_PRICE", JsonUtils.toJson(begPrice)));
 		answerList
 				.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
-		answerList
-				.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
+		/*answerList
+				.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));*/
+		Answer owIncGST = new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST));
+        owIncGST.setChangeEvent(false);
+        answerList.add(owIncGST);
+		
 		answerList.add(
 				new Answer(getUser(), offer, "PRI_OFFER_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
 		answerList.add(
@@ -3071,6 +3089,7 @@ public class QRules {
 		answerList.add(new Answer(getUser(), offer, "PRI_BEG_CODE", beg.getCode()));
 		answerList.add(new Answer(getUser(), offer, "PRI_NEXT_ACTION", linkOwner));
 		answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DATE", getCurrentLocalDateTime()));
+		
 
 		saveAnswers(answerList);
 
