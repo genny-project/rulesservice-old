@@ -1,8 +1,11 @@
 // package com.sample;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 
 // import org.apache.commons.lang3.StringUtils;
 
@@ -33,10 +36,14 @@
 // //import java.util.ArrayList;
 // //import java.util.List;
 <<<<<<< HEAD
+<<<<<<< HEAD
 // import java.util.HashMap;
 =======
 // import java.util.HashMap; 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+// import java.util.HashMap; 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // import java.time.LocalDateTime;
 // import java.time.ZonedDateTime;
 // import com.google.gson.GsonBuilder;
@@ -60,6 +67,7 @@
 //         bus: EventBus()
 //         $map : Map($value: this["token"] != null)
 <<<<<<< HEAD
+<<<<<<< HEAD
 //     then
 
 
@@ -68,6 +76,8 @@
 //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 //         String tokenString = (String)$map.get("token");
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //     then    
 
        
@@ -75,6 +85,7 @@
 //         /* Prepare Token & qwandaServiceUrl */
 //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 //         String tokenString = (String)$map.get("token");   
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
 
 //         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
@@ -92,6 +103,20 @@
 =======
         
 >>>>>>> b2035684... internmatch registration workflow
+=======
+
+//         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+//         System.out.println("------------------------------------------------------------------------");
+
+//         GsonBuilder gsonBuilder = new GsonBuilder();
+//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+//         Gson gson = gsonBuilder.create();
+
+//         /* extract answers */
+//         Answer[] answers = m.getItems();
+//         for (Answer answer : answers) {
+        
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //             Long askId = answer.getAskId();
 //             String sourceCode = answer.getSourceCode();
 //             String targetCode = answer.getTargetCode();
@@ -106,6 +131,7 @@
 //             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
 //             System.out.println("------------------------------------------------------------------------");
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 //             /* if this answer is actually an address another rule will be triggered */
 //             if(!attributeCode.contains("ADDRESS_FULL")) {
@@ -115,6 +141,8 @@
 // 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
             
 //             /* if this answer is actually an address another rule will be triggered */
 //             if(!attributeCode.contains("ADDRESS_FULL")) {
@@ -123,11 +151,15 @@
 // 	            String jsonAnswer = gson.toJson(answer);
 // 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 	
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 	            /* convert Answer Json to Answer obj */
 // 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
 // 	            System.out.println("Answer Object   ::   "+answerObj);
 // 	            System.out.println("------------------------------------------------------------------------");
+<<<<<<< HEAD
 <<<<<<< HEAD
 // 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
 
@@ -142,6 +174,8 @@
 
 // /* Update address */
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
 	
 // 	            /* post answers to qwanda-utils */
@@ -154,7 +188,10 @@
 // end
 
 // /* Update address */ 
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // rule "Update Address"
 // 	when
 // 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
@@ -164,10 +201,14 @@
 // 	    System.out.println(" ------  Update Address being exected  --------   ");
 // 		try {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 			
 >>>>>>> b2035684... internmatch registration workflow
+=======
+			
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 			Answer[] newAnswers = new Answer[50];
 // 			Answer[] answers = m.getItems();
 // 			GsonBuilder gsonBuilder = new GsonBuilder();
@@ -175,20 +216,27 @@
 // 	        Gson gson = gsonBuilder.create();
 // 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 <<<<<<< HEAD
+<<<<<<< HEAD
 // 	        String tokenString = (String)$map.get("token");
 
 // 	        for (Answer answer : answers) {
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 	        String tokenString = (String)$map.get("token"); 
 	        
 // 	        for (Answer answer : answers) {
 	        
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 	            String targetCode = answer.getTargetCode();
 // 	            answer.setSourceCode(answer.getTargetCode());
 // 	            String attributeCode = answer.getAttributeCode();
 // 	            String value = answer.getValue();
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 // 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
@@ -196,12 +244,17 @@
 
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 	            
 // 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 	            
 	          
 	           
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 	            /* if this answer is actually an address another rule will be triggered */
 // 	            if(attributeCode.contains("ADDRESS_FULL")) {
 // 	            	  JsonObject addressDataJson = new JsonObject(value);
@@ -212,6 +265,7 @@
 // 		    			availableKeys.put("state", "STATE");
 // 		    			availableKeys.put("postal_code", "POSTCODE");
 // 		    			availableKeys.put("country", "COUNTRY");
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 // 		    			int i = 0;
@@ -224,6 +278,8 @@
 // 		    				if(addressDataJson.containsKey(key)) {
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 		    					    					    			
 // 		    			int i = 0;
 // 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
@@ -234,7 +290,10 @@
 		    						    				
 // 		    				if(addressDataJson.containsKey(key)) {
 		    					
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
 // 		    					answer.setAttributeCode(newAttributeCode);
 // 		    					answer.setValue(addressDataJson.getString(key));
@@ -244,26 +303,36 @@
 // 		    					i++;
 // 		    				}
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 // 		    			}
 
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 		    				
 // 		    			}
 		    		
 		    					    	        
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    	        /* Store latitude */
 // 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
 // 		    			answer.setAttributeCode(newAttCode);
 // 		    			Double latitude = addressDataJson.getDouble("latitude");
 // 		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 		    			
 >>>>>>> b2035684... internmatch registration workflow
+=======
+		    			
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    			if(latitude != null) {
 // 			    			answer.setValue(Double.toString(latitude));
 // 			    			String jsonAnswer = gson.toJson(answer);
@@ -274,20 +343,28 @@
 // 			    			System.out.println("The answer object for latitude attribute added to Answer array " );
 // 		    			}
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 		    			
 >>>>>>> b2035684... internmatch registration workflow
+=======
+		    			
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    			/* Store longitude */
 // 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
 // 		    			answer.setAttributeCode(newAttCode);
 // 		    			Double longitude = addressDataJson.getDouble("longitude");
 // 		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 		    			
 >>>>>>> b2035684... internmatch registration workflow
+=======
+		    			
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    			if(longitude != null) {
 // 			    			answer.setValue(Double.toString(longitude));
 // 			    			String jsonAnswer = gson.toJson(answer);
@@ -296,14 +373,19 @@
 // 			    			i++;
 // 		    			}
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 		    			
 >>>>>>> b2035684... internmatch registration workflow
+=======
+		    			
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    			/* set new answers */
 // 		    			m.setItems(newAnswers);
 // 		    			String json = gson.toJson(m);
 // 		    			System.out.println("updated answer json string ::"+json);
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 // 		    			/* send new answers to api */
@@ -311,6 +393,10 @@
 		    			
 // 		    			/* send new answers to api */ 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+		    			
+// 		    			/* send new answers to api */ 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
 // 	            }
 // 	         }
@@ -328,6 +414,7 @@
 //     when
 //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
 <<<<<<< HEAD
+<<<<<<< HEAD
 //         bus:EventBus()
 //        $map : Map($value: this["token"] != null)
 
@@ -336,12 +423,18 @@
 //        $map : Map($value: this["token"] != null)
  
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//         bus:EventBus() 
+//        $map : Map($value: this["token"] != null)
+ 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //      then
 
 //       GsonBuilder gsonBuilder = new GsonBuilder();
 //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 //         Gson gson = gsonBuilder.create();
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 //         String tokenString = (String)$map.get("token");
@@ -376,6 +469,16 @@
 
 //         /* Collect DATA  */
 //         Answer newAnswer = $m.getAnswer();
+=======
+       
+//         String tokenString = (String)$map.get("token");   
+//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+
+//         /* Collect DATA  */
+//         Answer newAnswer = $m.getAnswer();
+>>>>>>> a7e9f6cc... internmatch registration workflow
   
 //         String jsonAnswerStr = gson.toJson(newAnswer);
 //         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
@@ -392,13 +495,17 @@
 
       
         
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // end
 
 // /* Rule listening to Gender Inference */
 // rule "Inference Gender Change"
 //     when
 //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
+<<<<<<< HEAD
 <<<<<<< HEAD
 //         bus:EventBus()
 //         $map : Map($value: this["token"] != null)
@@ -420,6 +527,8 @@
 //         System.out.println("------------------------------------------------------------------------");
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         bus:EventBus() 
 //         $map : Map($value: this["token"] != null)
  
@@ -439,12 +548,16 @@
 //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 //         System.out.println("------------------------------------------------------------------------");
 		
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
 //         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
 //         /* PRINT genderObj */
 //         System.out.println("------------------------------------------------------------------------\n");
 //         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 //         String gender= genderObj.getString("gender");
@@ -455,6 +568,8 @@
 //             System.out.println("\n------------------------------------------------------------------------");
 
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
         
 //         String gender= genderObj.getString("gender");    
 //         Float weight= genderObj.getFloat("probability");    
@@ -463,7 +578,10 @@
 //             System.out.println("GENDER   ::   "+gender.toString());
 //             System.out.println("\n------------------------------------------------------------------------");
             
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //             /* Collect DATA to save gender as an answer */
 //             Answer newAnswer = $m.getAnswer();
 
@@ -481,6 +599,7 @@
 //             obj.put("msg_type", "DATA_MSG");
 //             obj.put("data_type", "Answer");
 <<<<<<< HEAD
+<<<<<<< HEAD
 //             obj.put("items", items);
 //             /* Print Answer */
 //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString());
@@ -489,6 +608,11 @@
 //             /* Print Answer */
 //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//             obj.put("items", items); 
+//             /* Print Answer */
+//             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //             obj.put("token",tokenString);
 //             bus.publish("data", obj);
 //         }else{
@@ -496,6 +620,7 @@
 //             System.out.println("GENDER   ::  Not available ");
 //             System.out.println("Sorry, No Inferred Rule was executed ");
 //         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 
@@ -880,6 +1005,8 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
     
         
 // end
@@ -898,7 +1025,10 @@
 //         /* //Prepare Token & qwandaServiceUrl
 //         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 //         // String tokenString = (String)$map.get("token");   
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 
 //         // // Prepare gson Object
 //         // GsonBuilder gsonBuilder = new GsonBuilder();
@@ -909,6 +1039,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
 //         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
 //         // System.out.println("------------------------------------------------------------------------");
@@ -925,15 +1056,21 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
 //         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 //         // System.out.println("------------------------------------------------------------------------");
 		
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // 		//  // Collect DATA to save facebook dob as primary dob
 //         // Answer newAnswer = $m.getAnswer();
 //         // String jsonAnswerStr = gson.toJson(newAnswer);
 //         // JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -947,10 +1084,14 @@
 =======
             
 >>>>>>> b2035684... internmatch registration workflow
+=======
+            
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         // // get source and target code for logged in user
 //         // String sourceCode= $user.getuCode();
 //         // String targetCode= $user.getuCode();
 //         // // get FBK_DOB
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -970,11 +1111,16 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();  
 //         // // Check if PRI_DOB exists ?
 //         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
         
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         // if(PRI_DOB == null){
 //         //     jsonAnswer.put("value", FBK_BIRTHDAY);
 //         //     jsonAnswer.put("attributeCode", "PRI_DOB");
@@ -985,6 +1131,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 //         //     JsonArray items = new JsonArray();
 //         //     items.add(jsonAnswer);
@@ -1001,11 +1148,16 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
         
 //         //     JsonArray items = new JsonArray();
 //         //     items.add(jsonAnswer);
             
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         //     //Creating Answer DATA_MSG
 //         //     JsonObject obj = new JsonObject();
 //         //     obj.put("msg_type", "DATA_MSG");
@@ -1013,6 +1165,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //         //     obj.put("items", items);
 
 //         //     //Print Answer
@@ -1029,11 +1182,16 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         //     obj.put("items", items); 
             
 //         //     //Print Answer
 //         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString()); 
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         //     obj.put("token",tokenString);
 //         //     bus.publish("data", obj);
 //         // }else {
@@ -1042,6 +1200,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 //         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
 //         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
@@ -1060,12 +1219,17 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
         
 //         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
 //         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 //        */
         
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // end
 
 // /* //Rule listening to Image Inference
@@ -1075,6 +1239,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // //         bus:EventBus()
 // //         $map : Map($value: this["token"] != null)
 // //         $user: User(realm != null)
@@ -1093,12 +1258,17 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // //         bus:EventBus() 
 // //         $map : Map($value: this["token"] != null)
 // //         $user: User(realm != null)
  
 // //      then    
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // //         System.out.println("rule executed");
 // //      	if($user.getUname() ==  $map.get("preferred_username") ){
 // //      		GsonBuilder gsonBuilder = new GsonBuilder();
@@ -1107,6 +1277,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 =======
@@ -1121,6 +1292,10 @@
 	     
 	     
 >>>>>>> b2035684... internmatch registration workflow
+=======
+	     
+	     
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        System.out.println("\n\n");
 // // 	        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
 // // 	        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Image Change" + LOG_RESET);
@@ -1129,6 +1304,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // // 	        String tokenString = (String)$map.get("token");
 
 // // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
@@ -1151,6 +1327,8 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        String tokenString = (String)$map.get("token");   
 	
 // // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
@@ -1158,11 +1336,15 @@
 // // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 // // 	        System.out.println("------------------------------------------------------------------------");       
 	       
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        // Collect DATA to save facebook image as primary image
 // // 	        Answer newAnswer = $m.getAnswer();
 // // 	        String jsonAnswerStr = gson.toJson(newAnswer);
 // // 	        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1190,6 +1372,8 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 	        
 // // 	        // get FBK_IMGURL
 // // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
@@ -1198,7 +1382,10 @@
 // // 	        String sourceCode= $user.getuCode();
 // // 	        String targetCode= $user.getuCode();
 	        
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        jsonAnswer.put("value", FBK_IMGURL);
 // // 	        jsonAnswer.put("attributeCode","PRI_IMAGE_URL");
 // // 	        jsonAnswer.put("sourceCode", sourceCode);
@@ -1208,6 +1395,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 // // 	        JsonArray items = new JsonArray();
 // // 	        items.add(jsonAnswer);
@@ -1224,11 +1412,16 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 	        
 // // 	        JsonArray items = new JsonArray();
 // // 	        items.add(jsonAnswer);
 			
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        //Creating Answer DATA_MSG
 // // 	        JsonObject obj = new JsonObject();
 // // 	        obj.put("msg_type", "DATA_MSG");
@@ -1236,6 +1429,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // // 	        obj.put("items", items);
 
 // // 	        //Print Answer
@@ -1258,6 +1452,8 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        obj.put("items", items); 
 	        
 // // 	        //Print Answer
@@ -1265,12 +1461,16 @@
 // // 	        obj.put("token",tokenString);
 // // 	        bus.publish("data", obj);
 	        
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // 	        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Image Change" + LOG_RESET);
 // // 	        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 // //      	}else{
 // //      		 System.out.println("rule executed but outside if");
 // //      	}
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1288,12 +1488,17 @@
        
         
 >>>>>>> b2035684... internmatch registration workflow
+=======
+       
+        
+>>>>>>> a7e9f6cc... internmatch registration workflow
 // // end
 // */
 // /* Rule listening to load selection value change in Post Load
 // rule "Handle load selection"
 //     when
 //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1307,6 +1512,9 @@
 =======
 //         bus:EventBus() 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//         bus:EventBus() 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         $user: User(realm != null)
 //         $map : Map($value: this["token"] != null)
 //      then
@@ -1314,6 +1522,7 @@
 //         GsonBuilder gsonBuilder = new GsonBuilder();
 //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 //         Gson gson = gsonBuilder.create();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1327,11 +1536,15 @@
 =======
             
 >>>>>>> b2035684... internmatch registration workflow
+=======
+            
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         System.out.println("\n\n");
 //         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
 //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  POST LOAD - Handle load selection  " + LOG_RESET);
 //         //Prepare Token & qwandaServiceUrl
 //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1345,6 +1558,9 @@
 =======
 //         String tokenString = (String)$map.get("token"); 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//         String tokenString = (String)$map.get("token"); 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
 
 //          //Collect load code from answer
@@ -1366,6 +1582,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 
@@ -1376,6 +1593,9 @@
 =======
          
 >>>>>>> b2035684... internmatch registration workflow
+=======
+         
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //          //Answer loadTypeAnswer = new Answer($user.getuCode(), targetCode, "PRI_LOAD_TYPE",loadType);
 //           String jsonAnswerStr = gson.toJson(newAnswer);
 //           System.out.println("The answer in string format :: "+jsonAnswerStr);
@@ -1396,6 +1616,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 
@@ -1406,12 +1627,16 @@
 =======
        
 >>>>>>> b2035684... internmatch registration workflow
+=======
+       
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //        //  String targetCode1 = jsonAnswer.getTargetCode();
 //        //  String sourceCode1 = jsonAnswer.getSourceCode();
 //        //  String loadCode1 = jsonAnswer.getValue();
 //        //  System.out.println("The target BE code is   ::  " +targetCode1);
 //        //  System.out.println("The source BE code is   ::  " +sourceCode1);
 //        //  System.out.println("The load type is   ::  " +loadCode1);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1425,10 +1650,14 @@
 =======
          
 >>>>>>> b2035684... internmatch registration workflow
+=======
+         
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //          //Creating Answer DATA_MSG
 //          JsonObject obj = new JsonObject();
 //          obj.put("msg_type", "DATA_MSG");
 //          obj.put("data_type", "Answer");
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1464,6 +1693,8 @@
 =======
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //          obj.put("items", items); 
 //          //Print Answer
 //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString()); 
@@ -1476,12 +1707,16 @@
 //       //    answerArray = answerList.toArray(answerArray);
 //       //   System.out.println(" Printing the Answer array  :: "+answerArray);
          
+<<<<<<< HEAD
 >>>>>>> b2035684... internmatch registration workflow
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //      //    QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
 //      //    System.out.println(" Printing the QDataAnswerMessage Obj  :: "+msg.toString());
 //      //    JsonObject answerObj = new JsonObject().mapFrom(msg);
 //      //    answerObj.put("token",tokenString);
 //      //    System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1495,6 +1730,9 @@
 =======
 //      //    bus.publish("cmds", answerObj);    
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//      //    bus.publish("cmds", answerObj);    
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
 //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
 // end
@@ -1504,6 +1742,7 @@
 // rule "Handle load type selection"
 //     when
 //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1517,6 +1756,9 @@
 =======
 //         bus:EventBus() 
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//         bus:EventBus() 
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         $user: User(realm != null)
 //         $map : Map($value: this["token"] != null)
 //      then
@@ -1524,6 +1766,7 @@
 //         GsonBuilder gsonBuilder = new GsonBuilder();
 //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 //         Gson gson = gsonBuilder.create();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1537,11 +1780,15 @@
 =======
             
 >>>>>>> b2035684... internmatch registration workflow
+=======
+            
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         System.out.println("\n\n");
 //         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
 //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  Create LOAD - Handle load type selection  " + LOG_RESET);
 //         /* Prepare Token & qwandaServiceUrl */
 //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1563,6 +1810,11 @@
 //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
         
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//         String tokenString = (String)$map.get("token"); 
+//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+        
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //         /* Collect load code from answer */
 //          Answer newAnswer = $m.getAnswer();
 //          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
@@ -1597,6 +1849,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //          obj.put("items", items);
 //          /* Print Answer */
 //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString());
@@ -1626,6 +1879,8 @@
 //  end
 >>>>>>> 66750489... internmatch registration workflow
 =======
+=======
+>>>>>>> a7e9f6cc... internmatch registration workflow
 //          obj.put("items", items); 
 //          /* Print Answer */
 //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString()); 
@@ -1635,5 +1890,9 @@
       
 //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
 //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+<<<<<<< HEAD
 //  end
 >>>>>>> b2035684... internmatch registration workflow
+=======
+//  end
+>>>>>>> a7e9f6cc... internmatch registration workflow
