@@ -3114,6 +3114,13 @@ public class QRules {
 		createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);
 		/* link OFFER and QUOTER BE || CREATOR */
 		createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);
+		
+		/* set Status of the job */
+		   /*  get Owner of the job  */
+	       BaseEntity owner = getChildren(beg.getCode(), "LNK_BEG", "OWNER");
+		   //updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS", "#FFA500");
+		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+getUser().getCode(), Status.NEEDS_NO_ACTION.value());
+		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+owner.getCode(), Status.NEEDS_ACTION.value() );
 
 		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 		String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3122,14 +3129,6 @@ public class QRules {
 		publishBaseEntityByCode(offer.getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
 		publishBaseEntityByCode(getUser().getCode(), beg.getCode(), "LNK_BEG", offerRecipients);
 		publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
-
-		
-	    /* set Status of the job */
-		   /*  get Owner of the job  */
-	       BaseEntity owner = getChildren(beg.getCode(), "LNK_BEG", "OWNER");
-		   //updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS", "#FFA500");
-		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+getUser().getCode(), Status.NEEDS_NO_ACTION.value());
-		   updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_"+owner.getCode(), Status.NEEDS_ACTION.value() );
 		   
 		/* Messages */
 
