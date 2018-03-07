@@ -2549,12 +2549,6 @@ public class QRules {
 
 		if (!user.is("PRI_DRIVER")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0, 20, false);
-			for (BaseEntity be : bin) {
-				System.out.println(">>>>>  Printing the begCodes  >>>>");
-				System.out.println(be.getCode());
-				System.out.println(">>>>>       >>>>");
-				
-			}
 			publishCmd(bin, "GRP_BIN", "LNK_CORE");
 		}
 
