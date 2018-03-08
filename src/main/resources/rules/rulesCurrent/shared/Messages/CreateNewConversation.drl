@@ -75,12 +75,9 @@ rule "Create Conversation"
 
 			/* Conversation exists */
 			if(foundConversation == true) {
-				if(chatCode != null){
-					rules.println("Chat Exists   ::   TRUE" );
-					rules.println("OLD CHAT CODE   ::   " + chatCode);
-					rules.showLoading("Loading Chat History ...");
-				 	rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
-				}
+				rules.println("Chat Code   ::   " + chatCode);
+				rules.showLoading("Loading Chat History ...");
+				if(chatCode != null) rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
 			}
 			else {
 				rules.showLoading("Creating a new conversation...");
@@ -96,7 +93,7 @@ rule "Create Conversation"
 
 				/* Create chat BE */
 					BaseEntity chat = rules.createBaseEntityByCode(userCode, "CHT", "Chat");
-					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
+					rules.println("CHAT CODE   ::   " + chat.getCode());
 					RulesUtils.ruleLogger("CHAT BaseEntity", chat);
 
 				/* Subscribe Users to chat BaseEntity */
