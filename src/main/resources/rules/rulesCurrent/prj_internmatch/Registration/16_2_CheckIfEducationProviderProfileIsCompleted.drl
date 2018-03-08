@@ -5,18 +5,16 @@ import java.util.List;
 
 rule "Check If Education Provider Profile Completion"
      when
-        $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_EDU_PROVIDER") )
-        rules: QRules( isState("STARTED") && !isState("HAS_CHECKED_PROFILE_INTERN") ) 
+        rules: QRules( isState("STARTED") && !isState("LOOP_EDU_ROLE_CHECK") && isState("PRI_IS_EDU_PROVIDER")) 
      then
         
         rules.header();
         
-		rules.setState("HAS_CHECKED_PROFILE_INTERN");
+		rules.setState("LOOP_EDU_ROLE_CHECK");
      	rules.set("registration_question_grp", "QUE_EDU_PROVIDER_GRP");
      	
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
      	
      	rules.setState("CHECK_USER_PROFILE_COMPLETED");
 
