@@ -13,9 +13,13 @@ rule "Check Intern Profile Completion"
         
 		rules.setState("HAS_CHECKED_PROFILE_INTERN");
      	rules.set("registration_question_grp", "QUE_USER_INTERNMATCH_GRP");
+     	
+     	/* todo: send these selections when sending the group of questions, not here */
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
+     	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
+     	
      	rules.setState("CHECK_USER_PROFILE_COMPLETED");
 		
 		rules.footer();     		      
