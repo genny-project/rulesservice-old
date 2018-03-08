@@ -46,12 +46,14 @@ rule "Load Details - Back action"
 		 $m :  QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_GO_BACK_JOB_DETAIL" )
 	     bus: EventBus()
 	     $map : Map($value: this["token"] != null)
+		rules: QRules( isState("STARTED") && !isState("HAS_SENT_DASHBOARD") )
 	then
 
 		rules.header();
 
 		/* drools.setFocus("SendLayoutsAndData");  */
+		rules.setState("HAS_SENT_DASHBOARD");
 		rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-		
+
 		rules.footer();
 end
