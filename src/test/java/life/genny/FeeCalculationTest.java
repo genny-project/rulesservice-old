@@ -45,7 +45,14 @@ public class FeeCalculationTest {
 		
 		/* fee calculation */
 		ownerFeeExcGST = rules.calcOwnerFee(ownerPrice);
-		ownerFeeIncGST = rules.includeGSTMoney(ownerFeeExcGST);
+		
+		if(ownerPrice.compareTo(Money.of(300, DEFAULT_CURRENCY_AUD)) > 0) {
+			if(ownerFeeExcGST.compareTo(Money.of(100, DEFAULT_CURRENCY_AUD)) < 0) {
+				ownerFeeExcGST = Money.of(100, DEFAULT_CURRENCY_AUD);
+			}
+		}
+		
+		ownerFeeIncGST = rules.includeGSTMoney(ownerFeeExcGST);	
 		
 		/* price calculation */
 		ownerPriceExcGST = ownerPrice;
@@ -90,7 +97,14 @@ public class FeeCalculationTest {
 		QRules rules = new QRules(null, null, null);
 		
 		/* fee calculation */
-		driverFeeExcGST = rules.calcDriverFee(driverPrice);
+		driverFeeExcGST = rules.calcOwnerFee(driverPrice);
+		
+		if(driverPrice.compareTo(Money.of(300, DEFAULT_CURRENCY_AUD)) > 0) {
+			if(driverFeeExcGST.compareTo(Money.of(100, DEFAULT_CURRENCY_AUD)) < 0) {
+				driverFeeExcGST = Money.of(100, DEFAULT_CURRENCY_AUD);
+			}
+		}
+		
 		driverFeeIncGST = rules.includeGSTMoney(driverFeeExcGST);
 		
 		/* price calculation */
