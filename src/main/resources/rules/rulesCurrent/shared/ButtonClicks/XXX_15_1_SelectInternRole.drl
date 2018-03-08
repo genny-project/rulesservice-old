@@ -1,18 +1,19 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Select Intern Role"
 
 	when
-		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_SELECT_ROLE_INTERN")
-	    rules: QRules( !isState("INTERN_SELECTED") ) 	    
+		m : QEventMessage( data.code == "BTN_SELECT_ROLE_INTERN")
+	    rules: QRules() 	    
 	 then
-	 	rules.println("hi");
 	    rules.header();
+	 	rules.println("hi");
 		rules.setState("HAS_SENT_SUBLAYOUT");
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "TRUE");
+	/*	rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "TRUE");  */
 		rules.setState("INTERN_SELECTED");
 	    rules.footer();     		      
 end
