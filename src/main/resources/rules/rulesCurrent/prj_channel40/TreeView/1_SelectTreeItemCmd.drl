@@ -20,9 +20,13 @@ rule "TV_SELECT Event"
        	String grpCode = $m.getData().getValue();
         if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") && !grpCode.equals("GRP_ADMIN_USERS") && !grpCode.equals("GRP_ADMIN_JOBS")) {
 
-	        if(grpCode.equals("GRP_DASHBOARD")) {
-	        		drools.setFocus("SendLayoutsAndData");
+	        if( grpCode.equals("GRP_DASHBOARD") ) {
+	             rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
+	        		/*drools.setFocus("SendLayoutsAndData");*/
 	         }
+	   /*      else if( grpCode.equals("GRP_DASHBOARD") && rules.getUser().is("PRI_DRIVER") ){
+	            rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
+	         } */
 	        else {
 
 		        	/* sending cmd LIST_VIEW */
