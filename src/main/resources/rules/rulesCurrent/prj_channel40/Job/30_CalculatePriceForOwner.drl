@@ -96,13 +96,22 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
     }
     rules.println("targetCode   ::   " + newAnswer.getTargetCode() );
     rules.println("userRole     ::    " + userRole );
+    
     /* Check if the amount is  not null or not negative */
     if( amountValue != null && amountValue >= 0){
-        if( newAnswer.getTargetCode().startsWith("BEG_") || ( isOffer && userRole != null && userRole.equals("OWNER")) ) {
-            /* Owner Fees */
-            fees = rules.calcOwnerFee( answerPrice );
+		if( newAnswer.getTargetCode().startsWith("BEG_") || ( isOffer && userRole != null && userRole.equals("OWNER")) ) {
+		    
+		    /* Owner Fees */
+		   	fees = rules.calcOwnerFee(answerPrice);       
+   			if(answerPrice.compareTo(Money.of(300, DEFAULT_CURRENCY)) > 0) {
+				if(fees.compareTo(Money.of(100, DEFAULT_CURRENCY)) < 0) {
+			     	fees = Money.of(100, DEFAULT_CURRENCY);
+			     }
+  			}
+
             feePriceExcGST = fees;
-            feePriceIncGST = rules.includeGSTMoney(fees);
+            feePriceIncGST = rules.includeGSTMoney(feePriceExcGST);
+            
             ownerPriceIncGST = answerPrice;
             ownerPriceExcGST = rules.excludeGSTMoney(ownerPriceIncGST);
             driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
