@@ -22,11 +22,7 @@ rule "TV_SELECT Event"
 
 	        if( grpCode.equals("GRP_DASHBOARD") ) {
 	             rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-	        		/*drools.setFocus("SendLayoutsAndData");*/
 	         }
-	   /*      else if( grpCode.equals("GRP_DASHBOARD") && rules.getUser().is("PRI_DRIVER") ){
-	            rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-	         } */
 	        else {
 
 		        	/* sending cmd LIST_VIEW */
