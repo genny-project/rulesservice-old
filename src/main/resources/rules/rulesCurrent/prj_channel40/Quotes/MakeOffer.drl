@@ -70,32 +70,49 @@ rule "Make Offer"
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
-
-        /* Create Offer BE */
-            BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
-            RulesUtils.ruleLogger("OFFER Base Entity", offer);
-            /* Get Offer Code */
-            String offerCode= offer.getCode();
-            rules.println("offerCode   ::   "+offerCode);
+            String offerCode= "null";
             
-        /* Save attributes for OFFER as answer */
-            Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
-            Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
-            Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
-            Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
-            Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
+         /* Check if a link exists between BEG & OFFER */
+            //Boolean linkBegQuoter = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, linkQuoter, tokenString );
+            Boolean linkExists = QwandaUtils.checkIfLinkExists(begCode, linkCode, userCode, "QUOTER", tokenString);
+            rules.println("LINK EXISTS FOR BEG & QUOTER ?  ::    "+ linkExists);
             
-            List<Answer> answerList = new ArrayList<Answer>();	
-            answerList.add(offercode);
-            answerList.add(quoterCode);
-            answerList.add(quoterUname);
-            answerList.add(quoterFullName);
-            answerList.add(jobCode);
+            if(linkExists){           
+               //rules.println( "The baseEntity offer is"+rules.getOfferBE(begCode, userCode, linkCode, linkOffer) );
+              // BaseEntity oldOffer =  rules.getOfferBE(begCode, userCode, linkCode, linkOffer);
+               //offerCode = oldOffer.getCode();
+           }
+           
+          if(!linkExists){ 
 
-			rules.saveAnswers(answerList);
-            rules.publishData(answerList);         
+        		/* Create Offer BE */
+	          BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
+	          RulesUtils.ruleLogger("OFFER Base Entity", offer);
+	          /* Get Offer Code */
+	          offerCode = offer.getCode();
+	          rules.println("offerCode   ::   "+offerCode);
+            
+           /* Save attributes for OFFER as answer */
+             Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
+             Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
+             Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
+             Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
+             Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
+            
+              List<Answer> answerList = new ArrayList<Answer>();	
+              answerList.add(offercode);
+              answerList.add(quoterCode);
+              answerList.add(quoterUname);
+              answerList.add(quoterFullName);
+              answerList.add(jobCode);
+
+			  rules.saveAnswers(answerList);
+              rules.publishData(answerList);  
+            
+             }       
 
         /* Send Offer Questions */
             rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+            
         rules.footer();
 end
