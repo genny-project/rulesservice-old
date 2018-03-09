@@ -70,7 +70,7 @@ rule "Calculate Price for Driver"
             
             /* Check if the amount is  not null or not negative */  
                 if( amountValue != null && amountValue >= 0){
-                    if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER"))) {
+                    if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER") || userRole.equals("OWNER"))) {
                          
                          /* Driver Fees */
 					   	fees = rules.calcDriverFee( answerPrice );       
@@ -108,7 +108,7 @@ rule "Calculate Price for Driver"
                             answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
                             answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
                             answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString));
+                           /* answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString)); */
                             answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
                             answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
                             rules.saveAnswers(answers);

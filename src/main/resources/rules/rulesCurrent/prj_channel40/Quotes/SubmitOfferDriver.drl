@@ -118,8 +118,10 @@ rule "Submit Offer Driver"
 
             /* COUNTER OFFER HAPPENING */
                 if(linkBegOffer) {
-                    rules.println("Driver is giving counter offer");
-                    /* Send Messages*/
+                    rules.println("The value of PRI_NEXT_ACTION for this offer :"+offerCode+": is ::"+ rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION"));
+                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("QUOTER") ){
+                      rules.println("Driver is giving counter offer");
+                      /* Send Messages*/
                         HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
                         counterContextMapForOwner.put("JOB", begCode);
                         counterContextMapForOwner.put("OFFER", offerCode);
@@ -134,9 +136,32 @@ rule "Submit Offer Driver"
                         counterContextMapForDriver.put("OWNER", ownerCode);
                         rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_FROM_DTD", "TOAST");
 
-                    /* Update PRI_NEXT_ACTION = OWNER */
-                    Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                    rules.saveAnswer(offerActionAnswer1);          
+                      /* Update PRI_NEXT_ACTION = OWNER */
+                      Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                      rules.saveAnswer(offerActionAnswer1); 
+                    }  
+                    
+                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){   
+                       rules.println("Driver is updating the offer price");
+                      /* Send Messages*/
+                        HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
+                        counterContextMapForOwner.put("JOB", begCode);
+                        counterContextMapForOwner.put("OFFER", offerCode);
+                        counterContextMapForOwner.put("QUOTER", quoterCode);
+                        counterContextMapForOwner.put("OWNER", ownerCode);      
+                        rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_OFFER_PRICE_UPDATED_FROM_DTO", "TOAST");
+
+                        HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
+                        counterContextMapForDriver.put("JOB", begCode);
+                        counterContextMapForDriver.put("OFFER", offerCode);
+                        counterContextMapForDriver.put("QUOTER", quoterCode);
+                        counterContextMapForDriver.put("OWNER", ownerCode);
+                        rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_OFFER_PRICE_UPDATED_FROM_DTD", "TOAST");
+                     /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	                    String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
+	                    rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+	                    rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);                     
+                   }    
                 }
 
             /* SUBMIT OFFER HAPPENING */

@@ -73,14 +73,14 @@ rule "Make Offer"
             String offerCode= "null";
             
          /* Check if a link exists between BEG & OFFER */
-            //Boolean linkBegQuoter = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, linkQuoter, tokenString );
+            /* Boolean linkBegQuoter = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, linkQuoter, tokenString ); */
             Boolean linkExists = QwandaUtils.checkIfLinkExists(begCode, linkCode, userCode, "QUOTER", tokenString);
             rules.println("LINK EXISTS FOR BEG & QUOTER ?  ::    "+ linkExists);
             
             if(linkExists){           
-               //rules.println( "The baseEntity offer is"+rules.getOfferBE(begCode, userCode, linkCode, linkOffer) );
-              // BaseEntity oldOffer =  rules.getOfferBE(begCode, userCode, linkCode, linkOffer);
-               //offerCode = oldOffer.getCode();
+               rules.println( "The baseEntity offer is"+rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString) );
+               BaseEntity oldOffer =  rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
+               offerCode = oldOffer.getCode();
            }
            
           if(!linkExists){ 
