@@ -1,6 +1,8 @@
 
 package life.genny.rules;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
@@ -3343,6 +3345,62 @@ public class QRules {
 		         setState("ATTRIBUTE_CHANGE2");
 		     	fireAttributeChanges(m);
 		     	}
+	}
+	
+	
+	public List getLinkList(String groupCode, String linkCode, String linkValue, String token) {
+
+		// String qwandaServiceUrl = "http://localhost:8280";
+		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+		List linkList = null;
+
+		try {
+			String attributeString = QwandaUtils.apiGet(
+					qwandaServiceUrl + "/qwanda/entityentitys/" + groupCode + "/linkcodes/" +linkCode+ "/children/" +linkValue, token);
+			if (attributeString != null) {
+				linkList = JsonUtils.fromJson(attributeString, List.class);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return linkList;
+
+	}
+
+	
+	
+	public BaseEntity getLink(String groupCode, String sourceCode, String linkValue, String quoterCode,
+			String token) {
+		
+		
+		List linkList = getLinkList(groupCode, sourceCode, linkValue, token);
+		String quoterCodeForOffer = null;
+		BaseEntity offer = null;
+		
+		
+		if (linkList != null) {
+			
+			for (Object linkObj : linkList) {
+				Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
+
+				BaseEntity offerBe = getBaseEntityByCode(link.getTargetCode());
+
+				if (offerBe != null) {
+					quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
+
+					if (quoterCode.equals(quoterCodeForOffer)) {
+						offer = offerBe;
+						return offerBe;
+					}
+				}
+
+			}
+
+		}
+		
+		return offer;
 	}
 
 }
