@@ -3371,11 +3371,11 @@ public class QRules {
 
 	
 	
-	public BaseEntity getOfferBaseEntity(String groupCode, String sourceCode, String linkValue, String quoterCode,
+	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
 			String token) {
 		
 		
-		List linkList = getLinkList(groupCode, sourceCode, linkValue, token);
+		List linkList = getLinkList(groupCode, linkCode, linkValue, token);
 		String quoterCodeForOffer = null;
 		BaseEntity offer = null;
 		
