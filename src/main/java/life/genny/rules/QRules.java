@@ -3371,7 +3371,7 @@ public class QRules {
 
 	
 	
-	public BaseEntity getLink(String groupCode, String sourceCode, String linkValue, String quoterCode,
+	public BaseEntity getOfferBaseEntity(String groupCode, String sourceCode, String linkValue, String quoterCode,
 			String token) {
 		
 		
