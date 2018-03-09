@@ -1,15 +1,12 @@
 package life.genny.rules;
-
 import life.genny.rules.QRules;
 
 rule "Send Sublayout"
 
     when
         rules: QRules( isState("STARTED") && isState("SEND_SUBLAYOUT") && !isState("HAS_SENT_SUBLAYOUT") ) 
-
      then
-        rules.header();
-        
+        rules.header();    
 		rules.setState("HAS_SENT_SUBLAYOUT");
 		
 		String layoutCode = rules.getAsString("sublayoutcode");
