@@ -1,8 +1,6 @@
 
 package life.genny.rules;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
