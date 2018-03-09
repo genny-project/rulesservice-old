@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Edu Provider Registration Form Submit"
+	when
+	    rules: QRules( isState("QUE_EDUCATION_GRP") && !isState("LOOP_EDU_PROVIDER_REGISTRATION_FORM")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_EDU_PROVIDER_REGISTRATION_FORM");
+
+		String sourceCode = rules.getUser().getCode();
+		String targetCode = rules.getUser().getCode();
+		String attributeCode = "PRI_IS_PROFILE_COMPLETED";
+		String value = "TRUE";
+
+		rules.set("sourceCode", sourceCode);
+		rules.set("targetCode", targetCode);
+		rules.set("attributeCode", attributeCode);
+		rules.set("value", value);
+        rules.setState("UPDATE_BASEENTITY_ATTRIBUTE");
+
+	 	rules.footer();      
+end
