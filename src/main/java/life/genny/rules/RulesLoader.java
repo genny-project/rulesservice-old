@@ -322,7 +322,7 @@ public class RulesLoader {
 				// Adding realm name to the decoded token
 				decodedToken.put("realm", realm);
 			}
-			log.info("######  The realm name is:  #####  " + decodedToken.get("realm"));
+			//log.info("######  The realm name is:  #####  " + decodedToken.get("realm"));
 			// Printing Decoded Token values
 			// for (final Map.Entry entry : decodedToken.entrySet()) {
 			// log.info(entry.getKey() + ", " + entry.getValue());

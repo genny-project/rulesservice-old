@@ -17,6 +17,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channel.Consumer;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.entity.User;
@@ -49,7 +50,7 @@ public class EBCHandlers {
 	static String token;
 
 	public static void registerHandlers(final EventBus eventBus) {
-		EBConsumers.getFromCmds().subscribe(arg -> {
+		Consumer.getFromCmds().subscribe(arg -> {
 			JsonObject payload = processMessage("Service Command", arg);
 
 			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
@@ -61,7 +62,7 @@ public class EBCHandlers {
 
 		});
 
-		EBConsumers.getFromEvents().subscribe(arg -> {
+		Consumer.getFromEvents().subscribe(arg -> {
 			JsonObject payload = processMessage("Event", arg);
 
 			QEventMessage eventMsg = null;
@@ -83,7 +84,7 @@ public class EBCHandlers {
 
 		});
 
-		EBConsumers.getFromData().subscribe(arg -> {
+		Consumer.getFromData().subscribe(arg -> {
 
 			JsonObject payload = processMessage("Data", arg);
 
