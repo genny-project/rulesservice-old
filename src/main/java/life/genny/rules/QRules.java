@@ -38,6 +38,7 @@ import com.google.common.collect.Sets;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -1036,10 +1037,7 @@ public class QRules {
 		return devMode;
 	}
 
-	public void publish(String channel, final Object payload) {
 
-		this.getEventBus().publish(channel, payload);
-	}
 
 	public void send(final String channel, final Object payload) {
 		this.getEventBus().send(channel, payload);
@@ -1272,7 +1270,7 @@ public class QRules {
 		newLink.put("items", links);
 		newLink.put("token", getToken());
 		// getEventBus().publish("cmds", newLink);
-		publish("data", newLink);
+		publish("data", newLink.toString());
 		publish("data", json);
 	}
 
@@ -1280,6 +1278,23 @@ public class QRules {
 
 		msg.setToken(getToken());
 		publish("messages", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publish(String channel, final Object payload) {
+	    switch (channel) {
+	      case "event":
+	        Producer.getToEvents().write(payload);
+	      case "data":
+	        Producer.getToData().write((String)payload);
+	      case "cmds":
+	        Producer.getToCmds().write(payload);
+	      case "services":
+	        Producer.getToServices().write(payload);
+	      case "messages":
+	        Producer.getToMessages().write(payload);
+	      default:
+	        System.out.println("Channel does not exits: " + channel);
+	    }
 	}
 
 	/*
