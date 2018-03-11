@@ -12,7 +12,7 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Assembly user-company updation for attribute change - ABN"
     when
-    	m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ABN") ) 
+    	m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_ABN" ) 
     	rules: QRules( isState("STARTED") )
     then    
 		RulesUtils.header(drools.getRule().getName());
