@@ -689,12 +689,11 @@ public class RulesUtils {
 	{
 		try {
 			
-			 String json = VertxUtils.readCachedJson("attributes").toString();
-			 if ((json == null) || (json.contains("rror"))){
+			 JsonObject json = VertxUtils.readCachedJson("attributes");
+			 if ("ok".equals(json.getString("status"))) {
 				 println("LOADING ATTRIBUTES!");
-				 json = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
-				  VertxUtils.writeCachedJson("attributes", json);
-				  attributesMsg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+			//	  VertxUtils.writeCachedJson("attributes", json.getString("value"));
+				  attributesMsg = JsonUtils.fromJson(json.getString("value"), QDataAttributeMessage.class);
 				  Attribute[]  attributeArray = attributesMsg.getItems();
 				  
 				  for (Attribute attribute : attributeArray ) {
@@ -703,9 +702,9 @@ public class RulesUtils {
 				  println("All the attributes have been loaded in");
 				  
 			 } else {
-				 println("Attributes Already loaded into cache");
-				 if ((attributeMap == null ) || (attributeMap.isEmpty())) {
-					  attributesMsg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+				 String jsonString = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
+				  VertxUtils.writeCachedJson("attributes", jsonString);
+				  attributesMsg = JsonUtils.fromJson(jsonString, QDataAttributeMessage.class);
 					  Attribute[]  attributeArray = attributesMsg.getItems();
 					  
 					  for (Attribute attribute : attributeArray ) {
@@ -713,10 +712,8 @@ public class RulesUtils {
 					  }
 					  println("All the attributes have been loaded in");
 
-				 }
 
 			 }
-			
 			
 			 return attributesMsg;
 		} catch(Exception e) {

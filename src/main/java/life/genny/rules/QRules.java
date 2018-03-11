@@ -1740,7 +1740,7 @@ public class QRules {
 		BaseEntity cachedBe = null;
 
 		if (firstanswer != null) {
-			cachedBe = this.getBaseEntityByCode(firstanswer.getTargetCode());
+			cachedBe = this.getBaseEntityByCodeWithAttributes(firstanswer.getTargetCode());
 		} else {
 			return null;
 		}
@@ -1767,7 +1767,7 @@ public class QRules {
 	public void saveAnswer(Answer answer) {
 
 		try {
-			// updateCachedBaseEntity(answer);
+			updateCachedBaseEntity(answer);
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", RulesUtils.toJson(answer), getToken());
 			// Now update the Cache
 
@@ -1950,7 +1950,7 @@ public class QRules {
 		items = answers.toArray(items);
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
-		// updateCachedBaseEntity(answers);
+		updateCachedBaseEntity(answers);
 
 		String jsonAnswer = RulesUtils.toJson(msg);
 		jsonAnswer.replace("\\\"", "\"");
