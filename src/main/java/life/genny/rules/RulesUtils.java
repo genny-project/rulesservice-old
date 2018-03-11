@@ -696,7 +696,8 @@ public class RulesUtils {
 				  attributesMsg = JsonUtils.fromJson(json.getString("value"), QDataAttributeMessage.class);
 				  Attribute[]  attributeArray = attributesMsg.getItems();
 				  
-				  for (Attribute attribute : attributeArray ) {
+
+for (Attribute attribute : attributeArray ) {
 					  attributeMap.put(attribute.getCode(), attribute);
 				  }
 				  println("All the attributes have been loaded in");
