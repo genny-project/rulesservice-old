@@ -8,6 +8,7 @@ import life.genny.channels.Routers;
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.rules.RulesLoader;
+import life.genny.utils.VertxUtils;
 
 public class ServiceVerticle extends AbstractVerticle {
 
@@ -23,7 +24,7 @@ public class ServiceVerticle extends AbstractVerticle {
       if (rulesDir == null) {
         rulesDir = "rules";
       }
-      RulesLoader.loadInitialRules(rulesDir).compose(p -> {
+       RulesLoader.loadInitialRules(rulesDir).compose(p -> {
         Routers.routers(vertx);
         EBCHandlers.registerHandlers(CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
         fut.complete();

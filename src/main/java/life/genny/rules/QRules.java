@@ -392,6 +392,15 @@ public class QRules {
 		if (be == null) {
 			println("ERROR - be (" + code + ") fetched is NULL ");
 		} else {
+			if (be.getBaseEntityAttributes().isEmpty()) {
+				try {
+					be = QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
+					VertxUtils.writeCachedJson(code, JsonUtils.toJson(be));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			addAttributes(be);
 		}
 		return be;

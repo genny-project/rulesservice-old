@@ -76,7 +76,7 @@ rule "Submit Offer Driver"
             String linkCreator = "CREATOR";
 
         /* GET OFFER BE */
-            BaseEntity offer = rules.getBaseEntityByCode(offerCode);	
+            BaseEntity offer = rules.getBaseEntityByCodeWithAttributes(offerCode);	
 
         /* GET  attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
