@@ -1286,7 +1286,7 @@ public class QRules {
 	        Producer.getToEvents().write(payload);
 	        break;
 	      case "data":
-	        Producer.getToData().write((String)payload);
+	        Producer.getToData().write(payload);
 	        break;
 	      case "cmds":
 	        Producer.getToCmds().write(payload);
