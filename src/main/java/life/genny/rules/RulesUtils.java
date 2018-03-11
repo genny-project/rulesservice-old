@@ -703,7 +703,18 @@ public class RulesUtils {
 				  println("All the attributes have been loaded in");
 				  
 			 } else {
-				 println("Attributes Already loaded");
+				 println("Attributes Already loaded into cache");
+				 if ((attributeMap == null ) || (attributeMap.isEmpty())) {
+					  attributesMsg = JsonUtils.fromJson(json, QDataAttributeMessage.class);
+					  Attribute[]  attributeArray = attributesMsg.getItems();
+					  
+					  for (Attribute attribute : attributeArray ) {
+						  attributeMap.put(attribute.getCode(), attribute);
+					  }
+					  println("All the attributes have been loaded in");
+
+				 }
+
 			 }
 			
 			
