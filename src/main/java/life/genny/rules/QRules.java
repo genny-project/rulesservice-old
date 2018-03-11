@@ -1284,16 +1284,21 @@ public class QRules {
 	    switch (channel) {
 	      case "event":
 	        Producer.getToEvents().write(payload);
+	        break;
 	      case "data":
 	        Producer.getToData().write((String)payload);
+	        break;
 	      case "cmds":
 	        Producer.getToCmds().write(payload);
+	        break;
 	      case "services":
 	        Producer.getToServices().write(payload);
+	        break;
 	      case "messages":
 	        Producer.getToMessages().write(payload);
+	        break;
 	      default:
-	        System.out.println("Channel does not exits: " + channel);
+	        println("Channel does not exist: " + channel);
 	    }
 	}
 
@@ -2255,7 +2260,7 @@ public class QRules {
 
 			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
 				// Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
-				System.out.println("Money=" + ea.getValueMoney());
+				println("Money=" + ea.getValueMoney());
 				// BigDecimal bd = new BigDecimal(mon.getNumber().toString());
 				// Money hacked = Money.of(bd, mon.getCurrency());
 				// ea.setValueMoney(hacked);
@@ -2304,20 +2309,20 @@ public class QRules {
 			// RANGE_1_COMPONENT
 			ownerFee = Money.of(RANGE_1_COMPONENT, DEFAULT_CURRENCY_TYPE);
 
-			System.out.println("range 1 ");
+			println("range 1 ");
 		}
 
 		if (inputNum.doubleValue() > RANGE_1.doubleValue() && inputNum.doubleValue() <= RANGE_2.doubleValue()) {
 			// RANGE_2_COMPONENT + (input - RANGE_1) * FEE_2
-			System.out.println(input);
+			println(input);
 			Money subtract = MoneyHelper.sub(input, RANGE_1);
-			System.out.println(subtract);
+			println(subtract);
 			Money multiply = MoneyHelper.mul(subtract, FEE_2);
-			System.out.println(multiply);
+			println(multiply);
 			ownerFee = MoneyHelper.add(multiply, RANGE_2_COMPONENT);
-			System.out.println(ownerFee);
+			println(ownerFee);
 
-			System.out.println("range 2 ");
+			println("range 2 ");
 		}
 
 		if (inputNum.doubleValue() > RANGE_2.doubleValue() && inputNum.doubleValue() <= RANGE_3.doubleValue()) {
@@ -2328,7 +2333,7 @@ public class QRules {
 			Money addition2 = MoneyHelper.add(multiply, addition1);
 			ownerFee = addition2;
 
-			System.out.println("range 3 ");
+			println("range 3 ");
 		}
 
 		if (inputNum.doubleValue() > RANGE_3.doubleValue()) {
@@ -2341,7 +2346,7 @@ public class QRules {
 			Money addition3 = MoneyHelper.add(multiply, addition2);
 			ownerFee = addition3;
 
-			System.out.println("range 4 ");
+			println("range 4 ");
 		}
 
 		/*
@@ -2353,7 +2358,7 @@ public class QRules {
 
 		Number amount = ownerFee.getNumber().doubleValue();
 		Money fee = Money.of(amount.doubleValue(), DEFAULT_CURRENCY_TYPE);
-		System.out.println("From QRules " + fee);
+		println("From QRules " + fee);
 		return fee;
 
 	}
@@ -2407,7 +2412,7 @@ public class QRules {
 			Money multiply = MoneyHelper.mul(input, divide);
 			driverFee = calcOwnerFee(multiply);
 
-			System.out.println("zone 1 ");
+			println("zone 1 ");
 		}
 
 		if (inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_1.doubleValue()
@@ -2425,7 +2430,7 @@ public class QRules {
 			Money multiply3 = MoneyHelper.mul(input, divide2);
 			driverFee = calcOwnerFee(multiply3);
 
-			System.out.println("zone 2 ");
+			println("zone 2 ");
 		}
 
 		if (inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_2.doubleValue()
@@ -2445,7 +2450,7 @@ public class QRules {
 			Money multiply3 = MoneyHelper.mul(input, divide2);
 			driverFee = calcOwnerFee(multiply3);
 
-			System.out.println("zone 3 ");
+			println("zone 3 ");
 		}
 
 		if (inputNum.doubleValue() >= REVERSE_FEE_BOUNDARY_3.doubleValue()) {
@@ -2468,7 +2473,7 @@ public class QRules {
 			Money multiply3 = MoneyHelper.mul(input, divide2);
 			driverFee = calcOwnerFee(multiply3);
 
-			System.out.println("zone 4 ");
+			println("zone 4 ");
 		}
 		return driverFee;
 	}
@@ -2819,8 +2824,8 @@ public class QRules {
 								
 							/* GET all the driver subsribers */
 								String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-								System.out.println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
-								System.out.println("quoter code ::"+quoterCode);
+								println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
+								println("quoter code ::"+quoterCode);
 								
 								Set<String> unsubscribeSet = new HashSet<>(); 
 								
@@ -2830,7 +2835,7 @@ public class QRules {
 									}
 								}
 								
-								System.out.println("unsubscribe set ::"+unsubscribeSet);
+								println("unsubscribe set ::"+unsubscribeSet);
 								
 								String[] unsubscribeArr = new String[unsubscribeSet.size()];
 								
@@ -2839,13 +2844,13 @@ public class QRules {
 									unsubscribeArr[i++] = code;
 								}
 						
-								System.out.println("unsubscribe arr ::"+Arrays.toString(unsubscribeArr));
+								println("unsubscribe arr ::"+Arrays.toString(unsubscribeArr));
 								
 								/* Move BEG to GRP_APPROVED */
 								fastClearBaseEntity(begCode, unsubscribeArr);
 								
 								BaseEntity begbe = getBaseEntityByCode(begCode);
-								System.out.println("be   ::   " + begbe);
+								println("be   ::   " + begbe);
 
 								Set<EntityAttribute> attributes = begbe.getBaseEntityAttributes();
 								begbe.setBaseEntityAttributes(attributes);
@@ -2962,10 +2967,10 @@ public class QRules {
 
 	public void clearBaseEntityAttr(String userCode) {
 		BaseEntity be = getBaseEntityByCode(userCode);
-		System.out.println("be   ::   " + be);
+		println("be   ::   " + be);
 
 		Set<EntityAttribute> attributes = be.getBaseEntityAttributes();
-		System.out.println("Size all   ::   " + attributes.size());
+		println("Size all   ::   " + attributes.size());
 		Set<EntityAttribute> removeAttributes = new HashSet<EntityAttribute>();
 
 		for (EntityAttribute attribute : attributes) {
@@ -3002,12 +3007,12 @@ public class QRules {
 			}
 
 		}
-		System.out.println("before removing   ::   " + attributes.toString());
-		System.out.println("Size toRemove   ::   " + removeAttributes.size());
-		System.out.println("Removing attrs   ::   " + removeAttributes.toString());
+		println("before removing   ::   " + attributes.toString());
+		println("Size toRemove   ::   " + removeAttributes.size());
+		println("Removing attrs   ::   " + removeAttributes.toString());
 		attributes.removeAll(removeAttributes);
-		System.out.println("after removing   ::   " + attributes.toString());
-		System.out.println("Size afterRemoved   ::   " + attributes.size());
+		println("after removing   ::   " + attributes.toString());
+		println("Size afterRemoved   ::   " + attributes.size());
 
 		be.setBaseEntityAttributes(attributes);
 
@@ -3121,7 +3126,7 @@ public class QRules {
 
 		/* Determine the recipient code */
 		String[] recipients = VertxUtils.getSubscribers(realm(), beg.getCode());
-		System.out.println("BEG subscribers   ::   " + Arrays.toString(recipients));
+		println("BEG subscribers   ::   " + Arrays.toString(recipients));
 
 		/* link BEG and OFFER BE || OFFER */
 		createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
@@ -3350,7 +3355,7 @@ public class QRules {
 		if ((m.getData() != null)&&(m.getData().getCode()!=null)) {
 			println(m.getData().getCode());
 		}
-		if ((m.getData() != null)&&("DUMMY".equals(m.getData().getCode()))) {
+		if ((m.getData() != null)&&("MULTI_EVENT".equals(m.getData().getCode()))) {
 		      /* rules.publishData(new QDataAnswerMessage($m.getAnswer()));  */
 			  String[] recipientCodes = getRecipientCodes(m);
 		        addAttributes(m.getBe());
