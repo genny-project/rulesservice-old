@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -3514,8 +3515,9 @@ public class QRules {
 
 	public boolean hasRole(final String role)
 	{
-	Object obj = getDecodedTokenMap().get("roles");
-	if ((getUser().getCode().startsWith("PER_JOSH"))&& role.equals("admin")) {
+	LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
+	ArrayList roles = (ArrayList) rolesMap.get("roles");
+	if (roles.contains(role)) {
 		return true;
 	}
 	return false;
