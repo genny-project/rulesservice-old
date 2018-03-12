@@ -723,7 +723,7 @@ public class RulesUtils {
 
 			JsonObject json = VertxUtils.readCachedJson("attributes");
 			if ("ok".equals(json.getString("status"))) {
-				println("LOADING ATTRIBUTES!");
+				println("LOADING ATTRIBUTES FROM CACHE!");
 				// VertxUtils.writeCachedJson("attributes", json.getString("value"));
 				attributesMsg = JsonUtils.fromJson(json.getString("value"), QDataAttributeMessage.class);
 				Attribute[] attributeArray = attributesMsg.getItems();
@@ -734,6 +734,7 @@ public class RulesUtils {
 				println("All the attributes have been loaded in "+attributeMap.size()+" attributes");
 
 			} else {
+				println("LOADING ATTRIBUTES FROM API");
 				String jsonString = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
 				VertxUtils.writeCachedJson("attributes", jsonString);
 				attributesMsg = JsonUtils.fromJson(jsonString, QDataAttributeMessage.class);
@@ -742,7 +743,7 @@ public class RulesUtils {
 				for (Attribute attribute : attributeArray) {
 					attributeMap.put(attribute.getCode(), attribute);
 				}
-				println("All the attributes have been loaded in"+attributeMap.size()+" attributes");
+				println("All the attributes have been loaded from api in"+attributeMap.size()+" attributes");
 
 			}
 

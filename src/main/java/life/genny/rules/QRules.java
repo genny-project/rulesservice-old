@@ -44,6 +44,7 @@ import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
+import life.genny.qwanda.attribute.AttributeText;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
@@ -2270,17 +2271,17 @@ public class QRules {
 			recipientCodes[0] = getUser().getCode();
 		}
 		println("PUBLISHBE:" + be.getCode() + " with " + be.getBaseEntityAttributes().size() + " attribute changes");
-		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-
-			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
-				// Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
-				println("Money=" + ea.getValueMoney());
-				// BigDecimal bd = new BigDecimal(mon.getNumber().toString());
-				// Money hacked = Money.of(bd, mon.getCurrency());
-				// ea.setValueMoney(hacked);
-				break;
-			}
-		}
+//		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+//
+//			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
+//				// Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
+//				println("Money=" + ea.getValueMoney());
+//				// BigDecimal bd = new BigDecimal(mon.getNumber().toString());
+//				// Money hacked = Money.of(bd, mon.getCurrency());
+//				// ea.setValueMoney(hacked);
+//				break;
+//			}
+//		}
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null, null);
@@ -2709,7 +2710,10 @@ public class QRules {
 					if (attribute != null) {
 						ea.setAttribute(attribute);
 					} else {
-						log.error("Cannot get Attributes");
+						log.error("Cannot get Attribute - "+ea.getAttributeCode());
+						Attribute dummy = new AttributeText(ea.getAttributeCode(),ea.getAttributeCode());
+						ea.setAttribute(dummy);
+						
 					}
 				}
 			}
@@ -3315,30 +3319,38 @@ public class QRules {
 		List<Answer> answers = new ArrayList<Answer>();
 		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
 		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
-		saveAnswers(answers);
 
 		Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
 				deliveryLongitude);
 		if (totalDistance > 0) {
 			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance + "");
-			saveAnswer(totalDistanceAnswer);
+			answers.add(totalDistanceAnswer);
 		}
 
 		/* Adding Offer Count to 0 */
 		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
 		/* Publish Answer */
-		saveAnswer(offerCountAns);
+		answers.add(offerCountAns);
+		
+		/* set Status of the job */
+		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_ACTION.value()));
+		answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
+				Status.NEEDS_NO_ACTION.value()));
+
+		
+		saveAnswers(answers);
 
 		/* Determine the recipient code */
-		String[] recipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-
+		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+		println("Recipients for Job/Load "+Arrays.toString(recipientCodes));
+		
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
 		 * before link change
 		 */
 		BaseEntity newJobDetails = getBaseEntityByCode(jobCode);
 		println("The newly submitted Job details     ::     " + newJobDetails.toString());
-		publishData(newJobDetails, recipients);
+		publishData(newJobDetails, recipientCodes);
 
 		/* Moving the BEG */
 		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE");
@@ -3350,10 +3362,6 @@ public class QRules {
 			e.printStackTrace();
 		}
 
-		/* set Status of the job */
-		updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_ACTION.value());
-		updateBaseEntityAttribute(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
-				Status.NEEDS_NO_ACTION.value());
 
 		/* Get the sourceCode(Company code) for this User */
 		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
@@ -3365,16 +3373,43 @@ public class QRules {
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
 
-		/* Subscribe user to the job */
-		VertxUtils.subscribe(realm(), jobCode, getUser().getCode());
 
 		/* SEND LOAD BE */
-		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipients);
+		/* Try sending different types of links to the frontend to get it to display */
+		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(new Link(jobCode,load.getCode(),"LNK_BEG"), null, getToken());
+		publishData(msgLnkBegLoad,recipientCodes);
+		JsonArray links = new JsonArray();
+		JsonObject linkJson = new JsonObject();
+		links.add(linkJson);
+		linkJson.put("sourceCode", jobCode);
+		linkJson.put("targetCode", load.getCode());
+		linkJson.put("attributeCode","LNK_BEG");
+		linkJson.put("linkValue", getUser().getCode());
+		linkJson.put("weight", 1.0);
+
+		JsonArray recipients = new JsonArray();
+		for (String recipientCode : recipientCodes) {
+			recipients.add(recipientCode);
+		}
+
+		JsonObject newLink = new JsonObject();
+		newLink.put("msg_type", "DATA_MSG");
+		newLink.put("data_type", "EVT_LINK_CHANGE");
+		newLink.put("recipientCodeArray", recipients);
+		newLink.put("items", links);
+		newLink.put("token", getToken());
+		// getEventBus().publish("cmds", newLink);
+		publish("data", newLink);
+
+		/* SEND OWNER BE */
+	//	publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+
 		/* SEND JOB BE */
-		println(recipients);
-		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipients);
+		
+		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* Get the parent GRP of GRP_NEW_ITEMS */
-		BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
+	//	BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
 		/* SEND GRP_NEW_ITEMS BE */
 		/*
 		 * publishBaseEntityByCode("GRP_NEW_ITEMS",
@@ -3387,13 +3422,13 @@ public class QRules {
 		contextMap.put("JOB", jobCode);
 		contextMap.put("OWNER", getUser().getCode());
 
-		println("The String Array is ::" + Arrays.toString(recipients));
+		println("The String Array is ::" + Arrays.toString(recipientCodes));
 
 		/* Sending toast message to owner frontend */
-		sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 		/* Sending message to BEG OWNER */
-		sendMessage("", recipients, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -3469,4 +3504,6 @@ public class QRules {
 		return offer;
 	}
 
+	
+	
 }
