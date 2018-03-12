@@ -74,7 +74,7 @@ public class RulesUtils {
 	}
 
 	public static String terminateRuleLogger(String module) {
-		return executeRuleLogger("TERMINATED", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
+		return executeRuleLogger("END RULE", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
 				+ "======================================================================================================="
 				+ (devMode ? "" : ANSI_RESET);
 
@@ -82,7 +82,7 @@ public class RulesUtils {
 
 	public static String headerRuleLogger(String module) {
 		return "======================================================================================================="
-				+ executeRuleLogger("EXECUTED", module, ANSI_RED, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_RED)
+				+ executeRuleLogger("START RULE", module, ANSI_RED, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_RED)
 				+ (devMode ? "" : ANSI_RESET);
 	}
 
@@ -731,7 +731,7 @@ public class RulesUtils {
 				for (Attribute attribute : attributeArray) {
 					attributeMap.put(attribute.getCode(), attribute);
 				}
-				println("All the attributes have been loaded in");
+				println("All the attributes have been loaded in "+attributeMap.size()+" attributes");
 
 			} else {
 				String jsonString = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/attributes", token);
@@ -742,7 +742,7 @@ public class RulesUtils {
 				for (Attribute attribute : attributeArray) {
 					attributeMap.put(attribute.getCode(), attribute);
 				}
-				println("All the attributes have been loaded in");
+				println("All the attributes have been loaded in"+attributeMap.size()+" attributes");
 
 			}
 

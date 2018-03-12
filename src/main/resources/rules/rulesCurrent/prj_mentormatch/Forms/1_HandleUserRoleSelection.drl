@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonArray;
 
 rule "Handle user role mentormatch"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "LNK_USER_ROLE_LISTS" )
         rules: QRules( isState("STARTED") && !isState("ROLE_SELECTED") )
      then
 

@@ -14,6 +14,6 @@ rule "Main Init"
      	rules.header();
         rules.getUser();
         rules.setState("USER_CHECKED");
-		rules.println("Checked User is "+rules.getUser());
+		rules.println("Checked User is "+(rules.getUser()==null?" not in database":rules.getUser()));
 	    rules.footer();       		      
 end

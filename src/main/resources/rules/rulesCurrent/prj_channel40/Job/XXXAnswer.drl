@@ -271,7 +271,7 @@ end
 /* Rule listening to Gender Inference */
 rule "Inference Gender Change"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_FIRSTNAME" )
         bus:EventBus() 
         $map : Map($value: this["token"] != null)
  

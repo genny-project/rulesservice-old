@@ -15,7 +15,7 @@ import life.genny.qwanda.entity.BaseEntity;
 /*   Rule to handle load category selection   */
 rule "Handle Load Category Selection"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "LNK_LOAD_CATEGORY_LISTS" )
         rules: QRules(isState("STARTED") &&  !isState("LD_CAT_SEL_CHG"))
      then
         rules.header();

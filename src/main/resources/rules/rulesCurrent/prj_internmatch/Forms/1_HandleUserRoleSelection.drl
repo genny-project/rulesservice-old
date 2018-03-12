@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter;
 
 rule "Handle user role intermatch"
     when
-        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("LNK_USER_ROLE_LISTS") )
+        $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code =="LNK_USER_ROLE_LISTS" )
         rules: QRules( !isState("USER_TYPE_SAVED"))
      then
 

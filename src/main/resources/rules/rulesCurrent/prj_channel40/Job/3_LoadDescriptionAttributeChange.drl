@@ -13,7 +13,7 @@ rule "Load Description Attribute Change"
 /*  Update Jobs description based on Loadss desc value change  */
 
     when
-      $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_DESCRIPTION") && getAnswer().getTargetCode().startsWith("LOD_") )
+      $m: QEventAttributeValueChangeMessage( data.code == "PRI_DESCRIPTION" && getAnswer().getTargetCode().startsWith("LOD_") )
       rules : QRules( isState("STARTED") &&  !isState("LD_DESC_CHG"))
     then    
 	     rules.header();  

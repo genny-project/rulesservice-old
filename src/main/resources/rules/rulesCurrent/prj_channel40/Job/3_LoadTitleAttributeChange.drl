@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonArray;
 rule "Load Title Attribute Change"
 /*  Update Jobs title based on Loads name value change  */
     when
-    $m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_NAME")  && getAnswer().getTargetCode().startsWith("LOD_") )
+    $m: QEventAttributeValueChangeMessage(  data.code == "PRI_NAME"  && getAnswer().getTargetCode().startsWith("LOD_") )
     	rules : QRules( isState("STARTED") &&  !isState("LD_TITLE_CHG"))
     then    
     	    rules.header();
