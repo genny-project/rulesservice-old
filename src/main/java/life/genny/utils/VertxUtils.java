@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.FluentIterable;
@@ -134,6 +135,23 @@ public class VertxUtils {
 		return be;
 	}
 
+	static public void subscribeAdmin(final String realm, final String adminUserCode) {
+		final String SUBADMIN = "SUBADMIN";
+		// Subscribe to a code
+		Set<String> adminSet = getSetString(realm, SUBADMIN, "ADMINS");
+		adminSet.add(adminUserCode);
+		putSetString(realm, SUBADMIN, "ADMINS", adminSet);
+	}
+	
+	static public void unsubscribeAdmin(final String realm, final String adminUserCode) {
+		final String SUBADMIN = "SUBADMIN";
+		// Subscribe to a code
+		Set<String> adminSet = getSetString(realm, SUBADMIN, "ADMINS");
+		adminSet.remove(adminUserCode);
+		putSetString(realm, SUBADMIN, "ADMINS", adminSet);
+	}
+
+	
 	static public void subscribe(final String realm, final String subscriptionCode, final String userCode) {
 		final String SUB = "SUB";
 		// Subscribe to a code
@@ -174,7 +192,10 @@ public class VertxUtils {
 		final String SUB = "SUB";
 		// Subscribe to a code
 		String[] resultArray = getObject(realm, SUB, subscriptionCode, String[].class);
-		return resultArray;
+		
+		String[] resultAdmins = getObject(realm, "SUBADMIN", "ADMINS",String[].class);
+		 String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		return result;
 
 	}
 

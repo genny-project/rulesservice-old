@@ -24,6 +24,9 @@ rule "Is Logged In"
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
         
+        if (rules.hasRole("admin")) {
+        		rules.subscribeAdmin(rules.realm(),getUser().getCode());
+        }
         	drools.setFocus("SendAliases");
         
 		drools.setFocus("payments"); 
