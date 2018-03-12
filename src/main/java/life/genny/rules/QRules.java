@@ -2566,7 +2566,7 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (user.is("PRI_DRIVER")) {
+		if (((user.is("PRI_DRIVER")) || (hasRole("admin")))) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -2595,30 +2595,38 @@ public class QRules {
 		for (BaseEntity bucket : buckets) {
 			println(bucket);
 			List<BaseEntity> begs = new ArrayList<BaseEntity>();
-			if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+			
+			if (hasRole("admin")) {
 				List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
 						false);
 				begs.addAll(driverbegs);
-				VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
 			} else {
-				if (user.is("PRI_DRIVER")) {
+
+				if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
 					List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-							500, false, user.getCode());
+							500, false);
 					begs.addAll(driverbegs);
-					VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+					VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
+				} else {
+					if (user.is("PRI_DRIVER")) {
+						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+								500, false, user.getCode());
+						begs.addAll(driverbegs);
+						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+					}
+
 				}
 
-			}
-
-			if (user.is("PRI_OWNER")) {
-				List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
-						false, user.getCode());
-				begs.addAll(ownerbegs);
-				VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+				if (user.is("PRI_OWNER")) {
+					List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
+							false, user.getCode());
+					begs.addAll(ownerbegs);
+					VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+				}
 			}
 			println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
 			publishCmd(begs, bucket.getCode(), "LNK_CORE");
-
+			
 			for (BaseEntity beg : begs) {
 				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20, false);
 				List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
