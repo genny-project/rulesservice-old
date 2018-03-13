@@ -8,11 +8,8 @@ import life.genny.qwanda.Answer;
 
 import life.genny.qwandautils.QwandaUtils;
 
-
 rule "Is Logged In"
-
     when
-
         rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
 
      then
