@@ -30,7 +30,8 @@ rule "New Payments User"
      
      	/* Creates a new attribute for assembly user ID */
     	 	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", responseAssemblyUserId);
-     	PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
+     	/* PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken()); */
+     	rules.saveAnswer(assemblyIdAnswer);
      	rules.println("assembly ID created in our system ::"+responseAssemblyUserId); 
      
      } 
@@ -41,7 +42,8 @@ rule "New Payments User"
      	String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
   	
      	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
-     	PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken());
+     	/* PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken()); */
+     	rules.saveAnswer(assemblyIdAnswer);
      	rules.println("assembly ID created in our system ::"+existingAssemblyId); 
      }
      	 	    

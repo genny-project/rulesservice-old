@@ -18,6 +18,7 @@ rule "Update assembly user info and company info"
      
 	 String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 	 String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+	 rules.println("assembly id :"+assemblyId);
      
      if(assemblyId != null && userBe != null) {
          
