@@ -8,24 +8,18 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.MergeUtil;
 
-rule "Assembly user updation for attribute change - last name"
+
+rule "Assembly user updation for attribute change - phone number"
     when
-    	m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_LASTNAME" ) 
+    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_MOBILE")  && getAnswer().getTargetCode().startsWith("PER_") ) 
     	rules: QRules( isState("STARTED"))
     then    
-		rules.header();
+		RulesUtils.header(drools.getRule().getName());
         
-        String userName = rules.getAsString("preferred_username");
-     	String userCode = rules.getUser().getCode();  /* QwandaUtils.getBaseEntityCodeForUserName(userName, rules.getToken()); */
-     	String tokenString = rules.getToken();
-        
-        /* get assembly authKey   */
-    	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
-     
-    	/*  Gets assembly userId */
-    	String assemblyId = MergeUtil.getAttrValue(userCode, "PRI_ASSEMBLY_USER_ID", tokenString);
+        BaseEntity userBe = rules.getUser();
+		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
     	
     	if(assemblyId != null) {
     		 
@@ -41,10 +35,10 @@ rule "Assembly user updation for attribute change - last name"
         rules.println("\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
            
         /* Updates assembly user profile */
-        String response = PaymentUtils.updateUserPersonalInfo(null, assemblyId, attributeCode, value, assemblyAuthToken);
-        	rules.println("updated payments response ::"+response);
+        String response = PaymentUtils.updateUserInfo(assemblyId, attributeCode, value, assemblyAuthToken);
+        		rules.println("updated payments response ::"+response);
          
     	}
         
-        rules.footer();
+        RulesUtils.footer(drools.getRule().getName());
 end
