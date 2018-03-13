@@ -18,11 +18,15 @@ rule "Assembly Company updation for attribute change - ACN"
 		RulesUtils.header(drools.getRule().getName());
         
         BaseEntity userBe = rules.getUser();
+     	BaseEntity companyBe = rules.getParent(userBe.getCode(), "LNK_STAFF");
 		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
+		
+		String abn = companyBe.getValue("PRI_ABN", null);
     	
-    	if(assemblyId != null) {
+    	/* If ABN is not present, then ACN number will be saved to Assembly */
+    	if(assemblyId != null && abn != null) {
     		 
     	/* extract answers */
       	Answer answer = m.getAnswer();
