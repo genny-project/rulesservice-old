@@ -16,15 +16,8 @@ rule "Selected Intern Role"
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
-<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_internmatch/30_RoleSelection/20_1_InternRoleSelection.drl
      	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
      	rules.setState("CHECK_USER_PROFILE_COMPLETED");
 		
 		rules.footer();     		      
-=======
-        rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
-        rules.setState("CHECK_USER_PROFILE_COMPLETED");
-
-		rules.footer();
->>>>>>> 8b60dcb9d8750a1261bc315f5c75981317257429:src/main/resources/rules/rulesCurrent/prj_internmatch/AttributeChange/InternRoleSelection.drl
 end
