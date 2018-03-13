@@ -11,7 +11,7 @@ import life.genny.qwandautils.MergeUtil;
 rule "Check if Role Is Set - Intermatch"
     no-loop true
     when
-        rules: QRules( isState("IS_LOGGED_IN") && !isState("ROLE_CHECKED_LOOP"))
+        rules: QRules( isState("IS_LOGGED_IN") && !isState("ROLE_IS_SET"))
      then
      
      	rules.header();
@@ -22,7 +22,7 @@ rule "Check if Role Is Set - Intermatch"
      	roles[2] = "PRI_IS_HOST_COMPANY";
      	
    	   	rules.set("roleCodes", roles);	
-		rules.setState("ROLE_CHECKED_LOOP");
+		rules.setState("ROLE_IS_SET");
 		rules.setState("CHECK_ROLE");
    	    
     	    rules.footer();
