@@ -1,0 +1,37 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.PaymentUtils;
+
+rule "Update assembly user info and company info"
+	agenda-group "payments"
+	no-loop true
+    when
+    	rules: QRules( isState("IS_ASSEMBLY_USER_CREATED") && isState("IS_ASSEMBLY_COMPANY_CREATED") && !isState("IS_ASSEMBLY_INFO_UPDATED")) 
+    then
+     
+     RulesUtils.header(drools.getRule().getName());
+
+     BaseEntity userBe = rules.getUser();
+     BaseEntity companyBe = rules.getParent(userBe.getCode(), "LNK_STAFF");
+     
+	 String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+	 String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+     
+     if(assemblyId != null && userBe != null) {
+         
+         rules.println("updating the complete user profile in Assembly");
+     	 PaymentUtils.updateCompleteUserProfile(userBe, assemblyId, assemblyAuthToken);   	 
+          	
+     }
+     
+     if(assemblyId != null && companyBe != null && userBe != null) {
+     
+     	rules.println("updating the complete company profile in Assembly");
+     	PaymentUtils.updateCompleteCompanyProfile(userBe, companyBe, assemblyId, assemblyAuthToken);
+     }
+
+	rules.setState("IS_ASSEMBLY_INFO_UPDATED");
+	rules.footer();      		      
+end
