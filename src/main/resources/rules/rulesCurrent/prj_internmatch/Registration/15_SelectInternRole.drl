@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Select Intern Role"
+
+	when
+		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_SELECT_ROLE_INTERN")
+	    rules: QRules( isState("STARTED") && !isState("INTERN_SELECTED") ) 
+	    
+	 then
+	    rules.header();
+		rules.setState("HAS_SENT_SUBLAYOUT");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "TRUE");
+		
+		String[] roles = new String[1];
+     	roles[0] = "PRI_IS_INTERN";
+   	   	rules.set("roleCodes", roles);
+		rules.setState("CHECK_ROLE");
+		rules.setState("INTERN_SELECTED");
+		drools.setFocus("CheckProfileCompletion");
+	    rules.footer();     		      
+end

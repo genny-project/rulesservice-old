@@ -11,11 +11,12 @@ rule "Send internmatch BucketData To Frontend"
     salience 700
     agenda-group 'SendLayoutsAndData'
     when
-        rules: QRules( !isState("SEND_BUCKET_DATA")  && isState("SUBLAYOUT_CHANGE_READY"))
+        rules: QRules( !isState("SEND_BUCKET_DATA")  && isState("PROFILE_IS_COMPLETED"))
      then
      	rules.header();
 
      	rules.setState("SEND_BUCKET_DATA");
 		rules.sendInternMatchLayoutsAndData();
+		
 	    rules.footer();
 end

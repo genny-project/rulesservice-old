@@ -5,11 +5,8 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 import life.genny.qwanda.entity.BaseEntity;
 
-
 rule "Is Logged In"
-
     when
-
         rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
 
      then
