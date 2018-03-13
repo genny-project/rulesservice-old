@@ -265,7 +265,7 @@ rule "Inference Gender Change"
 //         GsonBuilder gsonBuilder = new GsonBuilder();
 //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
 //         Gson gson = gsonBuilder.create();
-         
+
 
 //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
 //         /* Prepare Token & qwandaServiceUrl */
