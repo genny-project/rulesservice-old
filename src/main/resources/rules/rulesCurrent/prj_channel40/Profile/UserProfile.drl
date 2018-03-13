@@ -12,8 +12,9 @@ rule "User-Profile"
        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE"  )
        rules: QRules( isState("STARTED") ) 
     then
-         rules.header();
-  	    String userCode = rules.getUser().getCode();
+        rules.header();
+        BaseEntity user = rules.getUser();
+  	    String userCode = user.getCode();
   	    
         rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
        /*  Get Company Code of the current user   */
@@ -30,12 +31,19 @@ rule "User-Profile"
         
         /*  Send Bank Details asks   */ 
           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
-        /*  Send User Documents asks   */ 
-          rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
           
-	   /* Send SubLayout  */	
-		rules.sendSublayout("SUB_USER_PROFILE", "user-profile.json");
-		
+        if( user.is("PRI_DRIVER") ){
+          /*  Send User Documents asks   */ 
+           rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
+          
+	      /* Send Driver SubLayout  */	
+		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-driver.json");
+	    }
+	   else{
+	      /* Send Owner SubLayout  */	
+		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json"); 
+	    }
+	   	
 		
          
        rules.footer(); 
