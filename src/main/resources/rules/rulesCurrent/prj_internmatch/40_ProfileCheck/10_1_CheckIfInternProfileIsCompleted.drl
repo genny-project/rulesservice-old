@@ -5,30 +5,17 @@ import java.util.List;
 
 rule "Check If Intern Profile Completion"
      when
-<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_internmatch/40_ProfileCheck/10_1_CheckIfInternProfileIsCompleted.drl
         rules: QRules( isState("CHECK_INTERNMATCH_PROFILE") && isState("PRI_IS_INTERN") && !isState("LOOP_INTERN_ROLE_CHECK")) 
-=======
-        rules: QRules( isState("STARTED") && !isState("LOOP_INTERN_ROLE_CHECK") && isState("PRI_IS_INTERN"))
->>>>>>> 8b60dcb9d8750a1261bc315f5c75981317257429:src/main/resources/rules/rulesCurrent/prj_internmatch/Registration/16_1_CheckIfInternProfileIsCompleted.drl
      then
 
         rules.header();
         rules.setState("LOOP_INTERN_ROLE_CHECK");
-<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_internmatch/40_ProfileCheck/10_1_CheckIfInternProfileIsCompleted.drl
-        
-     	rules.set("registration_question_grp", "QUE_INTERN_GRP");
-     	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
-=======
 
      	rules.set("registration_question_grp", "QUE_USER_INTERNMATCH_GRP");
         rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
         rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
->>>>>>> 8b60dcb9d8750a1261bc315f5c75981317257429:src/main/resources/rules/rulesCurrent/prj_internmatch/Registration/16_1_CheckIfInternProfileIsCompleted.drl
      	rules.setState("CHECK_USER_PROFILE_COMPLETED");
 
 		rules.footer();
