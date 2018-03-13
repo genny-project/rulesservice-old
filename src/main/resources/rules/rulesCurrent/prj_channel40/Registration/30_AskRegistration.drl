@@ -14,6 +14,8 @@ rule "Ask Registration"
      	rules.header();
    	    String userCode = rules.getUser().getCode();
    		rules.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
+   		
+   		
 
   		rules.askQuestions(userCode,userCode,"QUE_NEW_USER_PROFILE_GRP");
 
@@ -34,6 +36,8 @@ rule "Ask Registration"
           /*  Creating new base-entity Company    */
            BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
            companyCode = newCompany.getCode();
+           /* Set PRI_GST attribute to FALSE by default */
+           rules.updateBaseEntityAttribute(userCode, companyCode, "PRI_GST", "FALSE");
            rules.println("The New Company is   :: "+newCompany);
          /*  link new Company to the GRP_COMPANYS    */
             Link companyGRPCompanyLink =  QwandaUtils.createLink("GRP_COMPANYS", companyCode , "LNK_CORE", null, (double) 1, rules.getToken());
