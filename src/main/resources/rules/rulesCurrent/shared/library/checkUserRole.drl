@@ -5,11 +5,11 @@ import java.util.List;
 
 rule "Check User Role"
      when
-        rules: QRules( (isState("USER_CHECKED") || isState("STARTED")) && isState("CHECK_ROLE") && !isState("HAS_CHECKED_ROLE") ) 
+        rules: QRules( (isState("USER_CHECKED") || isState("STARTED")) && isState("CHECK_ROLE") && !isState("ROLE_IS_CHECKED") ) 
      then
         rules.header();
         
-		rules.setState("HAS_CHECKED_ROLE");
+		rules.setState("ROLE_IS_CHECKED");
 		
 		Object[] roleCodes = rules.getAsArray("roleCodes");
 		
