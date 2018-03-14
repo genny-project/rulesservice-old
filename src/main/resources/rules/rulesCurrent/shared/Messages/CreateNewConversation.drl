@@ -1,4 +1,4 @@
-commenpackage life.genny.rules;
+package life.genny.rules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
