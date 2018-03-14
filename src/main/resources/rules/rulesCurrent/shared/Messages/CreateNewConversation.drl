@@ -84,11 +84,7 @@ rule "Create Conversation"
 			}
 			else {
 				rules.showLoading("Creating a new conversation...");
-<<<<<<< HEAD
 
-=======
-				rules.println("Chat Exists   ::   FALSE" );
->>>>>>> 42e21b0... refactored
 				/* GET beg BE */
 					BaseEntity beg = rules.getBaseEntityByCode(begCode);
 
