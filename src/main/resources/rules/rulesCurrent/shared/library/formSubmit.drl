@@ -13,7 +13,7 @@ rule "Form Submit"
 		rules.setState("QUESTION_CODE_SET");
 	 	String quesCode = m.getData().getCode();
 		if(quesCode != null) {
-	 		rules.setState(quesCode);	
+	 		rules.setState(quesCode);
 		}
 	 	rules.footer();
 end
