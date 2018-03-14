@@ -4,14 +4,13 @@ import life.genny.rules.QRules;
 
 rule "Trigger Profile Check"
     when
-        rules: QRules( isState("TRIGGER_PROFILE_CHECK") && !isState("DID_TRIGGER_PROFILE_CHECK") ) 
-     then    
-        
+        rules: QRules( isState("TRIGGER_PROFILE_CHECK") && !isState("LOOP_TRIGGER_PROFILE_CHECK") ) 
+     then         
         rules.header();
-        
-        rules.setState("DID_TRIGGER_PROFILE_CHECK");
-        rules.setState("CHECK_INTERNMATCH_PROFILE");
 
+        rules.setState("LOOP_TRIGGER_PROFILE_CHECK");
+        rules.setState("CHECK_INTERNMATCH_PROFILE");
+    
         rules.footer();
       		      
 end
