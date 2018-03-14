@@ -5,11 +5,11 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Send Internmatch Layout"
     when
-         rules: QRules( isState("EXIT_SEND_DATA") && (!isState("LOOP_SENT_LAYOUT")) )
+         rules: QRules( isState("EXIT_SEND_DATA") && (!isState("LOOP_SENT_LAYOUTS")) )
      then
      	rules.header();
 
-        rules.setState("LOOP_SENT_LAYOUT");
+        rules.setState("LOOP_SENT_LAYOUTS");
 
         /* we send application layout */
         rules.setState("TRIGGER_SEND_LAYOUTS");
