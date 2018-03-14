@@ -55,6 +55,12 @@ rule "Delete new payment method - user"
 						JsonObject paymentMethod = (JsonObject)paymentMethodObj;
 						if(paymentMethod.getString("id").equals(deletedPaymentMethodId) == false) {
 							newPaymentMethodsArray.add(paymentMethod);
+						} else {
+							if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
+								PaymentUtils.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+							} else {
+								PaymentUtils.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+							}
 						}
 					}
 				}
