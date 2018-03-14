@@ -5,7 +5,8 @@ import java.util.List;
 
 rule "Home Page - Send Data"
      when
-        rules: QRules( isState("HOME_PAGE_SEND_DATA") && !isState("LOOP_HOME_PAGE_SEND_DATA") ) 
+        rules: QRules(  isState("HOME_PAGE_SEND_DATA") && 
+                        !isState("LOOP_HOME_PAGE_SEND_DATA") ) 
      then      
         rules.header();
         rules.setState("LOOP_HOME_PAGE_SEND_DATA");
