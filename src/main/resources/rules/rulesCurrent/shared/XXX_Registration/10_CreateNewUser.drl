@@ -3,13 +3,11 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 
-
 rule "Create New User"
-	no-loop true
-	salience 899
-	ruleflow-group 'Registration'
     when
-        rules: QRules( isState("NEW_REGISTRATION") && (isState("TRIGGER_REGISTRATION")) && (!isState("NEW_USER_CREATED")))
+        rules: QRules( isState("NEW_REGISTRATION") && 
+						isState("TRIGGER_REGISTRATION") && 
+						!isState("NEW_USER_CREATED") )
       then
      	rules.header();
 
