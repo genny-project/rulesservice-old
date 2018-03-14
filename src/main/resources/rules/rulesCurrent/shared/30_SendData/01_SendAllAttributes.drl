@@ -1,14 +1,11 @@
 package life.genny.rules;
 
-
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 
-
 rule "Send All Attributes"
-
     when
-         rules: QRules(isState("SEND_APPLICATION_ATTRIBUTES") && (!isState("LOOP_SEND_ATTRIBUTES")) )
+        rules: QRules(isState("SEND_APPLICATION_ATTRIBUTES") && (!isState("LOOP_SEND_ATTRIBUTES")) )
      then
      	rules.header();
         rules.sendAllAttributes();
