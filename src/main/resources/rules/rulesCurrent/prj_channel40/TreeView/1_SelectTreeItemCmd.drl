@@ -35,7 +35,6 @@ rule "TV_SELECT Event"
         }
         else {
 
-        		Boolean sendTable = false;
         		if(grpCode.equals("GRP_ADMIN_USERS")) {
 
         			rules.showLoading("Getting list of users...");
@@ -50,10 +49,11 @@ rule "TV_SELECT Event"
 
         			rules.publishCmd(totalList, grpCode, "LNK_CORE");
 
+                    /* we send the search form */
+                    rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_USERS_SEARCH", true);
+
         			/* send list users layout */
         			rules.sendSublayout("admin-user-list", "admin_users_channel40.json");
-
-        			sendTable = false;
 
         		}
         		else if(grpCode.equals("GRP_ADMIN_JOBS")) {
@@ -71,18 +71,23 @@ rule "TV_SELECT Event"
         	     	}
 
         			rules.publishCmd(totalList, grpCode, "LNK_CORE");
-        			sendTable = true;
+
+                    /* we send the search form */
+                    rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_JOBS_SEARCH", true);
+
+                    /* send list jobs layout */
+        			rules.sendSublayout("admin-user-list", "admin_jobs_channel40.json");
+
         		}
 
-    			if(sendTable) {
+    			/* if(sendTable) {
 
-    				 /* we send the table */
     	   			 QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
-    	   	    	     JsonObject bucketViewJson = JsonObject.mapFrom(cmdBucketView);
-    	   	    	     bucketViewJson.put("root", grpCode);
-    	   	    	     bucketViewJson.put("token", rules.getToken());
-    	   	    	     rules.publish("cmds",bucketViewJson);
-    			}
+    	   	    	 JsonObject bucketViewJson = JsonObject.mapFrom(cmdBucketView);
+    	   	    	 bucketViewJson.put("root", grpCode);
+    	   	    	 bucketViewJson.put("token", rules.getToken());
+    	   	    	 rules.publish("cmds", bucketViewJson);
+    			} */
         }
 
      rules.footer();
