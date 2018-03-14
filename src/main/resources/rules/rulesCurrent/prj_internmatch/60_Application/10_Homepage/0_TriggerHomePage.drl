@@ -1,0 +1,16 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Home Page"
+    when
+        rules: QRules( isState("TRIGGER_HOME_PAGE") && 
+                    !isState("LOOP_TRIGGER_HOME_PAGE")) 
+     then       
+        rules.header();
+        rules.clearState("HOME_PAGE_SENT_DATA");   
+
+        rules.setState("HOME_PAGE_SEND_DATA");
+        rules.setState("LOOP_TRIGGER_HOME_PAGE");
+
+        rules.footer(); 		      
+end
