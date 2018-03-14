@@ -19,6 +19,7 @@ rule "Auth Init"
             rules.setState("USER_NOT_CHECKED");
         }else{
             rules.setState("USER_CHECKED");
+            rules.setState("TRIGGER_REGISTRATION");
         }
         
 	    rules.footer();       		      
