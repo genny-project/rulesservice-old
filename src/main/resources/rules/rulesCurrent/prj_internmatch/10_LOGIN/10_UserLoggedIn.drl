@@ -5,7 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "User Logs In"
     when
-         rules: QRules( isState("IS_LOGGED_IN") && (!isState("LOOP_USER_LOGGED_IN")) )
+         rules: QRules( isState("AUTH_INIT") && !isState("LOOP_USER_LOGGED_IN") ) 
      then
      	rules.header();
 
