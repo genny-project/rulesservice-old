@@ -221,7 +221,7 @@ rule "Submit Offer Driver"
             
         /* Update the Job status   */
 		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
-		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_NO_ACTION.value());
+		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
 
         /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
