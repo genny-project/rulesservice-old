@@ -5,7 +5,8 @@ import life.genny.qwanda.message.QEventMessage;
 
 rule "Intern Registration Form Submit"
 	when
-	    rules: QRules( isState("QUE_INTERN_GRP") && !isState("LOOP_INTERN_REGISTRATION_FORM")) 
+	    rules: QRules( 	isState("QUE_INTERN_GRP") && 
+						!isState("LOOP_INTERN_REGISTRATION_FORM")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_INTERN_REGISTRATION_FORM");

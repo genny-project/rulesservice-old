@@ -5,7 +5,7 @@ import life.genny.qwanda.message.QEventMessage;
 
 rule "Edu Provider Registration Form Submit"
 	when
-	    rules: QRules( isState("QUE_EDUCATION_GRP") && !isState("LOOP_EDU_PROVIDER_REGISTRATION_FORM")) 
+	    rules: QRules( isState("QUE_EDU_PROVIDER_GRP") && !isState("LOOP_EDU_PROVIDER_REGISTRATION_FORM")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_EDU_PROVIDER_REGISTRATION_FORM");
