@@ -12,7 +12,7 @@ import life.genny.qwandautils.QwandaUtils;
 
 rule "Assembly Company updation for attribute change - ACN"
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ACN")  && getAnswer().getTargetCode().startsWith("CPY_") ) 
+    	m: QEventAttributeValueChangeMessage( data.code == "PRI_ACN"  && getAnswer().getTargetCode().startsWith("CPY_") ) 
     	rules: QRules( isState("STARTED"))
     then    
 		RulesUtils.header(drools.getRule().getName());

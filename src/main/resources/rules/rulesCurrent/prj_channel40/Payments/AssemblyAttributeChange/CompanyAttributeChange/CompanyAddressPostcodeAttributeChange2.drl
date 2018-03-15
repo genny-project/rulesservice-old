@@ -11,7 +11,7 @@ import life.genny.qwandautils.PaymentUtils;
 
 rule "Assembly Company updation for attribute change - Company Address Postcode"
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ADDRESS_POSTCODE")  && getAnswer().getTargetCode().startsWith("CPY_") ) 
+    	m: QEventAttributeValueChangeMessage( data.code == "PRI_ADDRESS_POSTCODE"  && getAnswer().getTargetCode().startsWith("CPY_") ) 
     	rules: QRules( isState("STARTED"))
     then    
 		RulesUtils.header(drools.getRule().getName());
