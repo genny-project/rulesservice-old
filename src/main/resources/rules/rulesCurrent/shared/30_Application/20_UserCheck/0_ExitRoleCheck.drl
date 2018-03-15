@@ -4,11 +4,11 @@ import life.genny.rules.QRules;
 rule "Exit Role Check"
 
     when
-         rules: QRules( isState("ROLE_CHECKED") && !isState("LOOP_EXIT_CHECK_ROLE") )
+         rules: QRules( isState("ROLE_CHECKED") && !isState("LOOP_EXIT_ROLE_CHECK") )
      then
      	rules.header();
-        rules.setState("LOOP_EXIT_CHECK_ROLE");
+        rules.setState("LOOP_EXIT_ROLE_CHECK");
     
-        rules.setState("EXIT_DID_CHECK_ROLE");
+        rules.setState("EXIT_ROLE_CHECK");
 	    rules.footer();      		      
 end
