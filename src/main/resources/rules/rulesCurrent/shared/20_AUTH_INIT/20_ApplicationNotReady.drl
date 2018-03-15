@@ -1,0 +1,16 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "Is Not Logged In"
+    when
+        rules: QRules(	isUserPresent() == false &&  					
+						!isState("LOOP_APPLICATION_NOT_READY"))
+      then
+		rules.header();
+		rules.setState("LOOP_APPLICATION_NOT_READY");
+		
+		rules.setState("APPLICATION_NOT_READY");
+
+		rules.footer();     		      
+end

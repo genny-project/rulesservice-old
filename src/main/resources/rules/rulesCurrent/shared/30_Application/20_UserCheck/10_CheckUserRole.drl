@@ -7,8 +7,8 @@ import life.genny.qwanda.attribute.EntityAttribute;
 
 rule "Check User Role"
      when
-        /* rules: QRules( isState("USER_FOUND") &&  !isState("LOOP_CHECK_ROLE") )  */
-        rules: QRules(isState("USER_FOUND") && !isState("LOOP_CHECK_ROLE") ) 
+        rules: QRules( 	isState("ROLE_CHECK_USER") && 
+						!isState("LOOP_CHECK_ROLE") ) 
      then
         rules.header();
 		rules.setState("LOOP_CHECK_ROLE");
