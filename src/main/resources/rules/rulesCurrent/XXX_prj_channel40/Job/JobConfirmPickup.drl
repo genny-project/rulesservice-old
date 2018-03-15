@@ -1,0 +1,27 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.rules.RulesUtils;
+import io.vertx.core.json.JsonObject;
+
+rule "Manually Confirm Pickup"
+when
+        $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_PICKUP")
+  		rules: QRules( !isState("CONFIRMED_PICKUP") )
+then
+         rules.header();
+                  
+		rules.setState("CONFIRMED_PICKUP");
+		
+  		     String begCode = $m.getItemCode();
+		     if(begCode != null) {
+		    	 	rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT","LNK_CORE");
+		     }
+
+		
+
+		rules.footer();
+
+end

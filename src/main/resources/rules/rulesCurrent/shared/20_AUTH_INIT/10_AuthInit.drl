@@ -9,17 +9,17 @@ rule "Auth Init"
 
     when
         m : QEventMessage( "AUTH_INIT" == data.code  )
-        rules: QRules( isState("STARTED") && !isState("USER_CHECKED") && !isState("AUTH_INIT"))
+        rules: QRules( isState("STARTED") && !isState("USER_FOUND") && !isState("AUTH_INIT"))
      then     
-     	rules.header();
 
+     	rules.header();
         rules.setState("AUTH_INIT");
         BaseEntity user = rules.getUser();
         if(user == null ){
-            rules.setState("USER_NOT_CHECKED");
-        }else{
-            rules.setState("USER_CHECKED");
+            rules.setState("USER_NOT_FOUND");
             rules.setState("TRIGGER_REGISTRATION");
+        }else{
+            rules.setState("USER_FOUND");
         }
         
 	    rules.footer();       		      

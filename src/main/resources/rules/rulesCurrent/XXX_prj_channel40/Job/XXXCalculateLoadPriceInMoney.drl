@@ -1,0 +1,135 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import java.lang.Double;
+import java.lang.String;
+import java.math.BigDecimal;
+import org.javamoney.moneta.Money;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+
+rule "Calculate Load Price in JavaMoney"
+	no-loop true
+    when 	
+    	$m: QEventAttributeValueChangeMessage(  QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_PRICE")  && getAnswer().getTargetCode().startsWith("BEG_") || 
+												QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_PRICE")  && getAnswer().getTargetCode().startsWith("OFR_") )
+    	rules : QRules()
+    then    
+		rules.header();
+
+		Answer newAnswer = $m.getAnswer();
+		
+		CurrencyUnit DEFAULT_CURRENCY_AUD = Monetary.getCurrency("AUD");
+
+		String beCode = newAnswer.getTargetCode();
+		Money answerPrice = Money.of(Integer.parseInt(newAnswer.getValue()), DEFAULT_CURRENCY_AUD);
+		Money fees = Money.of(0, DEFAULT_CURRENCY_AUD);
+
+		/* Calculate Fees*/				
+		if (answerPrice.compareTo(Money.of(0, DEFAULT_CURRENCY_AUD)) > 0 && answerPrice.compareTo(Money.of(1000, DEFAULT_CURRENCY_AUD)) <= 0) {
+			
+			/* 15% of price if price less than or equal to 1000 */
+			fees = answerPrice.multiply(0.15);
+			
+		} else if (answerPrice.compareTo(Money.of(1000, DEFAULT_CURRENCY_AUD)) > 0 && answerPrice.compareTo(Money.of(3000, DEFAULT_CURRENCY_AUD)) <= 0) {
+			/*
+				* 15% + 10% of remaining price if price greater than 1000 and less
+				* than or equal to 3000
+				*/
+			Money initialFee = Money.of(150, DEFAULT_CURRENCY_AUD);
+			Money negatedAmount = answerPrice.subtract(Money.of(1000, DEFAULT_CURRENCY_AUD));
+			fees = initialFee.add(negatedAmount.multiply(0.1));
+			
+		} else if (answerPrice.compareTo(Money.of(3000, DEFAULT_CURRENCY_AUD)) > 0 && answerPrice.compareTo(Money.of(5000, DEFAULT_CURRENCY_AUD)) <= 0) {
+			/*
+				* 15% + 10% + (7.5% of remaining amount) if price is greater than
+				* 3000 and less than or equal to 5000
+				*/
+			Money initialFee = Money.of(350, DEFAULT_CURRENCY_AUD);
+			Money negatedAmount = answerPrice.subtract(Money.of(3000, DEFAULT_CURRENCY_AUD));
+			fees = initialFee.add(negatedAmount.multiply(0.075));
+			
+		} else if (answerPrice.compareTo(Money.of(5000, DEFAULT_CURRENCY_AUD)) > 0) {
+			/*
+				* 15% + 10% + 7.5% + (5% of remaining amount) if price is greater
+				* than 5000
+				*/
+			Money initialFee = Money.of(500, DEFAULT_CURRENCY_AUD);
+			Money negatedAmount = answerPrice.subtract(Money.of(5000, DEFAULT_CURRENCY_AUD));
+			fees = initialFee.add(negatedAmount.multiply(0.05));
+		}
+		
+		
+		Money feeWithoutGST = fees;
+		Money feeWithGST = rules.includeGSTMoney(fees);
+
+		String priceCode = $m.getData().getCode();
+		
+		String ownerPriceIncGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_INC_GST");
+		String ownerPriceExcGstCode = priceCode.replace("_PRICE", "_OWNER_PRICE_EXC_GST");
+
+		String driverPriceIncGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_INC_GST");
+		String driverPriceExcGstCode = priceCode.replace("_PRICE", "_DRIVER_PRICE_EXC_GST");
+
+
+		String feePriceIncGstCode = priceCode.replace("_PRICE", "_FEE_INC_GST");
+		String feePriceExcGstCode = priceCode.replace("_PRICE", "_FEE_EXC_GST");
+		
+		Money ownerPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money ownerPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money driverPriceExcGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+		Money driverPriceIncGST = Money.of(0, DEFAULT_CURRENCY_AUD);
+
+		/* Get userRole */
+			String userRole = null;
+			if(newAnswer.getTargetCode().startsWith("OFR_")) {			
+				String offerCode = newAnswer.getTargetCode();
+				userRole = rules.getBaseEntityValueAsString(offerCode, "PRI_NEXT_ACTION");
+			}
+
+		if(newAnswer.getTargetCode().startsWith("BEG_") || (newAnswer.getTargetCode().startsWith("OFR_") && userRole == "OWNER")) {
+			ownerPriceExcGST = answerPrice;
+			ownerPriceIncGST = rules.includeGSTMoney(answerPrice);
+			driverPriceIncGST = ownerPriceIncGST.subtract(feeWithGST);
+			driverPriceExcGST = ownerPriceExcGST.subtract(feeWithoutGST);
+		}
+		else if(newAnswer.getTargetCode().startsWith("OFR_") && (userRole == "QUOTER" || userRole == null)) {
+			driverPriceExcGST = answerPrice;
+			driverPriceIncGST = rules.includeGSTMoney(answerPrice);
+			ownerPriceExcGST = driverPriceExcGST.subtract(feeWithoutGST);
+			ownerPriceIncGST = driverPriceIncGST.add(feeWithGST);
+		}
+
+
+		/* Saving  OWNER_PRICE_INC_GST */
+			Answer ownerPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceIncGstCode, String.valueOf(ownerPriceIncGST));          
+			rules.publishData(ownerPriceIncGSTAnswer);   
+
+		/* Saving  OWNER_PRICE_EXC_GST */
+			Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, ownerPriceExcGstCode, String.valueOf(ownerPriceExcGST));          
+			rules.publishData(ownerPriceExcGSTAnswer); 
+
+		/* Saving  DRIVER_PRICE_INC_GST */
+			Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceIncGstCode, String.valueOf(driverPriceIncGST));          
+			rules.publishData(driverPriceIncGSTAnswer);   
+
+		/* Saving  DRIVER_PRICE_EXC_GST */
+			Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), beCode, driverPriceExcGstCode, String.valueOf(driverPriceExcGST));          
+			rules.publishData(driverPriceExcGSTAnswer); 
+
+		/* Saving  FEE_INC_GST */
+			Answer feePriceIncGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceIncGstCode, String.valueOf(feeWithGST));          
+			rules.publishData(feePriceIncGstCodeAnswer);   
+			
+		/* Saving  FEE_EXC_GST */
+			Answer feePriceExcGstCodeAnswer = new Answer(rules.getUser().getCode(), beCode, feePriceExcGstCode, String.valueOf(feeWithoutGST));          
+			rules.publishData(feePriceExcGstCodeAnswer); 
+
+		rules.footer();
+end 

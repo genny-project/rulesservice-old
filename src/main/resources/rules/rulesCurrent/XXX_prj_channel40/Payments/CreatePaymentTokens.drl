@@ -1,0 +1,39 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwandautils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
+
+
+rule "Create Assembly Tokens"
+	agenda-group "payments"
+	no-loop true
+	when 
+		rules: QRules(isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_TOKEN_CREATED") ) 
+	then
+		RulesUtils.header(drools.getRule().getName());
+		
+		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+
+		
+		if(assemblyId != null) {
+			RulesUtils.println("Refreshing tokens");
+  			String oneTimeTransactionCardToken = null;
+  			String oneTimeTransactionBankToken = null;
+       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
+       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+	
+			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
+			rules.publishData(cardTokenAnswer);
+
+			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
+			rules.publishData(bankTokenAnswer);
+     	    
+		}
+		
+		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
+		RulesUtils.footer(drools.getRule().getName());
+    	
+end
+ 
