@@ -771,8 +771,11 @@ public class QRules {
 		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
 		this.publishCmd(cmdReload);
 	}
-
 	public void sendMentorMatchLayoutsAndData() {
+		this.sendMentorMatchLayoutsAndData(false);
+	}
+
+	public void sendMentorMatchLayoutsAndData(Boolean forceQuestions) {
 
 		BaseEntity user = getUser();
 
@@ -803,7 +806,7 @@ public class QRules {
 					Boolean hasCompletedProfile = mentor_profile_status != null
 							&& (mentor_profile_status.equals("TRUE") || user.is("PRI_MENTORMATCH_PROFILE_COMPLETED"));
 
-					if (!hasCompletedProfile) {
+					if (!hasCompletedProfile || (forceQuestions != null && forceQuestions == true)) {
 
 						// we send questions for mentors
 						if (isMentor && !isMentee) {
@@ -1230,15 +1233,15 @@ public class QRules {
 		cmdMsg.setToken(getToken());
 		String jsonString = JsonUtils.toJson(cmdMsg);
 		JsonObject json = new JsonObject(jsonString);
-		
+
 		JsonArray recipients = new JsonArray();
 		for (String recipientCode : recipientsCode) {
 			recipients.add(recipientCode);
 		}
-		
+
 		json.put("recipientCodeArray", recipients);
 		publish("data", json);
-		
+
 
 	}
 
@@ -2585,7 +2588,7 @@ public class QRules {
 		for (BaseEntity bucket : buckets) {
 			println(bucket);
 			List<BaseEntity> begs = new ArrayList<BaseEntity>();
-			
+
 			if (hasRole("admin")) {
 				List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
 						false);
@@ -2616,7 +2619,7 @@ public class QRules {
 			}
 			println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
 			publishCmd(begs, bucket.getCode(), "LNK_CORE");
-			
+
 			for (BaseEntity beg : begs) {
 				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20, false);
 				List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
@@ -2711,7 +2714,7 @@ public class QRules {
 						log.error("Cannot get Attribute - "+ea.getAttributeCode());
 						Attribute dummy = new AttributeText(ea.getAttributeCode(),ea.getAttributeCode());
 						ea.setAttribute(dummy);
-						
+
 					}
 				}
 			}
@@ -3329,20 +3332,20 @@ public class QRules {
 		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
 		/* Publish Answer */
 		answers.add(offerCountAns);
-		
+
 		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value())); 
+		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 		                                               //Setting color to green for new jobs for both driver and owner
 		/*answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
 				Status.NEEDS_NO_ACTION.value()));  */
 
-		
+
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
 		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
 		println("Recipients for Job/Load "+Arrays.toString(recipientCodes));
-		
+
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
 		 * before link change
@@ -3405,7 +3408,7 @@ public class QRules {
 	//	publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 
 		/* SEND JOB BE */
-		
+
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* Get the parent GRP of GRP_NEW_ITEMS */
 	//	BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
@@ -3511,7 +3514,7 @@ public class QRules {
 		return true;
 	}
 	return false;
-		
+
 	}
-	
+
 }
