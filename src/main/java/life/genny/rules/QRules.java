@@ -3189,7 +3189,7 @@ public class QRules {
 		// updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS",
 		// "#FFA500");
 		updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_" + getUser().getCode(),
-				Status.NEEDS_NO_ACTION.value());
+				Status.NEEDS_ACTION.value());
 		updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_" + owner.getCode(),
 				Status.NEEDS_ACTION.value());
 
@@ -3342,9 +3342,10 @@ public class QRules {
 		answers.add(offerCountAns);
 		
 		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_ACTION.value()));
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
-				Status.NEEDS_NO_ACTION.value()));
+		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value())); 
+		                                               //Setting color to green for new jobs for both driver and owner
+		/*answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
+				Status.NEEDS_NO_ACTION.value()));  */
 
 		
 		saveAnswers(answers);
