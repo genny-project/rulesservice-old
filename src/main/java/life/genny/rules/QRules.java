@@ -1227,30 +1227,19 @@ public class QRules {
 
 	public void publishCmd(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
 
-		Link link = cmdMsg.getLink();
-
-		JsonArray links = new JsonArray();
-		JsonObject linkJson = new JsonObject();
-		links.add(linkJson);
-		linkJson.put("sourceCode", link.getSourceCode());
-		linkJson.put("targetCode", link.getTargetCode());
-		linkJson.put("attributeCode", link.getAttributeCode());
-		linkJson.put("linkValue", link.getLinkValue());
-		linkJson.put("weight", link.getWeight());
-
+		cmdMsg.setToken(getToken());
+		String jsonString = JsonUtils.toJson(cmdMsg);
+		JsonObject json = new JsonObject(jsonString);
+		
 		JsonArray recipients = new JsonArray();
 		for (String recipientCode : recipientsCode) {
 			recipients.add(recipientCode);
 		}
+		
+		json.put("recipientCodeArray", recipients);
+		publish("data", json);
+		
 
-		JsonObject newLink = new JsonObject();
-		newLink.put("msg_type", "DATA_MSG");
-		newLink.put("data_type", "EVT_LINK_CHANGE");
-		newLink.put("recipientCodeArray", recipients);
-		newLink.put("items", links);
-		newLink.put("token", getToken());
-		// getEventBus().publish("cmds", newLink);
-		publish("data", newLink);
 	}
 
 	public void publishData(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
@@ -1267,25 +1256,25 @@ public class QRules {
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
-		Link link = cmdMsg.getLink();
-
-		JsonArray links = new JsonArray();
-		JsonObject linkJson = new JsonObject();
-		links.add(linkJson);
-		linkJson.put("sourceCode", link.getSourceCode());
-		linkJson.put("targetCode", link.getTargetCode());
-		linkJson.put("attributeCode", link.getAttributeCode());
-		linkJson.put("linkValue", link.getLinkValue());
-		linkJson.put("weight", link.getWeight());
-
-		JsonObject newLink = new JsonObject();
-		newLink.put("msg_type", "DATA_MSG");
-		newLink.put("data_type", "EVT_LINK_CHANGE");
-		newLink.put("recipientCodeArray", recipients);
-		newLink.put("items", links);
-		newLink.put("token", getToken());
-		// getEventBus().publish("cmds", newLink);
-		publish("data", newLink.toString());
+//		Link link = cmdMsg.getLink();
+//
+//		JsonArray links = new JsonArray();
+//		JsonObject linkJson = new JsonObject();
+//		links.add(linkJson);
+//		linkJson.put("sourceCode", link.getSourceCode());
+//		linkJson.put("targetCode", link.getTargetCode());
+//		linkJson.put("attributeCode", link.getAttributeCode());
+//		linkJson.put("linkValue", link.getLinkValue());
+//		linkJson.put("weight", link.getWeight());
+//
+//		JsonObject newLink = new JsonObject();
+//		newLink.put("msg_type", "DATA_MSG");
+//		newLink.put("data_type", "EVT_LINK_CHANGE");
+//		newLink.put("recipientCodeArray", recipients);
+//		newLink.put("items", links);
+//		newLink.put("token", getToken());
+//		// getEventBus().publish("cmds", newLink);
+//		publish("data", newLink.toString());
 		publish("data", json);
 	}
 
@@ -3388,28 +3377,28 @@ public class QRules {
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(new Link(jobCode,load.getCode(),"LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad,recipientCodes);
-		JsonArray links = new JsonArray();
-		JsonObject linkJson = new JsonObject();
-		links.add(linkJson);
-		linkJson.put("sourceCode", jobCode);
-		linkJson.put("targetCode", load.getCode());
-		linkJson.put("attributeCode","LNK_BEG");
-		linkJson.put("linkValue", getUser().getCode());
-		linkJson.put("weight", 1.0);
-
-		JsonArray recipients = new JsonArray();
-		for (String recipientCode : recipientCodes) {
-			recipients.add(recipientCode);
-		}
-
-		JsonObject newLink = new JsonObject();
-		newLink.put("msg_type", "DATA_MSG");
-		newLink.put("data_type", "EVT_LINK_CHANGE");
-		newLink.put("recipientCodeArray", recipients);
-		newLink.put("items", links);
-		newLink.put("token", getToken());
-		// getEventBus().publish("cmds", newLink);
-		publish("data", newLink);
+//		JsonArray links = new JsonArray();
+//		JsonObject linkJson = new JsonObject();
+//		links.add(linkJson);
+//		linkJson.put("sourceCode", jobCode);
+//		linkJson.put("targetCode", load.getCode());
+//		linkJson.put("attributeCode","LNK_BEG");
+//		linkJson.put("linkValue", getUser().getCode());
+//		linkJson.put("weight", 1.0);
+//
+//		JsonArray recipients = new JsonArray();
+//		for (String recipientCode : recipientCodes) {
+//			recipients.add(recipientCode);
+//		}
+//
+//		JsonObject newLink = new JsonObject();
+//		newLink.put("msg_type", "DATA_MSG");
+//		newLink.put("data_type", "EVT_LINK_CHANGE");
+//		newLink.put("recipientCodeArray", recipients);
+//		newLink.put("items", links);
+//		newLink.put("token", getToken());
+//		// getEventBus().publish("cmds", newLink);
+//		publish("data", newLink);
 
 		/* SEND OWNER BE */
 	//	publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
