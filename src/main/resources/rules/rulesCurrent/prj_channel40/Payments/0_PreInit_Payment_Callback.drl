@@ -1,0 +1,19 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAssemblyCallback;
+
+rule "Assembly Callback - Item"
+	no-loop true
+    when
+          m : QDataAssemblyCallback( data_type == "DATATYPE_ASSEMBLY_CALLBACK" )
+          rules: QRules(!isState("STARTED")) 
+     then    
+        rules.setDrools(drools);
+        rules.println("RULE INIT DATATYPE_ASSEMBLY_CALLBACK: "+m);
+        rules.setState("STARTED");
+
+  		drools.setFocus("payment-callback");
+        
+      		      
+end
