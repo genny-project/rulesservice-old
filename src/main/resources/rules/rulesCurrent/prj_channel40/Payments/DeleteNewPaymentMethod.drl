@@ -12,9 +12,9 @@ import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
 
 rule "Delete new payment method - user"
-
+	agenda-group "payment-method"
 	when
-		rules: QRules(  !isState("DELETED_PAYMENT_METHOD") )
+		rules: QRules( isState("STARTED") && !isState("DELETED_PAYMENT_METHOD") )
 		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_DELETE_NEW_PAYMENT_METHOD" )
 
 	then
@@ -55,6 +55,12 @@ rule "Delete new payment method - user"
 						JsonObject paymentMethod = (JsonObject)paymentMethodObj;
 						if(paymentMethod.getString("id").equals(deletedPaymentMethodId) == false) {
 							newPaymentMethodsArray.add(paymentMethod);
+						} else {
+							if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
+								PaymentUtils.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+							} else {
+								PaymentUtils.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+							}
 						}
 					}
 				}
