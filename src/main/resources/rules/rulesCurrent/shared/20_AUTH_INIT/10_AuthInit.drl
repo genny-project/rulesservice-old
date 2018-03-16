@@ -12,11 +12,12 @@ rule "Auth Init"
         rules: QRules( 	isState("STARTED")  &&
         					!isState("LOOP_AUTH_INIT_EVT") )
      then   
-        rules.setDrools(drools);
-     	rules.header();
+        rules.setDrools(drools); 
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 
+        rules.getUser();
+       
         if(rules.isUserPresent() == true) {
             rules.setState("TRIGGER_APPLICATION_SETUP"); /* this starts application workflow */
         }

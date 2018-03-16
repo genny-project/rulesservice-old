@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Ask Registration - Host Company - STEP 1"
+    when
+        rules: QRules(  isState("PROFILE_NOT_COMPLETED") && 
+						isState("PRI_IS_HOST_COMPANY") &&
+						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY") ) 
+     then 
+ 		rules.header();
+		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY");
+
+		rules.set("beCode", rules.getUser().getCode());
+		rules.set("bePrefix", "CPY");
+		rules.set("beName", "COMPANY");
+		rules.setState("CREATE_BASE_ENTITY");	
+		
+ 		rules.footer();
+end
