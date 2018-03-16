@@ -78,6 +78,36 @@ import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 import life.genny.qwanda.message.QDataGPSMessage;
 
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Map;
+import java.util.UUID;
+import java.net.URLEncoder;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -311,6 +341,19 @@ public class QRules {
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
 
+	}
+
+	public BaseEntity getProject() {
+
+		BaseEntity be = null;
+		String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+		be = getBaseEntityByCode(projectCode);
+
+		if (isNull("PROJECT") && be != null) {
+			set("PROJECT", be);
+		}
+
+		return be;
 	}
 
 	public BaseEntity getUser() {
@@ -732,6 +775,37 @@ public class QRules {
 		}
 	}
 
+	public void sendSlackNotification(String webhookURL, JsonObject message) throws IOException {
+
+		try {
+
+			// String payload = "payload=" + message.toString();
+
+			final HttpClient client = HttpClientBuilder.create().build();
+
+			final HttpPost post = new HttpPost(webhookURL);
+			final StringEntity input = new StringEntity(message.toString());
+
+			input.setContentType("application/json");
+			post.setEntity(input);
+
+			final HttpResponse response = client.execute(post);
+
+			String retJson = "";
+			final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				retJson += line;
+				;
+			}
+
+			int responseCode = response.getStatusLine().getStatusCode();
+		}
+		catch (IOException e) {
+			this.println(e);
+		}
+	}
+
 	public void sendInternMatchLayoutsAndData() {
 
 		BaseEntity user = getUser();
@@ -771,8 +845,11 @@ public class QRules {
 		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
 		this.publishCmd(cmdReload);
 	}
-
 	public void sendMentorMatchLayoutsAndData() {
+		this.sendMentorMatchLayoutsAndData(false);
+	}
+
+	public void sendMentorMatchLayoutsAndData(Boolean forceQuestions) {
 
 		BaseEntity user = getUser();
 
@@ -803,7 +880,7 @@ public class QRules {
 					Boolean hasCompletedProfile = mentor_profile_status != null
 							&& (mentor_profile_status.equals("TRUE") || user.is("PRI_MENTORMATCH_PROFILE_COMPLETED"));
 
-					if (!hasCompletedProfile) {
+					if (!hasCompletedProfile || (forceQuestions != null && forceQuestions == true)) {
 
 						// we send questions for mentors
 						if (isMentor && !isMentee) {
@@ -1230,15 +1307,15 @@ public class QRules {
 		cmdMsg.setToken(getToken());
 		String jsonString = JsonUtils.toJson(cmdMsg);
 		JsonObject json = new JsonObject(jsonString);
-		
+
 		JsonArray recipients = new JsonArray();
 		for (String recipientCode : recipientsCode) {
 			recipients.add(recipientCode);
 		}
-		
+
 		json.put("recipientCodeArray", recipients);
 		publish("data", json);
-		
+
 
 	}
 
@@ -2585,7 +2662,7 @@ public class QRules {
 		for (BaseEntity bucket : buckets) {
 			println(bucket);
 			List<BaseEntity> begs = new ArrayList<BaseEntity>();
-			
+
 			if (hasRole("admin")) {
 				List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
 						false);
@@ -2616,7 +2693,7 @@ public class QRules {
 			}
 			println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
 			publishCmd(begs, bucket.getCode(), "LNK_CORE");
-			
+
 			for (BaseEntity beg : begs) {
 				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20, false);
 				List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
@@ -2711,7 +2788,7 @@ public class QRules {
 						log.error("Cannot get Attribute - "+ea.getAttributeCode());
 						Attribute dummy = new AttributeText(ea.getAttributeCode(),ea.getAttributeCode());
 						ea.setAttribute(dummy);
-						
+
 					}
 				}
 			}
@@ -3329,20 +3406,20 @@ public class QRules {
 		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
 		/* Publish Answer */
 		answers.add(offerCountAns);
-		
+
 		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value())); 
+		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 		                                               //Setting color to green for new jobs for both driver and owner
 		/*answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
 				Status.NEEDS_NO_ACTION.value()));  */
 
-		
+
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
 		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
 		println("Recipients for Job/Load "+Arrays.toString(recipientCodes));
-		
+
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
 		 * before link change
@@ -3405,7 +3482,7 @@ public class QRules {
 	//	publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 
 		/* SEND JOB BE */
-		
+
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* Get the parent GRP of GRP_NEW_ITEMS */
 	//	BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
@@ -3511,7 +3588,7 @@ public class QRules {
 		return true;
 	}
 	return false;
-		
+
 	}
-	
+
 }
