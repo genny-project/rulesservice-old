@@ -5,7 +5,8 @@ import life.genny.rules.QRules;
 
 rule "Update BaseEntity Attribute"
      when
-        rules: QRules(  isState("UPDATE_BASEENTITY_ATTRIBUTE") && !isState("LOOP_UPDATE_BE_ATTRIBUTE")) 
+        rules: QRules(  isState("UPDATE_BASEENTITY_ATTRIBUTE") && 
+                        !isState("LOOP_UPDATE_BE_ATTRIBUTE")) 
      then
         
         rules.header();
