@@ -78,6 +78,36 @@ import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 import life.genny.qwanda.message.QDataGPSMessage;
 
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Map;
+import java.util.UUID;
+import java.net.URLEncoder;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -311,6 +341,19 @@ public class QRules {
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
 
+	}
+
+	public BaseEntity getProject() {
+
+		BaseEntity be = null;
+		String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+		be = getBaseEntityByCode(projectCode);
+
+		if (isNull("PROJECT") && be != null) {
+			set("PROJECT", be);
+		}
+
+		return be;
 	}
 
 	public BaseEntity getUser() {
@@ -729,6 +772,37 @@ public class QRules {
 					this.sendSublayout("INTERNSHIP_DETAILS", "internships/details.json", itemCode);
 				}
 			}
+		}
+	}
+
+	public void sendSlackNotification(String webhookURL, JsonObject message) throws IOException {
+
+		try {
+
+			// String payload = "payload=" + message.toString();
+
+			final HttpClient client = HttpClientBuilder.create().build();
+
+			final HttpPost post = new HttpPost(webhookURL);
+			final StringEntity input = new StringEntity(message.toString());
+
+			input.setContentType("application/json");
+			post.setEntity(input);
+
+			final HttpResponse response = client.execute(post);
+
+			String retJson = "";
+			final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				retJson += line;
+				;
+			}
+
+			int responseCode = response.getStatusLine().getStatusCode();
+		}
+		catch (IOException e) {
+			this.println(e);
 		}
 	}
 
