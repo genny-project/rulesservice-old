@@ -9,7 +9,7 @@ rule "Send Layout Change To Frontend"
     no-loop true
     ruleflow-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("LAYOUT_CHANGE_READY") )
+        rules: QRules( !isState("LAYOUT_CHANGE_READY") && isState("STARTED") )
      then
      	rules.header();
 
