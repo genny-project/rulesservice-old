@@ -22,6 +22,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
@@ -141,6 +142,19 @@ public class EBCHandlers {
 						json.put("items", jsonArray);
 						dataGPSMsg = JsonUtils.fromJson(json.toString(), QDataGPSMessage.class);
 						processMsg("GPS:"+dataGPSMsg.getData_type(), payload.getString("ruleGroup"), dataGPSMsg, eventBus, payload.getString("token"));
+					}
+				} else if(payload.getString("data_type").equals(QDataPaymentsCallbackMessage.class.getSimpleName())) {
+					QDataPaymentsCallbackMessage dataCallbackMsg = null;
+					try {
+						dataCallbackMsg = JsonUtils.fromJson(payload.toString(), QDataPaymentsCallbackMessage.class);
+						processMsg("Data:"+dataCallbackMsg.getData_type(), payload.getString("ruleGroup"), dataCallbackMsg, eventBus, payload.getString("token"));
+					} 
+					catch (com.google.gson.JsonSyntaxException e) {
+						
+						log.error("BAD Syntax converting to json from " + dataCallbackMsg);
+						JsonObject json = new JsonObject(payload.toString());
+						dataCallbackMsg = JsonUtils.fromJson(json.toString(), QDataPaymentsCallbackMessage.class);
+						processMsg("Callback:"+dataCallbackMsg.getData_type(), payload.getString("ruleGroup"), dataCallbackMsg, eventBus, payload.getString("token"));
 					}
 				}
 			}
