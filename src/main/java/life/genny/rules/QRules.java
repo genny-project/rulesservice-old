@@ -33,8 +33,10 @@ import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
+import com.google.gson.reflect.TypeToken;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -77,7 +79,6 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 import life.genny.qwanda.message.QDataGPSMessage;
-
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -479,19 +480,42 @@ public class QRules {
 		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, false);
 	}
 
+	public void clearBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
+			Integer pageSize) {
+		String key = parentCode + linkCode + "-" + pageStart + "-" + pageSize;
+
+		VertxUtils.putObject(this.realm(), "LIST", key, null);
+	}
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 
-		List<BaseEntity> bes = null;
+		List<BaseEntity> bes = new ArrayList<BaseEntity>();
+		String key = parentCode + linkCode + "-" + pageStart + "-" + pageSize;
+		if (cache) {
+			Type listType = new TypeToken<List<BaseEntity>>() {
+			}.getType();
+			List<String> beCodes = VertxUtils.getObject(this.realm(), "LIST", key, (Class) listType);
+			if (beCodes == null) {
+				bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
+						getToken(), parentCode, linkCode, pageStart, pageSize);
+				beCodes = new ArrayList<String>();
+				for (BaseEntity be : bes) {
+					VertxUtils.putObject(realm(), "", be.getCode(), JsonUtils.toJson(be));
+					beCodes.add(be.getCode());
+				}
+				VertxUtils.putObject(this.realm(), "LIST", key, beCodes);
+			} else {
+				for (String beCode : beCodes) {
+					BaseEntity be = VertxUtils.readFromDDT(beCode, true, getToken());
+					bes.add(be);
+				}
+			}
+		} else {
 
-		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
-
-		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
-				getToken(), parentCode, linkCode, pageStart, pageSize);
-
-		// } else {
-		// bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
-		// }
+			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
+					getToken(), parentCode, linkCode, pageStart, pageSize);
+		}
 
 		return bes;
 	}
@@ -561,6 +585,12 @@ public class QRules {
 			// println("Updated Link : "+newLink.toString());
 			// println("-----------------------------------");
 			// getEventBus().publish("cmds", newLink);
+			// clear the cache
+			if (sourceCode.equals("GRP_NEW_ITEMS")) {
+				clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+				// Now fill it again!
+				getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -800,8 +830,7 @@ public class QRules {
 			}
 
 			int responseCode = response.getStatusLine().getStatusCode();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			this.println(e);
 		}
 	}
@@ -845,6 +874,7 @@ public class QRules {
 		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
 		this.publishCmd(cmdReload);
 	}
+
 	public void sendMentorMatchLayoutsAndData() {
 		this.sendMentorMatchLayoutsAndData(false);
 	}
@@ -1316,7 +1346,6 @@ public class QRules {
 		json.put("recipientCodeArray", recipients);
 		publish("data", json);
 
-
 	}
 
 	public void publishData(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
@@ -1333,25 +1362,25 @@ public class QRules {
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
-//		Link link = cmdMsg.getLink();
-//
-//		JsonArray links = new JsonArray();
-//		JsonObject linkJson = new JsonObject();
-//		links.add(linkJson);
-//		linkJson.put("sourceCode", link.getSourceCode());
-//		linkJson.put("targetCode", link.getTargetCode());
-//		linkJson.put("attributeCode", link.getAttributeCode());
-//		linkJson.put("linkValue", link.getLinkValue());
-//		linkJson.put("weight", link.getWeight());
-//
-//		JsonObject newLink = new JsonObject();
-//		newLink.put("msg_type", "DATA_MSG");
-//		newLink.put("data_type", "EVT_LINK_CHANGE");
-//		newLink.put("recipientCodeArray", recipients);
-//		newLink.put("items", links);
-//		newLink.put("token", getToken());
-//		// getEventBus().publish("cmds", newLink);
-//		publish("data", newLink.toString());
+		// Link link = cmdMsg.getLink();
+		//
+		// JsonArray links = new JsonArray();
+		// JsonObject linkJson = new JsonObject();
+		// links.add(linkJson);
+		// linkJson.put("sourceCode", link.getSourceCode());
+		// linkJson.put("targetCode", link.getTargetCode());
+		// linkJson.put("attributeCode", link.getAttributeCode());
+		// linkJson.put("linkValue", link.getLinkValue());
+		// linkJson.put("weight", link.getWeight());
+		//
+		// JsonObject newLink = new JsonObject();
+		// newLink.put("msg_type", "DATA_MSG");
+		// newLink.put("data_type", "EVT_LINK_CHANGE");
+		// newLink.put("recipientCodeArray", recipients);
+		// newLink.put("items", links);
+		// newLink.put("token", getToken());
+		// // getEventBus().publish("cmds", newLink);
+		// publish("data", newLink.toString());
 		publish("data", json);
 	}
 
@@ -2338,17 +2367,19 @@ public class QRules {
 			recipientCodes[0] = getUser().getCode();
 		}
 		println("PUBLISHBE:" + be.getCode() + " with " + be.getBaseEntityAttributes().size() + " attribute changes");
-//		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-//
-//			if (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money")) {
-//				// Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
-//				println("Money=" + ea.getValueMoney());
-//				// BigDecimal bd = new BigDecimal(mon.getNumber().toString());
-//				// Money hacked = Money.of(bd, mon.getCurrency());
-//				// ea.setValueMoney(hacked);
-//				break;
-//			}
-//		}
+		// for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+		//
+		// if
+		// (ea.getAttribute().getDataType().getTypeName().equals("org.javamoney.moneta.Money"))
+		// {
+		// // Money mon = JsonUtils.fromJson(ea.getValueString(), Money.class);
+		// println("Money=" + ea.getValueMoney());
+		// // BigDecimal bd = new BigDecimal(mon.getNumber().toString());
+		// // Money hacked = Money.of(bd, mon.getCurrency());
+		// // ea.setValueMoney(hacked);
+		// break;
+		// }
+		// }
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null, null);
@@ -2625,12 +2656,14 @@ public class QRules {
 	}
 
 	public void sendLayoutsAndData() {
+		boolean doCache = true;
+
 		/* Show loading indicator */
 		showLoading("Loading your interface...");
 
 		BaseEntity user = getUser();
 
-		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, doCache);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
 		if (((user.is("PRI_DRIVER")) || (hasRole("admin")))) {
@@ -2646,16 +2679,16 @@ public class QRules {
 		publishCmd(root, "GRP_ROOT", "LNK_CORE");
 		println(root);
 
-		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, doCache);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
 		if (!user.is("PRI_DRIVER")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
-					20, false);
+					20, doCache);
 			publishCmd(bin, "GRP_BIN", "LNK_CORE");
 		}
 
-		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, doCache);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
 		println(buckets);
 
@@ -2671,7 +2704,7 @@ public class QRules {
 
 				if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
 					List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-							500, false);
+							500, doCache);
 					begs.addAll(driverbegs);
 					VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
 				} else {
@@ -2681,7 +2714,6 @@ public class QRules {
 						begs.addAll(driverbegs);
 						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
 					}
-
 				}
 
 				if (user.is("PRI_OWNER")) {
@@ -2695,17 +2727,11 @@ public class QRules {
 			publishCmd(begs, bucket.getCode(), "LNK_CORE");
 
 			for (BaseEntity beg : begs) {
-				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20, false);
+				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20, doCache);
 				List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
 				for (BaseEntity begKid : begKids) {
 					if (begKid.getCode().startsWith("OFR_")) {
 						if (user.is("PRI_OWNER")) {
-							// Optional<String> quoterCode = begKid.getValue("PRI_QUOTER_CODE");
-							// if (quoterCode.isPresent()) {
-							// if (user.getCode().equals(quoterCode.get())) {
-							// filteredKids.add(begKid);
-							// }
-							// }
 							filteredKids.add(begKid);
 							VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
 						}
@@ -2715,7 +2741,6 @@ public class QRules {
 								if (user.getCode().equals(quoterCode.get())) {
 									filteredKids.add(begKid);
 									VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
-
 								}
 							}
 						}
@@ -2724,20 +2749,14 @@ public class QRules {
 					}
 					println(bucket.getCode() + ":" + begKid.getCode());
 				}
-
 				publishCmd(filteredKids, beg.getCode(), "LNK_BEG");
 			}
 		}
 		/* Sending Draft Datas for the Owners */
 		if (user.is("PRI_OWNER")) {
-			/* List<BaseEntity> draftBegs = new ArrayList<BaseEntity>(); */
 			List<BaseEntity> ownerDraftBegs = getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
 					user.getCode());
 			publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
-			/*
-			 * draftBegs.addAll(ownerbegs); for (BaseEntity beg : ownerDraftBegs) {
-			 * publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"); }
-			 */
 		}
 
 		/*
@@ -2785,8 +2804,8 @@ public class QRules {
 					if (attribute != null) {
 						ea.setAttribute(attribute);
 					} else {
-						log.error("Cannot get Attribute - "+ea.getAttributeCode());
-						Attribute dummy = new AttributeText(ea.getAttributeCode(),ea.getAttributeCode());
+						log.error("Cannot get Attribute - " + ea.getAttributeCode());
+						Attribute dummy = new AttributeText(ea.getAttributeCode(), ea.getAttributeCode());
 						ea.setAttribute(dummy);
 
 					}
@@ -3409,16 +3428,17 @@ public class QRules {
 
 		/* set Status of the job */
 		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
-		                                               //Setting color to green for new jobs for both driver and owner
-		/*answers.add(new Answer(getUser().getCode(), jobCode, "STA_" + getUser().getCode(),
-				Status.NEEDS_NO_ACTION.value()));  */
-
+		// Setting color to green for new jobs for both driver and owner
+		/*
+		 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
+		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
+		 */
 
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
 		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-		println("Recipients for Job/Load "+Arrays.toString(recipientCodes));
+		println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
 
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
@@ -3438,7 +3458,6 @@ public class QRules {
 			e.printStackTrace();
 		}
 
-
 		/* Get the sourceCode(Company code) for this User */
 		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
 
@@ -3449,43 +3468,49 @@ public class QRules {
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
 
-
 		/* SEND LOAD BE */
 		/* Try sending different types of links to the frontend to get it to display */
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(new Link(jobCode,load.getCode(),"LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad,recipientCodes);
-//		JsonArray links = new JsonArray();
-//		JsonObject linkJson = new JsonObject();
-//		links.add(linkJson);
-//		linkJson.put("sourceCode", jobCode);
-//		linkJson.put("targetCode", load.getCode());
-//		linkJson.put("attributeCode","LNK_BEG");
-//		linkJson.put("linkValue", getUser().getCode());
-//		linkJson.put("weight", 1.0);
-//
-//		JsonArray recipients = new JsonArray();
-//		for (String recipientCode : recipientCodes) {
-//			recipients.add(recipientCode);
-//		}
-//
-//		JsonObject newLink = new JsonObject();
-//		newLink.put("msg_type", "DATA_MSG");
-//		newLink.put("data_type", "EVT_LINK_CHANGE");
-//		newLink.put("recipientCodeArray", recipients);
-//		newLink.put("items", links);
-//		newLink.put("token", getToken());
-//		// getEventBus().publish("cmds", newLink);
-//		publish("data", newLink);
+		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
+		publishData(msgLnkBegLoad, recipientCodes);
+		// JsonArray links = new JsonArray();
+		// JsonObject linkJson = new JsonObject();
+		// links.add(linkJson);
+		// linkJson.put("sourceCode", jobCode);
+		// linkJson.put("targetCode", load.getCode());
+		// linkJson.put("attributeCode","LNK_BEG");
+		// linkJson.put("linkValue", getUser().getCode());
+		// linkJson.put("weight", 1.0);
+		//
+		// JsonArray recipients = new JsonArray();
+		// for (String recipientCode : recipientCodes) {
+		// recipients.add(recipientCode);
+		// }
+		//
+		// JsonObject newLink = new JsonObject();
+		// newLink.put("msg_type", "DATA_MSG");
+		// newLink.put("data_type", "EVT_LINK_CHANGE");
+		// newLink.put("recipientCodeArray", recipients);
+		// newLink.put("items", links);
+		// newLink.put("token", getToken());
+		// // getEventBus().publish("cmds", newLink);
+		// publish("data", newLink);
 
 		/* SEND OWNER BE */
-	//	publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+		// publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 
 		/* SEND JOB BE */
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+
+		// clear the cache
+		clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+		// Now fill it again!
+		getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+
 		/* Get the parent GRP of GRP_NEW_ITEMS */
-	//	BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
+		// BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
 		/* SEND GRP_NEW_ITEMS BE */
 		/*
 		 * publishBaseEntityByCode("GRP_NEW_ITEMS",
@@ -3519,8 +3544,8 @@ public class QRules {
 			publishBE(m.getBe(), recipientCodes);
 			setState("ATTRIBUTE_CHANGE2");
 			fireAttributeChanges(m);
-		} else 	 if ((m.getData() != null)&&(m.getData().getCode()!=null))  {
-		/*	publishData(new QDataAnswerMessage(m.getAnswer())); */
+		} else if ((m.getData() != null) && (m.getData().getCode() != null)) {
+			/* publishData(new QDataAnswerMessage(m.getAnswer())); */
 			String[] recipientCodes = getRecipientCodes(m);
 			println(m);
 			addAttributes(m.getBe());
@@ -3580,14 +3605,13 @@ public class QRules {
 		return offer;
 	}
 
-	public boolean hasRole(final String role)
-	{
-	LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
-	ArrayList roles = (ArrayList) rolesMap.get("roles");
-	if (roles.contains(role)) {
-		return true;
-	}
-	return false;
+	public boolean hasRole(final String role) {
+		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
+		ArrayList roles = (ArrayList) rolesMap.get("roles");
+		if (roles.contains(role)) {
+			return true;
+		}
+		return false;
 
 	}
 
