@@ -3,7 +3,8 @@ import life.genny.rules.QRules;
 
 rule "Send Question"
 	when
-	    rules: QRules( isState("SEND_QUESTION") && !isState("LOOP_QUESTION_SENT") )
+	    rules: QRules(  isState("SEND_QUESTION") && 
+                        !isState("LOOP_QUESTION_SENT") )
 	 then 	
        
         rules.header();
