@@ -76,6 +76,11 @@ rule "Create Payment Item"
 		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
 
 		if(paymentIdAttributeValue != null && assemblyId != null) {
+		
+			//To save the datetime of item creation
+			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
+			rules.saveAnswer(itemCreationDateTime);
+		
 			RulesUtils.println("BEG CODE ::"+BEGCode);
 			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
