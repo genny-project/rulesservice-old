@@ -2375,6 +2375,13 @@ public class QRules {
 		return beg;
 	}
 
+	public BaseEntity createBaseEntityByCode2(final String beCode, final String name) {
+		BaseEntity beg = QwandaUtils.createBaseEntityByCode(beCode, name, qwandaServiceUrl, getToken());
+		addAttributes(beg);
+		VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
+		return beg;
+	}
+
 	public Money calcOwnerFee(Money input) {
 
 		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
@@ -2656,6 +2663,38 @@ public class QRules {
 	    }
 		publishCmd(root, "GRP_ROOT", "LNK_CORE");
 		println(root);
+
+		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
+		println("User is Admin"+hasRole("admin"));
+		//Checking for driver role
+		if( (user.is("PRI_DRIVER")) ) {
+			for (BaseEntity be : reportsHeader) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER") ) {
+					reportsHeaderToRemove.add(be);
+			    }
+			}
+		}
+		//Checking for owner role
+		else if( (user.is("PRI_OWNER")) ) {
+			for (BaseEntity be : reportsHeader) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER") ) {
+					reportsHeaderToRemove.add(be);
+			    }
+			}
+		}
+		//checking for admin role
+		if(!(hasRole("admin"))){
+			for (BaseEntity be : reportsHeader) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN") ) {
+					reportsHeaderToRemove.add(be);
+			    }
+			}
+		}
+		//Removing reports not related to the user based on their role
+		reportsHeader.removeAll(reportsHeaderToRemove);
+		println("Unrelated reports have been removed ");
+		publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE");
 
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
