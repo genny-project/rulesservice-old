@@ -7,26 +7,29 @@ import life.genny.qwanda.attribute.EntityAttribute;
 
 rule "Check User Role"
      when
-        rules: QRules( 	isState("CHECK_USER_ROLE") && 
+        rules: QRules( 	isState("STARTED") && 
 						!isState("LOOP_CHECK_USER_ROLE") ) 
      then
         rules.header();
 		rules.setState("LOOP_CHECK_USER_ROLE");
 				
 		BaseEntity user = rules.getUser();
-		List<EntityAttribute> roles = user.getBaseEntityAttributes()
+		Boolean has_role_been_found = false;
+		
+		if(user != null) {
+			
+			List<EntityAttribute> roles = user.getBaseEntityAttributes()
 								.stream()
 								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
 								.collect(Collectors.toList()); 
 
-		Boolean has_role_been_found = false;
-
-		for(EntityAttribute role: roles) {			
-			if(role != null && role.getValue() != null) {
-				Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
-				if(isRole) {
-					rules.setState(role.getAttributeCode());
-					has_role_been_found = true;
+			for(EntityAttribute role: roles) {			
+				if(role != null && role.getValue() != null) {
+					Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
+					if(isRole) {
+						rules.setState(role.getAttributeCode());
+						has_role_been_found = true;
+					}
 				}
 			}
 		}

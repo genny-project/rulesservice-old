@@ -9,16 +9,16 @@ rule "Selected Edu Provider Role"
         rules: QRules( 	isState("STARTED") && 
 						!isState("HAS_SELECTED_EDU_PROVIDER") ) 
      then      
-        rules.header();
-        
+        rules.header();     
 		rules.setState("HAS_SELECTED_EDU_PROVIDER");
+		
      	rules.set("registration_question_grp", "QUE_EDU_PROVIDER_GRP");
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
 
 		 /* call user check role to set PRI_IS_EDU_PROVIDER */
-		rules.setState("TRIGGER_USER_CHECK");	
-     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
+/* 		rules.setState("TRIGGER_USER_CHECK");	
+ */     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
      	
 		rules.footer();     		      
 end
