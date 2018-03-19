@@ -28,6 +28,8 @@ rule "Is Logged In"
         if (rules.hasRole("admin")) {
         		VertxUtils.subscribeAdmin(rules.realm(),rules.getUser().getCode());
         }
+        
+        rules.println("Decoded Token:"+rules.getDecodedTokenMap());
         	drools.setFocus("SendAliases");
         
 		drools.setFocus("payments"); 
