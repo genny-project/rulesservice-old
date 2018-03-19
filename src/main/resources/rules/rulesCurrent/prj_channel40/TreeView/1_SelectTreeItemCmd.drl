@@ -18,7 +18,13 @@ rule "TV_SELECT Event"
 
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
-        if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") && !grpCode.equals("GRP_ADMIN_USERS") && !grpCode.equals("GRP_ADMIN_JOBS")) {
+        if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") && !grpCode.equals("GRP_ADMIN_USERS") && !grpCode.equals("GRP_ADMIN_JOBS")
+             && !grpCode.equals("GRP_REPORTS")
+             && !grpCode.equals("GRP_REPORTS_ADMIN")  
+              && !grpCode.equals("GRP_REPORTS_USER")  
+              && !grpCode.equals("GRP_REPORTS_DRIVER")   
+              && !grpCode.equals("GRP_REPORTS_OWNER") 
+              ) {
 
 	        if( grpCode.equals("GRP_DASHBOARD") ) {
 	             rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
