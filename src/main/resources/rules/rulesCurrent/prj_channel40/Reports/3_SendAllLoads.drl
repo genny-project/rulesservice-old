@@ -14,7 +14,7 @@ rule "Report: Send All Loads"
      then
          rules.header();
          rules.setState("JOB_LIST_SENT");
-         rules.sendAllUsers("SBE_GET_ALL_LOADS");
+         rules.sendAllLoads("SBE_GET_ALL_LOADS");
 
 		 rules.footer();
 	      		      
