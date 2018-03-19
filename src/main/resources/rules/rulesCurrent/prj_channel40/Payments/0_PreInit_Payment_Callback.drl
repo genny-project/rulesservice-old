@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 rule "Pre-init Assembly Callback"
 	no-loop true
     when
-          m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()) )
+          m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()))
           rules: QRules(!isState("STARTED")) 
         
      then    

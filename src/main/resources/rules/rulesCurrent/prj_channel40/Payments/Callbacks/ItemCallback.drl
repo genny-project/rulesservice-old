@@ -9,11 +9,42 @@ rule "Assembly item callback"
 	agenda-group "payment-callback"
 	no-loop true
 	when 
-		m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()) )
+		m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()) &&  QDataPaymentsCallbackMessage.getObject_type() == QDataPaymentsCallbackMessage.ObjectType.ITEM)
 		rules: QRules( isState("STARTED") && !isState("ITEM_CALLBACK") ) 
 	then
 		RulesUtils.header(drools.getRule().getName());
-     	
+		
+		BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
+		String currentPaymentStatusString = begBe.getValue("PRI_PAYMENT_STATUS", null);
+		
+		JsonObject paymentStatusObj = new JsonObject();
+		paymentStatusObj.put("status", m.getObject_status().toString());
+		paymentStatusObj.put("statusUpdatedDateTime", rules.getZonedCurrentLocalDateTime());
+		paymentStatusObj.put("assemblyMessage", m.getObject_message());
+		
+		if(currentPaymentStatusString != null) {
+
+				RulesUtils.println(currentPaymentStatusString);
+				
+				JsonArray currentPaymentStatus = new JsonArray(currentPaymentStatusString);
+				currentPaymentStatus.add(paymentStatusObj);
+				String finalPaymentStatus = currentPaymentStatus.toString();
+
+				Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
+
+	            rules.saveAnswer(paymentStatusAnswer);
+	            rules.publishData(paymentStatusAnswer);
+
+			}
+			else {
+				rules.println("Payment method string ::"+paymentStatusObj.toString());
+				Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", "[" + paymentStatusObj.toString() + "]");
+
+	            rules.saveAnswer(paymentStatusAnswer);
+	            rules.publishData(paymentStatusAnswer);
+			}
+		
+		
      	rules.setState("ITEM_CALLBACK");
      			
 		RulesUtils.footer(drools.getRule().getName());
