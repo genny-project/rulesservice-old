@@ -49,8 +49,6 @@ rule "Assembly item callback"
 					rules.println("Repetitive callbacks for same callback status");
 					
 				}
-				
-				
 
 			}
 			else {
@@ -139,7 +137,7 @@ rule "Assembly item callback"
 	            		rules.publishData(paymentStatus);
 					
 	            		}
-			
+
 			}
 		
 		
