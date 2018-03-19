@@ -2671,7 +2671,7 @@ public class QRules {
 	}
 
 	public void sendLayoutsAndData() {
-		boolean doCache = true;
+		boolean doCache = false;
 
 		/* Show loading indicator */
 		showLoading("Loading your interface...");
