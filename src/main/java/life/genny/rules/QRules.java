@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -2317,6 +2320,7 @@ public class QRules {
 		String dateString = df.format(datetime);
 
 		return dateString;
+		
 	}
 
 	public String getCurrentLocalDate() {
@@ -3637,6 +3641,19 @@ public class QRules {
 	}
 	return false;
 
+	}
+	
+	
+	public String getZonedCurrentLocalDateTime() {
+		
+		LocalDateTime ldt = LocalDateTime.now(); 
+		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault()); 
+		String iso8601DateString = zdt.toString();
+		
+		System.out.println("datetime ::"+iso8601DateString);
+		
+		return iso8601DateString;
+			
 	}
 
 	public void sendCmdView(final String viewType, final String parentCode) {
