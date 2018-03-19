@@ -81,7 +81,7 @@ rule "Assembly item callback"
 		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
 		     		rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
 		     		
-		     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Deposited and held at at escrow");
+		     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow");
 		     		rules.saveAnswer(paymentStatus);
 	            		rules.publishData(paymentStatus);
 		     		
@@ -103,7 +103,7 @@ rule "Assembly item callback"
 		     			rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
 		     			rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
 		     			
-		     			Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Completed");
+		     			Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed");
 		     			rules.saveAnswer(paymentStatus);
 	            			rules.publishData(paymentStatus);
 		     			
@@ -126,13 +126,13 @@ rule "Assembly item callback"
 					rules.sendMessage(null, messageOwnerRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 					rules.sendMessage(null, messageToDriverRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 					
-					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment held");
+					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held");
 					rules.saveAnswer(paymentStatus);
 	            		rules.publishData(paymentStatus);
 					
 	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
 	            
-					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment Incoming");
+					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment incoming from Owner");
 					rules.saveAnswer(paymentStatus);
 	            		rules.publishData(paymentStatus);
 					
