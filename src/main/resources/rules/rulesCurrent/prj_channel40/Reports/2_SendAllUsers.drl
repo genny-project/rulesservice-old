@@ -15,7 +15,7 @@ rule "Report: Send All Users"
          rules.header();
          rules.setState("USER_LIST_SENT");
          rules.sendAllUsers("SBE_GET_ALL_USERS");
-
+         
 		 rules.footer();
 	      		      
 end
