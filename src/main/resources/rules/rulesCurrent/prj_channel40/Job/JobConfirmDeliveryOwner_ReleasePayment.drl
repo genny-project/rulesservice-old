@@ -72,21 +72,6 @@ then
        	           Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
        	           rules.saveAnswer(paymentDoneAns);
 
-		    	 		HashMap<String, String> contextMap = new HashMap<String, String>();
-					contextMap.put("JOB", begCode);
-			 		contextMap.put("OWNER", ownerCode);
-			 		contextMap.put("DRIVER", driverCode);
-
-			 		String[] messageToOwnerRecipients = new String[1];
-		     		messageToOwnerRecipients[0] = ownerCode;
-		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
-		     		rules.sendMessage(begCode, messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
-
-		     		String[] messageToDriverRecipients = new String[1];
-		     		messageToDriverRecipients[0] = driverCode;
-		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
-		     		rules.sendMessage(begCode, messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
-
 		     		rules.sendRating($m.getData().getValue());
 
 		     		/* we mark the job as marked */

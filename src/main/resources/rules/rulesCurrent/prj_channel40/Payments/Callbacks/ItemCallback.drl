@@ -15,33 +15,131 @@ rule "Assembly item callback"
 		RulesUtils.header(drools.getRule().getName());
 		
 		BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
-		String currentPaymentStatusString = begBe.getValue("PRI_PAYMENT_STATUS", null);
+		String currentPaymentStatusString = begBe.getValue("PRI_ITEM_STATUS", null);
+		
+		BaseEntity owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
+		BaseEntity driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
 		
 		JsonObject paymentStatusObj = new JsonObject();
 		paymentStatusObj.put("status", m.getObject_status().toString());
-		paymentStatusObj.put("statusUpdatedDateTime", rules.getZonedCurrentLocalDateTime());
+		paymentStatusObj.put("statusUpdatedDateTime", rules.getCurrentLocalDateTime());
 		paymentStatusObj.put("assemblyMessage", m.getObject_message());
+		
+		Boolean isUpdateAction = false;
 		
 		if(currentPaymentStatusString != null) {
 
-				RulesUtils.println(currentPaymentStatusString);
+				rules.println("payment status is not null ::"+currentPaymentStatusString);
 				
-				JsonArray currentPaymentStatus = new JsonArray(currentPaymentStatusString);
-				currentPaymentStatus.add(paymentStatusObj);
-				String finalPaymentStatus = currentPaymentStatus.toString();
+				if(!currentPaymentStatusString.contains(m.getObject_status().toString())) {
+				
+					JsonArray currentPaymentStatus = new JsonArray(currentPaymentStatusString);
+					currentPaymentStatus.add(paymentStatusObj);
+					String finalPaymentStatus = currentPaymentStatus.toString();
 
-				Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
+					Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
 
-	            rules.saveAnswer(paymentStatusAnswer);
-	            rules.publishData(paymentStatusAnswer);
+	           	 	rules.saveAnswer(paymentStatusAnswer);
+	            		rules.publishData(paymentStatusAnswer);
+	            		
+	            		isUpdateAction = true;
+	            	
+	            		
+				} else {
+					rules.println("Repetitive callbacks for same callback status");
+					
+				}
+				
+				
 
 			}
 			else {
 				rules.println("Payment method string ::"+paymentStatusObj.toString());
+				
 				Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", "[" + paymentStatusObj.toString() + "]");
 
-	            rules.saveAnswer(paymentStatusAnswer);
-	            rules.publishData(paymentStatusAnswer);
+	            	rules.saveAnswer(paymentStatusAnswer);
+	            	rules.publishData(paymentStatusAnswer);
+	            	
+	            	isUpdateAction = true;
+			} 
+				
+			if(isUpdateAction) {
+			
+				if(m.getObject_status().toString().equals("ITEM_PAYMENT_DEPOSITED")) {
+	            			
+	            		HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("JOB", begBe.getCode());
+
+			 		String[] messageOwnerRecipient = new String[1];
+		     		messageOwnerRecipient[0] = owner.getCode();
+		     		
+		     		String[] messageDriverRecipient = new String[1];
+		     		messageDriverRecipient[0] = driver.getCode();
+		     		
+		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
+		     		rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
+		     		
+		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
+		     		rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
+		     		
+		     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Deposited and held at at escrow");
+		     		rules.saveAnswer(paymentStatus);
+	            		rules.publishData(paymentStatus);
+		     		
+		     		
+	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
+	            		
+	            			HashMap<String, String> contextMap = new HashMap<String, String>();
+						contextMap.put("JOB", begBe.getCode());
+			 			contextMap.put("OWNER", owner.getCode());
+			 			contextMap.put("DRIVER", driver.getCode());
+
+			 			String[] messageToOwnerRecipients = new String[1];
+		     			messageToOwnerRecipients[0] = owner.getCode();
+		     			rules.sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
+		     			rules.sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
+
+		     			String[] messageToDriverRecipients = new String[1];
+		     			messageToDriverRecipients[0] = driver.getCode();
+		     			rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
+		     			rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
+		     			
+		     			Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Completed");
+		     			rules.saveAnswer(paymentStatus);
+	            			rules.publishData(paymentStatus);
+		     			
+	            		
+	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD")) {
+	            		
+	            		HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("DRIVER", driver.getCode());
+					contextMap.put("JOB", begBe.getCode());
+					contextMap.put("QUOTER", driver.getCode());
+					String[] recipientArr = { rules.getUser().getCode() };
+					
+					String[] messageOwnerRecipient = new String[1];
+		     		messageOwnerRecipient[0] = owner.getCode();
+		     		
+		     		String[] messageToDriverRecipient = new String[1];
+		     		messageToDriverRecipient[0] = driver.getCode();
+
+					/* Need to display error toast if make payment fails */
+					rules.sendMessage(null, messageOwnerRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
+					rules.sendMessage(null, messageToDriverRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
+					
+					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment held");
+					rules.saveAnswer(paymentStatus);
+	            		rules.publishData(paymentStatus);
+					
+	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
+	            
+					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment Incoming");
+					rules.saveAnswer(paymentStatus);
+	            		rules.publishData(paymentStatus);
+					
+	            		}
+			
 			}
 		
 		
