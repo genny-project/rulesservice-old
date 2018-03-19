@@ -495,7 +495,7 @@ public class QRules {
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
-
+		cache = false;
 		List<BaseEntity> bes = new ArrayList<BaseEntity>();
 		String key = parentCode + linkCode + "-" + pageStart + "-" + pageSize;
 		if (cache) {
@@ -592,11 +592,11 @@ public class QRules {
 			// println("-----------------------------------");
 			// getEventBus().publish("cmds", newLink);
 			// clear the cache
-			if (sourceCode.equals("GRP_NEW_ITEMS")) {
-				clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-				// Now fill it again!
-				getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-			}
+//			if (sourceCode.equals("GRP_NEW_ITEMS")) {
+//				clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+//				// Now fill it again!
+//				getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+//			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -3556,10 +3556,10 @@ public class QRules {
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 
-		// clear the cache
-		clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-		// Now fill it again!
-		getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+//		// clear the cache
+//		clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+//		// Now fill it again!
+//		getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
 
 		/* Get the parent GRP of GRP_NEW_ITEMS */
 		// BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
