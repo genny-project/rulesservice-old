@@ -1944,6 +1944,16 @@ public class QRules {
 				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
+				
+				/*HashMap<String, String> contextMap = new HashMap<String, String>();
+				contextMap.put("CONVERSATION", newMessage.getCode());
+				contextMap.put("SENDER", getUser().getCode());
+				
+				String[] recipientArr = { receiverCode };
+				
+				 Sends email and sms when a new conversation is recieved 
+				sendMessage("", recipientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+				sendMessage("", recipientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");*/
 			}
 		}
 	}
