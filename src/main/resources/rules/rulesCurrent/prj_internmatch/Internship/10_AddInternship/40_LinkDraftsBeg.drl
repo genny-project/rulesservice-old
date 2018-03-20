@@ -2,32 +2,31 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* LINK GRP_DRAFTS + INT || INTERNSHIP */
-rule "Link Internship To Drafts"
+rule "Add Internship - Step 4"
 	when
-	    rules: QRules( 	isState("LINK_TO_DRAFT") && 
-						isState("BASE_ENTITY_CREATED") &&
-						isState("INT") &&
-						isState("EVENT_BTN_CLICK") && 
-						!isState("LOOP_LINK_TO_DRAFT")) 
+	    rules: QRules( 	isState("LINK_DRAFTS_TO_BEG") && 
+						isState("LINK_CREATED") &&
+						isState("INTERNSHIP") &&
+						!isState("LOOP_ADD_INTERNSHIP_STEP4")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_LINK_TO_DRAFT");
+        rules.setState("LOOP_ADD_INTERNSHIP_STEP4");
 
 		BaseEntity internship = rules.getAsBaseEntity("baseEntity");
 		
 		/* Setting internship BaseEntity to state */
 		rules.set("internshipBe", internship);		
 
-		/* link BEG to INT */
+		/* link GRP_DRAFTS to INT */
 		rules.set("sourceCode", "GRP_DRAFTS");
 		rules.set("targetCode", internship.getCode());
 		rules.set("linkCode", "LNK_CORE");
-		rules.set("linkValue", "INTERNSHIP");
+		rules.set("linkValue", "BEG");
 		rules.set("weight", 1.0);
 
+		rules.setState("LOOP_CREATE_LINK");		
 		rules.setState("CREATE_LINK");
 
 		rules.setState("ASK_INTERNSHIP_QUESTION");
-
 	 	rules.footer();      
 end
