@@ -1,0 +1,31 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish BEG */
+rule "Submit Internship - Step 5"	
+	when
+		rules: QRules( 	isState("LINK_CREATED") && 
+						isState("BEG") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("PUBLISH_BEG") && 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP5") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP5");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		
+		String[] begRecipients = VertxUtils.getSubscribers(rules.realm(), beg.getCode());
+		rules.publishBaseEntityByCode(	beg.getCode(), 
+										"GRP_AVAILABLE" , 
+										"LNK_CORE", 
+										begRecipients);
+
+		rules.set("CMD_VIEW", "BUCKET_VIEW");
+		rules.set("root", "GRP_DASHBOARD");
+		rules.setState("CMD_VIEW");
+
+/* 		rules.setState("TRIGGER_HOME_PAGE");
+ */	 	rules.footer();      
+end
