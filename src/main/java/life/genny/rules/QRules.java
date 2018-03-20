@@ -45,6 +45,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
+import life.genny.cluster.IdGenerator;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -3508,6 +3509,9 @@ public class QRules {
 		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 		 */
 
+		   BaseEntity updatedJob = this.getBaseEntityByCode(job.getCode());
+		   Long jobId = updatedJob.getId();
+		   answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId+""));
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
