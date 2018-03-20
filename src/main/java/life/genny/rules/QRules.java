@@ -1954,6 +1954,7 @@ public class QRules {
 				/* Sends email and sms when a new conversation is recieved  */
 				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
+
 			}
 		}
 	}
