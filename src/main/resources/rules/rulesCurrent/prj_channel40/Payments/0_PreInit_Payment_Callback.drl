@@ -1,13 +1,14 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import life.genny.qwanda.message.QDataAssemblyCallback;
+import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 
-rule "Assembly Callback - Item"
+rule "Pre-init Assembly Callback"
 	no-loop true
     when
-          m : QDataAssemblyCallback( data_type == "DATATYPE_ASSEMBLY_CALLBACK" )
+          m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()))
           rules: QRules(!isState("STARTED")) 
+        
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT DATATYPE_ASSEMBLY_CALLBACK: "+m);
