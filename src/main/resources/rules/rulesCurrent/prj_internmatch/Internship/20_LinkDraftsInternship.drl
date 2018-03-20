@@ -7,6 +7,7 @@ rule "Link Internship To Drafts"
 	    rules: QRules( 	isState("LINK_TO_DRAFT") && 
 						isState("BASE_ENTITY_CREATED") &&
 						isState("INT") &&
+						isState("EVENT_BTN_CLICK") && 
 						!isState("LOOP_LINK_TO_DRAFT")) 
 	 then
 	 	rules.header();

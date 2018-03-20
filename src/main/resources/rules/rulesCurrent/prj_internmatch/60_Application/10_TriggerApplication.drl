@@ -10,6 +10,5 @@ rule "Trigger Application - Internmatch"
         rules.setState("LOOP_TRIGGER_APPLICATION");
         
         rules.setState("TRIGGER_HOME_PAGE");
-
         rules.footer(); 		      
 end

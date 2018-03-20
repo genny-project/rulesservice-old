@@ -15,9 +15,7 @@ rule "Selected Host Company Role"
      	rules.set("registration_question_grp", "QUE_HOST_COMPANY_GRP");
      	rules.sendSelections("GRP_COMPANY_SELECTION", "LNK_CORE", 10);
 
-        /* call user check role to set PRI_IS_HOST_COMPANY */
-/* 		rules.setState("TRIGGER_USER_CHECK");	
- */     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
+    	rules.setState("TRIGGER_PROFILE_CHECK");
 		
 		rules.footer();     		      
 end

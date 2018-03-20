@@ -6,6 +6,7 @@ rule "Create Internship"
 
 	when
 		rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
+						isState("EVENT_BTN_CLICK") && 
 						!isState("LOOP_CREATE_INTERNSHIP") ) 
 	 then
 	    rules.header();
