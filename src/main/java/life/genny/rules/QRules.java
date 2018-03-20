@@ -405,6 +405,24 @@ public class QRules {
 
 		return status;
 	}
+	
+	//Check if Terms and Condition has been accepted by the user
+	public Boolean isTCAccepted() {
+		Boolean status = true;
+		String value = null;
+		try {
+	         value = getUser().getValue("PRI_ACCEPTANCE_TERMS_CONDITIONS", null);
+		 }
+		 catch(Exception e) {
+		    e.printStackTrace();
+		  }
+		
+		if( value == null || value.equalsIgnoreCase("false")  ) {
+			status = false;
+		}
+		
+	    return status;
+	}
 
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode,
 			final String newValue) {
@@ -719,8 +737,12 @@ public class QRules {
 
 		String attributeVal = null;
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			try {
 			if (ea.getAttributeCode().equals(attributeCode)) {
 				attributeVal = ea.getObjectAsString();
+			}
+			}
+			catch(Exception e) {	
 			}
 		}
 
