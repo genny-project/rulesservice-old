@@ -16,32 +16,37 @@ rule "Create Payments Assembly Company"
 		rules: QRules(isState("NEW_ASSEMBLY_COMPANY_CREATED") && !isState("IS_ASSEMBLY_COMPANY_CREATED") ) 
 	then
 		RulesUtils.header(drools.getRule().getName());
-		
-		
-		 /* get assembly authKey   */
-    	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+
     	
-    	/*  Gets assembly userId */
-    	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+    	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();    
+    BaseEntity userBe = rules.getUser();
+    String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+    /* Boolean isCompany = userBe.getValue("PRI_ISCOMPANY", false); */
     	
      	
-     	RulesUtils.println("Company not found for user..So creating a Company now..");
+     	rules.println("Company not found for user..So creating a Company now..");
     		
      	if(assemblyId != null) {
-				
-			/* Create Assembly Company for user */
-			String companyId = PaymentUtils.createCompany(assemblyAuthToken, rules.getToken());
+     	
+     		/* if(isCompany) { */
+     			/* Create Assembly Company for user */
+				String companyId = PaymentUtils.createCompany(assemblyAuthToken, rules.getToken());
 		
-			/* Save companyId as an attribute for the user */
-			RulesUtils.println("create payment company response -"+companyId);
-			if(companyId != null) {
+				/* Save companyId as an attribute for the user */
+				RulesUtils.println("create payment company response -"+companyId);
+				if(companyId != null) {
 				
-    	 		Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
-    	 		rules.saveAnswer(assemblyCompanyIdAnswer);
-     			RulesUtils.println("Assembly Company created");
-     			rules.setState("IS_ASSEMBLY_COMPANY_CREATED");
+    	 				Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
+    	 				rules.saveAnswer(assemblyCompanyIdAnswer);
+     				RulesUtils.println("Assembly Company created");
+     				rules.setState("IS_ASSEMBLY_COMPANY_CREATED");
      				
-			}
+				}
+     		
+     		
+     	/*	} */
+				
+			
 		}
      	
      	
