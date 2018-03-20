@@ -294,6 +294,10 @@ public class QRules {
 		return (Attribute) get(key);
 	}
 
+	public Integer getAsInteger(final String key) {
+		return (Integer) get(key);
+	}
+
 	public Double getAsDouble(final String key) {
 		return (Double) get(key);
 	}
@@ -3567,14 +3571,29 @@ public class QRules {
 
 	public boolean hasRole(final String role)
 	{
-	LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
-	ArrayList roles = (ArrayList) rolesMap.get("roles");
-	if (roles.contains(role)) {
-		return true;
-	}
-	return false;
+		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
+		ArrayList roles = (ArrayList) rolesMap.get("roles");
+		if (roles.contains(role)) {
+			return true;
+		}
+		return false;
 		
 	}
-	
-	
+
+	public List<BaseEntity> getAllBegs( List<BaseEntity> beList, String linkCode, String pageStart, String pageSize, Boolean cache)
+	{	
+		List<BaseEntity> begList = new ArrayList<BaseEntity>();
+		for (BaseEntity be : beList) {
+			List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(be.getCode(), "LNK_CORE", 0, 500, false);
+					
+			begList.addAll(begs);
+			publishCmd(begList, be.getCode(), "LNK_CORE");
+/* 			publishCmd(beList, null, null, null);
+ */			
+		}
+		println("FETCHED " + begList.size() + " BEGS");
+		return begList;
+		
+	}
+
 }
