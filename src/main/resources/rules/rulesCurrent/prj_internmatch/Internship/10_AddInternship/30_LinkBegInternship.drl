@@ -1,0 +1,37 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* LINK BEG + INT || INTERNSHIP */
+rule "Add Internship - Step 3"
+	when
+	    rules: QRules( 	isState("LINK_BEG_TO_INT") && 
+						isState("BASE_ENTITY_CREATED") &&
+						isState("INT") &&
+						!isState("LOOP_ADD_INTERNSHIP_STEP3") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_ADD_INTERNSHIP_STEP3");
+
+		/* GET BEG BaseEntity from state map */
+		BaseEntity beg = rules.getAsBaseEntity("begBe");	
+		
+		/* GET newly created INT BaseEntity */
+		BaseEntity internship = rules.getAsBaseEntity("baseEntity");	
+		
+		/* SET INT BaseEntity to state */
+		rules.set("internshipBe", internship);	
+
+		/* link BEG to INT */
+		rules.set("sourceCode", beg.getCode());
+		rules.set("targetCode", internship.getCode());
+		rules.set("linkCode", "LNK_BEG");
+		rules.set("linkValue", "INTERNSHIP");
+		rules.set("weight", 1.0);
+
+		
+		rules.clearState("LOOP_CREATE_LINK");
+		rules.setState("CREATE_LINK");
+
+		rules.setState("LINK_DRAFTS_TO_BEG");
+	 	rules.footer();      
+end

@@ -1,19 +1,17 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Ask Internship Question"
-    when
+rule "Add Internship - Step 5"
+	when
         rules: QRules(  isState("ASK_INTERNSHIP_QUESTION") && 
 						isState("LINK_CREATED") && 
-						isState("INTERNSHIP") && 
-						isState("EVENT_BTN_CLICK") && 
-                        !isState("LOOP_ASK_INTERNSHIP_QUESTION")  )
+						isState("BEG") && 
+                        !isState("LOOP_ADD_INTERNSHIP_STEP5")  )
      then 
  		rules.header();
-		rules.setState("LOOP_ASK_INTERNSHIP_QUESTION");
+		rules.setState("LOOP_ADD_INTERNSHIP_STEP5");
 
-		BaseEntity internship = rules.getAsBaseEntity("baseEntity");
-		rules.set("internshipBe", internship);
+		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
 
 		rules.set("sourceCode", rules.getUser().getCode());
 		rules.set("targetCode", internship.getCode());
