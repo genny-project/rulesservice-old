@@ -8,13 +8,10 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Is TC Accepted"
     when
-        rules: QRules( isUserPresent() == true  && (isState("IS_LOGGED_IN")) && !isState("USER_TC_ACCEPTION_CHECKED") ) 
+        rules: QRules( isState("IS_LOGGED_IN") && !isState("NEW_USER_CREATED") && !isState("USER_TC_ACCEPTION_CHECKED") ) 
      then
         rules.header();
-  		
-  		/* we mark the user as logged in */
-       
-       
+  		       
         String userCode =  rules.getUser().getCode();
         if( rules.isTCAccepted() ){
             rules.println("The TC has been accepted");
