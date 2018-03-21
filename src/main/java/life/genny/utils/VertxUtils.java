@@ -231,7 +231,19 @@ public class VertxUtils {
 	static public void putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
 		String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
 		putObject(realm, keyPrefix, key, strArray);
-
+	}
+	
+	static public void putStringArray(final String realm, final String keyPrefix, final String key, final String[] string) {
+		putObject(realm, keyPrefix, key, string);
+	}
+	
+	static public String[] getStringArray(final String realm, final String keyPrefix, final String key) {
+		String[] resultArray = getObject(realm, keyPrefix, key, String[].class);
+		if (resultArray == null) {
+			return null;
+		}
+		
+		return resultArray;
 	}
 
 	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
