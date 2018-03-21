@@ -3,7 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
 /* Subscribe to BEG */
-rule "Submit Internship - Step 4"	
+rule "Submit Internship - Step 3"	
 	when
 		rules: QRules( 	isState("LINKED_BEG_TO_COMPANY") && 
 						isState("EVENT_FORM_SUBMIT") && 
@@ -11,7 +11,7 @@ rule "Submit Internship - Step 4"
 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP4");
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP3");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 
