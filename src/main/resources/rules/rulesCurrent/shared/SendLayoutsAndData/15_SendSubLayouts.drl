@@ -27,6 +27,7 @@ rule "Send Sub Layouts To Frontend"
 		
   		rules.sendSubLayouts();
 		
+        rules.println("Realm is   ::   " + rules.realm());
 		rules.setState("SUBLAYOUT_CHANGE_READY");
 		
 	    rules.footer();     		      

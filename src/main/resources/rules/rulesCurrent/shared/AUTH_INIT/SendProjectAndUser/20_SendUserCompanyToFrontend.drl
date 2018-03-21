@@ -26,8 +26,9 @@ rule "Send User Company To Frontend"
             rules.publishCmd(company,"USER_COMPANY");
             
             rules.println("Company "+companyCode+" SENT TO FRONTEND");
-            rules.setState("USER_COMPANY_SENT");
         }      
+		
+		rules.setState("USER_COMPANY_SENT");
 		
 	    rules.footer();     		      
 end
