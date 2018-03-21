@@ -15,6 +15,7 @@ rule "Check If Intern Profile Completion"
 
      	rules.set("registration_question_grp", "QUE_INTERN_GRP");
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
+     	rules.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
      	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
