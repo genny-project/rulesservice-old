@@ -4008,8 +4008,7 @@ public class QRules {
 	}
 
     public void setLastLayout(final String layoutViewCode, final String layoutViewGroupBECode) {
-       //Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
-       String sessionId = getAsString("session_state"); //adecodedTokenMap.get("session_state").toString();
+       String sessionId = getAsString("session_state"); 
        String[] layoutArray = {layoutViewCode, layoutViewGroupBECode };
        println("Set Layout:- The Session Id is ::"+sessionId);
        println("The layout is :: "+layoutArray[0]+" and "+layoutArray[1]);
@@ -4017,8 +4016,7 @@ public class QRules {
     }
     
     public String[] getLastLayout() {
-    	    //Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
-        String sessionId = getAsString("session_state"); //adecodedTokenMap.get("session_state").toString();
+        String sessionId = getAsString("session_state"); 
         println("Get Layout:- The Session Id is ::"+sessionId);
         String[] previousLayout = VertxUtils.getStringArray(realm(),"PreviousLayout", sessionId);
         println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
