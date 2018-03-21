@@ -1930,6 +1930,7 @@ public class QRules {
 
 				int counter = 0;
 				for (BaseEntity stakeholder : stakeholders) {
+					System.out.println("stakeholder code ::"+stakeholder.getCode());
 					recipientCodeArray[counter] = stakeholder.getCode();
 					counter += 1;
 				}
@@ -1945,15 +1946,14 @@ public class QRules {
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
 				
-				/*HashMap<String, String> contextMap = new HashMap<String, String>();
+				HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("CONVERSATION", newMessage.getCode());
 				contextMap.put("SENDER", getUser().getCode());
 				
-				String[] recipientArr = { receiverCode };
 				
-				 Sends email and sms when a new conversation is recieved 
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");*/
+				/* Sends email and sms when a new conversation is recieved  */
+				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
 			}
 		}
 	}
