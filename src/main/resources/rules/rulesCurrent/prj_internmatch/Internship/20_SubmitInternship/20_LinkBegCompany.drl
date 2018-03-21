@@ -4,38 +4,45 @@ import life.genny.rules.QRules;
 /* LINK BEG + CPY || COMPANY */
 rule "Submit Internship - Step 2"
 	when
-	    rules: QRules( 	isState("LINK_CREATED") && 
-						isState("INTERNSHIP") && 	
+	    rules: QRules( 	isState("LINKED_BEG_TO_USER") && 
+						isState("LINK_CREATED") && 	
+						isState("CREATOR") && 	
 						isState("EVENT_FORM_SUBMIT") &&	
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP2")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP2");
 
-		String userCode = rules.getUser().getCode();
-		
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		Boolean result = rules.is("begBe");
-		rules.println("begBe Exists   ::   " +result );
-		
 
-		/*  Get Company Code of the current user   */
-        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");     
-        if(company != null){
-            String companyCode = company.getCode();
-			rules.println("company Code   ::   " +companyCode );
-			rules.println("beg Code   ::   " + beg.getCode() );
+		if(beg != null){
+			Boolean result = rules.is("begBe");
+			rules.println("begBe Exists   ::   " +result );
 
-			/* link BEG to CPY */
-			rules.set("sourceCode", beg.getCode());
-			rules.set("targetCode", companyCode);
-			rules.set("linkCode", "LNK_BEG");
-			rules.set("linkValue", "COMPANY");
-			rules.set("weight", 1.0);
+			/*  Get Company Code of the current user   */
+			BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");     
+			if(company != null){
+				String companyCode = company.getCode();
+				rules.println("company Code   ::   " +companyCode );
+				rules.println("beg Code   ::   " + beg.getCode() );
 
-			rules.clearState("LOOP_CREATE_LINK");
-			rules.setState("CREATE_LINK");
+				/* link BEG to CPY */
+				rules.set("sourceCode", beg.getCode());
+				rules.set("targetCode", companyCode);
+				rules.set("linkCode", "LNK_BEG");
+				rules.set("linkValue", "COMPANY");
+				rules.set("weight", 1.0);
+
+				rules.clearState("LOOP_CREATE_LINK");
+				rules.setState("CREATE_LINK");
+
+				rules.setState("LINKED_BEG_TO_COMPANY");
+
+			}else{
+				rules.println("Company not found");
+			}
 		}else{
-			rules.println("Company not found");
+			rules.println("beg not found");
 		}
+		
 end
