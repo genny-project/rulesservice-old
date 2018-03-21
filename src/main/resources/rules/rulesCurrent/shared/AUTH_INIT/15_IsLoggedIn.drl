@@ -15,7 +15,6 @@ rule "Is Logged In"
      then
         rules.header();
      	
-     	
         BaseEntity user = rules.getUser();
         rules.println("user exists");
         rules.println("User "+user+" LOGGED IN"); 
@@ -24,13 +23,19 @@ rule "Is Logged In"
   		
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
-        	drools.setFocus("SendAliases");
-        	
-      if (rules.hasRole("admin")) {
-        		Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), "PRI_IS_ADMIN", "TRUE");
-        		isAdminAnswer.setWeight(1.0);
-		    rules.saveAnswer(isAdminAnswer);
+        
+       String attributeCode =  "PRI_IS_ADMIN";	
+       if (rules.hasRole("admin")) {
+	      if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null) )
+		    {
+		        rules.println("Setting attribiute "+attributeCode);
+        		    Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+        		    isAdminAnswer.setWeight(1.0);
+		        rules.saveAnswer(isAdminAnswer);
+		    }
+		 rules.println("User already has attribiute "+attributeCode);
         }
 		
-	    rules.footer();     		      
+       drools.setFocus("SendAliases");
+	   rules.footer();     		      
 end
