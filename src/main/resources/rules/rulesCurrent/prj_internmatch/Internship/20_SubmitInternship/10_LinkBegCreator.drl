@@ -31,6 +31,8 @@ rule "Submit Internship - Step 1"
 			rules.clearState("LOOP_CREATE_LINK");
 			rules.setState("CREATE_LINK");
 
+			rules.setState("LINKED_BEG_TO_USER");
+
 		}
 
 	 	rules.footer();      

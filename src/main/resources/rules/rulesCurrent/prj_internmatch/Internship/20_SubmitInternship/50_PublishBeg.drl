@@ -5,8 +5,7 @@ import life.genny.utils.VertxUtils;
 /* Publish BEG */
 rule "Submit Internship - Step 5"	
 	when
-		rules: QRules( 	isState("LINK_CREATED") && 
-						isState("BEG") && 
+		rules: QRules( 	isState("MOVED_BEG_TO_AVAILABLE") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("PUBLISH_BEG") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP5") ) 
@@ -25,7 +24,7 @@ rule "Submit Internship - Step 5"
 		rules.set("CMD_VIEW", "BUCKET_VIEW");
 		rules.set("root", "GRP_DASHBOARD");
 		rules.setState("CMD_VIEW");
-
-/* 		rules.setState("TRIGGER_HOME_PAGE");
- */	 	rules.footer();      
+		
+		rules.setState("PUBLISHED_BEG");
+	 	rules.footer();      
 end
