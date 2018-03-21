@@ -17,6 +17,7 @@ rule "TV_SELECT event handling"
      String code = $m.getData().getValue();
      if(code != null) {
         rules.sendViewCmd("LIST_VIEW", code);
+        rules.setLastLayout( "LIST_VIEW", code );
      }
 
      rules.footer();

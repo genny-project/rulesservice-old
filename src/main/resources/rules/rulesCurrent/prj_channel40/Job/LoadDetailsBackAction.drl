@@ -3,57 +3,27 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QEventLinkChangeMessage;
-import life.genny.qwanda.message.QCmdGeofenceMessage;
-import life.genny.qwanda.message.QMSGMessage;
-import life.genny.qwanda.message.QBaseMSGMessageType;
-import life.genny.qwanda.entity.EntityEntity;
-import org.apache.commons.lang3.StringUtils;
-import io.vertx.rxjava.core.eventbus.EventBus;
-import io.vertx.core.buffer.Buffer;
-import com.google.gson.Gson;
-import life.genny.qwanda.Answer;
-import life.genny.qwanda.GPS;
-import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwandautils.KeycloakUtils;
-import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.GPSUtils;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.FieldNamingPolicy;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
-import java.time.format.DateTimeFormatter;
-import life.genny.qwanda.DateTimeDeserializer;
-
-import life.genny.channels.EBCHandlers;
-
-global java.lang.String REACT_APP_QWANDA_API_URL;
 
 
 rule "Load Details - Back action"
 	when
 		 $m :  QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_GO_BACK_JOB_DETAIL" )
-	     bus: EventBus()
-	     $map : Map($value: this["token"] != null)
 		rules: QRules( isState("STARTED") && !isState("HAS_SENT_DASHBOARD") )
 	then
 
 		rules.header();
-
-		/* drools.setFocus("SendLayoutsAndData");  */
-		rules.setState("HAS_SENT_DASHBOARD");
-		rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-
+        rules.setState("HAS_SENT_DASHBOARD");
+        
+		/* Getting the last layout and grp */
+		String[] lastLayout = rules.getLastLayout();
+		
+		/* Redirecting to the previous layout */
+		if( lastLayout[0].equalsIgnoreCase("LIST_VIEW") ){
+		   rules.sendViewCmd(lastLayout[0], lastLayout[1]);
+		}else if ( lastLayout[0].equalsIgnoreCase("BUCKET_DASHBOARD") ){
+		   rules.sendSublayout( lastLayout[0], "dashboard_channel40.json", lastLayout[1]);
+        }
+        
 		rules.footer();
 end

@@ -11,9 +11,13 @@ rule "Send ListView Layout To Frontend - User is Driver"
      then
      	rules.header();
      	
+     	String viewCode = "LIST_VIEW";
+     	String grpBE = "GRP_NEW_ITEMS";
+     	
      	/* sending cmd LIST_VIEW */
-           rules.sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS"); 
-
+        rules.sendViewCmd(viewCode, grpBE); 
+        rules.setLastLayout( viewCode, grpBE );
+        
 		rules.setState("SEND_LIST_VIEW");
 		
 	    rules.footer();     		      
