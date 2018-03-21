@@ -26,15 +26,11 @@ rule "Is Logged In"
         rules.setState("IS_LOGGED_IN");
         	drools.setFocus("SendAliases");
         	
-      /*  if (rules.hasRole("admin")) {
-        		VertxUtils.subscribeAdmin(rules.realm(),rules.getUser().getCode());
+      if (rules.hasRole("admin")) {
+        		Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), "PRI_IS_ADMIN", "TRUE");
+        		isAdminAnswer.setWeight(1.0);
+		    rules.saveAnswer(isAdminAnswer);
         }
-        
-        rules.println("Decoded Token:"+rules.getDecodedTokenMap());
-        	drools.setFocus("SendAliases");
-        
-		drools.setFocus("payments");  */
-		
 		
 	    rules.footer();     		      
 end
