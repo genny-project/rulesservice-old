@@ -17,6 +17,7 @@ rule "Send All Begs"
         
         /* Get BaseEntity Lists from Map */
         List<BaseEntity> buckets = rules.getAsBaseEntitys("beList");
+        rules.println("beList recieved   ::   " +buckets );
         List<BaseEntity> begList = rules.getAllBegs(buckets, "LNK_CORE", "0", "500", false);
 
         rules.println("begs   ::   " + begList);
