@@ -3,20 +3,20 @@ import life.genny.rules.QRules;
 
 rule "Ask Registration - Host Company - STEP 3"
     when
-        rules: QRules(  isState("LINK_CREATED") && 
+        rules: QRules(  isState("CREATED_LINK") && 
 						isState("STAFF") &&
 						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP3") ) 
      then 
  		rules.header();		
 		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP3");
  		
- 		String sourceCode = rules.getUser().getCode();
-		String targetCode = rules.getUser().getCode();
+ 		String questionSourceCode = rules.getUser().getCode();
+		String questionTargetCode = rules.getUser().getCode();
 
 		/* send question group for user */
-		rules.set("sourceCode", sourceCode);
-		rules.set("targetCode", targetCode);
-		rules.set("questionGroup", "QUE_NEW_USER_DETAILS_GRP");
+		rules.set("questionSourceCode", questionSourceCode);
+		rules.set("questionTargetCode", questionTargetCode);
+		rules.set("questionGroupCode", "QUE_NEW_USER_DETAILS_GRP");
 		rules.setState("SEND_QUESTION");	
 		
  		rules.footer();

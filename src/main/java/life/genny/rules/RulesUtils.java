@@ -432,6 +432,24 @@ public class RulesUtils {
 
 	}
 
+	/* added because of the bug */	
+	public static String getBaseEntitysJsonByParentAndLinkCode2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
+
+		try {
+			String beJson = null;
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + parentCode + "/linkcodes/"
+					+ linkCode + "?pageStart=" + pageStart + "&pageSize=" + pageSize, token);
+			return beJson;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
 	public static String getBaseEntitysJsonByParentAndLinkCodeAndLinkValue(final String qwandaServiceUrl,
 			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
 			final String linkValue, final Integer pageStart, final Integer pageSize) {
@@ -541,7 +559,29 @@ public class RulesUtils {
 		return msg.getItems();
 
 	}
+	/** added because of bug /
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param pageStart
+	 * @param pageSize
+	 * @return baseEntitys
+	 */
+	public static BaseEntity[] getBaseEntitysArrayByParentAndLinkCodeWithAttributes2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
 
+		String beJson = getBaseEntitysJsonByParentAndLinkCode2(qwandaServiceUrl, decodedToken, token, parentCode,
+				linkCode, pageStart, pageSize);
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+		return msg.getItems();
+
+	}
+	
 	/**
 	 * 
 	 * @param qwandaServiceUrl
@@ -601,6 +641,30 @@ public class RulesUtils {
 			final Integer pageStart, final Integer pageSize) {
 
 		BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl, decodedToken,
+				token, parentCode, linkCode, pageStart, pageSize);
+		ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray));
+		return arrayList;
+
+	}
+
+	/**
+	* 
+	* @param qwandaServiceUrl
+	* @param decodedToken
+	* @param token
+	* @param parentCode
+	* @param linkCode
+	* @param pageStart
+	* @param pageSize
+	* @return baseEntitys
+	*/
+
+	/* added because of bug */
+	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributes2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
+
+		BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes2(qwandaServiceUrl, decodedToken,
 				token, parentCode, linkCode, pageStart, pageSize);
 		ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray));
 		return arrayList;

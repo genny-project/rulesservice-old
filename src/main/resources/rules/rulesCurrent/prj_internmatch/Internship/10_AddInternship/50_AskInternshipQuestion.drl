@@ -4,8 +4,9 @@ import life.genny.rules.QRules;
 rule "Add Internship - Step 5"
 	when
         rules: QRules(  isState("ASK_INTERNSHIP_QUESTION") && 
-						isState("LINK_CREATED") && 
+						isState("CREATED_LINK") && 
 						isState("BEG") && 
+						isState("LINKED_DRAFTS_TO_BEG") && 
                         !isState("LOOP_ADD_INTERNSHIP_STEP5")  )
      then 
  		rules.header();
@@ -13,11 +14,12 @@ rule "Add Internship - Step 5"
 
 		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
 
-		rules.set("sourceCode", rules.getUser().getCode());
-		rules.set("targetCode", internship.getCode());
-		rules.set("questionGroup", "QUE_INTERNSHIP_GRP");
-		rules.set("isPopup", false);
+		rules.set("questionSourceCode", rules.getUser().getCode());
+		rules.set("questionTargetCode", internship.getCode());
+		rules.set("questionGroupCode", "QUE_INTERNSHIP_GRP");
+		rules.set("questionIsPopup", false);
 		
 		rules.setState("ASK_QUESTION");
+		rules.setState("ASKED_INTERNSHIP_QUESTION");
  		rules.footer();
 end

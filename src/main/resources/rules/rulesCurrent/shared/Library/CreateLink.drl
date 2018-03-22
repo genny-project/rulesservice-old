@@ -4,23 +4,21 @@ import life.genny.qwanda.Link;
 
 rule "Create Link"
 	when
-	    rules: QRules( isState("CREATE_LINK") && 
-                        !isState("LOOP_CREATE_LINK") )   
+	    rules: QRules(  isState("CREATE_LINK")  )   
 	 then
 	    rules.header();
-		rules.setState("LOOP_CREATE_LINK");
 
-        String sourceCode = rules.getAsString("sourceCode");
-        String targetCode = rules.getAsString("targetCode");
+        String linkSourceCode = rules.getAsString("linkSourceCode");
+        String linkTargetCode = rules.getAsString("linkTargetCode");
         String linkCode = rules.getAsString("linkCode");
         String linkValue = rules.getAsString("linkValue");
-        Double weight = rules.getAsDouble("weight");
+        Double linkWeight = rules.getAsDouble("linkWeight");
  		
- 		if (sourceCode == null) {
-             rules.println("Create Link: missing sourceCode");
+ 		if (linkSourceCode == null) {
+             rules.println("Create Link: missing linkSourceCode");
         }
-        else if (targetCode == null) {
-            rules.println("Create Link: missing targetCode");
+        else if (linkTargetCode == null) {
+            rules.println("Create Link: missing linkTargetCode");
         }
         else if (linkCode == null) {
             rules.println("Create Link: missing linkCode");
@@ -28,14 +26,16 @@ rule "Create Link"
         else if (linkValue == null) {
             rules.println("Create Link: missing linkValue");
         }
-        else if (weight == null) {
-            rules.println("Create Link: missing weight");
+        else if (linkWeight == null) {
+            rules.println("Create Link: missing linkWeight");
         }
         else {
-            rules.createLink(sourceCode, targetCode, linkCode, linkValue, weight);	
+            rules.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);	
                  
-		    rules.setState("LINK_CREATED");	             
+		    rules.setState("CREATED_LINK");	             
 		    rules.setState(linkValue);	             
         }
+
+        rules.clearState("CREATE_LINK");
 	    rules.footer();      	
 end

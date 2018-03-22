@@ -21,7 +21,6 @@ rule "Home Page - Send Data"
         rules.publishBaseEntityByCode("GRP_OFFERED", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_PLACED", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_IN_PROGRESS", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
-        rules.publishBaseEntityByCode("GRP_DRAFTS", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
 
         rules.setState("HOME_PAGE_SENT_DATA");
 		rules.footer();     		      
