@@ -13,6 +13,7 @@ rule "Send Dashboard"
                         !isState("LOOP_SEND_DASHBOARD") )
      then
      	rules.header();
+     	rules.clearState("PUBLISHED_BASE_ENTITY_LIST");
      	rules.setState("LOOP_SEND_DASHBOARD");
         
         rules.set("beParentCode", "GRP_DASHBOARD");            
