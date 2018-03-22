@@ -15,24 +15,8 @@ rule "Report: Send All Loads"
          rules.header();
          rules.setState("JOB_LIST_SENT");
          String grpCode = m.getData().getValue();
-        // rules.sendAllLoads("SBE_GET_ALL_LOADS");
-        /* TODO: only quick fix, needs to be updated using the search BE */
-         /* we send the list of jobs */
-        	     List<BaseEntity> totalList = new ArrayList<BaseEntity>();
-        	     List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 100, false) ;
-
-        			for (BaseEntity bucket : buckets )
-        	     	{
-        	     		List<BaseEntity> bucketBegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
-        	     		totalList.addAll(bucketBegs);
-        	     	}
-        			rules.publishCmd(totalList, "GRP_ADMIN_JOBS", "LNK_CORE");
-
-                  /* we send the search form */
-                  rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_JOBS_SEARCH", true);
-
-                  /* send list jobs layout */
-        			 rules.sendSublayout("admin-user-list", "admin_jobs_channel40.json");
+         rules.sendAllLoads("SBE_GET_ALL_LOADS");
+   
 		 rules.footer();
 
 end

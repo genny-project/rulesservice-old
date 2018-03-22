@@ -3797,76 +3797,62 @@ public class QRules {
 
 	}
 
-	/* Search the text value in all jobs */
+	/* Get All the jobs */
 	public void sendAllLoads(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get all Loads - The search BE is  :: "+searchBeCode );
+		//println("Get all Loads - The search BE is  :: "+searchBeCode );
         BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Loads");
         //BaseEntity searchBE;
         JsonArray columnsArray = new JsonArray();
-	      JsonObject columns = new JsonObject();
-       // if( getBaseEntityByCode(searchBeCode) == null ) {
-          //	searchBE = createBaseEntityByCode2(searchBeCode, "Get All Loads");
-    	        // AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL","Image");
-            AttributeText attributeTextName = new AttributeText("COL_PRI_NAME","Load Name");
-            JsonObject name = new JsonObject();
-            name.put("code", "PRI_NAME");
- 	        columnsArray.add(name);
-		    AttributeText attributeTextDescription = new AttributeText("COL_PRI_DESCRIPTION","Description");
+	     JsonObject columns = new JsonObject();
+	     //Creating attributes
+	      AttributeText attributeBECode = new AttributeText("PRI_CODE","LIKE");
+          JsonObject beCode = new JsonObject();
+          beCode.put("code", "PRI_CODE");
+          AttributeText attributeTextName = new AttributeText("COL_PRI_NAME","Load Name");
+          JsonObject name = new JsonObject();
+          name.put("code", "PRI_NAME");
+	        columnsArray.add(name);
+		    AttributeText attributeTextJobId = new AttributeText("COL_PRI_JOB_ID","Job ID");
 		    JsonObject description = new JsonObject();
-		    description.put("code", "PRI_DESCRIPTION");
- 	        columnsArray.add(description);
+		    description.put("code", "PRI_JOB_ID");
+	        columnsArray.add(description);
 		    AttributeText attributeTextPickupAddress = new AttributeText("COL_PRI_PICKUP_ADDRESS_FULL","Pickup Address");
 		    JsonObject pickUpAddress = new JsonObject();
 		    pickUpAddress.put("code", "PRI_PICKUP_ADDRESS_FULL");
- 	        columnsArray.add(pickUpAddress);
-		    AttributeText attributeTextDropOffAddress = new AttributeText("COL_PRI_DROPOFF_ADDRESS_FULL","DropOff Address");
-		    JsonObject dropOffAddress = new JsonObject();
-		    dropOffAddress.put("code", "PRI_DROPOFF_ADDRESS_FULL");
- 	        columnsArray.add(dropOffAddress);
-		    AttributeMoney attributeOwnerPrice = new AttributeMoney("COL_PRI_OWNER_PRICE_INC_GST","Owner Price");
+	        columnsArray.add(pickUpAddress);
+		    AttributeMoney attributeDescription = new AttributeMoney("COL_PRI_DESCRIPTION","Description");
 		    JsonObject ownerPrice = new JsonObject();
-		    ownerPrice.put("code", "PRI_OWNER_PRICE_INC_GST");
- 	        columnsArray.add(ownerPrice);
-		    AttributeMoney attributeDriverPrice = new AttributeMoney("COL_PRI_DRIVER_PRICE_EXC_GST","Driver Price");
-		    JsonObject driverPrice = new JsonObject();
-		    driverPrice.put("code", "PRI_DRIVER_PRICE_EXC_GST");
- 	        columnsArray.add(driverPrice);
+		    ownerPrice.put("code", "PRI_DESCRIPTION");
+	        columnsArray.add(ownerPrice);
 
 		   //Sort Attribute
-		   //AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME","Sort By FirstName");
+		   AttributeText attributeTextSortName = new AttributeText("SRT_PRI_NAME","Sort By Name");
 
 		   //Pagination Attribute
 		    AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
 		    AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE","PageSize");
 
 		   try {
-			   //searchBE.addAttribute(attributeTextImage, 10.0);
+			   searchBE.addAttribute(attributeBECode, 10.0, "BEG_%%");
 			   searchBE.addAttribute(attributeTextName, 9.0);
-			   searchBE.addAttribute(attributeTextDescription, 8.0);
+			   searchBE.addAttribute(attributeTextJobId, 8.0);
 			   searchBE.addAttribute(attributeTextPickupAddress, 7.0);
-			   searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
-			   searchBE.addAttribute(attributeOwnerPrice, 5.0);
-			   searchBE.addAttribute(attributeDriverPrice, 4.0);
-			   //searchBE.addAttribute(attributeTextSortFirstName, 3.0, "ASC");
+			  // searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
+			   searchBE.addAttribute(attributeDescription, 5.0);
+			   //searchBE.addAttribute(attributeDriverPrice, 4.0);
+			   searchBE.addAttribute(attributeTextSortName, 3.0, "ASC");
 			   searchBE.addAttribute(attributePageStart, 2.0, "0");
-			   searchBE.addAttribute(attributePageSize, 1.0, "20");
+			   searchBE.addAttribute(attributePageSize, 1.0, "500");
 
 		   	} catch (BadDataException e) {
 		   	   // TODO Auto-generated catch block
 		   	   e.printStackTrace();
 		   	}
-
-     //  }
-     //  else {
-     //     	searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-     //   }
-  	    println("The search BE is  :: "+searchBE);
+	   // println("The search BE is  :: "+JsonUtils.toJson(searchBE));
         String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-		System.out.println("The result   ::  "+loadsList);
+		//System.out.println("The result   ::  "+loadsList);
 		publishData( new JsonObject(loadsList) );
-		//publishCmd(result, grpCode, "LNK_CORE");
-		//sendCmdView("TABLE_VIEW", "SBE_GET_ALL_LOADS" );
 		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray );
 	}
 
