@@ -14,7 +14,7 @@ rule "Create Assembly Tokens"
 		RulesUtils.header(drools.getRule().getName());
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+       	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		
 		if(assemblyId != null) {
