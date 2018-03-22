@@ -1924,8 +1924,11 @@ public class QRules {
 					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
-
+				System.out.println("chat code :: "+chatCode);
+				
 				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
+				BaseEntity parentCode = getParent(getUser().getCode(), "LNK_USER");
+				System.out.println("parentCode ::"+parentCode);
 				String[] recipientCodeArray = new String[stakeholders.size()];
 
 				int counter = 0;
@@ -1946,14 +1949,26 @@ public class QRules {
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
 
+				/* Send email and sms when there is a new conversation in the platform */
 				HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("CONVERSATION", newMessage.getCode());
 				contextMap.put("SENDER", getUser().getCode());
 				
+				List<BaseEntity> parentChatstakeholders = getBaseEntitysByParentAndLinkCode(parentCode.getCode(), "LNK_USER");
+				for(BaseEntity be : parentChatstakeholders) {
+					System.out.println("parent chat code stakeHolder ::"+be.getCode());
+					if(!be.getCode().equals(getUser().getCode())) {
+						System.out.println("recipient code stakeholder ::"+be.getCode());
+						String[] conversationReciepientArr = {be.getCode()};
+						/* Sends email and sms when a new conversation is recieved  */
+						sendMessage("", conversationReciepientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+						sendMessage("", conversationReciepientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
+						
+					}
+				}
 				
-				/* Sends email and sms when a new conversation is recieved  */
-				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
-				sendMessage("", recipientCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
+				
+				
 
 			}
 		}
