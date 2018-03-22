@@ -1949,6 +1949,8 @@ public class QRules {
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
 
+				/* Send email and sms when there is a new conversation in the platform */
+
 				HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("CONVERSATION", newMessage.getCode());
 				contextMap.put("SENDER", getUser().getCode());
