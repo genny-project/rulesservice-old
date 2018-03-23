@@ -8,10 +8,12 @@ rule "Ask Registration - Host Company - STEP 2"
 						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2") ) 
      then 
  		rules.header();
+		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2");
+
 		String userCode = rules.getUser().getCode();
 		BaseEntity company = rules.getAsBaseEntity("baseEntity");
 		String companyCode = company.getCode();
-		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2");
+		rules.set("companyBe", company);
 
 		/* link COMPANY to GRP_COMPANY */
 		rules.set("linkSourceCode", "GRP_COMPANYS");
