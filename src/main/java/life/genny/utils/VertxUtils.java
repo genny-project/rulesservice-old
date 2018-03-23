@@ -77,7 +77,11 @@ public class VertxUtils {
 
 	static public JsonObject writeCachedJson(final String key, final String value) {
 
-		DistMap.getDistBE().put(key, value);
+		if (value == null) {
+			DistMap.getDistBE().delete(key);
+		} else {
+			DistMap.getDistBE().put(key, value);
+		}
 		JsonObject ok = new JsonObject().put("status", "ok");
 		return ok;
 
