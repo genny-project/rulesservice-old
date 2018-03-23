@@ -1486,6 +1486,31 @@ public class QRules {
 
 		return null;
 	}
+	
+	/*
+	 * Get all childrens for the given source code with the linkcode and linkValue
+	 */
+	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+		List<BaseEntity> childList = new ArrayList<BaseEntity>();
+		try {
+			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
+					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
+			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			if (linkArray.length > 0) {
+				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
+				for(Link link: arrayList) {
+				  // RulesUtils.println("The Child BaseEnity code is   ::  " + link.getTargetCode());
+				   childList.add(RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(),
+						link.getTargetCode(), false)) ;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return childList;
+	}
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
 		List<Link> links = RulesUtils.getLinks(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), parentCode,
@@ -1924,16 +1949,12 @@ public class QRules {
 					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
-				System.out.println("chat code :: "+chatCode);
-				
+
 				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				BaseEntity parentCode = getParent(getUser().getCode(), "LNK_USER");
-				System.out.println("parentCode ::"+parentCode);
 				String[] recipientCodeArray = new String[stakeholders.size()];
 
 				int counter = 0;
 				for (BaseEntity stakeholder : stakeholders) {
-					System.out.println("stakeholder code ::"+stakeholder.getCode());
 					recipientCodeArray[counter] = stakeholder.getCode();
 					counter += 1;
 				}
@@ -1948,29 +1969,6 @@ public class QRules {
 				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
-
-				/* Send email and sms when there is a new conversation in the platform */
-
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("CONVERSATION", newMessage.getCode());
-				contextMap.put("SENDER", getUser().getCode());
-				
-				List<BaseEntity> parentChatstakeholders = getBaseEntitysByParentAndLinkCode(parentCode.getCode(), "LNK_USER");
-				for(BaseEntity be : parentChatstakeholders) {
-					System.out.println("parent chat code stakeHolder ::"+be.getCode());
-					if(!be.getCode().equals(getUser().getCode())) {
-						System.out.println("recipient code stakeholder ::"+be.getCode());
-						String[] conversationReciepientArr = {be.getCode()};
-						/* Sends email and sms when a new conversation is recieved  */
-						sendMessage("", conversationReciepientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
-						sendMessage("", conversationReciepientArr, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
-						
-					}
-				}
-				
-				
-				
-
 			}
 		}
 	}
@@ -3035,9 +3033,19 @@ public class QRules {
 
 					/* Allocate QUOTER as Driver */
 					updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-					/* Create link - CREATOR for the offer */
-					createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", "CREATOR", 1.0);
+					/* Update link between BEG and Accepted OFFER to weight= 100 */ 
+					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 100.0);
+					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+					//get all offers
+					List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
+					println("All the Offers for the load "+begCode+" are: "+offers.toString());
+					for(BaseEntity be : offers ) {
+						if( !(be.getCode().equals(offerCode)) ) {
+							println("The BE is : "+be.getCode());
+							/* Update PRI_NEXT_ACTION to Disabled */
+							updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+						}	
+					}					
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3552,6 +3560,8 @@ public class QRules {
 		BaseEntity newJobDetails = getBaseEntityByCode(jobCode);
 		println("The newly submitted Job details     ::     " + newJobDetails.toString());
 		publishData(newJobDetails, recipientCodes);
+		/* publishing to Owner */
+		publishBE(newJobDetails);
 
 		/* Moving the BEG */
 		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE");
@@ -3576,6 +3586,8 @@ public class QRules {
 		/* SEND LOAD BE */
 		/* Try sending different types of links to the frontend to get it to display */
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+		/* publishing to Owner */
+		publishBE(getBaseEntityByCode(loadCode));
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
@@ -3608,7 +3620,9 @@ public class QRules {
 		/* SEND JOB BE */
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-
+		/* publishing to Owner */
+		publishBE(getBaseEntityByCode(jobCode));
+		
 //		// clear the cache
 //		clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
 //		// Now fill it again!
