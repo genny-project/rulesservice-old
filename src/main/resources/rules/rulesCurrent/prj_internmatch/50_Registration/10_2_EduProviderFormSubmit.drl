@@ -6,6 +6,8 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Edu Provider Registration Form Submit"
 	when
 	    rules: QRules( 	isState("QUE_EDU_PROVIDER_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 						
+						!isState("PRI_IS_PROFILE_COMPLETED") && 
 						!isState("LOOP_EDU_PROVIDER_REGISTRATION_FORM")) 
 	 then
 	 	rules.header();

@@ -11,8 +11,8 @@ rule "Trigger Application"
         rules.setState("LOOP_TRIGGER_APPLICATION_SETUP");
         
         rules.setState("TRIGGER_SEND_DATA");
-        rules.setState("TRIGGER_SEND_APPLICATION_DATA");
-        rules.setState("TRIGGER_SEND_LAYOUTS");
+/*         rules.setState("TRIGGER_SEND_APPLICATION_DATA");
+ */        rules.setState("TRIGGER_SEND_LAYOUTS");
     
 	    rules.footer();      		      
 end
