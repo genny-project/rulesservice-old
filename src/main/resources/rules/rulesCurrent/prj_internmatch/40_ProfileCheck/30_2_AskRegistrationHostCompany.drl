@@ -3,7 +3,8 @@ import life.genny.rules.QRules;
 
 rule "Ask Registration - Host Company - STEP 2"
     when
-        rules: QRules(  isState("CREATED_BASE_ENTITY") && 
+        rules: QRules(  isState("PROFILE_NOT_COMPLETED") &&
+						isState("CREATED_BASE_ENTITY") && 
 						isState("CPY") &&
 						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2") ) 
      then 
