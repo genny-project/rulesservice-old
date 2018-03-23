@@ -9,7 +9,7 @@ rule "Trigger Application - Internmatch"
         rules.header();
         rules.setState("LOOP_TRIGGER_APPLICATION");
         
-        rules.setState("TRIGGER_HOME_PAGE");
-/*         rules.setState("TRIGGER_WELCOME_PAGE");  
- */        rules.footer(); 		      
+/*         rules.setState("TRIGGER_HOME_PAGE");
+ */        rules.setState("TRIGGER_WELCOME_PAGE");  
+        rules.footer(); 		      
 end

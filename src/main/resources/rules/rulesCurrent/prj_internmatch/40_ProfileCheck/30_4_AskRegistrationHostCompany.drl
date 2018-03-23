@@ -10,18 +10,25 @@ rule "Ask Registration - Host Company - STEP 4"
  		rules.header();		
 		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP4");
  		
- 		String questionSourceCode = rules.getUser().getCode();
-		String questionTargetCode = rules.getUser().getCode();
+		/* Get Company BaseEntity from map */
+		BaseEntity company = rules.getAsBaseEntity("companyBe");
+		if(company != null){
+			String questionSourceCode = rules.getUser().getCode();
+			String questionTargetCode = company.getCode();
 
-		/* send question group for host company */
-		rules.set("questionSourceCode", questionSourceCode);
-		rules.set("questionTargetCode", questionTargetCode);	
-		rules.set("questionGroupCode", "QUE_NEW_USER_COMPANY_GRP");
-		
-		rules.setState("SEND_QUESTION");
-		
-		/* we send the layout */
-		rules.sendSublayout("LAY_HOST_COMPANY", "registration/hostcompany.json", null, false);
+			/* send question group for host company */
+			rules.set("questionSourceCode", questionSourceCode);
+			rules.set("questionTargetCode", questionTargetCode);	
+			rules.set("questionGroupCode", "QUE_NEW_USER_COMPANY_GRP");
+			
+			rules.setState("SEND_QUESTION");
+			
+			/* we send the layout */
+			rules.sendSublayout("LAY_HOST_COMPANY", "registration/hostcompany.json", null, false);
+
+		}else{
+			rules.println("company is null");
+		}
 		
  		rules.footer();
 end
