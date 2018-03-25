@@ -399,7 +399,7 @@ public class QRules {
 		}
 	}
 
-	/* 
+	/*
 	 * Checks if Mandatory fields in the given Question Groups are filled
 	 */
 	public Boolean isMandatoryFieldsEntered(final String targertCode, final String questionCode) {
@@ -409,10 +409,10 @@ public class QRules {
 					questionCode, getToken());
 		}
 
-		return status;		
+		return status;
 	}
-	
-	
+
+
 	//Check if Mobile Verification has been completed
 	public Boolean isMobileVerificationCompleted() {
 		Boolean status = true;
@@ -3000,8 +3000,8 @@ public class QRules {
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
 							QwandaUtils.getMoneyString(feePriceIncGST)));
 					saveAnswers(answers);
-					
-					
+
+
 					//fetch the job to ensure the cache has caught up
 					BaseEntity begBe = null;
 					try {
@@ -3010,11 +3010,11 @@ public class QRules {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
+
 					/* Update BEG to have DRIVER_CODE as an attribute */
 					Answer beAnswer = new Answer(begBe.getCode(), beg.getCode(), "STT_IN_TRANSIT", quoterCode);
 					saveAnswer(beAnswer);
-								
+
 
 					/* TOAST :: SUCCESS */
 					println("Sending success toast since make payment succeeded");
@@ -3133,18 +3133,18 @@ public class QRules {
 							Status.NEEDS_NO_ACTION.value());
 
 					/* sending cmd BUCKETVIEW */
-					//drools.setFocus("SendLayoutsAndData"); 
-					
+					//drools.setFocus("SendLayoutsAndData");
+
 					List<BaseEntity> listBe = new ArrayList<>();
 					listBe.add(getUser());
 					listBe.add(getBaseEntityByCode(quoterCode));
 					listBe.add(getBaseEntityByCode(offerCode));
 					listBe.add(getBaseEntityByCode(begCode));
-					
+
 					publishCmd(listBe, "GRP_ROOT", "LNK_CORE");
 					sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 					setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
-					
+
 
 				}
 				setState("PAYMENT_DONE");
@@ -4078,37 +4078,6 @@ public class QRules {
         println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
     	  return previousLayout;
     }
-    
-    /* Sorting Offers of a beg as per the price, lowest price being on top */
-	public void sortOffersInBeg(final String begCode) {
-		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
-		//println("All the Offers for the load " + begCode + " are: " + offers.toString());
-		if (offers.size() > 1) {
-			Collections.sort(offers, new Comparator<BaseEntity>() {
-				@Override
-				public int compare(BaseEntity offer1, BaseEntity offer2) {
-					println("The price value of "+offer1.getCode()+" is " + offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
-					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
-					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					
-					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
-					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
-					
-					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
-
-				}
-			});
-		}
-		//println("The offers in the descendinng order :: " + offers.toString());
-		//println("The size of list is :: " + offers.size());
-		double maxLinkWeightValue = offers.size();
-		for (BaseEntity be : offers) {
-			updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", maxLinkWeightValue);
-			maxLinkWeightValue--;
-		}
-
-	}
 
 	public void triggerEmailForJobUpdate(String jobCode) {
 		List<Link> links = getLinks(jobCode, "LNK_BEG");
@@ -4151,27 +4120,28 @@ public class QRules {
 		sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
 	}
 
+
 	public void setSessionState(final String key, final Object value) {
 		Map<String,Object> map = VertxUtils.getMap(realm(), "STATE",key);
-		if (value == null) { 
+		if (value == null) {
 			map.remove(key);
 		} else {
 			map.put(key, value);
 		}
 		VertxUtils.putObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), map);
 	}
-	
+
 	public Object getSessionState(final String key) {
 		Type type = new TypeToken<Map<String, Object>>(){}.getType();
 		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
 		Object ret = myMap.get(key);
 		return ret;
 	}
-	
+
 	public Map<String,Object> getSessionStateMap() {
 		Type type = new TypeToken<Map<String, Object>>(){}.getType();
 		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
 		return myMap;
-	
+
 	}
 }
