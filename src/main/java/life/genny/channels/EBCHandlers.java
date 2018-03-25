@@ -203,9 +203,9 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-			System.out.println("FIRE RULES ("+realm+") "+msgType);
+			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+realm+") "+msgType); }
 
-			String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
+		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {
 				RulesLoader.executeStatefull(realm, eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {

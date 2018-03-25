@@ -33,6 +33,8 @@ rule "Is Logged In"
 		        rules.saveAnswer(isAdminAnswer);
 		    }
         }
+        
+        rules.println(rules.getDecodedTokenMap().toString());
 		
        drools.setFocus("SendAliases");
 	   rules.footer();     		      
