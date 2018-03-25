@@ -3128,7 +3128,7 @@ public class QRules {
 	}
 
 	public void updateGPS(QDataGPSMessage m) {
-		println("###### GPS: " + m);
+		
 		GPS driverPosition = m.getItems()[0];
 		Double driverLatitude = driverPosition.getLatitude();
 		Double driverLongitude = driverPosition.getLongitude();
@@ -3138,8 +3138,10 @@ public class QRules {
 			try {
 				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
 						getUser().getCode());
-				RulesUtils.println(jobsInTransit.toString());
-
+				if (!jobsInTransit.isEmpty()) {
+					println("###### GPS: " + m);
+					RulesUtils.println(jobsInTransit.toString());
+				}
 				for (BaseEntity be : jobsInTransit) {
 
 					Double deliveryLatitude = be.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);

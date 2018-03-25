@@ -262,7 +262,12 @@ public class RulesLoader {
 			final Map<String, String> keyValueMap) {
 
 		try {
-			KieSession kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
+			KieSession kieSession = null;
+			if (getKieBaseCache().get(rulesGroup) == null) {
+				log.error("The rulesGroup kieBaseCache is null, not loaded "+rulesGroup);
+				return;
+			}
+			kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
 
 			/*
 			 * kSession.addEventListener(new DebugAgendaEventListener());
