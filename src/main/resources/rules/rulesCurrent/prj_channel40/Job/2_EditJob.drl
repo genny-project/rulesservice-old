@@ -2,6 +2,8 @@ package life.genny.rules;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.QRules;
+import java.util.HashMap;
+import java.util.List;
 
 
 rule "Edit Jobs"
@@ -46,7 +48,9 @@ rule "Edit Jobs"
 
     /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson);
-
+      
+    	 /*Sending email to quoters who have made offer to a job, when a job is edited */
+     rules.triggerEmailForJobUpdate(jobCode);
 
      rules.footer();
 end

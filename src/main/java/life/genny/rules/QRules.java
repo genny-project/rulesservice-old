@@ -3132,7 +3132,7 @@ public class QRules {
 	}
 
 	public void updateGPS(QDataGPSMessage m) {
-		
+
 		GPS driverPosition = m.getItems()[0];
 		Double driverLatitude = driverPosition.getLatitude();
 		Double driverLongitude = driverPosition.getLongitude();
@@ -4025,66 +4025,77 @@ public class QRules {
 			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    } catch (BadDataException e) {
+			  // TODO Auto-generated catch block
+			  e.printStackTrace();
 		}
 
-		println("The search BE is  :: " + searchBE);
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		System.out.println("The result   ::  " + result);
-		publishData(new JsonObject(result));
-		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
+
+    	    println("The search BE is  :: "+searchBE);
+    	    String jsonSearchBE = JsonUtils.toJson(searchBE);
+	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
+	    System.out.println("The result   ::  "+result);
+	    publishData( new JsonObject(result) );
+	    sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray );
+
 
 	}
 
-	public void setLastLayout(final String layoutViewCode, final String layoutViewGroupBECode) {
-		String sessionId = getAsString("session_state");
-		String[] layoutArray = { layoutViewCode, layoutViewGroupBECode };
-		println("Set Layout:- The Session Id is ::" + sessionId);
-		println("The layout is :: " + layoutArray[0] + " and " + layoutArray[1]);
-		VertxUtils.putStringArray(realm(), "PreviousLayout", sessionId, layoutArray);
-	}
+    public void setLastLayout(final String layoutViewCode, final String layoutViewGroupBECode) {
+       String sessionId = getAsString("session_state");
+       String[] layoutArray = {layoutViewCode, layoutViewGroupBECode };
+       println("Set Layout:- The Session Id is ::"+sessionId);
+       println("The layout is :: "+layoutArray[0]+" and "+layoutArray[1]);
+    	   VertxUtils.putStringArray(realm(),"PreviousLayout", sessionId, layoutArray);
+    }
 
-	public String[] getLastLayout() {
-		String sessionId = getAsString("session_state");
-		println("Get Layout:- The Session Id is ::" + sessionId);
-		String[] previousLayout = VertxUtils.getStringArray(realm(), "PreviousLayout", sessionId);
-		println("The layout is :: " + previousLayout[0] + " and " + previousLayout[1]);
-		return previousLayout;
-	}
+    public String[] getLastLayout() {
+        String sessionId = getAsString("session_state");
+        println("Get Layout:- The Session Id is ::"+sessionId);
+        String[] previousLayout = VertxUtils.getStringArray(realm(),"PreviousLayout", sessionId);
+        println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
+    	  return previousLayout;
+    }
 
-	/* Sorting Offers of a beg as per the price, lowest price being on top */
-	public void sortOffersInBeg(final String begCode) {
-		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
-		//println("All the Offers for the load " + begCode + " are: " + offers.toString());
-		if (offers.size() > 1) {
-			Collections.sort(offers, new Comparator<BaseEntity>() {
-				@Override
-				public int compare(BaseEntity offer1, BaseEntity offer2) {
-					println("The price value of "+offer1.getCode()+" is " + offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
-					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
-					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					
-					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
-					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
-					
-					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
+	public void triggerEmailForJobUpdate(String jobCode) {
+		List<Link> links = getLinks(jobCode, "LNK_BEG");
+		List<String> offerList = new ArrayList<String>();
+		String ownerCode = null;
 
+		if (links != null) {
+
+			for (Link link : links) {
+
+				String linkValue = link.getLinkValue();
+				if (linkValue != null && linkValue.equals("OFFER")) {
+					offerList.add(link.getTargetCode());
 				}
-			});
-		}
-		//println("The offers in the descendinng order :: " + offers.toString());
-		//println("The size of list is :: " + offers.size());
-		double maxLinkWeightValue = offers.size();
-		for (BaseEntity be : offers) {
-			updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", maxLinkWeightValue);
-			maxLinkWeightValue--;
+
+				if (linkValue != null && linkValue.equals("OWNER")) {
+					ownerCode = link.getTargetCode();
+				}
+
+			}
 		}
 
+		String[] recipientArr = new String[offerList.size()];
+
+		int i = 0;
+		for (String offer : offerList) {
+			BaseEntity offerBe = getBaseEntityByCode(offer);
+			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
+			recipientArr[i] = quoterCode;
+			i++;
+		}
+
+		println("recipient array for edit job details email :" + Arrays.toString(recipientArr));
+		println("owner code ::" + ownerCode);
+
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", jobCode);
+		contextMap.put("OWNER", ownerCode);
+
+		sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
 	}
 
 	public void setSessionState(final String key, final Object value) {
