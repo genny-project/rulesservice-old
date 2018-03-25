@@ -208,6 +208,9 @@ rule "Submit Offer Driver"
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
             rules.saveAnswer(offerDateTime);
+            
+        /* Sort Begs based on the offers Owner Price and set the linkweight as per the order of cheapest as highest */
+           rules.sortOffersInBeg(begCode);
 
         /* Check if a link exists between USER & OFFER */
             Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
@@ -230,6 +233,10 @@ rule "Submit Offer Driver"
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+            
+            
+         
+            
 
         /* Send BUCKETVIEW Cmd */
             drools.setFocus("SendLayoutsAndData");
