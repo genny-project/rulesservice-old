@@ -3139,7 +3139,7 @@ public class QRules {
 				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
 						getUser().getCode());
 				if (!jobsInTransit.isEmpty()) {
-					println("###### GPS: " + m);
+					println("###### GPS: for user "+getUser().getCode()+":" + m);
 					RulesUtils.println(jobsInTransit.toString());
 				}
 				for (BaseEntity be : jobsInTransit) {
@@ -4083,4 +4083,27 @@ public class QRules {
 
 	}
 
+	public void setSessionState(final String key, final Object value) {
+		Map<String,Object> map = VertxUtils.getMap(realm(), "STATE",key);
+		if (value == null) { 
+			map.remove(key);
+		} else {
+			map.put(key, value);
+		}
+		VertxUtils.putObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), map);
+	}
+	
+	public Object getSessionState(final String key) {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
+		Object ret = myMap.get(key);
+		return ret;
+	}
+	
+	public Map<String,Object> getSessionStateMap() {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
+		return myMap;
+	
+	}
 }
