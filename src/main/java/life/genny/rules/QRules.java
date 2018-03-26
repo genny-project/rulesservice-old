@@ -399,27 +399,31 @@ public class QRules {
 		}
 	}
 
-	public Boolean isNewUserProfileCompleted() {
+	/* 
+	 * Checks if Mandatory fields in the given Question Groups are filled
+	 */
+	public Boolean isMandatoryFieldsEntered(final String targertCode, final String questionCode) {
 		Boolean status = false;
 		if (getUser() != null) {
-			status = QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(),
-					"QUE_NEW_USER_PROFILE_GRP", getToken());
+			status = QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), targertCode,
+					questionCode, getToken());
 		}
 
-		return status;
+		return status;		
 	}
-
-	// Check if Terms and Condition has been accepted by the user
-	public Boolean isTCAccepted() {
+	
+	
+	//Check if Mobile Verification has been completed
+	public Boolean isMobileVerificationCompleted() {
 		Boolean status = true;
-		String value = null;
+		Boolean value = null;
 		try {
-			value = getUser().getValue("PRI_ACCEPTANCE_TERMS_CONDITIONS", null);
+			value = getUser().getValue("PRI_MOBILE_VERIFICATION_COMPLETED", null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		if (value == null || value.equalsIgnoreCase("false")) {
+		if (value == null || !value) {
 			status = false;
 		}
 
