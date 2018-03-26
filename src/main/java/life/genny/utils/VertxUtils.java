@@ -1,6 +1,7 @@
 package life.genny.utils;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
+import com.google.gson.reflect.TypeToken;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -47,6 +49,18 @@ public class VertxUtils {
 
 
 	static public <T> T getObject(final String realm, final String keyPrefix, final String key, final Class clazz) {
+		T item = null;
+		JsonObject json = readCachedJson(realm + ":" + keyPrefix + ":" + key);
+		if (json.getString("status").equalsIgnoreCase("ok")) {
+			String data = json.getString("value");
+			item = (T) JsonUtils.fromJson(data, clazz);
+			return item;
+		} else {
+			return null;
+		}
+	}
+	
+	static public <T> T getObject(final String realm, final String keyPrefix, final String key, final Type clazz) {
 		T item = null;
 		JsonObject json = readCachedJson(realm + ":" + keyPrefix + ":" + key);
 		if (json.getString("status").equalsIgnoreCase("ok")) {
@@ -261,4 +275,16 @@ public class VertxUtils {
 		return localMessageProducerCache.get(sessionState);
 
 	}
+	
+	static public void putMap(final String realm, final String keyPrefix, final String key, final Map<String,Object> map) {
+		putObject(realm, keyPrefix, key, map);
+	}
+	
+	static public Map<String,Object> getMap(final String realm, final String keyPrefix, final String key) {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = getObject(realm, keyPrefix, key, type);
+		return myMap;
+	}
+	
+	
 }
