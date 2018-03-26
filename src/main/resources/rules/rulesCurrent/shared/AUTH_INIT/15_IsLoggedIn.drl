@@ -34,7 +34,7 @@ rule "Is Logged In"
 		    }
         }
         
-        rules.println(rules.getDecodedTokenMap().toString());
+        rules.println("Decoded Map:"+rules.getDecodedTokenMap().toString());
 		
        drools.setFocus("SendAliases");
 	   rules.footer();     		      
