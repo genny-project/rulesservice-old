@@ -5,7 +5,6 @@ rule "Send Question"
 	when
 	    rules: QRules( isState("SEND_QUESTION") )
 	 then 	
-       
         rules.header();
 
         String questionSourceCode = rules.getAsString("questionSourceCode");
