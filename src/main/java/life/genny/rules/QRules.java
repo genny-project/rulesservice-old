@@ -4084,7 +4084,7 @@ public class QRules {
         println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
     	  return previousLayout;
     }
-    
+
     /* Sorting Offers of a beg as per the price, lowest price being on top */
 	public void sortOffersInBeg(final String begCode) {
 		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
@@ -4118,7 +4118,7 @@ public class QRules {
 
 
 	public void triggerEmailForJobUpdate(String jobCode) {
-		
+
 
 	      /* fetch the job to ensure the cache has caught up */
 			BaseEntity begBe = null;
@@ -4170,6 +4170,7 @@ public class QRules {
 			sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
 		}
 		
+
 	}
 
 
