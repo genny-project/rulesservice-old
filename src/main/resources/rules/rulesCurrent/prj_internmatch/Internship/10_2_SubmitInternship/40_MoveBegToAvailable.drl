@@ -18,20 +18,9 @@ rule "Submit Internship - Step 4"
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP4");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-        
-/*         rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
- */
-		/* Moving the BEG */
-		Link link = new Link("GRP_DRAFTS", beg.getCode(), "LNK_CORE");
-		try {
-			String output = QwandaUtils.apiPostEntity(	rules.getQwandaServiceUrl() + "/qwanda/baseentitys/move/GRP_AVAILABLE",
-														JsonUtils.toJson(link), 
-														rules.getToken());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+        if(beg!=null){
+        	rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
 		}
-        
         rules.setState("MOVED_BEG_TO_AVAILABLE");
         rules.setState("PUBLISH_BEG");
 	 	rules.footer();      
