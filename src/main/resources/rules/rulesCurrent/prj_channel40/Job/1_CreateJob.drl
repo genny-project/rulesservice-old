@@ -79,6 +79,15 @@ rule "Create Job"
 
     /*  Publish it to the EventBus   */
       rules.getEventBus().publish("cmds", cmdJobSublayoutJson);
+      
+      /* Add new attribute to save job creation date-time */
+      Answer newJobCreationDateTimeAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime() );
+      rules.saveAnswer(newJobCreationDateTimeAnswer);
+      
+      
+      /* Add new attribute to check if a job is new or existing */
+      Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_IS_SUBMITTED", "false");
+      rules.saveAnswer(newJobSubmitAnswer);
 
      rules.footer();
 

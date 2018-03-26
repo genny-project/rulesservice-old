@@ -3663,20 +3663,26 @@ public class QRules {
 		 * publishBaseEntityByCode("GRP_NEW_ITEMS",
 		 * parentGrp.getCode(),"LNK_CORE",recipients);
 		 */
+		
+		if(!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+			
+			/* Sending Messages */
 
-		/* Sending Messages */
+			HashMap<String, String> contextMap = new HashMap<String, String>();
+			contextMap.put("JOB", jobCode);
+			contextMap.put("OWNER", getUser().getCode());
 
-		HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("JOB", jobCode);
-		contextMap.put("OWNER", getUser().getCode());
+			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
-		println("The String Array is ::" + Arrays.toString(recipientCodes));
+			/* Sending toast message to owner frontend */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
-		/* Sending toast message to owner frontend */
-		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-		/* Sending message to BEG OWNER */
-		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			/* Sending message to BEG OWNER */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			
+		}
+		
+		
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4080,44 +4086,58 @@ public class QRules {
     }
 
 	public void triggerEmailForJobUpdate(String jobCode) {
-		List<Link> links = getLinks(jobCode, "LNK_BEG");
-		List<String> offerList = new ArrayList<String>();
-		String ownerCode = null;
+		
 
-		if (links != null) {
-
-			for (Link link : links) {
-
-				String linkValue = link.getLinkValue();
-				if (linkValue != null && linkValue.equals("OFFER")) {
-					offerList.add(link.getTargetCode());
-				}
-
-				if (linkValue != null && linkValue.equals("OWNER")) {
-					ownerCode = link.getTargetCode();
-				}
-
+	      /* fetch the job to ensure the cache has caught up */
+			BaseEntity begBe = null;
+			try {
+				 begBe = QwandaUtils.getBaseEntityByCode(jobCode, getToken());
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+		
+		if(getBaseEntityByCode(jobCode).getValue("PRI_JOB_IS_SUBMITTED", false)) {
+			
+			List<Link> links = getLinks(jobCode, "LNK_BEG");
+			List<String> offerList = new ArrayList<String>();
+			String ownerCode = null;
+
+			if (links != null) {
+
+				for (Link link : links) {
+
+					String linkValue = link.getLinkValue();
+					if (linkValue != null && linkValue.equals("OFFER")) {
+						offerList.add(link.getTargetCode());
+					}
+
+					if (linkValue != null && linkValue.equals("OWNER")) {
+						ownerCode = link.getTargetCode();
+					}
+
+				}
+			}
+
+			String[] recipientArr = new String[offerList.size()];
+
+			int i = 0;
+			for (String offer : offerList) {
+				BaseEntity offerBe = getBaseEntityByCode(offer);
+				String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
+				recipientArr[i] = quoterCode;
+				i++;
+			}
+
+			println("recipient array for edit job details email :" + Arrays.toString(recipientArr));
+			println("owner code ::" + ownerCode);
+
+			HashMap<String, String> contextMap = new HashMap<String, String>();
+			contextMap.put("JOB", jobCode);
+			contextMap.put("OWNER", ownerCode);
+
+			sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
 		}
-
-		String[] recipientArr = new String[offerList.size()];
-
-		int i = 0;
-		for (String offer : offerList) {
-			BaseEntity offerBe = getBaseEntityByCode(offer);
-			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
-			recipientArr[i] = quoterCode;
-			i++;
-		}
-
-		println("recipient array for edit job details email :" + Arrays.toString(recipientArr));
-		println("owner code ::" + ownerCode);
-
-		HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("JOB", jobCode);
-		contextMap.put("OWNER", ownerCode);
-
-		sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
+		
 	}
 
 
