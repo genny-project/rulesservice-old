@@ -4084,6 +4084,38 @@ public class QRules {
         println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
     	  return previousLayout;
     }
+    
+    /* Sorting Offers of a beg as per the price, lowest price being on top */
+	public void sortOffersInBeg(final String begCode) {
+		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
+		//println("All the Offers for the load " + begCode + " are: " + offers.toString());
+		if (offers.size() > 1) {
+			Collections.sort(offers, new Comparator<BaseEntity>() {
+				@Override
+				public int compare(BaseEntity offer1, BaseEntity offer2) {
+					println("The price value of "+offer1.getCode()+" is " + offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
+					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
+					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+					
+					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
+					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
+					
+					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
+
+				}
+			});
+		}
+		//println("The offers in the descendinng order :: " + offers.toString());
+		//println("The size of list is :: " + offers.size());
+		double maxLinkWeightValue = offers.size();
+		for (BaseEntity be : offers) {
+			updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", maxLinkWeightValue);
+			maxLinkWeightValue--;
+		}
+
+	}
+
 
 	public void triggerEmailForJobUpdate(String jobCode) {
 		
