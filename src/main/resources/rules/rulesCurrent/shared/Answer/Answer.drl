@@ -39,6 +39,10 @@ ruleflow-group 'Answer'
 				rules.processImageUpload($m, "PRI_IMAGE_URL");
 				answersToSave.addAll(rules.processAnswer($m));
 			}
+			else if(attributeCode.contains("PRI_COMPANY_LOGO")) {
+				rules.processImageUpload($m, "PRI_IMAGE_URL");
+				answersToSave.addAll(rules.processAnswer($m));
+			}
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m); 
 			}
