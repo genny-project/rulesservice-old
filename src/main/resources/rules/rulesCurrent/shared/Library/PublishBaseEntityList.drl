@@ -36,6 +36,7 @@ rule "Publish BaseEntity List"
              rules.println("Publish BaseEntity List :: missing beCache");
         }
         else {
+           
             List<BaseEntity> beList = null;
             if( beStakeholderCode != null ) {
                 beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
@@ -43,6 +44,7 @@ rule "Publish BaseEntity List"
             else{
                 beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache);
             }
+
             rules.publishCmd(beList, beParentCode, beLinkCode);
             rules.set("beList", beList);
             rules.setState("PUBLISHED_BASE_ENTITY_LIST");

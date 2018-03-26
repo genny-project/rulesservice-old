@@ -383,8 +383,17 @@ public class QRules {
 
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
-
-		be = VertxUtils.readFromDDT(code, getToken());
+		
+		/* use vertexUtils */
+		//be = VertxUtils.readFromDDT(code, getToken());
+		
+		/* remove this try catch block from here */
+		try {
+			be= QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+		
 		if (be == null) {
 			println("ERROR - be (" + code + ") fetched is NULL ");
 		} else {
@@ -3570,25 +3579,17 @@ public class QRules {
 		
 	}
 
-	public List<BaseEntity> getAllBegs( List<BaseEntity> beList, String linkCode, String pageStart, String pageSize, Boolean cache)
-	{	
-		List<BaseEntity> begList = new ArrayList<BaseEntity>();
-		println(beList);
-		for (BaseEntity be : beList) {
-			List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(be.getCode(), "LNK_CORE", 0, 500, false);
-			println("bucket name " + be.getCode() + "items" + begs.size() );
-			
-			println("begs of each bucket   ::   " +begs);
-			begList.addAll(begs);
-			publishCmd(begList, be.getCode(), "LNK_CORE");
-/* 			publishCmd(beList, null, null, null);
- */			
-		}
-
-
-		println("FETCHED " + begList.size() + " BEGS");
-		return begList;
+	public List<BaseEntity> sendBaseEntityWithChildren( BaseEntity be, String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {			
 		
-	}
+		List<BaseEntity> children = getBaseEntitysByParentAndLinkCode2(be.getCode(), linkCode, pageStart, pageSize, cache);
 
+		if(children != null && children.size() > 0) {
+			
+			publishCmd(children, be.getCode(), linkCode);
+			println("FETCHED        ::   " + children.size() + " BEs ");
+			println("FETCHED BES   ::   " + children.toString() );
+		}
+		
+		return children;
+	}
 }

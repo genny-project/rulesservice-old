@@ -13,10 +13,10 @@ rule "Send Dashboard"
                         !isState("LOOP_SEND_DASHBOARD") )
      then
      	rules.header();
-     	rules.clearState("PUBLISHED_BASE_ENTITY_LIST");
      	rules.setState("LOOP_SEND_DASHBOARD");
+     	rules.clearState("PUBLISHED_BASE_ENTITY_LIST");
         
-        rules.set("beParentCode", "GRP_DASHBOARD");            
+        rules.set("beParentCode", "GRP_DASHBOARD");                    
         rules.set("beLinkCode", "LNK_CORE");
         rules.set("bePageStart", 0);
         rules.set("bePageSize", 20);
@@ -24,7 +24,7 @@ rule "Send Dashboard"
         
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
-         
+        
         rules.setState("SENT_DASHBOARD");		
         rules.setState("SEND_ALL_BEGS");		
 	    rules.footer();     		      
