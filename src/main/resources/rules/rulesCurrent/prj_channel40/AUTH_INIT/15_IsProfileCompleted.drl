@@ -1,0 +1,42 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+import life.genny.qwanda.entity.BaseEntity;
+
+
+rule "Is Profile Completed"
+    when
+        rules: QRules( isState("IS_LOGGED_IN") && !isState("NEW_USER_CREATED") && !isState("NEW_USER_PROFILE_COMPLETION_CHECKED") ) 
+     then
+        rules.header();
+  		       
+        String userCode =  rules.getUser().getCode();
+        /*  Check if user is already added to the company   */
+        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
+        String companyCode = "";
+        if(company != null)
+        {
+            companyCode = company.getCode();
+        }
+        rules.println("The Users Company code is   ::  "+companyCode);
+        rules.println("The isProfileCompleted status is :: "+rules.isMandatoryFieldsEntered(userCode, "QUE_NEW_USER_PROFILE_GRP"));
+        rules.println("The isUserCompanyDetailsEntered status is :: "+rules.isMandatoryFieldsEntered(companyCode, "QUE_NEW_USER_COMPANY_GRP"));
+       if(rules.isMandatoryFieldsEntered(userCode, "QUE_NEW_USER_PROFILE_GRP") && rules.isMandatoryFieldsEntered(companyCode, "QUE_NEW_USER_COMPANY_GRP") ){
+            rules.println("The User Profile has been accepted");
+		    rules.setState("NEW_USER_PROFILE_COMPLETION_CHECKED");
+         }else{
+              		     
+             rules.println("The Profile has not been completed. Sending profile again");
+             rules.sendLayout("LAY_FULL_SCREEN", "initial-profile-update.json");
+     	     rules.sendSublayout("SUB_LAY_INITIAL_PROFILE", "create_user.json");
+     	     /* Sending dropdown data and Asks */
+             rules.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
+             rules.sendQuestions(userCode, userCode, "QUE_NEW_USER_PROFILE_GRP", true);
+  		   
+            rules.sendQuestions(userCode, companyCode, "QUE_NEW_USER_COMPANY_GRP", true);
+       }
+       	  
+	   rules.footer();     		      
+end
