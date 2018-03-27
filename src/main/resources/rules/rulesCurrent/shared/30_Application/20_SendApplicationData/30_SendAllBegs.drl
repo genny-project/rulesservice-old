@@ -17,8 +17,14 @@ rule "Send All Begs"
         
         /* Get BaseEntity list from map */
         List<BaseEntity> baseEntityList = rules.getAsBaseEntitys("beList");
+
+        List<BaseEntity> begs = null;
         for(BaseEntity be: baseEntityList) {
-            rules.sendBaseEntityWithChildren(be, "LNK_CORE", 0, 500, false);
+            begs = rules.sendBaseEntityWithChildren(be, "LNK_CORE", 0, 500, false);
+
+            for(BaseEntity beg: begs) {
+                rules.sendBaseEntityWithChildren(beg, "LNK_BEG", 0, 500, false);
+            }
         }
          
         rules.setState("SENT_DASHBOARD_BEGS");		
