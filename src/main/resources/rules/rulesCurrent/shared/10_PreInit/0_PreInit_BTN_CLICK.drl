@@ -29,6 +29,8 @@ rule "Pre Init Btn Click"
 		String itemCode = dataJson.getString("itemCode");
 		rules.println("itemCode   ::   " + itemCode);
 
+		
+
 		if(quesCode != null) {
  	 		rules.setState(quesCode);
 		}
@@ -38,6 +40,7 @@ rule "Pre Init Btn Click"
 		if(itemCode != null) {
 			rules.set("itemCode", itemCode);
 		}
+		
 
 
   		drools.setFocus("ButtonClick");      		      
