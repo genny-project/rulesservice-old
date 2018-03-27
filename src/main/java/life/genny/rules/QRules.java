@@ -3999,7 +3999,7 @@ public class QRules {
 		// }else {
 		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
 		// }
-		println("The search BE is  :: " + searchBE);
+		//println("The search BE is  :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
@@ -4065,14 +4065,13 @@ public class QRules {
 			  e.printStackTrace();
 		}
 
-
-    	    println("The search BE is  :: "+searchBE);
-    	    String jsonSearchBE = JsonUtils.toJson(searchBE);
-	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-	    System.out.println("The result   ::  "+result);
-	    publishData( new JsonObject(result) );
-	    sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray );
-
+		//println("The search BE is  :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		System.out.println("The result   ::  " + result);
+		publishData(new JsonObject(result));
+		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 
 	}
 
@@ -4192,5 +4191,19 @@ public class QRules {
 		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
 		return myMap;
 
+	}
+	
+	/*
+	 * Redirecting to the Home/Landing Page based on the user role:OWNER or DRIVER
+	 */
+	public void redirectToHomePage() {
+		if( getUser().is("PRI_OWNER") ){
+            sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+	        setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
+         }
+         else if( getUser().is("PRI_DRIVER") ) {
+            sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
+            setLastLayout( "LIST_VIEW", "GRP_NEW_ITEMS" );
+         }
 	}
 }
