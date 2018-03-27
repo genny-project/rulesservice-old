@@ -3944,6 +3944,9 @@ public class QRules {
 		println("Get All Drivers - The search BE is  :: " + searchBeCode);
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); // createBaseEntityByCode2(searchBeCode,
 																				// "Get All Users");
+		
+		searchBE.addAttribute(new Attribute(), 1.0, ea.getValue());
+		
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
 		// if( getBaseEntityByCode(searchBeCode) == null ) {
