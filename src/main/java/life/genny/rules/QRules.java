@@ -3136,9 +3136,9 @@ public class QRules {
 							Status.NEEDS_NO_ACTION.value());
 
 					/* sending cmd BUCKETVIEW */
-					//drools.setFocus("SendLayoutsAndData");
+					drools.setFocus("SendLayoutsAndData");
 
-					List<BaseEntity> listBe = new ArrayList<>();
+				/*	List<BaseEntity> listBe = new ArrayList<>();
 					listBe.add(getUser());
 					listBe.add(getBaseEntityByCode(quoterCode));
 					listBe.add(getBaseEntityByCode(offerCode));
@@ -3146,7 +3146,7 @@ public class QRules {
 
 					publishCmd(listBe, "GRP_ROOT", "LNK_CORE");
 					sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
-					setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
+					setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );  */
 
 
 				}
