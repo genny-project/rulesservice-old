@@ -57,12 +57,19 @@ rule "Submit Job"
 			/* Sending message to BEG OWNER */
 			rules.sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 			
-			/* Add new attribute to save that a job existing */
+			/* Add new attribute to save that a job is existing */
 	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
 	      	rules.saveAnswer(newJobSubmitAnswer);
    		
    		}
-   		 		
+   		
+   		
+   		/*Sending email to quoters who have made offer to a job, when a job is edited */
+   		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+   		
+     		rules.triggerEmailForJobUpdate(jobCode);
+   		 
+   	 	}		
         
          /*  Calling the rule group : BucketView     */
            drools.setFocus("SendLayoutsAndData"); 
