@@ -4115,9 +4115,12 @@ public class QRules {
 		//println("The offers in the descendinng order :: " + offers.toString());
 		//println("The size of list is :: " + offers.size());
 		double maxLinkWeightValue = offers.size();
+		double linkWeight=1; 
 		for (BaseEntity be : offers) {
-			updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", maxLinkWeightValue);
-			maxLinkWeightValue--;
+		   if(linkWeight <= maxLinkWeightValue) {
+			  updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", linkWeight);
+			  linkWeight++;
+			}
 		}
 
 	}
