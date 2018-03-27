@@ -20,9 +20,18 @@ rule "Pre Init FORM Submit"
         
         String dataString = m.getData().getValue();
 		JsonObject dataJson = new JsonObject(dataString);
-		String targetCode = dataJson.getString("targetCode");
+		
+        /* Get targetCode */		
+        String targetCode = dataJson.getString("targetCode");
 		rules.println("targetCode   ::   " + targetCode);
-
+       
+        /* Get actionCode */		
+		String actionCode = dataJson.getString("action");
+		rules.println("actionCode   ::   " + actionCode);
+        
+        if(actionCode != null) {
+			rules.setState(actionCode);
+		}
         if(quesCode != null) {
 	 		rules.setState(quesCode);
 	 		rules.set("quesTargetCode", targetCode);

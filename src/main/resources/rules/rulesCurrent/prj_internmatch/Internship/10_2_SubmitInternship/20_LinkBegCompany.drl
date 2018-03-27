@@ -8,6 +8,7 @@ rule "Submit Internship - Step 2"
 						isState("CREATED_LINK") && 	
 						isState("CREATOR") && 	
 						isState("EVENT_FORM_SUBMIT") &&	
+						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP2")) 
 	 then
 	 	rules.header();

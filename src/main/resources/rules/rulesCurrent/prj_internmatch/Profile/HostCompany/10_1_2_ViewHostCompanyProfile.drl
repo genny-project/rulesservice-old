@@ -9,7 +9,7 @@ rule "View Host Company Profile Step - 2"
                         isState("PRI_IS_HOST_COMPANY") &&	
                         isState("PRI_IS_PROFILE_COMPLETED") &&	
                         isState("SENT_QUESTION") &&	
-                        isState("QUE_NEW_USER_DETAILS_GRP") &&	
+                        isState("QUE_USER_HOST_COMPANY_GRP") &&	
                         !isState("LOOP_VIEW_HOST_COMPANY_PROFILE_STEP2")) 	
      then
         rules.header();  
@@ -22,7 +22,7 @@ rule "View Host Company Profile Step - 2"
             /* send question group for COMPANY */
             rules.set("questionSourceCode", rules.getUser().getCode());
             rules.set("questionTargetCode", company.getCode());	
-            rules.set("questionGroupCode", "QUE_NEW_USER_COMPANY_GRP");
+            rules.set("questionGroupCode", "QUE_HOST_COMPANY_GRP");
             rules.setState("SEND_QUESTION");
 
             /* we send the layout */

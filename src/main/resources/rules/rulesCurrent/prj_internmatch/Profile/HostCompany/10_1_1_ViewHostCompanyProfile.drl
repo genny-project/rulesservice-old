@@ -19,8 +19,9 @@ rule "View Host Company Profile Step - 1"
         /* send question group for USER */
 		rules.set("questionSourceCode", rules.getUser().getCode());
 		rules.set("questionTargetCode", rules.getUser().getCode());
-		rules.set("questionGroupCode", "QUE_NEW_USER_DETAILS_GRP");
+		rules.set("questionGroupCode", "QUE_USER_HOST_COMPANY_GRP");
 		rules.setState("SEND_QUESTION");	
 
         rules.footer(); 
 end
+
