@@ -3,7 +3,7 @@ import life.genny.rules.QRules;
 
 rule "Update Host Company Profile"
 	when
-	    rules: QRules( 	isState("QUE_NEW_USER_COMPANY_GRP") && 
+	    rules: QRules( 	isState("QUE_HOST_COMPANY_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 		
 						isState("PRI_IS_PROFILE_COMPLETED") && 
 						!isState("LOOP_UPDATE_HOST_COMPANY_PROFILE")) 
