@@ -1,14 +1,14 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-/* Send TreeView */
-rule "Send TreeView"
+/* Send Root */
+rule "Send Root"
     when
-        rules: QRules(  isState("SEND_TREEVIEW") && 
-                        !isState("LOOP_SEND_TREEVIEW") )
+        rules: QRules(  isState("SEND_ROOT") && 
+                        !isState("LOOP_SEND_ROOT") )
      then
      	rules.header();
-     	rules.setState("LOOP_SEND_TREEVIEW");
+     	rules.setState("LOOP_SEND_ROOT");
 
         rules.set("beParentCode", "GRP_ROOT");            
         rules.set("beLinkCode", "LNK_CORE");
@@ -19,7 +19,7 @@ rule "Send TreeView"
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
          
-        rules.setState("SENT_TREEVIEW");		
+        rules.setState("SENT_ROOT");		
         rules.setState("SEND_DASHBOARD");		
 	    rules.footer();     		      
 end
