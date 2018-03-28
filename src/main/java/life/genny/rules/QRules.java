@@ -4210,4 +4210,33 @@ public class QRules {
             setLastLayout( "LIST_VIEW", "GRP_NEW_ITEMS" );
          }
 	}
+	
+	public void add(final String keyPrefix, final String parentCode, final BaseEntity be)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map == null) {
+			map = new HashMap<String,Object>();
+		}
+		map.put(be.getCode(), be);		
+		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
+	}
+	
+	public void remove(final String keyPrefix, final String parentCode, final String beCode)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map != null) {
+			map.remove(beCode);
+			VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
+		}
+	}
+	
+	public void remove(final String keyPrefix, final String parentCode)
+	{
+		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, null);
+	}
+	
+	
+	
 }
