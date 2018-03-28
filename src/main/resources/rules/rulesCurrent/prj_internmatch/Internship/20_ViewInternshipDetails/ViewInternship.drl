@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 /* Send Sub Layout */
 rule "View Internship Details"
 	when
-		rules: QRules(  isState("BTN_LOAD_SEE_MORE") && 
+		rules: QRules(  isState("BTN_VIEW_INTERNSHIP_DETAILS") && 
 						isState("EVENT_BTN_CLICK") && 
 						!isState("LOOP_VIEW_INTERNSHIP_DETAILS") ) 
 	 then
