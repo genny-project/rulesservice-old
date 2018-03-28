@@ -6,7 +6,7 @@ rule "Pre Init Generate Reports"
 	no-loop true
 	ruleflow-group 'Init'
     when
-       m : QEventMessage( event_type == "GEN_REPORTS" )
+       m : QEventMessage( event_type == "EVT_MSG" && "GEN_REPORTS"  == data.code)
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);

@@ -15,6 +15,7 @@ rule "SBE_ALLJOBS"
         rules: QRules( !isState("SBE_ALLJOBS") )
      then
          rules.setState(drools.getRule().getName());
+         rules.println("Generating "+drools.getRule().getName());
          
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"All Loads")
   	     .addColumn("PRI_NAME","Load Name")

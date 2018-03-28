@@ -27,9 +27,9 @@ rule "SBE_DRIVERJOBS"
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
   	     
   	     .setPageStart(0)
-  	     .setPageSize(500)
+  	     .setPageSize(500);
   	     
-  	     .setStakeholder(rules.getUser().getCode());
+  	   /*  .setStakeholder(rules.getUser().getCode()); */
   	     
   		 rules.add("GRP","GRP_REPORTS_DRIVER",report);
   		 

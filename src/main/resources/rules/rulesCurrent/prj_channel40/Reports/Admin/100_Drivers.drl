@@ -15,6 +15,7 @@ rule "SBE_DRIVERS"
         rules: QRules( !isState("SBE_DRIVERS") )
      then
          rules.setState(drools.getRule().getName());
+         rules.println("Generating "+drools.getRule().getName());
          
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Drivers")
   	     .addColumn("PRI_IMAGE_URL","Image")

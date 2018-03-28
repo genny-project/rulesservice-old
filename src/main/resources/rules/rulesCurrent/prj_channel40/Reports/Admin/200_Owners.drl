@@ -14,7 +14,8 @@ rule "SBE_OWNERS"
         rules: QRules( !isState("SBE_OWNERS") )
      then
          rules.setState(drools.getRule().getName());
-         
+        rules.println("Generating "+drools.getRule().getName());
+          
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Owners")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
