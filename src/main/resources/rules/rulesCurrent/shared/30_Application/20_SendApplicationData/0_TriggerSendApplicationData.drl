@@ -12,6 +12,6 @@ rule "Trigger Send Application Data"
      	rules.header();
         rules.setState("LOOP_TRIGGER_SEND_APPLICATION_DATA");
     
-        rules.setState("SEND_TREEVIEW");
+        rules.setState("SEND_ROOT");
 	    rules.footer();      		      
 end
