@@ -29,6 +29,9 @@ import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channels.EBCHandlers;
+import life.genny.cluster.CurrentVtxCtx;
+import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwandautils.KeycloakUtils;
 
 public class RulesLoader {
@@ -45,6 +48,8 @@ public class RulesLoader {
 	}
 
 	static KieServices ks = KieServices.Factory.get();
+	
+	public static Set<String> realms = new HashSet<String>();
 
 	/**
 	 * @param vertx
@@ -60,11 +65,32 @@ public class RulesLoader {
 
 			List<Tuple3<String, String, String>> rules = processFileRealms("genny", rulesDir);
 
-			Set<String> realms = getRealms(rules);
+			realms = getRealms(rules);
 			for (String realm : realms) {
 				setupKieRules(realm, rules);
 			}
 
+			fut.complete();
+		}, failed -> {
+		});
+
+		return fut;
+	}
+	
+	/**
+	 * @param vertx
+	 * @return
+	 */
+	public static Future<Void> generateReports(final String rulesDir) {
+		System.out.println("Generating Reports for all realms");
+		final Future<Void> fut = Future.future();
+		Vertx.currentContext().owner().executeBlocking(exec -> {
+
+			for (String realm : realms) {
+		        // Generate the reports
+				System.out.println("---- Realm:"+realm+"----------");
+		        EBCHandlers.initMsg("Event:GEN_REPORTS", realm,new QEventMessage("EVT_MSG","GEN_REPORTS"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			}
 			fut.complete();
 		}, failed -> {
 		});
