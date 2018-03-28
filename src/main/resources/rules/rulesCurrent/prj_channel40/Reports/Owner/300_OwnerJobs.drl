@@ -12,7 +12,7 @@ rule "SBE_OWNERJOBS"
     ruleflow-group 'GenerateReports'
     
     when
-        rules: QRules( !isState(drools.getRule().getName()) )
+        rules: QRules( !isState("SBE_OWNERJOBS") )
      then
          rules.setState(drools.getRule().getName());
          
@@ -27,7 +27,7 @@ rule "SBE_OWNERJOBS"
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
   	     
   	     .setPageStart(0)
-  	     .setPageSize(500);
+  	     .setPageSize(500)
   	     
   	     .setStakeholder(rules.getUser().getCode());
   	     

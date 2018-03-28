@@ -2,7 +2,6 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.SearchEntity;
-import life.genny.utils.VertxUtils;
 import java.util.ArrayList;
 
 
@@ -12,7 +11,7 @@ rule "SBE_OWNERS"
     ruleflow-group 'GenerateReports'
     
     when
-        rules: QRules( !isState(drools.getRule().getName()) )
+        rules: QRules( !isState("SBE_OWNERS") )
      then
          rules.setState(drools.getRule().getName());
          

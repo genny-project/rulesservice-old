@@ -12,7 +12,7 @@ rule "SBE_USERS"
     ruleflow-group 'GenerateReports'
     
     when
-        rules: QRules( !isState(drools.getRule().getName()) )
+        rules: QRules( !isState("SBE_USERS") )
      then
          rules.setState(drools.getRule().getName());
          

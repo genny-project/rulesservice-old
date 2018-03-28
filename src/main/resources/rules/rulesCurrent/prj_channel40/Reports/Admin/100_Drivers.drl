@@ -12,7 +12,7 @@ rule "SBE_DRIVERS"
     ruleflow-group 'GenerateReports'
     
     when
-        rules: QRules( !isState(drools.getRule().getName()) )
+        rules: QRules( !isState("SBE_DRIVERS") )
      then
          rules.setState(drools.getRule().getName());
          
