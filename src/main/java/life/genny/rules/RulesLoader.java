@@ -91,6 +91,7 @@ public class RulesLoader {
 				System.out.println("---- Realm:"+realm+"----------");
 		        EBCHandlers.initMsg("Event:GEN_REPORTS", realm,new QEventMessage("EVT_MSG","GEN_REPORTS"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
 			}
+			 System.out.println("Rules Loaded up");
 			fut.complete();
 		}, failed -> {
 		});

@@ -31,12 +31,13 @@ public class ServiceVerticle extends AbstractVerticle {
         if (rulesDir == null) {
           rulesDir = "rules";
         }
-//         RulesLoader.generateReports(rulesDir).compose(q -> {
-//            reportfut.complete();
-//        }, reportfut);
+         RulesLoader.generateReports(rulesDir).compose(q -> {
+            reportfut.complete();
+            
+        }, reportfut);
         fut.complete();
       }, fut);
     }, startFuture);
-
+   
   }
 }
