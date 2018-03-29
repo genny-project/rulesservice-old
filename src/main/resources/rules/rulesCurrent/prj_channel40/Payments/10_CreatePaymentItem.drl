@@ -28,6 +28,7 @@ rule "Create Payment Item"
 		/*Getting BEG code from offerCode that has been confirmed */
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
+		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
 
       	if(assemblyId != null) {
 
@@ -37,18 +38,28 @@ rule "Create Payment Item"
   			String oneTimeTransactionBankToken = null;
        		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
        		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
-						Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-						rules.publishData(cardTokenAnswer);
+			
+			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
+			/* rules.publishData(cardTokenAnswer); */
 
-						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-						rules.publishData(bankTokenAnswer);
-						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
-						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
+			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
+			/* rules.publishData(bankTokenAnswer); */
+			
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(cardTokenAnswer);
+			answers.add(bankTokenAnswer);
+
+			rules.saveAnswers(answers);
+			
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
 
        	}
 
        	/* Creating Payment Item */
-       	String paymentItemId = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
+       	String paymentItemId = begBe.getValue("PRI_ITEM_ID", null);
+       	
+       	/* String paymentItemId = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken()); */
        	if(paymentItemId == null) {
 
        		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());

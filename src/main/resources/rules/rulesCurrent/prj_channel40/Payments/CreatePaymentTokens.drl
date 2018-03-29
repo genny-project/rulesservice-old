@@ -9,16 +9,19 @@ rule "Create Assembly Tokens"
 	agenda-group "payments"
 	no-loop true
 	when 
-		rules: QRules(isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_TOKEN_CREATED") ) 
+		rules: QRules( isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_TOKEN_CREATED") ) 
 	then
+	
 		RulesUtils.header(drools.getRule().getName());
+		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
 
-		
 		if(assemblyId != null) {
+			
 			RulesUtils.println("Refreshing tokens");
+  			
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
        		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
@@ -35,10 +38,8 @@ rule "Create Assembly Tokens"
 			answers.add(bankTokenAnswer);
 
 			rules.saveAnswers(answers);
-     	    
 		}
 		
-		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
 		RulesUtils.footer(drools.getRule().getName());
     	
 end

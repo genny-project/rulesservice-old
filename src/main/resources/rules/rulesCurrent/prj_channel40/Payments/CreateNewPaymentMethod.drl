@@ -9,7 +9,6 @@ import life.genny.qwanda.Answer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
-import life.genny.qwandautils.MergeUtil;
 
 rule "Create new payment method - user"
 	agenda-group "payment-method"
@@ -37,13 +36,18 @@ rule "Create new payment method - user"
   			String oneTimeTransactionBankToken = null;
        		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
        		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
-						Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-						rules.publishData(cardTokenAnswer);
+			
+			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
+			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
+						
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(cardTokenAnswer);
+			answers.add(bankTokenAnswer);
 
-						Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-						rules.publishData(bankTokenAnswer);
-						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
-						rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
+			rules.saveAnswers(answers);		
+					
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
        	}
 
 		rules.println("Payment method string1 ::"+paymentMethodDataString);
