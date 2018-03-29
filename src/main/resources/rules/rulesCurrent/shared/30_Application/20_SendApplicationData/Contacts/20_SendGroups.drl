@@ -1,0 +1,34 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.List;
+
+/* Sends BEGs */
+rule "Send Groups"
+    when
+        rules: QRules(  isState("SENT_DASHBOARD") && 
+                        isState("SEND_GROUPS") && 
+                        isState("PUBLISHED_BASE_ENTITY_LIST") && 
+                        !isState("LOOP_SEND_CONTACT_GROUPS") )
+     then
+     	rules.header();
+     	rules.setState("LOOP_SEND_CONTACT_GROUPS");
+        
+        /* Get GROUPS from map */
+        List<BaseEntity> groupList = rules.getAsBaseEntitys("beList");
+        List<BaseEntity> members = null;
+        
+        for(BaseEntity group: groupList) {  
+            members = rules.getBaseEntitysByParentAndLinkCode(group.getCode(), "LNK_CORE", 0, 500, false);
+            
+            /* send members of a particular group */
+            rules.publishCmd(members, group.getCode(), "LNK_CORE");
+
+        }
+        rules.setState("SENT_GROUPS");		
+	    rules.footer();     		      
+end
+
+
+       
