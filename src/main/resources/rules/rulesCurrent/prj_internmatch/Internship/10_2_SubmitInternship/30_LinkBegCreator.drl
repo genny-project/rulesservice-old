@@ -2,26 +2,22 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* LINK BEG + USER || CREATOR */
-rule "Submit Internship - Step 1"
+rule "Submit Internship - Step 3"
 	when
-		rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
+		rules: QRules( 	isState("LINKED_GRP_INTERNSHIPS_TO_BEG") && 
+						isState("CREATED_LINK") && 
+						isState("INTERNSHIP") && 
+						isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_INTERNSHIP_STEP1")) 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP3")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP1");
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP3");
 
-		String internshipCode = rules.getAsString("quesTargetCode");
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
 
-		if(internshipCode != null){
-
-			BaseEntity internship = rules.getBaseEntityByCode(internshipCode);
-			rules.set("internshipBe", internship);
-
-			BaseEntity beg = rules.getParent(internshipCode, "LNK_BEG");
-			rules.set("begBe", beg);
-		
+		if(beg != null){
 			/* link BEG to USER */
 			rules.set("linkSourceCode",  beg.getCode());
 			rules.set("linkTargetCode", rules.getUser().getCode());
@@ -31,6 +27,8 @@ rule "Submit Internship - Step 1"
 			rules.setState("CREATE_LINK");
 
 			rules.setState("LINKED_BEG_TO_USER");
+		}else{
+			rules.println("beg is null");			
 		}
 
 	 	rules.footer();      
