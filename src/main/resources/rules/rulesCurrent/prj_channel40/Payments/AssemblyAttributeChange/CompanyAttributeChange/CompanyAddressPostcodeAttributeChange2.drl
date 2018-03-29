@@ -11,34 +11,35 @@ import life.genny.qwandautils.PaymentUtils;
 
 rule "Assembly Company updation for attribute change - Company Address Postcode"
     when
-    	m: QEventAttributeValueChangeMessage( data.code == "PRI_ADDRESS_POSTCODE"  && getAnswer().getTargetCode().startsWith("CPY_") ) 
-    	rules: QRules( isState("STARTED"))
-    then    
+    	m: QEventAttributeValueChangeMessage( data.code == "PRI_ADDRESS_POSTCODE"  && getAnswer().getTargetCode().startsWith("CPY_") )
+    	rules: QRules( isState("STARTED") && !isState("COMPANY_UPDATE_ADDRESSPOSTCODE_LOOP") )
+    then
 		RulesUtils.header(drools.getRule().getName());
-        
+        rules.setState("COMPANY_UPDATE_ADDRESSPOSTCODE_LOOP");
+
         BaseEntity userBe = rules.getUser();
 		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
-    	
+
     	if(assemblyId != null) {
-    		 
+
     	/* extract answers */
       	Answer answer = m.getAnswer();
-        
+
         String targetCode = answer.getTargetCode();
         String sourceCode = answer.getSourceCode();
         String value = answer.getValue();
         String attributeCode = m.data.getCode();
 
-        rules.println("Printing Answer data recieved for Update in Assembly  ::");  
+        rules.println("Printing Answer data recieved for Update in Assembly  ::");
         rules.println("\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
-           
+
         /* Updates assembly user profile */
         String response = PaymentUtils.updateCompanyInfo(assemblyId, companyId, attributeCode, value, assemblyAuthToken);
         		rules.println("updated payments response ::"+response);
-         
+
     	}
-        
+
         RulesUtils.footer(drools.getRule().getName());
 end
