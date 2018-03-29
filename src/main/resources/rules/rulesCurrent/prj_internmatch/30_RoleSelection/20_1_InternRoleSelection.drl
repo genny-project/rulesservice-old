@@ -18,6 +18,8 @@ rule "Selected Intern Role"
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
      	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
 
+		/* Add Intern to GRP_INTERNS */
+    	rules.setState("TRIGGER_ADD_TO_GROUP");
     	rules.setState("TRIGGER_PROFILE_CHECK");
 
 		rules.footer();

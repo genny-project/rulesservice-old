@@ -12,11 +12,7 @@ rule "Cancel Internship"
 	 	rules.header();
         rules.setState("LOOP_CANCEL_INTERNSHIP");
 
-        rules.set("subLayoutCode", "DASHBOARD");
-		rules.set("subLayoutPath", "homepage/dashboard_host_company.json");
-		rules.set("subLayoutRootCode", "GRP_DASHBOARD");
-		rules.set("subLayoutIsPopup", false);
-		rules.setState("SEND_SUBLAYOUT");
+		rules.setState("TRIGGER_HOME_PAGE");
 
 		rules.setState("CANCELLED_INTERNSHIP");
 	 	rules.footer();      

@@ -242,6 +242,17 @@ public class QRules {
 
 	/**
 	 * @param state
+	 *            the state to set
+	 */
+	/* added by anish */
+	public void setState(Boolean key) {
+		stateMap.put(key.toString().toUpperCase(), true);
+		// println("STATE " + key + " SET", RulesUtils.ANSI_RED);
+		update();
+	}
+
+	/**
+	 * @param state
 	 *            the state to clear
 	 */
 	public void clearState(String key) {
@@ -3627,5 +3638,29 @@ public class QRules {
 		}
 
 		return null;
+	}
+
+	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
+
+		Boolean isLinkExists = false;
+		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
+
+		if (dataBEMessage != null) {
+			BaseEntity[] beArr = dataBEMessage.getItems();
+
+			if (beArr.length > 0) {
+				for (BaseEntity be : beArr) {
+					if (be.getCode().equals(childCode)) {
+						isLinkExists = true;
+						return isLinkExists;
+					}
+				}
+			} else {
+				isLinkExists = false;
+				return isLinkExists;
+			}
+
+		}
+		return isLinkExists;
 	}
 }
