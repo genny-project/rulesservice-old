@@ -25,10 +25,16 @@ rule "Create Assembly Tokens"
        		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
 	
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-			rules.publishData(cardTokenAnswer);
+			/* rules.publishData(cardTokenAnswer); */
 
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			rules.publishData(bankTokenAnswer);
+			/* rules.publishData(bankTokenAnswer); */
+			
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(cardTokenAnswer);
+			answers.add(bankTokenAnswer);
+
+			rules.saveAnswers(answers);
      	    
 		}
 		
