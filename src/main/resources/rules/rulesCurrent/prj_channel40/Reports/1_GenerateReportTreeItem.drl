@@ -19,7 +19,15 @@ rule "TV_SELECT Event - Generate Report"
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
        	rules.println("The Group Id is :: "+grpCode );
-        	  if( grpCode.equals("GRP_REPORTS_ADMIN") ) {
+       	
+       	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
+       	Layout[] layoutArray = new Layout[1];
+       	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
+       	QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, rules.getToken());
+		rules.publishCmd(msg);
+       	rules.println(msg);
+        	
+        	  if( grpCode.equals("GRP_REPORTS_ADMIN2") ) {
              rules.sendSublayout("REPORT_ADMIN", "admin/admin_report_layout.json");
         	     //rules.showLoading("Getting list of users...");
             // rules.getAllUsers(grpCode);
@@ -40,7 +48,7 @@ rule "TV_SELECT Event - Generate Report"
         			/*rules.sendSublayout("admin-user-list", "admin_users_channel40.json");*/
 
         		}
-        		else if(grpCode.equals("SBE_GET_ALL_LOADS")) {
+        		else if(grpCode.equals("SBE_GET_ALL_LOADS2")) {
 
         			rules.showLoading("Getting list of jobs...");
                 rules.sendAllLoads(grpCode);

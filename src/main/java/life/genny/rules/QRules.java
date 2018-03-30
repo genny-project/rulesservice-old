@@ -1591,7 +1591,13 @@ public class QRules {
 
 		QDataAskMessage msg = null;
 		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-		publishData(msg);
+		if (msg != null) {
+			publishData(msg); 
+		}
+		else {
+			log.error("Questions Msg is null "+sourceCode + "/asks2/"
+					+ questionCode + "/" + targetCode);
+		}
 	}
 
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
@@ -2105,9 +2111,16 @@ public class QRules {
 	/**
 	 * @param answers
 	 */
-	public void saveAnswers(List<Answer> answers) {
+	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
+		if (!changeEvent) {
+		for (Answer answer : answers)
+			{
+				answer.setChangeEvent(false);
+			}
+		}
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
+		
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
 		updateCachedBaseEntity(answers);
@@ -2120,6 +2133,13 @@ public class QRules {
 		} catch (IOException e) {
 			log.error("Socket error trying to post answer");
 		}
+	}
+	
+	/**
+	 * @param answers
+	 */
+	public void saveAnswers(List<Answer> answers) {
+		saveAnswers(answers,true);
 	}
 
 	public void startWorkflow(final String id) {
@@ -3169,7 +3189,7 @@ public class QRules {
 						getUser().getCode());
 				if (!jobsInTransit.isEmpty()) {
 					println("###### GPS: for user "+getUser().getCode()+":" + m);
-					RulesUtils.println(jobsInTransit.toString());
+					println(jobsInTransit.toString());
 				}
 				for (BaseEntity be : jobsInTransit) {
 
@@ -3183,11 +3203,11 @@ public class QRules {
 					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
 					percentage = percentage < 0 ? 0 : percentage;
 
-					/* Update progress of the BEG */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
-
+					
 					/* update position of the beg */
 					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString()));
+					
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude + ""));
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude + ""));
 					saveAnswers(answers);
@@ -4221,6 +4241,16 @@ public class QRules {
 		map.put(be.getCode(), be);		
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
 	}
+
+	public Map<String,Object> getMap(final String keyPrefix, final String parentCode)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map == null) {
+			map = new HashMap<String,Object>();
+		}
+		return map;
+	}
 	
 	public void remove(final String keyPrefix, final String parentCode, final String beCode)
 	{
@@ -4237,6 +4267,59 @@ public class QRules {
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, null);
 	}
 	
+	public JsonObject generateLayout(final String reportGroupCode)
+	{
+     	 Map<String,Object> map = getMap("GRP",reportGroupCode);
+       	 println(map);
+       	 
+       	 Integer cols = 1;
+       	 Integer rows = map.size();
+       	 
+       	 JsonObject layout = new JsonObject();
+       	 JsonObject grid = new JsonObject();
+       	 grid.put("cols", cols);
+       	 grid.put("rows", rows);
+       	 
+       	 layout.put("Grid", grid);
+       	 
+       	 JsonArray children = new JsonArray();
+       	 grid.put("children", children);
+       	 for (String key : map.keySet()) {
+       		 BaseEntity searchBe = (BaseEntity) map.get(key);
+       		 JsonObject button = generateGennyButton(key,searchBe.getName());
+       		 children.add(button);
+       	 }
+       	 return layout;
+	}
 	
+	public JsonObject generateGennyButton(final String code, final String name)
+	{
+		JsonObject gennyButton = new JsonObject();
+		
+		JsonObject ret = new JsonObject();
+		JsonArray position = new JsonArray();
+		position.add(0);
+		position.add(0);
+		ret.put("position", position);
+		ret.put("buttonCode",code);
+		ret.put("children", name);
+		ret.put("value", new JsonObject());
+		
+		JsonObject buttonStyle = new JsonObject();
+		buttonStyle.put("background", "PROJECT.PRI_COLOR");
+		ret.put("buttonStyle", buttonStyle);
+		
+		JsonObject style = new JsonObject();
+		style.put("width", "150px");
+		style.put("height", "50px");
+		style.put("margin", "10px");
+		style.put("border", "1px solid");
+		style.put("borderColor", "PROJECT.PRI_COLOR");
+		ret.put("style", style);
+		
+		gennyButton.put("GennyButton", ret);
+		
+		return gennyButton;
+	}
 	
 }

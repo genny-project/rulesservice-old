@@ -12,7 +12,7 @@ rule "Assembly item callback"
 		m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()) &&  QDataPaymentsCallbackMessage.getObject_type() == QDataPaymentsCallbackMessage.ObjectType.ITEM)
 		rules: QRules( isState("STARTED") && !isState("ITEM_CALLBACK") ) 
 	then
-		RulesUtils.header(drools.getRule().getName());
+		rules.header();
 		
 		BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
 		String currentPaymentStatusString = begBe.getValue("PRI_ITEM_STATUS", null);
