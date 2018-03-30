@@ -15,7 +15,7 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.18</qwanda-utils.version>
+		<qwanda-utils.version>1.0.19</qwanda-utils.version>
 		<log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
 		<junit-version>4.12</junit-version>
@@ -24,7 +24,7 @@
 		<version.resteasy>3.0.10.Final</version.resteasy>
 		<resteasy.version>3.0.9.Final</resteasy.version>
 		<hazelcast.version>3.9.3</hazelcast.version>
-		<genny-verticle.version>1.0.18</genny-verticle.version>
+		<genny-verticle.version>1.0.19</genny-verticle.version>
 	</properties>
 	<repositories>
 		<repository>
