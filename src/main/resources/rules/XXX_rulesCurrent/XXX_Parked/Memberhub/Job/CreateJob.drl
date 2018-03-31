@@ -55,13 +55,13 @@ rule "Create Job"
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", rules.getToken());
      System.out.println("QName Json: "+qPostLoad.toString());
-     rules.getEventBus().publish("cmds",qPostLoad);
+     rules.publish("cmds",qPostLoad);
 
      JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/"+userCode+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", rules.getToken());
      System.out.println("QName Json: "+qPostJob.toString());
-     rules.getEventBus().publish("cmds",qPostJob);
+     rules.publish("cmds",qPostJob);
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
@@ -72,7 +72,7 @@ rule "Create Job"
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
 
     /*  Publish it to the EventBus   */
-      rules.getEventBus().publish("cmds", cmdJobSublayoutJson);
+      rules.publish("cmds", cmdJobSublayoutJson);
 
      rules.footer();
 
