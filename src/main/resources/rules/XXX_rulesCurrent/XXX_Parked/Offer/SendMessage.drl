@@ -68,7 +68,7 @@ then
         String recipient = rules.get("recipient").toString();
 
         JsonObject jsonMessage = MessageUtils.prepareSMSTemplate(templateCode, begCode, recipient, null, tokenString);
-        rules.getEventBus().publish("messages", jsonMessage); 
+        rules.publish("messages", jsonMessage); 
         rules.clearState("SEND_MESSAGE");
     RulesUtils.footer(drools.getRule().getName());  
 end

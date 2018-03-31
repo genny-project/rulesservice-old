@@ -48,7 +48,7 @@ rule "Show more info about job"
 				     cmdLoadSublayoutJson.put("items", sublayout);
 				     cmdLoadSublayoutJson.put("root", baseEntityCode);
 				     cmdLoadSublayoutJson.put("token", rules.getToken());
-				     rules.getEventBus().publish("cmds", cmdLoadSublayoutJson); 
+				     rules.publish("cmds", cmdLoadSublayoutJson); 
 				    
 				break;
 			      

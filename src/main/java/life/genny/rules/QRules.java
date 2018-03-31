@@ -600,27 +600,6 @@ public class QRules {
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
 					JsonUtils.toJson(link), getToken());
 
-			// JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(
-			// qwandaServiceUrl + "/qwanda/entityentitys/" + baseEntityCode + "/linkcodes/"
-			// + linkCode,
-			// getToken()));
-
-			// Creating a data msg
-			// JsonObject newLink = new JsonObject();
-			// newLink.put("msg_type", "DATA_MSG");
-			// newLink.put("data_type", "LINK_CHANGE");
-			// newLink.put("items", updatedLink);
-			// newLink.put("token", getToken() );
-			// println("-----------------------------------");
-			// println("Updated Link : "+newLink.toString());
-			// println("-----------------------------------");
-			// getEventBus().publish("cmds", newLink);
-			// clear the cache
-			// if (sourceCode.equals("GRP_NEW_ITEMS")) {
-			// clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-			// // Now fill it again!
-			// getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-			// }
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1015,7 +994,7 @@ public class QRules {
 
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 					recipientArray, getToken());
-			this.getEventBus().publish("messages", message);
+			publish("messages", message);
 		} else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
@@ -1068,7 +1047,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendViewCmd(final String cmd_view, final String root) {
@@ -1080,7 +1059,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendPopupLayout(final String layoutCode, final String sublayoutPath, final String root) {
@@ -1094,7 +1073,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
@@ -1123,7 +1102,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void showLoading(String text) {
@@ -1195,7 +1174,7 @@ public class QRules {
 	}
 
 	public void send(final String channel, final Object payload) {
-		this.getEventBus().send(channel, payload);
+		send(channel, payload);
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
@@ -1395,25 +1374,6 @@ public class QRules {
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
-		// Link link = cmdMsg.getLink();
-		//
-		// JsonArray links = new JsonArray();
-		// JsonObject linkJson = new JsonObject();
-		// links.add(linkJson);
-		// linkJson.put("sourceCode", link.getSourceCode());
-		// linkJson.put("targetCode", link.getTargetCode());
-		// linkJson.put("attributeCode", link.getAttributeCode());
-		// linkJson.put("linkValue", link.getLinkValue());
-		// linkJson.put("weight", link.getWeight());
-		//
-		// JsonObject newLink = new JsonObject();
-		// newLink.put("msg_type", "DATA_MSG");
-		// newLink.put("data_type", "EVT_LINK_CHANGE");
-		// newLink.put("recipientCodeArray", recipients);
-		// newLink.put("items", links);
-		// newLink.put("token", getToken());
-		// // getEventBus().publish("cmds", newLink);
-		// publish("data", newLink.toString());
 		publish("data", json);
 	}
 
@@ -1424,21 +1384,23 @@ public class QRules {
 	}
 
 	public void publish(String channel, final Object payload) {
+		// Actually Send  ....
 		switch (channel) {
 		case "event":
-			Producer.getToEvents().write(payload);
+		case "events":
+			Producer.getToEvents().send(payload);
 			break;
 		case "data":
-			Producer.getToData().write(payload);
+			Producer.getToWebData().send(payload);
 			break;
 		case "cmds":
-			Producer.getToCmds().write(payload);
+			Producer.getToWebCmds().send(payload);
 			break;
 		case "services":
-			Producer.getToServices().write(payload);
+			Producer.getToServices().send(payload);
 			break;
 		case "messages":
-			Producer.getToMessages().write(payload);
+			Producer.getToMessages().send(payload);
 			break;
 		default:
 			println("Channel does not exist: " + channel);
@@ -3555,7 +3517,7 @@ public class QRules {
 			msg.getData().setCode(ea.getAttributeCode());
 			msg.getData().setId(-1L);
 			msg.setBe(be);
-			this.getEventBus().publish("events", JsonUtils.toJson(msg));
+			publish("events", JsonUtils.toJson(msg));
 		}
 	}
 
@@ -3642,53 +3604,12 @@ public class QRules {
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
-		// JsonArray links = new JsonArray();
-		// JsonObject linkJson = new JsonObject();
-		// links.add(linkJson);
-		// linkJson.put("sourceCode", jobCode);
-		// linkJson.put("targetCode", load.getCode());
-		// linkJson.put("attributeCode","LNK_BEG");
-		// linkJson.put("linkValue", getUser().getCode());
-		// linkJson.put("weight", 1.0);
-		//
-		// JsonArray recipients = new JsonArray();
-		// for (String recipientCode : recipientCodes) {
-		// recipients.add(recipientCode);
-		// }
-		//
-		// JsonObject newLink = new JsonObject();
-		// newLink.put("msg_type", "DATA_MSG");
-		// newLink.put("data_type", "EVT_LINK_CHANGE");
-		// newLink.put("recipientCodeArray", recipients);
-		// newLink.put("items", links);
-		// newLink.put("token", getToken());
-		// // getEventBus().publish("cmds", newLink);
-		// publish("data", newLink);
-
-		/* SEND OWNER BE */
-		// publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-
-		/* SEND JOB BE */
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
 
-		// // clear the cache
-		// clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-		// // Now fill it again!
-		// getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-
-		/* Get the parent GRP of GRP_NEW_ITEMS */
-		// BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
-		/* SEND GRP_NEW_ITEMS BE */
-		/*
-		 * publishBaseEntityByCode("GRP_NEW_ITEMS",
-		 * parentGrp.getCode(),"LNK_CORE",recipients);
-		 * 
-		 */
-		
-		
+			
 		if(!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 			
 			/* Sending Messages */
