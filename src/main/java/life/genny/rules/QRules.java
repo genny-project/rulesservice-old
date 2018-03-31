@@ -2981,7 +2981,7 @@ public class QRules {
 							QwandaUtils.getMoneyString(feePriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
 							QwandaUtils.getMoneyString(feePriceIncGST)));
-					saveAnswers(answers);
+					
 
 
 					//fetch the job to ensure the cache has caught up
@@ -2993,8 +2993,8 @@ public class QRules {
 					}
 
 					/* Update BEG to have DRIVER_CODE as an attribute */
-					Answer beAnswer = new Answer(begBe.getCode(), beg.getCode(), "STT_IN_TRANSIT", quoterCode);
-					saveAnswer(beAnswer);
+					answers.add( new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					saveAnswers(answers);
 
 
 					/* TOAST :: SUCCESS */
