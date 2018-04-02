@@ -379,6 +379,9 @@ public class QRules {
 		 */
 		if (isNull("USER") && be != null) {
 			set("USER", be);
+		} else {
+			// try again
+			
 		}
 
 		return be;
@@ -3146,7 +3149,15 @@ public class QRules {
 
 		if (driverLatitude != null && driverLongitude != null) {
 
+			if (getUser()==null) {
+				String username = (String) getDecodedTokenMap().get("preferred_username");
+				String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
+
+				log.error("Code is not in Database "+code);
+				return;
+			}
 			try {
+				
 				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
 						getUser().getCode());
 				if (!jobsInTransit.isEmpty()) {

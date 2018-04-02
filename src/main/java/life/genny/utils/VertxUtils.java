@@ -152,6 +152,8 @@ public class VertxUtils {
 		 }
 		return be;
 	}
+	
+
 
 	static public void subscribeAdmin(final String realm, final String adminUserCode) {
 		final String SUBADMIN = "SUBADMIN";
