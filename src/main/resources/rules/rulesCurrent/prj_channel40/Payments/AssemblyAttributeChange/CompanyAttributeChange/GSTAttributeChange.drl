@@ -12,7 +12,7 @@ import life.genny.qwandautils.QwandaUtils;
 
 rule "Assembly Company updation for attribute change - GST"
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_GST")  && getAnswer().getTargetCode().startsWith("CPY_") )
+    	m: QEventAttributeValueChangeMessage( data.code == "PRI_GST"  && getAnswer().getTargetCode().startsWith("CPY_") )
     	rules: QRules( isState("STARTED") && !isState("COMPANY_UPDATE_GST_LOOP") )
     then
 		RulesUtils.header(drools.getRule().getName());
