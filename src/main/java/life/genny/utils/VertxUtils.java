@@ -41,11 +41,6 @@ public class VertxUtils {
 
 	}
 
-	static Map<String, String> localCache = new ConcurrentHashMap<String, String>();
-	static Map<String, MessageProducer<JsonObject>> localMessageProducerCache = new ConcurrentHashMap<String, MessageProducer<JsonObject>>();
-
-
-
 
 
 	static public <T> T getObject(final String realm, final String keyPrefix, final String key, final Class clazz) {
@@ -266,18 +261,7 @@ public class VertxUtils {
 		return resultArray;
 	}
 
-	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
 
-		localMessageProducerCache.put(sessionState, toSessionChannel);
-
-	}
-
-	public static MessageProducer<JsonObject> getMessageProducer(String sessionState) {
-
-		return localMessageProducerCache.get(sessionState);
-
-	}
-	
 	static public void putMap(final String realm, final String keyPrefix, final String key, final Map<String,Object> map) {
 		putObject(realm, keyPrefix, key, map);
 	}
