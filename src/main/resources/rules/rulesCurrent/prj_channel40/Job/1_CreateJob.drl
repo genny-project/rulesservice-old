@@ -21,6 +21,7 @@ rule "Create Job"
      rules: QRules(!isState("CREATE_LOAD_CLICKED"))
    then
      rules.header();
+       drools.setFocus("payments");  /* NOW Set up Payments */
 
       drools.setFocus("CreateLoad");
 
