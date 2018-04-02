@@ -20,7 +20,7 @@ when
 then
        rules.header();
        
-       drools.setFocus("payments");  /* NOW Set up Payments */
+       drools.setFocus("ispayments");  /* NOW Set up Payments */
        
 
         rules.println("Release Payment process started");

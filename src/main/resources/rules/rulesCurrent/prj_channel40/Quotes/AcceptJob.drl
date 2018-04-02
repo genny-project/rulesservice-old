@@ -58,7 +58,7 @@ rule "Accept Job"
         
         
         rules.showLoading("Please wait for a moment...");
-        drools.setFocus("payments");  /* NOW Set up Payments */
+        drools.setFocus("ispayments");  /* NOW Set up Payments */
          
   		rules.acceptJob($m);
   		rules.setState("JOB_ACCEPTED");
