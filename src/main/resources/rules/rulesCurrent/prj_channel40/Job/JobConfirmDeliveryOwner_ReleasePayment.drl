@@ -19,6 +19,9 @@ when
   		rules: QRules( !isState("CONFIRMED_DELIVERY_OWNER") && !isState("PAYMENT_RELEASED") )
 then
        rules.header();
+       
+       drools.setFocus("payments");  /* NOW Set up Payments */
+       
 
         rules.println("Release Payment process started");
 		/*rules.setState("PAYMENT_DONE");*/
