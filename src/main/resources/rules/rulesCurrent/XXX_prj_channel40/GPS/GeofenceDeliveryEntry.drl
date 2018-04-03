@@ -18,7 +18,7 @@ when
   rules: QRules()
 then
     
-		RulesUtils.header(drools.getRule().getName());
+		rules.header();
   
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
@@ -50,6 +50,6 @@ then
 		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
 		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
 
-		RulesUtils.footer(drools.getRule().getName());
+		rules.footer();
 
 end

@@ -18,8 +18,8 @@ import life.genny.qwandautils.JsonUtils;
 
 rule "Calculate Price for Owner"
 when
-$m: QEventAttributeValueChangeMessage(  (QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("OFR_")) ||
-(QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OWNER_PRICE_INC_GST")  && getAnswer().getTargetCode().startsWith("BEG_")) )
+$m: QEventAttributeValueChangeMessage(  (data.code == "PRI_OFFER_OWNER_PRICE_INC_GST"  && getAnswer().getTargetCode().startsWith("OFR_")) ||
+(data.code == "PRI_OWNER_PRICE_INC_GST"  && getAnswer().getTargetCode().startsWith("BEG_")) )
 rules : QRules ( isState("STARTED") && !isState("CALCULATE_OWNER_PRICE") )
 then
 rules.header();

@@ -1,0 +1,77 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "TV_SELECT Event - Generate Report"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT")
+       rules: QRules()
+     then
+
+     rules.header();
+
+        /* TODO: refactor this. */
+       	String grpCode = $m.getData().getValue();
+       	rules.println("The Group Id is :: "+grpCode );
+       	
+       	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
+       	Layout[] layoutArray = new Layout[1];
+       	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
+       	QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, rules.getToken());
+		rules.publishCmd(msg);
+       	rules.println(msg);
+        	
+        	  if( grpCode.equals("GRP_REPORTS_ADMIN2") ) {
+             rules.sendSublayout("REPORT_ADMIN", "admin/admin_report_layout.json");
+        	     //rules.showLoading("Getting list of users...");
+            // rules.getAllUsers(grpCode);
+        			 /* we send the list of users */
+        			/*List<BaseEntity> totalList = new ArrayList<BaseEntity>();*/
+        			/*List<BaseEntity> people = rules.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE","LNK_CORE", 0, 100, false) ;*/
+        			/*totalList.addAll(people);*/
+
+        			/*List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode("GRP_USERS","LNK_CORE", 0, 100, false) ;*/
+        			/*totalList.addAll(users);*/
+
+        			/*rules.publishCmd(totalList, grpCode, "LNK_CORE");*/
+
+                    /* we send the search form */
+                   /* rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_USERS_SEARCH", true);*/
+
+        			/* send list users layout */
+        			/*rules.sendSublayout("admin-user-list", "admin_users_channel40.json");*/
+
+        		}
+        		else if(grpCode.equals("SBE_GET_ALL_LOADS2")) {
+
+        			rules.showLoading("Getting list of jobs...");
+                rules.sendAllLoads(grpCode);
+        			/* we send the list of jobs */
+        			/*List<BaseEntity> totalList = new ArrayList<BaseEntity>();*/
+        			/*List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 100, false) ;*/
+
+        			/*for (BaseEntity bucket : buckets )
+        	     	{
+        	     		List<BaseEntity> bucketBegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
+        	     		totalList.addAll(bucketBegs);
+        	     	}
+
+        			rules.publishCmd(totalList, grpCode, "LNK_CORE");  */
+
+                    /* we send the search form */
+                   /* rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_JOBS_SEARCH", true); */
+
+                    /* send list jobs layout */
+        			/*rules.sendSublayout("admin-user-list", "admin_jobs_channel40.json");*/
+
+        		}
+        
+
+     rules.footer();
+end

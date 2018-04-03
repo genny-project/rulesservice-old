@@ -21,6 +21,7 @@ rule "Create Job"
      rules: QRules(!isState("CREATE_LOAD_CLICKED"))
    then
      rules.header();
+       drools.setFocus("ispayments");  /* NOW Set up Payments */
 
       drools.setFocus("CreateLoad");
 
@@ -61,13 +62,13 @@ rule "Create Job"
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", rules.getToken());
      rules.println("QName Json: "+qPostLoad.toString());
-     rules.getEventBus().publish("cmds",qPostLoad);
+     rules.publish("cmds",qPostLoad);
 
      JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+beg.getCode(), rules.getToken()));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", rules.getToken());
      rules.println("QName Json: "+qPostJob.toString());
-     rules.getEventBus().publish("cmds",qPostJob);
+     rules.publish("cmds",qPostJob);
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
@@ -78,7 +79,16 @@ rule "Create Job"
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
 
     /*  Publish it to the EventBus   */
-      rules.getEventBus().publish("cmds", cmdJobSublayoutJson);
+      rules.publish("cmds", cmdJobSublayoutJson);
+      
+      /* Add new attribute to save job creation date-time */
+      Answer newJobCreationDateTimeAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime() );
+      rules.saveAnswer(newJobCreationDateTimeAnswer);
+      
+      
+      /* Add new attribute to check if a job is new or existing */
+      Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_IS_SUBMITTED", "false");
+      rules.saveAnswer(newJobSubmitAnswer);
 
      rules.footer();
 
