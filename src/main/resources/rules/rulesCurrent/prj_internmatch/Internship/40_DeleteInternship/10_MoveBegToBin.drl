@@ -18,6 +18,6 @@ rule "Delete Internship - Step 1"
         }else{
 			rules.println("begCode is null");
 		}
-        rules.setState("DELETED_INTERNSHIP");
+        rules.setState("MOVED_BEG_TO_BIN");
 	 	rules.footer();      
 end
