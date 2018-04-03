@@ -3,15 +3,16 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
 /* Send Popup Layout */
-rule "Apply Internship - Step 2"	
+rule "Apply Internship - Step 4"	
 	when
-		rules: QRules( 	isState("BTN_APPLY_INTERNSHIP") && 
-						isState("EVENT_BTN_CLICK") && 
+		rules: QRules( 	isState("SEND_APPLY_INTERNSHIP_LAYOUT") && 
 						isState("SENT_QUESTION") && 
-						!isState("LOOP_APPLY_INTERNSHIP_STEP2") ) 
+						isState("BTN_APPLY_INTERNSHIP") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_APPLY_INTERNSHIP_STEP4") ) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_APPLY_INTERNSHIP_STEP2");
+        rules.setState("LOOP_APPLY_INTERNSHIP_STEP4");
 		rules.clearState("SENT_QUESTION");
 		
 		String begCode = rules.getAsString("itemCode");
