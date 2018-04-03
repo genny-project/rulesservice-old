@@ -6,26 +6,26 @@ import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.PaymentUtils;
 
 rule "Check if Payments User Exists"
-	agenda-group "payments"
+	agenda-group "ispayments"
 	no-loop true
     when
-    	rules: QRules( isState("IS_LOGGED_IN") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
+    	rules: QRules( isState("STARTED") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
     then
      
-     RulesUtils.header(drools.getRule().getName());
+     rules.header();
 
      
-    String assemblyUserId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+    String assemblyUserId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
      
      if(assemblyUserId != null) {
      
      	 Boolean isExists = PaymentUtils.checkIfAssemblyUserExists(assemblyUserId);
      	 if(!isExists) {
-     	 	RulesUtils.println("Invalid assembly ID for this tenant...creating new assembly user");
+     	 	rules.println("Invalid assembly ID for this tenant...creating new assembly user");
      	 	rules.setState("NEW_ASSEMBLY_USER_CREATION");
      	 }
      	 else {
-     	 	RulesUtils.println("Valid assembly ID exists for this tenant");
+     	 	rules.println("Valid assembly ID exists for this tenant");
      	 	rules.setState("IS_ASSEMBLY_USER_CREATED");  
      	 }
      	 

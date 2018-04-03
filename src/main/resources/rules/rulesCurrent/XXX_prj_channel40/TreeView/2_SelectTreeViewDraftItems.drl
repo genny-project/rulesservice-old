@@ -28,13 +28,13 @@ rule "TV_SELECT Draft Jobs"
      qPostLoad.put("aliasCode", $m.data.getCode());
      qPostLoad.put("token", rules.getToken());
      rules.println("QName Json: "+qPostLoad.toString());
-     rules.getEventBus().publish("cmds",qPostLoad);
+     rules.publish("cmds",qPostLoad);
 
      JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
      qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
      qPostJob.put("token", rules.getToken());
      rules.println("QName Json: "+qPostJob.toString());
-     rules.getEventBus().publish("cmds",qPostJob);
+     rules.publish("cmds",qPostJob);
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
@@ -45,7 +45,7 @@ rule "TV_SELECT Draft Jobs"
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
 
     /*  Publish it to the EventBus   */
-      rules.getEventBus().publish("cmds", cmdJobSublayoutJson);
+      rules.publish("cmds", cmdJobSublayoutJson);
 
 
      rules.footer();

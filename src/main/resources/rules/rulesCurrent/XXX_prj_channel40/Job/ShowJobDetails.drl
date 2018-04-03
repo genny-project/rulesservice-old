@@ -16,7 +16,7 @@ rule "Show more info about job"
 		
 		rules.header();
 		rules.setState("BTN_LOAD_SEE_MORE");
-		
+	    String[] lastLayout = rules.getLastLayout();
 		String data = $m.getData().getValue();
 		rules.println(data);
 		if(data != null) {

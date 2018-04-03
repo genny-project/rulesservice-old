@@ -22,8 +22,7 @@ rule "Create Payments Assembly Company"
     	String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
     	
     	/*  Gets assembly userId */
-    	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-    	
+    	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);    	
      	
      	RulesUtils.println("Company not found for user..So creating a Company now..");
     		

@@ -7,13 +7,17 @@ rule "Send ListView Layout To Frontend - User is Driver"
     salience 660
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("STARTED") && isState("SEND_BUCKET_DATA") && isState("USER_IS_DRIVER") && (!isState("SEND_LIST_VIEW")) ) 
+        rules: QRules(  isState("SEND_BUCKET_DATA") && isState("USER_IS_DRIVER") && (!isState("SEND_LIST_VIEW")) ) 
      then
      	rules.header();
      	
+     	String viewCode = "LIST_VIEW";
+     	String grpBE = "GRP_NEW_ITEMS";
+     	
      	/* sending cmd LIST_VIEW */
-           rules.sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS"); 
-
+        rules.sendViewCmd(viewCode, grpBE); 
+        rules.setLastLayout( viewCode, grpBE );
+        
 		rules.setState("SEND_LIST_VIEW");
 		
 	    rules.footer();     		      

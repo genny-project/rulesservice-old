@@ -13,7 +13,7 @@ rule "Is Payments Assembly Company Exists"
 	then
 		RulesUtils.header(drools.getRule().getName());
 
-    	String assemblyCompanyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", rules.getToken());
+    	String assemblyCompanyId = rules.getUser().getValue("PRI_ASSEMBLY_COMPANY_ID", null);
     	     	
      	if(assemblyCompanyId == null) {
      	

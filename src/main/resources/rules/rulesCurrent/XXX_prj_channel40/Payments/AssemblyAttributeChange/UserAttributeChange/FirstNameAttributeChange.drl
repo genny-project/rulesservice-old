@@ -12,33 +12,35 @@ import life.genny.qwandautils.QwandaUtils;
 
 rule "Assembly user updation for attribute change - first name"
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME")  && getAnswer().getTargetCode().startsWith("PER_") ) 
-    	rules: QRules( isState("STARTED"))
-    then    
+    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules( isState("STARTED") && !isState("USER_UPDATE_FIRSTNAME_LOOP") )
+    then
 		RulesUtils.header(drools.getRule().getName());
-        
+
+        rules.setState("USER_UPDATE_FIRSTNAME_LOOP");
+
         BaseEntity userBe = rules.getUser();
 		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
-    	
+
     	if(assemblyId != null) {
-    		 
+
     	/* extract answers */
       	Answer answer = m.getAnswer();
-        
+
         String targetCode = answer.getTargetCode();
         String sourceCode = answer.getSourceCode();
         String value = answer.getValue();
         String attributeCode = m.data.getCode();
 
-        rules.println("Printing Answer data recieved for Update in Assembly  ::");  
+        rules.println("Printing Answer data recieved for Update in Assembly  ::");
         rules.println("\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
-           
+
         /* Updates assembly user profile */
         String response = PaymentUtils.updateUserInfo(assemblyId, attributeCode, value, assemblyAuthToken);
         		rules.println("updated payments response ::"+response);
-         
+
     	}
-        
+
         RulesUtils.footer(drools.getRule().getName());
 end

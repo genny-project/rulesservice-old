@@ -1,0 +1,28 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule "Send Layout Change To Frontend"
+
+    salience 699
+    no-loop true
+    ruleflow-group "SendLayoutsAndData"
+    when
+        rules: QRules( !isState("LAYOUT_CHANGE_READY") && isState("STARTED") )
+     then
+     	rules.header();
+
+        rules.sendLayout("LAY_DEFAULT", "layout.json", "shared");
+        rules.setState("LAYOUT_CHANGE_READY");
+        
+        BaseEntity user = rules.getUser();
+		if( user.is("PRI_DRIVER") ){
+		   rules.setState("USER_IS_DRIVER");
+		}else if( user.is("PRI_OWNER") ){
+		    rules.setState("USER_IS_OWNER");
+		}
+	    rules.footer();
+	    
+   
+end

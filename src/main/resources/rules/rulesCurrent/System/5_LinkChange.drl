@@ -25,23 +25,7 @@ ruleflow-group 'LinkChange'
 		rules.println(Arrays.toString(recipientCodes));
  		rules.println("Link "+link);
 
- 	/*	    if (link.getTargetCode().startsWith("BEG_")) {
- 		   	 	List<BaseEntity> stakeholders = rules.getBaseEntitysByParentAndLinkCode(link.getTargetCode(),"LNK_BEG", 0, 20, false) ;
- 		    		List<String> recipients = new ArrayList<String>();
- 		    		for (BaseEntity stakeholder : stakeholders)
- 		    		{
- 		    			if (stakeholder.getCode().startsWith("PER_")) {
- 		    				recipients.add(stakeholder.getCode());
- 		    				rules.println("Sending to "+stakeholder.getCode());
- 		    			}
- 		   		 }
-
- 		   		String[] recipientArray = recipients.toArray(new String[0]);
- 		   		rules.publisData($m,recipientArray);
- 		   }
-
- 		    rules.sendParentLinks(link.getTargetCode(), link.getAttributeCode());
-	*/
+ 
 		rules.publishData($m,recipientCodes);
 
    	    rules.footer();
