@@ -1657,6 +1657,7 @@ public class QRules {
 
 			RulesUtils.header(drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
@@ -1667,6 +1668,7 @@ public class QRules {
 		try {
 			RulesUtils.footer(drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
@@ -2836,7 +2838,7 @@ public class QRules {
 					} else {
 						filteredKids.add(begKid);
 					}
-					println(bucket.getCode() + ":" + begKid.getCode());
+					//println(bucket.getCode() + ":" + begKid.getCode());
 				}
 				publishCmd(filteredKids, beg.getCode(), "LNK_BEG");
 			}

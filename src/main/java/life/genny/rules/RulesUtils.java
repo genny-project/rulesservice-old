@@ -107,9 +107,9 @@ public class RulesUtils {
 
 	public static void println(final Object obj, final String colour) {
 		if (devMode) {
-			System.out.println(obj);
+			log.info(obj);
 		} else {
-			System.out.println((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
+			log.info((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
 		}
 
 	}
