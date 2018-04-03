@@ -2906,7 +2906,6 @@ public class QRules {
 	public void makePayment(QDataAnswerMessage m) {
 		/* Save Payment-related answers as user/BEG attributes */
 		String userCode = getUser().getCode();
-		BaseEntity userBe = getUser();
 		//String begCode = PaymentUtils.processPaymentAnswers(getQwandaServiceUrl(), m, getToken());
 		
 		String begCode = null;
@@ -2940,28 +2939,33 @@ public class QRules {
 				if(ipAddress != null){
 					Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
 					userSpecificAnswers.add(ipAnswer);
+					saveAnswer(ipAnswer);
 					//saveAnswer(qwandaServiceUrl, ipAnswer, tokenString);
 				}
 				
 				if(accountId != null) {
 					Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
 					userSpecificAnswers.add(accountIdAnswer);
+					saveAnswer(accountIdAnswer);
 					//saveAnswer(qwandaServiceUrl, accountIdAnswer, tokenString);
 				}
 				
 				if(deviceId != null) {
 					Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
 					userSpecificAnswers.add(deviceIdAnswer);
-					
-					saveAnswers(userSpecificAnswers);
+					saveAnswer(deviceIdAnswer);
 					//saveAnswer(qwandaServiceUrl, deviceIdAnswer, tokenString);	
 				}	
+				
+				/* bulk answer not working currently, so using individual answers */
+				//saveAnswers(userSpecificAnswers);
 			}
 		}
 		
 		
 		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+		BaseEntity userBe = getUser();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		if (begCode != null && assemblyId != null) {
@@ -2973,15 +2977,17 @@ public class QRules {
 
 				/* Make payment */
 				showLoading("Processing payment...");
-				Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(getQwandaServiceUrl(), offerCode, begCode,
-						assemblyAuthKey, getToken());
-				println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
+				
+				BaseEntity offer = getBaseEntityByCode(offerCode);
+				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
+				JSONObject makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
+				println("isMakePaymentSucceeded ::" + makePaymentResponseObj);
 
 				/* GET offer Base Entity */
-				BaseEntity offer = getBaseEntityByCode(offerCode);
+				
 				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
 
-				if (!isMakePaymentSucceeded) {
+				if (! ((Boolean)makePaymentResponseObj.get("isSuccess"))) {
 					/* TOAST :: FAIL */
 					println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2996,7 +3002,7 @@ public class QRules {
 					drools.setFocus("SendLayoutsAndData");
 				}
 
-				if (isMakePaymentSucceeded) {
+				if ((Boolean)makePaymentResponseObj.get("isSuccess")) {
 					/* GET attributes of OFFER BE */
 					Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
 					Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
