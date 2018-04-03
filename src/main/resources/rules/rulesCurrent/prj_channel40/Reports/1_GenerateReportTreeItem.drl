@@ -7,6 +7,9 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QDataSubLayoutMessage;
+import life.genny.qwanda.Layout;
+
 
 rule "TV_SELECT Event - Generate Report"
      when
