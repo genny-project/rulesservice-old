@@ -2612,7 +2612,7 @@ public class QRules {
 		return results;
 	}
 
-	public void subscribeUserToBaseEntityCode(String userCode, String beCode) {
+	public void subscribeUserToBaseEntity(String userCode, String beCode) {
 		VertxUtils.subscribe(realm(), beCode, userCode);
 	}
 
