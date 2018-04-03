@@ -13,7 +13,7 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Arrays;
-
+import java.util.HashMap;
 
 import io.vertx.core.json.JsonObject;
 
@@ -39,9 +39,41 @@ rule "Submit Job"
        if(actionCode.equalsIgnoreCase("submit")) {       
            
    		rules.saveJob(job);
+   		
+   		rules.println("sending email to admins");
+   		String author = job.getValue("PRI_AUTHOR",null);
+   		/* If job is a new job, send email to admins */
+   		if ((!job.getValue("PRI_JOB_IS_SUBMITTED", false))&&(!"PER_ADAMCROW63_AT_GMAILCOM".equals(author))) {
+   			
+   			/* Send email to admins*/
+   			HashMap<String, String> contextMap = new HashMap<String, String>();
+			contextMap.put("JOB", jobCode);
+			contextMap.put("OWNER", rules.getUser().getCode());
+		
+			String[] recipientCodes = { "PER_MULLENS1122_AT_GMAILCOM", "PER_DREW_AT_CH40COMAU", "PER_ADAMCROW63_AT_GMAILCOM"};
+
+			rules.println("The String Array is ::" + Arrays.toString(recipientCodes));
+
+			/* Sending message to BEG OWNER */
+			rules.sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			
+			/* Add new attribute to save that a job is existing */
+	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
+	      	rules.saveAnswer(newJobSubmitAnswer);
+   		
+   		}
+   		
+   		
+   		/*Sending email to quoters who have made offer to a job, when a job is edited */
+   		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+   		
+     		rules.triggerEmailForJobUpdate(jobCode);
+   		 
+   	 	}		
         
          /*  Calling the rule group : BucketView     */
            drools.setFocus("SendLayoutsAndData"); 
+           
       }
       else if(actionCode.equalsIgnoreCase("cancel")){
       

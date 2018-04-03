@@ -33,6 +33,8 @@ rule "New Payments User"
      	/* PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken()); */
      	rules.saveAnswer(assemblyIdAnswer);
      	rules.println("assembly ID created in our system ::"+responseAssemblyUserId); 
+     	rules.setState("IS_ASSEMBLY_USER_CREATED");
+     	drools.setFocus("payments");
      
      } 
      
@@ -40,15 +42,19 @@ rule "New Payments User"
      if(responseAssemblyUserId == null) {
      	
      	String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
-  	
-     	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
-     	/* PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken()); */
-     	rules.saveAnswer(assemblyIdAnswer);
-     	rules.println("assembly ID created in our system ::"+existingAssemblyId); 
+  		
+  		if(existingAssemblyId != null) {
+  			Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
+     		rules.saveAnswer(assemblyIdAnswer);
+     		rules.println("assembly ID created in our system ::"+existingAssemblyId); 
+     		rules.setState("IS_ASSEMBLY_USER_CREATED");
+     		drools.setFocus("payments");
+  		}
+     	
      }
      	 	    
-     rules.setState("IS_ASSEMBLY_USER_CREATED");
-     drools.setFocus("payments");
+     
+     
  
 	 rules.footer();      		      
 end

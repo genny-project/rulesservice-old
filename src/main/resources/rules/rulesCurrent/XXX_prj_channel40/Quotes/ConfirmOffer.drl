@@ -111,6 +111,7 @@ rule "Confirm Offer"
 						}
 					}
 					else if(userRole.equals("QUOTER")) {
+					   rules.sortOffersInBeg(begCode);
 
         				/* Update PRI_NEXT_ACTION AS OWNER */
 						rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");

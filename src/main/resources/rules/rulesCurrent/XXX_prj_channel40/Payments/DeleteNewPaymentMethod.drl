@@ -9,12 +9,12 @@ import life.genny.qwanda.Answer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwandautils.PaymentUtils;
-import life.genny.qwandautils.MergeUtil;
+import java.util.List;
 
 rule "Delete new payment method - user"
-
+	agenda-group "payment-method"
 	when
-		rules: QRules(  !isState("DELETED_PAYMENT_METHOD") )
+		rules: QRules( isState("STARTED") && !isState("DELETED_PAYMENT_METHOD") )
 		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_DELETE_NEW_PAYMENT_METHOD" )
 
 	then
@@ -24,7 +24,7 @@ rule "Delete new payment method - user"
 		String deletedPaymentMethodId = $m.getData().getValue();
 
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+       	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
 
        	/* Save tokens */
        	if(assemblyId != null) {
@@ -35,15 +35,21 @@ rule "Delete new payment method - user"
        		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
 
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-			rules.saveAnswer(cardTokenAnswer);
+			/* rules.saveAnswer(cardTokenAnswer); */
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			rules.saveAnswer(bankTokenAnswer);
+			/* rules.saveAnswer(bankTokenAnswer); */
+			
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(cardTokenAnswer);
+			answers.add(bankTokenAnswer);
+
+			rules.saveAnswers(answers);
        	}
 
 		if(deletedPaymentMethodId != null) {
 
 			String userCode = rules.getUser().getCode();
-			String userCurrentPaymentMethods = MergeUtil.getAttrValue(userCode, "PRI_USER_PAYMENT_METHODS", rules.getToken());
+			String userCurrentPaymentMethods = rules.getUser().getValue("PRI_USER_PAYMENT_METHODS", null);
 			if(userCurrentPaymentMethods != null) {
 
 				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
@@ -55,6 +61,12 @@ rule "Delete new payment method - user"
 						JsonObject paymentMethod = (JsonObject)paymentMethodObj;
 						if(paymentMethod.getString("id").equals(deletedPaymentMethodId) == false) {
 							newPaymentMethodsArray.add(paymentMethod);
+						} else {
+							if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
+								PaymentUtils.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+							} else {
+								PaymentUtils.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+							}
 						}
 					}
 				}

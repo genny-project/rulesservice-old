@@ -12,10 +12,13 @@ rule "Send Bucket Layout To Frontend"
      	rules.header();
      	
      	String layout = RulesUtils.getLayout("card.json");
+     	String viewCode = "BUCKET_DASHBOARD";
+     	String grpBE = "GRP_DASHBOARD";
      	
      	/* sending cmd BUCKET_VIEW */
-     	rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json", "GRP_DASHBOARD");
-
+     	rules.sendSublayout(viewCode, "dashboard_channel40.json", grpBE);
+        rules.setLastLayout( viewCode, grpBE );
+        
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
 	    rules.footer();     		      

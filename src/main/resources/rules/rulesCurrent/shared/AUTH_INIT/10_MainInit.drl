@@ -1,0 +1,19 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Main Init"
+
+    when
+        m : QEventMessage( event_type == "AUTH_INIT" && data.code == "AUTH_INIT")
+        rules: QRules(isState("STARTED") &&  (!isState("USER_CHECKED")) && isState("ALL_ATTRIBUTES_SENT")) 
+     then     
+     	rules.header();
+        rules.getUser();
+        rules.setState("USER_CHECKED");
+		rules.println("Checked User is "+(rules.getUser()==null?" not in database":rules.getUser()));
+	    rules.footer();       		      
+end

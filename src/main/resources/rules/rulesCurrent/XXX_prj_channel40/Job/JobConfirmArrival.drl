@@ -38,6 +38,10 @@ then
         			BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
         			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
         			String ownerCode = jobBe.getValue("PRI_AUTHOR",null);
+        			
+        			/* Add new attribute to save the time when load was dropped off */
+	      		Answer jobDeliveryDateTimeAnswer = new Answer(rules.getUser().getCode(), begCode, "PRI_DROPOFF_DATETIME", rules.getZonedCurrentLocalDateTime());
+	      		rules.saveAnswer(jobDeliveryDateTimeAnswer);
         
         			HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("JOB", begCode);
