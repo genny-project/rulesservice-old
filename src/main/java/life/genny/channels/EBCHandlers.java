@@ -2,6 +2,7 @@ package life.genny.channels;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
@@ -142,6 +144,19 @@ public class EBCHandlers {
 						dataGPSMsg = JsonUtils.fromJson(json.toString(), QDataGPSMessage.class);
 						processMsg("GPS:"+dataGPSMsg.getData_type(), payload.getString("ruleGroup"), dataGPSMsg, eventBus, payload.getString("token"));
 					}
+				} else if(payload.getString("data_type").equals(QDataPaymentsCallbackMessage.class.getSimpleName())) {
+					QDataPaymentsCallbackMessage dataCallbackMsg = null;
+					try {
+						dataCallbackMsg = JsonUtils.fromJson(payload.toString(), QDataPaymentsCallbackMessage.class);
+						processMsg("Data:"+dataCallbackMsg.getData_type(), payload.getString("ruleGroup"), dataCallbackMsg, eventBus, payload.getString("token"));
+					} 
+					catch (com.google.gson.JsonSyntaxException e) {
+						
+						log.error("BAD Syntax converting to json from " + dataCallbackMsg);
+						JsonObject json = new JsonObject(payload.toString());
+						dataCallbackMsg = JsonUtils.fromJson(json.toString(), QDataPaymentsCallbackMessage.class);
+						processMsg("Callback:"+dataCallbackMsg.getData_type(), payload.getString("ruleGroup"), dataCallbackMsg, eventBus, payload.getString("token"));
+					}
 				}
 			}
 		});
@@ -188,11 +203,56 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-			System.out.println("FIRE RULES ("+realm+") "+msgType);
+			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+realm+") "+msgType); }
 
-			String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
+		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {
 				RulesLoader.executeStatefull(realm, eventBus, globals, facts, keyvalue);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			future.complete();
+		}, res -> {
+			if (res.succeeded()) {
+				//System.out.println("Processed "+msgType+" Msg");
+			}
+		});
+
+	}
+	
+	public static void initMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus) {
+		Vertx.currentContext().owner().executeBlocking(future -> {
+			Map<String,Object> adecodedTokenMap = new HashMap<String,Object>();
+			Set<String> auserRoles = new HashSet<String>();
+			auserRoles.add("admin");
+			auserRoles.add("user");
+	
+			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
+			qRules.set("realm", ruleGroup);
+
+			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
+
+			List<Object> facts = new ArrayList<Object>();
+			facts.add(qRules);
+			facts.add(msg);
+			facts.add(adecodedTokenMap);
+			facts.add(auserRoles);
+	            User currentUser = new User("user1", "User1", ruleGroup, "admin");
+				usersSession.put("user", currentUser);
+				facts.add(currentUser);
+	
+					
+
+			Map<String, String> keyvalue = new HashMap<String, String>();
+			keyvalue.put("token", token);
+
+			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }
+
+		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
+			try {
+				RulesLoader.executeStatefull(ruleGroup, eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
