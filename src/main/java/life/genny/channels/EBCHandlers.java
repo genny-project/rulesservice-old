@@ -184,7 +184,7 @@ public class EBCHandlers {
 			qRules.set("realm", realm);
 
 
-			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>(); /* RulesLoader.getStandardGlobals(); */
+			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>(); RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(qRules);
