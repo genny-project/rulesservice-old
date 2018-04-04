@@ -24,18 +24,20 @@ rule "Send Buckets"
         for(BaseEntity bucket: bucketList) {  
             begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
             
-            /* send BEGS */
-            rules.publishCmd(begs, bucket.getCode(), "LNK_CORE");
+            for(BaseEntity beg: begs) { 
+                
+                /* Send beg to Subscriberts only */
+                String[] begSubscribers = rules.getSubscribers(beg.getCode());                
+                rules.println("BEG Code   ::   " + beg.getCode());
+                rules.println("Each BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
 
-            for(BaseEntity beg: begs) {  
-                begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+                rules.publishBaseEntityByCode(beg, bucket.getCode(), "LNK_CORE", begSubscribers);
                 
                 /* send INTERNSHIP | COMPANY | CREATOR */
+                begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
                 rules.publishCmd(begKids, beg.getCode(), "LNK_BEG");
             }
         }
-        
-        
          
         rules.setState("SENT_BUCKETS");		
         rules.setState("SEND_CONTACTS");		

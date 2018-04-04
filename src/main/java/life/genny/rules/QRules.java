@@ -94,6 +94,8 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -4497,5 +4499,16 @@ public class QRules {
 
 		}
 		return isLinkExists;
+	}
+
+	/* returns  subscribers of a baseEntity Code */
+	public String[] getSubscribers(final String subscriptionCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
+
+		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
+		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		return result;
 	}
 }
