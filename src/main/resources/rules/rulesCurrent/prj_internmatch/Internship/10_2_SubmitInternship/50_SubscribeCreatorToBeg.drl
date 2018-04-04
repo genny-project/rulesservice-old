@@ -18,9 +18,12 @@ rule "Submit Internship - Step 5"
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP5");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		if(beg != null){
+			rules.subscribeUserToBaseEntity(rules.getUser().getCode(), beg);
+	 		rules.setState("SUBSCRIBED_CREATOR_TO_BEG");
 
-		rules.subscribeUserToBaseEntity(rules.getUser().getCode(), beg);
-	
- 		rules.setState("SUBSCRIBED_CREATOR_TO_BEG");
+	 		rules.setState("SUBSCRIBE_COMPANY_TO_BEG");
+		}
+
 	 	rules.footer();      
 end

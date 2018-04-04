@@ -1,0 +1,34 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish APPLICATION, INTERN BaseEntity To Bucket */
+rule "Submit Apply Internship - Step 6"
+	when
+		rules: QRules( 	isState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION") && 
+						isState("PUBLISH_APPLICATION") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP6") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP6");
+		
+		/* get application, beg from state map */
+        BaseEntity application = rules.getAsBaseEntity("applicationBe");
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+        BaseEntity companyStaff = rules.getAsBaseEntity("companyStaffBe");
+		
+		String[] applicationSubscribers = VertxUtils.getSubscribers(rules.realm(), application.getCode());
+		
+		/* send APPLICATION BaseEntity */
+		rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", applicationSubscribers);
+
+		/* send INTERN BaseEntity */
+		rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", applicationSubscribers);
+		
+		rules.setState("PUBLISHED_APPLICATION");
+
+		rules.setState("GO_TO_HOMEPAGE");
+	 	rules.footer();      
+end

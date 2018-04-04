@@ -6,6 +6,7 @@ import life.genny.utils.VertxUtils;
 rule "Submit Internship - Step 5.1"	
 	when
 		rules: QRules( 	isState("SUBSCRIBED_CREATOR_TO_BEG") && 
+						isState("SUBSCRIBE_COMPANY_TO_BEG") && 
 						isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
@@ -21,5 +22,6 @@ rule "Submit Internship - Step 5.1"
 		rules.subscribeUserToBaseEntity(company.getCode(), beg);
 	
  		rules.setState("SUBSCRIBED_COMPANY_TO_BEG");
+ 		rules.setState("SUBSCRIBE_ALL_INTERNS_TO_NEW_BEG");
 	 	rules.footer();      
 end
