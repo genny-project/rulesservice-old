@@ -2,17 +2,18 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Subscribe Intern to BEG */
-rule "Submit Apply Internship - Step 6"
+rule "Submit Apply Internship - Step 7"
 	when
 		rules: QRules( 	isState("GO_TO_HOMEPAGE") && 
+						isState("PUBLISHED_APPLICATION") && 
 						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP6")) 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP7")) 
 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP6");
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP7");
 
         rules.setState("TRIGGER_HOME_PAGE");
 

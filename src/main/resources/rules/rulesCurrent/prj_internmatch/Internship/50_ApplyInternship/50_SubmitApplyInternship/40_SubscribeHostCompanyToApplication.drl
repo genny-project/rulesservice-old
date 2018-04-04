@@ -10,7 +10,6 @@ rule "Submit Apply Internship - Step 4"
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP4")) 
-
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP4");
@@ -28,7 +27,8 @@ rule "Submit Apply Internship - Step 4"
 		}else{
 			rules.subscribeUserToBaseEntity(company.getCode(), application.getCode());
 			rules.setState("SUBSCRIBED_HOST_COMPANY_TO_APPLICATION");
-			rules.setState("GO_TO_HOMEPAGE");
+
+			rules.setState("SUBSCRIBE_HOST_COMPANY_STAFF_TO_APPLICATION");
 		}
 	 	rules.footer();      
 end

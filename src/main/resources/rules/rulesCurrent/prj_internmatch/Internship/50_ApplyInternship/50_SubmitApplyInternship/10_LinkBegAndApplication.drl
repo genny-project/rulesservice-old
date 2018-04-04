@@ -13,28 +13,25 @@ rule "Submit Apply Internship - Step 1"
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP1");
 
+        BaseEntity application = rules.getAsBaseEntity("applicationBe");
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+        
+        if(beg == null){   
+            rules.println("beg is null");
+        }else if(application == null){
+            rules.println("application is null");    
+        }else{
 
-			BaseEntity application = rules.getAsBaseEntity(applicationBe);
-			BaseEntity beg = rules.getAsBaseEntity(begBe);
+            /* link BEG to APPLICATION || APPLICATION */
+            rules.set("linkSourceCode",  beg.getCode());
+            rules.set("linkTargetCode", application.getCode());
+            rules.set("linkCode", "LNK_BEG");
+            rules.set("linkValue", "APPLICATION");
+            rules.set("linkWeight", 1.0);
+            rules.setState("CREATE_LINK");
+
+            rules.setState("LINKED_BEG_TO_APPLICATION");
+            rules.setState("LINK_APPLICATION_TO_INTERN");
             
-            if(beg == null){   
-                rules.println("beg is null");
-            }else if(application == null){
-                rules.println("application is null");    
-            }else{
-                BaseEntity beg = rules.getBaseEntityByCode(begCode);
-                rules.set("begBe", beg);
-
-                /* link BEG to APPLICATION || APPLICATION */
-                rules.set("linkSourceCode",  beg.getCode());
-                rules.set("linkTargetCode", application.getCode());
-                rules.set("linkCode", "LNK_BEG");
-                rules.set("linkValue", "APPLICATION");
-                rules.set("linkWeight", 1.0);
-                rules.setState("CREATE_LINK");
-
-                rules.setState("LINKED_BEG_TO_APPLICATION");
-                rules.setState("LINK_APPLICATION_TO_INTERN");
-                
-            }
+        }
 end

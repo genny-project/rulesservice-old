@@ -9,8 +9,10 @@ rule "Trigger Application - Internmatch"
         rules.header();
         rules.setState("LOOP_TRIGGER_APPLICATION");
         
+        /* to do */
+        rules.setState("TRIGGER_SUBSCRIPTION"); /* trigger subscription then only app data */
         rules.setState("TRIGGER_SEND_APPLICATION_DATA");
         rules.setState("TRIGGER_HOME_PAGE");
-/*         rules.setState("TRIGGER_WELCOME_PAGE");  
- */        rules.footer(); 		      
+/*      rules.setState("TRIGGER_WELCOME_PAGE");   */
+        rules.footer(); 		      
 end
