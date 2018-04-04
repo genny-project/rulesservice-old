@@ -50,6 +50,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
+import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.AttributeBoolean;
 import life.genny.qwanda.attribute.AttributeInteger;
@@ -79,9 +80,8 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
@@ -2980,14 +2980,14 @@ public class QRules {
 				
 				BaseEntity offer = getBaseEntityByCode(offerCode);
 				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
-				JSONObject makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
+				PaymentsResponse makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
 				println("isMakePaymentSucceeded ::" + makePaymentResponseObj);
 
 				/* GET offer Base Entity */
 				
 				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
 
-				if (! ((Boolean)makePaymentResponseObj.get("isSuccess"))) {
+				if (!makePaymentResponseObj.getIsSuccess()) {
 					/* TOAST :: FAIL */
 					println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -3002,7 +3002,7 @@ public class QRules {
 					drools.setFocus("SendLayoutsAndData");
 				}
 
-				if ((Boolean)makePaymentResponseObj.get("isSuccess")) {
+				if (makePaymentResponseObj.getIsSuccess()) {
 					/* GET attributes of OFFER BE */
 					Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
 					Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
@@ -3028,7 +3028,7 @@ public class QRules {
 							QwandaUtils.getMoneyString(feePriceIncGST)));
 					
 					
-					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
+					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getResponseMap().get("depositReferenceId")));
 
 					//fetch the job to ensure the cache has caught up
 				/*	BaseEntity begBe = null;
