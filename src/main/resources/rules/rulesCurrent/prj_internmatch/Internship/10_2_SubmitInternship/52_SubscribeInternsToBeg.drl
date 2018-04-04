@@ -1,0 +1,40 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Subscribe All Interns to New BEG"
+	when
+		rules: QRules( 	isState("SUBSCRIBE_ALL_INTERNS_TO_NEW_BEG") && 
+						isState("SUBSCRIBED_COMPANY_TO_BEG") &&
+						!isState("LOOP_SUBSCRIBE_ALL_INTERNS_TO_NEW_BEG") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBSCRIBE_ALL_INTERNS_TO_NEW_BEG");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+
+		if(beg != null){
+			
+			/* Get All Interns */
+			List<BaseEntity> interns = rules.getBaseEntitysByParentAndLinkCode("GRP_INTERNS", "LNK_CORE", 0, 500, false);
+
+			if(interns != null){
+				for(BaseEntity intern : interns){
+					rules.subscribeUserToBaseEntity(intern.getCode(), beg.getCode());
+				}
+
+				String[] begSubscribers = rules.getSubscribers(beg.getCode());
+				rules.println("SUBSCRIBERS of newly created BEG   ::   " + Arrays.toString(begSubscribers));
+				
+				rules.setState("SUBSCRIBED_ALL_INTERNS_TO_NEW_BEG");
+
+				rules.setState("MOVE_BEG_TO_AVAILABLE");
+			}else{
+				rules.println("list of interns is null");
+			}
+		}else{
+			rules.println("beg is null");
+		}
+		
+	 	rules.footer();      
+end

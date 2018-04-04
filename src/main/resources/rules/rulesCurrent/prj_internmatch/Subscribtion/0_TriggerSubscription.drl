@@ -1,0 +1,17 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Subscription - Internmatch"
+
+    when
+         rules: QRules( isState("TRIGGER_SUBSCRIPTION") &&
+         				isState("PROFILE_IS_COMPLETED") &&
+         				!isState("LOOP_TRIGGER_SUBSCRIPTION") )
+     then
+     	rules.header();
+        rules.setState("LOOP_TRIGGER_SUBSCRIPTION");
+        
+        rules.setState("SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS");
+    
+	    rules.footer();      		      
+end

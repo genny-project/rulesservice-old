@@ -21,7 +21,7 @@ rule "Submit Apply Internship - Step 2"
             /* link BEG to USER || APPLICANT */
             rules.set("linkSourceCode", application.getCode());
             rules.set("linkTargetCode", rules.getUser().getCode());
-            rules.set("linkCode", "LNK_BEG");
+            rules.set("linkCode", "LNK_APP");
             rules.set("linkValue", "APPLICANT");
             rules.set("linkWeight", 1.0);
             rules.setState("CREATE_LINK");
@@ -33,4 +33,5 @@ rule "Submit Apply Internship - Step 2"
         }else{
             rules.println("application BaseEntity is null");
         }
+	 	rules.footer();
 end
