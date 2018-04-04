@@ -2797,11 +2797,30 @@ public class QRules {
 					begs.addAll(driverbegs);
 					VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
 				} else {
-					if (user.is("PRI_DRIVER")) {
+					if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
 						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-								500, false, user.getCode());						
-						begs.addAll(driverbegs);
-						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+								500, false, user.getCode());	
+						for(BaseEntity beg : driverbegs) {
+							/*  Getting begs related to this driver only  */
+							String driverCode = beg.getValue("STT_IN_TRANSIT", null);
+							 if (driverCode!=null && driverCode.equals(user.getCode())) {
+								VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+									begs.add(beg);
+						       }else {
+						    	     /* Another check to handle loads which misses STT_IN_TRANSIT attribute in Production due to bug
+						    	      *   (It was not saving STT_IN_TRANSIT attribute while saving in bulk) */
+						    	       BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
+						    	       if(driver!=null && driver.getCode().equals(user.getCode())) {
+						    	    	         VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+											begs.add(beg);
+						    	       }
+						    	      
+						       }
+							 
+				        }
+						
+//						begs.addAll(driverbegs);
+//						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
 					}
 				}
 
@@ -3013,19 +3032,19 @@ public class QRules {
 					Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
 
 					List<Answer> answers = new ArrayList<Answer>();
-					answers.add(new Answer(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice)));
+					answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
 					answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST",
-							QwandaUtils.getMoneyString(ownerPriceExcGST)));
+							JsonUtils.toJson(ownerPriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST",
-							QwandaUtils.getMoneyString(ownerPriceIncGST)));
+							JsonUtils.toJson(ownerPriceIncGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST",
-							QwandaUtils.getMoneyString(driverPriceExcGST)));
+							JsonUtils.toJson(driverPriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST",
-							QwandaUtils.getMoneyString(driverPriceIncGST)));
+							JsonUtils.toJson(driverPriceIncGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST",
-							QwandaUtils.getMoneyString(feePriceExcGST)));
+							JsonUtils.toJson(feePriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
-							QwandaUtils.getMoneyString(feePriceIncGST)));
+							JsonUtils.toJson(feePriceIncGST)));
 					
 					
 					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
