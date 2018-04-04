@@ -133,6 +133,8 @@ public class QRules {
 	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
+	
+	private long ruleStartMs = 0;
 
 	KnowledgeHelper drools;
 
@@ -1657,16 +1659,20 @@ public class QRules {
 
 			RulesUtils.header(drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
-					+ this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
+					+ " "+this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
 		}
+		ruleStartMs = System.nanoTime();
 	}
 
 	public void footer() {
+		long endTime = System.nanoTime();
+		double difference = (endTime - ruleStartMs) / 1e6;  // get ms
+		
 		try {
-			RulesUtils.footer(drools.getRule().getName() + " - "
+			RulesUtils.footer(difference+" ms :"+drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
 					+ this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());

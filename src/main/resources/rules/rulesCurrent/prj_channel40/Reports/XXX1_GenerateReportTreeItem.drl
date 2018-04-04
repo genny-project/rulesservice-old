@@ -10,7 +10,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "TV_SELECT Event - Generate Report"
      when
-       $m : QEventMessage( event_type == "TV_SELECT")
+       $m : QEventMessage( event_type == "TV_SELECT" && data.value matches "GRP_REPORTS.*" )
        rules: QRules()
      then
 
