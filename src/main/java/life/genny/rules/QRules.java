@@ -3028,7 +3028,7 @@ public class QRules {
 							QwandaUtils.getMoneyString(feePriceIncGST)));
 					
 					
-					answers.add(new Answer(userCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
+					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
 
 					//fetch the job to ensure the cache has caught up
 				/*	BaseEntity begBe = null;
