@@ -1,0 +1,32 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Dashboard */
+rule "Shortlist Internship - Step 0"
+	when
+		rules: QRules( 	isState("BTN_SHORTLIST_INTERN") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_SHORTLIST_INTERN_STEP0")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SHORTLIST_INTERN_STEP0");
+
+		String applicationCode = rules.getAsString("itemCode");
+		String begCode = rules.getAsString("hintCode");
+
+		if(applicationCode == null){
+            rules.println("applicationCode is null");
+        }else if(begCode == null){
+            rules.println("begCode is null");
+        }else{
+			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
+			rules.set("applicationBe", application);
+
+			BaseEntity beg = rules.getBaseEntityByCode(begCode);
+			rules.set("begBe", beg);
+
+			rules.setState("BEG_APPLICATION_READY");            
+		    rules.setState("DUPLICATE_BEG");
+        }
+	 	rules.footer();      
+end
