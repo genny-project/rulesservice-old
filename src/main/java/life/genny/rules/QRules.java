@@ -3012,24 +3012,6 @@ public class QRules {
 					Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
 					Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
 
-					/* Update BEG's prices with offer's prices */
-					/*
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE",
-					 * QwandaUtils.getMoneyString(offerPrice)); 
-					 * updateBaseEntityAttribute(begCode,
-					 * begCode, "PRI_OWNER_PRICE_EXC_GST",
-					 * QwandaUtils.getMoneyString(ownerPriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST",
-					 * QwandaUtils.getMoneyString(ownerPriceIncGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST",
-					 * QwandaUtils.getMoneyString(driverPriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST",
-					 * QwandaUtils.getMoneyString(driverPriceIncGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST",
-					 * QwandaUtils.getMoneyString(feePriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST",
-					 * QwandaUtils.getMoneyString(feePriceIncGST));
-					 */
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice)));
 					answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST",
@@ -3045,7 +3027,8 @@ public class QRules {
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
 							QwandaUtils.getMoneyString(feePriceIncGST)));
 					
-
+					
+					answers.add(new Answer(userCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
 
 					//fetch the job to ensure the cache has caught up
 				/*	BaseEntity begBe = null;
