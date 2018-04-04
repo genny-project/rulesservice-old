@@ -2,8 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
-import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 
 rule "Check if Payments User Exists"
 	agenda-group "ispayments"

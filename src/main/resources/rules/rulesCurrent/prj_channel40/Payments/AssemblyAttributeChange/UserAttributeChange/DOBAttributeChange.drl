@@ -6,7 +6,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 
 
