@@ -1,7 +1,9 @@
 
 package life.genny.rules;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -15,6 +17,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,19 +28,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.money.CurrencyUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
+import org.json.simple.JSONObject;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
@@ -45,7 +53,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
-import life.genny.cluster.IdGenerator;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -62,61 +69,29 @@ import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
-import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
-import life.genny.qwanda.message.QDataGPSMessage;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.UUID;
-import java.net.URLEncoder;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class QRules {
 
@@ -133,6 +108,8 @@ public class QRules {
 	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
+	
+	private long ruleStartMs = 0;
 
 	KnowledgeHelper drools;
 
@@ -1629,6 +1606,22 @@ public class QRules {
 		}
 
 	}
+	
+	public boolean sendSelections(final String selectionRootCode, final String linkCode, final String stakeholderCode,final Integer maxItems) {
+
+		JsonObject selectionLists;
+		try {
+			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
+					+ selectionRootCode + "/linkcodes/" + linkCode + "/attributes/"+stakeholderCode+"?pageStart=0&pageSize=" + maxItems, getToken()));
+			selectionLists.put("token", getToken());
+			publish("cmds", selectionLists);
+			return true;
+		} catch (IOException e) {
+			log.error("Unable to fetch selections");
+			return false;
+		}
+
+	}
 
 	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode,
 			final String linkValue, final Integer maxItems) {
@@ -1657,16 +1650,22 @@ public class QRules {
 
 			RulesUtils.header(drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ " "+this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
 		}
+		ruleStartMs = System.nanoTime();
 	}
 
 	public void footer() {
+		long endTime = System.nanoTime();
+		double difference = (endTime - ruleStartMs) / 1e6;  // get ms
+		
 		try {
-			RulesUtils.footer(drools.getRule().getName() + " - "
+			RulesUtils.footer(difference+" ms :"+drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ " " + this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
@@ -2855,7 +2854,7 @@ public class QRules {
 					} else {
 						filteredKids.add(begKid);
 					}
-					println(bucket.getCode() + ":" + begKid.getCode());
+					//println(bucket.getCode() + ":" + begKid.getCode());
 				}
 				publishCmd(filteredKids, beg.getCode(), "LNK_BEG");
 			}
