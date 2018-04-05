@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-/* Send Dashboard */
+/* Duplicate BEG */
 rule "Shortlist Internship - Step 1"
 	when
 		rules: QRules( 	isState("DUPLICATE_BEG") && 
@@ -13,9 +13,18 @@ rule "Shortlist Internship - Step 1"
 	 	rules.header();
         rules.setState("LOOP_SHORTLIST_INTERN_STEP1");
 
-		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		BaseEntity newBeg = rules.duplicateBaseEntity(beg, "BEG", "BEG");
-		rules.println("Duplicated BE   ::   " +newBeg);
-		
+		BaseEntity oldBeg = rules.getAsBaseEntity("begBe");
+		BaseEntity application = rules.getAsBaseEntity("applicationBe");
+
+		BaseEntity newBeg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "BEG");
+		if(newBeg != null && application != null){
+			
+			String[] linkValues = {"APPLICATION"};
+			rules.copyLinksExcept(oldBeg, newBeg, linkValues);
+			rules.set("newBegBe", newBeg);
+        	rules.setState("DUPLICATED_BEG");
+
+        	rules.setState("LINK_BEG_TO_APPLICATION");
+		}
 	 	rules.footer();      
 end

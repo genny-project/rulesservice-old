@@ -5,8 +5,10 @@ import life.genny.utils.VertxUtils;
 /* Publish APPLICATION, INTERN BaseEntity To Bucket */
 rule "Submit Apply Internship - Step 6"
 	when
-		rules: QRules( 	isState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION") && 
-						isState("PUBLISH_APPLICATION") && 
+		rules: QRules( 	isState("LINKED_APPLICATION_TO_INTERN") && 
+						isState("PUBLISH_APPLICATION_TO_BUCKET") && 
+						isState("CREATED_LINK") && 
+						isState("APPLICANT") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP6") ) 
@@ -27,7 +29,7 @@ rule "Submit Apply Internship - Step 6"
 		/* send INTERN BaseEntity */
 		rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", applicationSubscribers);
 		
-		rules.setState("PUBLISHED_APPLICATION");
+		rules.setState("PUBLISHED_APPLICATION_TO_BUCKET");
 
 		rules.setState("GO_TO_HOMEPAGE");
 	 	rules.footer();      
