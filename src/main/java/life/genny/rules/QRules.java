@@ -1371,10 +1371,10 @@ public class QRules {
 			Producer.getToEvents().send(payload);
 			break;
 		case "data":
-			Producer.getToWebData().send(payload);
+			Producer.getToWebData().write(payload);
 			break;
 		case "cmds":
-			Producer.getToWebCmds().send(payload);
+			Producer.getToWebCmds().write(payload);
 			break;
 		case "services":
 			Producer.getToServices().send(payload);
