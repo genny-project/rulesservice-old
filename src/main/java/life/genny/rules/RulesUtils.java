@@ -106,10 +106,11 @@ public class RulesUtils {
 	}
 
 	public static void println(final Object obj, final String colour) {
+		Date date = new Date();
 		if (devMode) {
-			System.out.println(obj);
+			System.out.println(date+": "+obj);
 		} else {
-			System.out.println((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
+			System.out.println((devMode ? "" : colour) + date+": " + obj + (devMode ? "" : ANSI_RESET));
 		}
 
 	}
