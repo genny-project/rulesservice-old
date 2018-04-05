@@ -1228,6 +1228,21 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
+	
+	public void logoutAll() {
+	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
+	 	msg.setToken(getToken());
+	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
+	     String[]  recipientCodes = new String[1];
+	     recipientCodes[0] = getUser().getCode();
+	     String json = JsonUtils.toJson(msg);
+	     JsonObject jsonObj = new JsonObject(json);
+	     JsonArray jsonArr = new JsonArray();
+	     jsonArr.add(getUser().getCode());
+		jsonObj.put("recipientCodes", jsonArr);
+	
+		publish("data", jsonObj);
+	}
 
 	public void publishData(final QDataAnswerMessage msg) {
 		msg.setToken(getToken());
