@@ -16,7 +16,6 @@ rule "Submit Apply Internship - Step 0"
         String applicationCode = rules.getAsString("quesTargetCode");
 
         if(applicationCode != null){
-			
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
             rules.set("applicationBe", application);
             
@@ -32,16 +31,18 @@ rule "Submit Apply Internship - Step 0"
 				if(company != null){
             		rules.set("companyBe", company);
 
-					rules.setState("BEG_APPLICATION_COMPANY_READY");            
+					rules.setState("BEG_APPLICATION_COMPANY_READY");  
+
+					rules.setState("SUBSCRIBE_INTERN_TO_APPLICATION");            
 					
 				}else{
 					rules.println("company BaseEntity is null");
 				}
-				
 			}else{
 				rules.println("begCode is null");
 			}
 		}else{
 			rules.println("applicationCode is null");
 		}
+		rules.footer();
 end
