@@ -1383,19 +1383,19 @@ public class QRules {
 		switch (channel) {
 		case "event":
 		case "events":
-			Producer.getToEvents().send(payload);
+			Producer.getToEvents().send(payload).end();;
 			break;
 		case "data":
-			Producer.getToWebData().write(payload);
+			Producer.getToWebData().write(payload).end();;
 			break;
 		case "cmds":
-			Producer.getToWebCmds().write(payload);
+			Producer.getToWebCmds().write(payload).end();
 			break;
 		case "services":
-			Producer.getToServices().send(payload);
+			Producer.getToServices().send(payload).end();
 			break;
 		case "messages":
-			Producer.getToMessages().send(payload);
+			Producer.getToMessages().send(payload).end();
 			break;
 		default:
 			println("Channel does not exist: " + channel);
