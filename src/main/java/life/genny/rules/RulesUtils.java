@@ -553,6 +553,11 @@ public class RulesUtils {
 		String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode,
 				linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+		if (msg == null) {
+			log.error("Null Error in RulesUtils: getBaseEntitysArrayByParentAndLinkCodeWithAttributes ,"+beJson);
+			BaseEntity[] beArray = new BaseEntity[0];
+			msg = new QDataBaseEntityMessage(beArray);
+		}
 		return msg.getItems();
 
 	}
