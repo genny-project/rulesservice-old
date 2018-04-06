@@ -1228,6 +1228,21 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
+	
+	public void logoutAll() {
+	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
+	 	msg.setToken(getToken());
+	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
+	     String[]  recipientCodes = new String[1];
+	     recipientCodes[0] = getUser().getCode();
+	     String json = JsonUtils.toJson(msg);
+	     JsonObject jsonObj = new JsonObject(json);
+	     JsonArray jsonArr = new JsonArray();
+	     jsonArr.add(getUser().getCode());
+		jsonObj.put("recipientCodes", jsonArr);
+	
+		publish("data", jsonObj);
+	}
 
 	public void publishData(final QDataAnswerMessage msg) {
 		msg.setToken(getToken());
@@ -1368,19 +1383,19 @@ public class QRules {
 		switch (channel) {
 		case "event":
 		case "events":
-			Producer.getToEvents().send(payload);
+			Producer.getToEvents().send(payload).end();;
 			break;
 		case "data":
-			Producer.getToWebData().write(payload);
+			Producer.getToWebData().write(payload).end();;
 			break;
 		case "cmds":
-			Producer.getToWebCmds().write(payload);
+			Producer.getToWebCmds().write(payload).end();
 			break;
 		case "services":
-			Producer.getToServices().send(payload);
+			Producer.getToServices().send(payload).end();
 			break;
 		case "messages":
-			Producer.getToMessages().send(payload);
+			Producer.getToMessages().send(payload).end();
 			break;
 		default:
 			println("Channel does not exist: " + channel);

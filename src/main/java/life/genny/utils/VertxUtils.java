@@ -244,8 +244,12 @@ public class VertxUtils {
 	}
 
 	static public void putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
+		if (set == null) {
+			writeCachedJson(realm + ":" + keyPrefix + ":" + key,null);
+		} else {
 		String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
 		putObject(realm, keyPrefix, key, strArray);
+		}
 	}
 	
 	static public void putStringArray(final String realm, final String keyPrefix, final String key, final String[] string) {
