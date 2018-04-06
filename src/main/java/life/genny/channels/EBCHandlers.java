@@ -163,7 +163,7 @@ public class EBCHandlers {
 	}
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
-		log.info("EVENT-BUS >> " + messageType.toUpperCase() );
+	//	log.info("EVENT-BUS >> " + messageType.toUpperCase() );
 
 		final JsonObject payload = new JsonObject(arg.body().toString());
 		return payload;
@@ -249,7 +249,7 @@ public class EBCHandlers {
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }
+		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }
 
 		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {

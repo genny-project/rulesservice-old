@@ -108,9 +108,9 @@ public class RulesUtils {
 	public static void println(final Object obj, final String colour) {
 		Date date = new Date();
 		if (devMode) {
-			System.out.println(date+":"+obj);
+			System.out.println(date+": "+obj);
 		} else {
-			System.out.println((devMode ? "" : colour) + date+":" + obj + (devMode ? "" : ANSI_RESET));
+			System.out.println((devMode ? "" : colour) + date+": " + obj + (devMode ? "" : ANSI_RESET));
 		}
 
 	}
@@ -553,6 +553,11 @@ public class RulesUtils {
 		String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode,
 				linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+		if (msg == null) {
+			log.error("Null Error in RulesUtils: getBaseEntitysArrayByParentAndLinkCodeWithAttributes ,"+beJson);
+			BaseEntity[] beArray = new BaseEntity[0];
+			msg = new QDataBaseEntityMessage(beArray);
+		}
 		return msg.getItems();
 
 	}
