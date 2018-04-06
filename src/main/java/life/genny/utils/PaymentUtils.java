@@ -2008,7 +2008,7 @@ public class PaymentUtils {
 				JSONObject accountObj = new JSONObject();
 	
 				accountObj.put("id", accountId);
-				debitAuthorityObj.put("amount", finalPrice.toString());
+				debitAuthorityObj.put("amount", finalPrice);
 				debitAuthorityObj.put("account", accountObj);
 				
 				try {
