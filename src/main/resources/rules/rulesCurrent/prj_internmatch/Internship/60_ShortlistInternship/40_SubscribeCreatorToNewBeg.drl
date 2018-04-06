@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Subscribe CREATOR to NEW_BEG */
+rule "Shortlist Internship - Step 4"	
+	when
+		rules: QRules( 	isState("SUBSCRIBE_CREATOR_TO_NEW_BEG") && 
+						isState("LINKED_NEW_BEG_TO_INTERN") && 
+						isState("BTN_SHORTLIST_INTERN") && 
+						isState("EVENT_BTN_CLICK") &&  
+						!isState("LOOP_SHORTLIST_INTERN_STEP4")) 
+
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SHORTLIST_INTERN_STEP4");
+
+        BaseEntity creator = rules.getAsBaseEntity("creatorBe");
+        BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
+		
+		if(creator != null && newBeg != null){
+			rules.subscribeUserToBaseEntityAndChildren(creator.getCode(), newBeg.getCode(), "LNK_BEG");
+	 		rules.setState("SUBSCRIBED_CREATOR_TO_NEW_BEG");
+
+	 		rules.setState("SUBSCRIBE_COMPANY_TO_NEW_BEG");
+		}
+	 	rules.footer();      
+end
