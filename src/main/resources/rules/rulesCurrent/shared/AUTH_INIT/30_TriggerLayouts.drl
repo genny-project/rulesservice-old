@@ -10,7 +10,6 @@ rule "Trigger Layouts"
         rules: QRules( isState("PROJECT_SENT")  &&  
                          (isState("USER_COMPANY_SENT")) && 
                          (isState("IS_LOGGED_IN")) && 
-                         (isState("USER_TC_ACCEPTION_CHECKED"))  &&
                          (!isState("NEW_REGISTRATION")) &&
                          (!isState("NEW_USER_CREATED"))  &&
                          (!isState("TRIGGER_LAYOUTS")) )

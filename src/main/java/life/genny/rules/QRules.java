@@ -1397,6 +1397,9 @@ public class QRules {
 		case "messages":
 			Producer.getToMessages().send(payload).end();
 			break;
+		case "social":
+			Producer.getToSocial().write(payload).end();
+			break;
 		default:
 			println("Channel does not exist: " + channel);
 		}
