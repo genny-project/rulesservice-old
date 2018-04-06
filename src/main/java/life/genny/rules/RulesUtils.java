@@ -106,10 +106,11 @@ public class RulesUtils {
 	}
 
 	public static void println(final Object obj, final String colour) {
+		Date date = new Date();
 		if (devMode) {
-			System.out.println(obj);
+			System.out.println(date+": "+obj);
 		} else {
-			System.out.println((devMode ? "" : colour) + obj + (devMode ? "" : ANSI_RESET));
+			System.out.println((devMode ? "" : colour) + date+": " + obj + (devMode ? "" : ANSI_RESET));
 		}
 
 	}
@@ -276,10 +277,24 @@ public class RulesUtils {
 	public static String getBaseEntityJsonByAttributeAndValue(final String qwandaServiceUrl,
 			Map<String, Object> decodedToken, final String token, final String attributeCode, final String value) {
 
+		return getBaseEntityJsonByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,value,1);
+
+	}
+	
+	/**
+	 * 
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @return baseEntity user for the decodedToken passed
+	 */
+	public static String getBaseEntityJsonByAttributeAndValue(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String attributeCode, final String value, final Integer pageSize) {
+
 		try {
 			String beJson = null;
 			beJson = QwandaUtils.apiGet(
-					qwandaServiceUrl + "/qwanda/baseentitys/test2?pageSize=1&" + attributeCode + "=" + value, token);
+					qwandaServiceUrl + "/qwanda/baseentitys/test2?pageSize="+pageSize+"&" + attributeCode + "=" + value, token);
 			// println("BE"+beJson);
 			return beJson;
 
@@ -301,7 +316,7 @@ public class RulesUtils {
 			Map<String, Object> decodedToken, final String token, final String attributeCode, final String value) {
 
 		String beJson = getBaseEntityJsonByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,
-				value);
+				value,1000);
 		QDataBaseEntityMessage be = fromJson(beJson, QDataBaseEntityMessage.class);
 
 		List<BaseEntity> items = null;
@@ -538,6 +553,11 @@ public class RulesUtils {
 		String beJson = getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, decodedToken, token, parentCode,
 				linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
+		if (msg == null) {
+			log.error("Null Error in RulesUtils: getBaseEntitysArrayByParentAndLinkCodeWithAttributes ,"+beJson);
+			BaseEntity[] beArray = new BaseEntity[0];
+			msg = new QDataBaseEntityMessage(beArray);
+		}
 		return msg.getItems();
 
 	}

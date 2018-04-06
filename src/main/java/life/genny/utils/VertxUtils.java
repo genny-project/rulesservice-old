@@ -1,6 +1,7 @@
 package life.genny.utils;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
+import com.google.gson.reflect.TypeToken;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -39,14 +41,21 @@ public class VertxUtils {
 
 	}
 
-	static Map<String, String> localCache = new ConcurrentHashMap<String, String>();
-	static Map<String, MessageProducer<JsonObject>> localMessageProducerCache = new ConcurrentHashMap<String, MessageProducer<JsonObject>>();
-
-
-
 
 
 	static public <T> T getObject(final String realm, final String keyPrefix, final String key, final Class clazz) {
+		T item = null;
+		JsonObject json = readCachedJson(realm + ":" + keyPrefix + ":" + key);
+		if (json.getString("status").equalsIgnoreCase("ok")) {
+			String data = json.getString("value");
+			item = (T) JsonUtils.fromJson(data, clazz);
+			return item;
+		} else {
+			return null;
+		}
+	}
+	
+	static public <T> T getObject(final String realm, final String keyPrefix, final String key, final Type clazz) {
 		T item = null;
 		JsonObject json = readCachedJson(realm + ":" + keyPrefix + ":" + key);
 		if (json.getString("status").equalsIgnoreCase("ok")) {
@@ -77,7 +86,11 @@ public class VertxUtils {
 
 	static public JsonObject writeCachedJson(final String key, final String value) {
 
-		DistMap.getDistBE().put(key, value);
+		if (value == null) {
+			DistMap.getDistBE().delete(key);
+		} else {
+			DistMap.getDistBE().put(key, value);
+		}
 		JsonObject ok = new JsonObject().put("status", "ok");
 		return ok;
 
@@ -134,6 +147,8 @@ public class VertxUtils {
 		 }
 		return be;
 	}
+	
+
 
 	static public void subscribeAdmin(final String realm, final String adminUserCode) {
 		final String SUBADMIN = "SUBADMIN";
@@ -229,20 +244,37 @@ public class VertxUtils {
 	}
 
 	static public void putSetString(final String realm, final String keyPrefix, final String key, final Set set) {
+		if (set == null) {
+			writeCachedJson(realm + ":" + keyPrefix + ":" + key,null);
+		} else {
 		String[] strArray = (String[]) FluentIterable.from(set).toArray(String.class);
 		putObject(realm, keyPrefix, key, strArray);
-
+		}
+	}
+	
+	static public void putStringArray(final String realm, final String keyPrefix, final String key, final String[] string) {
+		putObject(realm, keyPrefix, key, string);
+	}
+	
+	static public String[] getStringArray(final String realm, final String keyPrefix, final String key) {
+		String[] resultArray = getObject(realm, keyPrefix, key, String[].class);
+		if (resultArray == null) {
+			return null;
+		}
+		
+		return resultArray;
 	}
 
-	public static void putMessageProducer(String sessionState, MessageProducer<JsonObject> toSessionChannel) {
 
-		localMessageProducerCache.put(sessionState, toSessionChannel);
-
+	static public void putMap(final String realm, final String keyPrefix, final String key, final Map<String,Object> map) {
+		putObject(realm, keyPrefix, key, map);
 	}
-
-	public static MessageProducer<JsonObject> getMessageProducer(String sessionState) {
-
-		return localMessageProducerCache.get(sessionState);
-
+	
+	static public Map<String,Object> getMap(final String realm, final String keyPrefix, final String key) {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = getObject(realm, keyPrefix, key, type);
+		return myMap;
 	}
+	
+	
 }

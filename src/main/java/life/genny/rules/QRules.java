@@ -1,7 +1,9 @@
 
 package life.genny.rules;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -15,6 +17,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,19 +28,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.money.CurrencyUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
+import org.json.simple.JSONObject;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
@@ -45,7 +53,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
-import life.genny.cluster.IdGenerator;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -62,59 +69,29 @@ import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QDataMessage;
 import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
-import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
-import life.genny.qwanda.message.QDataGPSMessage;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Map;
-import java.util.UUID;
-import java.net.URLEncoder;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class QRules {
 
@@ -131,6 +108,8 @@ public class QRules {
 	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
+	
+	private long ruleStartMs = 0;
 
 	KnowledgeHelper drools;
 
@@ -377,6 +356,9 @@ public class QRules {
 		 */
 		if (isNull("USER") && be != null) {
 			set("USER", be);
+		} else {
+			// try again
+			
 		}
 
 		return be;
@@ -397,32 +379,35 @@ public class QRules {
 		}
 	}
 
-	public Boolean isNewUserProfileCompleted() {
+	/*
+	 * Checks if Mandatory fields in the given Question Groups are filled
+	 */
+	public Boolean isMandatoryFieldsEntered(final String targertCode, final String questionCode) {
 		Boolean status = false;
 		if (getUser() != null) {
-			status = QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), getUser().getCode(),
-					"QUE_NEW_USER_PROFILE_GRP", getToken());
+			status = QwandaUtils.isMandatoryFieldsEntered(getUser().getCode(), targertCode,
+					questionCode, getToken());
 		}
 
 		return status;
 	}
-	
-	//Check if Terms and Condition has been accepted by the user
-	public Boolean isTCAccepted() {
+
+
+	//Check if Mobile Verification has been completed
+	public Boolean isMobileVerificationCompleted() {
 		Boolean status = true;
-		String value = null;
+		Boolean value = null;
 		try {
-	         value = getUser().getValue("PRI_ACCEPTANCE_TERMS_CONDITIONS", null);
-		 }
-		 catch(Exception e) {
-		    e.printStackTrace();
-		  }
-		
-		if( value == null || value.equalsIgnoreCase("false")  ) {
+			value = getUser().getValue("PRI_MOBILE_VERIFICATION_COMPLETED", null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		if (value == null || !value) {
 			status = false;
 		}
-		
-	    return status;
+
+		return status;
 	}
 
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode,
@@ -595,27 +580,6 @@ public class QRules {
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
 					JsonUtils.toJson(link), getToken());
 
-			// JsonArray updatedLink = new JsonArray(QwandaUtils.apiGet(
-			// qwandaServiceUrl + "/qwanda/entityentitys/" + baseEntityCode + "/linkcodes/"
-			// + linkCode,
-			// getToken()));
-
-			// Creating a data msg
-			// JsonObject newLink = new JsonObject();
-			// newLink.put("msg_type", "DATA_MSG");
-			// newLink.put("data_type", "LINK_CHANGE");
-			// newLink.put("items", updatedLink);
-			// newLink.put("token", getToken() );
-			// println("-----------------------------------");
-			// println("Updated Link : "+newLink.toString());
-			// println("-----------------------------------");
-			// getEventBus().publish("cmds", newLink);
-			// clear the cache
-//			if (sourceCode.equals("GRP_NEW_ITEMS")) {
-//				clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-//				// Now fill it again!
-//				getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-//			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -739,11 +703,10 @@ public class QRules {
 		String attributeVal = null;
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
 			try {
-			if (ea.getAttributeCode().equals(attributeCode)) {
-				attributeVal = ea.getObjectAsString();
-			}
-			}
-			catch(Exception e) {	
+				if (ea.getAttributeCode().equals(attributeCode)) {
+					attributeVal = ea.getObjectAsString();
+				}
+			} catch (Exception e) {
 			}
 		}
 
@@ -1011,7 +974,7 @@ public class QRules {
 
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 					recipientArray, getToken());
-			this.getEventBus().publish("messages", message);
+			publish("messages", message);
 		} else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
@@ -1064,7 +1027,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendViewCmd(final String cmd_view, final String root) {
@@ -1076,7 +1039,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendPopupLayout(final String layoutCode, final String sublayoutPath, final String root) {
@@ -1090,7 +1053,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void sendSublayout(final String layoutCode, final String sublayoutPath) {
@@ -1119,7 +1082,7 @@ public class QRules {
 			cmdJobSublayoutJson.put("root", root);
 		}
 
-		this.getEventBus().publish("cmds", cmdJobSublayoutJson);
+		publish("cmds", cmdJobSublayoutJson);
 	}
 
 	public void showLoading(String text) {
@@ -1191,7 +1154,7 @@ public class QRules {
 	}
 
 	public void send(final String channel, final Object payload) {
-		this.getEventBus().send(channel, payload);
+		send(channel, payload);
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
@@ -1264,6 +1227,21 @@ public class QRules {
 	public void publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
+	}
+	
+	public void logoutAll() {
+	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
+	 	msg.setToken(getToken());
+	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
+	     String[]  recipientCodes = new String[1];
+	     recipientCodes[0] = getUser().getCode();
+	     String json = JsonUtils.toJson(msg);
+	     JsonObject jsonObj = new JsonObject(json);
+	     JsonArray jsonArr = new JsonArray();
+	     jsonArr.add(getUser().getCode());
+		jsonObj.put("recipientCodes", jsonArr);
+	
+		publish("data", jsonObj);
 	}
 
 	public void publishData(final QDataAnswerMessage msg) {
@@ -1391,25 +1369,6 @@ public class QRules {
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
-		// Link link = cmdMsg.getLink();
-		//
-		// JsonArray links = new JsonArray();
-		// JsonObject linkJson = new JsonObject();
-		// links.add(linkJson);
-		// linkJson.put("sourceCode", link.getSourceCode());
-		// linkJson.put("targetCode", link.getTargetCode());
-		// linkJson.put("attributeCode", link.getAttributeCode());
-		// linkJson.put("linkValue", link.getLinkValue());
-		// linkJson.put("weight", link.getWeight());
-		//
-		// JsonObject newLink = new JsonObject();
-		// newLink.put("msg_type", "DATA_MSG");
-		// newLink.put("data_type", "EVT_LINK_CHANGE");
-		// newLink.put("recipientCodeArray", recipients);
-		// newLink.put("items", links);
-		// newLink.put("token", getToken());
-		// // getEventBus().publish("cmds", newLink);
-		// publish("data", newLink.toString());
 		publish("data", json);
 	}
 
@@ -1420,21 +1379,23 @@ public class QRules {
 	}
 
 	public void publish(String channel, final Object payload) {
+		// Actually Send  ....
 		switch (channel) {
 		case "event":
-			Producer.getToEvents().write(payload);
+		case "events":
+			Producer.getToEvents().send(payload).end();;
 			break;
 		case "data":
-			Producer.getToData().write(payload);
+			Producer.getToWebData().write(payload).end();;
 			break;
 		case "cmds":
-			Producer.getToCmds().write(payload);
+			Producer.getToWebCmds().write(payload).end();
 			break;
 		case "services":
-			Producer.getToServices().write(payload);
+			Producer.getToServices().send(payload).end();
 			break;
 		case "messages":
-			Producer.getToMessages().write(payload);
+			Producer.getToMessages().send(payload).end();
 			break;
 		default:
 			println("Channel does not exist: " + channel);
@@ -1485,6 +1446,31 @@ public class QRules {
 		}
 
 		return null;
+	}
+
+	/*
+	 * Get all childrens for the given source code with the linkcode and linkValue
+	 */
+	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+		List<BaseEntity> childList = new ArrayList<BaseEntity>();
+		try {
+			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
+					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
+			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			if (linkArray.length > 0) {
+				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
+				for (Link link : arrayList) {
+					// RulesUtils.println("The Child BaseEnity code is :: " + link.getTargetCode());
+					childList.add(RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
+							getToken(), link.getTargetCode(), false));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return childList;
 	}
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
@@ -1562,7 +1548,13 @@ public class QRules {
 
 		QDataAskMessage msg = null;
 		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-		publishData(msg);
+		if (msg != null) {
+			publishData(msg); 
+		}
+		else {
+			log.error("Questions Msg is null "+sourceCode + "/asks2/"
+					+ questionCode + "/" + targetCode);
+		}
 	}
 
 	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
@@ -1629,6 +1621,22 @@ public class QRules {
 		}
 
 	}
+	
+	public boolean sendSelections(final String selectionRootCode, final String linkCode, final String stakeholderCode,final Integer maxItems) {
+
+		JsonObject selectionLists;
+		try {
+			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
+					+ selectionRootCode + "/linkcodes/" + linkCode + "/attributes/"+stakeholderCode+"?pageStart=0&pageSize=" + maxItems, getToken()));
+			selectionLists.put("token", getToken());
+			publish("cmds", selectionLists);
+			return true;
+		} catch (IOException e) {
+			log.error("Unable to fetch selections");
+			return false;
+		}
+
+	}
 
 	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode,
 			final String linkValue, final Integer maxItems) {
@@ -1657,16 +1665,22 @@ public class QRules {
 
 			RulesUtils.header(drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ " "+this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
 		}
+		ruleStartMs = System.nanoTime();
 	}
 
 	public void footer() {
+		long endTime = System.nanoTime();
+		double difference = (endTime - ruleStartMs) / 1e6;  // get ms
+		
 		try {
-			RulesUtils.footer(drools.getRule().getName() + " - "
+			RulesUtils.footer(difference+" ms :"+drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
+					+ " " + this.decodedTokenMap.get("preferred_username")   // This is faster than calling getUser()
 					+ showStates());
 		} catch (NullPointerException e) {
 			println("Error in rules: ", "ANSI_RED");
@@ -2076,9 +2090,16 @@ public class QRules {
 	/**
 	 * @param answers
 	 */
-	public void saveAnswers(List<Answer> answers) {
+	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
+		if (!changeEvent) {
+		for (Answer answer : answers)
+			{
+				answer.setChangeEvent(false);
+			}
+		}
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
+		
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
 		updateCachedBaseEntity(answers);
@@ -2091,6 +2112,13 @@ public class QRules {
 		} catch (IOException e) {
 			log.error("Socket error trying to post answer");
 		}
+	}
+	
+	/**
+	 * @param answers
+	 */
+	public void saveAnswers(List<Answer> answers) {
+		saveAnswers(answers,true);
 	}
 
 	public void startWorkflow(final String id) {
@@ -2433,7 +2461,6 @@ public class QRules {
 		return beg;
 	}
 
-
 	public Money calcOwnerFee(Money input) {
 
 		CurrencyUnit DEFAULT_CURRENCY_TYPE = input.getCurrency();
@@ -2704,48 +2731,48 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, doCache);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (((user.is("PRI_DRIVER")) )) {
+		if (((user.is("PRI_DRIVER")))) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
 					println("GRP_DRAFTS & GRP_BIN has been added to remove list");
-				 }
+				}
 
-			 }
+			}
 			root.removeAll(toRemove);
 			println("GRP_DRAFTS & GRP_BIN have been removed from root");
-	    }
+		}
 		publishCmd(root, "GRP_ROOT", "LNK_CORE");
 		println(root);
 
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
-		println("User is Admin"+hasRole("admin"));
-		//Checking for driver role
-		if( (user.is("PRI_DRIVER")) ) {
+		println("User is Admin" + hasRole("admin"));
+		// Checking for driver role
+		if ((user.is("PRI_DRIVER"))) {
 			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER") ) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 					reportsHeaderToRemove.add(be);
-			    }
+				}
 			}
 		}
-		//Checking for owner role
-		else if( (user.is("PRI_OWNER")) ) {
+		// Checking for owner role
+		else if ((user.is("PRI_OWNER"))) {
 			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER") ) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
 					reportsHeaderToRemove.add(be);
-			    }
+				}
 			}
 		}
-		//checking for admin role
-		if(!(hasRole("admin"))){
+		// checking for admin role
+		if (!(hasRole("admin"))) {
 			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN") ) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
 					reportsHeaderToRemove.add(be);
-			    }
+				}
 			}
 		}
-		//Removing reports not related to the user based on their role
+		// Removing reports not related to the user based on their role
 		reportsHeader.removeAll(reportsHeaderToRemove);
 		println("Unrelated reports have been removed ");
 		publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE");
@@ -2753,10 +2780,11 @@ public class QRules {
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
 		publishCmd(admin, "GRP_ADMIN", "LNK_CORE");
 
-	/*	if(hasRole("admin")){
-		  List<BaseEntity> reports = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		  publishCmd(reports, "GRP_REPORTS", "LNK_CORE");
-		} */
+		/*
+		 * if(hasRole("admin")){ List<BaseEntity> reports =
+		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
+		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
+		 */
 		if (!user.is("PRI_DRIVER")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, doCache);
@@ -2783,11 +2811,30 @@ public class QRules {
 					begs.addAll(driverbegs);
 					VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
 				} else {
-					if (user.is("PRI_DRIVER")) {
+					if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
 						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-								500, false, user.getCode());
-						begs.addAll(driverbegs);
-						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+								500, false, user.getCode());	
+						for(BaseEntity beg : driverbegs) {
+							/*  Getting begs related to this driver only  */
+							String driverCode = beg.getValue("STT_IN_TRANSIT", null);
+							 if (driverCode!=null && driverCode.equals(user.getCode())) {
+								VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+									begs.add(beg);
+						       }else {
+						    	     /* Another check to handle loads which misses STT_IN_TRANSIT attribute in Production due to bug
+						    	      *   (It was not saving STT_IN_TRANSIT attribute while saving in bulk) */
+						    	       BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
+						    	       if(driver!=null && driver.getCode().equals(user.getCode())) {
+						    	    	         VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+											begs.add(beg);
+						    	       }
+						    	      
+						       }
+							 
+				        }
+						
+//						begs.addAll(driverbegs);
+//						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
 					}
 				}
 
@@ -2822,7 +2869,7 @@ public class QRules {
 					} else {
 						filteredKids.add(begKid);
 					}
-					println(bucket.getCode() + ":" + begKid.getCode());
+					//println(bucket.getCode() + ":" + begKid.getCode());
 				}
 				publishCmd(filteredKids, beg.getCode(), "LNK_BEG");
 			}
@@ -2892,9 +2939,66 @@ public class QRules {
 	public void makePayment(QDataAnswerMessage m) {
 		/* Save Payment-related answers as user/BEG attributes */
 		String userCode = getUser().getCode();
-		BaseEntity userBe = getBaseEntityByCode(userCode);
-		String begCode = PaymentUtils.processPaymentAnswers(getQwandaServiceUrl(), m, getToken());
+		//String begCode = PaymentUtils.processPaymentAnswers(getQwandaServiceUrl(), m, getToken());
+		
+		String begCode = null;
+		Answer[] dataAnswers = m.getItems();
+		for (Answer answer : dataAnswers) {
+
+			String targetCode = answer.getTargetCode();
+			String sourceCode = answer.getSourceCode();
+			String attributeCode = answer.getAttributeCode();
+			String value = answer.getValue();
+			
+			begCode = targetCode;
+
+			log.debug("Payments value ::" + value + "attribute code ::" + attributeCode);
+			System.out.println("Payments value ::" + value + "attribute code ::" + attributeCode);
+			System.out.println("Beg code ::"+begCode);
+
+			/* if this answer is actually an Payment_method, this rule will be triggered */
+			if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
+				
+				JsonObject paymentValues = new JsonObject(value);
+				
+				/*{ ipAddress, deviceID, accountID }*/
+				String ipAddress = paymentValues.getString("ipAddress");
+				String accountId = paymentValues.getString("accountID");
+				String deviceId = paymentValues.getString("deviceID");
+				
+				List<Answer> userSpecificAnswers = new ArrayList<>();
+				
+				
+				if(ipAddress != null){
+					Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
+					userSpecificAnswers.add(ipAnswer);
+					saveAnswer(ipAnswer);
+					//saveAnswer(qwandaServiceUrl, ipAnswer, tokenString);
+				}
+				
+				if(accountId != null) {
+					Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
+					userSpecificAnswers.add(accountIdAnswer);
+					saveAnswer(accountIdAnswer);
+					//saveAnswer(qwandaServiceUrl, accountIdAnswer, tokenString);
+				}
+				
+				if(deviceId != null) {
+					Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
+					userSpecificAnswers.add(deviceIdAnswer);
+					saveAnswer(deviceIdAnswer);
+					//saveAnswer(qwandaServiceUrl, deviceIdAnswer, tokenString);	
+				}	
+				
+				/* bulk answer not working currently, so using individual answers */
+				//saveAnswers(userSpecificAnswers);
+			}
+		}
+		
+		
+		
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+		BaseEntity userBe = getUser();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		if (begCode != null && assemblyId != null) {
@@ -2906,15 +3010,17 @@ public class QRules {
 
 				/* Make payment */
 				showLoading("Processing payment...");
-				Boolean isMakePaymentSucceeded = PaymentUtils.makePayment(getQwandaServiceUrl(), offerCode, begCode,
-						assemblyAuthKey, getToken());
-				println("isMakePaymentSucceeded ::" + isMakePaymentSucceeded);
+				
+				BaseEntity offer = getBaseEntityByCode(offerCode);
+				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
+				JSONObject makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
+				println("isMakePaymentSucceeded ::" + makePaymentResponseObj);
 
 				/* GET offer Base Entity */
-				BaseEntity offer = getBaseEntityByCode(offerCode);
+				
 				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
 
-				if (!isMakePaymentSucceeded) {
+				if (! ((Boolean)makePaymentResponseObj.get("isSuccess"))) {
 					/* TOAST :: FAIL */
 					println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -2929,7 +3035,7 @@ public class QRules {
 					drools.setFocus("SendLayoutsAndData");
 				}
 
-				if (isMakePaymentSucceeded) {
+				if ((Boolean)makePaymentResponseObj.get("isSuccess")) {
 					/* GET attributes of OFFER BE */
 					Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
 					Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
@@ -2939,42 +3045,36 @@ public class QRules {
 					Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
 					Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
 
-					/* Update BEG's prices with offer's prices */
-					/*
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_PRICE",
-					 * QwandaUtils.getMoneyString(offerPrice)); updateBaseEntityAttribute(begCode,
-					 * begCode, "PRI_OWNER_PRICE_EXC_GST",
-					 * QwandaUtils.getMoneyString(ownerPriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_OWNER_PRICE_INC_GST",
-					 * QwandaUtils.getMoneyString(ownerPriceIncGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST",
-					 * QwandaUtils.getMoneyString(driverPriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST",
-					 * QwandaUtils.getMoneyString(driverPriceIncGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_EXC_GST",
-					 * QwandaUtils.getMoneyString(feePriceExcGST));
-					 * updateBaseEntityAttribute(begCode, begCode, "PRI_FEE_INC_GST",
-					 * QwandaUtils.getMoneyString(feePriceIncGST));
-					 */
 					List<Answer> answers = new ArrayList<Answer>();
-					answers.add(new Answer(begCode, begCode, "PRI_PRICE", QwandaUtils.getMoneyString(offerPrice)));
+					answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
 					answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST",
-							QwandaUtils.getMoneyString(ownerPriceExcGST)));
+							JsonUtils.toJson(ownerPriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST",
-							QwandaUtils.getMoneyString(ownerPriceIncGST)));
+							JsonUtils.toJson(ownerPriceIncGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST",
-							QwandaUtils.getMoneyString(driverPriceExcGST)));
+							JsonUtils.toJson(driverPriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST",
-							QwandaUtils.getMoneyString(driverPriceIncGST)));
+							JsonUtils.toJson(driverPriceIncGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST",
-							QwandaUtils.getMoneyString(feePriceExcGST)));
+							JsonUtils.toJson(feePriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
-							QwandaUtils.getMoneyString(feePriceIncGST)));
-					saveAnswers(answers);
+							JsonUtils.toJson(feePriceIncGST)));
+					
+					
+					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
+
+					//fetch the job to ensure the cache has caught up
+				/*	BaseEntity begBe = null;
+					try {
+						 begBe = QwandaUtils.getBaseEntityByCode(begCode, getToken());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}  */
 
 					/* Update BEG to have DRIVER_CODE as an attribute */
-					Answer beAnswer = new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode);
-					saveAnswer(beAnswer);
+					answers.add( new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					saveAnswers(answers);
+
 
 					/* TOAST :: SUCCESS */
 					println("Sending success toast since make payment succeeded");
@@ -2982,6 +3082,8 @@ public class QRules {
 					contextMap.put("DRIVER", quoterCode);
 					contextMap.put("JOB", begCode);
 					contextMap.put("QUOTER", quoterCode);
+					contextMap.put("OFFER", offer.getCode());
+					
 					String[] recipientArr = { userCode };
 
 					/* TOAST :: PAYMENT SUCCESS */
@@ -2994,6 +3096,8 @@ public class QRules {
 					HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
 					contextMapForDriver.put("JOB", begCode);
 					contextMapForDriver.put("OWNER", userCode);
+					contextMapForDriver.put("OFFER", offer.getCode());
+					
 					String[] recipientArrForDriver = { quoterCode };
 
 					/* Sending messages to DRIVER - Email and sms enabled */
@@ -3008,9 +3112,19 @@ public class QRules {
 
 					/* Allocate QUOTER as Driver */
 					updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-					/* Create link - CREATOR for the offer */
-					createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", "CREATOR", 1.0);
+					/* Update link between BEG and Accepted OFFER to weight= 100 */
+					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 100.0);
+					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+					// get all offers
+					List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
+					println("All the Offers for the load " + begCode + " are: " + offers.toString());
+					for (BaseEntity be : offers) {
+						if (!(be.getCode().equals(offerCode))) {
+							println("The BE is : " + be.getCode());
+							/* Update PRI_NEXT_ACTION to Disabled */
+							updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+						}
+					}
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3085,6 +3199,17 @@ public class QRules {
 					/* sending cmd BUCKETVIEW */
 					drools.setFocus("SendLayoutsAndData");
 
+				/*	List<BaseEntity> listBe = new ArrayList<>();
+					listBe.add(getUser());
+					listBe.add(getBaseEntityByCode(quoterCode));
+					listBe.add(getBaseEntityByCode(offerCode));
+					listBe.add(getBaseEntityByCode(begCode));
+
+					publishCmd(listBe, "GRP_ROOT", "LNK_CORE");
+					sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+					setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );  */
+
+
 				}
 				setState("PAYMENT_DONE");
 
@@ -3093,18 +3218,28 @@ public class QRules {
 	}
 
 	public void updateGPS(QDataGPSMessage m) {
-		println("###### GPS: " + m);
+
 		GPS driverPosition = m.getItems()[0];
 		Double driverLatitude = driverPosition.getLatitude();
 		Double driverLongitude = driverPosition.getLongitude();
 
 		if (driverLatitude != null && driverLongitude != null) {
 
+			if (getUser()==null) {
+				String username = (String) getDecodedTokenMap().get("preferred_username");
+				String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
+
+				log.error("Code is not in Database "+code);
+				return;
+			}
 			try {
+				
 				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
 						getUser().getCode());
-				RulesUtils.println(jobsInTransit.toString());
-
+				if (!jobsInTransit.isEmpty()) {
+					println("###### GPS: for user "+getUser().getCode()+":" + m);
+					println(jobsInTransit.toString());
+				}
 				for (BaseEntity be : jobsInTransit) {
 
 					Double deliveryLatitude = be.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);
@@ -3117,11 +3252,11 @@ public class QRules {
 					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
 					percentage = percentage < 0 ? 0 : percentage;
 
-					/* Update progress of the BEG */
-					updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString());
-
+					
 					/* update position of the beg */
 					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString()));
+					
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude + ""));
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude + ""));
 					saveAnswers(answers);
@@ -3469,7 +3604,7 @@ public class QRules {
 			msg.getData().setCode(ea.getAttributeCode());
 			msg.getData().setId(-1L);
 			msg.setBe(be);
-			this.getEventBus().publish("events", JsonUtils.toJson(msg));
+			publish("events", JsonUtils.toJson(msg));
 		}
 	}
 
@@ -3509,9 +3644,9 @@ public class QRules {
 		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 		 */
 
-		   BaseEntity updatedJob = this.getBaseEntityByCode(job.getCode());
-		   Long jobId = updatedJob.getId();
-		   answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId+""));
+		BaseEntity updatedJob = this.getBaseEntityByCode(job.getCode());
+		Long jobId = updatedJob.getId();
+		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
@@ -3525,6 +3660,8 @@ public class QRules {
 		BaseEntity newJobDetails = getBaseEntityByCode(jobCode);
 		println("The newly submitted Job details     ::     " + newJobDetails.toString());
 		publishData(newJobDetails, recipientCodes);
+		/* publishing to Owner */
+		publishBE(newJobDetails);
 
 		/* Moving the BEG */
 		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE");
@@ -3549,65 +3686,38 @@ public class QRules {
 		/* SEND LOAD BE */
 		/* Try sending different types of links to the frontend to get it to display */
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+		/* publishing to Owner */
+		publishBE(getBaseEntityByCode(loadCode));
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
-		// JsonArray links = new JsonArray();
-		// JsonObject linkJson = new JsonObject();
-		// links.add(linkJson);
-		// linkJson.put("sourceCode", jobCode);
-		// linkJson.put("targetCode", load.getCode());
-		// linkJson.put("attributeCode","LNK_BEG");
-		// linkJson.put("linkValue", getUser().getCode());
-		// linkJson.put("weight", 1.0);
-		//
-		// JsonArray recipients = new JsonArray();
-		// for (String recipientCode : recipientCodes) {
-		// recipients.add(recipientCode);
-		// }
-		//
-		// JsonObject newLink = new JsonObject();
-		// newLink.put("msg_type", "DATA_MSG");
-		// newLink.put("data_type", "EVT_LINK_CHANGE");
-		// newLink.put("recipientCodeArray", recipients);
-		// newLink.put("items", links);
-		// newLink.put("token", getToken());
-		// // getEventBus().publish("cmds", newLink);
-		// publish("data", newLink);
-
-		/* SEND OWNER BE */
-		// publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-
-		/* SEND JOB BE */
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+		/* publishing to Owner */
+		publishBE(getBaseEntityByCode(jobCode));
 
-//		// clear the cache
-//		clearBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
-//		// Now fill it again!
-//		getBaseEntitysByParentAndLinkCode("GRP_NEW_ITEMS", "LNK_CORE", 0, 500);
+			
+		if(!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+			
+			/* Sending Messages */
+			
+			println("new job");
 
-		/* Get the parent GRP of GRP_NEW_ITEMS */
-		// BaseEntity parentGrp = getParent("GRP_NEW_ITEMS", "LNK_CORE");
-		/* SEND GRP_NEW_ITEMS BE */
-		/*
-		 * publishBaseEntityByCode("GRP_NEW_ITEMS",
-		 * parentGrp.getCode(),"LNK_CORE",recipients);
-		 */
+			HashMap<String, String> contextMap = new HashMap<String, String>();
+			contextMap.put("JOB", jobCode);
+			contextMap.put("OWNER", getUser().getCode());
 
-		/* Sending Messages */
+			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
-		HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("JOB", jobCode);
-		contextMap.put("OWNER", getUser().getCode());
+			/* Sending toast message to owner frontend */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
-		println("The String Array is ::" + Arrays.toString(recipientCodes));
-
-		/* Sending toast message to owner frontend */
-		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-		/* Sending message to BEG OWNER */
-		sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			/* Sending message to BEG OWNER */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			
+		}
+		
+		
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -3693,14 +3803,13 @@ public class QRules {
 
 	}
 
-
 	public String getZonedCurrentLocalDateTime() {
 
 		LocalDateTime ldt = LocalDateTime.now();
 		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault());
 		String iso8601DateString = zdt.toString();
 
-		System.out.println("datetime ::"+iso8601DateString);
+		System.out.println("datetime ::" + iso8601DateString);
 
 		return iso8601DateString;
 
@@ -3709,66 +3818,66 @@ public class QRules {
 	public void sendCmdView(final String viewType, final String parentCode) {
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", viewType);
-	    	 JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-	    	 cmdViewJson.put("root", parentCode);
-	    	 cmdViewJson.put("token", getToken());
-	    	 publish("cmds", cmdViewJson);
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", parentCode);
+		cmdViewJson.put("token", getToken());
+		publish("cmds", cmdViewJson);
 
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
-		//JsonArray columnsArray = new JsonArray();
+		// JsonArray columnsArray = new JsonArray();
 
-   	   JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-   	   cmdViewJson.put("root", parentCode);
-   	   cmdViewJson.put("token", getToken());
-       cmdViewJson.put("columns", columnHeaders );
-   	   publish("cmds", cmdViewJson);
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", parentCode);
+		cmdViewJson.put("token", getToken());
+		cmdViewJson.put("columns", columnHeaders);
+		publish("cmds", cmdViewJson);
 	}
 
 	/* Search the text value in all jobs */
 	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
-    	    println("Get All Users - The search BE is  :: "+searchBeCode );
-        BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users"); //createBaseEntityByCode2(searchBeCode, "Get All Users");
-    	      JsonArray columnsArray = new JsonArray();
-    	      JsonObject columns = new JsonObject();
-    	   // if( getBaseEntityByCode(searchBeCode) == null ) {
-		  // searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
-    	       AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL","Image");
-    	       JsonObject image = new JsonObject();
-    	       image.put("code", "PRI_IMAGE_URL");
-    	       columnsArray.add(image);
-           AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME","User Name");
-           JsonObject userName = new JsonObject();
-           userName.put("code", "PRI_USERNAME");
-	       columnsArray.add(userName);
-		   AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME","First Name");
-		   JsonObject firstName = new JsonObject();
-		   firstName.put("code", "PRI_FIRSTNAME");
-	       columnsArray.add(firstName);
-		   AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME","Last Name");
-		   JsonObject lastName = new JsonObject();
-		   lastName.put("code", "PRI_LASTNAME");
-	       columnsArray.add(lastName);
-		   AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE","Mobile Number");
-		   JsonObject mobile = new JsonObject();
-		   mobile.put("code", "PRI_MOBILE");
-	       columnsArray.add(mobile);
-		   AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL","Email");
-		   JsonObject email = new JsonObject();
-		   email.put("code", "PRI_EMAIL");
-	       columnsArray.add(email);
-		   println("The columnsArray is ::"+columnsArray);
-		  //Sort Attribute
-		  AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME","Sort By FirstName");
+		println("Get All Users - The search BE is  :: " + searchBeCode);
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users"); // createBaseEntityByCode2(searchBeCode,
+																				// "Get All Users");
+		JsonArray columnsArray = new JsonArray();
+		JsonObject columns = new JsonObject();
+		// if( getBaseEntityByCode(searchBeCode) == null ) {
+		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
+		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
+		JsonObject image = new JsonObject();
+		image.put("code", "PRI_IMAGE_URL");
+		columnsArray.add(image);
+		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
+		JsonObject userName = new JsonObject();
+		userName.put("code", "PRI_USERNAME");
+		columnsArray.add(userName);
+		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
+		JsonObject firstName = new JsonObject();
+		firstName.put("code", "PRI_FIRSTNAME");
+		columnsArray.add(firstName);
+		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
+		JsonObject lastName = new JsonObject();
+		lastName.put("code", "PRI_LASTNAME");
+		columnsArray.add(lastName);
+		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
+		JsonObject mobile = new JsonObject();
+		mobile.put("code", "PRI_MOBILE");
+		columnsArray.add(mobile);
+		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
+		JsonObject email = new JsonObject();
+		email.put("code", "PRI_EMAIL");
+		columnsArray.add(email);
+		println("The columnsArray is ::" + columnsArray);
+		// Sort Attribute
+		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
 
-		  //Pagination Attribute
-		  AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		  AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE","PageSize");
+		// Pagination Attribute
+		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
+		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
 
-
-		  try {
+		try {
 			searchBE.addAttribute(attributeTextImage, 10.0);
 			searchBE.addAttribute(attributeTextUserName, 9.0);
 			searchBE.addAttribute(attributeTextFirstName, 8.0);
@@ -3778,140 +3887,129 @@ public class QRules {
 			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		    } catch (BadDataException e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
-    	   // }else {
-    	    //   	searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-    	    //}
-    	    println("The search BE is  :: "+searchBE);
-    	    String jsonSearchBE = JsonUtils.toJson(searchBE);
-	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-	    System.out.println("The result   ::  "+result);
-	    publishData( new JsonObject(result) );
-	    sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray );
-	   // sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-	    //publishCmd(result, grpCode, "LNK_CORE");
+		// }else {
+		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
+		// }
+		println("The search BE is  :: " + searchBE);
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		System.out.println("The result   ::  " + result);
+		publishData(new JsonObject(result));
+		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
+		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
+		// publishCmd(result, grpCode, "LNK_CORE");
 
 	}
 
-	/* Search the text value in all jobs */
+	/* Get All the jobs */
 	public void sendAllLoads(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get all Loads - The search BE is  :: "+searchBeCode );
-        BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Loads");
-        //BaseEntity searchBE;
-        JsonArray columnsArray = new JsonArray();
-	      JsonObject columns = new JsonObject();
-       // if( getBaseEntityByCode(searchBeCode) == null ) {
-          //	searchBE = createBaseEntityByCode2(searchBeCode, "Get All Loads");
-    	        // AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL","Image");
-            AttributeText attributeTextName = new AttributeText("COL_PRI_NAME","Load Name");
-            JsonObject name = new JsonObject();
-            name.put("code", "PRI_NAME");
- 	        columnsArray.add(name);
-		    AttributeText attributeTextDescription = new AttributeText("COL_PRI_DESCRIPTION","Description");
-		    JsonObject description = new JsonObject();
-		    description.put("code", "PRI_DESCRIPTION");
- 	        columnsArray.add(description);
-		    AttributeText attributeTextPickupAddress = new AttributeText("COL_PRI_PICKUP_ADDRESS_FULL","Pickup Address");
-		    JsonObject pickUpAddress = new JsonObject();
-		    pickUpAddress.put("code", "PRI_PICKUP_ADDRESS_FULL");
- 	        columnsArray.add(pickUpAddress);
-		    AttributeText attributeTextDropOffAddress = new AttributeText("COL_PRI_DROPOFF_ADDRESS_FULL","DropOff Address");
-		    JsonObject dropOffAddress = new JsonObject();
-		    dropOffAddress.put("code", "PRI_DROPOFF_ADDRESS_FULL");
- 	        columnsArray.add(dropOffAddress);
-		    AttributeMoney attributeOwnerPrice = new AttributeMoney("COL_PRI_OWNER_PRICE_INC_GST","Owner Price");
-		    JsonObject ownerPrice = new JsonObject();
-		    ownerPrice.put("code", "PRI_OWNER_PRICE_INC_GST");
- 	        columnsArray.add(ownerPrice);
-		    AttributeMoney attributeDriverPrice = new AttributeMoney("COL_PRI_DRIVER_PRICE_EXC_GST","Driver Price");
-		    JsonObject driverPrice = new JsonObject();
-		    driverPrice.put("code", "PRI_DRIVER_PRICE_EXC_GST");
- 	        columnsArray.add(driverPrice);
+		// println("Get all Loads - The search BE is :: "+searchBeCode );
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Loads");
+		// BaseEntity searchBE;
+		JsonArray columnsArray = new JsonArray();
+		JsonObject columns = new JsonObject();
+		// Creating attributes
+		AttributeText attributeBECode = new AttributeText("PRI_CODE", "LIKE");
+		JsonObject beCode = new JsonObject();
+		beCode.put("code", "PRI_CODE");
+		AttributeText attributeTextName = new AttributeText("COL_PRI_NAME", "Load Name");
+		JsonObject name = new JsonObject();
+		name.put("code", "PRI_NAME");
+		columnsArray.add(name);
+		AttributeText attributeTextJobId = new AttributeText("COL_PRI_JOB_ID", "Job ID");
+		JsonObject description = new JsonObject();
+		description.put("code", "PRI_JOB_ID");
+		columnsArray.add(description);
+		AttributeText attributeTextPickupAddress = new AttributeText("COL_PRI_PICKUP_ADDRESS_FULL", "Pickup Address");
+		JsonObject pickUpAddress = new JsonObject();
+		pickUpAddress.put("code", "PRI_PICKUP_ADDRESS_FULL");
+		columnsArray.add(pickUpAddress);
+		AttributeMoney attributeDescription = new AttributeMoney("COL_PRI_DESCRIPTION", "Description");
+		JsonObject ownerPrice = new JsonObject();
+		ownerPrice.put("code", "PRI_DESCRIPTION");
+		columnsArray.add(ownerPrice);
 
-		   //Sort Attribute
-		   //AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME","Sort By FirstName");
+		// Sort Attribute
+		AttributeText attributeTextSortName = new AttributeText("SRT_PRI_NAME", "Sort By Name");
 
-		   //Pagination Attribute
-		    AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		    AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE","PageSize");
+		// Pagination Attribute
+		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
+		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
 
-		   try {
-			   //searchBE.addAttribute(attributeTextImage, 10.0);
-			   searchBE.addAttribute(attributeTextName, 9.0);
-			   searchBE.addAttribute(attributeTextDescription, 8.0);
-			   searchBE.addAttribute(attributeTextPickupAddress, 7.0);
-			   searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
-			   searchBE.addAttribute(attributeOwnerPrice, 5.0);
-			   searchBE.addAttribute(attributeDriverPrice, 4.0);
-			   //searchBE.addAttribute(attributeTextSortFirstName, 3.0, "ASC");
-			   searchBE.addAttribute(attributePageStart, 2.0, "0");
-			   searchBE.addAttribute(attributePageSize, 1.0, "20");
+		try {
+			searchBE.addAttribute(attributeBECode, 10.0, "BEG_%%");
+			searchBE.addAttribute(attributeTextName, 9.0);
+			searchBE.addAttribute(attributeTextJobId, 8.0);
+			searchBE.addAttribute(attributeTextPickupAddress, 7.0);
+			// searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
+			searchBE.addAttribute(attributeDescription, 5.0);
+			// searchBE.addAttribute(attributeDriverPrice, 4.0);
+			searchBE.addAttribute(attributeTextSortName, 3.0, "ASC");
+			searchBE.addAttribute(attributePageStart, 2.0, "0");
+			searchBE.addAttribute(attributePageSize, 1.0, "500");
 
-		   	} catch (BadDataException e) {
-		   	   // TODO Auto-generated catch block
-		   	   e.printStackTrace();
-		   	}
-
-     //  }
-     //  else {
-     //     	searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-     //   }
-  	    println("The search BE is  :: "+searchBE);
-        String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-		System.out.println("The result   ::  "+loadsList);
-		publishData( new JsonObject(loadsList) );
-		//publishCmd(result, grpCode, "LNK_CORE");
-		//sendCmdView("TABLE_VIEW", "SBE_GET_ALL_LOADS" );
-		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray );
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// println("The search BE is :: "+JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		// System.out.println("The result :: "+loadsList);
+		publishData(new JsonObject(loadsList));
+		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
 	}
 
-	//Search and send all the Drivers
-     public void sendAllDrivers(String searchBeCode) throws ClientProtocolException, IOException {
-    	    println("Get All Drivers - The search BE is  :: "+searchBeCode );
-        BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); //createBaseEntityByCode2(searchBeCode, "Get All Users");
-    	      JsonArray columnsArray = new JsonArray();
-    	      JsonObject columns = new JsonObject();
-    	   // if( getBaseEntityByCode(searchBeCode) == null ) {
-		  // searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
-    	       AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL","Image");
-    	       JsonObject image = new JsonObject();
-    	       image.put("code", "PRI_IMAGE_URL");
-    	       columnsArray.add(image);
-           AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME","User Name");
-           JsonObject userName = new JsonObject();
-           userName.put("code", "PRI_USERNAME");
-	       columnsArray.add(userName);
-		   AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME","First Name");
-		   JsonObject firstName = new JsonObject();
-		   firstName.put("code", "PRI_FIRSTNAME");
-	       columnsArray.add(firstName);
-		   AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME","Last Name");
-		   JsonObject lastName = new JsonObject();
-		   lastName.put("code", "PRI_LASTNAME");
-	       columnsArray.add(lastName);
-		   AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE","Mobile Number");
-		   JsonObject mobile = new JsonObject();
-		   mobile.put("code", "PRI_MOBILE");
-	       columnsArray.add(mobile);
-		   AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL","Email");
-		   JsonObject email = new JsonObject();
-		   email.put("code", "PRI_EMAIL");
-	       columnsArray.add(email);
-		   println("The columnsArray is ::"+columnsArray);
-		  //Sort Attribute
-		  AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME","Sort By FirstName");
-		  AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_DRIVER", "=");
-		  //Pagination Attribute
-		  AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		  AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE","PageSize");
+	// Search and send all the Drivers
+	public void sendAllDrivers(String searchBeCode) throws ClientProtocolException, IOException {
+		println("Get All Drivers - The search BE is  :: " + searchBeCode);
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); // createBaseEntityByCode2(searchBeCode,
+																				// "Get All Users");
+		
+		JsonArray columnsArray = new JsonArray();
+		JsonObject columns = new JsonObject();
+		// if( getBaseEntityByCode(searchBeCode) == null ) {
+		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
+		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
+		JsonObject image = new JsonObject();
+		image.put("code", "PRI_IMAGE_URL");
+		columnsArray.add(image);
+		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
+		JsonObject userName = new JsonObject();
+		userName.put("code", "PRI_USERNAME");
+		columnsArray.add(userName);
+		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
+		JsonObject firstName = new JsonObject();
+		firstName.put("code", "PRI_FIRSTNAME");
+		columnsArray.add(firstName);
+		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
+		JsonObject lastName = new JsonObject();
+		lastName.put("code", "PRI_LASTNAME");
+		columnsArray.add(lastName);
+		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
+		JsonObject mobile = new JsonObject();
+		mobile.put("code", "PRI_MOBILE");
+		columnsArray.add(mobile);
+		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
+		JsonObject email = new JsonObject();
+		email.put("code", "PRI_EMAIL");
+		columnsArray.add(email);
+		println("The columnsArray is ::" + columnsArray);
+		// Sort Attribute
+		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
+		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_DRIVER", "=");
+		// Pagination Attribute
+		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
+		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
 
-
-		  try {
+		try {
 			searchBE.addAttribute(attributeTextImage, 10.0);
 			searchBE.addAttribute(attributeTextUserName, 9.0);
 			searchBE.addAttribute(attributeTextFirstName, 8.0);
@@ -3919,68 +4017,68 @@ public class QRules {
 			searchBE.addAttribute(attributeTextMobile, 6.0);
 			searchBE.addAttribute(attributeTextEmail, 5.0);
 			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
-			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE") ;
+			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		    } catch (BadDataException e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
-    	   // }else {
-    	    //   	searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-    	    //}
-    	    println("The search BE is  :: "+searchBE);
-    	    String jsonSearchBE = JsonUtils.toJson(searchBE);
-	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-	    System.out.println("The result   ::  "+result);
-	    publishData( new JsonObject(result) );
-	    sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray );
-	   // sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-	    //publishCmd(result, grpCode, "LNK_CORE");
+		// }else {
+		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
+		// }
+		//println("The search BE is  :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		System.out.println("The result   ::  " + result);
+		publishData(new JsonObject(result));
+		sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
+		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
+		// publishCmd(result, grpCode, "LNK_CORE");
 
 	}
 
-   //Search and send all the Owners
-     public void sendAllOwners(String searchBeCode) throws ClientProtocolException, IOException {
-    	    println("Get All Drivers - The search BE is  :: "+searchBeCode );
-        BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Owners");
-    	      JsonArray columnsArray = new JsonArray();
-    	      JsonObject columns = new JsonObject();
-    	       AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL","Image");
-    	       JsonObject image = new JsonObject();
-    	       image.put("code", "PRI_IMAGE_URL");
-    	       columnsArray.add(image);
-           AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME","User Name");
-           JsonObject userName = new JsonObject();
-           userName.put("code", "PRI_USERNAME");
-	       columnsArray.add(userName);
-		   AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME","First Name");
-		   JsonObject firstName = new JsonObject();
-		   firstName.put("code", "PRI_FIRSTNAME");
-	       columnsArray.add(firstName);
-		   AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME","Last Name");
-		   JsonObject lastName = new JsonObject();
-		   lastName.put("code", "PRI_LASTNAME");
-	       columnsArray.add(lastName);
-		   AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE","Mobile Number");
-		   JsonObject mobile = new JsonObject();
-		   mobile.put("code", "PRI_MOBILE");
-	       columnsArray.add(mobile);
-		   AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL","Email");
-		   JsonObject email = new JsonObject();
-		   email.put("code", "PRI_EMAIL");
-	       columnsArray.add(email);
-		   println("The columnsArray is ::"+columnsArray);
-		  //Sort Attribute
-		  AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME","Sort By FirstName");
-		  AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_OWNER", "=");
-		  //Pagination Attribute
-		  AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		  AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE","PageSize");
+	// Search and send all the Owners
+	public void sendAllOwners(String searchBeCode) throws ClientProtocolException, IOException {
+		println("Get All Drivers - The search BE is  :: " + searchBeCode);
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Owners");
+		JsonArray columnsArray = new JsonArray();
+		JsonObject columns = new JsonObject();
+		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
+		JsonObject image = new JsonObject();
+		image.put("code", "PRI_IMAGE_URL");
+		columnsArray.add(image);
+		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
+		JsonObject userName = new JsonObject();
+		userName.put("code", "PRI_USERNAME");
+		columnsArray.add(userName);
+		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
+		JsonObject firstName = new JsonObject();
+		firstName.put("code", "PRI_FIRSTNAME");
+		columnsArray.add(firstName);
+		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
+		JsonObject lastName = new JsonObject();
+		lastName.put("code", "PRI_LASTNAME");
+		columnsArray.add(lastName);
+		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
+		JsonObject mobile = new JsonObject();
+		mobile.put("code", "PRI_MOBILE");
+		columnsArray.add(mobile);
+		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
+		JsonObject email = new JsonObject();
+		email.put("code", "PRI_EMAIL");
+		columnsArray.add(email);
+		println("The columnsArray is ::" + columnsArray);
+		// Sort Attribute
+		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
+		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_OWNER", "=");
+		// Pagination Attribute
+		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
+		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
 
-
-		  try {
+		try {
 			searchBE.addAttribute(attributeTextImage, 10.0);
 			searchBE.addAttribute(attributeTextUserName, 9.0);
 			searchBE.addAttribute(attributeTextFirstName, 8.0);
@@ -3988,7 +4086,7 @@ public class QRules {
 			searchBE.addAttribute(attributeTextMobile, 6.0);
 			searchBE.addAttribute(attributeTextEmail, 5.0);
 			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
-			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE") ;
+			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
 		    } catch (BadDataException e) {
@@ -3996,15 +4094,240 @@ public class QRules {
 			  e.printStackTrace();
 		}
 
-
-    	    println("The search BE is  :: "+searchBE);
-    	    String jsonSearchBE = JsonUtils.toJson(searchBE);
-	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, getToken());
-	    System.out.println("The result   ::  "+result);
-	    publishData( new JsonObject(result) );
-	    sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray );
-
+		//println("The search BE is  :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		System.out.println("The result   ::  " + result);
+		publishData(new JsonObject(result));
+		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 
 	}
 
+    public void setLastLayout(final String layoutViewCode, final String layoutViewGroupBECode) {
+       String sessionId = getAsString("session_state");
+       String[] layoutArray = {layoutViewCode, layoutViewGroupBECode };
+       println("Set Layout:- The Session Id is ::"+sessionId);
+       println("The layout is :: "+layoutArray[0]+" and "+layoutArray[1]);
+    	   VertxUtils.putStringArray(realm(),"PreviousLayout", sessionId, layoutArray);
+    }
+
+    public String[] getLastLayout() {
+        String sessionId = getAsString("session_state");
+        println("Get Layout:- The Session Id is ::"+sessionId);
+        String[] previousLayout = VertxUtils.getStringArray(realm(),"PreviousLayout", sessionId);
+        println("The layout is :: "+previousLayout[0]+" and "+previousLayout[1]);
+    	  return previousLayout;
+    }
+
+    /* Sorting Offers of a beg as per the price, lowest price being on top */
+	public void sortOffersInBeg(final String begCode) {
+		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
+		//println("All the Offers for the load " + begCode + " are: " + offers.toString());
+		if (offers.size() > 1) {
+			Collections.sort(offers, new Comparator<BaseEntity>() {
+				@Override
+				public int compare(BaseEntity offer1, BaseEntity offer2) {
+					println("The price value of "+offer1.getCode()+" is " + offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
+					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
+					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+					
+					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
+					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
+					
+					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
+
+				}
+			});
+		}
+		//println("The offers in the descendinng order :: " + offers.toString());
+		//println("The size of list is :: " + offers.size());
+		double maxLinkWeightValue = offers.size();
+		double linkWeight=1; 
+		for (BaseEntity be : offers) {
+		   if(linkWeight <= maxLinkWeightValue) {
+			  updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", linkWeight);
+			  linkWeight++;
+			}
+		}
+
+	}
+
+
+	public void triggerEmailForJobUpdate(String jobCode) {
+
+		println("Job is already submitted, so the job is getting edited");
+
+		List<Link> links = getLinks(jobCode, "LNK_BEG");
+		List<String> offerList = new ArrayList<String>();
+		String ownerCode = null;
+
+		if (links != null) {
+
+			for (Link link : links) {
+
+				String linkValue = link.getLinkValue();
+				if (linkValue != null && linkValue.equals("OFFER")) {
+					offerList.add(link.getTargetCode());
+				}
+
+				if (linkValue != null && linkValue.equals("OWNER")) {
+					ownerCode = link.getTargetCode();
+				}
+
+			}
+		}
+
+		String[] recipientArr = new String[offerList.size()];
+
+		int i = 0;
+		for (String offer : offerList) {
+			BaseEntity offerBe = getBaseEntityByCode(offer);
+			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
+			recipientArr[i] = quoterCode;
+			i++;
+		}
+
+		println("recipient array for edit job details email :" + Arrays.toString(recipientArr));
+		println("owner code ::" + ownerCode);
+
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", jobCode);
+		contextMap.put("OWNER", ownerCode);
+
+		sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
+
+	}
+
+
+	public void setSessionState(final String key, final Object value) {
+		Map<String,Object> map = VertxUtils.getMap(realm(), "STATE",key);
+		if (value == null) {
+			map.remove(key);
+		} else {
+			map.put(key, value);
+		}
+		VertxUtils.putObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), map);
+	}
+
+	public Object getSessionState(final String key) {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
+		Object ret = myMap.get(key);
+		return ret;
+	}
+
+	public Map<String,Object> getSessionStateMap() {
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		Map<String, Object> myMap = VertxUtils.getObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), type);
+		return myMap;
+
+	}
+	
+	/*
+	 * Redirecting to the Home/Landing Page based on the user role:OWNER or DRIVER
+	 */
+	public void redirectToHomePage() {
+		if( getUser().is("PRI_OWNER") ){
+            sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+	        setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
+         }
+         else if( getUser().is("PRI_DRIVER") ) {
+            sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
+            setLastLayout( "LIST_VIEW", "GRP_NEW_ITEMS" );
+         }
+	}
+	
+	public void add(final String keyPrefix, final String parentCode, final BaseEntity be)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map == null) {
+			map = new HashMap<String,Object>();
+		}
+		map.put(be.getCode(), be);		
+		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
+	}
+
+	public Map<String,Object> getMap(final String keyPrefix, final String parentCode)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map == null) {
+			map = new HashMap<String,Object>();
+		}
+		return map;
+	}
+	
+	public void remove(final String keyPrefix, final String parentCode, final String beCode)
+	{
+		// Add this be to the static 
+		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		if (map != null) {
+			map.remove(beCode);
+			VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
+		}
+	}
+	
+	public void remove(final String keyPrefix, final String parentCode)
+	{
+		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, null);
+	}
+	
+	public JsonObject generateLayout(final String reportGroupCode)
+	{
+     	 Map<String,Object> map = getMap("GRP",reportGroupCode);
+       	 println(map);
+       	 
+       	 Integer cols = 1;
+       	 Integer rows = map.size();
+       	 
+       	 JsonObject layout = new JsonObject();
+       	 JsonObject grid = new JsonObject();
+       	 grid.put("cols", cols);
+       	 grid.put("rows", rows);
+       	 
+       	 layout.put("Grid", grid);
+       	 
+       	 JsonArray children = new JsonArray();
+       	 grid.put("children", children);
+       	 for (String key : map.keySet()) {
+       		 BaseEntity searchBe = (BaseEntity) map.get(key);
+       		 JsonObject button = generateGennyButton(key,searchBe.getName());
+       		 children.add(button);
+       	 }
+       	 return layout;
+	}
+	
+	public JsonObject generateGennyButton(final String code, final String name)
+	{
+		JsonObject gennyButton = new JsonObject();
+		
+		JsonObject ret = new JsonObject();
+		JsonArray position = new JsonArray();
+		position.add(0);
+		position.add(0);
+		ret.put("position", position);
+		ret.put("buttonCode",code);
+		ret.put("children", name);
+		ret.put("value", new JsonObject());
+		
+		JsonObject buttonStyle = new JsonObject();
+		buttonStyle.put("background", "PROJECT.PRI_COLOR");
+		ret.put("buttonStyle", buttonStyle);
+		
+		JsonObject style = new JsonObject();
+		style.put("width", "150px");
+		style.put("height", "50px");
+		style.put("margin", "10px");
+		style.put("border", "1px solid");
+		style.put("borderColor", "PROJECT.PRI_COLOR");
+		ret.put("style", style);
+		
+		gennyButton.put("GennyButton", ret);
+		
+		return gennyButton;
+	}
+	
 }

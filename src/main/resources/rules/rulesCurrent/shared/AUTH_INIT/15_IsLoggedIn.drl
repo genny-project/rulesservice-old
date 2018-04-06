@@ -15,7 +15,6 @@ rule "Is Logged In"
      then
         rules.header();
      	
-     	
         BaseEntity user = rules.getUser();
         rules.println("user exists");
         rules.println("User "+user+" LOGGED IN"); 
@@ -24,17 +23,19 @@ rule "Is Logged In"
   		
   		/* we mark the user as logged in */
         rules.setState("IS_LOGGED_IN");
-        	drools.setFocus("SendAliases");
-        	
-      /*  if (rules.hasRole("admin")) {
-        		VertxUtils.subscribeAdmin(rules.realm(),rules.getUser().getCode());
+        
+       String attributeCode =  "PRI_IS_ADMIN";	
+       if (rules.hasRole("admin")) {
+	      if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null) )
+		    {
+        		    Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+        		    isAdminAnswer.setWeight(1.0);
+		        rules.saveAnswer(isAdminAnswer);
+		    }
         }
         
-        rules.println("Decoded Token:"+rules.getDecodedTokenMap());
-        	drools.setFocus("SendAliases");
-        
-		drools.setFocus("payments");  */
+        rules.println("Decoded Map:"+rules.getDecodedTokenMap().toString());
 		
-		
-	    rules.footer();     		      
+       drools.setFocus("SendAliases");
+	   rules.footer();     		      
 end

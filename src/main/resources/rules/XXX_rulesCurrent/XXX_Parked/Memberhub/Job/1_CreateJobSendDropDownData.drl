@@ -36,13 +36,13 @@ rule "Send DropDown Datas"
      JsonObject loadLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOADS/linkcodes/LNK_"+company.getCode()+"/attributes", rules.getToken()));
      loadLists.put("token", rules.getToken());
      System.out.println("List of Load Json: "+loadLists.toString());
-     rules.getEventBus().publish("cmds",loadLists);
+     rules.publish("cmds",loadLists);
 
     /*   Getting list of the load category   */
      JsonObject loadCategoryLists = new JsonObject( QwandaUtils.apiGet(qwandaServiceUrl+"/qwanda/baseentitys/GRP_LOAD_CATEGORY/linkcodes/LNK_CORE?pageStart=0&pageSize=20", rules.getToken()));
      loadCategoryLists.put("token", rules.getToken());
      System.out.println("List of Load category Json: "+loadCategoryLists.toString());
-     rules.getEventBus().publish("cmds",loadCategoryLists);
+     rules.publish("cmds",loadCategoryLists);
      
  	rules.footer();
   
