@@ -16,6 +16,9 @@ rule "User-Profile"
         BaseEntity user = rules.getUser();
   	    String userCode = user.getCode();
   	    
+  	    drools.setFocus("ispayments");  /* NOW Set up Payments */
+  	    
+  	    
         rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
        /*  Get Company Code of the current user   */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");

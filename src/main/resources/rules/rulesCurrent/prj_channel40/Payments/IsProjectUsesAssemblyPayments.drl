@@ -15,12 +15,12 @@ rule "Check if project uses Assembly Payments"
      
     Boolean isPaymentAssembly = rules.getProject().getValue("PRI_IS_PAYMENTS_ASSEMBLY", false);
     rules.println("isPayments assembly used in the project ::"+isPaymentAssembly);
+       rules.setState("IS_ASSEMBLY_PAYMENTS");
     
     if(isPaymentAssembly) {
     		drools.setFocus("payments");
     }
 
-   rules.setState("IS_ASSEMBLY_PAYMENTS");
 
 	  rules.footer();      		      
 end

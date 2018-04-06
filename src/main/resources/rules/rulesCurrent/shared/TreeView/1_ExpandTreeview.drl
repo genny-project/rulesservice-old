@@ -9,7 +9,7 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Expand TreeView Item"
 
     when
-        $m : QEventMessage( event_type == "EVT_MSG" && data.code == "TV_EXPAND")
+        $m : QEventMessage( event_type == "EVT_MSG" && data.code == "TV_EXPAND"  && data.value != "GRP_MESSAGES")
         rules: QRules( ) 
      then
      	
