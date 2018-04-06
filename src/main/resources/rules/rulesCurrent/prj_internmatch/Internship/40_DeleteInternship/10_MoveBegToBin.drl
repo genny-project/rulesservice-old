@@ -12,9 +12,10 @@ rule "Delete Internship - Step 1"
         rules.setState("LOOP_DELETE_INTERNSHIP_STEP1");
 
 		/* get begCode (itemCode) from state */		
-		String begCode = rules.getAsString("itemCode");  
-        if(begCode != null){
-            rules.moveBaseEntity(begCode, "GRP_AVAILABLE", "GRP_BIN", "LNK_CORE");
+		String begCode = rules.getAsString("itemCode"); 
+		BaseEntity parentBe = rules.getParent(begCode, "LNK_CORE");
+        if(begCode != null && parentBe!= null){
+            rules.moveBaseEntity(begCode, parentBe.getCode(), "GRP_BIN", "LNK_CORE");
         }else{
 			rules.println("begCode is null");
 		}

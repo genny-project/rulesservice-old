@@ -2812,6 +2812,14 @@ public class QRules {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
 
+	public void subscribeUserToBaseEntityAndChildren(String userCode, String beCode, String linkCode) {
+		List<BaseEntity> beKids = new ArrayList<BaseEntity>();
+		beKids = getBaseEntitysByParentAndLinkCode(beCode, linkCode, 0, 500, false);
+		for(BaseEntity beKid : beKids){
+			VertxUtils.subscribe(realm(), beKid.getCode(), userCode);
+		}
+	}
+
 	public void sendLayoutsAndData() {
 		boolean doCache = false;
 
