@@ -4,6 +4,7 @@ import life.genny.rules.QRules;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.utils.VertxUtils;
 
 
 global java.lang.String REACT_APP_QWANDA_API_URL;
@@ -15,8 +16,7 @@ rule "User Logout"
  		rules: QRules( isState("STARTED") ) 
     then
         rules.header();
-        
-        rules.publishCmd(new QCmdMessage("CMD_LOGOUT","LOGOUT"));
+        rules.logoutAll();
         
 		rules.footer();      
 end 
