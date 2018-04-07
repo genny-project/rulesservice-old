@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Publish OLD BEG with delete = TRUE to INTERN */
+rule "Shortlist Internship - Step 10"	
+	when
+		rules: QRules( 	isState("DELETE_OLD_BEG_FROM_INTERN") && 
+						isState("UNSUBSCRIBED_INTERN_FROM_OLD_BEG") && 
+						isState("BTN_SHORTLIST_INTERN") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_SHORTLIST_INTERN_STEP10")) 
+
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SHORTLIST_INTERN_STEP10");
+
+        BaseEntity oldBeg = rules.getAsBaseEntity("begBe");
+        BaseEntity intern = rules.getAsBaseEntity("internBe");
+		
+		if(intern != null && oldBeg != null){
+			/* Intern is the recipient */
+			String[] oldBegRecipient= {intern.getCode()};
+
+			rules.publishBaseEntityByCode(oldBeg.getCode(), "GRP_AVAILABLE", "LNK_CORE", oldBegRecipient, true);
+	 		rules.setState("DELETED_OLD_BEG_FROM_INTERN");
+		}
+	 	rules.footer();      
+end
