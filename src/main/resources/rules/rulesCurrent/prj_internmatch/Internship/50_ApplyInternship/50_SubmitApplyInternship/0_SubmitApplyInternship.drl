@@ -31,7 +31,7 @@ rule "Submit Apply Internship - Step 0"
 				if(company != null){
             		rules.set("companyBe", company);
 
-					rules.setState("BEG_APPLICATION_COMPANY_READY");  
+					rules.setState("SUBMIT_APPLY_INTERNSHIP_READY");  
 
 					rules.setState("SUBSCRIBE_INTERN_TO_APPLICATION");            
 					
