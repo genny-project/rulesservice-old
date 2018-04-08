@@ -2833,7 +2833,6 @@ public class QRules {
 		println("after removal, subscriber is   ::   " + subscriberSet.toString());
 		
 		VertxUtils.putSetString(realm(), SUB, beCode, subscriberSet);
-
 		
 	}
 
