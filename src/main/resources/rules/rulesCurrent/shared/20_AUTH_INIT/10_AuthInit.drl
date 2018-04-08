@@ -21,5 +21,6 @@ rule "Auth Init"
         if(rules.isUserPresent() == true) {
             rules.setState("TRIGGER_APPLICATION_SETUP"); /* this starts application workflow */
         }
+        
 	    rules.footer();       		      
 end

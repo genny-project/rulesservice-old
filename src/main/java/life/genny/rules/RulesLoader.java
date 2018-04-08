@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.io.File;
+
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import life.genny.channels.EBCHandlers;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.rules.Workflows.AwesomeHandler;
 
 public class RulesLoader {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -314,10 +316,11 @@ public class RulesLoader {
 			}
 
 			kieSession.insert(keyValueMap);
+			kieSession.getWorkItemManager().registerWorkItemHandler("Awesome", new AwesomeHandler());
 
 			// Set the focus on the Init agenda group to force proper startup
 			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
-
+			
 			kieSession.fireAllRules();
 
 			kieSession.dispose();

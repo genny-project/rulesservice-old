@@ -12,7 +12,9 @@ rule "Application Ready"
         rules.header();
         
         rules.setState("LOOP_APPLICATION_READY");
-        rules.setState("APPLICATION_READY");
+        /* rules.setState("APPLICATION_READY"); */
+        
+        rules.startWorkflow("authinit");
         
 	    rules.footer();     		      
 end

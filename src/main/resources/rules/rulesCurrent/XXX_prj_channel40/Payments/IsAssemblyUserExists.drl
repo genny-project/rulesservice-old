@@ -9,7 +9,7 @@ rule "Check if Payments User Exists"
 	agenda-group "ispayments"
 	no-loop true
     when
-    	rules: QRules( isState("STARTED") && (!isState("IS_ASSEMBLY_USER_CREATED"))) 
+    	rules: QRules( isState("STARTED") && (!isState("IS_ASSEMBLY_USER_CREATED")) && isState("IS_ASSEMBLY_PAYMENTS") ) 
     then
      
      rules.header();

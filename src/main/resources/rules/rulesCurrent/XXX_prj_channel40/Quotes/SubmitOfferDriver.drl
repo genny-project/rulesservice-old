@@ -48,6 +48,8 @@ rule "Submit Offer Driver"
     then
         rules.header();
         rules.setState("DRIVER_OFFER_MADE");
+        
+        drools.setFocus("ispayments");  /* NOW Set up Payments */
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
