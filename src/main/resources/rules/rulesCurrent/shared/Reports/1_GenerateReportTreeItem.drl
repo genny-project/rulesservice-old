@@ -10,12 +10,12 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "TV_SELECT Event - Generate Report"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.value matches "GRP_REPORTS.*" )
-       rules: QRules()
+       $m : QEventMessage( event_type == "TV_SELECT" && data.value !="GRP_REPORTS" && data.value.startsWith("GRP_REPORTS_") )
+       rules: QRules(!isState("REPORTS_LAYOUT_SENT"))
      then
 
      rules.header();
-
+        rules.setState("REPORTS_LAYOUT_SENT");
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
        	rules.println("The Group Id is :: "+grpCode );
