@@ -26,7 +26,7 @@ rule "Submit Apply Internship - Step 0"
                 BaseEntity beg = rules.getBaseEntityByCode(begCode);
                 rules.set("begBe", beg);
 
-           	 	BaseEntity company = rules.getChildren(begCode, "LNK_BEG", "COMPANY");
+           	 	BaseEntity company = rules.getChildren(begCode, "LNK_BEG", "HOSTCOMPANY");
 
 				if(company != null){
             		rules.set("companyBe", company);

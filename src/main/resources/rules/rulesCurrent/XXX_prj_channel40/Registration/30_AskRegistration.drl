@@ -34,7 +34,7 @@
 //         {
 //            rules.println("Company Not Found, Creating New Company");
 //           /*  Creating new base-entity Company    */
-//            BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
+//            BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "HOSTCOMPANY", rules.getQwandaServiceUrl(), rules.getToken());
 //            companyCode = newCompany.getCode();
 //            /* Set PRI_GST attribute to FALSE by default */
 //            rules.updateBaseEntityAttribute(userCode, companyCode, "PRI_GST", "FALSE");
