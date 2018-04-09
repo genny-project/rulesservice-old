@@ -3015,7 +3015,7 @@ public class QRules {
 				BaseEntity offer = getBaseEntityByCode(offerCode);
 				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
 				PaymentsResponse makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
-				println("isMakePaymentSucceeded ::" + makePaymentResponseObj);
+				println("isMakePaymentSucceeded ::" + makePaymentResponseObj.toString());
 
 				/* GET offer Base Entity */
 				
