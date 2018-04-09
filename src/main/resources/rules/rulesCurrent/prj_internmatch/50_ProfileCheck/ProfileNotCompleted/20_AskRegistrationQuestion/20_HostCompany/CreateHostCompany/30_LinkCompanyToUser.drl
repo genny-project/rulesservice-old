@@ -10,7 +10,7 @@ rule "Create Host Company - STEP 3"
         				isState("PROFILE_NOT_COMPLETED") &&
         				isState("HOST_COMPANY_DOESNT_EXISTS") &&
         				isState("CREATED_LINK") &&
-        				isState("HOST_COMPANY") &&
+        				isState("HOSTCOMPANY") &&
 						!isState("LOOP_CREATE_HOST_COMPANY_STEP3") ) 
      then 
  		rules.header();

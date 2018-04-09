@@ -15,7 +15,7 @@ rule "Create Host Company - STEP 1"
 
 		rules.set("beCode", rules.getUser().getCode());
 		rules.set("bePrefix", "CPY");
-		rules.set("beName", "COMPANY");
+		rules.set("beName", "HOSTCOMPANY");
 		rules.setState("CREATE_BASE_ENTITY");	
 
 		rules.setState("CREATED_HOST_COMPANY");	
