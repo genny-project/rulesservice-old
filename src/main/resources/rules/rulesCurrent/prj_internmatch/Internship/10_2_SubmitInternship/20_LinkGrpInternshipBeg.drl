@@ -19,7 +19,7 @@ rule "Submit Internship - Step 2"
             /* link GRP_INTERNSHIPS to BEG  */
             rules.set("linkSourceCode",  "GRP_INTERNSHIPS");
             rules.set("linkTargetCode", beg.getCode());
-            rules.set("linkCode", "LNK_CORE");
+            rules.set("linkCode", "LNK_INTERNSHIP");
             rules.set("linkValue", "INTERNSHIP");
             rules.set("linkWeight", 1.0);
             rules.setState("CREATE_LINK");

@@ -13,12 +13,16 @@ rule "Delete Internship - Step 1"
 
 		/* get begCode (itemCode) from state */		
 		String begCode = rules.getAsString("itemCode"); 
-		BaseEntity parentBe = rules.getParent(begCode, "LNK_CORE");
-        if(begCode != null && parentBe!= null){
-            rules.moveBaseEntity(begCode, parentBe.getCode(), "GRP_BIN", "LNK_CORE");
-        }else{
-			rules.println("begCode is null");
+		if(begCode != null){
+			BaseEntity parentBe = rules.getParent(begCode, "LNK_CORE");
+			if(parentBe!= null){
+				rules.println("beg Code   ::   " + begCode);
+				rules.println("beg's current parent is   ::   " + parentBe.getCode());
+				rules.moveBaseEntity(begCode, parentBe.getCode(), "GRP_BIN", "LNK_CORE");
+				rules.setState("MOVED_BEG_TO_BIN");
+			}else{
+				rules.println("begCode is null");
+			}
 		}
-        rules.setState("MOVED_BEG_TO_BIN");
 	 	rules.footer();      
 end
