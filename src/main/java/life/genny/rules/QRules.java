@@ -4332,5 +4332,19 @@ public class QRules {
 		return gennyButton;
 	}
 	
+    /*
+     * Send Report based on the SearchBE
+     */
+	public void sendReport(String reportCode) throws IOException {
+		System.out.println("The report code is :: "+reportCode);
+		BaseEntity searchBE = getBaseEntityByCode(reportCode);
+	    System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
+	    String jsonSearchBE = JsonUtils.toJson(searchBE);
+	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+	  				getToken());
+	  	System.out.println("The result   ::  " + result);
+	  	publishData(new JsonObject(result));
+	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
+	}
 	
 }
