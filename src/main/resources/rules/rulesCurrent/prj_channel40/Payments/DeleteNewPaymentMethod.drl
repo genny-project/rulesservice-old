@@ -8,7 +8,7 @@ import life.genny.qwanda.Answer;
 /* Sorry Adam if you read this */
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 import java.util.List;
 
 rule "Delete new payment method - user"

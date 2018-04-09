@@ -65,9 +65,7 @@ rule "Assembly item callback"
 			if(isUpdateAction) {
 			
 				if(m.getObject_status().toString().equals("ITEM_PAYMENT_DEPOSITED")) {
-	            			
-	            		HashMap<String, String> contextMap = new HashMap<String, String>();
-					contextMap.put("JOB", begBe.getCode());
+	            		
 
 			 		String[] messageOwnerRecipient = new String[1];
 		     		messageOwnerRecipient[0] = owner.getCode();
@@ -75,15 +73,21 @@ rule "Assembly item callback"
 		     		String[] messageDriverRecipient = new String[1];
 		     		messageDriverRecipient[0] = driver.getCode();
 		     		
+		     		HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("JOB", begBe.getCode());
+					contextMap.put("DRIVER", driver.getCode());
+					contextMap.put("OWNER", owner.getCode());
+		     		
 		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
 		     		rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
 		     		
 		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
 		     		rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
 		     		
+		     		rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_ESCROW_OWNER", "EMAIL");
+		     		
 		     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow");
 		     		rules.saveAnswer(paymentStatus);
-	            		rules.publishData(paymentStatus);
 		     		
 		     		
 	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
@@ -128,13 +132,11 @@ rule "Assembly item callback"
 					
 					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held");
 					rules.saveAnswer(paymentStatus);
-	            		rules.publishData(paymentStatus);
 					
 	            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
 	            
 					Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment incoming from Owner");
 					rules.saveAnswer(paymentStatus);
-	            		rules.publishData(paymentStatus);
 					
 	            		}
 
