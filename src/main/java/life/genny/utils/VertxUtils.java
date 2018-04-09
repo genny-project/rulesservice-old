@@ -266,13 +266,13 @@ public class VertxUtils {
 	}
 
 
-	static public void putMap(final String realm, final String keyPrefix, final String key, final Map<String,Object> map) {
+	static public void putMap(final String realm, final String keyPrefix, final String key, final Map<String,String> map) {
 		putObject(realm, keyPrefix, key, map);
 	}
 	
-	static public Map<String,Object> getMap(final String realm, final String keyPrefix, final String key) {
-		Type type = new TypeToken<Map<String, Object>>(){}.getType();
-		Map<String, Object> myMap = getObject(realm, keyPrefix, key, type);
+	static public Map<String,String> getMap(final String realm, final String keyPrefix, final String key) {
+		Type type = new TypeToken<Map<String, String>>(){}.getType();
+		Map<String, String> myMap = getObject(realm, keyPrefix, key, type);
 		return myMap;
 	}
 	

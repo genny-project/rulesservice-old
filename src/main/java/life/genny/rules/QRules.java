@@ -57,6 +57,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
+import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.attribute.AttributeBoolean;
 import life.genny.qwanda.attribute.AttributeInteger;
@@ -88,7 +89,7 @@ import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.VertxUtils;
@@ -1232,7 +1233,6 @@ public class QRules {
 	public void logoutAll() {
 	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
 	 	msg.setToken(getToken());
-	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
 	     String[]  recipientCodes = new String[1];
 	     recipientCodes[0] = getUser().getCode();
 	     String json = JsonUtils.toJson(msg);
@@ -1242,6 +1242,10 @@ public class QRules {
 		jsonObj.put("recipientCodes", jsonArr);
 	
 		publish("data", jsonObj);
+		
+		// clear the session AFTER it has been sent to bridge!
+	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
+
 	}
 
 	public void publishData(final QDataAnswerMessage msg) {
@@ -3013,14 +3017,16 @@ public class QRules {
 				
 				BaseEntity offer = getBaseEntityByCode(offerCode);
 				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
-				JSONObject makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
-				println("isMakePaymentSucceeded ::" + makePaymentResponseObj);
+				PaymentsResponse makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
+
+				println("isMakePaymentSucceeded ::" + makePaymentResponseObj.toString());
+
 
 				/* GET offer Base Entity */
 				
 				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
 
-				if (! ((Boolean)makePaymentResponseObj.get("isSuccess"))) {
+				if (!makePaymentResponseObj.getIsSuccess()) {
 					/* TOAST :: FAIL */
 					println("Sending error toast since make payment failed");
 					HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -3035,7 +3041,7 @@ public class QRules {
 					drools.setFocus("SendLayoutsAndData");
 				}
 
-				if ((Boolean)makePaymentResponseObj.get("isSuccess")) {
+				if (makePaymentResponseObj.getIsSuccess()) {
 					/* GET attributes of OFFER BE */
 					Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
 					Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
@@ -3061,7 +3067,7 @@ public class QRules {
 							JsonUtils.toJson(feePriceIncGST)));
 					
 					
-					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.get("depositReferenceId").toString()));
+					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getResponseMap().get("depositReferenceId")));
 
 					//fetch the job to ensure the cache has caught up
 				/*	BaseEntity begBe = null;
@@ -4202,11 +4208,11 @@ public class QRules {
 
 
 	public void setSessionState(final String key, final Object value) {
-		Map<String,Object> map = VertxUtils.getMap(realm(), "STATE",key);
+		Map<String,String> map = VertxUtils.getMap(realm(), "STATE",key);
 		if (value == null) {
 			map.remove(key);
 		} else {
-			map.put(key, value);
+			map.put(key, JsonUtils.toJson(value));
 		}
 		VertxUtils.putObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), map);
 	}
@@ -4228,6 +4234,7 @@ public class QRules {
 	/*
 	 * Redirecting to the Home/Landing Page based on the user role:OWNER or DRIVER
 	 */
+	 /* TODO: refactor this. */
 	public void redirectToHomePage() {
 		if( getUser().is("PRI_OWNER") ){
             sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
@@ -4242,20 +4249,21 @@ public class QRules {
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
-			map = new HashMap<String,Object>();
+			map = new HashMap<String,String>();
 		}
-		map.put(be.getCode(), be);		
+		map.put(be.getCode(), JsonUtils.toJson(be));
+		VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
 	}
 
-	public Map<String,Object> getMap(final String keyPrefix, final String parentCode)
+	public Map<String,String> getMap(final String keyPrefix, final String parentCode)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
-			map = new HashMap<String,Object>();
+			map = new HashMap<String,String>();
 		}
 		return map;
 	}
@@ -4263,7 +4271,7 @@ public class QRules {
 	public void remove(final String keyPrefix, final String parentCode, final String beCode)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map != null) {
 			map.remove(beCode);
 			VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
@@ -4277,7 +4285,7 @@ public class QRules {
 	
 	public JsonObject generateLayout(final String reportGroupCode)
 	{
-     	 Map<String,Object> map = getMap("GRP",reportGroupCode);
+     	 Map<String,String> map = getMap("GRP",reportGroupCode);
        	 println(map);
        	 
        	 Integer cols = 1;
@@ -4293,7 +4301,7 @@ public class QRules {
        	 JsonArray children = new JsonArray();
        	 grid.put("children", children);
        	 for (String key : map.keySet()) {
-       		 BaseEntity searchBe = (BaseEntity) map.get(key);
+       		 BaseEntity searchBe = JsonUtils.fromJson(map.get(key), BaseEntity.class);
        		 JsonObject button = generateGennyButton(key,searchBe.getName());
        		 children.add(button);
        	 }
@@ -4328,6 +4336,21 @@ public class QRules {
 		gennyButton.put("GennyButton", ret);
 		
 		return gennyButton;
+	}
+	
+    /*
+     * Send Report based on the SearchBE
+     */
+	public void sendReport(String reportCode) throws IOException {
+		System.out.println("The report code is :: "+reportCode);
+		BaseEntity searchBE = getBaseEntityByCode(reportCode);
+	    System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
+	    String jsonSearchBE = JsonUtils.toJson(searchBE);
+	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+	  				getToken());
+	  	System.out.println("The result   ::  " + result);
+	  	publishData(new JsonObject(result));
+	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 	}
 	
 }

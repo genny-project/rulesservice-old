@@ -10,12 +10,12 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "TV_SELECT Event - Generate Report"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.value matches "GRP_REPORTS.*" )
-       rules: QRules()
+       $m : QEventMessage( event_type == "TV_SELECT" && data.value !="GRP_REPORTS" && data.value.startsWith("GRP_REPORTS_") )
+       rules: QRules(!isState("REPORTS_LAYOUT_SENT"))
      then
 
      rules.header();
-
+        rules.setState("REPORTS_LAYOUT_SENT");
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
        	rules.println("The Group Id is :: "+grpCode );
@@ -23,11 +23,13 @@ rule "TV_SELECT Event - Generate Report"
        	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
        	Layout[] layoutArray = new Layout[1];
        	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
-       	QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, rules.getToken());
-		rules.publishCmd(msg);
-       	rules.println(msg);
-        	
-    
+        QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", "ADMIN_REPORTS");
+		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
+		rules.println("Loading url: " + rules.realm() );
+		rules.println("the Layout array string is :: "+ layoutArray[0].getData());
+		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
+		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
+		rules.publishCmd(cmdJobSublayoutJson);
 
      rules.footer();
 end
