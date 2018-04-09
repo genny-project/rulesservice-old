@@ -11,9 +11,10 @@ import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly user updation for attribute change - Country"
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ADDRESS_COUNTRY")  && getAnswer().getTargetCode().startsWith("PER_") )
-    	rules: QRules( isState("STARTED")  && !isState("USER_UPDATE_COUNTRY_LOOP") )
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ADDRESS_COUNTRY")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules(!isState("USER_UPDATE_COUNTRY_LOOP") )
     then
 		RulesUtils.header(drools.getRule().getName());
 

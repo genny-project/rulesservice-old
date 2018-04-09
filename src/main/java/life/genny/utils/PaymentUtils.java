@@ -37,7 +37,6 @@ import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.PaymentEndpoint;
 import life.genny.qwandautils.QwandaUtils;
 
 public class PaymentUtils {

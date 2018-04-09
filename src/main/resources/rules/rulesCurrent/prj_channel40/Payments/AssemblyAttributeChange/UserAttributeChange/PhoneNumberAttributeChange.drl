@@ -11,9 +11,11 @@ import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly user updation for attribute change - phone number"
+
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_MOBILE")  && getAnswer().getTargetCode().startsWith("PER_") )
-    	rules: QRules( isState("STARTED") && !isState("USER_UPDATE_PHONE_NUMBER_LOOP"))
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_MOBILE")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules(!isState("USER_UPDATE_PHONE_NUMBER_LOOP"))
     then
 		RulesUtils.header(drools.getRule().getName());
 

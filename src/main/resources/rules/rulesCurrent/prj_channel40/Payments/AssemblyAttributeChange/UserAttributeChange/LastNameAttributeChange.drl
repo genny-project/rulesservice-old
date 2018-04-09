@@ -11,9 +11,10 @@ import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly user updation for attribute change - last name"
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_LASTNAME")  && getAnswer().getTargetCode().startsWith("PER_") )
-    	rules: QRules( isState("STARTED") && !isState("USER_UPDATE_LASTNAME_LOOP"))
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_LASTNAME")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules(!isState("USER_UPDATE_LASTNAME_LOOP"))
     then
 		RulesUtils.header(drools.getRule().getName());
 

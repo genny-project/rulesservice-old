@@ -11,9 +11,10 @@ import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly Company updation for attribute change - ABN"
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ABN")  && getAnswer().getTargetCode().startsWith("CPY_") )
-    	rules: QRules( isState("STARTED") && !isState("COMPANY_UPDATE_ABN_LOOP") )
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ABN")  && getAnswer().getTargetCode().startsWith("CPY_") )
+    	rules: QRules(!isState("COMPANY_UPDATE_ABN_LOOP") )
     then
 		RulesUtils.header(drools.getRule().getName());
         rules.setState("COMPANY_UPDATE_ABN_LOOP");

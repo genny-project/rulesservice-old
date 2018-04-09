@@ -11,9 +11,10 @@ import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly user updation for attribute change - Postcode"
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ADDRESS_POSTCODE")  && getAnswer().getTargetCode().startsWith("PER_") )
-    	rules: QRules( isState("STARTED") && !isState("USER_UPDATE_POSTCODE_LOOP"))
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ADDRESS_POSTCODE")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules( !isState("USER_UPDATE_POSTCODE_LOOP"))
     then
 		RulesUtils.header(drools.getRule().getName());
 
