@@ -25,7 +25,7 @@ rule "Create Host Company - STEP 2"
             rules.set("linkSourceCode",  "GRP_HOST_COMPANYS");
             rules.set("linkTargetCode", company.getCode());
             rules.set("linkCode", "LNK_COMPANY");
-            rules.set("linkValue", "HOST_COMPANY");
+            rules.set("linkValue", "HOSTCOMPANY");
             rules.set("linkWeight", 1.0);
             rules.setState("CREATE_LINK");
             

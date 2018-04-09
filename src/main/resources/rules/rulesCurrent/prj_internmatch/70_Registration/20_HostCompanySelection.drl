@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+
+rule "Host Company Selection"
+     when
+        $m: QEventAttributeValueChangeMessage( getData().getCode().equals("LNK_HOST_COMPANY") )
+        rules: QRules(!isState("LOOP_HOST_COMPANY_SELECTION") ) 
+     then
+        rules.header();
+        rules.setState("LOOP_HOST_COMPANY_SELECTION");
+   
+        String oldCompanyCode = $m.getAnswer().getValue();
+        String newCompanyCode = $m.getAnswer().getValue();
+        if(oldCompanyCode == null){
+            rules.println("oldCompanyCode is null");
+        }else if(newCompanyCode == null){
+            rules.println("newCompanyCode is null");       
+        }else{
+            BaseEntity oldCompany = rules.getBaseEntityByCode(oldCompanyCode);
+            BaseEntity newCompany = rules.getBaseEntityByCode(newCompanyCode);
+
+            if(oldCompany != null && newCompany != null){
+                rules.duplicateAttributes(oldCompany, newCompany);
+            }
+            rules.publishBaseEntityByCode(newCompanyCode);
+        }
+        rules.footer();
+end
