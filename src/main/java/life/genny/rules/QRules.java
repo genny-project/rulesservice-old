@@ -4202,11 +4202,11 @@ public class QRules {
 
 
 	public void setSessionState(final String key, final Object value) {
-		Map<String,Object> map = VertxUtils.getMap(realm(), "STATE",key);
+		Map<String,String> map = VertxUtils.getMap(realm(), "STATE",key);
 		if (value == null) {
 			map.remove(key);
 		} else {
-			map.put(key, value);
+			map.put(key, JsonUtils.toJson(value));
 		}
 		VertxUtils.putObject(realm(), "STATE", getDecodedTokenMap().get("session_state").toString(), map);
 	}
@@ -4228,6 +4228,7 @@ public class QRules {
 	/*
 	 * Redirecting to the Home/Landing Page based on the user role:OWNER or DRIVER
 	 */
+	 /* TODO: refactor this. */
 	public void redirectToHomePage() {
 		if( getUser().is("PRI_OWNER") ){
             sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
@@ -4242,20 +4243,21 @@ public class QRules {
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
-			map = new HashMap<String,Object>();
+			map = new HashMap<String,String>();
 		}
-		map.put(be.getCode(), be);		
+		map.put(be.getCode(), JsonUtils.toJson(be));
+		VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
 	}
 
-	public Map<String,Object> getMap(final String keyPrefix, final String parentCode)
+	public Map<String,String> getMap(final String keyPrefix, final String parentCode)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
-			map = new HashMap<String,Object>();
+			map = new HashMap<String,String>();
 		}
 		return map;
 	}
@@ -4263,7 +4265,7 @@ public class QRules {
 	public void remove(final String keyPrefix, final String parentCode, final String beCode)
 	{
 		// Add this be to the static 
-		Map<String,Object> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
+		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map != null) {
 			map.remove(beCode);
 			VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
@@ -4277,7 +4279,7 @@ public class QRules {
 	
 	public JsonObject generateLayout(final String reportGroupCode)
 	{
-     	 Map<String,Object> map = getMap("GRP",reportGroupCode);
+     	 Map<String,String> map = getMap("GRP",reportGroupCode);
        	 println(map);
        	 
        	 Integer cols = 1;
@@ -4293,7 +4295,7 @@ public class QRules {
        	 JsonArray children = new JsonArray();
        	 grid.put("children", children);
        	 for (String key : map.keySet()) {
-       		 BaseEntity searchBe = (BaseEntity) map.get(key);
+       		 BaseEntity searchBe = JsonUtils.fromJson(map.get(key), BaseEntity.class);
        		 JsonObject button = generateGennyButton(key,searchBe.getName());
        		 children.add(button);
        	 }
@@ -4329,5 +4331,6 @@ public class QRules {
 		
 		return gennyButton;
 	}
+	
 	
 }
