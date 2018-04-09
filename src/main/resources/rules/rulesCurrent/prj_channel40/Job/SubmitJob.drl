@@ -26,6 +26,9 @@ rule "Submit Job"
     then
          rules.header();  
          rules.setState("NEW_JOB_SAVED"); 
+         
+         drools.setFocus("ispayments");  /* NOW Set up Payments */
+         
         /* rules.showLoading("Creating your new load..."); */
                 
        /*  Get data.value and decode    */
