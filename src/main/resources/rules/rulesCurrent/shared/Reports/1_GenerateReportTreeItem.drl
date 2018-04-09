@@ -23,11 +23,13 @@ rule "TV_SELECT Event - Generate Report"
        	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
        	Layout[] layoutArray = new Layout[1];
        	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
-       	QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, rules.getToken());
-		rules.publishCmd(msg);
-       	rules.println(msg);
-        	
-    
+        QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", "ADMIN_REPORTS");
+		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
+		rules.println("Loading url: " + rules.realm() );
+		rules.println("the Layout array string is :: "+ layoutArray[0].getData());
+		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
+		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
+		rules.publishCmd(cmdJobSublayoutJson);
 
      rules.footer();
 end
