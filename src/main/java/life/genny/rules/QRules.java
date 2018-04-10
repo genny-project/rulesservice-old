@@ -148,6 +148,7 @@ public class QRules {
 				// Successfully got the value
 				fut.complete(resGet.result());
 			} else {
+				
 				// Something went wrong!
 				fut.complete(RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code));
 
@@ -4492,11 +4493,11 @@ public class QRules {
 	public List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level) {
 
 		if(level == 0) {
-			return null; // exit point;
+			level = 1;
 		}
 
 		level--;
-		BaseEntity be = this.getBaseEntityByCode2(beCode);
+		BaseEntity be = this.getBaseEntityByCode2(beCode); // GRP ROOT
 		if(be != null) {
 
 			List<BaseEntity> beList = new ArrayList<BaseEntity>();
