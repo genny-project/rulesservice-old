@@ -17,10 +17,12 @@ rule "Submit Internship - Step 5.2"
 		if(beg != null){
 			
 			/* Get All Interns */
-			List<BaseEntity> interns = rules.getBaseEntitysByParentAndLinkCode("GRP_INTERNS", "LNK_CORE", 0, 500, false);
-
+			List<BaseEntity> interns = rules.getBaseEntitysByParentAndLinkCode("GRP_INTERNS", "LNK_INTERN", 0, 500, false);
+			rules.println("existing interns   ::   " + interns.toString());
+	
 			if(interns != null){
 				for(BaseEntity intern : interns){
+					rules.println("existing intern   ::   " + intern.getCode() );
 					rules.subscribeUserToBaseEntity(intern.getCode(), beg.getCode());
 				}
 

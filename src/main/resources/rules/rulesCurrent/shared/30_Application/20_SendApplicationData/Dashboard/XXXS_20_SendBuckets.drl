@@ -1,0 +1,58 @@
+package life.genny.rules;
+
+// import life.genny.rules.QRules;
+// import life.genny.qwanda.entity.BaseEntity;
+// import java.util.List;
+
+// /* Sends BEGs */
+// rule "Send Buckets"
+//     when
+//         rules: QRules(  isState("SENT_DASHBOARD") && 
+//                         isState("SEND_BUCKETS") && 
+//                         isState("PUBLISHED_BASE_ENTITY_LIST") && 
+//                         !isState("LOOP_SEND_DASHBOARD_BEGS") )
+//      then
+//      	rules.header();
+//      	rules.setState("LOOP_SEND_DASHBOARD_BEGS");
+        
+//         /* Get BUCKETS from map */
+//         List<BaseEntity> bucketList = rules.getAsBaseEntitys("beList");
+
+//         List<BaseEntity> begs = null;
+//         List<BaseEntity> begKids = new ArrayList<BaseEntity>();
+        
+//         for(BaseEntity bucket: bucketList) {  
+//             begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+//             if( bucket.getCode().equals("GRP_AVAILABLE") ){
+//                 rules.println("BUCKET CODE   ::   " + bucket.getCode());
+//                 rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begs);
+//             }
+            
+//             for(BaseEntity beg: begs) { 
+                
+//                 /* Send beg to Subscriberts only */
+//                 String[] begSubscribers = rules.getSubscribers(beg.getCode());              
+//                 rules.println("BEG Code   ::   " + beg.getCode());
+//                 rules.println("Each BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
+//                 if(begSubscribers != null){
+//                     rules.publishBaseEntityByCode(beg, bucket.getCode(), "LNK_CORE", begSubscribers);
+                    
+//                     /* send INTERNSHIP | COMPANY | CREATOR */
+//                     begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+//                     rules.publishCmd(begKids, beg.getCode(), "LNK_BEG");
+                    
+//                 }else{
+//                     rules.println("BEG subscriber is null for   ::   ");
+//                     rules.println("BEG Code   ::   " + beg.getCode());
+                    
+//                 }
+//             }
+//         }
+         
+//         rules.setState("SENT_BUCKETS");		
+//         rules.setState("SEND_CONTACTS");		
+// 	    rules.footer();     		      
+// end
+
+
+       
