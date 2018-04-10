@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -17,6 +18,7 @@ import javax.money.Monetary;
 import org.javamoney.moneta.Money;
 import org.junit.Test;
 
+import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.QRules;
 
 public class FeeCalculationTest {
@@ -133,7 +135,7 @@ public class FeeCalculationTest {
 	@Test
 	public void generatePasscodeTest() {
 		QRules rules = new QRules(null, null, null);
-		for(int i=0; i<= 100; i++) {
+		for(int i=0; i<= 10; i++) {
 		  System.out.println("The passcode is::"+rules.generateVerificationCode());
 
 		}
