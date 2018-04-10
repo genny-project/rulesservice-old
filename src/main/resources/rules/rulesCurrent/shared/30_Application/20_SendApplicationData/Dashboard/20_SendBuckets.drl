@@ -22,20 +22,32 @@ rule "Send Buckets"
         List<BaseEntity> begKids = new ArrayList<BaseEntity>();
         
         for(BaseEntity bucket: bucketList) {  
-            begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+
+            begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, rules.getUser().getCode());
+            rules.println("FETCHED linked BEGS for the intern   ::   " + begs.size() );
+
+            rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begs);
             
             for(BaseEntity beg: begs) { 
                 
                 /* Send beg to Subscriberts only */
                 String[] begSubscribers = rules.getSubscribers(beg.getCode());              
+                
                 rules.println("BEG Code   ::   " + beg.getCode());
                 rules.println("Each BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
 
-                rules.publishBaseEntityByCode(beg, bucket.getCode(), "LNK_CORE", begSubscribers);
-                
-                /* send INTERNSHIP | COMPANY | CREATOR */
-                begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
-                rules.publishCmd(begKids, beg.getCode(), "LNK_BEG");
+                if(begSubscribers != null){
+                    rules.publishBaseEntityByCode(beg, bucket.getCode(), "LNK_CORE", begSubscribers);
+                    
+                    /* send INTERNSHIP | COMPANY | CREATOR */
+                    begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+                    rules.publishCmd(begKids, beg.getCode(), "LNK_BEG");
+                    
+                }else{
+                    rules.println("BEG subscriber is null for   ::   ");
+                    rules.println("BEG Code   ::   " + beg.getCode());
+                    
+                }
             }
         }
          
