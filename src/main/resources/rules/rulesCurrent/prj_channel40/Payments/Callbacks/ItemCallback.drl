@@ -14,8 +14,13 @@ rule "Assembly item callback"
 	then
 		rules.header();
 		
+		rules.println("item id fr callback ::"+m.getObjectId());
+		rules.println("item object status ::"+m.getObject_status());
+		
 		BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
 		String currentPaymentStatusString = begBe.getValue("PRI_ITEM_STATUS", null);
+		
+		rules.println("current payment status ::"+currentPaymentStatusString);
 		
 		BaseEntity owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
 		BaseEntity driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
