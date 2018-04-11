@@ -4,18 +4,33 @@ import life.genny.rules.QRules;
 rule "Send Sublayout"
 
     when
-        rules: QRules( 	isState("STARTED") && 
-						isState("SEND_SUBLAYOUT") && 
+        rules: QRules( 	isState("SEND_SUBLAYOUT") && 
 						!isState("HAS_SENT_SUBLAYOUT") )
      then
         rules.header();
 		rules.setState("HAS_SENT_SUBLAYOUT");
 
-		String layoutCode = rules.getAsString("sublayoutcode");
-		String layoutPath = rules.getAsString("sublayoutpath");
+		String subLayoutCode = rules.getAsString("subLayoutCode");
+		String subLayoutPath = rules.getAsString("subLayoutPath");
+		String subLayoutRootCode = rules.getAsString("subLayoutRootCode");
+		Boolean subLayoutIsPopup = rules.getAsBoolean("subLayoutIsPopup");
 
-		if(layoutCode != null && layoutPath != null ){
-			rules.sendSublayout(layoutCode, layoutPath);
-		}
+		if(subLayoutCode == null) {
+             rules.println("Send SubLayout :: missing subLayoutCode");
+        }
+        else if(subLayoutPath == null) {
+            rules.println("Send SubLayout :: missing subLayoutPath");
+        }
+        else if(subLayoutRootCode == null) {
+            rules.println("Send SubLayout :: missing subLayoutRootCode");
+        }
+        else if(subLayoutIsPopup == null) {
+            rules.println("Send SubLayout :: missing subLayoutIsPopup");
+        }
+        else {
+			rules.sendSublayout(subLayoutCode, subLayoutPath, subLayoutRootCode, subLayoutIsPopup);
+            rules.setState("SENT_SUBLAYOUT");
+        }
+        rules.clearState("SEND_SUBLAYOUT");        
 	    rules.footer();
 end

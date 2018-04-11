@@ -548,6 +548,23 @@ public class QRules {
 
 		return bes;
 	}
+	/* added because of the bug */
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode2(final String parentCode, final String linkCode,
+			Integer pageStart, Integer pageSize, Boolean cache) {
+
+		List<BaseEntity> bes = null;
+
+		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
+
+		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes2(qwandaServiceUrl, getDecodedTokenMap(),
+				getToken(), parentCode, linkCode, pageStart, pageSize);
+
+		// } else {
+		// bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
+		// }
+
+		return bes;
+	}
 
 	public List<BaseEntity> getBaseEntitysByParentLinkCodeAndLinkValue(final String parentCode, final String linkCode,
 			final String linkValue, Integer pageStart, Integer pageSize, Boolean cache) {
@@ -584,14 +601,8 @@ public class QRules {
 		return bes;
 	}
 
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
-			final String linkCode) {
-
-		// JsonObject begEntity = new JsonObject();
-		// begEntity.put("sourceCode", sourceCode);
-		// begEntity.put("targetCode", baseEntityCode);
-		// begEntity.put("attributeCode", linkCode);
-
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode)
+	{
 		Link link = new Link(sourceCode, baseEntityCode, linkCode);
 
 		try {
@@ -603,7 +614,6 @@ public class QRules {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 

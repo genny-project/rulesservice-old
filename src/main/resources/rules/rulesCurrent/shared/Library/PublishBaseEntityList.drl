@@ -11,41 +11,42 @@ rule "Publish BaseEntity List"
         rules.header();    
         rules.setState("LOOP_PUBLISH_BASE_ENTITY_LIST");
 
-        String parentCode = rules.getAsString("parentCode");
-        String linkCode = rules.getAsString("linkCode");
+        String beParentCode = rules.getAsString("beParentCode");
+        String beLinkCode = rules.getAsString("beLinkCode");
 
-        Integer pageStart = rules.getAsInteger("pageStart");
-        Integer pageSize = rules.getAsInteger("pageSize");
+        Integer bePageStart = rules.getAsInteger("bePageStart");
+        Integer bePageSize = rules.getAsInteger("bePageSize");
 
-        Boolean cache = rules.getAsBoolean("cache");
-        String stakeholderCode = rules.getAsString("stakeholderCode");
+        Boolean beCache = rules.getAsBoolean("beCache");
+        String beStakeholderCode = rules.getAsString("beStakeholderCode");
         
-        if(parentCode == null) {
-            rules.println("Publish BaseEntity List :: missing parentCode");
+        if(beParentCode == null) {
+            rules.println("Publish BaseEntity List :: missing beParentCode");
         }
-        else if(linkCode == null) {
-            rules.println("Publish BaseEntity List :: missing linkCode");
+        else if(beLinkCode == null) {
+            rules.println("Publish BaseEntity List :: missing beLinkCode");
         }
-        else if(pageStart == null) {
-             rules.println("Publish BaseEntity List :: missing pageStart");
+        else if(bePageStart == null) {
+             rules.println("Publish BaseEntity List :: missing bePageStart");
         }
-        else if(pageSize == null) {
-             rules.println("Publish BaseEntity List :: missing pageSize");
+        else if(bePageSize == null) {
+             rules.println("Publish BaseEntity List :: missing bePageSize");
         }
-        else if(cache == null) {
-             rules.println("Publish BaseEntity List :: missing cache");
+        else if(beCache == null) {
+             rules.println("Publish BaseEntity List :: missing beCache");
         }
         else {
             List<BaseEntity> beList = null;
-            if( stakeholderCode != null ) {
-                beList = rules.getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, cache, stakeholderCode);
+            if( beStakeholderCode != null ) {
+                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
             }
             else{
-                beList = rules.getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, cache);
+                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache);
             }
-            rules.publishCmd(beList, parentCode, linkCode);
+            rules.publishCmd(beList, beParentCode, beLinkCode);
             rules.set("beList", beList);
-            rules.setState("BASE_ENTITY_LIST_PUBLISHED");
+            rules.setState("PUBLISHED_BASE_ENTITY_LIST");
         }
+        rules.clearState("PUBLISH_BASE_ENTITY_LIST");        
 	    rules.footer();     		      
 end

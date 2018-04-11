@@ -1,6 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
+/* Send TreeView */
 rule "Send TreeView"
     when
         rules: QRules(  isState("SEND_TREEVIEW") && 
@@ -9,16 +10,17 @@ rule "Send TreeView"
      	rules.header();
      	rules.setState("LOOP_SEND_TREEVIEW");
 
-        rules.set("parentCode", "GRP_ROOT");            
-        rules.set("linkCode", "LNK_CORE");
-        rules.set("pageStart", 0);
-        rules.set("pageSize", 20);
-        rules.set("cache", false);
+        rules.set("beParentCode", "GRP_ROOT");            
+        rules.set("beLinkCode", "LNK_CORE");
+        rules.set("bePageStart", 0);
+        rules.set("bePageSize", 20);
+        rules.set("beCache", false);
 
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
          
         rules.setState("SENT_TREEVIEW");		
+        rules.setState("SEND_DASHBOARD");		
 	    rules.footer();     		      
 end
 
