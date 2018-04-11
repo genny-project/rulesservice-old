@@ -20,5 +20,7 @@ rule "Ask Registration"
 		rules.set("isPopup", isPopup);
 		
 		rules.setState("ASK_QUESTION");
+ 		rules.setState("ASK_REGISTRATION");
+ 		
  		rules.footer();
 end
