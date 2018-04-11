@@ -9,11 +9,10 @@ rule "Auth Init"
 	no-loop true
     when
         m : QEventMessage( "AUTH_INIT" == data.code  )
-        rules: QRules( isState("STARTED") && !isState("USER_CHECKED") && !isState("AUTH_INIT"))
+        rules: QRules( 	isState("STARTED")  &&
+                        !isState("LOOP_AUTH_INIT_EVT") )
      then
-
-     	rules.header();
-		
+        rules.setDrools(drools);
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 
