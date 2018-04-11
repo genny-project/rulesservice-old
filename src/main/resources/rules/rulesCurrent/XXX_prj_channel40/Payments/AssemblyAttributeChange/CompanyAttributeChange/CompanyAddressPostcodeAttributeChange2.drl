@@ -6,13 +6,14 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 
 
 rule "Assembly Company updation for attribute change - Company Address Postcode"
+	ruleflow-group 'AttributeChange'
     when
     	m: QEventAttributeValueChangeMessage( data.code == "PRI_ADDRESS_POSTCODE"  && getAnswer().getTargetCode().startsWith("CPY_") )
-    	rules: QRules( isState("STARTED") && !isState("COMPANY_UPDATE_ADDRESSPOSTCODE_LOOP") )
+    	rules: QRules(!isState("COMPANY_UPDATE_ADDRESSPOSTCODE_LOOP") )
     then
 		RulesUtils.header(drools.getRule().getName());
         rules.setState("COMPANY_UPDATE_ADDRESSPOSTCODE_LOOP");

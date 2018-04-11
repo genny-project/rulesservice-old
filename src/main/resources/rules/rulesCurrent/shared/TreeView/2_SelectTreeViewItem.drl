@@ -6,7 +6,10 @@ import life.genny.rules.QRules;
 
 rule "TV_SELECT event handling"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && !getData().getValue().equals("GRP_DASHBOARD") && !getData().getValue().equals("GRP_REPORTS") )
+       $m : QEventMessage( event_type == "TV_SELECT" && !getData().getValue().equals("GRP_DASHBOARD") 
+                                                     && !getData().getValue().equals("GRP_REPORTS") 
+                                                     && data.value != "GRP_MESSAGES"
+                                                     && !data.value.startsWith("GRP_REPORTS_"))
        rules: QRules( !isState("TV_SELECT_HANDLED") )
      then
 

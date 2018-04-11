@@ -6,14 +6,15 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
-import life.genny.qwandautils.PaymentUtils;
+import life.genny.utils.PaymentUtils;
 import life.genny.qwandautils.QwandaUtils;
 
 
 rule "Assembly user updation for attribute change - State"
+	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_ADDRESS_STATE")  && getAnswer().getTargetCode().startsWith("PER_") )
-    	rules: QRules( isState("STARTED")  && !isState("USER_UPDATE_STATE_LOOP"))
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ADDRESS_STATE")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	rules: QRules( !isState("USER_UPDATE_STATE_LOOP"))
     then
 		RulesUtils.header(drools.getRule().getName());
 
