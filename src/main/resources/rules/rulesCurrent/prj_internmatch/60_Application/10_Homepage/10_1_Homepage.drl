@@ -5,12 +5,12 @@ import java.util.List;
 
 rule "Home Page - Send Data"
      when
-        rules: QRules(  isState("HOME_PAGE_SEND_DATA") && 
-                        !isState("LOOP_HOME_PAGE_SEND_DATA") ) 
-     then      
+        rules: QRules(  isState("HOME_PAGE_SEND_DATA") &&
+                        !isState("LOOP_HOME_PAGE_SEND_DATA") )
+     then
         rules.header();
         rules.setState("LOOP_HOME_PAGE_SEND_DATA");
-        
+
         String[] recipientArray = new String[1];
 		recipientArray[0] = rules.getUser().getCode();
 
@@ -23,6 +23,5 @@ rule "Home Page - Send Data"
         rules.publishBaseEntityByCode("GRP_IN_PROGRESS", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
 
         rules.setState("HOME_PAGE_SENT_DATA");
-		rules.footer();     		      
+		rules.footer();
 end
-     	
