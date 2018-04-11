@@ -96,7 +96,7 @@ rule "Create Conversation"
 
 				/* Create chat BE */
 					BaseEntity chat = rules.createBaseEntityByCode(userCode, "CHT", "Chat");
-					rules.println("CHAT CODE   ::   " + chat.getCode());
+					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
 					RulesUtils.ruleLogger("CHAT BaseEntity", chat);
 
 				/* Subscribe Users to chat BaseEntity */
