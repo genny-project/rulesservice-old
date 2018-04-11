@@ -131,7 +131,7 @@ public class RulesUtils {
 		if (System.getenv("GENNY_DEV") == null) {
 			activateCache = true;
 		} else {
-			activateCache = true; // this should be FALSE
+			activateCache = false; // this should be FALSE
 		}
 
 		String host = System.getenv("LAYOUT_CACHE_HOST");

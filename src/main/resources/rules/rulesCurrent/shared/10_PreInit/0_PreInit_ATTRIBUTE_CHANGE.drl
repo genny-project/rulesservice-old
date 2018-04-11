@@ -16,6 +16,6 @@ rule "Pre Init Attribute Change"
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");
         rules.setState("STARTED");
 		
-        	drools.setFocus("AttributeChange");
+        drools.setFocus("AttributeChange");
        		      
 end
