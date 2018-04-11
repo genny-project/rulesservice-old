@@ -5,7 +5,9 @@ import java.util.List;
 
 rule "Check If Intern Profile Completion"
      when
-        rules: QRules( isState("CHECK_INTERNMATCH_PROFILE") && isState("PRI_IS_INTERN") && !isState("LOOP_INTERN_ROLE_CHECK"))
+        rules: QRules( 	isState("CHECK_INTERNMATCH_PROFILE") && 
+						isState("PRI_IS_INTERN") && 
+						!isState("LOOP_INTERN_ROLE_CHECK")	)
      then
 
         rules.header();

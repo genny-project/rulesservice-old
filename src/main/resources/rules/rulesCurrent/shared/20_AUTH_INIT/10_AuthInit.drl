@@ -13,13 +13,14 @@ rule "Auth Init"
      then
      	rules.header();
 
+     	rules.header();
         rules.setState("AUTH_INIT");
         BaseEntity user = rules.getUser();
         if(user == null ){
-            rules.setState("USER_NOT_CHECKED");
-        }else{
-            rules.setState("USER_CHECKED");
+            rules.setState("USER_NOT_FOUND");
             rules.setState("TRIGGER_REGISTRATION");
+        }else{
+            rules.setState("USER_FOUND");
         }
 
 	    rules.footer();

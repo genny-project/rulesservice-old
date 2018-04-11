@@ -12,7 +12,8 @@ import life.genny.qwandautils.MergeUtil;
 rule "Check if Profile Completed - Intermatch"
     no-loop true
     when
-        rules: QRules( ( isState("USER_CHECKED") || isState("STARTED") ) && isState("CHECK_USER_PROFILE_COMPLETED") && !isState("PROFILE_CHECK_COMPLETED") )
+		
+        rules: QRules( ( isState("USER_FOUND") || isState("STARTED") ) && isState("CHECK_USER_PROFILE_COMPLETED") && !isState("PROFILE_CHECK_COMPLETED") )
      then
      	rules.header();
      	
