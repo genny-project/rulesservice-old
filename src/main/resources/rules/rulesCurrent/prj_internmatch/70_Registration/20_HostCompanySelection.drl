@@ -12,7 +12,7 @@ rule "Host Company Selection"
         rules.setState("LOOP_HOST_COMPANY_SELECTION");
    
         String oldCompanyCode = $m.getAnswer().getValue();
-        String newCompanyCode = $m.getAnswer().getValue();
+        String newCompanyCode = $m.getAnswer().getTargetCode();
         if(oldCompanyCode == null){
             rules.println("oldCompanyCode is null");
         }else if(newCompanyCode == null){
