@@ -12,10 +12,10 @@ rule "Auth Init"
         rules.setDrools(drools); 
         rules.setState("LOOP_AUTH_INIT_EVT");
         rules.setState("AUTH_INIT");
-       
+        
+        rules.getUser();
+
         if(rules.isUserPresent() == true) {
-            
-            rules.getUser();
             rules.setState("TRIGGER_APPLICATION_SETUP"); /* this starts application workflow */
         }
 	    rules.footer();       		      
