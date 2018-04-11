@@ -15,12 +15,10 @@ rule "Auth Init"
 
      	rules.header();
         rules.setState("AUTH_INIT");
-        BaseEntity user = rules.getUser();
-        if(user == null ){
-            rules.setState("USER_NOT_FOUND");
-            rules.setState("TRIGGER_REGISTRATION");
-        }else{
-            rules.setState("USER_FOUND");
+        rules.setState("LOOP_AUTH_INIT_EVT");
+
+        if(rules.isUserPresent() == true) {
+            rules.setState("TRIGGER_SEND_APPLICATION_SETUP"); /* this starts application workflow */
         }
 
 	    rules.footer();
