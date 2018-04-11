@@ -10,7 +10,7 @@ rule "Auth Init"
     when
         m : QEventMessage( "AUTH_INIT" == data.code  )
         rules: QRules( isState("STARTED") && !isState("USER_CHECKED") && !isState("AUTH_INIT"))
-     then     
+     then
      	rules.header();
 
         rules.setState("AUTH_INIT");
@@ -21,6 +21,6 @@ rule "Auth Init"
             rules.setState("USER_CHECKED");
             rules.setState("TRIGGER_REGISTRATION");
         }
-        
-	    rules.footer();       		      
+
+	    rules.footer();
 end
