@@ -3,29 +3,33 @@ import life.genny.rules.QRules;
 
 rule "Ask Question"
 	when
-	    rules: QRules(  isState("ASK_QUESTION") &&
-                        !isState("ASKED_QUESTION") )
+	    rules: QRules( isState("ASK_QUESTION") )
 	 then 	
         rules.header();
- 		rules.setState("ASKED_QUESTION");
 
-        String sourceCode = rules.getAsString("sourceCode");
-        String targetCode = rules.getAsString("targetCode");
-        String questionGroup = rules.getAsString("questionGroup");
-        Boolean isPopup = rules.getAsBoolean("isPopup");
+        String questionSourceCode = rules.getAsString("questionSourceCode");
+        String questionTargetCode = rules.getAsString("questionTargetCode");
+        String questionGroupCode = rules.getAsString("questionGroupCode");
+        Boolean questionIsPopup = rules.getAsBoolean("questionIsPopup");
  		
- 		if(sourceCode == null) {
-             rules.println("Ask Question: missing source code");
+ 		if(questionSourceCode == null) {
+             rules.println("Ask Question: missing questionSourceCode");
         }
-        else if(targetCode == null) {
-            rules.println("Ask Question: missing target code");
+        else if(questionTargetCode == null) {
+            rules.println("Ask Question: missing questionTargetCode");
         }
-        else if(questionGroup == null) {
-            rules.println("Ask Question: missing questionGroup code");
+        else if(questionGroupCode == null) {
+            rules.println("Ask Question: missing questionGroupCode");
         }
         else {
-            rules.askQuestions(sourceCode, targetCode, questionGroup, false, isPopup);
+            rules.askQuestions( questionSourceCode, 
+                                questionTargetCode, 
+                                questionGroupCode, 
+                                false, 
+                                questionIsPopup );
+ 		    rules.setState("ASKED_QUESTION");
         }
-
+ 		
+        rules.clearState("ASK_QUESTION");
 	 	rules.footer();      
 end

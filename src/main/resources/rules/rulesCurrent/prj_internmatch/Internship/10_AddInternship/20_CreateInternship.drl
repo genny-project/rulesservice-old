@@ -4,9 +4,10 @@ import life.genny.rules.QRules;
 /* Create Internship BaseEntity */
 rule "Add Internship - Step 2"
 	when
-		rules: QRules(  isState("CREATE_INTERNSHIP") && 
-						isState("BASE_ENTITY_CREATED") && 
+		rules: QRules(  isState("CREATE_INT") && 
+						isState("CREATED_BASE_ENTITY") && 
 						isState("BEG") && 
+						isState("CREATED_BEG") && 
 						!isState("LOOP_ADD_INTERNSHIP_STEP2") ) 
 	 then
 	    rules.header();
@@ -22,10 +23,9 @@ rule "Add Internship - Step 2"
 		rules.set("beCode", rules.getUser().getCode());
 		rules.set("bePrefix", "INT");
 		rules.set("beName", "INTERNSHIP");
-
-		rules.clearState("LOOP_CREATE_BASE_ENTITY");	
 		rules.setState("CREATE_BASE_ENTITY");	
 
+		rules.setState("CREATED_INT");			
         rules.setState("LINK_BEG_TO_INT");
 	    rules.footer();     		      
 end

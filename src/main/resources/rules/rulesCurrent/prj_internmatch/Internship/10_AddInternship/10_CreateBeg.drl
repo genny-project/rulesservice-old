@@ -14,11 +14,10 @@ rule "Add Internship - Step 1"
 		 /* Create BEG BaseEntity*/
 		rules.set("beCode", rules.getUser().getCode());
 		rules.set("bePrefix", "BEG");
-		rules.set("beName", "BEG");
-		
-		rules.clearState("LOOP_CREATE_BASE_ENTITY");	
+		rules.set("beName", "BEG");		
 		rules.setState("CREATE_BASE_ENTITY");	
 
-		rules.setState("CREATE_INTERNSHIP");	
+		rules.setState("CREATED_BEG");	
+		rules.setState("CREATE_INT");	
 	 	rules.footer();      
 end

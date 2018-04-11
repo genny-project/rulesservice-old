@@ -1,10 +1,12 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
+/* Sends TreeView / Buckets / BEGs */
 rule "Trigger Send Application Data"
 
     when    
          rules: QRules( isState("TRIGGER_SEND_APPLICATION_DATA") && 
+                        
                         !isState("LOOP_TRIGGER_SEND_APPLICATION_DATA") )
      then
      	rules.header();

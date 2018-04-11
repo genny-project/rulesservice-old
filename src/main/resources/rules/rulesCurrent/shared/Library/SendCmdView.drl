@@ -3,15 +3,24 @@ import life.genny.rules.QRules;
 
 rule "Send Cmd View"
     when
-        rules: QRules(  isState("CMD_VIEW") && 
-                        !isState("LOOP_CMD_VIEW")) 
+        rules: QRules( isState("SEND_CMD_VIEW") ) 
      then
         rules.header();    
-        rules.setState("LOOP_CMD_VIEW");
 
-        String cmdView = rules.getAsString("CMD_VIEW");
-        String rootCode = rules.getAsString("root");
+        String cmdView = rules.getAsString("cmdView");
+        String cmdViewRootCode = rules.getAsString("cmdViewRootCode");
 
-        rules.sendViewCmd(cmdView, rootCode);
+        if(cmdView == null) {
+            rules.println("Send Cmd View :: missing cmdView");
+        }
+        else if(cmdViewRootCode == null) {
+            rules.println("Send Cmd View :: missing cmdViewRootCode");
+        }
+        else {
+			rules.sendViewCmd(cmdView, cmdViewRootCode);
+            rules.setState("SENT_CMD_VIEW");
+        }
+
+        rules.clearState("SEND_CMD_VIEW");
 	    rules.footer();     		      
 end
