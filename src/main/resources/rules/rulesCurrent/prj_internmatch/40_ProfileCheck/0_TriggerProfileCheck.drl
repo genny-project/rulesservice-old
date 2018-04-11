@@ -11,6 +11,9 @@ rule "Trigger Profile Check"
         rules.setState("LOOP_TRIGGER_PROFILE_CHECK");
         rules.setState("CHECK_INTERNMATCH_PROFILE");
 
+        rules.setState("LOOP_TRIGGER_PROFILE_CHECK");
+        rules.setState("CHECK_INTERNMATCH_PROFILE");
+
         rules.footer();
 
 end
