@@ -5,8 +5,7 @@ rule "Ask Registration"
     	no-loop true
     when
         rules: QRules(  isState("PROFILE_NOT_COMPLETED") && !isState("ASK_REGISTRATION")  )
-     then
-     
+     then 
  		rules.header();
  		
  		String userCode = rules.getUser().getCode();
