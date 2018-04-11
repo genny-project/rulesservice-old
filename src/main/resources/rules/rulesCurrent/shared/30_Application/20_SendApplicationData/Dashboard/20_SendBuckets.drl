@@ -27,7 +27,7 @@ rule "Send Buckets"
             for(BaseEntity beg: begs) { 
                 
                 /* Send beg to Subscriberts only */
-                String[] begSubscribers = rules.getSubscribers(beg.getCode());                
+                String[] begSubscribers = rules.getSubscribers(beg.getCode());              
                 rules.println("BEG Code   ::   " + beg.getCode());
                 rules.println("Each BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
 
