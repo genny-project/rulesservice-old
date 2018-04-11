@@ -15,13 +15,13 @@ rule "Send BaseEntity By Code Parent And Link"
         String[] recipientCodes = (String[])rules.getAsArray("recipientCodes");
 
         if(beCode == null) {
-             rules.println("Send BaseEntity By Code: missing becode");
+            rules.println("Send BaseEntity By Code: missing be code");
         }
         else if(parentCode == null) {
-            rules.println("Send BaseEntity By Code: missing parentCode");
+            rules.println("Send BaseEntity By Code: missing parent code");
         }
         else if(linkCode == null) {
-            rules.println("Send BaseEntity By Code: missing attributeCode");
+            rules.println("Send BaseEntity By Code: missing attributeCode code");
         }
         else {
             rules.publishBaseEntityByCode(beCode, parentCode, linkCode, recipientCodes);
