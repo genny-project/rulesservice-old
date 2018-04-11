@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 /* LINK GRP_INTERNSHIPS + BEG || INTERNSHIPS */
 rule "Submit Internship - Step 2"
      when
-        rules: QRules( 	isState("BEG_INTERNSHIP_COMPANY_READY") && 
+        rules: QRules( 	isState("SUBMIT_INTERNSHIP_READY") && 
                      	isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 

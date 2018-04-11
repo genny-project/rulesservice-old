@@ -59,7 +59,7 @@ rule "Shortlist Internship - Step 0"
 			rules.set("internshipBe", internship);
 			rules.set("internBe", intern );
 			
-			rules.setState("BEG_APPLICATION_INTERN_READY");            
+			rules.setState("SHORTLIST_INTERN_READY");            
 			rules.setState("CREATE_NEW_BEG");
         }
 	 	rules.footer();      
