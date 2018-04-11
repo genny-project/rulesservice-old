@@ -84,12 +84,6 @@ rule "Create Conversation"
 			}
 			else {
 				rules.showLoading("Creating a new conversation...");
-				rules.println("Chat Code   ::   " + chatCode);
-				rules.showLoading("Loading Chat History ...");
-				if(chatCode != null) rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
-			}
-			else {
-				rules.showLoading("Creating a new conversation...");
 
 				/* GET beg BE */
 					BaseEntity beg = rules.getBaseEntityByCode(begCode);
