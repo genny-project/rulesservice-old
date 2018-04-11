@@ -666,12 +666,6 @@ public class QRules {
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
 
-	public void publishBaseEntityByCode(final String be, final Boolean delete) {
-		String[] recipientArray = new String[1];
-		recipientArray[0] = be;
-		publishBaseEntityByCode(be, null, null, recipientArray, delete);
-	}
-
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
