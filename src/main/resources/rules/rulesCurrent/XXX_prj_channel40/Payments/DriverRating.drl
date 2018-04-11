@@ -4,8 +4,6 @@ import life.genny.rules.QRules;
 
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwandautils.PaymentUtils;
-import life.genny.qwandautils.MergeUtil;
 import java.util.HashMap;
 import life.genny.rules.RulesUtils;
 

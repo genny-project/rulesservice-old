@@ -8,15 +8,16 @@ rule "Auth Init"
         m : QEventMessage(  data.code == "AUTH_INIT" )
         rules: QRules( 	isState("STARTED")  &&
                         !isState("LOOP_AUTH_INIT_EVT") )
-     then   
-        rules.setDrools(drools); 
-        rules.setState("LOOP_AUTH_INIT_EVT");
+     then
+        rules.setDrools(drools);
         rules.setState("AUTH_INIT");
-        
+        rules.setState("LOOP_AUTH_INIT_EVT");
+
         rules.getUser();
 
         if(rules.isUserPresent() == true) {
             rules.setState("TRIGGER_APPLICATION_SETUP"); /* this starts application workflow */
         }
-	    rules.footer();       		      
+
+	    rules.footer();
 end
