@@ -25,17 +25,19 @@ rule "Check User Role"
 								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
 								.collect(Collectors.toList());
 
-		Boolean has_role_been_found = false;
-
-		for(EntityAttribute role: roles) {
-			if(role != null && role.getValue() != null) {
-				Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
-				if(isRole) {
-					rules.setState(role.getAttributeCode());
-					has_role_been_found = true;
+			for(EntityAttribute role: roles) {
+				
+				if(role != null && role.getValue() != null) {
+					Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
+					if(isRole) {
+						rules.setState(role.getAttributeCode());
+						has_role_been_found = true;
+					}
 				}
+				
 			}
-		}else{
+		}
+		else{
 			rules.println("user is null");
 		}
 
