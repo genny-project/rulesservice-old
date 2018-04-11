@@ -1,0 +1,17 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Cmd View"
+    when
+        rules: QRules(  isState("CMD_VIEW") && 
+                        !isState("LOOP_CMD_VIEW")) 
+     then
+        rules.header();    
+        rules.setState("LOOP_CMD_VIEW");
+
+        String cmdView = rules.getAsString("CMD_VIEW");
+        String rootCode = rules.getAsString("root");
+
+        rules.sendViewCmd(cmdView, rootCode);
+	    rules.footer();     		      
+end

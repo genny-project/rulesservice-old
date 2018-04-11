@@ -11,7 +11,8 @@ rule "Form Submit"
 	 	rules.header();
  		rules.setState("QUESTION_CODE_SET");
 	 	String quesCode = m.getData().getCode();
-	 	rules.println("quesCode   ::   " + quesCode);
-	 	rules.setState(quesCode);	
+		if(quesCode != null) {
+	 		rules.setState(quesCode);	
+		}
 	 	rules.footer();      
 end
