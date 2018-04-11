@@ -439,7 +439,16 @@ public class QRules {
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
 
-		be = VertxUtils.readFromDDT(code, getToken());
+		/* use vertexUtils */
+		//be = VertxUtils.readFromDDT(code, getToken());
+
+		/* remove this try catch block from here */
+		try {
+			be= QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+
 		if (be == null) {
 			println("ERROR - be (" + code + ") fetched is NULL ");
 		} else {
@@ -4418,5 +4427,4 @@ public class QRules {
 	  	publishData(new JsonObject(result));
 	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 	}
-
 }
