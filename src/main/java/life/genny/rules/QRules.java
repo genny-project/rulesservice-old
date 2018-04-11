@@ -117,6 +117,10 @@ public class QRules {
 	public void setDrools(KnowledgeHelper drools) {
 		this.drools = drools;
 	}
+	
+	public KnowledgeHelper getDrools() {
+		return this.drools;
+	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
@@ -4400,5 +4404,6 @@ public class QRules {
 	  	publishData(new JsonObject(result));
 	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 	}
+	
 	
 }
