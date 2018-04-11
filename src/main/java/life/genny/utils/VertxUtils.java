@@ -2,6 +2,7 @@ package life.genny.utils;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -190,6 +191,19 @@ public class VertxUtils {
 		// Subscribe to a code
 		Set<String> subscriberSet = getSetString(realm, SUB, be.getCode());
 		subscriberSet.add(userCode);
+		putSetString(realm, SUB, be.getCode(), subscriberSet);
+
+	}
+	
+	/*
+	 * Subscribe list of users to the be
+	 */
+	static public void subscribe(final String realm, final BaseEntity be, final String[] SubscribersCodeArray) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		//Set<String> subscriberSet = getSetString(realm, SUB, be.getCode());
+		//subscriberSet.add(userCode);
+		Set<String> subscriberSet = new HashSet<String>(Arrays.asList(SubscribersCodeArray));
 		putSetString(realm, SUB, be.getCode(), subscriberSet);
 
 	}
