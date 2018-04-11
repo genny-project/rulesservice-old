@@ -84,17 +84,19 @@ rule "Create Conversation"
 			}
 			else {
 				rules.showLoading("Creating a new conversation...");
-<<<<<<< HEAD
+				rules.println("Chat Code   ::   " + chatCode);
+				rules.showLoading("Loading Chat History ...");
+				if(chatCode != null) rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
+			}
+			else {
+				rules.showLoading("Creating a new conversation...");
 
-=======
-				rules.println("Chat Exists   ::   FALSE" );
->>>>>>> 42e21b0... refactored
 				/* GET beg BE */
 					BaseEntity beg = rules.getBaseEntityByCode(begCode);
 
 				/* Create chat BE */
 					BaseEntity chat = rules.createBaseEntityByCode(userCode, "CHT", "Chat");
-					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
+					rules.println("CHAT CODE   ::   " + chat.getCode());
 					RulesUtils.ruleLogger("CHAT BaseEntity", chat);
 
 				/* Subscribe Users to chat BaseEntity */
