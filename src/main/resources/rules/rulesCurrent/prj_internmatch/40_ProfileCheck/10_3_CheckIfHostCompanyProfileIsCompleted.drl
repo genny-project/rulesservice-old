@@ -1,0 +1,21 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Check If Host Company Profile Completion"
+      when
+        rules: QRules( isState("CHECK_INTERNMATCH_PROFILE") && !isState("LOOP_HOST_COMPANY_ROLE_CHECK") && isState("PRI_IS_HOST_COMPANY")) 
+     then
+        
+        rules.header();
+        
+		rules.setState("LOOP_HOST_COMPANY_ROLE_CHECK");
+     	rules.set("registration_question_grp", "QUE_HOST_COMPANY_GRP");
+     	
+     	rules.sendSelections("GRP_COMPANY_SELECTION", "LNK_CORE", 10);
+     	
+     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
+	    rules.footer();     		      
+end
+     	
