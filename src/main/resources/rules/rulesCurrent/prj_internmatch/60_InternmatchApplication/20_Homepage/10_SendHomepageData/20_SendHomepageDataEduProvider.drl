@@ -15,8 +15,9 @@ rule "Home Page - Send Data - EDU PROVIDER"
         String[] recipientArray = new String[1];
 		recipientArray[0] = rules.getUser().getCode();
 
-        rules.publishBaseEntityByCode("GRP_DASHBOARD", "GRP_ROOT", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_DASHBOARD_EDU_PROVIDER", "GRP_ROOT", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_INTERNS", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_APPLIED", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_SHORTLISTED", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_INTERVIEWS", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
         rules.publishBaseEntityByCode("GRP_OFFERED", "GRP_DASHBOARD", "LNK_CORE", recipientArray);
