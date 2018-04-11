@@ -1,8 +1,8 @@
-package life.genny.rules;
+/* package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
-/* Publish BEG */
+
 rule "Submit Internship - Step 5"	
 	when
 		rules: QRules( 	isState("MOVED_BEG_TO_AVAILABLE") && 
@@ -34,3 +34,4 @@ rule "Submit Internship - Step 5"
 		rules.setState("PUBLISHED_BEG");
 	 	rules.footer();      
 end
+ */
