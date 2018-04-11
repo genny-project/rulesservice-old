@@ -109,7 +109,7 @@ public class QRules {
 	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
-	
+
 	private long ruleStartMs = 0;
 
 	KnowledgeHelper drools;
@@ -117,7 +117,7 @@ public class QRules {
 	public void setDrools(KnowledgeHelper drools) {
 		this.drools = drools;
 	}
-	
+
 	public KnowledgeHelper getDrools() {
 		return this.drools;
 	}
@@ -285,12 +285,12 @@ public class QRules {
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Object> getAsList(final String key) {
 		return (List<Object>) get(key);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Object[] getAsArray(final String key) {
 		return (Object[]) get(key);
@@ -310,6 +310,10 @@ public class QRules {
 
 	public Attribute getAsAttribute(final String key) {
 		return (Attribute) get(key);
+	}
+
+	public Integer getAsInteger(final String key) {
+		return (Integer) get(key);
 	}
 
 	public Double getAsDouble(final String key) {
@@ -373,7 +377,7 @@ public class QRules {
 			set("USER", be);
 		} else {
 			// try again
-			
+
 		}
 
 		return be;
@@ -1243,7 +1247,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
-	
+
 	public void logoutAll() {
 	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
 	 	msg.setToken(getToken());
@@ -1254,9 +1258,9 @@ public class QRules {
 	     JsonArray jsonArr = new JsonArray();
 	     jsonArr.add(getUser().getCode());
 		jsonObj.put("recipientCodes", jsonArr);
-	
+
 		publish("data", jsonObj);
-		
+
 		// clear the session AFTER it has been sent to bridge!
 	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
 
@@ -1567,7 +1571,7 @@ public class QRules {
 		QDataAskMessage msg = null;
 		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 		if (msg != null) {
-			publishData(msg); 
+			publishData(msg);
 		}
 		else {
 			log.error("Questions Msg is null "+sourceCode + "/asks2/"
@@ -1639,7 +1643,7 @@ public class QRules {
 		}
 
 	}
-	
+
 	public boolean sendSelections(final String selectionRootCode, final String linkCode, final String stakeholderCode,final Integer maxItems) {
 
 		JsonObject selectionLists;
@@ -1694,7 +1698,7 @@ public class QRules {
 	public void footer() {
 		long endTime = System.nanoTime();
 		double difference = (endTime - ruleStartMs) / 1e6;  // get ms
-		
+
 		try {
 			RulesUtils.footer(difference+" ms :"+drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "")
@@ -1979,7 +1983,7 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void processChat2(QEventMessage m) {
 
 		String data = m.getData().getValue();
@@ -2155,7 +2159,7 @@ public class QRules {
 		}
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
-		
+
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
 
 		updateCachedBaseEntity(answers);
@@ -2169,7 +2173,7 @@ public class QRules {
 			log.error("Socket error trying to post answer");
 		}
 	}
-	
+
 	/**
 	 * @param answers
 	 */
@@ -2869,7 +2873,7 @@ public class QRules {
 				} else {
 					if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
 						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-								500, false, user.getCode());	
+								500, false, user.getCode());
 						for(BaseEntity beg : driverbegs) {
 							/*  Getting begs related to this driver only  */
 							String driverCode = beg.getValue("STT_IN_TRANSIT", null);
@@ -2884,11 +2888,11 @@ public class QRules {
 						    	    	         VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
 											begs.add(beg);
 						    	       }
-						    	      
+
 						       }
-							 
+
 				        }
-						
+
 //						begs.addAll(driverbegs);
 //						VertxUtils.subscribe(realm(), driverbegs, user.getCode());
 					}
@@ -2996,7 +3000,7 @@ public class QRules {
 		/* Save Payment-related answers as user/BEG attributes */
 		String userCode = getUser().getCode();
 		//String begCode = PaymentUtils.processPaymentAnswers(getQwandaServiceUrl(), m, getToken());
-		
+
 		String begCode = null;
 		Answer[] dataAnswers = m.getItems();
 		for (Answer answer : dataAnswers) {
@@ -3005,7 +3009,7 @@ public class QRules {
 			String sourceCode = answer.getSourceCode();
 			String attributeCode = answer.getAttributeCode();
 			String value = answer.getValue();
-			
+
 			begCode = targetCode;
 
 			log.debug("Payments value ::" + value + "attribute code ::" + attributeCode);
@@ -3014,45 +3018,45 @@ public class QRules {
 
 			/* if this answer is actually an Payment_method, this rule will be triggered */
 			if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
-				
+
 				JsonObject paymentValues = new JsonObject(value);
-				
+
 				/*{ ipAddress, deviceID, accountID }*/
 				String ipAddress = paymentValues.getString("ipAddress");
 				String accountId = paymentValues.getString("accountID");
 				String deviceId = paymentValues.getString("deviceID");
-				
+
 				List<Answer> userSpecificAnswers = new ArrayList<>();
-				
-				
+
+
 				if(ipAddress != null){
 					Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
 					userSpecificAnswers.add(ipAnswer);
 					saveAnswer(ipAnswer);
 					//saveAnswer(qwandaServiceUrl, ipAnswer, tokenString);
 				}
-				
+
 				if(accountId != null) {
 					Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
 					userSpecificAnswers.add(accountIdAnswer);
 					saveAnswer(accountIdAnswer);
 					//saveAnswer(qwandaServiceUrl, accountIdAnswer, tokenString);
 				}
-				
+
 				if(deviceId != null) {
 					Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
 					userSpecificAnswers.add(deviceIdAnswer);
 					saveAnswer(deviceIdAnswer);
-					//saveAnswer(qwandaServiceUrl, deviceIdAnswer, tokenString);	
-				}	
-				
+					//saveAnswer(qwandaServiceUrl, deviceIdAnswer, tokenString);
+				}
+
 				/* bulk answer not working currently, so using individual answers */
 				//saveAnswers(userSpecificAnswers);
 			}
 		}
-		
-		
-		
+
+
+
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
 		BaseEntity userBe = getUser();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
@@ -3066,7 +3070,7 @@ public class QRules {
 
 				/* Make payment */
 				showLoading("Processing payment...");
-				
+
 				BaseEntity offer = getBaseEntityByCode(offerCode);
 				 /*makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken)*/
 				PaymentsResponse makePaymentResponseObj = PaymentUtils.makePaymentWithResponse(userBe, offer, beg, assemblyAuthKey);
@@ -3075,7 +3079,7 @@ public class QRules {
 
 
 				/* GET offer Base Entity */
-				
+
 				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
 
 				if (!makePaymentResponseObj.getIsSuccess()) {
@@ -3117,8 +3121,8 @@ public class QRules {
 							JsonUtils.toJson(feePriceExcGST)));
 					answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST",
 							JsonUtils.toJson(feePriceIncGST)));
-					
-					
+
+
 					answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getResponseMap().get("depositReferenceId")));
 
 					//fetch the job to ensure the cache has caught up
@@ -3141,7 +3145,7 @@ public class QRules {
 					contextMap.put("JOB", begCode);
 					contextMap.put("QUOTER", quoterCode);
 					contextMap.put("OFFER", offer.getCode());
-					
+
 					String[] recipientArr = { userCode };
 
 					/* TOAST :: PAYMENT SUCCESS */
@@ -3155,7 +3159,7 @@ public class QRules {
 					contextMapForDriver.put("JOB", begCode);
 					contextMapForDriver.put("OWNER", userCode);
 					contextMapForDriver.put("OFFER", offer.getCode());
-					
+
 					String[] recipientArrForDriver = { quoterCode };
 
 					/* Sending messages to DRIVER - Email and sms enabled */
@@ -3291,7 +3295,7 @@ public class QRules {
 				return;
 			}
 			try {
-				
+
 				List<BaseEntity> jobsInTransit = getBaseEntitysByAttributeAndValue("STT_IN_TRANSIT",
 						getUser().getCode());
 				if (!jobsInTransit.isEmpty()) {
@@ -3310,11 +3314,11 @@ public class QRules {
 					Double percentage = 100.0 * (totalDistance - distance) / (totalDistance);
 					percentage = percentage < 0 ? 0 : percentage;
 
-					
+
 					/* update position of the beg */
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_PROGRESS", percentage.toString()));
-					
+
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LATITUDE", driverLatitude + ""));
 					answers.add(new Answer(be.getCode(), be.getCode(), "PRI_POSITION_LONGITUDE", driverLongitude + ""));
 					saveAnswers(answers);
@@ -3754,11 +3758,11 @@ public class QRules {
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
 
-			
+
 		if(!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
-			
+
 			/* Sending Messages */
-			
+
 			println("new job");
 
 			HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -3772,10 +3776,10 @@ public class QRules {
 
 			/* Sending message to BEG OWNER */
 			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-			
+
 		}
-		
-		
+
+
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4030,7 +4034,7 @@ public class QRules {
 		println("Get All Drivers - The search BE is  :: " + searchBeCode);
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); // createBaseEntityByCode2(searchBeCode,
 																				// "Get All Users");
-		
+
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
 		// if( getBaseEntityByCode(searchBeCode) == null ) {
@@ -4190,10 +4194,10 @@ public class QRules {
 					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
 					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
 					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					
+
 					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
 					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
-					
+
 					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
 
 				}
@@ -4202,7 +4206,7 @@ public class QRules {
 		//println("The offers in the descendinng order :: " + offers.toString());
 		//println("The size of list is :: " + offers.size());
 		double maxLinkWeightValue = offers.size();
-		double linkWeight=1; 
+		double linkWeight=1;
 		for (BaseEntity be : offers) {
 		   if(linkWeight <= maxLinkWeightValue) {
 			  updateLink(begCode, be.getCode(), "LNK_BEG", "OFFER", linkWeight);
@@ -4282,7 +4286,7 @@ public class QRules {
 		return myMap;
 
 	}
-	
+
 	/*
 	 * Redirecting to the Home/Landing Page based on the user role:OWNER or DRIVER
 	 */
@@ -4297,10 +4301,10 @@ public class QRules {
             setLastLayout( "LIST_VIEW", "GRP_NEW_ITEMS" );
          }
 	}
-	
+
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be)
 	{
-		// Add this be to the static 
+		// Add this be to the static
 		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
 			map = new HashMap<String,String>();
@@ -4312,44 +4316,44 @@ public class QRules {
 
 	public Map<String,String> getMap(final String keyPrefix, final String parentCode)
 	{
-		// Add this be to the static 
+		// Add this be to the static
 		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
 			map = new HashMap<String,String>();
 		}
 		return map;
 	}
-	
+
 	public void remove(final String keyPrefix, final String parentCode, final String beCode)
 	{
-		// Add this be to the static 
+		// Add this be to the static
 		Map<String,String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map != null) {
 			map.remove(beCode);
 			VertxUtils.putMap(this.realm(), keyPrefix, parentCode, map);
 		}
 	}
-	
+
 	public void remove(final String keyPrefix, final String parentCode)
 	{
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, null);
 	}
-	
+
 	public JsonObject generateLayout(final String reportGroupCode)
 	{
      	 Map<String,String> map = getMap("GRP",reportGroupCode);
        	 println(map);
-       	 
+
        	 Integer cols = 1;
        	 Integer rows = map.size();
-       	 
+
        	 JsonObject layout = new JsonObject();
        	 JsonObject grid = new JsonObject();
        	 grid.put("cols", cols);
        	 grid.put("rows", rows);
-       	 
+
        	 layout.put("Grid", grid);
-       	 
+
        	 JsonArray children = new JsonArray();
        	 grid.put("children", children);
        	 for (String key : map.keySet()) {
@@ -4359,11 +4363,11 @@ public class QRules {
        	 }
        	 return layout;
 	}
-	
+
 	public JsonObject generateGennyButton(final String code, final String name)
 	{
 		JsonObject gennyButton = new JsonObject();
-		
+
 		JsonObject ret = new JsonObject();
 		JsonArray position = new JsonArray();
 		position.add(0);
@@ -4372,11 +4376,11 @@ public class QRules {
 		ret.put("buttonCode",code);
 		ret.put("children", name);
 		ret.put("value", new JsonObject());
-		
+
 		JsonObject buttonStyle = new JsonObject();
 		buttonStyle.put("background", "PROJECT.PRI_COLOR");
 		ret.put("buttonStyle", buttonStyle);
-		
+
 		JsonObject style = new JsonObject();
 		style.put("width", "150px");
 		style.put("height", "50px");
@@ -4384,12 +4388,12 @@ public class QRules {
 		style.put("border", "1px solid");
 		style.put("borderColor", "PROJECT.PRI_COLOR");
 		ret.put("style", style);
-		
+
 		gennyButton.put("GennyButton", ret);
-		
+
 		return gennyButton;
 	}
-	
+
     /*
      * Send Report based on the SearchBE
      */
@@ -4404,6 +4408,5 @@ public class QRules {
 	  	publishData(new JsonObject(result));
 	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 	}
-	
-	
+
 }

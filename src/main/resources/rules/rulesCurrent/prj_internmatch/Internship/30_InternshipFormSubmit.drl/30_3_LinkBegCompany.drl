@@ -5,7 +5,8 @@ import life.genny.rules.QRules;
 rule "Internship Form Submit - Step 3"
 	when
 	    rules: QRules( 	isState("LINK_CREATED") && 
-						isState("INTERNSHIP") && 		
+						isState("INTERNSHIP") && 	
+						isState("EVENT_FORM_SUBMIT") &&	
 						!isState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP3")) 
 	 then
 	 	rules.header();
@@ -14,11 +15,16 @@ rule "Internship Form Submit - Step 3"
 		String userCode = rules.getUser().getCode();
 		
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		Boolean result = rules.is("begBe");
+		rules.println("begBe Exists   ::   " +result );
+		
 
 		/*  Get Company Code of the current user   */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");     
         if(company != null){
             String companyCode = company.getCode();
+			rules.println("company Code   ::   " +companyCode );
+			rules.println("beg Code   ::   " + beg.getCode() );
 
 			/* link BEG to CPY */
 			rules.set("sourceCode", beg.getCode());

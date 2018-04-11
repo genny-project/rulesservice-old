@@ -6,7 +6,8 @@ import life.genny.utils.VertxUtils;
 rule "Internship Form Submit - Step 5"
 	when
 		rules: QRules( 	isState("LINK_CREATED") && 
-						isState("CREATOR") && 		
+						isState("CREATOR") && 	
+						isState("EVENT_FORM_SUBMIT") && 	
 						!isState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP5")) 
 	 then
 	 	rules.header();

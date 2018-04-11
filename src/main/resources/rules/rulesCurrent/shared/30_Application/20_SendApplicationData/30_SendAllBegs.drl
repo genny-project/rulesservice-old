@@ -1,0 +1,62 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.List;
+
+rule "Send All Begs"
+    when
+        rules: QRules(  isState("SENT_DASHBOARD") && 
+                        isState("BASE_ENTITY_LIST_PUBLISHED") && 
+                        !isState("LOOP_SEND_DASHBOARD_BEGS") )
+     then
+     	rules.header();
+     	rules.setState("LOOP_SEND_DASHBOARD_BEGS");
+        
+        /* Get BaseEntity Lists from Map */
+        List<BaseEntity> buckets = rules.getAsBaseEntitys("beList");
+        List<BaseEntity> begList = rules.getAllBegs(buckets, "LNK_CORE", "0", "500", false);
+
+        rules.println("begs   ::   " + begList);
+        rules.setState("PUBLISH_BASE_ENTITY_LIST");
+
+        // for (BaseEntity bucket : buckets) {
+        //     println(bucket);
+        //     List<BaseEntity> begs = new ArrayList<BaseEntity>();
+            
+        //     if (hasRole("admin")) {
+        //         /* list of all begs */
+        //         List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+        //         begs.addAll(driverbegs);
+
+        //     } else {
+
+        //         if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+        //             List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+        //             begs.addAll(driverbegs);
+        //             VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
+        //         } else {
+        //             if (user.is("PRI_DRIVER")) {
+        //                 List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, user.getCode());
+        //                 begs.addAll(driverbegs);
+        //                 VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+        //             }
+        //         }
+
+        //         if (user.is("PRI_OWNER")) {
+        //             List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, user.getCode());
+        //             begs.addAll(ownerbegs);
+        //             VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+        //         }
+        //     }
+        //     println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
+        //     publishCmd(begs, bucket.getCode(), "LNK_CORE");
+        //     rules.println(buckets);
+        // }
+         
+        rules.setState("SENT_DASHBOARD_BEGS");		
+	    rules.footer();     		      
+end
+
+
+       
