@@ -184,7 +184,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -233,7 +233,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -245,7 +245,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -271,7 +271,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -283,9 +283,9 @@ public class RulesUtils {
 		return getBaseEntityJsonByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,value,1);
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -309,7 +309,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -335,7 +335,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -357,7 +357,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -376,7 +376,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -450,7 +450,7 @@ public class RulesUtils {
 
 	}
 
-	/* added because of the bug */	
+	/* added because of the bug */
 	public static String getBaseEntitysJsonByParentAndLinkCode2(final String qwandaServiceUrl,
 			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
 			final Integer pageStart, final Integer pageSize) {
@@ -538,7 +538,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -557,7 +557,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -584,7 +584,7 @@ public class RulesUtils {
 	}
 	/** added because of bug /
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -604,9 +604,9 @@ public class RulesUtils {
 		return msg.getItems();
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -630,7 +630,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -649,7 +649,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -671,7 +671,7 @@ public class RulesUtils {
 	}
 
 	/**
-	* 
+	*
 	* @param qwandaServiceUrl
 	* @param decodedToken
 	* @param token
@@ -695,7 +695,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -719,7 +719,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -740,7 +740,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -770,7 +770,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -840,9 +840,9 @@ public class RulesUtils {
 		}
 		return null;
 	}
-	
-	
-	
-	
+
+
+
+
 
 }
