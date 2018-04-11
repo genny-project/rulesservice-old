@@ -14,7 +14,11 @@ rule "Check User Role"
 		rules.setState("LOOP_CHECK_ROLE");
 
 		BaseEntity user = rules.getUser();
-		List<EntityAttribute> roles = user.getBaseEntityAttributes()
+		Boolean has_role_been_found = false;
+
+		if(user != null) {
+
+			List<EntityAttribute> roles = user.getBaseEntityAttributes()
 								.stream()
 								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
 								.collect(Collectors.toList());
