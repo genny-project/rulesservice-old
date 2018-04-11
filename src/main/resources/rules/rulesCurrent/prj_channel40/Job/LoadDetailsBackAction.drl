@@ -14,16 +14,16 @@ rule "Load Details - Back action"
 
 		rules.header();
         rules.setState("HAS_SENT_DASHBOARD");
-        
+
 		/* Getting the last layout and grp */
 		String[] lastLayout = rules.getLastLayout();
-		
+
 		/* Redirecting to the previous layout */
 		if( lastLayout[0].equalsIgnoreCase("LIST_VIEW") ){
 		   rules.sendViewCmd(lastLayout[0], lastLayout[1]);
 		}else if ( lastLayout[0].equalsIgnoreCase("BUCKET_DASHBOARD") ){
 		   rules.sendSublayout( lastLayout[0], "dashboard_channel40.json", lastLayout[1]);
         }
-        
+
 		rules.footer();
 end
