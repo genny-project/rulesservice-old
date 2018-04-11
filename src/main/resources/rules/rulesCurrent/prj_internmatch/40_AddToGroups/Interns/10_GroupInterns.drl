@@ -13,7 +13,7 @@ rule "Add To Intern Group"
      	/* link INTERN to GRP_INTERNS */
         rules.set("linkSourceCode",  "GRP_INTERNS");
         rules.set("linkTargetCode", rules.getUser().getCode());
-        rules.set("linkCode", "LNK_CORE");
+        rules.set("linkCode", "LNK_INTERN");
         rules.set("linkValue", "INTERN");
         rules.set("linkWeight", 1.0);
         rules.setState("CREATE_LINK");

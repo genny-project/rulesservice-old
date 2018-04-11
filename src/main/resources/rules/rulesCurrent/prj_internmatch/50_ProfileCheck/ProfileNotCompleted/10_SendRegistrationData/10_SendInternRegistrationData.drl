@@ -3,9 +3,9 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import java.util.List;
 
-rule "Check If Intern Profile Completion"
+rule "Send Intern Registration Data"
      when
-        rules: QRules( 	isState("CHECK_INTERNMATCH_PROFILE") && 
+        rules: QRules( 	isState("PROFILE_NOT_COMPLETED") && 
 						isState("PRI_IS_INTERN") && 
 						!isState("LOOP_INTERN_ROLE_CHECK")	)
      then
@@ -19,7 +19,7 @@ rule "Check If Intern Profile Completion"
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
      	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
-     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
-
+		 
+     	rules.setState("SENT_REGISTRATION_DATA");
 		rules.footer();
 end

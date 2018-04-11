@@ -2,15 +2,20 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Send Company Questions */
-rule "Ask Registration - Host Company - STEP 4"
+rule "Ask Registration - Host Company - STEP 2"
     when
-        rules: QRules(  isState("PROFILE_NOT_COMPLETED") &&
+        rules: QRules(  isState("SEND_HOST_COMPANY_QUESTION") &&
+        				isState("SENT_USER_QUESTION") &&
+        				isState("HOST_COMPANY_EXISTS") &&
+        				isState("PROFILE_NOT_COMPLETED") &&
+        				isState("PRI_IS_HOST_COMPANY") &&
+        				isState("SENT_REGISTRATION_DATA") &&
 						isState("SENT_QUESTION") && 
 						isState("QUE_USER_HOST_COMPANY_GRP") &&
-						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP4") ) 
+						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2") ) 
      then 
  		rules.header();		
-		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP4");
+		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP2");
  		
 		/* Get Company BaseEntity from map */
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
@@ -22,12 +27,11 @@ rule "Ask Registration - Host Company - STEP 4"
 			rules.set("questionSourceCode", questionSourceCode);
 			rules.set("questionTargetCode", questionTargetCode);	
 			rules.set("questionGroupCode", "QUE_HOST_COMPANY_GRP");
-			
 			rules.setState("SEND_QUESTION");
 			
-			/* we send the layout */
-			rules.sendSublayout("LAY_HOST_COMPANY", "registration/hostcompany.json", null, false);
-
+			rules.setState("SENT_HOST_COMPANY_QUESTION");
+			rules.setState("SEND_HOST_COMPANY_REGISTRATION_LAYOUT");
+			
 		}else{
 			rules.println("company is null");
 		}
