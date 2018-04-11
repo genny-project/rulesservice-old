@@ -96,6 +96,8 @@ import life.genny.utils.VertxUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -148,7 +150,7 @@ public class QRules {
 				// Successfully got the value
 				fut.complete(resGet.result());
 			} else {
-				
+
 				// Something went wrong!
 				fut.complete(RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code));
 
@@ -627,14 +629,9 @@ public class QRules {
 	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode)
 	{
 		Link link = new Link(sourceCode, baseEntityCode, linkCode);
-
-		try {
-
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), getToken());
-
-
-		} catch (IOException e) {
+		try{
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, JsonUtils.toJson(link), getToken());
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -661,6 +658,12 @@ public class QRules {
 		String[] recipientArray = new String[1];
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray);
+	}
+
+	public void publishBaseEntityByCode(final String be, final Boolean delete) {
+		String[] recipientArray = new String[1];
+		recipientArray[0] = be;
+		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
 
 	public void publishBaseEntityByCode(final String be, final Boolean delete) {
