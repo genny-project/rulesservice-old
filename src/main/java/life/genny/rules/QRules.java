@@ -1959,25 +1959,30 @@ public class QRules {
 
 				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
 				String[] recipientCodeArray = new String[stakeholders.size()];
-
+			    /* List of receivers except current user */
+				String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
 				int counter = 0;
 				for (BaseEntity stakeholder : stakeholders) {
 					recipientCodeArray[counter] = stakeholder.getCode();
+					if (!stakeholder.getCode().equals(getUser().getCode())) {
+			    	        msgReceiversCodeArray[counter] = stakeholder.getCode();
+					}
 					counter += 1;
+					
 				}
-
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
 				List<Answer> answers = new ArrayList<Answer>();
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
 						getUser().getCode()));
 				saveAnswers(answers);
 				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
+				System.out.println("The recipients are :: "+Arrays.toString(msgReceiversCodeArray));
+				/* Publish chat to Receiver */
+				publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray ); 
+				/* Publish message to Receiver */
+				publishData(getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray );  //Had to use getCode() to get data from DB, it was missing attribute
+
+
 			}
 		}
 	}
@@ -2920,14 +2925,22 @@ public class QRules {
 
 				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
 				if (users != null) {
-
-					for (BaseEntity linkedUser : users) {
-
+                    if(users.contains(getUser()) ) {
+					    for (BaseEntity linkedUser : users) {
 						/* if user is a stackholder of this conversation we send it */
 						if (linkedUser.getCode().equals(getUser().getCode())) {
+							VertxUtils.subscribe(realm(), convo, getUser().getCode());
 							userConversations.add(convo);
 						}
+						/* Sending the messages recipient User BE */
+						if (!linkedUser.getCode().equals(getUser().getCode())) {
+							VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
+							String[] senderCodeInArray = { getUser().getCode() };
+							publishData(linkedUser, senderCodeInArray);
+						}
+						
 					}
+				}
 				}
 			}
 		}
@@ -3873,8 +3886,36 @@ public class QRules {
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 		cmdViewJson.put("root", parentCode);
 		cmdViewJson.put("token", getToken());
+				
 		publish("cmds", cmdViewJson);
+	}
+	
+	/*
+	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display
+	 */
+	public void sendCmdSplitView(final String parentCode, final String chatCode) {
+		 QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+			JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+			
+		JsonObject codeListView = new JsonObject();
+		   codeListView.put("code", "LIST_VIEW");
+		   codeListView.put("data", parentCode);
+		JsonObject convListView = new JsonObject();
+		    convListView.put("code", "CONVERSATION_VIEW");
+		    if(chatCode == null || chatCode.isEmpty()) {
+		        convListView.put("data", "null");   
+		     }else
+		    	   convListView.put("data", chatCode); 
+		    
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(convListView);
+        System.out.println("The JsonArray is :: "+msgCodes);		
 
+		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: "+cmdViewJson);
+		publishCmd(cmdViewJson);
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
@@ -4417,6 +4458,49 @@ public class QRules {
 	  	}
 	  	sendTableViewWithHeaders(reportCode, columnHeaders);
 	  	
+	}
+
+	
+	/*
+	 * Check if conversation between sender and receiver already exists
+	 */
+	public Boolean checkIfChatAlreadyExists(final String sender, final String receiver) {
+		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+
+		if (chats != null) {
+
+			for (BaseEntity chat : chats) {
+
+				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+				if (users != null) {
+                     if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
+							return true;
+						}
+					}
+				}
+			}
+		return false;
+			
+	}
+    
+	/*
+	 * Give oldChat for the given sender and receiver
+	 */
+	public BaseEntity getOldChatForSenderReceiver(final String sender, final String receiver) {	
+		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+		if (chats != null) {
+
+			for (BaseEntity chat : chats) {
+
+				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+				if (users != null) {
+                     if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
+							return chat;
+						}
+					}
+				}
+			}
+		return null;
 	}
 
 	
