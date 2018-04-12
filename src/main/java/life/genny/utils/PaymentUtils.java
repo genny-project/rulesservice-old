@@ -9,8 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,6 +33,7 @@ import org.json.simple.parser.ParseException;
 
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Link;
 import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
@@ -38,6 +41,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.RulesUtils;
 
 public class PaymentUtils {
 	
@@ -825,7 +829,7 @@ public class PaymentUtils {
 		}
 		
 		/* DRIVER -> Seller */
-		if(itemContextMap.containsKey("QUOTER")) {
+		/*if(itemContextMap.containsKey("QUOTER")) {
 			
 			BaseEntity driverBe = itemContextMap.get("QUOTER");
 			System.out.println("Context map contains QUOTER");
@@ -841,6 +845,40 @@ public class PaymentUtils {
 			} catch (PaymentException e) {
 				log.error("BEG CONTEXT MAP HAS NO QUOTER LINK, SO SELLER OBJECT IS NULL");
 			}
+		}*/
+		
+		/* DRIVER -> Seller */
+		if(offerBe != null ) {	
+
+			String quoterCode_driver = offerBe.getValue("PRI_QUOTER_CODE", null);
+			
+			if(quoterCode_driver != null) {
+				BaseEntity confirmedDriverBe = MergeUtil.getBaseEntityForAttr(quoterCode_driver, token);
+				System.out.println("confirmed quoter-driver code ::"+confirmedDriverBe.getCode());
+				sellerObj = new JSONObject();
+				sellerObj.put("id", confirmedDriverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
+				
+			} else {
+				
+				/* PRI_QUOTER_CODE attribute returned null, so fetching driver from links of the offer */
+				System.out.println("PRI_QUOTER_CODE attribute returned null, so fetching driver from links of the offer");
+				String creatorCode = RulesUtils.getChildren(offerCode, "LNK_OFR", "CREATOR", token);
+				
+				if (creatorCode != null) {
+					
+					System.out.println("creator driver code ::"+creatorCode);
+					BaseEntity driverBe = MergeUtil.getBaseEntityForAttr(creatorCode, token);
+					
+					sellerObj = new JSONObject();
+					sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
+				} else {
+					try {
+						throw new PaymentException("Payment Item creation will not succeed since Beg has no driver");
+					} catch (PaymentException e) {
+						log.error("BEG CONTEXT MAP HAS NO DRIVER, SO SELLER OBJECT IS NULL");
+					}
+				}				
+			}		
 		}
 		
 		/* If both buyer and seller is available for a particular BEG, Create Payment Item */
@@ -2117,6 +2155,7 @@ public class PaymentUtils {
 		return responseString;
 		
 	}
+
 	
 
 }

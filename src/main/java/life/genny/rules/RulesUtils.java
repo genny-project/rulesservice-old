@@ -773,5 +773,25 @@ public class RulesUtils {
 		}
 		return null;
 	}
+	
+	
+	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
+
+		try {
+			String beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + sourceCode
+					+ "/linkcodes/" + linkCode + "/children/" + linkValue, token);
+			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			if (linkArray.length > 0) {
+				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
+				Link first = arrayList.get(0);
+				RulesUtils.println("The Child BaseEnity code is   ::  " + first.getTargetCode());
+				return first.getTargetCode();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
 }
