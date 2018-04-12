@@ -11,8 +11,14 @@ rule "Send Application Data - EDU PROVIDER"
      then
      	rules.header();
         rules.setState("LOOP_SEND_APPLICATION_DATA_EDU_PROVIDER");
-        rules.sendEduProviderData();
         
-        rules.setState("SENT_APPLICATION_DATA");
+        BaseEntity eduProvider = rules.getParent(rules.getUser().getCode(), "LNK_EDU");
+		
+		if (eduProvider == null) {
+			rules.println("Edu Provider of the current user is null");
+		}else{
+            rules.sendEduProviderData();
+            rules.setState("SENT_APPLICATION_DATA");
+        }
 	    rules.footer();      		      
 end

@@ -18,7 +18,14 @@ rule "Host Company Registration Form Submit"
 		String attributeCode = "PRI_IS_PROFILE_COMPLETED";
 		String value = "TRUE";
 
-		rules.updateBaseEntityAttribute(sourceCode, targetCode, attributeCode, value);
-
+/* 		rules.updateBaseEntityAttribute(sourceCode, targetCode, attributeCode, value);
+ */
+		rules.saveAnswer(
+			new Answer(	sourceCode, 
+						targetCode, 
+						attributeCode,
+						value )
+		);
+		
 	 	rules.footer();      
 end
