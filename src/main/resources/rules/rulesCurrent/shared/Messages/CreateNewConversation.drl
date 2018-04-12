@@ -16,22 +16,51 @@ rule "Create Conversation"
 
      	rules.header();
 
-	    String data = $m.getData().getValue();
+        String data = $m.getData().getValue();
 
   		if(data != null) {
 
   			JsonObject dataJson = new JsonObject(data);
-  		    String receiverCode = dataJson.getString("itemCode");
+  		   String itemCode = dataJson.getString("itemCode");
+  		  // String offerCode = dataJson.getString("itemCode");
   		    String hint = dataJson.getString("hint");
   		    String userCode = rules.getUser().getCode();
-
-  		    if(receiverCode != null) {
-
-  		    		rules.showLoading("Creating new conversation...");
-
+  		   
+            
+  		    if(itemCode != null) {
+  		       String receiverCode = null;
+  		       String chatCode = "";
+  		       /* Get the Receiver User Code */
+  		         if(itemCode.startsWith("PER_")){   /* This is Owners user code, msg initiated by Driver */
+  		              receiverCode = itemCode;
+  		         }else{
+                   BaseEntity receiver = rules.getChildren(itemCode, "LNK_OFR", "CREATOR");
+                    receiverCode = receiver.getCode();
+                 }
+                 
+  		    		String[] recipientCodeArray = new String[2];
+	  			recipientCodeArray[0] = userCode;
+	  			recipientCodeArray[1] = receiverCode;
+	  			
+  		    		
+  		    		rules.println("If chat already exists between users :: "+rules.checkIfChatAlreadyExists( userCode, receiverCode ));
+  		    		//Check if conversation already exists
+  		    		if(rules.checkIfChatAlreadyExists( userCode,receiverCode )){
+  		    		  rules.showLoading("Loading Message...");
+  		    		    //getChatCode
+  		    		    BaseEntity oldChat = rules.getOldChatForSenderReceiver( userCode,receiverCode );
+  		    		    chatCode = oldChat.getCode();
+  		    		    VertxUtils.subscribe(rules.realm(), oldChat, recipientCodeArray);
+  		    		    rules.println("The old chat code is :: "+chatCode);
+  		    		    rules.publishData(oldChat, recipientCodeArray);
+  		    		}else{
+  		    		 rules.showLoading("Creating new conversation...");
+                 //then create new convo
   		    		/* create new conversation */
   		        BaseEntity newConvo = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "CHT", rules.getToken()), "Chat", rules.getQwandaServiceUrl(), rules.getToken());
-
+                chatCode = newConvo.getCode();
+                VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray);
+                rules.println("The new chat code is :: "+chatCode);
   		        /* Set convo attributes */
   		        /* title of the convo = name of the load */
   		        String nameLoad = rules.getBaseEntityValueAsString(hint, "PRI_TITLE");
@@ -42,10 +71,6 @@ rule "Create Conversation"
 	  			Answer items[] = new Answer[2];
 	  			items[0] = titleConvo;
 	  			items[1] = lastMessageDate;
-
-	  			String[] recipientCodeArray = new String[2];
-	  			recipientCodeArray[0] = userCode;
-	  			recipientCodeArray[1] = receiverCode;
 
 	  			QDataAnswerMessage msg = new QDataAnswerMessage(items);
 	  			msg.setRecipientCodeArray(recipientCodeArray);
@@ -62,11 +87,21 @@ rule "Create Conversation"
 	  			QwandaUtils.createLink(newConvo.getCode(), receiverCode, "LNK_USER", "receiver", 1.0, rules.getToken());
 
   		        /* Fetch new conversation and send it to relevant users */
-  		        rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+  		       // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);  		        
+  		        //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
+                rules.publishData(newConvo, recipientCodeArray);
+               /* Send sender BE to receiver and receiver BE to sender  */
+                String[] receiverCodeInArray = {receiverCode};
+                String[] senderCodeInArray = {userCode};
+                rules.publishData(rules.getBaseEntityByCode(userCode), receiverCodeInArray );
+                rules.publishData(rules.getBaseEntityByCode(receiverCode), senderCodeInArray );
+  		      }
+  		      
+  		    /* redirect user to messaging screen */
+  		   // rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
+  		    rules.sendCmdSplitView("GRP_MESSAGES", chatCode);
+  		   }
 
-  		        /* redirect user to messaging screen */
-  		        rules.sendSublayout("messages-layout", "messages-layout.json", newConvo.getCode());
-  		    }
   		}
 
      	rules.footer();

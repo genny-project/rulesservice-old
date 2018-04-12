@@ -23,6 +23,7 @@ rule "Select Conversation"
   		    
   		    if(conversationCode != null) {
   		    		rules.publishBaseEntitysByParentAndLinkCodeWithAttributes(conversationCode, "LNK_MESSAGES", 0, 100, true);
+  		    		rules.sendCmdSplitView("GRP_MESSAGES", conversationCode);
   		    }
   		}
      	
