@@ -3466,7 +3466,6 @@ public class QRules {
 		answerList.add(new Answer(getUser(), offer, "PRI_OFFER_DATE", getCurrentLocalDateTime()));
 
 		saveAnswers(answerList);
-
 		/* Update the number of offers for BEG */
 		Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
 		offerCount = offerCount + 1;
@@ -3701,7 +3700,7 @@ public class QRules {
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
-
+		
 			
 		if(!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 			
@@ -3714,12 +3713,35 @@ public class QRules {
 			contextMap.put("OWNER", getUser().getCode());
 
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
+			
+			/* Getting all people */
+			List<BaseEntity> people = getBaseEntitysByParentAndLinkCode("GRP_PEOPLE","LNK_CORE", 0, 100, false) ;
+			System.out.println("size ::"+people.size());
+			List<BaseEntity> driversBe = new ArrayList<>();
+			
+			/* Getting all driver BEs */
+			for(BaseEntity stakeholderBe : people) {
+				Boolean isDriver = stakeholderBe.getValue("PRI_DRIVER", false);
+				if(isDriver) {
+					driversBe.add(stakeholderBe);
+				}			
+			}
+			
+			int i = 0;
+			String[] stakeholderArr = new String[driversBe.size()];
+			for(BaseEntity stakeholderBe : driversBe) {
+				stakeholderArr[i] = 	stakeholderBe.getCode();
+				i++;
+			}
+			
+			
+			println("recipient array - drivers ::"+Arrays.toString(stakeholderArr));
 
 			/* Sending toast message to owner frontend */
-			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 			/* Sending message to BEG OWNER */
-			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 			
 		}
 		
@@ -4352,5 +4374,6 @@ public class QRules {
 	  	publishData(new JsonObject(result));
 	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 	}
+
 	
 }
