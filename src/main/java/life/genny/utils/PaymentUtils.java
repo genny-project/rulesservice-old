@@ -2088,5 +2088,35 @@ public class PaymentUtils {
 		return releasePaymentResponse;
 	}
 	
+	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+		
+		String responseString = null;
+		
+		String phoneNumber = userBe.getValue("PRI_MOBILE", null);
+			
+		JSONObject userObj = new JSONObject();
+		JSONObject contactInfoObj = null;
+		
+		userObj.put("id", assemblyUserId);
+	
+		if(phoneNumber != null) {
+			contactInfoObj = new JSONObject();
+			contactInfoObj.put("mobile", phoneNumber);
+			userObj.put("contactInfo", contactInfoObj);
+		}
+
+		if(userObj != null && assemblyUserId != null) {
+			try {
+				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
+				System.out.println("response string from payments user mobile-number updation ::"+responseString);
+			} catch (PaymentException e) {
+				log.error("Exception occured during phone updation");
+			}
+		}
+		
+		return responseString;
+		
+	}
+	
 
 }
