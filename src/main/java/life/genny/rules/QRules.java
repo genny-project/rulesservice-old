@@ -1966,6 +1966,7 @@ public class QRules {
 					recipientCodeArray[counter] = stakeholder.getCode();
 					if (!stakeholder.getCode().equals(getUser().getCode())) {
 			    	        msgReceiversCodeArray[counter] = stakeholder.getCode();
+
 			    	        counter += 1;
 					}					
 				}
@@ -3911,7 +3912,6 @@ public class QRules {
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
         System.out.println("The JsonArray is :: "+msgCodes);		
-
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: "+cmdViewJson);
@@ -3923,20 +3923,29 @@ public class QRules {
 	 *  Publish all the messages that belongs to the given chat
 	 */
 	public void sendChatMessages(final String chatCode) {
-		publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES", 0, 100, true);
+		//publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES", 0, 100, true);
 		
-		SearchEntity report = new SearchEntity("SBE_CHATMSGS","Chat Messages")
+		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS","Chat Messages")
 		  	     .addColumn("PRI_MESSAGE","Message")
 		  	     .addColumn("PRI_CREATOR","Creater ID")
 		  	     
 		  	     .setSourceCode(chatCode)
+		  	     .setSourceStakeholder(getUser().getCode())
 		  	     
 		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)		  	     
 		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"MSG_%")
 		  	     
 		  	     .setPageStart(0)
-		  	     .setPageSize(100);
+		  	     .setPageSize(500);
 		
+		try {
+			sendSearhResults(sendAllMsgs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error! Unable to get Search Rsults");
+			e.printStackTrace();
+		}
+
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
@@ -4481,6 +4490,18 @@ public class QRules {
 	  	
 	}
 
+	/*
+	 * Publish Search BE results
+	 */
+	public void sendSearhResults( SearchEntity searchBE) throws IOException {
+		System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
+	    String jsonSearchBE = JsonUtils.toJson(searchBE);
+	    String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+	  				getToken());
+	    QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+	  	System.out.println("The result   ::  " + msg);
+	  	publishData(new JsonObject(resultJson));
+	}
 	
 	/*
 	 * Check if conversation between sender and receiver already exists
@@ -4523,8 +4544,6 @@ public class QRules {
 			}
 		return null;
 	}
-
-
 
 	
 }
