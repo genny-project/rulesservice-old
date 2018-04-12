@@ -1,8 +1,5 @@
 package life.genny.rules;
-
 import life.genny.rules.QRules;
-import life.genny.qwanda.entity.BaseEntity;
-
 import life.genny.qwanda.message.QEventMessage;
 
 rule "Pre Init"
@@ -10,13 +7,14 @@ rule "Pre Init"
     ruleflow-group 'Init'
     
     when
-        m : QEventMessage( "AUTH_INIT" == data.code  )
-        rules: QRules(  !isState("LOOP_PRE_INIT_EVT") &&
-                        !isState("STARTED") )
+        m : QEventMessage( data.code == "AUTH_INIT")
+        rules: QRules(  !isState("STARTED") &&
+                        !isState("LOOP_PRE_INIT_EVT") )
      then   
         rules.setDrools(drools);
      	rules.header();
-        rules.setState("STARTED");
         rules.setState("LOOP_PRE_INIT_EVT");
+
+        rules.setState("STARTED");
 	    rules.footer();       		      
 end

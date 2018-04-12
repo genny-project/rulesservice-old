@@ -8,46 +8,48 @@ import life.genny.qwanda.attribute.EntityAttribute;
 
 rule "Check User Role"
      when
-        /* rules: QRules( isState("USER_CHECKED") &&  !isState("LOOP_CHECK_ROLE") )  */
-        rules: QRules( (isState("STARTED") || isState("USER_CHECKED")) && !isState("LOOP_CHECK_ROLE") )
+        rules: QRules(  isState("STARTED") && 
+						isUserPresent() == true &&  					
+						!isState("LOOP_CHECK_ROLE") )
      then
         rules.header();
 		rules.setState("LOOP_CHECK_ROLE");
 
 		BaseEntity user = rules.getUser();
-		rules.println("user is   ::   " + user.toString());
-		Boolean has_role_been_found = false;
+		if(user != null){
+			rules.println("user is   ::   " + user.toString());
+			Boolean has_role_been_found = false;
 
-		if(user != null) {
+			if(user != null) {
 
-			List<EntityAttribute> roles = user.getBaseEntityAttributes()
-								.stream()
-								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
-								.collect(Collectors.toList());
+				List<EntityAttribute> roles = user.getBaseEntityAttributes()
+									.stream()
+									.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
+									.collect(Collectors.toList());
 
-			for(EntityAttribute role: roles) {
-				
-				if(role != null && role.getValue() != null) {
-					Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
-					if(isRole) {
-						rules.setState(role.getAttributeCode());
-						has_role_been_found = true;
+				for(EntityAttribute role: roles) {
+					
+					if(role != null && role.getValue() != null) {
+						Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
+						if(isRole) {
+							rules.setState(role.getAttributeCode());
+							has_role_been_found = true;
+						}
 					}
+					
 				}
-				
 			}
-		}
-		else{
-			rules.println("user is null");
-		}
+			else{
+				rules.println("user is null");
+			}
 
-		if(has_role_been_found) {
-			rules.setState("ROLE_FOUND");
+			if(has_role_been_found) {
+				rules.setState("ROLE_FOUND");
+			}
+			else {
+				rules.setState("ROLE_NOT_FOUND");
+			}
+			rules.setState("ROLE_CHECKED");
 		}
-		else {
-			rules.setState("ROLE_NOT_FOUND");
-		}
-
-		rules.setState("ROLE_CHECKED");
 	    rules.footer();
 end
