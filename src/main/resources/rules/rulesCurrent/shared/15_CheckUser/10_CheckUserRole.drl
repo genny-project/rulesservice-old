@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.attribute.EntityAttribute;
 
-rule "Check User Role"
+rule "Setting user role"
      when
         rules: QRules(  isState("STARTED") && 
 						isUserPresent() == true &&  					

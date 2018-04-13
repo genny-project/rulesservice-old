@@ -4,8 +4,7 @@ import life.genny.rules.QRules;
 rule "Trigger Registration"
 
     when
-         rules: QRules( isUserPresent() == false &&
-                        isState("TRIGGER_REGISTRATION") &&
+         rules: QRules( isState("TRIGGER_REGISTRATION") &&
          				!isState("LOOP_TRIGGER_REGISTRATION") )
      then
      	rules.header();
