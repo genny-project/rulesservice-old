@@ -28,6 +28,8 @@ rule "Duplicate BEG - Step 10"
             rules.setState("CREATE_LINK");
 
             rules.setState("LINKED_GRP_APPLIED_TO_BEG");
+            rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
+            
             
         }
 	 	rules.footer();      

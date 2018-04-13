@@ -15,7 +15,6 @@ rule "Submit Apply Internship - Step 7"
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP7");
 
-        rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
         rules.setState("TRIGGER_DUPLICATE_BEG");
 
  		rules.setState("SUBMITTED_APPLICATION_FOR_INTERNSHIP");
