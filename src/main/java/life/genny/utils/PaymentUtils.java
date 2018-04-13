@@ -184,11 +184,7 @@ public class PaymentUtils {
 			response = client.execute(delete);
 		}
 
-		/* If the method we are using isn't value / hasn't created a response then don't go further */
-		if ( response == null ) {
-			return;
-		}
-
+		
 		/* Read in the response */
 		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String line = "";
@@ -236,7 +232,7 @@ public class PaymentUtils {
 
 	/* Creates a new delete request */
 	public static String apiDeletePaymentEntity(final String deleteUrl, final String authToken) throws ClientProtocolException, IOException, PaymentException {
-		return apiCall( "DELETE", deleteUrl, entityString, authToken );
+		return apiCall( "DELETE", deleteUrl, null, authToken );
 	}
 
 	/* Generates a random ID / UUID for a new Assembly user */
@@ -786,28 +782,6 @@ public class PaymentUtils {
 			} catch (PaymentException e) {
 			}
 		}
-
-		/* Set the seller for the item */
-		/* DRIVER -> Seller */
-		/*if(itemContextMap.containsKey("QUOTER")) {
-	
-			BaseEntity driverBe = itemContextMap.get("QUOTER");
-			System.out.println("Context map contains QUOTER");
-
-			/* Check that a seller was provided and if so use their Assembly user ID */
-			if(driverBe != null) {
-				sellerObj = new JSONObject();
-				sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
-			}
-		} else {
-			/* No quoter set, throw an error */
-			log.error("BEG CONTEXT MAP HAS NO QUOTER LINK, SO SELLER OBJECT IS NULL");
-			try {
-				throw new PaymentException("Payment Item creation will not succeed since Beg has no quoter link");
-			} catch (PaymentException e) {
-				log.error("BEG CONTEXT MAP HAS NO QUOTER LINK, SO SELLER OBJECT IS NULL");
-			}
-		}*/
 		
 		/* DRIVER -> Seller */
 		if(offerBe != null ) {	
