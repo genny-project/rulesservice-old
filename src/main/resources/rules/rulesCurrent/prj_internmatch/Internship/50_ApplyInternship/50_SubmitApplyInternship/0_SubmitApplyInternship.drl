@@ -4,10 +4,10 @@ import life.genny.rules.QRules;
 /* Add BEG, APPLICATION, CPY to map */
 rule "Submit Apply Internship - Step 0"
 	when
-		rules: QRules( 	isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP0")) 
+		rules: QRules( 	isState("QUE_INTERNSHIP_ADDITIONAL_GRP") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP0"))
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP0");
@@ -16,25 +16,30 @@ rule "Submit Apply Internship - Step 0"
         String applicationCode = rules.getAsString("quesTargetCode");
 
         if(applicationCode != null){
-			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
+
+        	BaseEntity application = rules.getBaseEntityByCode(applicationCode);
             rules.set("applicationBe", application);
-            
-            /* get begCode(attribute) from application */        
+
+            /* get begCode(attribute) from application */
             String begCode = application.getLoopValue("PRI_BEG_CODE", null);
 
-            if(begCode != null){   
-                BaseEntity beg = rules.getBaseEntityByCode(begCode);
+            if(begCode != null && rules.getUser() != null) {
+
+				BaseEntity beg = rules.getBaseEntityByCode(begCode);
                 rules.set("begBe", beg);
 
+				BaseEntity internship = rules.getChildren(begCode, "LNK_BEG", "INTERNSHIP");
            	 	BaseEntity company = rules.getChildren(begCode, "LNK_BEG", "HOSTCOMPANY");
 
-				if(company != null){
-            		rules.set("companyBe", company);
+				if(company != null && internship != null) {
 
-					rules.setState("SUBMIT_APPLY_INTERNSHIP_READY");  
+					rules.set("companyBe", company);
+					rules.set("internshipBe", internship);
+					rules.set("internBe", rules.getUser());
 
-					rules.setState("SUBSCRIBE_INTERN_TO_APPLICATION");            
-					
+					rules.setState("SUBMIT_APPLY_INTERNSHIP_READY");
+					rules.setState("SUBSCRIBE_INTERN_TO_APPLICATION");
+
 				}else{
 					rules.println("company BaseEntity is null");
 				}

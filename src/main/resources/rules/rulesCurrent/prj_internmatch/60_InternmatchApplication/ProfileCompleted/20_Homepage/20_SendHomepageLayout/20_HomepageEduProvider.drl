@@ -6,13 +6,13 @@ import java.util.List;
 rule "Home Page - Send Layout - EDU PROVIDER"
      when
         rules: QRules(  isState("HOME_PAGE_SENT_DATA") && 
-                        !isState("PRI_IS_HOST_COMPANY") &&
+                        isState("PRI_IS_EDU_PROVIDER") &&
                         !isState("LOOP_HOME_PAGE_SEND_LAYOUT") ) 
      then      
         rules.header();
         rules.setState("LOOP_HOME_PAGE_SEND_LAYOUT");
 
-        rules.sendSublayout("DASHBOARD", "homepage/dashboard_edu_provider.json", "GRP_DASHBOARD", false);
+        rules.sendSublayout("DASHBOARD", "homepage/dashboard_edu_provider.json", "GRP_DASHBOARD_EDU_PROVIDER", false);
         rules.setState("HOME_PAGE_SENT_LAYOUT");
         
 		rules.footer();     		      

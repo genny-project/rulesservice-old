@@ -6,7 +6,7 @@ import java.util.List;
 rule "Home Page - Send Layout - INTERN"
      when
         rules: QRules(  isState("HOME_PAGE_SENT_DATA") && 
-                        !isState("PRI_IS_HOST_COMPANY") &&
+                        isState("PRI_IS_INTERN") &&
                         !isState("LOOP_HOME_PAGE_SEND_LAYOUT") ) 
      then      
         rules.header();

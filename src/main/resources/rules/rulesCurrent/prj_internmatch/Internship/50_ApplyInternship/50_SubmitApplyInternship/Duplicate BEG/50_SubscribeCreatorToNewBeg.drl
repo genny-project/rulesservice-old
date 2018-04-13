@@ -5,25 +5,24 @@ import life.genny.utils.VertxUtils;
 /* Subscribe CREATOR to NEW_BEG */
 rule "Duplicate BEG - Step 5"
 	when
-		rules: QRules( 	isState("SUBSCRIBE_CREATOR_TO_NEW_BEG") && 
-						isState("LINKED_NEW_BEG_TO_INTERN") && 
-						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") &&
-						!isState("LOOP_DUPLICATE_BEG_STEP5")) 
+		rules: QRules( 	isState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP") &&
+						!isState("LOOP_DUPLICATE_BEG_STEP5"))
 
 	 then
 	 	rules.header();
         rules.setState("LOOP_DUPLICATE_BEG_STEP5");
 
-        BaseEntity creator = rules.getAsBaseEntity("creatorBe");
+        BaseEntity creator = rules.getAsBaseEntity("internBe");
         BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
-		
+
 		if(creator != null && newBeg != null){
 			rules.subscribeUserToBaseEntityAndChildren(creator.getCode(), newBeg.getCode(), "LNK_BEG");
-	 		rules.setState("SUBSCRIBED_CREATOR_TO_NEW_BEG");
-
-	 		rules.setState("SUBSCRIBE_COMPANY_TO_NEW_BEG");
+	 		rules.setState("SUBSCRIBED_CREATOR_TO_NEW_BEG_APPLY_INTERNSHIP");
 		}
-	 	rules.footer();      
+		else {
+			rules.println(creator == null ? "No creator" : creator);
+			rules.println(newBeg == null ? "No new beg" : newBeg);
+		}
+		
+	 	rules.footer();
 end
