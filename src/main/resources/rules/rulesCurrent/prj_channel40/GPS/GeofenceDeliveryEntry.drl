@@ -25,19 +25,25 @@ then
 		
 		List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
 		String ownerCode = null;
+		String loadCode = null;
 		     
 		for(Link link : linkList) {
 		   if(link.getLinkValue().equals("OWNER")) {
 		     	ownerCode = link.getTargetCode();
 		   }
+		   
+		   if(link.getLinkValue().equals("LOAD")) {
+		   		loadCode = link.getTargetCode();
+		   }
 		}
 		
 		String[] recipients = new String[1];
 		recipients[0] = ownerCode;
-		
+				
 		HashMap<String, String> contextMap = new HashMap<String, String>();
 		contextMap.put("JOB", begCode);
 		contextMap.put("DRIVER", rules.getUser().getCode());
+		contextMap.put("LOAD", loadCode);
 		
 		/* Sending message to BEG OWNER */
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "TOAST");
