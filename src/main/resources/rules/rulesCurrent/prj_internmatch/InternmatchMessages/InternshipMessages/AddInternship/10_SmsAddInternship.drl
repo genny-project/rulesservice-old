@@ -7,14 +7,12 @@ import java.util.ArrayList;
 
 rule "SMS Add Internhsip"
     when
-         rules: QRules( isState("SEND_SMS") &&
-         				!isState("LOOP_TRIGGER_SEND_MESSAGE") )
+         rules: QRules( isState("SEND_SMS_ADD_INTERNSHIP") &&
+         				!isState("LOOP_SEND_SMS_ADD_INTERNSHIP") )
      then
      	rules.header();
-        rules.setState("LOOP_TRIGGER_SEND_MESSAGE");
+        rules.setState("LOOP_SEND_SMS_ADD_INTERNSHIP");
         
-        HashMap<String, String> contextMap = ;
-
         /* Get the required baseEntities for contextMap */
         BaseEntity beg = rules.getAsBaseEntity("begBe");
         BaseEntity internship = rules.getAsBaseEntity("internshipBe");
@@ -26,6 +24,8 @@ rule "SMS Add Internhsip"
         contextMap.put("INTERN", intern.getCode());
         contextMap.put("APPLICATION", application.getCode());
 
+        String[] smsRecipient = { intern.getCode(), rules.getuser().getCode() };
+        String[] emailRecipient = { intern.getCode() };
         String[] smsRecipient = { intern.getCode() };
         String templateCode = "MSG_INTERNMATCH_NEW_POSITION_ADDED";
 
@@ -40,8 +40,8 @@ rule "SMS Add Internhsip"
         }else if( templateCode == null){
             rules.println("SEND SMS   ::   templateCode is null");
         }else{
-            rules.sendMessage("", smsRecipient, contextMap, templateCode, "SMS");        
-            rules.setState("SENT_SMS");
+            rules.setState("SEND_SMS");
+            rules.setState("SENT_SMS_ADD_INTERNSHIP");
         }     
 	    rules.footer();      		      
 end
