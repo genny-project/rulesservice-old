@@ -1,0 +1,32 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
+
+rule "Trigger Send Toast"
+    when
+         rules: QRules( isState("SEND_TOAST") &&
+         				!isState("LOOP_TRIGGER_SEND_TOAST") )
+     then
+     	rules.header();
+        rules.setState("LOOP_TRIGGER_SEND_TOAST");
+        
+        HashMap<String, String> contextMap = rules.getAsHashMap("contextMap");
+        String[] toastRecipient = rules.getAsArray("toastRecipient");
+        String templateCode = rules.getAsString("templateCode");
+        
+        if( contextMap == null){
+            rules.println("SEND TOAST   ::   contextMap is null");
+        }else if( contextMap == null){
+            rules.println("SEND TOAST   ::   toastRecipient is null");
+        }else if( contextMap == null){
+            rules.println("SEND TOAST   ::   templateCode is null");
+        }else{
+    		rules.sendMessage("", toastRecipient, contextMap, templateCode, "TOAST");        
+            rules.setState("SENT_TOAST");
+        }   
+	    rules.footer();      		      
+end
+
