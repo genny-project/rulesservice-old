@@ -25,12 +25,14 @@ rule "Submit Apply Internship - Step 3"
                 rules.subscribeUserToBaseEntity(companyStaff.getCode(), application.getCode());
                 rules.setState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION");
                 
-                rules.setState("LINK_GRP_APPLIED_TO_BEG");
+                rules.setState("LINK_BEG_TO_APPLICATION");
             }else{
                 rules.println("No staff found for company");
             }
         }else{
-            rules.println("company is null");
+            rules.println("HOST company is null");
         }
 	 	rules.footer();      
 end
+
+

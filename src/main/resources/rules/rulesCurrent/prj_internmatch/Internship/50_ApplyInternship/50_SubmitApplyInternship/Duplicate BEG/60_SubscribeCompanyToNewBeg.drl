@@ -1,0 +1,29 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Subscribe COMPANY to NEW_BEG */
+rule "Duplicate BEG - Step 6"
+	when
+		rules: QRules( 	isState("SUBSCRIBE_COMPANY_TO_NEW_BEG") && 
+						isState("SUBSCRIBED_CREATOR_TO_NEW_BEG") && 
+						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP6")) 
+
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP6");
+
+        BaseEntity company = rules.getAsBaseEntity("companyBe");
+        BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
+		
+		if(company != null && newBeg != null){
+			rules.subscribeUserToBaseEntityAndChildren(company.getCode(), newBeg.getCode(), "LNK_BEG");
+	 		rules.setState("SUBSCRIBED_COMPANY_TO_NEW_BEG");
+
+	 		rules.setState("SUBSCRIBE_INTERN_TO_NEW_BEG");
+		}
+	 	rules.footer();      
+end

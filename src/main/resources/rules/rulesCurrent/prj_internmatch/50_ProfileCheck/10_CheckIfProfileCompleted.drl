@@ -7,6 +7,7 @@ import life.genny.qwanda.message.QDataQSTMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import life.genny.qwandautils.MergeUtil;
 
 rule "Check if Profile Completed - Intermatch"
@@ -21,15 +22,16 @@ rule "Check if Profile Completed - Intermatch"
      	
      	rules.setState("LOOP_CHECK_USER_PROFILE_COMPLETED");
      	
-		Boolean isProfileCompleted = rules.getUser().getLoopValue("PRI_IS_PROFILE_COMPLETED", false);
+		Optional<Boolean> isProfileCompleted = rules.getUser().getValue("PRI_IS_PROFILE_COMPLETED");
+		if(isProfileCompleted.isPresent() && isProfileCompleted.get() == true) {
+   		   	rules.setState("PROFILE_IS_COMPLETED");
+   		   	rules.setState("APPLICATION_READY");
+		}
+		else {
+   		 	rules.setState("PROFILE_NOT_COMPLETED");
+		}
 		
 		rules.println("PRI_IS_PROFILE_COMPLETED value   ::   " +  isProfileCompleted);
 		
-		if(isProfileCompleted == null || isProfileCompleted == false) {
-   		 	rules.setState("PROFILE_NOT_COMPLETED");
-   		}
-   		else {
-   		   	rules.setState("PROFILE_IS_COMPLETED");
-   		}
     	rules.footer();
 end

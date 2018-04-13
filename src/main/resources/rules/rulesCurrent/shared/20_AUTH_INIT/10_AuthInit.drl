@@ -16,7 +16,5 @@ rule "Auth Init"
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 
-        rules.setState("TRIGGER_APPLICATION_SETUP"); /* this starts application workflow */
-
 	    rules.footer();
 end

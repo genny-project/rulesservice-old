@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Duplicate BEG */
+rule "Duplicate BEG - Step 1"
+	when
+		rules: QRules( 	isState("CREATE_NEW_BEG") && 
+						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") &&
+						!isState("LOOP_DUPLICATE_BEG_STEP1") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_DUPLICATE_BEG_STEP1");
+
+		/* Create BEG BaseEntity*/
+		rules.set("beCode", rules.getUser().getCode());
+		rules.set("bePrefix", "BEG");
+		rules.set("beName", "BEG");		
+		rules.setState("CREATE_BASE_ENTITY");	
+
+		rules.setState("CREATED_NEW_BEG");	
+		rules.setState("COPY_LINKS_FROM_OLD_BEG");	
+	 	rules.footer();      
+end

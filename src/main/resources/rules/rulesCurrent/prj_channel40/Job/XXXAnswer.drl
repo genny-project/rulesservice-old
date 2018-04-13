@@ -1,1898 +1,1899 @@
-// package com.sample;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+// /* // package com.sample;
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// =======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
 
-// import org.apache.commons.lang3.StringUtils;
+// // import org.apache.commons.lang3.StringUtils;
 
-// import life.genny.qwanda.message.QEventMessage;
-// import life.genny.qwanda.message.QMessage.MessageData;
-// import life.genny.qwanda.message.QCmdMessage;
-// import io.vertx.rxjava.core.eventbus.EventBus;
-// import io.vertx.core.buffer.Buffer;
-// import com.google.gson.Gson;
-// import life.genny.qwanda.Answer;
-// import life.genny.qwanda.message.QDataAnswerMessage;
-// import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
-// import life.genny.qwandautils.KeycloakUtils;
-// import life.genny.qwandautils.MergeUtil;
-// import life.genny.qwandautils.QwandaUtils;
-// import life.genny.qwandautils.MergeUtil;
-// import life.genny.qwanda.message.QDataAskMessage;
-// import life.genny.qwanda.message.QCmdMessage;
-// import life.genny.qwanda.message.QDataAnswerMessage;
-// import life.genny.qwanda.Ask;
-// import life.genny.qwanda.Link;
-
-
-// import java.lang.reflect.Type;
-// import java.util.Map;
-// import java.util.Set;
-// import java.util.Iterator;
-// //import java.util.ArrayList;
-// //import java.util.List;
-<<<<<<< HEAD
-<<<<<<< HEAD
-// import java.util.HashMap;
-=======
-// import java.util.HashMap; 
->>>>>>> b2035684... internmatch registration workflow
-=======
-// import java.util.HashMap; 
->>>>>>> a7e9f6cc... internmatch registration workflow
-// import java.time.LocalDateTime;
-// import java.time.ZonedDateTime;
-// import com.google.gson.GsonBuilder;
-// import com.google.gson.JsonDeserializationContext;
-// import com.google.gson.JsonDeserializer;
-// import com.google.gson.JsonElement;
-// import com.google.gson.JsonParseException;
-// import com.google.gson.JsonPrimitive;
-// import com.google.gson.JsonSerializationContext;
-// import com.google.gson.FieldNamingPolicy;
-// import io.vertx.core.json.JsonObject;
-// import io.vertx.core.json.JsonArray;
-// import java.time.format.DateTimeFormatter;
-// import life.genny.qwanda.DateTimeDeserializer;
+// // import life.genny.qwanda.message.QEventMessage;
+// // import life.genny.qwanda.message.QMessage.MessageData;
+// // import life.genny.qwanda.message.QCmdMessage;
+// // import io.vertx.rxjava.core.eventbus.EventBus;
+// // import io.vertx.core.buffer.Buffer;
+// // import com.google.gson.Gson;
+// // import life.genny.qwanda.Answer;
+// // import life.genny.qwanda.message.QDataAnswerMessage;
+// // import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+// // import life.genny.qwandautils.KeycloakUtils;
+// // import life.genny.qwandautils.MergeUtil;
+// // import life.genny.qwandautils.QwandaUtils;
+// // import life.genny.qwandautils.MergeUtil;
+// // import life.genny.qwanda.message.QDataAskMessage;
+// // import life.genny.qwanda.message.QCmdMessage;
+// // import life.genny.qwanda.message.QDataAnswerMessage;
+// // import life.genny.qwanda.Ask;
+// // import life.genny.qwanda.Link;
 
 
-
-// rule "Answer"
-//     when
-//         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-//         bus: EventBus()
-//         $map : Map($value: this["token"] != null)
-<<<<<<< HEAD
-<<<<<<< HEAD
-//     then
+// // import java.lang.reflect.Type;
+// // import java.util.Map;
+// // import java.util.Set;
+// // import java.util.Iterator;
+// // //import java.util.ArrayList;
+// // //import java.util.List;
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // import java.util.HashMap;
+// =======
+// // import java.util.HashMap; 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// // import java.util.HashMap; 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // import java.time.LocalDateTime;
+// // import java.time.ZonedDateTime;
+// // import com.google.gson.GsonBuilder;
+// // import com.google.gson.JsonDeserializationContext;
+// // import com.google.gson.JsonDeserializer;
+// // import com.google.gson.JsonElement;
+// // import com.google.gson.JsonParseException;
+// // import com.google.gson.JsonPrimitive;
+// // import com.google.gson.JsonSerializationContext;
+// // import com.google.gson.FieldNamingPolicy;
+// // import io.vertx.core.json.JsonObject;
+// // import io.vertx.core.json.JsonArray;
+// // import java.time.format.DateTimeFormatter;
+// // import life.genny.qwanda.DateTimeDeserializer;
 
 
 
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//     then    
+// // rule "Answer"
+// //     when
+// //         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+// //         bus: EventBus()
+// //         $map : Map($value: this["token"] != null)
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //     then
+
+
+
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //     then    
 
        
         
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");   
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");   
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
 
-//         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("------------------------------------------------------------------------");
+// //         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("------------------------------------------------------------------------");
 
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
 
-//         /* extract answers */
-//         Answer[] answers = m.getItems();
-//         for (Answer answer : answers) {
-<<<<<<< HEAD
+// //         /* extract answers */
+// //         Answer[] answers = m.getItems();
+// //         for (Answer answer : answers) {
+// <<<<<<< HEAD
 
-=======
+// =======
         
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 
-//         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("------------------------------------------------------------------------");
+// //         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("------------------------------------------------------------------------");
 
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
 
-//         /* extract answers */
-//         Answer[] answers = m.getItems();
-//         for (Answer answer : answers) {
+// //         /* extract answers */
+// //         Answer[] answers = m.getItems();
+// //         for (Answer answer : answers) {
         
->>>>>>> a7e9f6cc... internmatch registration workflow
-//             Long askId = answer.getAskId();
-//             String sourceCode = answer.getSourceCode();
-//             String targetCode = answer.getTargetCode();
-//             answer.setSourceCode(answer.getTargetCode());
-//             String attributeCode = answer.getAttributeCode();
-//             String value = answer.getValue();
-//             Boolean inferred = answer.getInferred();
-//             Double weight = answer.getWeight();
-//             Boolean expired = answer.getExpired();
-//             Boolean refused = answer.getRefused();
-//             System.out.println("Printing Answer data recieved   ::");
-//             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
-//             System.out.println("------------------------------------------------------------------------");
-<<<<<<< HEAD
-<<<<<<< HEAD
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //             Long askId = answer.getAskId();
+// //             String sourceCode = answer.getSourceCode();
+// //             String targetCode = answer.getTargetCode();
+// //             answer.setSourceCode(answer.getTargetCode());
+// //             String attributeCode = answer.getAttributeCode();
+// //             String value = answer.getValue();
+// //             Boolean inferred = answer.getInferred();
+// //             Double weight = answer.getWeight();
+// //             Boolean expired = answer.getExpired();
+// //             Boolean refused = answer.getRefused();
+// //             System.out.println("Printing Answer data recieved   ::");
+// //             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+// //             System.out.println("------------------------------------------------------------------------");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-//             /* if this answer is actually an address another rule will be triggered */
-//             if(!attributeCode.contains("ADDRESS_FULL")) {
+// //             /* if this answer is actually an address another rule will be triggered */
+// //             if(!attributeCode.contains("ADDRESS_FULL")) {
 
-//              	/* convert answer to json */
-// 	            String jsonAnswer = gson.toJson(answer);
-// 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
+// //              	/* convert answer to json */
+// // 	            String jsonAnswer = gson.toJson(answer);
+// // 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
             
-//             /* if this answer is actually an address another rule will be triggered */
-//             if(!attributeCode.contains("ADDRESS_FULL")) {
+// //             /* if this answer is actually an address another rule will be triggered */
+// //             if(!attributeCode.contains("ADDRESS_FULL")) {
             
-//              	/* convert answer to json */
-// 	            String jsonAnswer = gson.toJson(answer);
-// 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
+// //              	/* convert answer to json */
+// // 	            String jsonAnswer = gson.toJson(answer);
+// // 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
 	
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 	            /* convert Answer Json to Answer obj */
-// 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 	            System.out.println("Answer Object   ::   "+answerObj);
-// 	            System.out.println("------------------------------------------------------------------------");
-<<<<<<< HEAD
-<<<<<<< HEAD
-// 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 	            /* convert Answer Json to Answer obj */
+// // 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 	            System.out.println("Answer Object   ::   "+answerObj);
+// // 	            System.out.println("------------------------------------------------------------------------");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
 
-// 	            /* post answers to qwanda-utils */
-// 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
-//             }
-//          }
+// // 	            /* post answers to qwanda-utils */
+// // 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+// //             }
+// //          }
 
 
 
-// end
+// // end
 
-// /* Update address */
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
+// // /* Update address */
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */         
 	
-// 	            /* post answers to qwanda-utils */
-// 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
-//             }
-//          }      
+// // 	            /* post answers to qwanda-utils */
+// // 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+// //             }
+// //          }      
         
     
            
-// end
+// // end
 
-// /* Update address */ 
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// rule "Update Address"
-// 	when
-// 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-// 	    bus: EventBus()
-// 	    $map : Map($value: this["token"] != null)
-// 	then
-// 	    System.out.println(" ------  Update Address being exected  --------   ");
-// 		try {
-<<<<<<< HEAD
-<<<<<<< HEAD
+// // /* Update address */ 
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // rule "Update Address"
+// // 	when
+// // 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+// // 	    bus: EventBus()
+// // 	    $map : Map($value: this["token"] != null)
+// // 	then
+// // 	    System.out.println(" ------  Update Address being exected  --------   ");
+// // 		try {
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
+// =======
 			
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 			
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 			Answer[] newAnswers = new Answer[50];
-// 			Answer[] answers = m.getItems();
-// 			GsonBuilder gsonBuilder = new GsonBuilder();
-// 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-// 	        Gson gson = gsonBuilder.create();
-// 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-<<<<<<< HEAD
-<<<<<<< HEAD
-// 	        String tokenString = (String)$map.get("token");
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 			Answer[] newAnswers = new Answer[50];
+// // 			Answer[] answers = m.getItems();
+// // 			GsonBuilder gsonBuilder = new GsonBuilder();
+// // 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// // 	        Gson gson = gsonBuilder.create();
+// // 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // 	        String tokenString = (String)$map.get("token");
 
-// 	        for (Answer answer : answers) {
+// // 	        for (Answer answer : answers) {
 
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 	        String tokenString = (String)$map.get("token"); 
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 	        String tokenString = (String)$map.get("token"); 
 	        
-// 	        for (Answer answer : answers) {
+// // 	        for (Answer answer : answers) {
 	        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 	            String targetCode = answer.getTargetCode();
-// 	            answer.setSourceCode(answer.getTargetCode());
-// 	            String attributeCode = answer.getAttributeCode();
-// 	            String value = answer.getValue();
-<<<<<<< HEAD
-<<<<<<< HEAD
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 	            String targetCode = answer.getTargetCode();
+// // 	            answer.setSourceCode(answer.getTargetCode());
+// // 	            String attributeCode = answer.getAttributeCode();
+// // 	            String value = answer.getValue();
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-// 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+// // 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 
 
 
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
 	            
-// 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+// // 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
 	            
 	          
 	           
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 	            /* if this answer is actually an address another rule will be triggered */
-// 	            if(attributeCode.contains("ADDRESS_FULL")) {
-// 	            	  JsonObject addressDataJson = new JsonObject(value);
-// 		            	Map<String, String> availableKeys = new HashMap<String, String>();
-// 		    			availableKeys.put("full_address", "FULL");
-// 		    			availableKeys.put("street_address", "ADDRESS1");
-// 		    			availableKeys.put("suburb", "SUBURB");
-// 		    			availableKeys.put("state", "STATE");
-// 		    			availableKeys.put("postal_code", "POSTCODE");
-// 		    			availableKeys.put("country", "COUNTRY");
-<<<<<<< HEAD
-<<<<<<< HEAD
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 	            /* if this answer is actually an address another rule will be triggered */
+// // 	            if(attributeCode.contains("ADDRESS_FULL")) {
+// // 	            	  JsonObject addressDataJson = new JsonObject(value);
+// // 		            	Map<String, String> availableKeys = new HashMap<String, String>();
+// // 		    			availableKeys.put("full_address", "FULL");
+// // 		    			availableKeys.put("street_address", "ADDRESS1");
+// // 		    			availableKeys.put("suburb", "SUBURB");
+// // 		    			availableKeys.put("state", "STATE");
+// // 		    			availableKeys.put("postal_code", "POSTCODE");
+// // 		    			availableKeys.put("country", "COUNTRY");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-// 		    			int i = 0;
-// 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
-// 		    			{
+// // 		    			int i = 0;
+// // 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+// // 		    			{
 
-// 		    				String key = entry.getKey();
-// 		    				String valueEntry = entry.getValue();
+// // 		    				String key = entry.getKey();
+// // 		    				String valueEntry = entry.getValue();
 
-// 		    				if(addressDataJson.containsKey(key)) {
+// // 		    				if(addressDataJson.containsKey(key)) {
 
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
 		    					    					    			
-// 		    			int i = 0;
-// 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
-// 		    			{	
+// // 		    			int i = 0;
+// // 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+// // 		    			{	
 		    				
-// 		    				String key = entry.getKey();
-// 		    				String valueEntry = entry.getValue();
+// // 		    				String key = entry.getKey();
+// // 		    				String valueEntry = entry.getValue();
 		    						    				
-// 		    				if(addressDataJson.containsKey(key)) {
+// // 		    				if(addressDataJson.containsKey(key)) {
 		    					
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
-// 		    					answer.setAttributeCode(newAttributeCode);
-// 		    					answer.setValue(addressDataJson.getString(key));
-// 		    					String jsonAnswer = gson.toJson(answer);
-// 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 		    					newAnswers[i] = answerObj;
-// 		    					i++;
-// 		    				}
-<<<<<<< HEAD
-<<<<<<< HEAD
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+// // 		    					answer.setAttributeCode(newAttributeCode);
+// // 		    					answer.setValue(addressDataJson.getString(key));
+// // 		    					String jsonAnswer = gson.toJson(answer);
+// // 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 		    					newAnswers[i] = answerObj;
+// // 		    					i++;
+// // 		    				}
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-// 		    			}
+// // 		    			}
 
 
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
 		    				
-// 		    			}
+// // 		    			}
 		    		
 		    					    	        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    	        /* Store latitude */
-// 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
-// 		    			answer.setAttributeCode(newAttCode);
-// 		    			Double latitude = addressDataJson.getDouble("latitude");
-// 		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
-<<<<<<< HEAD
-<<<<<<< HEAD
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    	        /* Store latitude */
+// // 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+// // 		    			answer.setAttributeCode(newAttCode);
+// // 		    			Double latitude = addressDataJson.getDouble("latitude");
+// // 		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
+// =======
 		    			
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 		    			
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    			if(latitude != null) {
-// 			    			answer.setValue(Double.toString(latitude));
-// 			    			String jsonAnswer = gson.toJson(answer);
-// 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
-// 			    			newAnswers[i] = answerObj;
-// 			    			i++;
-// 			    			System.out.println("The answer object for latitude attribute added to Answer array " );
-// 		    			}
-<<<<<<< HEAD
-<<<<<<< HEAD
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    			if(latitude != null) {
+// // 			    			answer.setValue(Double.toString(latitude));
+// // 			    			String jsonAnswer = gson.toJson(answer);
+// // 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+// // 			    			newAnswers[i] = answerObj;
+// // 			    			i++;
+// // 			    			System.out.println("The answer object for latitude attribute added to Answer array " );
+// // 		    			}
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
+// =======
 		    			
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 		    			
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    			/* Store longitude */
-// 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
-// 		    			answer.setAttributeCode(newAttCode);
-// 		    			Double longitude = addressDataJson.getDouble("longitude");
-// 		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
-<<<<<<< HEAD
-<<<<<<< HEAD
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    			/* Store longitude */
+// // 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+// // 		    			answer.setAttributeCode(newAttCode);
+// // 		    			Double longitude = addressDataJson.getDouble("longitude");
+// // 		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
+// =======
 		    			
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 		    			
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    			if(longitude != null) {
-// 			    			answer.setValue(Double.toString(longitude));
-// 			    			String jsonAnswer = gson.toJson(answer);
-// 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 			    			newAnswers[i] = answerObj;
-// 			    			i++;
-// 		    			}
-<<<<<<< HEAD
-<<<<<<< HEAD
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    			if(longitude != null) {
+// // 			    			answer.setValue(Double.toString(longitude));
+// // 			    			String jsonAnswer = gson.toJson(answer);
+// // 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 			    			newAnswers[i] = answerObj;
+// // 			    			i++;
+// // 		    			}
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
+// =======
 		    			
->>>>>>> b2035684... internmatch registration workflow
-=======
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 		    			
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    			/* set new answers */
-// 		    			m.setItems(newAnswers);
-// 		    			String json = gson.toJson(m);
-// 		    			System.out.println("updated answer json string ::"+json);
-<<<<<<< HEAD
-<<<<<<< HEAD
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    			/* set new answers */
+// // 		    			m.setItems(newAnswers);
+// // 		    			String json = gson.toJson(m);
+// // 		    			System.out.println("updated answer json string ::"+json);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-// 		    			/* send new answers to api */
-=======
+// // 		    			/* send new answers to api */
+// =======
 		    			
-// 		    			/* send new answers to api */ 
->>>>>>> b2035684... internmatch registration workflow
-=======
+// // 		    			/* send new answers to api */ 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
 		    			
-// 		    			/* send new answers to api */ 
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
-// 	            }
-// 	         }
-// 		}
-// 		catch (Exception e) {
-// 	       e.printStackTrace();
-// 		}
-// end
+// // 		    			/* send new answers to api */ 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
+// // 	            }
+// // 	         }
+// // 		}
+// // 		catch (Exception e) {
+// // 	       e.printStackTrace();
+// // 		}
+// // end
 
-// /* Rule listening to Attribute change */
+// // /* Rule listening to Attribute change */
 
 
-// /* Rule listening to Facebook Code change */
-// rule "Listen Facebook Code"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         bus:EventBus()
-//        $map : Map($value: this["token"] != null)
+// // /* Rule listening to Facebook Code change */
+// // rule "Listen Facebook Code"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         bus:EventBus()
+// //        $map : Map($value: this["token"] != null)
 
-=======
-//         bus:EventBus() 
-//        $map : Map($value: this["token"] != null)
+// =======
+// //         bus:EventBus() 
+// //        $map : Map($value: this["token"] != null)
  
->>>>>>> b2035684... internmatch registration workflow
-=======
-//         bus:EventBus() 
-//        $map : Map($value: this["token"] != null)
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //         bus:EventBus() 
+// //        $map : Map($value: this["token"] != null)
  
->>>>>>> a7e9f6cc... internmatch registration workflow
-//      then
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //      then
 
-//       GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
+// //       GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 
-//         String tokenString = (String)$map.get("token");
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// //         String tokenString = (String)$map.get("token");
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
 
-//         /* Collect DATA  */
-//         Answer newAnswer = $m.getAnswer();
+// //         /* Collect DATA  */
+// //         Answer newAnswer = $m.getAnswer();
 
-//         String jsonAnswerStr = gson.toJson(newAnswer);
-//         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//         jsonAnswer.put("token",$m.getToken());
-
-
-
-
-//         /* Print DATA msg */
-//         System.out.println("------------------------------------------------------------------------\n");
-//         System.out.println("SOCIAL DATA   ::   "+jsonAnswer);
-//         System.out.println("------------------------------------------------------------------------");
-//         bus.publish("social", jsonAnswer);
+// //         String jsonAnswerStr = gson.toJson(newAnswer);
+// //         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //         jsonAnswer.put("token",$m.getToken());
 
 
 
-=======
+
+// //         /* Print DATA msg */
+// //         System.out.println("------------------------------------------------------------------------\n");
+// //         System.out.println("SOCIAL DATA   ::   "+jsonAnswer);
+// //         System.out.println("------------------------------------------------------------------------");
+// //         bus.publish("social", jsonAnswer);
+
+
+
+// =======
        
-//         String tokenString = (String)$map.get("token");   
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// //         String tokenString = (String)$map.get("token");   
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 
-//         /* Collect DATA  */
-//         Answer newAnswer = $m.getAnswer();
-=======
+// //         /* Collect DATA  */
+// //         Answer newAnswer = $m.getAnswer();
+// =======
        
-//         String tokenString = (String)$map.get("token");   
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// //         String tokenString = (String)$map.get("token");   
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
 
-//         /* Collect DATA  */
-//         Answer newAnswer = $m.getAnswer();
->>>>>>> a7e9f6cc... internmatch registration workflow
+// //         /* Collect DATA  */
+// //         Answer newAnswer = $m.getAnswer();
+// >>>>>>> a7e9f6cc... internmatch registration workflow
   
-//         String jsonAnswerStr = gson.toJson(newAnswer);
-//         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//         jsonAnswer.put("token",$m.getToken());
+// //         String jsonAnswerStr = gson.toJson(newAnswer);
+// //         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //         jsonAnswer.put("token",$m.getToken());
         
    
        
 
-//         /* Print DATA msg */
-//         System.out.println("------------------------------------------------------------------------\n");    
-//         System.out.println("SOCIAL DATA   ::   "+jsonAnswer); 
-//         System.out.println("------------------------------------------------------------------------");     
-//         bus.publish("social", jsonAnswer);
+// //         /* Print DATA msg */
+// //         System.out.println("------------------------------------------------------------------------\n");    
+// //         System.out.println("SOCIAL DATA   ::   "+jsonAnswer); 
+// //         System.out.println("------------------------------------------------------------------------");     
+// //         bus.publish("social", jsonAnswer);
 
       
         
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// end
-
-// /* Rule listening to Gender Inference */
-// rule "Inference Gender Change"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         bus:EventBus()
-//         $map : Map($value: this["token"] != null)
-
-//      then
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-
-
-//         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");
-
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-//         System.out.println("------------------------------------------------------------------------");
-
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         bus:EventBus() 
-//         $map : Map($value: this["token"] != null)
- 
-//      then    
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-         
-      
-//         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");   
-
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
-//         System.out.println("------------------------------------------------------------------------");
-		
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
-//         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
-//         /* PRINT genderObj */
-//         System.out.println("------------------------------------------------------------------------\n");
-//         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-//         String gender= genderObj.getString("gender");
-//         Float weight= genderObj.getFloat("probability");
-
-//         if(gender !=null ) {
-//             System.out.println("GENDER   ::   "+gender.toString());
-//             System.out.println("\n------------------------------------------------------------------------");
-
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-        
-//         String gender= genderObj.getString("gender");    
-//         Float weight= genderObj.getFloat("probability");    
-       
-//         if(gender !=null ) {
-//             System.out.println("GENDER   ::   "+gender.toString());
-//             System.out.println("\n------------------------------------------------------------------------");
-            
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//             /* Collect DATA to save gender as an answer */
-//             Answer newAnswer = $m.getAnswer();
-
-//             String jsonAnswerStr = gson.toJson(newAnswer);
-//             JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//             jsonAnswer.put("value",gender);
-//             jsonAnswer.put("attributeCode","PRI_GENDER");
-//             jsonAnswer.put("inferred",true);
-//             jsonAnswer.put("weight",weight);
-//             JsonArray items = new JsonArray();
-//             items.add(jsonAnswer);
-
-//                 /* Creating Answer DATA_MSG */
-//             JsonObject obj = new JsonObject();
-//             obj.put("msg_type", "DATA_MSG");
-//             obj.put("data_type", "Answer");
-<<<<<<< HEAD
-<<<<<<< HEAD
-//             obj.put("items", items);
-//             /* Print Answer */
-//             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString());
-=======
-//             obj.put("items", items); 
-//             /* Print Answer */
-//             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
->>>>>>> b2035684... internmatch registration workflow
-=======
-//             obj.put("items", items); 
-//             /* Print Answer */
-//             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
->>>>>>> a7e9f6cc... internmatch registration workflow
-//             obj.put("token",tokenString);
-//             bus.publish("data", obj);
-//         }else{
-//             System.out.println("------------------------------------------------------------------------\n");
-//             System.out.println("GENDER   ::  Not available ");
-//             System.out.println("Sorry, No Inferred Rule was executed ");
-//         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-// end
-
-
-// import org.apache.commons.lang3.StringUtils;
-
-// import life.genny.qwanda.message.QEventMessage;
-// import life.genny.qwanda.message.QMessage.MessageData;
-// import life.genny.qwanda.message.QCmdMessage;
-// import io.vertx.rxjava.core.eventbus.EventBus;
-// import io.vertx.core.buffer.Buffer;
-// import com.google.gson.Gson;
-// import life.genny.qwanda.Answer;
-// import life.genny.qwanda.message.QDataAnswerMessage;
-// import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
-// import life.genny.qwandautils.KeycloakUtils;
-// import life.genny.qwandautils.MergeUtil;
-// import life.genny.qwandautils.QwandaUtils;
-// import life.genny.qwandautils.MergeUtil;
-// import life.genny.qwanda.message.QDataAskMessage;
-// import life.genny.qwanda.message.QCmdMessage;
-// import life.genny.qwanda.message.QDataAnswerMessage;
-// import life.genny.qwanda.Ask;
-// import life.genny.qwanda.Link;
-
-
-// import java.lang.reflect.Type;
-// import java.util.Map;
-// import java.util.Set;
-// import java.util.Iterator;
-// //import java.util.ArrayList;
-// //import java.util.List;
-// import java.util.HashMap;
-// import java.time.LocalDateTime;
-// import java.time.ZonedDateTime;
-// import com.google.gson.GsonBuilder;
-// import com.google.gson.JsonDeserializationContext;
-// import com.google.gson.JsonDeserializer;
-// import com.google.gson.JsonElement;
-// import com.google.gson.JsonParseException;
-// import com.google.gson.JsonPrimitive;
-// import com.google.gson.JsonSerializationContext;
-// import com.google.gson.FieldNamingPolicy;
-// import io.vertx.core.json.JsonObject;
-// import io.vertx.core.json.JsonArray;
-// import java.time.format.DateTimeFormatter;
-// import life.genny.qwanda.DateTimeDeserializer;
-
-
-
-// rule "Answer"
-//     when
-//         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-//         bus: EventBus()
-//         $map : Map($value: this["token"] != null)
-//     then
-
-
-
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");
-
-//         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("------------------------------------------------------------------------");
-
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-
-//         /* extract answers */
-//         Answer[] answers = m.getItems();
-//         for (Answer answer : answers) {
-
-//             Long askId = answer.getAskId();
-//             String sourceCode = answer.getSourceCode();
-//             String targetCode = answer.getTargetCode();
-//             answer.setSourceCode(answer.getTargetCode());
-//             String attributeCode = answer.getAttributeCode();
-//             String value = answer.getValue();
-//             Boolean inferred = answer.getInferred();
-//             Double weight = answer.getWeight();
-//             Boolean expired = answer.getExpired();
-//             Boolean refused = answer.getRefused();
-//             System.out.println("Printing Answer data recieved   ::");
-//             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
-//             System.out.println("------------------------------------------------------------------------");
-
-//             /* if this answer is actually an address another rule will be triggered */
-//             if(!attributeCode.contains("ADDRESS_FULL")) {
-
-//              	/* convert answer to json */
-// 	            String jsonAnswer = gson.toJson(answer);
-// 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
-
-// 	            /* convert Answer Json to Answer obj */
-// 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 	            System.out.println("Answer Object   ::   "+answerObj);
-// 	            System.out.println("------------------------------------------------------------------------");
-// 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
-
-// 	            /* post answers to qwanda-utils */
-// 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
-//             }
-//          }
-
-
-
-// end
-
-// /* Update address */
-// rule "Update Address"
-// 	when
-// 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-// 	    bus: EventBus()
-// 	    $map : Map($value: this["token"] != null)
-// 	then
-// 	    System.out.println(" ------  Update Address being exected  --------   ");
-// 		try {
-
-// 			Answer[] newAnswers = new Answer[50];
-// 			Answer[] answers = m.getItems();
-// 			GsonBuilder gsonBuilder = new GsonBuilder();
-// 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-// 	        Gson gson = gsonBuilder.create();
-// 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-// 	        String tokenString = (String)$map.get("token");
-
-// 	        for (Answer answer : answers) {
-
-// 	            String targetCode = answer.getTargetCode();
-// 	            answer.setSourceCode(answer.getTargetCode());
-// 	            String attributeCode = answer.getAttributeCode();
-// 	            String value = answer.getValue();
-
-// 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
-
-
-
-// 	            /* if this answer is actually an address another rule will be triggered */
-// 	            if(attributeCode.contains("ADDRESS_FULL")) {
-// 	            	  JsonObject addressDataJson = new JsonObject(value);
-// 		            	Map<String, String> availableKeys = new HashMap<String, String>();
-// 		    			availableKeys.put("full_address", "FULL");
-// 		    			availableKeys.put("street_address", "ADDRESS1");
-// 		    			availableKeys.put("suburb", "SUBURB");
-// 		    			availableKeys.put("state", "STATE");
-// 		    			availableKeys.put("postal_code", "POSTCODE");
-// 		    			availableKeys.put("country", "COUNTRY");
-
-// 		    			int i = 0;
-// 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
-// 		    			{
-
-// 		    				String key = entry.getKey();
-// 		    				String valueEntry = entry.getValue();
-
-// 		    				if(addressDataJson.containsKey(key)) {
-
-// 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
-// 		    					answer.setAttributeCode(newAttributeCode);
-// 		    					answer.setValue(addressDataJson.getString(key));
-// 		    					String jsonAnswer = gson.toJson(answer);
-// 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 		    					newAnswers[i] = answerObj;
-// 		    					i++;
-// 		    				}
-
-// 		    			}
-
-
-// 		    	        /* Store latitude */
-// 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
-// 		    			answer.setAttributeCode(newAttCode);
-// 		    			Double latitude = addressDataJson.getDouble("latitude");
-// 		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
-
-// 		    			if(latitude != null) {
-// 			    			answer.setValue(Double.toString(latitude));
-// 			    			String jsonAnswer = gson.toJson(answer);
-// 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
-// 			    			newAnswers[i] = answerObj;
-// 			    			i++;
-// 			    			System.out.println("The answer object for latitude attribute added to Answer array " );
-// 		    			}
-
-// 		    			/* Store longitude */
-// 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
-// 		    			answer.setAttributeCode(newAttCode);
-// 		    			Double longitude = addressDataJson.getDouble("longitude");
-// 		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
-
-// 		    			if(longitude != null) {
-// 			    			answer.setValue(Double.toString(longitude));
-// 			    			String jsonAnswer = gson.toJson(answer);
-// 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
-// 			    			newAnswers[i] = answerObj;
-// 			    			i++;
-// 		    			}
-
-// 		    			/* set new answers */
-// 		    			m.setItems(newAnswers);
-// 		    			String json = gson.toJson(m);
-// 		    			System.out.println("updated answer json string ::"+json);
-
-// 		    			/* send new answers to api */
-// 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
-// 	            }
-// 	         }
-// 		}
-// 		catch (Exception e) {
-// 	       e.printStackTrace();
-// 		}
-// end
-<<<<<<< HEAD
-
-// /* Rule listening to Attribute change */
-
-
-// /* Rule listening to Facebook Code change */
-// rule "Listen Facebook Code"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
-//         bus:EventBus()
-//        $map : Map($value: this["token"] != null)
-
-//      then
-
-//       GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-
-=======
-
-// /* Rule listening to Attribute change */
-
-
-// /* Rule listening to Facebook Code change */
-// rule "Listen Facebook Code"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
-//         bus:EventBus()
-//        $map : Map($value: this["token"] != null)
-
-//      then
-
-//       GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-
->>>>>>> 66750489... internmatch registration workflow
-
-//         String tokenString = (String)$map.get("token");
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-
-//         /* Collect DATA  */
-//         Answer newAnswer = $m.getAnswer();
-
-//         String jsonAnswerStr = gson.toJson(newAnswer);
-//         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//         jsonAnswer.put("token",$m.getToken());
-
-
-
-
-//         /* Print DATA msg */
-//         System.out.println("------------------------------------------------------------------------\n");
-//         System.out.println("SOCIAL DATA   ::   "+jsonAnswer);
-//         System.out.println("------------------------------------------------------------------------");
-//         bus.publish("social", jsonAnswer);
-
-
-
-// end
-
-// /* Rule listening to Gender Inference */
-// rule "Inference Gender Change"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
-//         bus:EventBus()
-//         $map : Map($value: this["token"] != null)
-
-//      then
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-
-
-//         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         String tokenString = (String)$map.get("token");
-
-//         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-//         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-//         System.out.println("------------------------------------------------------------------------");
-
-// 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
-//         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
-//         /* PRINT genderObj */
-//         System.out.println("------------------------------------------------------------------------\n");
-//         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
-
-//         String gender= genderObj.getString("gender");
-//         Float weight= genderObj.getFloat("probability");
-
-//         if(gender !=null ) {
-//             System.out.println("GENDER   ::   "+gender.toString());
-//             System.out.println("\n------------------------------------------------------------------------");
-
-//             /* Collect DATA to save gender as an answer */
-//             Answer newAnswer = $m.getAnswer();
-
-//             String jsonAnswerStr = gson.toJson(newAnswer);
-//             JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//             jsonAnswer.put("value",gender);
-//             jsonAnswer.put("attributeCode","PRI_GENDER");
-//             jsonAnswer.put("inferred",true);
-//             jsonAnswer.put("weight",weight);
-//             JsonArray items = new JsonArray();
-//             items.add(jsonAnswer);
-
-//                 /* Creating Answer DATA_MSG */
-//             JsonObject obj = new JsonObject();
-//             obj.put("msg_type", "DATA_MSG");
-//             obj.put("data_type", "Answer");
-//             obj.put("items", items);
-//             /* Print Answer */
-//             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString());
-//             obj.put("token",tokenString);
-//             bus.publish("data", obj);
-//         }else{
-//             System.out.println("------------------------------------------------------------------------\n");
-//             System.out.println("GENDER   ::  Not available ");
-//             System.out.println("Sorry, No Inferred Rule was executed ");
-//         }
-
-
-// end
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-// /* Rule listening to Gender Inference */
-// rule "Inference DOB Change"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         bus:EventBus()
-//         $map : Map($value: this["token"] != null)
-//         /*  $user: User(realm != null) */
-
-//      then
-
-
-//         /* //Prepare Token & qwandaServiceUrl
-//         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         // String tokenString = (String)$map.get("token");
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//         bus:EventBus()
-//         $map : Map($value: this["token"] != null)
-//         /*  $user: User(realm != null) */
-
-//      then
-
-
-//         /* //Prepare Token & qwandaServiceUrl
-//         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         // String tokenString = (String)$map.get("token");
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-    
-        
-// end
-
-// /* Rule listening to Gender Inference */
-// rule "Inference DOB Change"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
-//         bus:EventBus() 
-//         $map : Map($value: this["token"] != null)
-//         /*  $user: User(realm != null) */
- 
-//      then            
-     
-        
-//         /* //Prepare Token & qwandaServiceUrl
-//         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-//         // String tokenString = (String)$map.get("token");   
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-
-//         // // Prepare gson Object
-//         // GsonBuilder gsonBuilder = new GsonBuilder();
-//         // gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         // Gson gson = gsonBuilder.create();
-
-//         // System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-//         // System.out.println("------------------------------------------------------------------------");
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-//         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-//         // System.out.println("------------------------------------------------------------------------");
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-//         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
-//         // System.out.println("------------------------------------------------------------------------");
-		
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// 		//  // Collect DATA to save facebook dob as primary dob
-//         // Answer newAnswer = $m.getAnswer();
-//         // String jsonAnswerStr = gson.toJson(newAnswer);
-//         // JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-            
->>>>>>> b2035684... internmatch registration workflow
-=======
-            
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         // // get source and target code for logged in user
-//         // String sourceCode= $user.getuCode();
-//         // String targetCode= $user.getuCode();
-//         // // get FBK_DOB
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();
-//         // // Check if PRI_DOB exists ?
-//         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();
-//         // // Check if PRI_DOB exists ?
-//         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();  
-//         // // Check if PRI_DOB exists ?
-//         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
-        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         // if(PRI_DOB == null){
-//         //     jsonAnswer.put("value", FBK_BIRTHDAY);
-//         //     jsonAnswer.put("attributeCode", "PRI_DOB");
-//         //     jsonAnswer.put("sourceCode", sourceCode);
-//         //     jsonAnswer.put("targetCode", targetCode);
-//         //     jsonAnswer.put("inferred",true);
-//         //     jsonAnswer.put("weight", "1");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-//         //     JsonArray items = new JsonArray();
-//         //     items.add(jsonAnswer);
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-
-//         //     JsonArray items = new JsonArray();
-//         //     items.add(jsonAnswer);
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-        
-//         //     JsonArray items = new JsonArray();
-//         //     items.add(jsonAnswer);
-            
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         //     //Creating Answer DATA_MSG
-//         //     JsonObject obj = new JsonObject();
-//         //     obj.put("msg_type", "DATA_MSG");
-//         //     obj.put("data_type", "Answer");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         //     obj.put("items", items);
-
-//         //     //Print Answer
-//         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString());
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//         //     obj.put("items", items);
-
-//         //     //Print Answer
-//         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString());
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         //     obj.put("items", items); 
-            
-//         //     //Print Answer
-//         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString()); 
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         //     obj.put("token",tokenString);
-//         //     bus.publish("data", obj);
-//         // }else {
-//         //     System.out.println(" PRI_DOB already exists ! ");
-//         // }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-//         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
-//         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-//        */
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-
-//         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
-//         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-//        */
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-        
-//         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
-//         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-//        */
-        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// end
-
-// /* //Rule listening to Image Inference
-// // rule "Inference Image Change"
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // end
+
+// // /* Rule listening to Gender Inference */
+// // rule "Inference Gender Change"
 // //     when
-// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_IMGURL") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
 // //         bus:EventBus()
 // //         $map : Map($value: this["token"] != null)
-// //         $user: User(realm != null)
 
 // //      then
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-// //         bus:EventBus()
-// //         $map : Map($value: this["token"] != null)
-// //         $user: User(realm != null)
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
 
-// //      then
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
+
+// //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");
+
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// //         System.out.println("------------------------------------------------------------------------");
+
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
 // //         bus:EventBus() 
 // //         $map : Map($value: this["token"] != null)
-// //         $user: User(realm != null)
  
 // //      then    
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// //         System.out.println("rule executed");
-// //      	if($user.getUname() ==  $map.get("preferred_username") ){
-// //      		GsonBuilder gsonBuilder = new GsonBuilder();
-// // 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-// // 	        Gson gson = gsonBuilder.create();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-=======
-
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-	     
-	     
->>>>>>> b2035684... internmatch registration workflow
-=======
-	     
-	     
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        System.out.println("\n\n");
-// // 	        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-// // 	        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Image Change" + LOG_RESET);
-// // 	        //Prepare Token & qwandaServiceUrl
-// // 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-// // 	        String tokenString = (String)$map.get("token");
-
-// // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-// // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-// // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-// // 	        System.out.println("------------------------------------------------------------------------");
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-// // 	        String tokenString = (String)$map.get("token");
-
-// // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-// // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
-// // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
-// // 	        System.out.println("------------------------------------------------------------------------");
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        String tokenString = (String)$map.get("token");   
-	
-// // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
-// // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
-// // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
-// // 	        System.out.println("------------------------------------------------------------------------");       
-	       
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        // Collect DATA to save facebook image as primary image
-// // 	        Answer newAnswer = $m.getAnswer();
-// // 	        String jsonAnswerStr = gson.toJson(newAnswer);
-// // 	        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-// // 	        // get FBK_IMGURL
-// // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
-
-// // 	        // get source and target code for logged in user
-// // 	        String sourceCode= $user.getuCode();
-// // 	        String targetCode= $user.getuCode();
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-
-// // 	        // get FBK_IMGURL
-// // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
-
-// // 	        // get source and target code for logged in user
-// // 	        String sourceCode= $user.getuCode();
-// // 	        String targetCode= $user.getuCode();
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-	        
-// // 	        // get FBK_IMGURL
-// // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
-	        
-// // 	        // get source and target code for logged in user
-// // 	        String sourceCode= $user.getuCode();
-// // 	        String targetCode= $user.getuCode();
-	        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        jsonAnswer.put("value", FBK_IMGURL);
-// // 	        jsonAnswer.put("attributeCode","PRI_IMAGE_URL");
-// // 	        jsonAnswer.put("sourceCode", sourceCode);
-// // 	        jsonAnswer.put("targetCode", targetCode);
-// // 	        jsonAnswer.put("inferred",true);
-// // 	        jsonAnswer.put("weight", "1");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-// // 	        JsonArray items = new JsonArray();
-// // 	        items.add(jsonAnswer);
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-
-// // 	        JsonArray items = new JsonArray();
-// // 	        items.add(jsonAnswer);
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-	        
-// // 	        JsonArray items = new JsonArray();
-// // 	        items.add(jsonAnswer);
-			
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        //Creating Answer DATA_MSG
-// // 	        JsonObject obj = new JsonObject();
-// // 	        obj.put("msg_type", "DATA_MSG");
-// // 	        obj.put("data_type", "Answer");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-// // 	        obj.put("items", items);
-
-// // 	        //Print Answer
-// // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString());
-// // 	        obj.put("token",tokenString);
-// // 	        bus.publish("data", obj);
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-// // 	        obj.put("items", items);
-
-// // 	        //Print Answer
-// // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString());
-// // 	        obj.put("token",tokenString);
-// // 	        bus.publish("data", obj);
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        obj.put("items", items); 
-	        
-// // 	        //Print Answer
-// // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString()); 
-// // 	        obj.put("token",tokenString);
-// // 	        bus.publish("data", obj);
-	        
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // 	        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Image Change" + LOG_RESET);
-// // 	        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-// //      	}else{
-// //      		 System.out.println("rule executed but outside if");
-// //      	}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-=======
-
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-       
-        
->>>>>>> b2035684... internmatch registration workflow
-=======
-       
-        
->>>>>>> a7e9f6cc... internmatch registration workflow
-// // end
-// */
-// /* Rule listening to load selection value change in Post Load
-// rule "Handle load selection"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         bus:EventBus()
-=======
-//         bus:EventBus()
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//         bus:EventBus()
->>>>>>> 66750489... internmatch registration workflow
-=======
-//         bus:EventBus() 
->>>>>>> b2035684... internmatch registration workflow
-=======
-//         bus:EventBus() 
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         $user: User(realm != null)
-//         $map : Map($value: this["token"] != null)
-//      then
-//         // Prepare GSON Deserialization
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-            
->>>>>>> b2035684... internmatch registration workflow
-=======
-            
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         System.out.println("\n\n");
-//         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-//         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  POST LOAD - Handle load selection  " + LOG_RESET);
-//         //Prepare Token & qwandaServiceUrl
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         String tokenString = (String)$map.get("token");
-=======
-//         String tokenString = (String)$map.get("token");
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token");
->>>>>>> 66750489... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token"); 
->>>>>>> b2035684... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token"); 
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-
-//          //Collect load code from answer
-//          Answer newAnswer = $m.getAnswer();
-//          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
-//          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
-//          String targetCode = newAnswer.getTargetCode();
-//          String sourceCode = newAnswer.getSourceCode();
-//          String loadCode = newAnswer.getValue();
-//          System.out.println("The target BE code is   ::  " +targetCode);
-//          System.out.println("The source BE code is   ::  " +sourceCode);
-//          System.out.println("The load code is   ::  " +loadCode);
-//          //link LOAD to Job
-//          QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(targetCode,loadCode,"LNK_BEG","LOAD")),tokenString);
-//          String loadName = MergeUtil.getAttrValue(loadCode, "PRI_DESCRIPTION", tokenString);
-//          String loadType = MergeUtil.getAttrValue(loadCode, "PRI_LOAD_TYPE", tokenString);
-//          System.out.println(" The load Name is :: "+loadName);
-//          System.out.println(" The load type is :: "+loadType);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-         
->>>>>>> b2035684... internmatch registration workflow
-=======
-         
->>>>>>> a7e9f6cc... internmatch registration workflow
-//          //Answer loadTypeAnswer = new Answer($user.getuCode(), targetCode, "PRI_LOAD_TYPE",loadType);
-//           String jsonAnswerStr = gson.toJson(newAnswer);
-//           System.out.println("The answer in string format :: "+jsonAnswerStr);
-//          JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//          jsonAnswer.put("value",loadType);
-//          jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
-//          jsonAnswer.put("inferred",true);
-//          //jsonAnswer.put("weight",weight);
-//          System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
-//          //creating Json array
-//          JsonArray items = new JsonArray();
-//          items.add(jsonAnswer);
-//         // newAnswer.setTargetCode(targetCode);
-//          //newAnswer.setSourceCode($user.getuCode());
-//          //newAnswer.setAttributeCode("PRI_LOAD_TYPE");
-//          //newAnswer.setValue(loadType);
-//          //newAnswer.setInferred(true);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-       
->>>>>>> b2035684... internmatch registration workflow
-=======
-       
->>>>>>> a7e9f6cc... internmatch registration workflow
-//        //  String targetCode1 = jsonAnswer.getTargetCode();
-//        //  String sourceCode1 = jsonAnswer.getSourceCode();
-//        //  String loadCode1 = jsonAnswer.getValue();
-//        //  System.out.println("The target BE code is   ::  " +targetCode1);
-//        //  System.out.println("The source BE code is   ::  " +sourceCode1);
-//        //  System.out.println("The load type is   ::  " +loadCode1);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-         
->>>>>>> b2035684... internmatch registration workflow
-=======
-         
->>>>>>> a7e9f6cc... internmatch registration workflow
-//          //Creating Answer DATA_MSG
-//          JsonObject obj = new JsonObject();
-//          obj.put("msg_type", "DATA_MSG");
-//          obj.put("data_type", "Answer");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//          obj.put("items", items);
-//          //Print Answer
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString());
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
-
-//      //    List<Answer> answerList = new ArrayList<Answer>();
-//       //   answerList.add(loadTypeAnswer);
-//      //    Answer[] answerArray = new Answer[answerList.size()];
-//       //    answerArray = answerList.toArray(answerArray);
-//       //   System.out.println(" Printing the Answer array  :: "+answerArray);
-
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//          obj.put("items", items);
-//          //Print Answer
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString());
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
-
-//      //    List<Answer> answerList = new ArrayList<Answer>();
-//       //   answerList.add(loadTypeAnswer);
-//      //    Answer[] answerArray = new Answer[answerList.size()];
-//       //    answerArray = answerList.toArray(answerArray);
-//       //   System.out.println(" Printing the Answer array  :: "+answerArray);
-
-<<<<<<< HEAD
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//          obj.put("items", items); 
-//          //Print Answer
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString()); 
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
-         
-//      //    List<Answer> answerList = new ArrayList<Answer>();
-//       //   answerList.add(loadTypeAnswer);         
-//      //    Answer[] answerArray = new Answer[answerList.size()];
-//       //    answerArray = answerList.toArray(answerArray);
-//       //   System.out.println(" Printing the Answer array  :: "+answerArray);
-         
-<<<<<<< HEAD
->>>>>>> b2035684... internmatch registration workflow
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//      //    QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
-//      //    System.out.println(" Printing the QDataAnswerMessage Obj  :: "+msg.toString());
-//      //    JsonObject answerObj = new JsonObject().mapFrom(msg);
-//      //    answerObj.put("token",tokenString);
-//      //    System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//      //    bus.publish("cmds", answerObj);
-=======
-//      //    bus.publish("cmds", answerObj);
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//      //    bus.publish("cmds", answerObj);
->>>>>>> 66750489... internmatch registration workflow
-=======
-//      //    bus.publish("cmds", answerObj);    
->>>>>>> b2035684... internmatch registration workflow
-=======
-//      //    bus.publish("cmds", answerObj);    
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
-//         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-// end
-// */
-
-// /*Rule listening to load type selection value change in Create Load */
-// rule "Handle load type selection"
-//     when
-//         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         bus:EventBus()
-=======
-//         bus:EventBus()
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//         bus:EventBus()
->>>>>>> 66750489... internmatch registration workflow
-=======
-//         bus:EventBus() 
->>>>>>> b2035684... internmatch registration workflow
-=======
-//         bus:EventBus() 
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         $user: User(realm != null)
-//         $map : Map($value: this["token"] != null)
-//      then
-//         /* Prepare GSON Deserialization */
-//         GsonBuilder gsonBuilder = new GsonBuilder();
-//         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
-//         Gson gson = gsonBuilder.create();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-            
->>>>>>> b2035684... internmatch registration workflow
-=======
-            
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         System.out.println("\n\n");
-//         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
-//         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  Create LOAD - Handle load type selection  " + LOG_RESET);
-//         /* Prepare Token & qwandaServiceUrl */
-//         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//         String tokenString = (String)$map.get("token");
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-
-=======
-//         String tokenString = (String)$map.get("token");
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token");
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-
->>>>>>> 66750489... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token"); 
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-        
->>>>>>> b2035684... internmatch registration workflow
-=======
-//         String tokenString = (String)$map.get("token"); 
-//         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
-        
->>>>>>> a7e9f6cc... internmatch registration workflow
-//         /* Collect load code from answer */
-//          Answer newAnswer = $m.getAnswer();
-//          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
-//          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
-//          String targetCode = newAnswer.getTargetCode();
-//          String sourceCode = newAnswer.getSourceCode();
-//          String loadTypeCode = newAnswer.getValue();
-//          String attributeCode = $m.data.getCode();
-//          System.out.println("The target BE code is   ::  " +targetCode);
-//          System.out.println("The source BE code is   ::  " +sourceCode);
-//          System.out.println("The attribute code is   ::  " +attributeCode);
-//          System.out.println("The load type code is   ::  " +loadTypeCode);
-//            BaseEntity loadType = MergeUtil.getBaseEntityForAttr(loadTypeCode, tokenString);
-//           String loadTypeValue = loadType.getName();
-//          System.out.println("The load type value is   ::  " +loadTypeValue);
-//          /* creating new Answer */
-//          String jsonAnswerStr = gson.toJson(newAnswer);
-//          System.out.println("The answer in string format :: "+jsonAnswerStr);
-//          JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
-//          jsonAnswer.put("value",loadTypeValue);
-//          jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
-//          jsonAnswer.put("inferred",true);
-//          /* jsonAnswer.put("weight",weight); */
-//          System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
-//          /* creating Json array */
-//          JsonArray items = new JsonArray();
-//          items.add(jsonAnswer);
-//          /* Creating Answer DATA_MSG */
-//          JsonObject obj = new JsonObject();
-//          obj.put("msg_type", "DATA_MSG");
-//          obj.put("data_type", "Answer");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//          obj.put("items", items);
-//          /* Print Answer */
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString());
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
-
-
-//         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
-//         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-//  end
-=======
-=======
->>>>>>> 66750489... internmatch registration workflow
-//          obj.put("items", items);
-//          /* Print Answer */
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString());
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
-
-
-//         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
-//         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-<<<<<<< HEAD
-//  end
->>>>>>> a7e9f6c... internmatch registration workflow
-=======
-//  end
->>>>>>> 66750489... internmatch registration workflow
-=======
-=======
->>>>>>> a7e9f6cc... internmatch registration workflow
-//          obj.put("items", items); 
-//          /* Print Answer */
-//          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString()); 
-//          obj.put("token",tokenString);
-//          bus.publish("data", obj);
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
          
       
-//         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
-//         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
-<<<<<<< HEAD
-//  end
->>>>>>> b2035684... internmatch registration workflow
-=======
-//  end
->>>>>>> a7e9f6cc... internmatch registration workflow
+// //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");   
+
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// //         System.out.println("------------------------------------------------------------------------");
+		
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
+// //         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
+// //         /* PRINT genderObj */
+// //         System.out.println("------------------------------------------------------------------------\n");
+// //         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// //         String gender= genderObj.getString("gender");
+// //         Float weight= genderObj.getFloat("probability");
+
+// //         if(gender !=null ) {
+// //             System.out.println("GENDER   ::   "+gender.toString());
+// //             System.out.println("\n------------------------------------------------------------------------");
+
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+        
+// //         String gender= genderObj.getString("gender");    
+// //         Float weight= genderObj.getFloat("probability");    
+       
+// //         if(gender !=null ) {
+// //             System.out.println("GENDER   ::   "+gender.toString());
+// //             System.out.println("\n------------------------------------------------------------------------");
+            
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //             /* Collect DATA to save gender as an answer */
+// //             Answer newAnswer = $m.getAnswer();
+
+// //             String jsonAnswerStr = gson.toJson(newAnswer);
+// //             JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //             jsonAnswer.put("value",gender);
+// //             jsonAnswer.put("attributeCode","PRI_GENDER");
+// //             jsonAnswer.put("inferred",true);
+// //             jsonAnswer.put("weight",weight);
+// //             JsonArray items = new JsonArray();
+// //             items.add(jsonAnswer);
+
+// //                 /* Creating Answer DATA_MSG */
+// //             JsonObject obj = new JsonObject();
+// //             obj.put("msg_type", "DATA_MSG");
+// //             obj.put("data_type", "Answer");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //             obj.put("items", items);
+// //             /* Print Answer */
+// //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString());
+// =======
+// //             obj.put("items", items); 
+// //             /* Print Answer */
+// //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //             obj.put("items", items); 
+// //             /* Print Answer */
+// //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString()); 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //             obj.put("token",tokenString);
+// //             bus.publish("data", obj);
+// //         }else{
+// //             System.out.println("------------------------------------------------------------------------\n");
+// //             System.out.println("GENDER   ::  Not available ");
+// //             System.out.println("Sorry, No Inferred Rule was executed ");
+// //         }
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+
+// // end
+
+
+// // import org.apache.commons.lang3.StringUtils;
+
+// // import life.genny.qwanda.message.QEventMessage;
+// // import life.genny.qwanda.message.QMessage.MessageData;
+// // import life.genny.qwanda.message.QCmdMessage;
+// // import io.vertx.rxjava.core.eventbus.EventBus;
+// // import io.vertx.core.buffer.Buffer;
+// // import com.google.gson.Gson;
+// // import life.genny.qwanda.Answer;
+// // import life.genny.qwanda.message.QDataAnswerMessage;
+// // import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+// // import life.genny.qwandautils.KeycloakUtils;
+// // import life.genny.qwandautils.MergeUtil;
+// // import life.genny.qwandautils.QwandaUtils;
+// // import life.genny.qwandautils.MergeUtil;
+// // import life.genny.qwanda.message.QDataAskMessage;
+// // import life.genny.qwanda.message.QCmdMessage;
+// // import life.genny.qwanda.message.QDataAnswerMessage;
+// // import life.genny.qwanda.Ask;
+// // import life.genny.qwanda.Link;
+
+
+// // import java.lang.reflect.Type;
+// // import java.util.Map;
+// // import java.util.Set;
+// // import java.util.Iterator;
+// // //import java.util.ArrayList;
+// // //import java.util.List;
+// // import java.util.HashMap;
+// // import java.time.LocalDateTime;
+// // import java.time.ZonedDateTime;
+// // import com.google.gson.GsonBuilder;
+// // import com.google.gson.JsonDeserializationContext;
+// // import com.google.gson.JsonDeserializer;
+// // import com.google.gson.JsonElement;
+// // import com.google.gson.JsonParseException;
+// // import com.google.gson.JsonPrimitive;
+// // import com.google.gson.JsonSerializationContext;
+// // import com.google.gson.FieldNamingPolicy;
+// // import io.vertx.core.json.JsonObject;
+// // import io.vertx.core.json.JsonArray;
+// // import java.time.format.DateTimeFormatter;
+// // import life.genny.qwanda.DateTimeDeserializer;
+
+
+
+// // rule "Answer"
+// //     when
+// //         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+// //         bus: EventBus()
+// //         $map : Map($value: this["token"] != null)
+// //     then
+
+
+
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");
+
+// //         System.out.println("\nToken          ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("------------------------------------------------------------------------");
+
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+
+// //         /* extract answers */
+// //         Answer[] answers = m.getItems();
+// //         for (Answer answer : answers) {
+
+// //             Long askId = answer.getAskId();
+// //             String sourceCode = answer.getSourceCode();
+// //             String targetCode = answer.getTargetCode();
+// //             answer.setSourceCode(answer.getTargetCode());
+// //             String attributeCode = answer.getAttributeCode();
+// //             String value = answer.getValue();
+// //             Boolean inferred = answer.getInferred();
+// //             Double weight = answer.getWeight();
+// //             Boolean expired = answer.getExpired();
+// //             Boolean refused = answer.getRefused();
+// //             System.out.println("Printing Answer data recieved   ::");
+// //             System.out.println("\nAskId: " +askId + "\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value+" \nInferred: "+(inferred?"TRUE":"FALSE")+ " \nWeight: "+weight);
+// //             System.out.println("------------------------------------------------------------------------");
+
+// //             /* if this answer is actually an address another rule will be triggered */
+// //             if(!attributeCode.contains("ADDRESS_FULL")) {
+
+// //              	/* convert answer to json */
+// // 	            String jsonAnswer = gson.toJson(answer);
+// // 	            System.out.println("incoming JSON Answer   ::   "+jsonAnswer);
+
+// // 	            /* convert Answer Json to Answer obj */
+// // 	            Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 	            System.out.println("Answer Object   ::   "+answerObj);
+// // 	            System.out.println("------------------------------------------------------------------------");
+// // 	            /* JsonObject jsonObject = Buffer.buffer(json).toJsonObject(); */
+
+// // 	            /* post answers to qwanda-utils */
+// // 	            QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers",jsonAnswer, tokenString);
+// //             }
+// //          }
+
+
+
+// // end
+
+// // /* Update address */
+// // rule "Update Address"
+// // 	when
+// // 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+// // 	    bus: EventBus()
+// // 	    $map : Map($value: this["token"] != null)
+// // 	then
+// // 	    System.out.println(" ------  Update Address being exected  --------   ");
+// // 		try {
+
+// // 			Answer[] newAnswers = new Answer[50];
+// // 			Answer[] answers = m.getItems();
+// // 			GsonBuilder gsonBuilder = new GsonBuilder();
+// // 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// // 	        Gson gson = gsonBuilder.create();
+// // 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// // 	        String tokenString = (String)$map.get("token");
+
+// // 	        for (Answer answer : answers) {
+
+// // 	            String targetCode = answer.getTargetCode();
+// // 	            answer.setSourceCode(answer.getTargetCode());
+// // 	            String attributeCode = answer.getAttributeCode();
+// // 	            String value = answer.getValue();
+
+// // 	            System.out.println("value ::"+value + "attribute code ::"+attributeCode);
+
+
+
+// // 	            /* if this answer is actually an address another rule will be triggered */
+// // 	            if(attributeCode.contains("ADDRESS_FULL")) {
+// // 	            	  JsonObject addressDataJson = new JsonObject(value);
+// // 		            	Map<String, String> availableKeys = new HashMap<String, String>();
+// // 		    			availableKeys.put("full_address", "FULL");
+// // 		    			availableKeys.put("street_address", "ADDRESS1");
+// // 		    			availableKeys.put("suburb", "SUBURB");
+// // 		    			availableKeys.put("state", "STATE");
+// // 		    			availableKeys.put("postal_code", "POSTCODE");
+// // 		    			availableKeys.put("country", "COUNTRY");
+
+// // 		    			int i = 0;
+// // 		    			for (Map.Entry<String, String> entry : availableKeys.entrySet())
+// // 		    			{
+
+// // 		    				String key = entry.getKey();
+// // 		    				String valueEntry = entry.getValue();
+
+// // 		    				if(addressDataJson.containsKey(key)) {
+
+// // 		    					String newAttributeCode = attributeCode.replace("FULL", valueEntry);
+// // 		    					answer.setAttributeCode(newAttributeCode);
+// // 		    					answer.setValue(addressDataJson.getString(key));
+// // 		    					String jsonAnswer = gson.toJson(answer);
+// // 		    					Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 		    					newAnswers[i] = answerObj;
+// // 		    					i++;
+// // 		    				}
+
+// // 		    			}
+
+
+// // 		    	        /* Store latitude */
+// // 		    	        String newAttCode = attributeCode.replace("FULL", "LATITUDE");
+// // 		    			answer.setAttributeCode(newAttCode);
+// // 		    			Double latitude = addressDataJson.getDouble("latitude");
+// // 		    			System.out.println(" The latitude value after conversion is  :: "+latitude );
+
+// // 		    			if(latitude != null) {
+// // 			    			answer.setValue(Double.toString(latitude));
+// // 			    			String jsonAnswer = gson.toJson(answer);
+// // 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 			    			System.out.println("The answer object for latitude attribute is  :: "+answerObj.toString() );
+// // 			    			newAnswers[i] = answerObj;
+// // 			    			i++;
+// // 			    			System.out.println("The answer object for latitude attribute added to Answer array " );
+// // 		    			}
+
+// // 		    			/* Store longitude */
+// // 		    			newAttCode = attributeCode.replace("FULL", "LONGITUDE");
+// // 		    			answer.setAttributeCode(newAttCode);
+// // 		    			Double longitude = addressDataJson.getDouble("longitude");
+// // 		    			System.out.println(" The longitude value after conversion is  :: "+longitude );
+
+// // 		    			if(longitude != null) {
+// // 			    			answer.setValue(Double.toString(longitude));
+// // 			    			String jsonAnswer = gson.toJson(answer);
+// // 			    			Answer answerObj = gson.fromJson(jsonAnswer, Answer.class);
+// // 			    			newAnswers[i] = answerObj;
+// // 			    			i++;
+// // 		    			}
+
+// // 		    			/* set new answers */
+// // 		    			m.setItems(newAnswers);
+// // 		    			String json = gson.toJson(m);
+// // 		    			System.out.println("updated answer json string ::"+json);
+
+// // 		    			/* send new answers to api */
+// // 		    			QwandaUtils.apiPostEntity(qwandaServiceUrl+"/qwanda/answers/bulk", json, tokenString);
+// // 	            }
+// // 	         }
+// // 		}
+// // 		catch (Exception e) {
+// // 	       e.printStackTrace();
+// // 		}
+// // end
+// <<<<<<< HEAD
+
+// // /* Rule listening to Attribute change */
+
+
+// // /* Rule listening to Facebook Code change */
+// // rule "Listen Facebook Code"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
+// //         bus:EventBus()
+// //        $map : Map($value: this["token"] != null)
+
+// //      then
+
+// //       GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+
+// =======
+
+// // /* Rule listening to Attribute change */
+
+
+// // /* Rule listening to Facebook Code change */
+// // rule "Listen Facebook Code"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FB_BASIC") )
+// //         bus:EventBus()
+// //        $map : Map($value: this["token"] != null)
+
+// //      then
+
+// //       GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+
+// >>>>>>> 66750489... internmatch registration workflow
+
+// //         String tokenString = (String)$map.get("token");
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+
+// //         /* Collect DATA  */
+// //         Answer newAnswer = $m.getAnswer();
+
+// //         String jsonAnswerStr = gson.toJson(newAnswer);
+// //         JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //         jsonAnswer.put("token",$m.getToken());
+
+
+
+
+// //         /* Print DATA msg */
+// //         System.out.println("------------------------------------------------------------------------\n");
+// //         System.out.println("SOCIAL DATA   ::   "+jsonAnswer);
+// //         System.out.println("------------------------------------------------------------------------");
+// //         bus.publish("social", jsonAnswer);
+
+
+
+// // end
+
+// // /* Rule listening to Gender Inference */
+// // rule "Inference Gender Change"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_FIRSTNAME") )
+// //         bus:EventBus()
+// //         $map : Map($value: this["token"] != null)
+
+// //      then
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+
+
+// //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Gender Change" + LOG_RESET);
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         String tokenString = (String)$map.get("token");
+
+// //         System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// //         System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// //         System.out.println("------------------------------------------------------------------------");
+
+// // 		String PRI_FIRSTNAME=  $m.getAnswer().getValue();
+// //         JsonObject genderObj = new JsonObject( QwandaUtils.apiGet("https://api.genderize.io/?name=" +PRI_FIRSTNAME , null));
+// //         /* PRINT genderObj */
+// //         System.out.println("------------------------------------------------------------------------\n");
+// //         System.out.println("GENDER OBJECT   ::   "+genderObj.toString());
+
+// //         String gender= genderObj.getString("gender");
+// //         Float weight= genderObj.getFloat("probability");
+
+// //         if(gender !=null ) {
+// //             System.out.println("GENDER   ::   "+gender.toString());
+// //             System.out.println("\n------------------------------------------------------------------------");
+
+// //             /* Collect DATA to save gender as an answer */
+// //             Answer newAnswer = $m.getAnswer();
+
+// //             String jsonAnswerStr = gson.toJson(newAnswer);
+// //             JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //             jsonAnswer.put("value",gender);
+// //             jsonAnswer.put("attributeCode","PRI_GENDER");
+// //             jsonAnswer.put("inferred",true);
+// //             jsonAnswer.put("weight",weight);
+// //             JsonArray items = new JsonArray();
+// //             items.add(jsonAnswer);
+
+// //                 /* Creating Answer DATA_MSG */
+// //             JsonObject obj = new JsonObject();
+// //             obj.put("msg_type", "DATA_MSG");
+// //             obj.put("data_type", "Answer");
+// //             obj.put("items", items);
+// //             /* Print Answer */
+// //             System.out.println("\nSaving PRI_GENDER as an Answer   ::    "+obj.toString());
+// //             obj.put("token",tokenString);
+// //             bus.publish("data", obj);
+// //         }else{
+// //             System.out.println("------------------------------------------------------------------------\n");
+// //             System.out.println("GENDER   ::  Not available ");
+// //             System.out.println("Sorry, No Inferred Rule was executed ");
+// //         }
+
+
+// // end
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// // /* Rule listening to Gender Inference */
+// // rule "Inference DOB Change"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         bus:EventBus()
+// //         $map : Map($value: this["token"] != null)
+// //         /*  $user: User(realm != null) */
+
+// //      then
+
+
+// //         /* //Prepare Token & qwandaServiceUrl
+// //         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         // String tokenString = (String)$map.get("token");
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //         bus:EventBus()
+// //         $map : Map($value: this["token"] != null)
+// //         /*  $user: User(realm != null) */
+
+// //      then
+
+
+// //         /* //Prepare Token & qwandaServiceUrl
+// //         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         // String tokenString = (String)$map.get("token");
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+    
+        
+// // end
+
+// // /* Rule listening to Gender Inference */
+// // rule "Inference DOB Change"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_BIRTHDAY") )
+// //         bus:EventBus() 
+// //         $map : Map($value: this["token"] != null)
+// //         /*  $user: User(realm != null) */
+ 
+// //      then            
+     
+        
+// //         /* //Prepare Token & qwandaServiceUrl
+// //         // String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// //         // String tokenString = (String)$map.get("token");   
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+
+// //         // // Prepare gson Object
+// //         // GsonBuilder gsonBuilder = new GsonBuilder();
+// //         // gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         // Gson gson = gsonBuilder.create();
+
+// //         // System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// //         // System.out.println("------------------------------------------------------------------------");
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// //         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// //         // System.out.println("------------------------------------------------------------------------");
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         // System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// //         // System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// //         // System.out.println("------------------------------------------------------------------------");
+		
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // 		//  // Collect DATA to save facebook dob as primary dob
+// //         // Answer newAnswer = $m.getAnswer();
+// //         // String jsonAnswerStr = gson.toJson(newAnswer);
+// //         // JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+            
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+            
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         // // get source and target code for logged in user
+// //         // String sourceCode= $user.getuCode();
+// //         // String targetCode= $user.getuCode();
+// //         // // get FBK_DOB
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();
+// //         // // Check if PRI_DOB exists ?
+// //         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();
+// //         // // Check if PRI_DOB exists ?
+// //         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         // String FBK_BIRTHDAY=  $m.getAnswer().getValue();  
+// //         // // Check if PRI_DOB exists ?
+// //         // String PRI_DOB= MergeUtil.getAttrValue(sourceCode, "PRI_DOB", tokenString );
+        
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         // if(PRI_DOB == null){
+// //         //     jsonAnswer.put("value", FBK_BIRTHDAY);
+// //         //     jsonAnswer.put("attributeCode", "PRI_DOB");
+// //         //     jsonAnswer.put("sourceCode", sourceCode);
+// //         //     jsonAnswer.put("targetCode", targetCode);
+// //         //     jsonAnswer.put("inferred",true);
+// //         //     jsonAnswer.put("weight", "1");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// //         //     JsonArray items = new JsonArray();
+// //         //     items.add(jsonAnswer);
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+
+// //         //     JsonArray items = new JsonArray();
+// //         //     items.add(jsonAnswer);
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+        
+// //         //     JsonArray items = new JsonArray();
+// //         //     items.add(jsonAnswer);
+            
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         //     //Creating Answer DATA_MSG
+// //         //     JsonObject obj = new JsonObject();
+// //         //     obj.put("msg_type", "DATA_MSG");
+// //         //     obj.put("data_type", "Answer");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         //     obj.put("items", items);
+
+// //         //     //Print Answer
+// //         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString());
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //         //     obj.put("items", items);
+
+// //         //     //Print Answer
+// //         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString());
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         //     obj.put("items", items); 
+            
+// //         //     //Print Answer
+// //         //     System.out.println("\nSaving FBK_BIRTHDAY as PRI_DOB   ::    "+obj.toString()); 
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         //     obj.put("token",tokenString);
+// //         //     bus.publish("data", obj);
+// //         // }else {
+// //         //     System.out.println(" PRI_DOB already exists ! ");
+// //         // }
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// //         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
+// //         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// //        */
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+
+// //         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
+// //         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// //        */
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+        
+// //         // System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference DOB Change" + LOG_RESET);
+// //         // System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// //        */
+        
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // end
+
+// // /* //Rule listening to Image Inference
+// // // rule "Inference Image Change"
+// // //     when
+// // //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && QEventAttributeValueChangeMessage.getData().getCode().equals("FBK_IMGURL") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // //         bus:EventBus()
+// // //         $map : Map($value: this["token"] != null)
+// // //         $user: User(realm != null)
+
+// // //      then
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// // //         bus:EventBus()
+// // //         $map : Map($value: this["token"] != null)
+// // //         $user: User(realm != null)
+
+// // //      then
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // //         bus:EventBus() 
+// // //         $map : Map($value: this["token"] != null)
+// // //         $user: User(realm != null)
+ 
+// // //      then    
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // //         System.out.println("rule executed");
+// // //      	if($user.getUname() ==  $map.get("preferred_username") ){
+// // //      		GsonBuilder gsonBuilder = new GsonBuilder();
+// // // 	        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// // // 	        Gson gson = gsonBuilder.create();
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+
+// =======
+
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+	     
+	     
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+	     
+	     
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        System.out.println("\n\n");
+// // // 	        System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+// // // 	        System.out.println(LOG_GREEN + "RULE EXECUTED      ::   Inference Image Change" + LOG_RESET);
+// // // 	        //Prepare Token & qwandaServiceUrl
+// // // 	        String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // // 	        String tokenString = (String)$map.get("token");
+
+// // // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// // // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// // // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// // // 	        System.out.println("------------------------------------------------------------------------");
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// // // 	        String tokenString = (String)$map.get("token");
+
+// // // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// // // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m);
+// // // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode());
+// // // 	        System.out.println("------------------------------------------------------------------------");
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        String tokenString = (String)$map.get("token");   
+	
+// // // 	        System.out.println("\nToken                               ::   " + StringUtils.abbreviateMiddle(tokenString,"...",40));
+// // // 	        System.out.println("QEventAttributeValueChangeMessage   ::    " +$m); 
+// // // 	        System.out.println("Attribute Code changed              ::    "+$m.data.getCode()); 
+// // // 	        System.out.println("------------------------------------------------------------------------");       
+	       
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        // Collect DATA to save facebook image as primary image
+// // // 	        Answer newAnswer = $m.getAnswer();
+// // // 	        String jsonAnswerStr = gson.toJson(newAnswer);
+// // // 	        JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// // // 	        // get FBK_IMGURL
+// // // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
+
+// // // 	        // get source and target code for logged in user
+// // // 	        String sourceCode= $user.getuCode();
+// // // 	        String targetCode= $user.getuCode();
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+
+// // // 	        // get FBK_IMGURL
+// // // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
+
+// // // 	        // get source and target code for logged in user
+// // // 	        String sourceCode= $user.getuCode();
+// // // 	        String targetCode= $user.getuCode();
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+	        
+// // // 	        // get FBK_IMGURL
+// // // 	        String FBK_IMGURL=  $m.getAnswer().getValue();
+	        
+// // // 	        // get source and target code for logged in user
+// // // 	        String sourceCode= $user.getuCode();
+// // // 	        String targetCode= $user.getuCode();
+	        
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        jsonAnswer.put("value", FBK_IMGURL);
+// // // 	        jsonAnswer.put("attributeCode","PRI_IMAGE_URL");
+// // // 	        jsonAnswer.put("sourceCode", sourceCode);
+// // // 	        jsonAnswer.put("targetCode", targetCode);
+// // // 	        jsonAnswer.put("inferred",true);
+// // // 	        jsonAnswer.put("weight", "1");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// // // 	        JsonArray items = new JsonArray();
+// // // 	        items.add(jsonAnswer);
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+
+// // // 	        JsonArray items = new JsonArray();
+// // // 	        items.add(jsonAnswer);
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+	        
+// // // 	        JsonArray items = new JsonArray();
+// // // 	        items.add(jsonAnswer);
+			
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        //Creating Answer DATA_MSG
+// // // 	        JsonObject obj = new JsonObject();
+// // // 	        obj.put("msg_type", "DATA_MSG");
+// // // 	        obj.put("data_type", "Answer");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// // // 	        obj.put("items", items);
+
+// // // 	        //Print Answer
+// // // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString());
+// // // 	        obj.put("token",tokenString);
+// // // 	        bus.publish("data", obj);
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// // // 	        obj.put("items", items);
+
+// // // 	        //Print Answer
+// // // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString());
+// // // 	        obj.put("token",tokenString);
+// // // 	        bus.publish("data", obj);
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        obj.put("items", items); 
+	        
+// // // 	        //Print Answer
+// // // 	        System.out.println("\nSaving FBK_IMGURL as PRI_IMAGE_URL   ::    "+obj.toString()); 
+// // // 	        obj.put("token",tokenString);
+// // // 	        bus.publish("data", obj);
+	        
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // 	        System.out.println( "\n" + LOG_RED + "RULE TERMINATED    ::   Inference Image Change" + LOG_RESET);
+// // // 	        System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// // //      	}else{
+// // //      		 System.out.println("rule executed but outside if");
+// // //      	}
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+
+// =======
+
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+       
+        
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+       
+        
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// // // end
+// // */
+// // /* Rule listening to load selection value change in Post Load
+// // rule "Handle load selection"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_LISTS") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         bus:EventBus()
+// =======
+// //         bus:EventBus()
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //         bus:EventBus()
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// //         bus:EventBus() 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //         bus:EventBus() 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         $user: User(realm != null)
+// //         $map : Map($value: this["token"] != null)
+// //      then
+// //         // Prepare GSON Deserialization
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+            
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+            
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         System.out.println("\n\n");
+// //         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+// //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  POST LOAD - Handle load selection  " + LOG_RESET);
+// //         //Prepare Token & qwandaServiceUrl
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         String tokenString = (String)$map.get("token");
+// =======
+// //         String tokenString = (String)$map.get("token");
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token");
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token"); 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token"); 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+
+// //          //Collect load code from answer
+// //          Answer newAnswer = $m.getAnswer();
+// //          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
+// //          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
+// //          String targetCode = newAnswer.getTargetCode();
+// //          String sourceCode = newAnswer.getSourceCode();
+// //          String loadCode = newAnswer.getValue();
+// //          System.out.println("The target BE code is   ::  " +targetCode);
+// //          System.out.println("The source BE code is   ::  " +sourceCode);
+// //          System.out.println("The load code is   ::  " +loadCode);
+// //          //link LOAD to Job
+// //          QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", gson.toJson(new Link(targetCode,loadCode,"LNK_BEG","LOAD")),tokenString);
+// //          String loadName = MergeUtil.getAttrValue(loadCode, "PRI_DESCRIPTION", tokenString);
+// //          String loadType = MergeUtil.getAttrValue(loadCode, "PRI_LOAD_TYPE", tokenString);
+// //          System.out.println(" The load Name is :: "+loadName);
+// //          System.out.println(" The load type is :: "+loadType);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+         
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+         
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //          //Answer loadTypeAnswer = new Answer($user.getuCode(), targetCode, "PRI_LOAD_TYPE",loadType);
+// //           String jsonAnswerStr = gson.toJson(newAnswer);
+// //           System.out.println("The answer in string format :: "+jsonAnswerStr);
+// //          JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //          jsonAnswer.put("value",loadType);
+// //          jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
+// //          jsonAnswer.put("inferred",true);
+// //          //jsonAnswer.put("weight",weight);
+// //          System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
+// //          //creating Json array
+// //          JsonArray items = new JsonArray();
+// //          items.add(jsonAnswer);
+// //         // newAnswer.setTargetCode(targetCode);
+// //          //newAnswer.setSourceCode($user.getuCode());
+// //          //newAnswer.setAttributeCode("PRI_LOAD_TYPE");
+// //          //newAnswer.setValue(loadType);
+// //          //newAnswer.setInferred(true);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+       
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+       
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //        //  String targetCode1 = jsonAnswer.getTargetCode();
+// //        //  String sourceCode1 = jsonAnswer.getSourceCode();
+// //        //  String loadCode1 = jsonAnswer.getValue();
+// //        //  System.out.println("The target BE code is   ::  " +targetCode1);
+// //        //  System.out.println("The source BE code is   ::  " +sourceCode1);
+// //        //  System.out.println("The load type is   ::  " +loadCode1);
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+         
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+         
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //          //Creating Answer DATA_MSG
+// //          JsonObject obj = new JsonObject();
+// //          obj.put("msg_type", "DATA_MSG");
+// //          obj.put("data_type", "Answer");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //          obj.put("items", items);
+// //          //Print Answer
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString());
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+
+// //      //    List<Answer> answerList = new ArrayList<Answer>();
+// //       //   answerList.add(loadTypeAnswer);
+// //      //    Answer[] answerArray = new Answer[answerList.size()];
+// //       //    answerArray = answerList.toArray(answerArray);
+// //       //   System.out.println(" Printing the Answer array  :: "+answerArray);
+
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //          obj.put("items", items);
+// //          //Print Answer
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString());
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+
+// //      //    List<Answer> answerList = new ArrayList<Answer>();
+// //       //   answerList.add(loadTypeAnswer);
+// //      //    Answer[] answerArray = new Answer[answerList.size()];
+// //       //    answerArray = answerList.toArray(answerArray);
+// //       //   System.out.println(" Printing the Answer array  :: "+answerArray);
+
+// <<<<<<< HEAD
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //          obj.put("items", items); 
+// //          //Print Answer
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer   ::    "+obj.toString()); 
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+         
+// //      //    List<Answer> answerList = new ArrayList<Answer>();
+// //       //   answerList.add(loadTypeAnswer);         
+// //      //    Answer[] answerArray = new Answer[answerList.size()];
+// //       //    answerArray = answerList.toArray(answerArray);
+// //       //   System.out.println(" Printing the Answer array  :: "+answerArray);
+         
+// <<<<<<< HEAD
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //      //    QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
+// //      //    System.out.println(" Printing the QDataAnswerMessage Obj  :: "+msg.toString());
+// //      //    JsonObject answerObj = new JsonObject().mapFrom(msg);
+// //      //    answerObj.put("token",tokenString);
+// //      //    System.out.println(" Printing the updated Answer Obj  :: "+answerObj.toString());
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //      //    bus.publish("cmds", answerObj);
+// =======
+// //      //    bus.publish("cmds", answerObj);
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //      //    bus.publish("cmds", answerObj);
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// //      //    bus.publish("cmds", answerObj);    
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //      //    bus.publish("cmds", answerObj);    
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: POST LOAD -  Handle load selection  " + LOG_RESET);
+// //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// // end
+// // */
+
+// // /*Rule listening to load type selection value change in Create Load */
+// // rule "Handle load type selection"
+// //     when
+// //         $m: QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.getCode().equals("LNK_LOAD_CATEGORY_LISTS") )
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         bus:EventBus()
+// =======
+// //         bus:EventBus()
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //         bus:EventBus()
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// //         bus:EventBus() 
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //         bus:EventBus() 
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         $user: User(realm != null)
+// //         $map : Map($value: this["token"] != null)
+// //      then
+// //         /* Prepare GSON Deserialization */
+// //         GsonBuilder gsonBuilder = new GsonBuilder();
+// //         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new DateTimeDeserializer());
+// //         Gson gson = gsonBuilder.create();
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+
+// =======
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+            
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+            
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         System.out.println("\n\n");
+// //         System.out.println(LOG_YELLOW + "================================================================================================================================================" + LOG_RESET);
+// //         System.out.println(LOG_GREEN + "RULE EXECUTED      ::  Create LOAD - Handle load type selection  " + LOG_RESET);
+// //         /* Prepare Token & qwandaServiceUrl */
+// //         String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //         String tokenString = (String)$map.get("token");
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+
+// =======
+// //         String tokenString = (String)$map.get("token");
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token");
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token"); 
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+        
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //         String tokenString = (String)$map.get("token"); 
+// //         System.out.println("Print QEventAttributeValueChangeMessage ::  "+$m.toString());
+        
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //         /* Collect load code from answer */
+// //          Answer newAnswer = $m.getAnswer();
+// //          System.out.println("The created value  ::  "+newAnswer.getCreatedDate());
+// //          System.out.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
+// //          String targetCode = newAnswer.getTargetCode();
+// //          String sourceCode = newAnswer.getSourceCode();
+// //          String loadTypeCode = newAnswer.getValue();
+// //          String attributeCode = $m.data.getCode();
+// //          System.out.println("The target BE code is   ::  " +targetCode);
+// //          System.out.println("The source BE code is   ::  " +sourceCode);
+// //          System.out.println("The attribute code is   ::  " +attributeCode);
+// //          System.out.println("The load type code is   ::  " +loadTypeCode);
+// //            BaseEntity loadType = MergeUtil.getBaseEntityForAttr(loadTypeCode, tokenString);
+// //           String loadTypeValue = loadType.getName();
+// //          System.out.println("The load type value is   ::  " +loadTypeValue);
+// //          /* creating new Answer */
+// //          String jsonAnswerStr = gson.toJson(newAnswer);
+// //          System.out.println("The answer in string format :: "+jsonAnswerStr);
+// //          JsonObject jsonAnswer = new JsonObject(jsonAnswerStr);
+// //          jsonAnswer.put("value",loadTypeValue);
+// //          jsonAnswer.put("attributeCode","PRI_LOAD_TYPE");
+// //          jsonAnswer.put("inferred",true);
+// //          /* jsonAnswer.put("weight",weight); */
+// //          System.out.println("The updated answer in Json format is :: "+jsonAnswer.toString());
+// //          /* creating Json array */
+// //          JsonArray items = new JsonArray();
+// //          items.add(jsonAnswer);
+// //          /* Creating Answer DATA_MSG */
+// //          JsonObject obj = new JsonObject();
+// //          obj.put("msg_type", "DATA_MSG");
+// //          obj.put("data_type", "Answer");
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// <<<<<<< HEAD
+// //          obj.put("items", items);
+// //          /* Print Answer */
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString());
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+
+
+// //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
+// //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// //  end
+// =======
+// =======
+// >>>>>>> 66750489... internmatch registration workflow
+// //          obj.put("items", items);
+// //          /* Print Answer */
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString());
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+
+
+// //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
+// //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// <<<<<<< HEAD
+// //  end
+// >>>>>>> a7e9f6c... internmatch registration workflow
+// =======
+// //  end
+// >>>>>>> 66750489... internmatch registration workflow
+// =======
+// =======
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+// //          obj.put("items", items); 
+// //          /* Print Answer */
+// //          System.out.println("\nSaving PRI_LOAD_TYPE as an Answer for LOAD   ::    "+obj.toString()); 
+// //          obj.put("token",tokenString);
+// //          bus.publish("data", obj);
+         
+      
+// //         System.out.println( "\n" + LOG_RED + "RULE TERMINATED    :: Create LOAD - Handle load type selection  " + LOG_RESET);
+// //         System.out.println(LOG_YELLOW + "------------------------------------------------------------------------------------------------------------------------------------------------" + LOG_RESET);
+// <<<<<<< HEAD
+// //  end
+// >>>>>>> b2035684... internmatch registration workflow
+// =======
+// //  end
+// >>>>>>> a7e9f6cc... internmatch registration workflow
+ */

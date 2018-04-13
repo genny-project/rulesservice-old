@@ -12,7 +12,7 @@ rule "Delete Internship - Step 3"
 	 	rules.header();
         rules.setState("LOOP_DELETE_INTERNSHIP_STEP3");
 		
-		rules.setState("TRIGGER_HOME_PAGE");
+		rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
  
 	 	rules.footer();      
 end

@@ -24,8 +24,8 @@ rule "Create New User"
                           "PRI_IS_PROFILE_COMPLETED", 
                           "FALSE") );
 
-        rules.setState("NEW_USER_CREATED");
-        rules.setState("TRIGGER_APPLICATION_SETUP");
+        rules.setState("CREATED_NEW_USER");
+
         rules.println("New User is   ::   " + user);
         
         rules.clearState("PROFILE_CHECK_COMPLETED");
