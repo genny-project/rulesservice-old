@@ -26,7 +26,7 @@
 			
 			BaseEntity owner = null;
 			BaseEntity driver = null;
-			
+			BaseEntity load = null;
 
 			if(begBe != null) {
 
@@ -37,6 +37,7 @@
 
 				owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
 				driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
+				load = rules.getChildren(begBe.getCode(), "LNK_BEG", "LOAD");
 
 				JsonObject paymentStatusObj = new JsonObject();
 				paymentStatusObj.put("status", m.getObject_status().toString());
@@ -100,6 +101,7 @@
 					contextMap.put("JOB", begBe.getCode());
 					contextMap.put("DRIVER", driver.getCode());
 					contextMap.put("OWNER", owner.getCode());
+					contextMap.put("LOAD", load.getCode());
 
 			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
 			     	rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
@@ -119,6 +121,7 @@
 						contextMap.put("JOB", begBe.getCode());
 				 		contextMap.put("OWNER", owner.getCode());
 				 		contextMap.put("DRIVER", driver.getCode());
+				 		contextMap.put("LOAD", load.getCode());
 
 				 		String[] messageToOwnerRecipients = new String[1];
 			     		messageToOwnerRecipients[0] = owner.getCode();
