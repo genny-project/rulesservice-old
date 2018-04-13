@@ -10,9 +10,9 @@ rule "Trigger Message"
      	rules.header();
         rules.setState("LOOP_TRIGGER_SEND_MESSAGE");
         
-        rules.setState("TRIGGER_SEND_SMS");
-        rules.setState("TRIGGER_SEND_EMAIL");
-        rules.setState("TRIGGER_SEND_TOAST");
+        rules.setState("SEND_SMS");
+        rules.setState("SEND_EMAIL");
+        rules.setState("SEND_TOAST");
     
 	    rules.footer();      		      
 end
