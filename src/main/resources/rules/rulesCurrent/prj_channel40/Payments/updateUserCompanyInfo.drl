@@ -26,6 +26,7 @@ rule "Update assembly user info and company info"
          /* Updating existing user details in Assembly */
          rules.println("updating the complete user profile in Assembly");
      	 PaymentUtils.updateCompleteUserProfile(userBe, assemblyId, assemblyAuthToken);   
+     	 PaymentUtils.updateUserPhoneNumber(userBe, assemblyId, assemblyAuthToken);
      	 
      	 /* Updating the existing payment accounts in Assembly */
      	 if(userCurrentPaymentMethods != null) {
