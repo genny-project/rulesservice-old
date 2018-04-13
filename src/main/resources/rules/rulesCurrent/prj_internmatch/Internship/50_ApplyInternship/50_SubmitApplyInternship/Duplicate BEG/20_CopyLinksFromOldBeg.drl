@@ -4,26 +4,23 @@ import life.genny.rules.QRules;
 /* Copy Links from Old BEG TO New BEG */
 rule "Duplicate BEG - Step 2"
 	when
-		rules: QRules( 	isState("COPY_LINKS_FROM_OLD_BEG") && 
-						isState("CREATED_NEW_BEG") && 
-						isState("CREATED_BASE_ENTITY") && 
-						isState("BEG") && 
-						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") &&
-						!isState("LOOP_DUPLICATE_BEG_STEP2")) 
+		rules: QRules( 	isState("CREATED_NEW_BEG_APPLY_INTERNSHIP") &&
+						isState("CREATED_BASE_ENTITY") &&
+						!isState("LOOP_DUPLICATE_BEG_STEP2"))
 	 then
-	 
+
 	 	rules.header();
 
         rules.setState("LOOP_DUPLICATE_BEG_STEP2");
 
 		BaseEntity newBeg = rules.getAsBaseEntity("baseEntity");
-		// if(newBeg != null){
-		// 	/* BEG is required to have atleast one attribute */
-		// 	rules.saveAnswer(new Answer(newBeg.getCode(), newBeg.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
-		// 	rules.set("newBegBe", newBeg);
-		// }
+//		 if(newBeg != null){
+//		 	/* BEG is required to have atleast one attribute */
+//		 	rules.saveAnswer(new Answer(newBeg.getCode(), newBeg.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
+//		 }
+		 
+		rules.set("newBegBe", newBeg);
+
 		BaseEntity oldBeg = rules.getAsBaseEntity("begBe");
 		BaseEntity application = rules.getAsBaseEntity("applicationBe");
 
@@ -31,9 +28,8 @@ rule "Duplicate BEG - Step 2"
 			
 			String[] linkValues = {"APPLICATION"};
 			rules.copyLinksExcept(oldBeg, newBeg, linkValues);
-        	rules.setState("COPIED_LINKS_FROM_OLD_BEG");
-        	rules.setState("LINK_NEW_BEG_TO_APPLICATION");
+			rules.setState("COPIED_LINKS_FROM_OLD_BEG_APPLY_INTERNSHIP");
 		}
 
-	 	rules.footer();      
+	 	rules.footer();
 end
