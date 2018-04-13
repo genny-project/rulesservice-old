@@ -3081,6 +3081,7 @@ public class QRules {
 					answers.add( new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
 					saveAnswers(answers);
 
+					BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
 
 					/* TOAST :: SUCCESS */
 					println("Sending success toast since make payment succeeded");
@@ -3089,6 +3090,7 @@ public class QRules {
 					contextMap.put("JOB", begCode);
 					contextMap.put("QUOTER", quoterCode);
 					contextMap.put("OFFER", offer.getCode());
+					contextMap.put("LOAD", loadBe.getCode());
 					
 					String[] recipientArr = { userCode };
 
