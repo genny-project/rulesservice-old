@@ -13,10 +13,8 @@ rule "Duplicate BEG - Step 9"
 
 		BaseEntity newbeg = rules.getAsBaseEntity("newBegBe");
 		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
-		/* BaseEntity creator = rules.getAsBaseEntity("creatorBe"); */
-		
-		/* What is a creator ? isnt it the intern? or the creator of the internship? */
-		
+		BaseEntity creator = rules.getAsBaseEntity("creatorBe"); 
+				
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
 		BaseEntity application = rules.getAsBaseEntity("applicationBe");
 		BaseEntity intern = rules.getAsBaseEntity("internBe");
@@ -26,9 +24,9 @@ rule "Duplicate BEG - Step 9"
 		}else if(internship == null){
 			rules.println("internship is null");
 		}
-		/* else if(creator == null){
+		else if(creator == null){
 			rules.println("creator is null");
-		} */
+		}
 		else if(company == null){
 			rules.println("company is null");
 		}else if(application == null){
@@ -39,9 +37,9 @@ rule "Duplicate BEG - Step 9"
 			String[] begSubscribers = VertxUtils.getSubscribers(rules.realm(), newbeg.getCode());
 			rules.println("NEW_BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
 
-			rules.publishBaseEntityByCode(newbeg.getCode(), "GRP_SHORTLISTED", "LNK_CORE", begSubscribers);
+			rules.publishBaseEntityByCode(newbeg.getCode(), "GRP_APPLIED", "LNK_CORE", begSubscribers);
 			rules.publishBaseEntityByCode(internship.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers);
-			/* rules.publishBaseEntityByCode(creator.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers); */
+			rules.publishBaseEntityByCode(creator.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers); 
 			rules.publishBaseEntityByCode(company.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers);
 			rules.publishBaseEntityByCode(application.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers);
 			rules.publishBaseEntityByCode(intern.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers);
