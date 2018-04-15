@@ -1556,11 +1556,13 @@ public class QRules {
 	/*
 	 * Get all childrens for the given source code with the linkcode and linkValue
 	 */
-	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode) {
+		
 		List<BaseEntity> childList = new ArrayList<BaseEntity>();
 		try {
+		
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
-					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
+					+ "/linkcodes/" + linkCode + "/children/", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
@@ -4733,7 +4735,7 @@ public class QRules {
 				println("BUCKET code   ::   " + bucket.getCode());
 
 				/* FOR GRP_AVAILABLE BEGS */
-				if(bucket.getCode().equals("GRP_AVAILABLE")){
+				if(bucket.getCode().equals("GRP_AVAILABLE")) {
 					
 					/* subscribe to GRP_AVAILABLE  */
 					subscribeUserToBaseEntity(getUser().getCode(), bucket.getCode());
@@ -4814,6 +4816,8 @@ public class QRules {
 		println("buckets   ::   " + buckets);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
 		
+		List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode("GRP_CONTACTS", "LNK_CORE", 0, 20, false);
+		publishCmd(contacts, "GRP_CONTACTS", "LNK_CORE");
 		
 		if (buckets != null) {
 
