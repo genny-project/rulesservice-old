@@ -20,8 +20,7 @@ rule "Send Root"
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
          
         rules.setState("SENT_ROOT");		
-        rules.setState("SEND_DASHBOARD");		
-        rules.setState("SEND_CONTACT");		
+        rules.setState("SEND_CONTACTS");		
 	    rules.footer();     		      
 end
 

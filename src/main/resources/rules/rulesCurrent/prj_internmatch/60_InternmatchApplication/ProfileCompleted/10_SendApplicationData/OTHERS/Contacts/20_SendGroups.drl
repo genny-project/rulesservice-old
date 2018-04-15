@@ -7,23 +7,25 @@ import java.util.List;
 /* Sends BEGs */
 rule "Send Groups"
     when
-        rules: QRules(  isState("SENT_DASHBOARD") && 
-                        isState("SEND_GROUPS") && 
-                        isState("PUBLISHED_BASE_ENTITY_LIST") && 
+        rules: QRules(  isState("SEND_GROUPS") &&  
                         !isState("LOOP_SEND_CONTACT_GROUPS") )
      then
      	rules.header();
      	rules.setState("LOOP_SEND_CONTACT_GROUPS");
         
         /* Get GROUPS from map */
-        List<BaseEntity> groupList = rules.getAsBaseEntitys("beList");
+        List<String> groupList = (List<String>)(List<?>)rules.getAsList("beList");
         List<BaseEntity> members = null;
         
-        for(BaseEntity group: groupList) {  
-            members = rules.getBaseEntitysByParentAndLinkCode(group.getCode(), "LNK_CORE", 0, 500, false);
+        for(String group: groupList) {  
+        	
+        		rules.println("PUSHING : " + group);
+            
+        		List<BaseEntity> newMembers = rules.getBaseEntitysByParentAndLinkCode(group, "LNK_CORE", 0, 500, false);
+            members.addAll(newMembers);
             
             /* send members of a particular group */
-            rules.publishCmd(members, group.getCode(), "LNK_CORE");
+            rules.publishCmd(members, group, "LNK_CORE");
 
         }
         rules.setState("SENT_GROUPS");		
