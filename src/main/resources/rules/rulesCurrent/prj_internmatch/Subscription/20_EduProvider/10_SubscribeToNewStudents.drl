@@ -18,18 +18,19 @@ rule "Subscribe To Newly Registered Student"
         			
         			 /* Recipients = EDU_PROVIDER staffs  */
                     String[] eduProviderStaffCodes = new String[eduProviderStaffs.size()];
-                    if(eduProviderStaffs != null) {
+                    if(eduProviderStaffCodes != null) {
                         
                         Integer counter = 0;
                         for(BaseEntity eduProviderStaff : eduProviderStaffs){
-                            eduProviderStaffCodes[counter] = eduProviderStaff.getCode();
+                        		eduProviderStaffCodes[counter] = eduProviderStaff.getCode();
             			    	    rules.subscribeUserToBaseEntity(eduProviderStaff.getCode(), rules.getUser().getCode());
                             counter += 1;
                         }
                     }
-        		}
+                    
+                    rules.publishBaseEntityByCode(rules.getUser().getCode(), "GRP_INTERNS", "INTERN", eduProviderStaffCodes);
 
-            rules.publishBaseEntityByCode(rules.getUser().getCode(), "GRP_INTERNS", "INTERN", eduProviderStaffCodes);
+        		}
         }
 		
 		rules.setState("SUBSCRIBED_TO_NEWLY_REGISTERED_STUDENTS");
