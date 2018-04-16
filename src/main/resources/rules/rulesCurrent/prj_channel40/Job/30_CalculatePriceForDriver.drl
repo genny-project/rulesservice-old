@@ -19,13 +19,12 @@ rule "Calculate Price for Driver"
     no-loop true
     when
         $m: QEventAttributeValueChangeMessage( data.code == "PRI_OFFER_DRIVER_PRICE_EXC_GST"  && getAnswer().getTargetCode().startsWith("OFR_") )
-        rules : QRules( isState("STARTED") && !isState("CALCULATE_DRIVER_PRICE") )
+        rules : QRules( isState("STARTED") && !isState("CALCULATE_DRIVER_PRICE") && getUser().is("PRI_DRIVER") )
     then    
     
         rules.header();
         rules.setState("CALCULATE_DRIVER_PRICE");
         
-        if(rules.getUser() != null && rules.getUser().is("PRI_DRIVER")) {
         		
         		String tokenString = rules.getToken();
             Answer newAnswer = $m.getAnswer();
@@ -60,17 +59,17 @@ rule "Calculate Price for Driver"
                 Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY);
             /* Get userRole */
                 String userRole = null;
-                if(isOffer) {           
-                    String offerCode = newAnswer.getTargetCode();
-                    System.out.println(" offerCode BE "+ offerCode);
-                    userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
-                }
+          
+                    BaseEntity offer = rules.getBaseEntityByCode(newAnswer.getTargetCode());
+                    System.out.println(" offerCode BE "+ offer.getCode());                  
+                    userRole = offer.getValue("PRI_NEXT_ACTION",null);
+                    
                 System.out.println("targetCode   ::   " + newAnswer.getTargetCode() );
                 System.out.println("userRole     ::    " + userRole );
             
             /* Check if the amount is  not null or not negative */  
                 if( amountValue != null && amountValue >= 0){
-                    if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER") || userRole.equals("OWNER"))) {
+                    if(  (userRole == null || userRole.equals("QUOTER") || userRole.equals("OWNER"))) {
                          
                          /* Driver Fees */
 					   	fees = rules.calcDriverFee( answerPrice );       
@@ -113,8 +112,12 @@ rule "Calculate Price for Driver"
                             answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
                             rules.saveAnswers(answers);
                     }
+                     else {
+                     	rules.println("ERROR: User Role not acceptable - "+userRole);
+                     }
+                } else {
+                	rules.println("ERROR: Amount is dodgy- "+amountValue);
                 }
-        }
 
         rules.footer();
 end
