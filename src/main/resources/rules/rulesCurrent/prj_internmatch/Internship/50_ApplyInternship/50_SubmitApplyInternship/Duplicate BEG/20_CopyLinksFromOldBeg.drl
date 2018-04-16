@@ -4,7 +4,8 @@ import life.genny.rules.QRules;
 /* Copy Links from Old BEG TO New BEG */
 rule "Duplicate BEG - Step 2"
 	when
-		rules: QRules( 	isState("CREATED_NEW_BEG_APPLY_INTERNSHIP") &&
+		rules: QRules( 	isState("COPY_LINKS_FROM_OLD_BEG_APPLY_INTERNSHIP") &&
+						isState("CREATED_NEW_BEG_APPLY_INTERNSHIP") &&
 						isState("CREATED_BASE_ENTITY") &&
 						!isState("LOOP_DUPLICATE_BEG_STEP2"))
 	 then
@@ -30,6 +31,8 @@ rule "Duplicate BEG - Step 2"
 			String[] linkValues = {"APPLICATION"};
 			rules.copyLinksExcept(oldBeg, newBeg, linkValues);
 			rules.setState("COPIED_LINKS_FROM_OLD_BEG_APPLY_INTERNSHIP");
+			
+			rules.setState("LINK_NEW_BEG_TO_APPLICATION_APPLY_INTERNSHIP");
 		}
 
 	 	rules.footer();

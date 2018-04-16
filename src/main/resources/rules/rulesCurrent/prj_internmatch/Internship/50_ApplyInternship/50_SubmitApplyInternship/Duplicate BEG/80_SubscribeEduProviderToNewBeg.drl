@@ -2,10 +2,11 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
-/* Subscribe INTERN to NEW_BEG */
+/* Subscribe EDU_PROVIDER to NEW_BEG */
 rule "Duplicate BEG - Step 8"
 	when
-		rules: QRules( 	isState("SUBSCRIBED_INTERN_TO_NEW_BEG_APPLY_INTERNSHIP") &&
+		rules: QRules( 	isState("SUBSCRIBE_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP") &&
+						isState("SUBSCRIBED_INTERN_TO_NEW_BEG_APPLY_INTERNSHIP") &&
 						!isState("LOOP_DUPLICATE_BEG_STEP8"))
 
 	 then
@@ -19,19 +20,23 @@ rule "Duplicate BEG - Step 8"
 
 			rules.println("1. eduProvider is   ::   " + eduProvider.getCode());
 
+			/* subscribe eduProvider Staffs to newBeg */
 			List<BaseEntity> eduProviderStaffs = rules.getChildrens(eduProvider.getCode(), "LNK_EDU", "STAFF");
 			if(eduProviderStaffs != null) {
 				
 				for(BaseEntity eduProviderStaff : eduProviderStaffs){
 					rules.subscribeUserToBaseEntityAndChildren(eduProviderStaff.getCode(), newBeg.getCode(), "LNK_BEG");
+					rules.setState("SUBSCRIBED_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP");
 				}
+			}else{
+				rules.println("no eduProviderStaffs yet for eduProviderStaff");
+				rules.setState("SUBSCRIBED_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP");
 			}
 			
-			rules.setState("SUBSCRIBE_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP");
+			rules.setState("PUBLISH_NEW_BEG_AND_KIDS_APPLY_INTERNSHIP");
 			
 		}else{
 			rules.println("user's edu provider is null");
 		}
-
 	 	rules.footer();
 end

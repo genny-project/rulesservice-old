@@ -12,7 +12,7 @@ rule "Home Page - Send Layout - INTERN"
         rules.header();
         rules.setState("LOOP_HOME_PAGE_SEND_LAYOUT");
 
-        rules.sendSublayout("DASHBOARD", "homepage/dashboard.json", "GRP_DASHBOARD", false);
+        rules.sendSublayout("AVAILABLE_INTERNSHIPS", "homepage/available_internships.json", "GRP_AVAILABLE", false);
         rules.setState("HOME_PAGE_SENT_LAYOUT");
         
 		rules.footer();     		      

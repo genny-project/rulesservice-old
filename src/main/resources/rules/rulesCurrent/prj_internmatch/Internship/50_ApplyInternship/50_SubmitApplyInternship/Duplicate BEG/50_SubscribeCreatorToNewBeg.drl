@@ -5,7 +5,10 @@ import life.genny.utils.VertxUtils;
 /* Subscribe CREATOR to NEW_BEG */
 rule "Duplicate BEG - Step 5"
 	when
-		rules: QRules( 	isState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP") &&
+		rules: QRules( 	isState("SUBSCRIBE_CREATOR_TO_NEW_BEG_APPLY_INTERNSHIP") &&
+						isState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP") &&
+						isState("CREATED_LINK") &&
+						isState("INTERN") &&
 						!isState("LOOP_DUPLICATE_BEG_STEP5"))
 
 	 then
