@@ -67,7 +67,10 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
+<<<<<<< HEAD
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
+=======
+>>>>>>> 6837529f... generic attachments
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -3781,16 +3784,6 @@ public class QRules {
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
-			
-			/* Testing message with attachments */
-			String[] userarr = {"PER_USER2"};
-			List<QBaseMSGAttachment> attachmentList = new ArrayList<>();
-			QBaseMSGAttachment attachment1 = new QBaseMSGAttachment(AttachmentType.NON_INLINE, "image/png", "https://i.imgur.com/1Qe34Ol.png", false, "IMG");			
-			QBaseMSGAttachment attachment2 = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", "https://raw.githubusercontent.com/genny-project/layouts/master/email/templates/invoice-pdf-owner.html", true, "INVOICE");
-			attachmentList.add(attachment1);
-			attachmentList.add(attachment2);
-
-			sendMessage("", userarr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL", attachmentList);		
 		}
 
 
@@ -4511,6 +4504,7 @@ public class QRules {
 
 	}
 	
+
 	/*
 	 * Publish Search BE results
 	 */
@@ -4546,25 +4540,6 @@ public class QRules {
 
 	}
 	
-	//attachments
-		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
-					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
-
-				if (recipientArray != null && recipientArray.length > 0) {
-
-					/* Adding project code to context */
-					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-					contextMap.put("PROJECT", projectCode);
-
-					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
-							recipientArray, attachmentList, getToken());
-					publish("messages", message);
-				} else {
-					log.error("Recipient array is null and so message cant be sent");
-				}
-
-		}
-
 	/*
 	 * Give oldChat for the given sender and receiver
 	 */
