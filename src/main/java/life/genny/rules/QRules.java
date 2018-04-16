@@ -4583,40 +4583,6 @@ public class QRules {
 		return null;
 	}
 
-	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
-
-		Boolean isLinkExists = false;
-		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
-
-		if (dataBEMessage != null) {
-			BaseEntity[] beArr = dataBEMessage.getItems();
-
-			if (beArr.length > 0) {
-				for (BaseEntity be : beArr) {
-					if (be.getCode().equals(childCode)) {
-						isLinkExists = true;
-						return isLinkExists;
-					}
-				}
-			} else {
-				isLinkExists = false;
-				return isLinkExists;
-			}
-
-		}
-		return isLinkExists;
-	}
-
-	/* returns  subscribers of a baseEntity Code */
-	public String[] getSubscribers(final String subscriptionCode) {
-		final String SUB = "SUB";
-		// Subscribe to a code
-		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
-
-		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
-		return result;
-	}
 
 	/* static public String[] getSubscribers(final String realm, final String subscriptionCode) {
 		final String SUB = "SUB";
@@ -4628,119 +4594,6 @@ public class QRules {
 		return result;
 
 	} */
-
-	/* returns a duplicated BaseEntity from an existing beCode */
-	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
-		duplicateAttributes(oldBe, newBe);
-		duplicateLinks(oldBe, newBe);
-		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
-		duplicateAttributes(oldBe, newBe);
-		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	public BaseEntity duplicateBaseEntityLinks(final BaseEntity oldBe, final String bePrefix, final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
-		duplicateLinks(oldBe, newBe);
-		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
-		List<Answer> duplicateAnswerList = new ArrayList<>();
-
-		for(EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
-			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
-		}
-		saveAnswers(duplicateAnswerList);
-	}
-
-	public void duplicateLinks(final BaseEntity oldBe, final BaseEntity newBe) {
-		for(EntityEntity ee : oldBe.getLinks()) {
-			createLink(	newBe.getCode(),
-						ee.getLink().getTargetCode(),
-						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(),
-						ee.getLink().getWeight() );
-		}
-	}
-
-	public void duplicateLink(final BaseEntity oldBe, final BaseEntity newBe, final BaseEntity childBe) {
-		for (EntityEntity ee : oldBe.getLinks()) {
-			if(ee.getLink().getTargetCode() == childBe.getCode()){
-
-				createLink(	newBe.getCode(),
-						ee.getLink().getTargetCode(),
-						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(),
-						ee.getLink().getWeight() );
-				break;
-			}
-		}
-	}
-
-	public void duplicateLinksExceptOne(final BaseEntity oldBe, final BaseEntity newBe, String linkValue) {
-		for (EntityEntity ee : oldBe.getLinks()) {
-			if(ee.getLink().getLinkValue() == linkValue){
-				continue;
-			}
-			createLink(	newBe.getCode(),
-						ee.getLink().getTargetCode(),
-						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(),
-						ee.getLink().getWeight() );
-		}
-	}
-
-	public BaseEntity cloneBeg(final BaseEntity oldBe,final BaseEntity newBe, final BaseEntity childBe, String linkValue){
-		duplicateLinksExceptOne(oldBe, newBe, linkValue);
-		duplicateLink(oldBe, newBe, childBe);
-		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	/* clones links of oldBe to newBe from supplied arraylist linkValues */
-	public BaseEntity copyLinks(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
-		println("linkvalues   ::   " + Arrays.toString(linkValues));
-		for (EntityEntity ee : oldBe.getLinks()) {
-			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
-			for(String linkValue : linkValues){
-				println("a linkvalue   ::   " + linkValue);
-				if(ee.getLink().getLinkValue().equals(linkValue)){
-					createLink(	newBe.getCode(),
-								ee.getLink().getTargetCode(),
-								ee.getLink().getAttributeCode(),
-								ee.getLink().getLinkValue(),
-								ee.getLink().getWeight() );
-					println("creating link for   ::   " + linkValue);
-				}
-			}
-		}
-		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	/* clones all links of oldBe to newBe except the linkValues supplied in arraylist linkValues */
-	public BaseEntity copyLinksExcept(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
-		println("linkvalues   ::   " + Arrays.toString(linkValues));
-		for (EntityEntity ee : oldBe.getLinks()) {
-			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
-			for (String linkValue : linkValues) {
-				println("a linkvalue   ::   " + linkValue);
-				if (ee.getLink().getLinkValue().equals(linkValue)) {
-					continue;
-				}
-				createLink(	newBe.getCode(),
-							ee.getLink().getTargetCode(),
-							ee.getLink().getAttributeCode(),
-							ee.getLink().getLinkValue(),
-							ee.getLink().getWeight() );
-				println("creating link for   ::   " + linkValue);
-			}
-		}
-		return getBaseEntityByCode(newBe.getCode());
-	}
 
 	public void sendInternApplicationData() {
 		String[] recipient = { getUser().getCode() };
@@ -4976,4 +4829,251 @@ public class QRules {
 			}
 		}
 	}
+
+	/* New QRules */
+	
+	public List<EntityEntity> getLinks(BaseEntity be) {
+		return this.getLinks(be.getCode());
+	}
+
+	public List<EntityEntity> getLinks(String beCode) {
+		
+		List<EntityEntity> links = new ArrayList<EntityEntity>();
+		BaseEntity be = this.getBaseEntityByCode(beCode);
+		if(be != null) {
+			
+			Set<EntityEntity> linkSet = be.getLinks();
+			links.addAll(linkSet);
+		}
+		
+		return links;
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be) {
+		return this.getLinkedBaseEntities(be.getCode(), null, null);
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(String beCode) {
+		return this.getLinkedBaseEntities(beCode, null, null);
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be, String linkCode) {
+		return this.getLinkedBaseEntities(be.getCode(), linkCode, null);
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(String beCode, String linkCode) {
+		return this.getLinkedBaseEntities(beCode, linkCode, null);
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be, String linkCode, String linkValue) {
+		return this.getLinkedBaseEntities(be.getCode(), linkCode, linkValue);
+	}
+	
+	public List<BaseEntity> getLinkedBaseEntities(String beCode, String linkCode, String linkValue) {
+		
+		List<BaseEntity> linkedBaseEntities = new ArrayList<BaseEntity>();
+		try {
+				
+			/* We grab all the links from the node passed as a parameter "beCode" */
+			List<EntityEntity> links = this.getLinks(beCode);
+			
+			/* We loop through all the links */
+			for(EntityEntity link: links) {
+				
+				if(link != null && link.getLink() != null) {
+					
+					Link entityLink = link.getLink();
+					
+					/* We get the targetCode */
+					String targetCode = entityLink.getTargetCode();
+					if(targetCode != null) {
+						
+						/* We use the targetCode to get the base entity */
+						BaseEntity targetBe = this.getBaseEntityByCode(targetCode);
+						if(targetBe != null) {
+							
+							/* If a linkCode is passed we filter using its value */
+							if(linkCode != null) {
+								if(entityLink.getAttributeCode() != null && entityLink.getAttributeCode().equals(linkCode)) {
+									
+									/* If a linkValue is passed we filter using its value */
+									if(linkValue != null) {
+										if(entityLink.getLinkValue() != null && entityLink.getLinkValue().equals(linkValue)) {
+											linkedBaseEntities.add(targetBe);
+										}
+									}
+									else {
+										
+										/* If no link value was provided we just pass the base entity */
+										linkedBaseEntities.add(targetBe);
+									}
+								}
+							}
+							else {
+								
+								/* If not linkCode was provided we just pass the base entity */
+								linkedBaseEntities.add(targetBe);
+							}
+						}
+					}
+				}
+			}
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return linkedBaseEntities;
+	}
+	
+	/* returns a duplicated BaseEntity from an existing beCode */
+	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateAttributes(oldBe, newBe);
+		duplicateLinks(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateAttributes(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	public BaseEntity duplicateBaseEntityLinks(final BaseEntity oldBe, final String bePrefix, final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateLinks(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
+		List<Answer> duplicateAnswerList = new ArrayList<>();
+
+		for(EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
+			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
+		}
+		saveAnswers(duplicateAnswerList);
+	}
+
+	public void duplicateLinks(final BaseEntity oldBe, final BaseEntity newBe) {
+		for(EntityEntity ee : oldBe.getLinks()) {
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(),
+						ee.getLink().getWeight() );
+		}
+	}
+
+	public void duplicateLink(final BaseEntity oldBe, final BaseEntity newBe, final BaseEntity childBe) {
+		for (EntityEntity ee : oldBe.getLinks()) {
+			if(ee.getLink().getTargetCode() == childBe.getCode()){
+
+				createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(),
+						ee.getLink().getWeight() );
+				break;
+			}
+		}
+	}
+
+	public void duplicateLinksExceptOne(final BaseEntity oldBe, final BaseEntity newBe, String linkValue) {
+		for (EntityEntity ee : oldBe.getLinks()) {
+			if(ee.getLink().getLinkValue() == linkValue){
+				continue;
+			}
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(),
+						ee.getLink().getWeight() );
+		}
+	}
+
+	public BaseEntity cloneBeg(final BaseEntity oldBe,final BaseEntity newBe, final BaseEntity childBe, String linkValue){
+		duplicateLinksExceptOne(oldBe, newBe, linkValue);
+		duplicateLink(oldBe, newBe, childBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	/* clones links of oldBe to newBe from supplied arraylist linkValues */
+	public BaseEntity copyLinks(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
+		println("linkvalues   ::   " + Arrays.toString(linkValues));
+		for (EntityEntity ee : oldBe.getLinks()) {
+			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
+			for(String linkValue : linkValues){
+				println("a linkvalue   ::   " + linkValue);
+				if(ee.getLink().getLinkValue().equals(linkValue)){
+					createLink(	newBe.getCode(),
+								ee.getLink().getTargetCode(),
+								ee.getLink().getAttributeCode(),
+								ee.getLink().getLinkValue(),
+								ee.getLink().getWeight() );
+					println("creating link for   ::   " + linkValue);
+				}
+			}
+		}
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	/* clones all links of oldBe to newBe except the linkValues supplied in arraylist linkValues */
+	public BaseEntity copyLinksExcept(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
+		println("linkvalues   ::   " + Arrays.toString(linkValues));
+		for (EntityEntity ee : oldBe.getLinks()) {
+			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
+			for (String linkValue : linkValues) {
+				println("a linkvalue   ::   " + linkValue);
+				if (ee.getLink().getLinkValue().equals(linkValue)) {
+					continue;
+				}
+				createLink(	newBe.getCode(),
+							ee.getLink().getTargetCode(),
+							ee.getLink().getAttributeCode(),
+							ee.getLink().getLinkValue(),
+							ee.getLink().getWeight() );
+				println("creating link for   ::   " + linkValue);
+			}
+		}
+		return getBaseEntityByCode(newBe.getCode());
+	}
+	
+	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
+
+		Boolean isLinkExists = false;
+		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
+
+		if (dataBEMessage != null) {
+			BaseEntity[] beArr = dataBEMessage.getItems();
+
+			if (beArr.length > 0) {
+				for (BaseEntity be : beArr) {
+					if (be.getCode().equals(childCode)) {
+						isLinkExists = true;
+						return isLinkExists;
+					}
+				}
+			} else {
+				isLinkExists = false;
+				return isLinkExists;
+			}
+
+		}
+		return isLinkExists;
+	}
+
+	/* returns  subscribers of a baseEntity Code */
+	public String[] getSubscribers(final String subscriptionCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
+
+		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
+		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		return result;
+	}
 }
+
+
