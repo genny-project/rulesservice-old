@@ -2919,6 +2919,7 @@ public class QRules {
 	}
 
 	public void addAttributes(BaseEntity be) {
+		if (!be.getCode().startsWith("SBE_")) {  // don't bother with search be 
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
 			if (ea != null) {
 				Attribute attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
@@ -2937,6 +2938,7 @@ public class QRules {
 					}
 				}
 			}
+		}
 		}
 	}
 
@@ -3866,6 +3868,8 @@ public class QRules {
 		cmdViewJson.put("columns", columnHeaders);
 		publish("cmds", cmdViewJson);
 	}
+	
+
 
 	/* Search the text value in all jobs */
 	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
@@ -4371,11 +4375,27 @@ public class QRules {
 		BaseEntity searchBE = getBaseEntityByCode(reportCode);
 	    System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
 	    String jsonSearchBE = JsonUtils.toJson(searchBE);
-	    String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+	    String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 	  				getToken());
-	  	System.out.println("The result   ::  " + result);
-	  	publishData(new JsonObject(result));
+	    QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+	  	System.out.println("The result   ::  " + msg);
+	  	publishData(new JsonObject(resultJson));
 	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
+	  	JsonArray columnHeaders = new JsonArray();
+	  	List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
+	  	for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
+	  		if (ea.getAttributeCode().startsWith("COL_")) {
+	  			columnAttributes.add(ea);
+	  		}
+	  	}
+	  	// Sort columns
+	  	
+	  	columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
+	  	for (EntityAttribute ea : columnAttributes) {
+	  		columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
+	  	}
+	  	sendTableViewWithHeaders(reportCode, columnHeaders);
+	  	
 	}
 
 	
