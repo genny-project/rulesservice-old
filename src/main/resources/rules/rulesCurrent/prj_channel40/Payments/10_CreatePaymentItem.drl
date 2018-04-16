@@ -29,6 +29,9 @@ rule "Create Payment Item"
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
 		RulesUtils.println("BEG CODE ::"+BEGCode);
 		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
+		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+		BaseEntity ownerBe = rules.getUser();
+		BaseEntity driverBe = null;
 
       	if(assemblyId != null) {
 
@@ -55,14 +58,43 @@ rule "Create Payment Item"
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
 
        	}
-
-       	/* Creating Payment Item */
-       	String paymentItemId = begBe.getValue("PRI_ITEM_ID", null);
        	
-       	/* String paymentItemId = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken()); */
-       	if(paymentItemId == null) {
+       	
+       	String quoterCode_driver = offerBe.getValue("PRI_QUOTER_CODE", null);
+       	if(quoterCode_driver != null) {
+       		/* if OFFER has an attribute has attribute PRI_QUOTER_CODE, fetch it as the confirmed driver */
+       		driverBe = rules.getBaseEntityByCode(quoterCode_driver);
+       	} else {
+       		/* if attribute PRI_QUOTER_CODE returns null, then fetch the Driver BE from the links of the OFFER */
+       		driverBe = rules.getChildren(offerCode, "LNK_OFR", "CREATOR");
+       	}
+       	
 
-       		String itemId = PaymentUtils.createPaymentItem(offerCode, BEGCode, assemblyAuthKey, rules.getToken());
+       	/* Checking if item already exists */
+       	String paymentItemId = begBe.getValue("PRI_ITEM_ID", null);
+       	Boolean isNewItem = false;
+       	
+       	if(paymentItemId == null) {
+       		/* If payment Item ID is not present for a BEG, create a new payment item */
+       		isNewItem = true;
+       	} else {
+       		/* Check if item already present is valid or not */
+       		Boolean isItemValid = PaymentUtils.checkForAssemblyItemValidity(paymentItemId, offerBe, ownerBe, driverBe, assemblyAuthKey);
+       		
+       		if(isItemValid) {
+       			isNewItem = false;
+       		} else {
+       			isNewItem = true;
+       		}
+       	}
+       	
+       	rules.println("New item needs to be created ::"+isNewItem);
+       	
+       	/* create a new payment item */
+       	if(isNewItem) {
+       		
+       		String itemId = null;
+			itemId = PaymentUtils.createPaymentItem(offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
        	 	rules.println("Payment item Id="+itemId);
        	 	
        	 	if(itemId != null) {
@@ -81,7 +113,8 @@ rule "Create Payment Item"
        	 	}
         		
        	}
-
+       	
+       	
 		/* Ugly way of checking */
 		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
 		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
