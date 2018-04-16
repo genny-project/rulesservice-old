@@ -4507,25 +4507,6 @@ public class QRules {
 
 	}
 	
-	//attachments
-		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
-					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
-
-				if (recipientArray != null && recipientArray.length > 0) {
-
-					/* Adding project code to context */
-					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-					contextMap.put("PROJECT", projectCode);
-
-					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
-							recipientArray, attachmentList, getToken());
-					publish("messages", message);
-				} else {
-					log.error("Recipient array is null and so message cant be sent");
-				}
-
-		}
-
 	/*
 	 * Publish Search BE results
 	 */
@@ -4560,6 +4541,25 @@ public class QRules {
 		return false;
 
 	}
+	
+	//attachments
+		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+				if (recipientArray != null && recipientArray.length > 0) {
+
+					/* Adding project code to context */
+					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+					contextMap.put("PROJECT", projectCode);
+
+					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
+							recipientArray, attachmentList, getToken());
+					publish("messages", message);
+				} else {
+					log.error("Recipient array is null and so message cant be sent");
+				}
+
+		}
 
 	/*
 	 * Give oldChat for the given sender and receiver
