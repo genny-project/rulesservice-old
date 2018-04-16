@@ -68,6 +68,7 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
+import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -87,6 +88,7 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
+import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -3776,9 +3778,19 @@ public class QRules {
 
 			/* Sending toast message to owner frontend */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
+ 
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+
+			
+			/* Testing message with attachments */
+			String[] userarr = {"PER_USER2"};
+			List<QBaseMSGAttachment> attachmentList = new ArrayList<>();
+			QBaseMSGAttachment attachment1 = new QBaseMSGAttachment(AttachmentType.NON_INLINE, "image/png", "https://i.imgur.com/1Qe34Ol.png", false, "IMG");			
+			QBaseMSGAttachment attachment2 = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", "https://raw.githubusercontent.com/genny-project/layouts/master/email/templates/invoice-pdf-owner.html", true, "INVOICE");
+			attachmentList.add(attachment1);
+			attachmentList.add(attachment2);
+			
 
 		}
 
@@ -4549,5 +4561,24 @@ public class QRules {
 			}
 		return null;
 	}
+	
+	//attachments
+		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+				if (recipientArray != null && recipientArray.length > 0) {
+
+					/* Adding project code to context */
+					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+					contextMap.put("PROJECT", projectCode);
+
+					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
+							recipientArray, attachmentList, getToken());
+					publish("messages", message);
+				} else {
+					log.error("Recipient array is null and so message cant be sent");
+				}
+
+		}
 
 }
