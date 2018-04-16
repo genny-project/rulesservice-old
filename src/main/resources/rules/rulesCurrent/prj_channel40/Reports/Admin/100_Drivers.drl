@@ -30,7 +30,7 @@ rule "SBE_DRIVERS"
   	     .addFilter("PRI_DRIVER",true)
   	     
   	     .setPageStart(0)
-  	     .setPageSize(20);
+  	     .setPageSize(10000);
   	     
   		 rules.add("GRP","GRP_REPORTS_ADMIN",report);
 end

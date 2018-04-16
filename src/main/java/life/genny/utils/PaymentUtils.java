@@ -43,39 +43,36 @@ import life.genny.qwandautils.QwandaUtils;
 
 public class PaymentUtils {
 
-	/* Create a new logger for this class */
-	protected static final Logger log = org.apache.logging.log4j.LogManager.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	/* Define constants */
+
+	//public static final String DEFAULT_CURRENCY = "AUD";
 	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
 	public static final String PROVIDER_TYPE_BANK = "bank";
-	public static final String CONTACT_ADMIN_TEXT = "Please contact support for assistance"; /* TODO Use an environment variable to include support contact info */
 
-	/**
-	* Returns the authentication key for the payments service - key is generated as per documentation here
-	* https://github.com/genny-project/payments/blob/master/docs/auth-tokens.md
-	*/
+	public static final String CONTACT_ADMIN_TEXT = "Please contact Channel40 for assistance";
+
 	@SuppressWarnings("unchecked")
 	public static String getAssemblyAuthKey() {
-		/* Fetch marketplace information from environmnt variables */
-		String paymentMarketPlace = System.getenv("PAYMENT_MARKETPLACE_NAME");
-		String paymentToken = System.getenv("PAYMENT_TOKEN");
-		String paymentSecret = System.getenv("PAYMENT_SECRET");
 
-		/* Create the data for the authentication token */
+		String paymentMarketPlace = System.getenv("PAYMENT_MARKETPLACE_NAME");
+	    String paymentToken = System.getenv("PAYMENT_TOKEN");
+	    String paymentSecret = System.getenv("PAYMENT_SECRET");
+
 		JSONObject authObj = new JSONObject();
 		authObj.put("tenant", paymentMarketPlace);
 		authObj.put("token", paymentToken);
 		authObj.put("secret", paymentSecret);
 
-		/* Return the base 64 encoded authentication token */
-		return base64Encoder(authObj.toJSONString());
+		String encodedAuthString = base64Encoder(authObj.toJSONString());
+
+		return encodedAuthString;
 	}
 
-	/* Encoded a UTF8 string in Base64 */
 	public static String base64Encoder(String plainString) {
-		String encodedString = null;
 
+		String encodedString = null;
 		try {
 			encodedString = Base64.getEncoder().encodeToString(plainString.getBytes("utf-8"));
 		} catch (UnsupportedEncodingException e) {
@@ -85,18 +82,14 @@ public class PaymentUtils {
 		return encodedString;
 	}
 
-	/* Decodes a Base64 encoded string into a JSONObject */
 	public static JSONObject base64Decoder(String plainString) {
-		String decodedString = null;
 
-		/* Create a parser */
+		String decodedString = null;
 		JSONParser parser = new JSONParser();
 		JSONObject authobj = new JSONObject();
 
-		/* Attempt to decode the base64 string into a UTF8 string */
 		decodedString = new String(Base64.getDecoder().decode(plainString));
 
-		/* Attempt to parse the JSON string into a JSON object */
 		try {
 			authobj = (JSONObject) parser.parse(decodedString);
 		} catch (ParseException e) {
@@ -106,84 +99,21 @@ public class PaymentUtils {
 		return authobj;
 	}
 
-	public static String apiCall(final String method, final String url, final String body, final String authToken) throws ClientProtocolException, IOException, PaymentException {
-		/* Create a string to store the response */
+
+	public static String apiPostPaymentEntity(final String postUrl, final String entityString, final String authToken)
+			throws IOException, PaymentException {
 		String retJson = "";
-
-		/* Create a HTTP Client */
+		//final HttpClient client = new DefaultHttpClient();
 		final HttpClient client = HttpClientBuilder.create().build();
+		System.out.println("http request payments ::"+postUrl);
+		final HttpPost post = new HttpPost(postUrl);
+		post.addHeader("Authorization", authToken);
 
-		/* Log that we are making a request */
-		System.out.println( "http request payments ::" + url );
+		final StringEntity input = new StringEntity(entityString);
+		input.setContentType("application/json");
+		post.setEntity(input);
+		final HttpResponse response = client.execute(post);
 
-		/* Create an object to store the http response */
-		HttpResponse response = null;
-
-		/* Check what HTTP method we are calling */
-		if ( method.equals( "POST" )) {
-			/* Create a new post request */
-			final HttpPost post = new HttpPost(url);
-			/* If a auth token was provided use it */
-			if ( authToken != null ) {
-				post.addHeader("Authorization", authToken);
-			}
-
-			/* If a request body was provided use it */
-			if ( body != null ) {
-				final StringEntity input = new StringEntity(body);
-				input.setContentType("application/json");
-				post.setEntity(input);
-			}
-
-			/* Execute the request */
-			response = client.execute(post);
-		}
-
-		if ( method.equals( "PUT" )) {
-			/* Create a new put request */
-			final HttpPut put = new HttpPut(url);
-			/* If a auth token was provided use it */
-			if ( authToken != null ) {
-				put.addHeader("Authorization", authToken);
-			}
-
-			/* If a request body was provided use it */
-			if ( body != null ) {
-				final StringEntity input = new StringEntity(body);
-				input.setContentType("application/json");
-				put.setEntity(input);
-			}
-
-			/* Execute the request */
-			response = client.execute(put);
-		}
-
-		if ( method.equals( "GET" )) {
-			/* Create a new get request */
-			final HttpGet get = new HttpGet(url);
-			/* If a auth token was provided use it */
-			if ( authToken != null ) {
-				get.addHeader("Authorization", authToken);
-			}
-
-			/* Execute the request */
-			response = client.execute(get);
-		}
-
-		if ( method.equals( "DELETE" )) {
-			/* Create a new delete request */
-			final HttpDelete delete = new HttpDelete(url);
-			/* If a auth token was provided use it */
-			if ( authToken != null ) {
-				delete.addHeader("Authorization", authToken);
-			}
-
-			/* Execute the request */
-			response = client.execute(delete);
-		}
-
-		
-		/* Read in the response */
 		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String line = "";
 		while ((line = rd.readLine()) != null) {
@@ -191,22 +121,131 @@ public class PaymentUtils {
 			;
 		}
 
-		/* Get the response code */
 		int responseCode = response.getStatusLine().getStatusCode();
 
-		/* Log some information about the response */
 		System.out.println("response code ::"+responseCode);
 		System.out.println("response ::"+response.getStatusLine());
 		System.out.println("response body::"+retJson);
 
-		/* If the response code isn't a valid one throw an error */
-		if(responseCode > 299) {
-			throw new PaymentException("Payment exception, " + retJson);
-		}
-
-		/* Return the response JSON */
+		if(responseCode != 200) {
+			throw new PaymentException("Payment exception, "+retJson);		}
 		return retJson;
 	}
+
+	public static String apiPostPaymentEntity(final String postUrl, final String authToken)
+			throws IOException, PaymentException {
+		String retJson = "";
+		//final HttpClient client = new DefaultHttpClient();
+		final HttpClient client = HttpClientBuilder.create().build();
+		System.out.println("http request payments ::"+postUrl);
+		final HttpPost post = new HttpPost(postUrl);
+		post.addHeader("Authorization", authToken);
+
+		final HttpResponse response = client.execute(post);
+
+		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+		String line = "";
+		while ((line = rd.readLine()) != null) {
+			retJson += line;
+			;
+		}
+
+		int responseCode = response.getStatusLine().getStatusCode();
+
+		System.out.println("response code ::"+responseCode);
+		System.out.println("response ::"+response.getStatusLine());
+
+		System.out.println("response body::"+retJson);
+
+		if(responseCode != 200) {
+			throw new PaymentException("Payment exception, "+retJson);
+		}
+		return retJson;
+	}
+
+
+	public static String apiGetPaymentResponse(final String getUrl, final String authToken)
+			throws ClientProtocolException, IOException, PaymentException {
+		String retJson = "";
+		log.debug("GET:" + getUrl + ":");
+		final HttpClient client = HttpClientBuilder.create().build();
+		final HttpGet request = new HttpGet(getUrl);
+		if (authToken != null) {
+			request.addHeader("Authorization", authToken);
+		}
+		final HttpResponse response = client.execute(request);
+
+		BufferedReader rd = null;
+
+		try {
+			rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				retJson += line;
+				;
+			}
+		} catch (NullPointerException e) {
+			return null;
+		}
+
+		int responseCode = response.getStatusLine().getStatusCode();
+
+		System.out.println("response code ::"+responseCode);
+		System.out.println("response ::"+response.getStatusLine());
+		System.out.println("response body::"+retJson);
+
+		if(responseCode != 200) {
+			throw new PaymentException("Payment exception,"+retJson);
+		}
+
+		return retJson;
+	}
+
+
+	public static String apiPutPaymentEntity(final String putUrl, final String entityString, final String authToken)
+			throws IOException, PaymentException {
+		String retJson = "";
+		final HttpClient client = HttpClientBuilder.create().build();
+
+		log.debug("PUT:" + putUrl + ":");
+
+		/* Read in the response */
+		final HttpPut put = new HttpPut(putUrl);
+		put.addHeader("Authorization", authToken);
+
+		final StringEntity input = new StringEntity(entityString);
+		input.setContentType("application/json");
+		put.setEntity(input);
+		final HttpResponse response = client.execute(put);
+
+		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+		String line = "";
+		while ((line = rd.readLine()) != null) {
+			retJson += line;
+			;
+		}
+
+		int responseCode = response.getStatusLine().getStatusCode();
+
+		System.out.println("response code ::" + responseCode);
+		System.out.println("response ::" + response.getStatusLine());
+		System.out.println("response body::" + retJson);
+
+		if (responseCode != 200) {
+			throw new PaymentException("Payment exception, " + response.getEntity().getContent());
+		}
+
+		return retJson;
+	}
+
+
+
+		public static String apiDeletePaymentEntity(final String deleteUrl, final String authToken)
+				throws IOException, PaymentException {
+			String retJson = "";
+			final HttpClient client = HttpClientBuilder.create().build();
+
+			log.debug("DELETE:" + deleteUrl + ":");
 
 	/* Creates a new post request */
 	public static String apiPostPaymentEntity(final String postUrl, final String entityString, final String authToken) throws ClientProtocolException, IOException, PaymentException {
@@ -233,22 +272,23 @@ public class PaymentUtils {
 		return apiCall( "DELETE", deleteUrl, null, authToken );
 	}
 
-	/* Generates a random ID / UUID for a new Assembly user */
+
+
 	public static String getAssemblyId(String token) {
+
 		return UUID.randomUUID().toString();
+
 	}
 
-	/* Checks whether a Assembly user with the provided ID exists already */
+
 	public static Boolean checkIfAssemblyUserExists(String assemblyUserId) {
+
 		Boolean isExists = false;
 
-		/* If a user ID was provided then... */
 		if(assemblyUserId != null) {
-			/* Get an authentication token for the API */
 			String authToken = getAssemblyAuthKey();
-			String assemblyUserString = null;
 
-			/* Attempt to get the user with the specified ID, if it returns an error we know the user doesn't exist */
+			String assemblyUserString = null;
 			try {
 				assemblyUserString = PaymentEndpoint.getAssemblyUserById(assemblyUserId, authToken);
 				if(assemblyUserString != null && !assemblyUserString.contains("error")) {
@@ -264,33 +304,43 @@ public class PaymentUtils {
 		return isExists;
 	}
 
-	/* Creates a new user in Assembly */
 	@SuppressWarnings("unchecked")
 	public static String createAssemblyUser(String assemblyUserId, String authToken, String token) {
-		/* Get user information */
+
 		String userCode = QwandaUtils.getUserCode(token);
 		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, token);
 		String assemblyId = null;
 
-		/* Create objects to store the information we'll send to Assembly */
 		JSONObject userobj = new JSONObject();
 		JSONObject personalInfoObj = new JSONObject();
 		JSONObject contactInfoObj = new JSONObject();
 		JSONObject locationObj = new JSONObject();
 
 		if(be != null && assemblyUserId != null) {
-			/* Get all of the users information from their base entity */
+
+			/*Object firstName = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_FIRSTNAME");
+			Object lastName = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_LASTNAME");
+			Object dobString = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_DOB");
+			Object email = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_EMAIL");
+			//Object phoneNumber = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_MOBILE");
+			Object addressLine1 = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_ADDRESS1");
+			Object city = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_CITY");
+			Object state = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_STATE");
+			Object country = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_COUNTRY");
+			Object postCode = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_POSTCODE");*/
+
+
 			Object firstName = be.getValue("PRI_FIRSTNAME", null);
 			Object lastName = be.getValue("PRI_LASTNAME", null);
 			Object dobString = be.getValue("PRI_DOB", null);
 			Object email = be.getValue("PRI_EMAIL", null);
+			//Object phoneNumber = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_MOBILE");
 			Object addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
 			Object city = be.getValue("PRI_ADDRESS_CITY", null);
 			Object state = be.getValue("PRI_ADDRESS_STATE", null);
 			Object country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			Object postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
 
-			/* Check a bunch of fields and store them in the object we send to Assembly if they exist */
 			if(firstName != null) {
 				personalInfoObj.put("firstName", firstName.toString());
 			}
@@ -299,19 +349,25 @@ public class PaymentUtils {
 				personalInfoObj.put("lastName", lastName.toString());
 			}
 
-			/* If the date of birth is provided format it correctly */
 			if(dobString != null) {
 				System.out.println("dob string ::"+dobString);
+				//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
 				LocalDate dobDate = (LocalDate) dobString;
 				String formattedDOBString = assemblyDateFormatter.format(dobDate);
 				System.out.println("another formatted dob ::"+formattedDOBString);
+
 				personalInfoObj.put("dob", formattedDOBString.toString());
 			}
 
 			if(email != null) {
 				contactInfoObj.put("email", email.toString());
 			}
+
+			/*if(phoneNumber != null) {
+				contactInfoObj.put("mobile", phoneNumber.toString());
+			}*/
 
 			if(addressLine1 != null) {
 				locationObj.put("addressLine1", addressLine1.toString());
@@ -325,7 +381,6 @@ public class PaymentUtils {
 				locationObj.put("state", state.toString());
 			}
 
-			/* If a country code is defined then use that, otherwise use Australia */
 			if(country != null) {
 				locationObj.put("country", country.toString());
 			} else {
@@ -337,7 +392,7 @@ public class PaymentUtils {
 			}
 		}
 
-		/* Combine all of the individual objects into one object that'll well send off */
+		//personalInfoObj.put("governmentNumber", "123456789");
 		userobj.put("personalInfo", personalInfoObj);
 		userobj.put("contactInfo", contactInfoObj);
 		userobj.put("location", locationObj);
@@ -345,7 +400,6 @@ public class PaymentUtils {
 
 		System.out.println("user obj ::"+userobj);
 
-		/* Attempt creating the user in Assembly */
 		String paymentUserCreationResponse;
 		try {
 			paymentUserCreationResponse = PaymentEndpoint.createAssemblyUser(JsonUtils.toJson(userobj), authToken);
@@ -357,11 +411,9 @@ public class PaymentUtils {
 			assemblyId = null;
 		}
 
-		/* The user creation worked, return the user ID */
 		return assemblyId;
 	}
 
-	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
 		String responseString = null;
 		try {
@@ -372,33 +424,31 @@ public class PaymentUtils {
 		return responseString;
 	}
 
-	/* Called when a particular attribute is updated for a user */
 	@SuppressWarnings({ "unchecked"})
 	public static String updateUserInfo(String assemblyUserId, String attributeCode, String value, String assemblyAuthToken) {
-		/* Log the attribute for debugging purposes */
+
 		System.out.println("attributeCode ::" + attributeCode + ", value ::" + value);
 		String responseString = null;
 
-		/* Personal Info Update Objects  */
+		 /* Personal Info Update Objects  */
 		JSONObject userobj = null;
 		JSONObject personalInfoObj = null;
 		JSONObject personalContactInfoObj = null;
 		JSONObject locationObj = null;
 
-		/* Check which value was updated and update in Assembly accordingly */
 		switch (attributeCode) {
-			case "PRI_FIRSTNAME":
+
+		case "PRI_FIRSTNAME":
 			personalInfoObj = new JSONObject();
 			personalInfoObj.put("firstName", value);
 			break;
 
-			case "PRI_LASTNAME":
+		case "PRI_LASTNAME":
 			personalInfoObj = new JSONObject();
 			personalInfoObj.put("lastName", value);
 			break;
 
-			case "PRI_DOB":
-			/* Format the date of birth */
+		case "PRI_DOB":
 			personalInfoObj = new JSONObject();
 			DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -408,83 +458,81 @@ public class PaymentUtils {
 			personalInfoObj.put("dob", formattedDOBString.toString());
 			break;
 
-			case "PRI_EMAIL":
+		case "PRI_EMAIL":
 			personalContactInfoObj = new JSONObject();
 			personalContactInfoObj.put("email", value);
 			break;
 
-			case "PRI_MOBILE":
+		case "PRI_MOBILE":
 			personalContactInfoObj = new JSONObject();
 			personalContactInfoObj.put("mobile", value);
 			break;
 
 
-			case "PRI_ADDRESS_ADDRESS1":
+		case "PRI_ADDRESS_FULL":
 			locationObj = new JSONObject();
 			locationObj.put("addressLine1", value);
 			break;
 
-			case "PRI_ADDRESS_SUBURB":
+		case "PRI_ADDRESS_SUBURB":
 			locationObj = new JSONObject();
+			locationObj.put("addressLine2", value);
 			locationObj.put("city", value);
 			break;
 
-			case "PRI_ADDRESS_CITY":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
-
-			case "PRI_ADDRESS_STATE":
+		case "PRI_ADDRESS_STATE":
 			locationObj = new JSONObject();
 			locationObj.put("state", value);
 			break;
-			case "PRI_ADDRESS_COUNTRY":
+		case "PRI_ADDRESS_COUNTRY":
 			locationObj = new JSONObject();
 			locationObj.put("country", value);
 			break;
-			case "PRI_ADDRESS_POSTCODE":
+		case "PRI_ADDRESS_POSTCODE":
 			locationObj = new JSONObject();
 			locationObj.put("postcode", value);
 			break;
+
 		}
 
-		/* For Assembly Personal Information Update */
-		if(personalInfoObj != null  && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("personalInfo", personalInfoObj);
-			userobj.put("id", assemblyUserId);
-		}
+		 /* For Assembly Personal Information Update */
 
-		if (personalContactInfoObj != null && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("contactInfo", personalContactInfoObj);
-			userobj.put("id", assemblyUserId);
-		}
-
-		if (locationObj != null && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("location", locationObj);
-			userobj.put("id", assemblyUserId);
-		}
-
-		/* Make the request to Assembly and update */
-		if(userobj != null && assemblyUserId!= null) {
-			try {
-				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userobj), assemblyAuthToken);
-				System.out.println("response string from payments user updation ::"+responseString);
-			} catch (PaymentException e) {
-				log.error("Exception occured user updation");
-				e.printStackTrace();
+			if(personalInfoObj != null  && assemblyUserId != null) {
+				userobj = new JSONObject();
+				userobj.put("personalInfo", personalInfoObj);
+				userobj.put("id", assemblyUserId);
 			}
-		}
 
-		/* Return the response */
-		return responseString;
+			if (personalContactInfoObj != null && assemblyUserId != null) {
+				userobj = new JSONObject();
+				userobj.put("contactInfo", personalContactInfoObj);
+				userobj.put("id", assemblyUserId);
+			}
+
+			if (locationObj != null && assemblyUserId != null) {
+				userobj = new JSONObject();
+				userobj.put("location", locationObj);
+				userobj.put("id", assemblyUserId);
+
+			}
+
+			if(userobj != null && assemblyUserId!= null) {
+				try {
+					responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userobj), assemblyAuthToken);
+					System.out.println("response string from payments user updation ::"+responseString);
+				} catch (PaymentException e) {
+					log.error("Exception occured user updation");
+					e.printStackTrace();
+				}
+			}
+
+			return responseString;
 	}
 
-	/* Called when a particular attribute is updated for a company */
+
 	@SuppressWarnings({ "unchecked" })
 	public static String updateCompanyInfo(String userId, String companyId, String attributeCode, String value, String authToken) {
+
 		System.out.println("attributeCode ::" + attributeCode + ", value ::" + value);
 
 		/* Company Info Update Objects */
@@ -496,111 +544,116 @@ public class PaymentUtils {
 		JSONObject companyContactInfoObj = null;
 		JSONObject locationObj = null;
 
-		/* Check what attribute was updated and update accordingly */
 		switch (attributeCode) {
-			case "PRI_CPY_NAME":
+
+		case "PRI_CPY_NAME":
 			companyObj.put("name", value);
 			companyObj.put("legalName", value);
 			break;
 
-			case "PRI_ABN":
+		case "PRI_ABN":
 			companyObj.put("taxNumber", value);
 			break;
 
-			case "PRI_ACN":
+		case "PRI_ACN":
 			companyObj.put("taxNumber", value);
 			break;
 
-			case "PRI_GST":
+		case "PRI_GST":
 			companyObj.put("chargesTax", Boolean.valueOf(value));
 			break;
 
-			case "PRI_LANDLINE":
+		case "PRI_LANDLINE":
 			companyContactInfoObj = new JSONObject();
 			companyContactInfoObj.put("phone", value);
 			break;
 
-			case "PRI_ADDRESS_ADDRESS1":
+		case "PRI_ADDRESS_FULL":
 			locationObj = new JSONObject();
 			locationObj.put("addressLine1", value);
 			break;
 
-			case "PRI_ADDRESS_SUBURB":
+		case "PRI_ADDRESS_SUBURB":
 			locationObj = new JSONObject();
+			locationObj.put("addressLine2", value);
 			locationObj.put("city", value);
 			break;
 
-			case "PRI_ADDRESS_CITY":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
-
-			case "PRI_ADDRESS_STATE":
+		case "PRI_ADDRESS_STATE":
 			locationObj = new JSONObject();
 			locationObj.put("state", value);
 			break;
-			case "PRI_ADDRESS_COUNTRY":
+		case "PRI_ADDRESS_COUNTRY":
 			locationObj = new JSONObject();
 			locationObj.put("country", value);
 			break;
-			case "PRI_ADDRESS_POSTCODE":
+		case "PRI_ADDRESS_POSTCODE":
 			locationObj = new JSONObject();
 			locationObj.put("postcode", value);
 			break;
 		}
 
-		/* For Assembly User Company Information Update */
-		if(companyContactInfoObj != null && companyId != null) {
-			companyObj.put("contactInfo", companyContactInfoObj);
 
-			if(userId != null) {
-				userobj = new JSONObject();
-				userobj.put("id", userId);
-				companyObj.put("user", userobj);
+		 /* For Assembly User Company Information Update */
+			if(companyContactInfoObj != null && companyId != null) {
+
+				companyObj.put("contactInfo", companyContactInfoObj);
+
+				if(userId != null) {
+					userobj = new JSONObject();
+					userobj.put("id", userId);
+					companyObj.put("user", userobj);
+				}
+
 			}
 
-		}
+			if (locationObj != null) {
 
-		if (locationObj != null) {
-			companyObj.put("location", locationObj);
+				companyObj.put("location", locationObj);
 
-			if(userId != null) {
-				userobj = new JSONObject();
-				userobj.put("id", userId);
-				companyObj.put("user", userobj);
+				if(userId != null) {
+					userobj = new JSONObject();
+					userobj.put("id", userId);
+					companyObj.put("user", userobj);
+				}
 			}
-		}
 
-		/* Send updated details to Assembly */
-		if(companyId != null && companyObj != null) {
-			try {
-				responseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(companyObj), authToken);
-			} catch (PaymentException e) {
-				log.error("Exception occured company updation");
-				e.printStackTrace();
+
+			if(companyId != null && companyObj != null) {
+				try {
+					responseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(companyObj), authToken);
+				} catch (PaymentException e) {
+					log.error("Exception occured company updation");
+					e.printStackTrace();
+				}
 			}
-		}
 
-		/* Return response */
-		return responseString;
+			return responseString;
+
+
 	}
 
-	/* Creates a new company in Assembly */
+
 	@SuppressWarnings("unchecked")
 	public static String createCompany(String authtoken, String tokenString) {
-		/* Get the users information */
+
 		String userCode = QwandaUtils.getUserCode(tokenString);
 		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, tokenString);
 		String createCompanyResponse = null;
 		String companyCode = null;
 
-		/* Create objects to store the data we'll send to Assembly */
 		JSONObject companyObj = new JSONObject();
 		JSONObject userObj = new JSONObject();
 		JSONObject contactObj = new JSONObject();
 		JSONObject locationObj = new JSONObject();
 
-		/* Get the provided company information from the base entity */
+		/*Object companyName = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_NAME");
+		Object taxNumber = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ABN");
+		Object chargeTax = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_GST");
+		Object companyPhoneNumber = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_LANDLINE");
+		Object countryName = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ADDRESS_COUNTRY");
+		Object assemblyUserId = MergeUtil.getBaseEntityAttrObjectValue(be, "PRI_ASSEMBLY_USER_ID");*/
+
 		Object companyName = be.getValue("PRI_NAME", null);
 		Object taxNumber = be.getValue("PRI_ABN", null);
 		Object chargeTax = be.getValue("PRI_GST", null);
@@ -608,7 +661,6 @@ public class PaymentUtils {
 		Object countryName = be.getValue("PRI_ADDRESS_COUNTRY", null);
 		Object assemblyUserId = be.getValue("PRI_ASSEMBLY_USER_ID", null);
 
-		/* Check if each field is provided and add to request object if so */
 		if (companyName != null) {
 			companyObj.put("name", companyName.toString());
 		}
@@ -629,21 +681,18 @@ public class PaymentUtils {
 			userObj.put("id", assemblyUserId.toString());
 		}
 
-		/* If a country name was provided use that, otherwise use Australia */
 		if (countryName != null) {
 			locationObj.put("country", countryName.toString());
 		} else {
 			locationObj.put("country", "AU");
 		}
 
-		/* Combine all of the objects into one */
 		companyObj.put("contactInfo", contactObj);
 		companyObj.put("user", userObj);
 		companyObj.put("location", locationObj);
 
 		log.info("Company object ::" + companyObj);
 
-		/* Make the request to Assembly */
 		if (companyObj != null && userObj != null) {
 			System.out.println("company obj is not null, company object ::"+companyObj);
 			try {
@@ -660,11 +709,10 @@ public class PaymentUtils {
 			}
 		}
 
-		/* Return the ID of the created company */
 		return companyCode;
+
 	}
 
-	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
 	public static String createPaymentItem(BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
 		/* Get the base entity information */
@@ -678,22 +726,23 @@ public class PaymentUtils {
 		itemObj.put("paymentType", DEFAULT_PAYMENT_TYPE);
 
 		if (begBe != null) {
-			/* Get the fees for this item */
+
 			String feeId = getPaymentFeeId(offerBe, assemblyauthToken);
 			System.out.println("fee Id ::" + feeId);
 
-			/* Get the title, description and job ID for this item from the base entity group */
+			/*String begTitle = MergeUtil.getBaseEntityAttrValueAsString(begBe, "PRI_TITLE");
+			String begDescription = MergeUtil.getBaseEntityAttrValueAsString(begBe, "PRI_DESCRIPTION");*/
 			String begTitle = begBe.getValue("PRI_TITLE", null);
 			String begDescription = begBe.getValue("PRI_DESCRIPTION", null);
 			String begJobId = begBe.getValue("PRI_JOB_ID", null);
 
-			/* Check that values are provided and if they are include them in the request */
 			if (begTitle != null) {
 				if(begJobId != null) {
 					itemObj.put("name", begTitle + ", Job #"+begJobId);
 				} else {
 					itemObj.put("name", begTitle);
 				}
+
 			}
 
 			if (begDescription != null) {
@@ -702,6 +751,7 @@ public class PaymentUtils {
 				} else {
 					itemObj.put("description", begDescription);
 				}
+
 			}
 
 			if (feeId != null) {
@@ -709,12 +759,10 @@ public class PaymentUtils {
 				itemObj.put("fees", feeArr);
 			}
 
-			/* Add the amount to the item */
-
 			/*
-			* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST),
-			* Creating Payments Fee with feePriceIncGST
-			*/
+			 * driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST),
+			 * Creating Payments Fee with feePriceIncGST
+			 */
 			String offerOwnerPriceString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
 
 			System.out.println("begpriceString ::" + offerOwnerPriceString);
@@ -757,28 +805,27 @@ public class PaymentUtils {
 			}
 		}
 
-		/* Set the buyer for the item */
+
 		/* OWNER -> Buyer */
 		if(ownerBe != null) {
 			System.out.println("Context map contains OWNER");
 
-			/* Check that an owner is actually set and if so use their Assembly user ID */
 			if(ownerBe != null) {
 				buyerObj = new JSONObject();
+				//buyerObj.put("id", MergeUtil.getBaseEntityAttrValueAsString(ownerBe, "PRI_ASSEMBLY_USER_ID"));
 				buyerObj.put("id", ownerBe.getValue("PRI_ASSEMBLY_USER_ID", null));
 			}
 		} else {
-			/* No owner was specified, throw an error */
 			log.error("BEG CONTEXT MAP HAS NO OWNER LINK, SO BUYER OBJECT IS NULL");
 			try {
 				throw new PaymentException("Payment Item creation will not succeed since owner BE returned null");
 			} catch (PaymentException e) {
 			}
 		}
-		
+
 		/* DRIVER -> Seller */
-		if(driverBe != null ) {	
-			
+		if(driverBe != null ) {
+
 			sellerObj = new JSONObject();
 			sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
 		} else {
@@ -792,14 +839,13 @@ public class PaymentUtils {
 
 		/* If both buyer and seller is available for a particular BEG, Create Payment Item */
 		if(itemObj != null && buyerObj != null && sellerObj != null) {
-			/* Create the request object */
+
 			itemObj.put("buyer", buyerObj);
 			itemObj.put("seller", sellerObj);
 			itemObj.put("id", UUID.randomUUID().toString());
 
 			System.out.println("Item object ::"+itemObj);
 
-			/* Make the request to Assembly to create the item */
 			String itemCreationResponse;
 			try {
 				itemCreationResponse = PaymentEndpoint.createItem(JsonUtils.toJson(itemObj), assemblyauthToken);
@@ -815,17 +861,24 @@ public class PaymentUtils {
 				log.error("PAYMENT ITEM CREATION FAILED, ITEM/BUYER/SELLER OBJECT IS NULL, exception is handled");
 				itemId = null;
 			}
+
 		}
 
 		return itemId;
 	}
 
+
 	public static String getBegCode(String offerCode, String tokenString) {
-		return MergeUtil.getAttrValue(offerCode, "PRI_BEG_CODE", tokenString);
+
+		String begCode = null;
+		begCode = MergeUtil.getAttrValue(offerCode, "PRI_BEG_CODE", tokenString);
+
+		return begCode;
 	}
 
-	/* Saves an answer */
 	public static void saveAnswer(String qwandaServiceUrl, Answer answer, String token) {
+
+
 		try {
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), token);
 		} catch (IOException e) {
@@ -833,17 +886,20 @@ public class PaymentUtils {
 		}
 	}
 
-	/* Fetch the one time use Assembly card and bank tokens for a user */
-	public static String fetchOneTimeAssemblyToken(String qwandaServiceUrl, String userId, String tokenString, String assemblyId, String assemblyAuthToken, String type) {
+	public static String fetchOneTimeAssemblyToken(String qwandaServiceUrl, String userId, String tokenString, String assemblyId,
+			String assemblyAuthToken, String type)
+	{
 		String transactionToken = null;
 		JSONParser parser = new JSONParser();
 		JSONObject authenticationEntityObj = new JSONObject();
 
-		/* Check that an Assembly ID was provided before we continue */
+
 		if (assemblyId != null) {
+
 			String tokenResponse = null;
 
 			try {
+
 				authenticationEntityObj.put("type", type);
 				JSONObject userObj = new JSONObject();
 				userObj.put("id", assemblyId);
@@ -874,41 +930,86 @@ public class PaymentUtils {
 		return transactionToken;
 	}
 
+//	public static void saveTokenAnswers(String qwandaServiceUrl, String userId, String tokenString, String assemblyId,
+//			String assemblyAuthToken) {
+//
+//		JSONParser parser = new JSONParser();
+//
+//		if (assemblyId != null) {
+//
+//			String tokenResponse = null;
+//
+//			try {
+//				tokenResponse  = authenticatePaymentProvider(assemblyId, assemblyAuthToken);
+//
+//				if (!tokenResponse.contains("error")) {
+//
+//					try {
+//						JSONObject tokenObj = (JSONObject) parser.parse(tokenResponse);
+//						System.out.println("token object ::" + tokenObj);
+//
+//						String providerToken = tokenObj.get("token").toString();
+//
+//						Answer cardTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_CARD_TOKEN", providerToken);
+//						saveAnswer(qwandaServiceUrl, cardTokenAnswer, tokenString);
+//
+//						Answer bankTokenAnswer = new Answer(userId, userId, "PRI_ASSEMBLY_BANK_TOKEN", providerToken);
+//						saveAnswer(qwandaServiceUrl, bankTokenAnswer, tokenString);
+//
+//					} catch (ParseException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			} catch (Exception e) {
+//				log.error("PaymentUtils Exception occured during Payment authentication Token provision");
+//			}
+//		} else {
+//			log.error("ASSEMBLY USER ID IS NULL");
+//		}
+//
+//	}
+//
+
 	@SuppressWarnings("unchecked")
 	private static String authenticatePaymentProvider(String assemblyId, String assemblyAuthToken) throws PaymentException {
+
 		JSONObject paymentProviderObj = new JSONObject();
 		JSONObject userObj = new JSONObject();
+
 		userObj.put("id", assemblyId);
+
 		paymentProviderObj.put("type", PROVIDER_TYPE_BANK);
 		paymentProviderObj.put("user", userObj);
+
 		String tokenResponse = null;
+
 		tokenResponse = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(paymentProviderObj), assemblyAuthToken);
+
+
 		return tokenResponse;
 	}
 
-	/* Creates a new fee in Assembly from a offer base entity */
+
 	@SuppressWarnings("unchecked")
 	public static String getPaymentFeeId(BaseEntity offerBe, String assemblyAuthToken) {
-		/* Create a new JSON parser */
+
 		JSONParser parser = new JSONParser();
 		String feeId = null;
 
-		/* Get the fee amount from the base entity */
+		// Object fee = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_FEE");
 		String begFeeString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
 
-		/* If the fee amount is empty don't do anything */
 		if (begFeeString != null) {
 			System.out.println("begpriceString ::" + begFeeString);
 
-			/* Convert the amount to a string and then to a BigDecimal */
 			String amount = QwandaUtils.getAmountAsString(begFeeString);
+
 			BigDecimal begPrice = new BigDecimal(amount);
 
 			// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
 			BigDecimal finalFee = begPrice.multiply(new BigDecimal(100));
 			System.out.println("fees for feeId creation in Assembly::" + finalFee);
 
-			/* Create the request object */
 			JSONObject feeObj = new JSONObject();
 			feeObj.put("name", "Channel40 fee");
 			feeObj.put("type", 1);
@@ -918,7 +1019,6 @@ public class PaymentUtils {
 			feeObj.put("max", null);
 			feeObj.put("to", "buyer");
 
-			/* Attempt to create the fee in Assembly */
 			String feeResponse;
 			try {
 				feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), assemblyAuthToken);
@@ -931,20 +1031,25 @@ public class PaymentUtils {
 						feeId = feeResponseObj.get("id").toString();
 						return feeId;
 					}
+
 				}
+
 			} catch (PaymentException e1) {
 				log.error("Exception occured during Payment Fee creation");
 				e1.printStackTrace();
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
+
 		}
 
-		/* Return the fee ID */
 		return feeId;
+
 	}
 
+
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
+
 		Boolean isAnswerContainsPaymentAttribute = false;
 
 		if(m != null) {
@@ -961,10 +1066,14 @@ public class PaymentUtils {
 		return isAnswerContainsPaymentAttribute;
 	}
 
+
+
 	public static String processPaymentAnswers(String qwandaServiceUrl, QDataAnswerMessage m, String tokenString) {
+
 		String begCode = null;
 
 		try {
+
 			System.out.println("----> Payments attributes Answers <------");
 
 			String userCode = QwandaUtils.getUserCode(tokenString);
@@ -1016,7 +1125,224 @@ public class PaymentUtils {
 		return begCode;
 	}
 
-	/* Returns the payment method for a user and account ID */
+	/*@SuppressWarnings("unchecked")
+	public static Boolean makePayment(String qwandaUrl, String offerCode, String begCode, String authToken, String tokenString) {
+
+		System.out.println("inside make payment");
+		Boolean isMakePaymentSuccess = false;
+		String userCode = QwandaUtils.getUserCode(tokenString);
+		BaseEntity userBe = MergeUtil.getBaseEntityForAttr(userCode, tokenString);
+		BaseEntity begBe = MergeUtil.getBaseEntityForAttr(begCode, tokenString);
+		BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, tokenString);
+		String paymentResponse = null;
+		Object ipAddress = MergeUtil.getBaseEntityAttrObjectValue(userBe, "PRI_IP_ADDRESS");
+		Object deviceId = MergeUtil.getBaseEntityAttrObjectValue(userBe, "PRI_DEVICE_ID");
+		Object itemId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ITEM_ID");
+		Object accountId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ACCOUNT_ID");
+
+		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
+		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
+		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
+		JSONObject paymentObj = new JSONObject();
+		JSONObject accountObj = null;
+		String paymentType = null;
+		if (itemId != null) {
+			paymentObj.put("id", itemId);
+			System.out.println("item is in make payment not null");
+		} else {
+			log.error("Make Payment - Item ID is NULL");
+			try {
+				throw new PaymentException("Item ID is null, so Make payment will not succeed");
+			} catch (PaymentException e) {
+				isMakePaymentSuccess = false;
+			}
+		}
+		if (accountId != null) {
+			accountObj = new JSONObject();
+			accountObj.put("id", accountId);
+
+			paymentType = getPaymentMethodType(userBe, accountId);
+
+			System.out.println("account id in make payment not null");
+		} else {
+			log.error("Make payment - accound Id is NULL");
+			try {
+				throw new PaymentException("Account ID is null, so Make payment will not succeed");
+			} catch (PaymentException e) {
+				isMakePaymentSuccess = false;
+			}
+		}
+		if (accountObj != null) {
+			paymentObj.put("account", accountObj);
+		}
+		if (ipAddress != null) {
+			System.out.println("ip address in make payment not null");
+			paymentObj.put("ipAddress", ipAddress);
+		} else {
+			log.error("Make payment - IP ADDRESS is NULL");
+			try {
+				throw new PaymentException("IP Address is null, so Make payment will not succeed");
+			} catch (PaymentException e) {
+				isMakePaymentSuccess = false;
+			}
+		}
+		if (deviceId != null) {
+			System.out.println("device id in make payment not null");
+			paymentObj.put("deviceID", deviceId);
+		} else {
+			log.error("Make payment - DEVICE ID is NULL");
+			try {
+				throw new PaymentException("deviceID is null, so Make payment will not succeed");
+			} catch (PaymentException e) {
+				isMakePaymentSuccess = false;
+			}
+		}
+		if (paymentObj.get("id") != null) {
+			System.out.println("payment obj not null");
+			if (paymentType != null && paymentType.equals("BANK_ACCOUNT")) {
+				System.out.println("Bank account..Need to be authorized to make payment");
+				 Add Call to Matt's direct debit API
+				Boolean debitAuthorityResponse = getDebitAuthority(offerBe, begBe, accountId, authToken);
+
+				if(debitAuthorityResponse) {
+					log.debug("Make payment object ::" + paymentObj.toJSONString());
+					try {
+						paymentResponse = PaymentEndpoint.makePayment(itemId.toString(), JsonUtils.toJson(paymentObj),
+								authToken);
+						log.debug("Make payment response ::" + paymentResponse);
+						if (!paymentResponse.contains("error")) {
+							isMakePaymentSuccess = true;
+
+							 Saving deposit reference as an answer to beg
+							saveDepositReference(qwandaUrl, paymentResponse, userCode, begCode, tokenString);
+
+						}
+					} catch (PaymentException e) {
+
+						log.error("Exception occured during making payment with " + paymentType);
+						String errorMessage = e.getMessage();
+						log.error("error message ::"+errorMessage);
+
+						 When make payment API is getting accessed more than once for an item
+						if(errorMessage.contains("payment is already made")) {
+							isMakePaymentSuccess = true;
+						} else {
+							isMakePaymentSuccess = false;
+						}
+
+					}
+				} else {
+					isMakePaymentSuccess = false;
+				}
+
+			} else if (paymentType != null && paymentType.equals("CARD")) {
+				System.out.println("Credit card payment");
+				try {
+					paymentResponse = PaymentEndpoint.makePayment(itemId.toString(), JsonUtils.toJson(paymentObj),
+							authToken);
+					log.debug("Make payment response ::" + paymentResponse);
+					if (!paymentResponse.contains("error")) {
+						isMakePaymentSuccess = true;
+
+						 Save deposit reference as an answer to beg
+						saveDepositReference(qwandaUrl, paymentResponse, userCode, begCode, tokenString);
+					}
+				} catch (PaymentException e) {
+
+
+					log.error("Exception occured during making payment with " + paymentType);
+					String errorMessage = e.getMessage();
+					log.error("error message ::"+errorMessage);
+
+					 When make payment API is getting accessed more than once for an item
+					if(errorMessage.contains("payment is already made")) {
+						isMakePaymentSuccess = true;
+					} else {
+						isMakePaymentSuccess = false;
+					}
+
+				}
+			}
+			return isMakePaymentSuccess;
+		} else {
+			try {
+				throw new PaymentException("Item ID is null, so Make Payment will not succeed");
+			} catch (PaymentException e) {
+				e.printStackTrace();
+			}
+		}
+		return isMakePaymentSuccess;
+	}
+
+	private static void saveDepositReference(String qwandaServiceUrl, String paymentResponse, String userCode, String begCode,
+			String tokenString) {
+
+		JSONObject depositReference = JsonUtils.fromJson(paymentResponse, JSONObject.class);
+		String depositReferenceId = depositReference.get("depositReference").toString();
+
+		Answer answer = new Answer(userCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", depositReferenceId);
+		saveAnswer(qwandaServiceUrl, answer, tokenString);
+
+	}
+	private static Boolean getDebitAuthority(BaseEntity offerBe, BaseEntity begBe, Object accountId, String authToken) {
+
+		Boolean isDebitAuthority = false;
+		String getDebitAuthorityResponse = null;
+		String offerOwnerPriceString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
+		System.out.println("begpriceString ::" + offerOwnerPriceString);
+		String amount = null;
+		if(offerOwnerPriceString != null) {
+			System.out.println("begPriceString is not null");
+			JSONObject moneyobj = JsonUtils.fromJson(offerOwnerPriceString, JSONObject.class);
+			amount = moneyobj.get("amount").toString();
+
+			if(amount != null) {
+				System.out.println("amount is not null");
+				BigDecimal begPrice = new BigDecimal(amount);
+				// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
+				BigDecimal finalPrice = begPrice.multiply(new BigDecimal(100));
+
+				JSONObject debitAuthorityObj = new JSONObject();
+				JSONObject accountObj = new JSONObject();
+
+				{
+					  "account": {
+					    "id": "dkjgsxdkfesw345fidsfdsf"
+					  },
+					  "amount": 1000
+					}
+
+				accountObj.put("id", accountId);
+				debitAuthorityObj.put("amount", finalPrice.toString());
+				debitAuthorityObj.put("account", accountObj);
+
+				try {
+					getDebitAuthorityResponse = PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(debitAuthorityObj), authToken);
+					if(!getDebitAuthorityResponse.contains("error")) {
+						isDebitAuthority = true;
+					}
+				} catch (PaymentException e) {
+					isDebitAuthority = false;
+					log.error("Exception occured during debit authorization, Make Payment will not succeed");
+					e.printStackTrace();
+				}
+
+
+			} else {
+				isDebitAuthority = false;
+				log.error("AMOUNT IS NULL");
+			}
+
+
+		} else {
+			isDebitAuthority = false;
+			log.error("PRI_DRIVER_PRICE_INC_GST IS NULL");
+		}
+
+		return isDebitAuthority;
+	}*/
+
 	private static String getPaymentMethodType(BaseEntity userBe, Object accountId) {
 
 		System.out.println("in getPaymentMethodType method");
@@ -1040,14 +1366,13 @@ public class PaymentUtils {
 
 	}
 
-	/* Releases a payment from escrow */
 	public static Boolean releasePayment(String begCode, String authToken, String tokenString) {
+
 		Boolean isReleasePaymentSuccess = false;
 		System.out.println("BEG Code for release payment ::"+begCode);
 		BaseEntity begBe = MergeUtil.getBaseEntityForAttr(begCode, tokenString);
-		String paymentResponse = null;
 
-		/* Get the Assembly item ID */
+		String paymentResponse = null;
 		Object itemId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ITEM_ID");
 
 		if(itemId != null) {
@@ -1075,30 +1400,43 @@ public class PaymentUtils {
 		return isReleasePaymentSuccess;
 	}
 
-	/* Sets the disbursement account for a user */
+
+	/*public static String publishBaseEntityByCode(final String be, String token) {
+
+
+		String[] recipientArray = new String[1];
+		recipientArray[0] = be;
+		BaseEntity item = MergeUtil.getBaseEntityForAttr(be, token);
+		BaseEntity[]  itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, null,
+			      null);
+
+		msg.setRecipientCodeArray(recipientArray);
+		msg.setToken(token);
+		String msgStr = JsonUtils.toJson(msg);
+		return msgStr;
+
+	}*/
+
 	@SuppressWarnings("unchecked")
 	public static String disburseAccount(String assembyUserId, String paymentMethodString, String authToken) {
 
 		String disburseAccountResponse = null;
 
-		/* Check that both an Assembly user ID and payment method details are provided */
 		if(assembyUserId != null && paymentMethodString != null) {
 
 			System.out.println( "Payment account method string is not null");
 
-			/* Convert the JSON string into a JSON Object */
 			JSONObject paymentMethodObj = JsonUtils.fromJson(paymentMethodString, JSONObject.class);
-
-			/* Get the ID of the payment method (that's all we'll need) */
 			String paymentAccountId = paymentMethodObj.get("id").toString();
 
-			/* Create the request body */
 			JSONObject disburseAccObj = new JSONObject();
+
 			JSONObject accObj = new JSONObject();
 			accObj.put("id", paymentAccountId);
 			disburseAccObj.put("account", accObj);
 
-			/* Attempt to set the disbursement account for this user */
 			try {
 				disburseAccountResponse = PaymentEndpoint.disburseAccount(assembyUserId, JsonUtils.toJson(disburseAccObj), authToken);
 				System.out.println("disburse payment response ::"+disburseAccountResponse);
@@ -1107,8 +1445,8 @@ public class PaymentUtils {
 				log.error("disburse payment response ::"+disburseAccountResponse);
 				e.printStackTrace();
 			}
+
 		} else {
-			/* No Assembly user ID was provided, throw an error */
 			try {
 				throw new PaymentException("Payment Disimbursement failed because of null values, assemblyUserId ::"+assembyUserId+", payment method string ::"+paymentMethodString);
 			} catch (PaymentException e) {
@@ -1184,27 +1522,27 @@ public class PaymentUtils {
 		return assemblyUserId;
 	}
 
-	/* Fully updates a user in Assembly */
 	public static String updateCompleteUserProfile(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+
 		String responseString = null;
 
-		/* Get all of the users information */
 		String firstName = userBe.getValue("PRI_FIRSTNAME", null);
 		String lastName = userBe.getValue("PRI_LASTNAME", null);
 		Object dob = userBe.getValue("PRI_DOB", null);
-		String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+
+		String addressLine1 = userBe.getValue("PRI_ADDRESS_FULL", null);
+		String addressLine2 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
 		String city = userBe.getValue("PRI_ADDRESS_SUBURB", null);
 		String state = userBe.getValue("PRI_ADDRESS_STATE", null);
 		String country = userBe.getValue("PRI_ADDRESS_COUNTRY", null);
 		String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
 
-		/* Create objects to store the request */
+
 		JSONObject userObj = new JSONObject();
 		JSONObject personalInfoObj = new JSONObject();
 		JSONObject contactInfoObj = null;
 		JSONObject locationObj = null;
 
-		/* Set the ID and other fields if they are provided and not null */
 		userObj.put("id", assemblyUserId);
 
 		if(firstName != null) {
@@ -1215,8 +1553,8 @@ public class PaymentUtils {
 			personalInfoObj.put("lastName", lastName);
 		}
 
-		/* If the date of birth is provided format it correctly */
 		if(dob != null) {
+
 			DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			LocalDate date = LocalDate.parse(dob.toString(), formatter);
@@ -1225,10 +1563,15 @@ public class PaymentUtils {
 			personalInfoObj.put("dob", formattedDOBString);
 		}
 
-		/* If the address is provided set it */
+
 		if(addressLine1 != null) {
+
 			locationObj = new JSONObject();
 			locationObj.put("addressLine1", addressLine1);
+
+			if(addressLine2 != null) {
+				locationObj.put("addressLine2", addressLine2);
+			}
 
 			if(city != null) {
 				locationObj.put("city", city);
@@ -1251,7 +1594,9 @@ public class PaymentUtils {
 
 		userObj.put("personalInfo", personalInfoObj);
 
-		/* Attempt to update the user in Assembly */
+
+
+
 		if(userObj != null && assemblyUserId != null) {
 			try {
 				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
@@ -1263,40 +1608,43 @@ public class PaymentUtils {
 		}
 
 		return responseString;
+
 	}
 
-	/* Update a complete company profile */
 	public static String updateCompleteCompanyProfile(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
-		/* Create objects to store the request */
+
 		String responseString = null;
 		JSONObject companyObj = new JSONObject();
 		JSONObject userObj = new JSONObject();
 		JSONObject contactInfoObj = null;
 		JSONObject locationObj = null;
 
-		/* Get the companies assembly ID */
 		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
 
-		/* Get the companies information */
 		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
 		String abn = companyBe.getValue("PRI_ABN", null);
 		Object acn = companyBe.getValue("PRI_ACN", null);
 		Object gst = companyBe.getValue("PRI_GST", null);
+
+		System.out.println("GST ::"+gst );
+
 		String companyPhone = companyBe.getValue("PRI_LANDLINE", null);
-		String addressLine1 = companyBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+
+
+		String addressLine1 = companyBe.getValue("PRI_ADDRESS_FULL", null);
+		String addressLine2 = companyBe.getValue("PRI_ADDRESS_ADDRESS1", null);
 		String city = companyBe.getValue("PRI_ADDRESS_SUBURB", null);
 		String state = companyBe.getValue("PRI_ADDRESS_STATE", null);
 		String country = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
 		String postCode = companyBe.getValue("PRI_ADDRESS_POSTCODE", null);
 
-		/* Check that the Assembly ID was provided */
 		if(assemblyUserId != null) {
 			System.out.println("assembly user id is not null, user ::"+companyObj);
 			userObj.put("id", assemblyUserId);
 			companyObj.put("user", userObj);
 		}
 
-		/* Updated all the other provided fields */
+
 		if(companyName != null) {
 			companyObj.put("name", companyName);
 			companyObj.put("legalName", companyName);
@@ -1314,15 +1662,20 @@ public class PaymentUtils {
 
 
 		if(companyPhone != null) {
+
 			contactInfoObj = new JSONObject();
 			contactInfoObj.put("phone", companyPhone);
 			companyObj.put("contactInfo", contactInfoObj);
 		}
 
-		/* If an address was provided set all the address fields */
 		if(addressLine1 != null) {
+
 			locationObj = new JSONObject();
 			locationObj.put("addressLine1", addressLine1);
+
+			if(addressLine2 != null) {
+				locationObj.put("addressLine2", addressLine2);
+			}
 
 			if(city != null) {
 				locationObj.put("city", city);
@@ -1343,7 +1696,7 @@ public class PaymentUtils {
 			companyObj.put("location", locationObj);
 		}
 
-		/* Attempt to update the company in Assembly */
+
 		if(companyId != null && companyObj != null) {
 			System.out.println("updating company object in assembly ::"+companyObj);
 			try {
@@ -1355,10 +1708,11 @@ public class PaymentUtils {
 		}
 
 		return responseString;
+
 	}
 
-	/* Returns true of false depending on whether the payment method provided is a bank account */
 	public static Boolean isBankAccount(String bankPaymentString) {
+
 		Boolean isBankAccount = false;
 		JSONObject paymentMethodObj = JsonUtils.fromJson(bankPaymentString, JSONObject.class);
 
@@ -1370,30 +1724,31 @@ public class PaymentUtils {
 		return isBankAccount;
 	}
 
-	/* Deletes a bank account */
 	public static void deleteBankAccount(String bankAccountId, String authKey) {
+
 		try {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
 		} catch (PaymentException e) {
 			e.printStackTrace();
 		}
+
 	}
 
-	/* Deletes a credit card */
 	public static void deleteCard(String cardAccountId, String authKey) {
+
 		try {
 			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
 		} catch (PaymentException e) {
 			e.printStackTrace();
 		}
+
 	}
 
-	/* Makes a payment */
 	@SuppressWarnings("unchecked")
 	public static PaymentsResponse makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken) {
+
 		System.out.println("inside make payment");
 
-		/* Get the required fields */
 		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
 		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
 		String itemId = begBe.getValue("PRI_ITEM_ID", null);
@@ -1406,9 +1761,8 @@ public class PaymentUtils {
 		JSONObject accountObj = null;
 		String paymentType = null;
 
-		/* Check that an item ID was provided */
 		if (itemId != null) {
-			/* Set the fields in the request if they were provided */
+
 			paymentObj.put("id", itemId);
 
 			if(deviceId != null) {
@@ -1436,12 +1790,18 @@ public class PaymentUtils {
 				System.out.println("account Id is null");
 			}
 
-			/* Check the type of the account that has been selected and pay with that */
 			if (paymentType != null && paymentType.equals("BANK_ACCOUNT")) {
+
 				makepaymentResponse = makePaymentWithBankAccount(paymentType, userBe, offerBe, begBe, paymentObj, authToken);
+
+
 			} else if (paymentType != null && paymentType.equals("CARD")) {
+
 				makepaymentResponse = makePaymentWithCardResponse(paymentType, userBe, offerBe, begBe, paymentObj, authToken);
+
+
 			} else {
+
 				makepaymentResponse.setIsSuccess(false);
 				makepaymentResponse.setMessage("Unknown payment method type");
 				responseMap.put("depositReferenceId", null);
@@ -1449,8 +1809,8 @@ public class PaymentUtils {
 			}
 
 			return makepaymentResponse;
+
 		} else {
-			/* An item ID wasn't provided throw an error */
 			makepaymentResponse.setIsSuccess(false);
 			makepaymentResponse.setMessage("Item creation for transaction has failed. "+CONTACT_ADMIN_TEXT);
 			responseMap.put("depositReferenceId", null);
@@ -1460,9 +1820,8 @@ public class PaymentUtils {
 		return makepaymentResponse;
 	}
 
-	/* Attempts to make a payment with a card */
 	private static PaymentsResponse makePaymentWithCardResponse(String paymentType, BaseEntity userBe,
-	BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
+			BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
 
 		System.out.println("Credit card payment");
 		PaymentsResponse makepaymentResponse = new PaymentsResponse();
@@ -1473,7 +1832,7 @@ public class PaymentUtils {
 
 		try {
 			paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(paymentObj),
-			authToken);
+					authToken);
 			log.debug("Make payment response ::" + paymentResponse);
 			if (!paymentResponse.contains("error")) {
 				isMakePaymentSuccess = true;
@@ -1519,9 +1878,8 @@ public class PaymentUtils {
 		return makepaymentResponse;
 	}
 
-	/* Attempts to make a payment with a bank account */
 	private static PaymentsResponse makePaymentWithBankAccount(String paymentType, BaseEntity userBe,
-	BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
+			BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
 
 		System.out.println("Bank account..Need to be authorized to make payment");
 
@@ -1538,7 +1896,7 @@ public class PaymentUtils {
 			log.debug("Make payment object ::" + paymentObj.toJSONString());
 			try {
 				paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(paymentObj),
-				authToken);
+						authToken);
 				log.debug("Make payment response ::" + paymentResponse);
 				if (!paymentResponse.contains("error")) {
 					isMakePaymentSuccess = true;
@@ -1605,14 +1963,20 @@ public class PaymentUtils {
 		return makepaymentResponse;
 	}
 
-	/* Returns the despoit reference from a payment response */
 	private static String getDepositReference(String paymentResponse, String userCode, String begCode) {
+
 		JSONObject depositReference = JsonUtils.fromJson(paymentResponse, JSONObject.class);
-		return depositReference.get("depositReference").toString();
+		String depositReferenceId = depositReference.get("depositReference").toString();
+
+		/*Answer answer = new Answer(userCode, begCode, "PRI_DEPOSIT_REFERENCE_ID", depositReferenceId);
+		saveAnswer(qwandaServiceUrl, answer, tokenString);*/
+
+		return depositReferenceId;
+
 	}
 
-	/* Creates a direct debit authority */
 	private static PaymentsResponse getDebitAuthorityWithResponse(BaseEntity offerBe, BaseEntity begBe, Object accountId, String authToken) {
+
 		Boolean isDebitAuthority = false;
 		String getDebitAuthorityResponse = null;
 		String offerOwnerPriceString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
@@ -1661,7 +2025,10 @@ public class PaymentUtils {
 					debitAuthorityResponse.setResponseMap(responseMap);
 
 				}
+
+
 			}
+
 		} else {
 			isDebitAuthority = false;
 			log.error("PRI_DRIVER_PRICE_INC_GST IS NULL");
@@ -1676,7 +2043,8 @@ public class PaymentUtils {
 		return debitAuthorityResponse;
 	}
 
-	/* Releases a payment */
+
+
 	public static PaymentsResponse releasePaymentWithResponse(BaseEntity begBe, String authToken) {
 
 		Boolean isReleasePaymentSuccess = false;
@@ -1715,16 +2083,16 @@ public class PaymentUtils {
 	}
 
 	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
-		
+
 		String responseString = null;
-		
+
 		String phoneNumber = userBe.getValue("PRI_MOBILE", null);
-			
+
 		JSONObject userObj = new JSONObject();
 		JSONObject contactInfoObj = null;
-		
+
 		userObj.put("id", assemblyUserId);
-	
+
 		if(phoneNumber != null) {
 			contactInfoObj = new JSONObject();
 				;
@@ -1739,67 +2107,67 @@ public class PaymentUtils {
 				log.error("Exception occured during phone updation");
 			}
 		}
-		
+
 		return responseString;
-		
+
 	}
 
 	//offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
 	public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
 		Boolean isAssemblyItemValid = false;
 		String itemResponse = null;
-		
+
 		try {
 			itemResponse = PaymentEndpoint.getAssemblyPaymentItem(itemId, assemblyAuthKey);
-			
+
 			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
-			
+
 			//Get all values for "items" key
 			Map<String, Object> itemDescObj = (Map<String, Object>) itemResponseObj.get("items");
-			
+
 			Double itemPrice = (Double) itemDescObj.get("amount");
 			System.out.println("item price ::"+itemPrice);
-			
+
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
 			String driverEmail = driverBe.getValue("PRI_EMAIL", null);
-			
+
 			/* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
-			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);		
+			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
 			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
-			
+
 			/* convert into cents */
 			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
 
 			Map<String, Object> buyerOwnerInfo = (Map<String, Object>) itemDescObj.get("buyer");
 			Map<String, Object> ownerContactInfo = (Map<String, Object>) buyerOwnerInfo.get("contactInfo");
-			
+
 			Map<String, Object> sellerDriverInfo = (Map<String, Object>) itemDescObj.get("seller");
 			Map<String, Object> driverContactInfo = (Map<String, Object>) sellerDriverInfo.get("contactInfo");
-				
+
 			Boolean isOwnerEmail = ownerContactInfo.get("email").equals(ownerEmail);
 			System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
-			
+
 			Boolean isDriverEmail = driverContactInfo.get("email").equals(driverEmail);
 			System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
-			
+
 			Boolean isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
 			System.out.println("Is price attribute for item equal ?"+isPriceEqual);
-			
+
 			if(ownerContactInfo.get("email").equals(ownerEmail) && driverContactInfo.get("email").equals(driverEmail) && Double.compare(calculatedItemPriceInCents, itemPrice) == 0) {
-				
+
 				isAssemblyItemValid = true;
 			} else {
 				isAssemblyItemValid = false;
 			}
 
-			
+
 		} catch (PaymentException e) {
 			isAssemblyItemValid = false;
 		}
-		
-		
+
+
 		return isAssemblyItemValid;
 	}
-	
+
 
 }
