@@ -29,6 +29,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mortbay.util.ajax.JSON;
 
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
@@ -1750,36 +1751,42 @@ public class PaymentUtils {
 		
 		try {
 			itemResponse = PaymentEndpoint.getAssemblyPaymentItem(itemId, assemblyAuthKey);
-			System.out.println("item response ::"+itemResponse);
 			
 			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
+			
+			//Get all values for "items" key
+			Map<String, Object> itemDescObj = (Map<String, Object>) itemResponseObj.get("items");
+			
+			Double itemPrice = (Double) itemDescObj.get("amount");
+			System.out.println("item price ::"+itemPrice);
 			
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
 			String driverEmail = driverBe.getValue("PRI_EMAIL", null);
 			
-			Money ownerPriceIncGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-			Money feeExcGST = offerBe.getValue("PRI_OFFER_FEE_EXC_GST", null);
-			
-			Money calculatedItemPrice = MoneyHelper.sub(ownerPriceIncGST, feeExcGST);
+			/* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
+			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);		
+			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
 			
 			/* convert into cents */
-			Money calculateItemPriceInCents = MoneyHelper.mul(calculatedItemPrice, 100);
-			System.out.println("calculated item price in cents ::"+calculateItemPriceInCents);
+			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
+
+			Map<String, Object> buyerOwnerInfo = (Map<String, Object>) itemDescObj.get("buyer");
+			Map<String, Object> ownerContactInfo = (Map<String, Object>) buyerOwnerInfo.get("contactInfo");
 			
-			JSONObject ownerObj = (JSONObject) itemResponseObj.get("buyer");
-			JSONObject ownerContactObj = (JSONObject) ownerObj.get("contactInfo");
-			System.out.println("owner email"+ownerContactObj.get("email"));
-			String itemOwner = (String) ownerContactObj.get("email");
+			Map<String, Object> sellerDriverInfo = (Map<String, Object>) itemDescObj.get("seller");
+			Map<String, Object> driverContactInfo = (Map<String, Object>) sellerDriverInfo.get("contactInfo");
+				
+			Boolean isOwnerEmail = ownerContactInfo.get("email").equals(ownerEmail);
+			System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
 			
-			JSONObject driverObj = (JSONObject) itemResponseObj.get("seller");
-			JSONObject driverContactObj = (JSONObject) driverObj.get("contactInfo");
-			System.out.println("driver email"+driverContactObj.get("email"));
-			String itemDriver = (String) driverContactObj.get("email");
+			Boolean isDriverEmail = driverContactInfo.get("email").equals(driverEmail);
+			System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
 			
-			Double itemPrice = (Double) itemResponseObj.get("amount");
-			System.out.println("item price ::"+itemPrice);
+			Boolean isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
+			System.out.println("Is price attribute for item equal ?"+isPriceEqual);
 			
-			if(itemOwner.equals(ownerEmail) && itemDriver.equals(driverEmail) && calculateItemPriceInCents.getNumber().doubleValue() == itemPrice) {
+			if(ownerContactInfo.get("email").equals(ownerEmail) && driverContactInfo.get("email").equals(driverEmail) && Double.compare(calculatedItemPriceInCents, itemPrice) == 0) {
+				
 				isAssemblyItemValid = true;
 			} else {
 				isAssemblyItemValid = false;

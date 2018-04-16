@@ -3151,48 +3151,49 @@ public class QRules {
 
 					/* GET all the driver subsribers */
 					String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-					println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
-					println("quoter code ::" + quoterCode);
+					
+					if(begRecipients != null) {
+						println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
+						println("quoter code ::" + quoterCode);
+						
+						Set<String> unsubscribeSet = new HashSet<>();
 
-					Set<String> unsubscribeSet = new HashSet<>();
-
-					for (String begRecipient : begRecipients) {
-						if (!begRecipient.equals(quoterCode)) {
-							unsubscribeSet.add(begRecipient);
+						for (String begRecipient : begRecipients) {
+							if (!begRecipient.equals(quoterCode)) {
+								unsubscribeSet.add(begRecipient);
+							}
 						}
+
+						println("unsubscribe set ::" + unsubscribeSet);
+						
+						String[] unsubscribeArr = new String[unsubscribeSet.size()];
+
+						int i = 0;
+						for (String code : unsubscribeSet) {
+							unsubscribeArr[i++] = code;
+						}
+						
+						println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
+
+						/* Move BEG to GRP_APPROVED */
+						fastClearBaseEntity(begCode, unsubscribeArr);
+						
+						BaseEntity begbe = getBaseEntityByCode(begCode);
+						println("be   ::   " + begbe);
+
+						Set<EntityAttribute> attributes = begbe.getBaseEntityAttributes();
+						begbe.setBaseEntityAttributes(attributes);
+
+						QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begbe);
+						beMsg.setDelete(true);
+						publishData(beMsg, unsubscribeArr);
+						
+						VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
 					}
-
-					println("unsubscribe set ::" + unsubscribeSet);
-
-					String[] unsubscribeArr = new String[unsubscribeSet.size()];
-
-					int i = 0;
-					for (String code : unsubscribeSet) {
-						unsubscribeArr[i++] = code;
-					}
-
-					println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
-
-					/* Move BEG to GRP_APPROVED */
-					fastClearBaseEntity(begCode, unsubscribeArr);
-
-					BaseEntity begbe = getBaseEntityByCode(begCode);
-					println("be   ::   " + begbe);
-
-					Set<EntityAttribute> attributes = begbe.getBaseEntityAttributes();
-					begbe.setBaseEntityAttributes(attributes);
-
-					QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begbe);
-					beMsg.setDelete(true);
-					publishData(beMsg, unsubscribeArr);
-
-					VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
+					
+					
 					moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
 
-					// publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE",
-					// newbegRecipients);
-					// publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE",
-					// newbegRecipients);
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
