@@ -1,6 +1,13 @@
 package life.genny.rules;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import life.genny.qwanda.attribute.AttributeInteger;
+import life.genny.qwanda.attribute.AttributeText;
+import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.QRules;
 
 
@@ -18,9 +25,22 @@ rule "TV_SELECT event handling"
      rules.setState("TV_SELECT_HANDLED");
 
      String code = $m.getData().getValue();
+     
+     String[] columnNames = {"PRI_IMAGE_URL", "PRI_FIRSTNAME", "PRI_LASTNAME", "PRI_MOBILE", "PRI_EMAIL"};
      if(code != null) {
-        rules.sendViewCmd("LIST_VIEW", code);
-        rules.setLastLayout( "LIST_VIEW", code );
+       
+    	 	//rules.sendViewCmd("TABLE_VIEW", code);
+        rules.setLastLayout( "TABLE_VIEW", code );
+        
+        JsonArray columnsArray = new JsonArray();
+        
+        for(String column: columnNames) {
+	        	JsonObject col = new JsonObject();
+	        	col.put("code", column);
+	    		columnsArray.add(col);
+        }
+
+		rules.sendTableViewWithHeaders(code, columnsArray);
      }
 
      rules.footer();
