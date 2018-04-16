@@ -9,10 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,6 +24,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
+import org.javamoney.moneta.Money;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -33,7 +32,6 @@ import org.json.simple.parser.ParseException;
 
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Link;
 import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
@@ -41,7 +39,6 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.rules.RulesUtils;
 
 public class PaymentUtils {
 
@@ -668,19 +665,15 @@ public class PaymentUtils {
 
 	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
-	public static String createPaymentItem(String offerCode, String BEGGroupCode, String assemblyauthToken, String token) {
+	public static String createPaymentItem(BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
 		/* Get the base entity information */
 		String itemId = null;
-		Map<String, BaseEntity> itemContextMap = QwandaUtils.getBaseEntWithChildrenForAttributeCode(BEGGroupCode, token);
-		BaseEntity begBe = MergeUtil.getBaseEntityForAttr(BEGGroupCode, token);
-		BaseEntity offerBe = MergeUtil.getBaseEntityForAttr(offerCode, token);
 
 		/* Create objects to store the request */
 		JSONObject itemObj = new JSONObject();
 		JSONObject buyerObj = null;
 		JSONObject sellerObj = null;
 
-		System.out.println("item context Map ::"+itemContextMap);
 		itemObj.put("paymentType", DEFAULT_PAYMENT_TYPE);
 
 		if (begBe != null) {
@@ -765,8 +758,7 @@ public class PaymentUtils {
 
 		/* Set the buyer for the item */
 		/* OWNER -> Buyer */
-		if(itemContextMap.containsKey("OWNER")) {
-			BaseEntity ownerBe = itemContextMap.get("OWNER");
+		if(ownerBe != null) {
 			System.out.println("Context map contains OWNER");
 
 			/* Check that an owner is actually set and if so use their Assembly user ID */
@@ -778,43 +770,23 @@ public class PaymentUtils {
 			/* No owner was specified, throw an error */
 			log.error("BEG CONTEXT MAP HAS NO OWNER LINK, SO BUYER OBJECT IS NULL");
 			try {
-				throw new PaymentException("Payment Item creation will not succeed since Beg has no owner link");
+				throw new PaymentException("Payment Item creation will not succeed since owner BE returned null");
 			} catch (PaymentException e) {
 			}
 		}
 		
 		/* DRIVER -> Seller */
-		if(offerBe != null ) {	
-
-			String quoterCode_driver = offerBe.getValue("PRI_QUOTER_CODE", null);
+		if(driverBe != null ) {	
 			
-			if(quoterCode_driver != null) {
-				BaseEntity confirmedDriverBe = MergeUtil.getBaseEntityForAttr(quoterCode_driver, token);
-				System.out.println("confirmed quoter-driver code ::"+confirmedDriverBe.getCode());
-				sellerObj = new JSONObject();
-				sellerObj.put("id", confirmedDriverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
-				
-			} else {
-				
-				/* PRI_QUOTER_CODE attribute returned null, so fetching driver from links of the offer */
-				System.out.println("PRI_QUOTER_CODE attribute returned null, so fetching driver from links of the offer");
-				String creatorCode = RulesUtils.getChildren(offerCode, "LNK_OFR", "CREATOR", token);
-				
-				if (creatorCode != null) {
-					
-					System.out.println("creator driver code ::"+creatorCode);
-					BaseEntity driverBe = MergeUtil.getBaseEntityForAttr(creatorCode, token);
-					
-					sellerObj = new JSONObject();
-					sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
-				} else {
-					try {
-						throw new PaymentException("Payment Item creation will not succeed since Beg has no driver");
-					} catch (PaymentException e) {
-						log.error("BEG CONTEXT MAP HAS NO DRIVER, SO SELLER OBJECT IS NULL");
-					}
-				}				
-			}		
+			sellerObj = new JSONObject();
+			sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
+		} else {
+			/* No driver was specified, throw an error */
+			log.error("SELLER OBJECT IS NULL");
+			try {
+				throw new PaymentException("Payment Item creation will not succeed since driver BE returned null");
+			} catch (PaymentException e) {
+			}
 		}
 
 		/* If both buyer and seller is available for a particular BEG, Create Payment Item */
@@ -1741,7 +1713,7 @@ public class PaymentUtils {
 		return releasePaymentResponse;
 	}
 
-public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
 		
 		String responseString = null;
 		
@@ -1754,7 +1726,7 @@ public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUse
 	
 		if(phoneNumber != null) {
 			contactInfoObj = new JSONObject();
-			contactInfoObj.put("mobile", phoneNumber);
+				;
 			userObj.put("contactInfo", contactInfoObj);
 		}
 
@@ -1771,6 +1743,56 @@ public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUse
 		
 	}
 
+	//offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
+	public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
+		Boolean isAssemblyItemValid = false;
+		String itemResponse = null;
+		
+		try {
+			itemResponse = PaymentEndpoint.getAssemblyPaymentItem(itemId, assemblyAuthKey);
+			System.out.println("item response ::"+itemResponse);
+			
+			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
+			
+			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
+			String driverEmail = driverBe.getValue("PRI_EMAIL", null);
+			
+			Money ownerPriceIncGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+			Money feeExcGST = offerBe.getValue("PRI_OFFER_FEE_EXC_GST", null);
+			
+			Money calculatedItemPrice = MoneyHelper.sub(ownerPriceIncGST, feeExcGST);
+			
+			/* convert into cents */
+			Money calculateItemPriceInCents = MoneyHelper.mul(calculatedItemPrice, 100);
+			System.out.println("calculated item price in cents ::"+calculateItemPriceInCents);
+			
+			JSONObject ownerObj = (JSONObject) itemResponseObj.get("buyer");
+			JSONObject ownerContactObj = (JSONObject) ownerObj.get("contactInfo");
+			System.out.println("owner email"+ownerContactObj.get("email"));
+			String itemOwner = (String) ownerContactObj.get("email");
+			
+			JSONObject driverObj = (JSONObject) itemResponseObj.get("seller");
+			JSONObject driverContactObj = (JSONObject) driverObj.get("contactInfo");
+			System.out.println("driver email"+driverContactObj.get("email"));
+			String itemDriver = (String) driverContactObj.get("email");
+			
+			Double itemPrice = (Double) itemResponseObj.get("amount");
+			System.out.println("item price ::"+itemPrice);
+			
+			if(itemOwner.equals(ownerEmail) && itemDriver.equals(driverEmail) && calculateItemPriceInCents.getNumber().doubleValue() == itemPrice) {
+				isAssemblyItemValid = true;
+			} else {
+				isAssemblyItemValid = false;
+			}
+
+			
+		} catch (PaymentException e) {
+			isAssemblyItemValid = false;
+		}
+		
+		
+		return isAssemblyItemValid;
+	}
 	
 
 }
