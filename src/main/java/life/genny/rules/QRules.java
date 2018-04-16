@@ -1531,18 +1531,39 @@ public class QRules {
 	 * Get user's company code
 	 */
 	public BaseEntity getParent(final String targetCode, final String linkCode) {
+		List<BaseEntity> parents = this.getParents(targetCode, linkCode);
+		if(parents != null && parents.size() > 0) {
+			return parents.get(0);
+		}
+
+		return null;
+	}
+
+	/*
+	 * Get user's company code
+	 */
+	public List<BaseEntity> getParents(final String targetCode, final String linkCode) {
 
 		try {
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
+				
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
-				Link first = arrayList.get(0);
-				RulesUtils.println("The parent code is   ::  " + first.getSourceCode());
-				return RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(),
-						first.getSourceCode(), false);
+				println("arrayList  :: " + arrayList);
+				ArrayList<BaseEntity> parents = new ArrayList<BaseEntity>();
+				for(Link lnk: arrayList) {
+					
+					BaseEntity linkedBe = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), lnk.getSourceCode(), false);
+					if(linkedBe != null) {
+						parents.add(linkedBe);
+					}
+				}
+
+				return parents;
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

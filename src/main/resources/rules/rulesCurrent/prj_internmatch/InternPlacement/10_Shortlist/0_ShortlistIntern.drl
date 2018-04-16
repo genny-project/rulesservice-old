@@ -25,6 +25,15 @@ rule "Shortlist Internship - Step 0"
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			rules.set("applicationBe", application);
 
+			List<BaseEntity> begs = rules.getParents(application.getCode(), "LNK_BEG");
+			rules.println("begs of applicatin is   ::   " +begs.size() );
+
+			/* for(BaseEntity beg : begs){
+				// get the newBeg parent of Application BE
+
+				// set the newBeg to map
+			} */
+
 			BaseEntity creator = rules.getChildren(beg.getCode(), "LNK_BEG", "CREATOR");
 			BaseEntity hostCompany = rules.getChildren(beg.getCode(), "LNK_BEG", "HOSTCOMPANY");
 			BaseEntity internship = rules.getChildren(beg.getCode(), "LNK_BEG", "INTERNSHIP");
@@ -60,7 +69,7 @@ rule "Shortlist Internship - Step 0"
 			rules.set("internBe", intern );
 			
 			rules.setState("SHORTLIST_INTERN_READY");            
-			rules.setState("CREATE_NEW_BEG");
+			rules.setState("MOVE_NEW_BEG_TO_SHORTLIST");
         }
 	 	rules.footer();      
 end
