@@ -3790,8 +3790,8 @@ public class QRules {
 			QBaseMSGAttachment attachment2 = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", "https://raw.githubusercontent.com/genny-project/layouts/master/email/templates/invoice-pdf-owner.html", true, "INVOICE");
 			attachmentList.add(attachment1);
 			attachmentList.add(attachment2);
-			
 
+			sendMessage("", userarr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL", attachmentList);		
 		}
 
 
@@ -4506,6 +4506,25 @@ public class QRules {
 	  	sendTableViewWithHeaders(reportCode, columnHeaders);
 
 	}
+	
+	//attachments
+		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+				if (recipientArray != null && recipientArray.length > 0) {
+
+					/* Adding project code to context */
+					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+					contextMap.put("PROJECT", projectCode);
+
+					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
+							recipientArray, attachmentList, getToken());
+					publish("messages", message);
+				} else {
+					log.error("Recipient array is null and so message cant be sent");
+				}
+
+		}
 
 	/*
 	 * Publish Search BE results
@@ -4562,23 +4581,5 @@ public class QRules {
 		return null;
 	}
 	
-	//attachments
-		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
-					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
-
-				if (recipientArray != null && recipientArray.length > 0) {
-
-					/* Adding project code to context */
-					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-					contextMap.put("PROJECT", projectCode);
-
-					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
-							recipientArray, attachmentList, getToken());
-					publish("messages", message);
-				} else {
-					log.error("Recipient array is null and so message cant be sent");
-				}
-
-		}
 
 }
