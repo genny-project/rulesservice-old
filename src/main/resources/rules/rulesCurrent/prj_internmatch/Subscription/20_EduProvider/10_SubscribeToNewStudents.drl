@@ -11,21 +11,28 @@ rule "Subscribe To Newly Registered Student"
 		rules.setState("LOOP_TRIGGER_SUBSCRIPTION_AFTER_REGISTRATION");
         
         BaseEntity eduProvider = rules.getParent(rules.getUser().getCode() , "LNK_EDU");
-		List<BaseEntity> eduProviderStaffs = rules.getChildrens(eduProvider.getCode(), "LNK_EDU", "STAFF");
-       
-        /* Recipients = EDU_PROVIDER staffs  */
-        String[] eduProviderStaffCodes = new String[eduProviderStaffs.size()];
-        if(eduProviderStaffs != null) {
-            
-            Integer counter = 0;
-            for(BaseEntity eduProviderStaff : eduProviderStaffs){
-                eduProviderStaffCodes[counter] = eduProviderStaff.getCode();
-			    rules.subscribeUserToBaseEntity(eduProviderStaff.getCode(), rules.getUser().getCode());
-                counter += 1;
-            }
-        }
+        if(eduProvider != null) {
+        		
+        		List<BaseEntity> eduProviderStaffs = rules.getChildrens(eduProvider.getCode(), "LNK_EDU", "STAFF");
+        		if(eduProviderStaffs != null) {
+        			
+        			 /* Recipients = EDU_PROVIDER staffs  */
+                    String[] eduProviderStaffCodes = new String[eduProviderStaffs.size()];
+                    if(eduProviderStaffCodes != null) {
+                        
+                        Integer counter = 0;
+                        for(BaseEntity eduProviderStaff : eduProviderStaffs){
+                        		eduProviderStaffCodes[counter] = eduProviderStaff.getCode();
+            			    	    rules.subscribeUserToBaseEntity(eduProviderStaff.getCode(), rules.getUser().getCode());
+                            counter += 1;
+                        }
+                    }
+                    
+                    rules.publishBaseEntityByCode(rules.getUser().getCode(), "GRP_INTERNS", "INTERN", eduProviderStaffCodes);
 
-        rules.publishBaseEntityByCode(rules.getUser().getCode(), "GRP_INTERNS", "INTERN", eduProviderStaffCodes);
+        		}
+        }
+		
 		rules.setState("SUBSCRIBED_TO_NEWLY_REGISTERED_STUDENTS");
 		rules.footer();     		      
 end
