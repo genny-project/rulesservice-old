@@ -80,6 +80,7 @@ rule "Create Payment Item"
        	} else {
        		/* Check if item already present is valid or not */
        		Boolean isItemValid = PaymentUtils.checkForAssemblyItemValidity(paymentItemId, offerBe, ownerBe, driverBe, assemblyAuthKey);
+       		rules.println("is item valid ::"+isItemValid);
        		
        		if(isItemValid) {
        			isNewItem = false;
