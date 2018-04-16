@@ -19,13 +19,14 @@ rule "Calculate Price for Driver"
     no-loop true
     when
         $m: QEventAttributeValueChangeMessage( data.code == "PRI_OFFER_DRIVER_PRICE_EXC_GST"  && getAnswer().getTargetCode().startsWith("OFR_") )
-        rules : QRules( isState("STARTED") && !isState("CALCULATE_DRIVER_PRICE") && getUser().is("PRI_DRIVER") )
+        rules : QRules( isState("STARTED") && !isState("CALCULATE_DRIVER_PRICE") )
     then    
     
         rules.header();
+        
         rules.setState("CALCULATE_DRIVER_PRICE");
         
-        		
+        if (rules.getUser().is("PRI_DRIVER") == true) {	
         		String tokenString = rules.getToken();
             Answer newAnswer = $m.getAnswer();
             /* BaseEntity Code */
@@ -118,6 +119,6 @@ rule "Calculate Price for Driver"
                 } else {
                 	rules.println("ERROR: Amount is dodgy- "+amountValue);
                 }
-
+		}
         rules.footer();
 end
