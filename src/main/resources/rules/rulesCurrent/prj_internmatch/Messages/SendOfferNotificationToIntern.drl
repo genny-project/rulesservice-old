@@ -1,0 +1,29 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send offer notification to Intern"
+	when
+		rules: QRules(  isState("INTERN_WAS_OFFERED_INTERNSHIP") && !isState("INTERN_NOTIFICATION_OFFER_LOOP") )
+	then
+	 	rules.header();
+ 		
+ 		rules.setState("INTERN_NOTIFICATION_OFFER_LOOP");
+ 		
+ 		//this is to grab a parameter from the previous rule
+ 		String internCode = rules.getAsString("internCode");
+ 		String begCode = rules.getAsString("begCode"); /* requires to create a PRI_CODE attribute */
+ 		
+ 		if(internCode != null) {
+ 		
+	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
+	        contextMap.put("INTERN", internCode);
+	        contextMap.put("HOST_COMPANY_REP", rules.getUser().getCode());
+	        contextMap.put("BEG", begCode);
+	        
+ 			String[] recipients = new String[1];
+ 			recipients[0] = rules.getUser().getCode();
+ 			rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_OFFER_INTERN", "EMAIL");
+ 		}
+	 	
+	 	rules.footer();      
+end
