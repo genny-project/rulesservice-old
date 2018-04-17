@@ -4,30 +4,36 @@
 // /* Sends ROOT */
 // rule "Send Application Data - INTERN" 
 //     when    
-//         rules: QRules(  isState("SEND_ROOT_KIDS_APPLICATION_DATA_INTERN") && 
-//                         isState("SENT_ROOT_APPLICATION_DATA_INTERN") && 
+//         rules: QRules(  isState("SEND_BUCKETS_INTERN") && 
+//                         isState("SENT_ROOT_KIDS_INTERN") && 
 //                         isState("PRI_IS_INTERN") && 
-//                         !isState("LOOP_SEND_APPLICATION_DATA_INTERN_STEP2") )
+//                         !isState("LOOP_SEND_BUCKETS_INTERN") )
 //      then
 //      	rules.header();
-//         rules.setState("LOOP_SEND_APPLICATION_DATA_INTERN_STEP2");
+//         rules.setState("LOOP_SEND_BUCKETS_INTERN");
 		
-// 		List<BaseEntity> rootKids = rules.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+// 		List<BaseEntity> rootKids = rules.getAsBaseEntityList("rootKidsList");
+// 		if(rootKids != null){
+
+// 		}
+//         List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 // 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 
 // 		/* Remove  GRP_DASHBOARD_EDU_PROVIDER from GRP_ROOT */
-// 		if(rootKids != null){
-// 			for (BaseEntity rootKid : rootKids) {
-// 				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_EDU_PROVIDER")) {
-// 					toRemove.add(rootKid);
+// 		if(buckets != null){
+// 			for (BaseEntity bucket : buckets) {
+// 				if (bucket.getCode().equalsIgnoreCase("GRP_AVAILABLE")) {
+// 					toRemove.add(bucket);
+// 					rules.subscribeUserToBaseEntity(rules.getUser().getCode(), bucket.getCode());
+					
 // 				}
 // 			}
-// 			rootKids.removeAll(toRemove);
+// 			buckets.removeAll(toRemove);
 
 // 	        /* SEND ROOT Kids */
-// 			rules.publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");		
+// 			rules.publishCmd(buckets, "GRP_ROOT", "LNK_CORE");		
 			
-// 			rules.set("rootKids", rootKids);
+// 			rules.set("buckets", buckets);
 //         	rules.setState("SENT_ROOT_KIDS_APPLICATION_DATA_INTERN");
 // 		}
 // 	    rules.footer();      		      
@@ -35,8 +41,6 @@
 
 
 // public void sendInternApplicationData() {
-
-
 
 // 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 // 		println("buckets   ::   " + buckets);
@@ -47,6 +51,8 @@
 			
 // 				/* FOR GRP_AVAILABLE BEGS */
 // 				if (bucket.getCode().equalsIgnoreCase("GRP_AVAILABLE")) {
+
+// 					removeBuckets.add(bucket);
 
 // 					/* send GRP_AVAILABLE as child of GRP_ROOT for list view */
 // 					publishBaseEntityByCode(bucket.getCode(), "GRP_ROOT", "LNK_CORE", recipient);
