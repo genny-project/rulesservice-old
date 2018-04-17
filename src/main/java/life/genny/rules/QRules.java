@@ -3898,7 +3898,7 @@ public class QRules {
 			JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 			
 		JsonObject codeListView = new JsonObject();
-		   codeListView.put("code", "LIST_VIEW");
+		   codeListView.put("code", "MESSAGE_VIEW");
 		   codeListView.put("data", parentCode);
 		JsonObject convListView = new JsonObject();
 		    convListView.put("code", "CONVERSATION_VIEW");
