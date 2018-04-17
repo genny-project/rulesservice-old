@@ -25,11 +25,14 @@ then
 rules.header();
 rules.setState("CALCULATE_OWNER_PRICE");
 
-if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
+       Answer newAnswer = $m.getAnswer();
+        BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+ 
+if(source.is("PRI_OWNER")) {
 
     String tokenString = rules.getToken();
-    Answer newAnswer = $m.getAnswer();
-    rules.println("Am i owner ?" + rules.getUser().is("PRI_OWNER"));
+
+    rules.println("Am i owner ?" + source.is("PRI_OWNER"));
     /* BaseEntity Code */
     String begCode = newAnswer.getTargetCode();
 
@@ -132,11 +135,11 @@ if(rules.getUser() != null && rules.getUser().is("PRI_OWNER")) {
             Answer owIncGST = new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, JsonUtils.toJson(ownerPriceIncGST));
             owIncGST.setChangeEvent(false);
             
-            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, JsonUtils.toJson(ownerPriceExcGST)));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, JsonUtils.toJson(driverPriceIncGST)));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, JsonUtils.toJson(driverPriceExcGST)));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, JsonUtils.toJson(feePriceIncGST)));
-            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, JsonUtils.toJson(feePriceExcGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, ownerPriceExcGstCode, JsonUtils.toJson(ownerPriceExcGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceIncGstCode, JsonUtils.toJson(driverPriceIncGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceExcGstCode, JsonUtils.toJson(driverPriceExcGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceIncGstCode, JsonUtils.toJson(feePriceIncGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceExcGstCode, JsonUtils.toJson(feePriceExcGST)));
             answers.add(owIncGST);
             rules.saveAnswers(answers);
         }
