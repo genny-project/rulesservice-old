@@ -4167,11 +4167,13 @@ public class QRules {
 					println("The price value of "+offer2.getCode()+" is " + offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null));
 					Money offer1Money = offer1.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
 					Money offer2Money = offer2.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-					
+					if(offer1Money != null && offer2Money != null) {
 					Number offer1MoneyValue = offer1Money.getNumber().doubleValue();
 					Number offer2MoneyValue = offer2Money.getNumber().doubleValue();
 					
 					return ((Double)offer1MoneyValue).compareTo((Double) (offer2MoneyValue));
+					}
+					else return 0;
 
 				}
 			});
