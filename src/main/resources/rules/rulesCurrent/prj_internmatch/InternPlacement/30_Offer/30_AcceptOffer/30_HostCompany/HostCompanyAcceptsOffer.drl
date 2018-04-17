@@ -1,0 +1,26 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Host Company Accepts Offer */
+rule "Accept Offer - Host Company"
+	when
+		rules: QRules( 	isState("BTN_ACCEPT_OFFER") && 
+						isState("EVENT_BTN_CLICK") && 
+						isState("PRI_IS_HOST_COMPANY") && 
+						isState("QUE_HOST_COMPANY_AGREEMENT_GRP") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_HOST_COMPANY_ACCEPT_OFFER") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_HOST_COMPANY_ACCEPT_OFFER");
+
+		String begCode = rules.getAsString("quesTargetCode");
+
+		if(begCode != null){
+		    rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE");
+            rules.setState("HOST_COMPANY_ACCEPTED_OFFER");
+
+            rules.setState("CHECK_OFFER_ACCEPTED");
+        }
+	 	rules.footer();      
+end

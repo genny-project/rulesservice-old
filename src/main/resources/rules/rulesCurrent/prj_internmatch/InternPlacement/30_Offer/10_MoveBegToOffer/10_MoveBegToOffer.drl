@@ -18,6 +18,8 @@ rule "Offer Intern - Step 1"
         	rules.moveBaseEntity(beg.getCode(), "GRP_INTERVIEWS", "GRP_OFFERED", "LNK_CORE");
         	rules.setState("MOVED_BEG_TO_OFFERED");
 
+			// trigger message here
+
 		}else{
 			rules.println("beg is null");
 		}
