@@ -4763,7 +4763,6 @@ public class QRules {
 								if (applicant != null) {
 									/* subscribe to APPLICANT  */
 									subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
-									String[] recipient = { getUser().getCode() };
 									publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
 
 								}
@@ -4847,7 +4846,6 @@ public class QRules {
 										if (applicant != null) {
 											/* subscribe to APPLICANT  */
 											subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
-											String[] recipient = { getUser().getCode() };
 											publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
 
 										}
