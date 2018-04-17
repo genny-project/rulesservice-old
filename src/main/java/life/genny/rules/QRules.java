@@ -413,9 +413,9 @@ public class QRules {
 
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode,
 			final String newValue) {
-
-		Answer newAnswer = new Answer(sourceCode, beCode, attributeCode, newValue);
-		saveAnswer(newAnswer);
+		List<Answer> answers = new ArrayList<Answer>();
+		answers.add(new Answer(sourceCode, beCode, attributeCode, newValue));
+		saveAnswers(answers);
 	}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
@@ -1230,7 +1230,7 @@ public class QRules {
 		publish("data", JsonUtils.toJson(msg));
 	}
 	
-	public void logoutAll() {
+	public void logout() {
 	     QCmdMessage msg = new QCmdMessage("CMD_LOGOUT","LOGOUT");
 	 	msg.setToken(getToken());
 	     String[]  recipientCodes = new String[1];
@@ -1242,10 +1242,24 @@ public class QRules {
 		jsonObj.put("recipientCodes", jsonArr);
 	
 		publish("data", jsonObj);
+		logoutCleanup();
+	}
+	
+	public void logoutCleanup()
+	{
+		// Remove the session from the sessionstates
+		Set<String> userSessions = VertxUtils.getSetString("", "SessionStates", getUser().getCode());
+		userSessions.remove((String)getDecodedTokenMap().get("session_state"));
 		
-		// clear the session AFTER it has been sent to bridge!
-	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), null);
-
+	     VertxUtils.putSetString("","SessionStates", getUser().getCode(), userSessions);
+	     
+	       if (userSessions.isEmpty()) {
+	    	   updateBaseEntityAttribute(getUser().getCode(), getUser().getCode(), "PRI_ONLINE", "FALSE");
+	       } else {
+		       updateBaseEntityAttribute(getUser().getCode(), getUser().getCode(), "PRI_ONLINE", "TRUE");
+	    	   
+	       }
+	
 	}
 
 	public void publishData(final QDataAnswerMessage msg) {
@@ -1956,9 +1970,11 @@ public class QRules {
 				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
 				 * recipientCodeArray);
 				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
+				List<Answer> answers = new ArrayList<Answer>();
+				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
+				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
+						getUser().getCode()));
+				saveAnswers(answers);
 				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
 				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
 				publishBE(chatBE);
@@ -2007,9 +2023,10 @@ public class QRules {
 			String value = answer.getValue();
 
 			if (attributeCode.equals("PRI_RATING_RAW")) {
+				List<Answer> answerList = new ArrayList<Answer>();
 
 				/* Saving PRI_RATING attribute */
-				this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_RATING", value);
+				answerList.add(new Answer(sourceCode, targetCode, "PRI_RATING", value));
 
 				/* we grab the old value of the rating as well as the current rating */
 				String currentRatingString = getBaseEntityValueAsString(targetCode, finalAttributeCode);
@@ -2028,8 +2045,8 @@ public class QRules {
 
 					/* we increment the number of current ratings */
 					numberOfRating += 1;
-					this.updateBaseEntityAttribute(sourceCode, targetCode, "PRI_NUMBER_RATING",
-							Double.toString(numberOfRating));
+					answerList.add(new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING",
+							Double.toString(numberOfRating)));
 
 					/* we compute the new rating */
 
@@ -2040,11 +2057,11 @@ public class QRules {
 
 					Double newRatingAverage = currentRating / numberOfRating;
 					newRatingAverage += newRating / numberOfRating;
-					this.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode,
-							Double.toString(newRatingAverage));
-
+					answerList.add(new Answer(sourceCode, targetCode, finalAttributeCode,
+							Double.toString(newRatingAverage)));
+				
 				}
-
+				saveAnswers(answerList);
 				/* publishData(answer); */
 			}
 		}
@@ -3475,6 +3492,7 @@ public class QRules {
 		Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
 		offerCount = offerCount + 1;
 		println("Offer Count is   ::   " + offerCount);
+		
 		saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
 
 		/* Determine the recipient code */
@@ -3493,11 +3511,12 @@ public class QRules {
 		BaseEntity owner = getChildren(beg.getCode(), "LNK_BEG", "OWNER");
 		// updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS",
 		// "#FFA500");
-		updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_" + getUser().getCode(),
-				Status.NEEDS_ACTION.value());
-		updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_" + owner.getCode(),
-				Status.NEEDS_ACTION.value());
-
+		answerList = new ArrayList<Answer>();
+		answerList.add(new Answer(getUser().getCode(), beg.getCode(), "STA_" + getUser().getCode(),
+				Status.NEEDS_ACTION.value()));
+		answerList.add(new Answer(getUser().getCode(), beg.getCode(), "STA_" + owner.getCode(),
+				Status.NEEDS_ACTION.value()));
+		saveAnswers(answerList);
 		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 		String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
 		println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
