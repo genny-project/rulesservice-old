@@ -1767,6 +1767,9 @@ public class PaymentUtils {
 			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);		
 			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
 			
+			String str = String.format("%.2f",calculatedItemPriceInCents);
+			calculatedItemPriceInCents = Double.parseDouble(str);
+			
 			/* convert into cents */
 			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
 
