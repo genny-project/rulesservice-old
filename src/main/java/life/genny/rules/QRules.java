@@ -1966,9 +1966,8 @@ public class QRules {
 					recipientCodeArray[counter] = stakeholder.getCode();
 					if (!stakeholder.getCode().equals(getUser().getCode())) {
 			    	        msgReceiversCodeArray[counter] = stakeholder.getCode();
-					}
-					counter += 1;
-					
+			    	        counter += 1;
+					}					
 				}
 				List<Answer> answers = new ArrayList<Answer>();
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
@@ -1981,8 +1980,6 @@ public class QRules {
 				publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray ); 
 				/* Publish message to Receiver */
 				publishData(getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray );  //Had to use getCode() to get data from DB, it was missing attribute
-
-
 			}
 		}
 	}
@@ -3899,13 +3896,13 @@ public class QRules {
 			
 		JsonObject codeListView = new JsonObject();
 		   codeListView.put("code", "MESSAGE_VIEW");
-		   codeListView.put("data", parentCode);
+		   codeListView.put("root", parentCode);
 		JsonObject convListView = new JsonObject();
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
-		        convListView.put("data", "null");   
+		        convListView.put("root", "null");   
 		     }else
-		    	   convListView.put("data", chatCode); 
+		    	   convListView.put("root", chatCode); 
 		    
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
