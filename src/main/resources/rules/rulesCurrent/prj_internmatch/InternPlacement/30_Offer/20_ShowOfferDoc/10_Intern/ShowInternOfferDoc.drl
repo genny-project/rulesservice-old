@@ -4,16 +4,15 @@ import life.genny.rules.QRules;
 /* Show Offer Document - Intern */
 rule "Show Offer Document - Intern"
 	when
-		rules: QRules( 	isState("BTN_SHOW_OFFER") && 
-						isState("EVENT_BTN_CLICK") && 
+		rules: QRules( 	isState("EVENT_REDIRECT") && 
+						isState("REDIRECT_SHOW_OFFER") && 
 						isState("PRI_IS_INTERN") && 
 						!isState("LOOP_SHOW_OFFER_DOCUMENT_INTERN") ) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_SHOW_OFFER_DOCUMENT_INTERN");
 
-		String applicationCode = rules.getAsString("itemCode");
-		String begCode = rules.getAsString("hintCode");
+		String begCode = rules.getAsString("itemCode");
 
         if(begCode != null){
 		   	String questionSourceCode = rules.getUser().getCode();

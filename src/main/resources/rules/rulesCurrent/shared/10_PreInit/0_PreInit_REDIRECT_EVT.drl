@@ -1,0 +1,53 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Redirect Event"
+	no-loop true
+	ruleflow-group 'Init'
+    when
+		m : QEventMessage( event_type == "REDIRECT_EVT" )
+		rules: QRules(!isState("STARTED")) 
+     then   
+        rules.setDrools(drools);
+        rules.println("RULE INIT REDIRECT_EVT: "+m);
+        rules.setState("EVENT_REDIRECT");
+        rules.setState("STARTED");
+
+        String dataCode = m.getData().getCode();
+		 
+		String dataString = m.getData().getValue();
+		JsonObject dataJson = new JsonObject(dataString);
+
+		/* Get targetCode */
+		String targetCode = dataJson.getString("targetCode");
+		rules.println("targetCode   ::   " + targetCode);
+
+		/* Get itemCode */		
+		String itemCode = dataJson.getString("itemCode");
+		rules.println("itemCode   ::   " + itemCode);
+
+		/* Get itemCode */		
+		String hintCode = dataJson.getString("hint");
+		rules.println("hintCode   ::   " + hintCode);
+
+		/* Get actionCode */		
+		String actionCode = dataJson.getString("action");
+		rules.println("actionCode   ::   " + actionCode);
+		
+
+		if(dataCode != null) {
+ 	 		rules.setState(dataCode);
+		}
+		if(targetCode != null) {
+			rules.set("quesTargetCode", targetCode);
+		}
+		if(itemCode != null) {
+			rules.set("itemCode", itemCode);
+		}
+		if(hintCode != null) {
+			rules.set("hintCode", hintCode);
+		}
+end

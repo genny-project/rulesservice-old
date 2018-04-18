@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -364,6 +365,14 @@ public class QRules {
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
 
+	}
+	
+	public String encodeToBase64(String str) {
+		return Base64.getEncoder().encodeToString(str.getBytes());
+	}
+	
+	public String decodeBase64(byte[] base64str) {
+		return new String(Base64.getDecoder().decode(base64str)); 
 	}
 
 	public BaseEntity getProject() {
