@@ -666,7 +666,7 @@ public class PaymentUtils {
 
 	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
-	public static String createPaymentItem(BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
+	public static String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
 		/* Get the base entity information */
 		String itemId = null;
 
@@ -683,8 +683,8 @@ public class PaymentUtils {
 			System.out.println("fee Id ::" + feeId);
 
 			/* Get the title, description and job ID for this item from the base entity group */
-			String begTitle = begBe.getValue("PRI_TITLE", null);
-			String begDescription = begBe.getValue("PRI_DESCRIPTION", null);
+			String begTitle = loadBe.getValue("PRI_NAME", null);
+			String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
 			String begJobId = begBe.getValue("PRI_JOB_ID", null);
 
 			/* Check that values are provided and if they are include them in the request */

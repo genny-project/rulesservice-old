@@ -30,6 +30,7 @@ rule "Create Payment Item"
 		RulesUtils.println("BEG CODE ::"+BEGCode);
 		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
 		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+		BaseEntity loadBe = rules.getChildren(BEGCode, "LNK_BEG", "LOAD");
 		BaseEntity ownerBe = rules.getUser();
 		BaseEntity driverBe = null;
 
@@ -95,7 +96,7 @@ rule "Create Payment Item"
        	if(isNewItem) {
        		
        		String itemId = null;
-			itemId = PaymentUtils.createPaymentItem(offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
+			itemId = PaymentUtils.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
        	 	rules.println("Payment item Id="+itemId);
        	 	
        	 	if(itemId != null) {
