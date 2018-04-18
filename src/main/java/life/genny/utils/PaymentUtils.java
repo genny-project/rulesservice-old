@@ -29,7 +29,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.mortbay.util.ajax.JSON;
 
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
