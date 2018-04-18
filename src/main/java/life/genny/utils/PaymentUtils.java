@@ -666,7 +666,7 @@ public class PaymentUtils {
 
 	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
-	public static String createPaymentItem(BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
+	public static String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
 		/* Get the base entity information */
 		String itemId = null;
 
@@ -683,8 +683,8 @@ public class PaymentUtils {
 			System.out.println("fee Id ::" + feeId);
 
 			/* Get the title, description and job ID for this item from the base entity group */
-			String begTitle = begBe.getValue("PRI_TITLE", null);
-			String begDescription = begBe.getValue("PRI_DESCRIPTION", null);
+			String begTitle = loadBe.getValue("PRI_NAME", null);
+			String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
 			String begJobId = begBe.getValue("PRI_JOB_ID", null);
 
 			/* Check that values are provided and if they are include them in the request */
@@ -1766,6 +1766,9 @@ public class PaymentUtils {
 			/* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
 			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
 			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
+
+			String str = String.format("%.2f",calculatedItemPriceInCents);
+			calculatedItemPriceInCents = Double.parseDouble(str);
 
 			/* convert into cents */
 			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
