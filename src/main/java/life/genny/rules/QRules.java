@@ -1952,40 +1952,19 @@ public class QRules {
 					recipientCodeArray[counter] = stakeholder.getCode();
 					if (!stakeholder.getCode().equals(getUser().getCode())) {
 			    	        msgReceiversCodeArray[counter] = stakeholder.getCode();
-					}
-					counter += 1;
-					
+			    	        counter += 1;
+					}					
 				}
 
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
 				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
 				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
 						getUser().getCode());
 				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", getUser().getCode(), 1.0, getToken());
-				//BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				//publishBE(chatBE);
-				
-				//List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER", 0, 100, true);
-				//if (users != null) {
-					//List<String> userCodeList = new ArrayList<String>();
-				
-				 // for (BaseEntity linkedUser : users) {
-//				     if (!linkedUser.getCode().equals(getUser().getCode())) {
-//				    	    String[] codeArray = {linkedUser.getCode()};
-				   System.out.println("The recipients are :: "+Arrays.toString(msgReceiversCodeArray));
+				  System.out.println("The recipients are :: "+Arrays.toString(msgReceiversCodeArray));
+				   /* Publish chat to Receiver */
 				   publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray ); 
-						   //publishData(getBaseEntityByCode(chatCode), codeArray);
-					 // userCodeList.add(linkedUser.getCode());	
-					  
-				    // }
-				// }
-				  //String[] recipientArray = userCodeList.toArray(new String[userCodeList.size()]);
-				  //System.out.println("The recipients are :: "+Arrays.toString(recipientArray));
-				  //publishData(newMessage, recipientArray ); 
-				//}
+				   /* Publish message to Receiver */
+				   publishData(getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray );  //Had to use getCode() to get data from DB, it was missing attribute
 			}
 		}
 	}
@@ -3899,13 +3878,13 @@ public class QRules {
 			
 		JsonObject codeListView = new JsonObject();
 		   codeListView.put("code", "MESSAGE_VIEW");
-		   codeListView.put("data", parentCode);
+		   codeListView.put("root", parentCode);
 		JsonObject convListView = new JsonObject();
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
-		        convListView.put("data", "null");   
+		        convListView.put("root", "null");   
 		     }else
-		    	   convListView.put("data", chatCode); 
+		    	   convListView.put("root", chatCode); 
 		    
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
