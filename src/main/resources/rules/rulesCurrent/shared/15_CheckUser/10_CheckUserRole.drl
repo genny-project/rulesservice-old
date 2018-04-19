@@ -9,7 +9,6 @@ import life.genny.qwanda.attribute.EntityAttribute;
 rule "Setting user role"
      when
         rules: QRules(  isState("STARTED") && 
-						isUserPresent() == true &&  					
 						!isState("LOOP_CHECK_ROLE") )
      then
         rules.header();
