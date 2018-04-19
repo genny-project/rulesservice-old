@@ -19,14 +19,15 @@ import life.genny.qwandautils.GPSUtils;
 
 import life.genny.qwanda.Answer;
 
-rule "Receive GPS Data"
+rule "RX GPS Data"
+	no-loop true
+	ruleflow-group 'GPS'
 	
     when
 	    m : QDataGPSMessage()
-	    rules: QRules()
+	    rules: QRules( isState("STARTED") && !isState("RX_GPS") )
      then
-     	     			
- 	    	rules.setDrools(drools);	
+     	rules.setState("RX_GPS");
 	  	rules.updateGPS(m);
 
  		    	
