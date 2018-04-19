@@ -1241,7 +1241,7 @@ public class QRules {
 	     jsonArr.add(getUser().getCode());
 		jsonObj.put("recipientCodes", jsonArr);
 	
-		publish("data", jsonObj);
+		publishCmd(jsonObj);
 		logoutCleanup();
 	}
 	
