@@ -1,20 +1,20 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Send Offer Message To Edu Provider"
-	when
-		rules: QRules(  isState("SEND_OFFER_MESSAGE_TO_EDU_PROVIDER") && 
-                        !isState("LOOP_SEND_OFFER_MESSAGE_TO_EDU_PROVIDER") )
-	then
-	 	rules.header();
- 		rules.setState("LOOP_SEND_OFFER_MESSAGE_TO_EDU_PROVIDER");
- 		
+rule "Send 3 day reminder to sign agreement to Education Provider"
+    when
+        rules: QRules(  isState("SEND_3_DAY_REMINDER_TO_EDU_PROVIDER_REP") && 
+                        !isState("LOOP_SEND_3_DAY_REMINDER_TO_EDU_PROVIDER_REP") )
+    then
+        rules.header();
+        rules.setState("LOOP_SEND_3_DAY_REMINDER_TO_EDU_PROVIDER_REP");
+         
         BaseEntity beg = rules.getAsBaseEntity("begBe");
         BaseEntity intern = rules.getAsBaseEntity("internBe");
         BaseEntity internship = rules.getAsBaseEntity("internshipBe");
         BaseEntity hostCompany = rules.getAsBaseEntity("hostCompanyBe");
         BaseEntity eduProvider = rules.getAsBaseEntity("eduProviderBe");
- 		
+        
         if(beg == null){
             rules.println("beg is null");
             return;
@@ -31,14 +31,14 @@ rule "Send Offer Message To Edu Provider"
             rules.println("eduProvider is null");
             return;
         }else{
-
-	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
-	        contextMap.put("BEG", beg.getCode());
+            
+            HashMap<String, String> contextMap = new HashMap<String, String>(); 
+            contextMap.put("BEG", beg.getCode());
             contextMap.put("INTERN", intern.getCode());
-	        contextMap.put("INTERNSHIP", internship.getCode());
-	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
-	        contextMap.put("EDU_PROVIDER", eduProvider.getCode());
-
+            contextMap.put("INTERNSHIP", internship.getCode());
+            contextMap.put("HOSTCOMPANY", hostCompany.getCode());
+            contextMap.put("EDU_PROVIDER", eduProvider.getCode());
+            
             String[] recipients = null;
 
             /* Get all the EDU_PROVIDER staffs */
@@ -51,9 +51,10 @@ rule "Send Offer Message To Edu Provider"
                     recipients[i] = eduProviderStaff.getCode();
                     i++;
                 }
-            }
-            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_OFFER_EDUCATION_PROVIDER", "EMAIL");
- 		    rules.setState("SENT_OFFER_MESSAGE_TO_EDU_PROVIDER");
- 		}
-	 	rules.footer();      
+            }             
+            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_3_DAY_PLEASE_SIGN_AGREEMENT_EDU_PROVIDER_REP", "EMAIL");
+            rules.setState("SENT_3_DAY_REMINDER_TO_EDU_PROVIDER_REP");
+         }
+         
+         rules.footer();      
 end
