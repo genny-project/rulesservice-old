@@ -3883,6 +3883,7 @@ public class QRules {
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
 		        convListView.put("root", "null");   
+
 		     }else {
 		    	   convListView.put("root", chatCode); 
 		    	    //Publish all the messages for this chat
@@ -3919,6 +3920,7 @@ public class QRules {
 		  	     .setPageStart(0)
 		  	     .setPageSize(100);
 		
+
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
