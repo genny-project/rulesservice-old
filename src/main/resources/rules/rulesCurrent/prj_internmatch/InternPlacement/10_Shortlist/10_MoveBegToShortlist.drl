@@ -19,6 +19,7 @@ rule "Shortlist Internship - Step 1"
         	rules.moveBaseEntity(newBeg.getCode(), "GRP_APPLIED", "GRP_SHORTLISTED", "LNK_CORE");
         	rules.setState("MOVED_BEG_TO_INTERVIEW");
 
+        	rules.setState("REMOVE_APPLICANT_FROM_OLD_BEG");
 		}else{
 			rules.println("newBeg is null");
 		}
