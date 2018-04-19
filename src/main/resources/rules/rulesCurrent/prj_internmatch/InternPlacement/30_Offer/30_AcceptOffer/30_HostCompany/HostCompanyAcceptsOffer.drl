@@ -15,19 +15,15 @@ rule "Accept Offer - Host Company"
 
 		String begCode = rules.getAsString("quesTargetCode");
 
-		rules.println("rule was executed");
-
 		if(begCode != null){
 			rules.println("begCode    ::   " + begCode);
-			
-			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_INTERN_ACCEPTED", "TRUE") );
 			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE") );
-			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_EDU_PROVIDER_ACCEPTED", "TRUE") );
 
             rules.setState("HOST_COMPANY_ACCEPTED_OFFER");
-
-            rules.setState("CHECK_OFFER_ACCEPTED");
          	rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
-         }
+			 
+        }else{
+			rules.println("begCode is null");
+		}
 	 	rules.footer();      
 end

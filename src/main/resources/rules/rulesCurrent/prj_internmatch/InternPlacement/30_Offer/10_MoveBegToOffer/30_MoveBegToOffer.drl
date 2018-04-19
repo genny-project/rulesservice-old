@@ -15,7 +15,7 @@ rule "Offer Intern - Step 3"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
         if(beg != null){
-        	    //rules.moveBaseEntity(beg.getCode(), "GRP_INTERVIEWS", "GRP_OFFERED", "LNK_CORE");
+        	    rules.moveBaseEntity(beg.getCode(), "GRP_INTERVIEWS", "GRP_OFFERED", "LNK_CORE");
 	        	rules.setState("MOVED_BEG_TO_OFFERED");
 		}
         else {
