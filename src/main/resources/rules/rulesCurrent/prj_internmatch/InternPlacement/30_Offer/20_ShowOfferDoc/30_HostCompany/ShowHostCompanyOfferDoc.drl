@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 /* Show Offer Document - Host Company */
 rule "Show Offer Document - Host Company"
 	when
-		rules: QRules( 	isState("EVENT_REDIRECT") && 
+		rules: QRules( 	isState("REDIRECT_EVENT") && 
 						isState("REDIRECT_SHOW_OFFER") && 
 						isState("PRI_IS_HOST_COMPANY") && 
 						!isState("LOOP_SHOW_OFFER_DOCUMENT_HOST_COMPANY") ) 
