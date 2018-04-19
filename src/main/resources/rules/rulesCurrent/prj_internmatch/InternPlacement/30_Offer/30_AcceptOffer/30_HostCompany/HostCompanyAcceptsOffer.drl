@@ -20,9 +20,9 @@ rule "Accept Offer - Host Company"
 		if(begCode != null){
 			rules.println("begCode    ::   " + begCode);
 			
-		    rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_INTERN_ACCEPTED", "TRUE");
-		    //rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE");
-		    //rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_IS_EDU_PROVIDER", "TRUE");
+			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_INTERN_ACCEPTED", "TRUE") );
+			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE") );
+			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_EDU_PROVIDER_ACCEPTED", "TRUE") );
 
             rules.setState("HOST_COMPANY_ACCEPTED_OFFER");
 

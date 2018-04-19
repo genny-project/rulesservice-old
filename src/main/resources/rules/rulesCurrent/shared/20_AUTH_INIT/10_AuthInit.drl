@@ -4,15 +4,15 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.entity.BaseEntity;
 
 rule "Auth Init"
-    no-loop true
-	ruleflow-group 'Init'
     when
-        m : QEventMessage(  data.code == "AUTH_INIT" )
-        rules: QRules( 	isState("STARTED")  &&
+        m : QEventMessage(  (event_type == "AUTH_INIT" ||
+                            event_type == "REDIRECT_EVENT" ))
+        rules: QRules( 	isState("ROLE_CHECKED")  &&
                         !isState("LOOP_AUTH_INIT_EVT") )
      then
-        rules.setDrools(drools);
+       
      	rules.header();
+        
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 

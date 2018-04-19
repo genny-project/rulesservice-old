@@ -24,14 +24,15 @@ rule "Check if Profile Completed - Intermatch"
      	
 		Optional<Boolean> isProfileCompleted = rules.getUser().getValue("PRI_IS_PROFILE_COMPLETED");
 		if(isProfileCompleted.isPresent() && isProfileCompleted.get() == true) {
-   		   	rules.setState("PROFILE_IS_COMPLETED");
+   		   	
+			rules.setState("PROFILE_IS_COMPLETED");
    		   	rules.setState("APPLICATION_READY");
+			rules.setState("TRIGGER_INTERNMATCH_APPLICATION");
 		}
 		else {
    		 	rules.setState("PROFILE_NOT_COMPLETED");
 		}
 		
 		rules.println("PRI_IS_PROFILE_COMPLETED value   ::   " +  isProfileCompleted);
-		
     	rules.footer();
 end
