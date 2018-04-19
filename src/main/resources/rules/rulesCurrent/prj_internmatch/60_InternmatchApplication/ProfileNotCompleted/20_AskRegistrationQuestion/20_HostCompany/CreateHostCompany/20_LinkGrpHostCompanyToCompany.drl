@@ -6,11 +6,8 @@ rule "Create Host Company - STEP 2"
      when
         rules: QRules(  isState("LINK_GRP_HOST_COMPANYS_TO_HOST_OMPANY") && 
 						isState("CREATED_HOST_COMPANY") &&
-						isState("PRI_IS_HOST_COMPANY") &&
-        				isState("PROFILE_NOT_COMPLETED") && 
-        				isState("HOST_COMPANY_DOESNT_EXISTS") && 
-        				isState("CREATED_BASE_ENTITY") && 
-        				isState("CPY") && 
+        					isState("CREATED_BASE_ENTITY") && 
+        					isState("CPY") && 
 						!isState("LOOP_CREATE_HOST_COMPANY_STEP2") )
      then
         rules.header();
@@ -19,7 +16,9 @@ rule "Create Host Company - STEP 2"
         /* get company BasEntity FROM state */
         BaseEntity company =rules.getAsBaseEntity("baseEntity");
         if(company != null){
-            rules.set("companyBe", company);
+            
+        	
+        		rules.set("companyBe", company);
             
             /* link GRP_HOST_COMPANYS to HOST_COMPANY */
             rules.set("linkSourceCode",  "GRP_HOST_COMPANYS");

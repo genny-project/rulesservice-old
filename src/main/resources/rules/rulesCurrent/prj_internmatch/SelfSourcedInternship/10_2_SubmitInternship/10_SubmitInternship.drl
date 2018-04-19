@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Add BEG, INT, CPY to map */
+rule "Submit Self Sourced Internship - Step 1"
+	when
+		rules: QRules( 	isState("QUE_SELF_SOURCED_HOST_COMPANY_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_SUBMIT_SS_INTERNSHIP_STEP1")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_SS_INTERNSHIP_STEP1");
+
+		/* for now we just show this page. we should actually call the other steps */
+       // self_sourced_internship_was_created.json
+        
+        rules.set("subLayoutCode", "LAY_SELFSOURCED_COMPLETED");
+		rules.set("subLayoutPath", "internships/self_sourced_internship_was_created.json");
+		rules.set("subLayoutRootCode", null);
+		rules.set("subLayoutIsPopup", false);
+		rules.setState("SEND_SUBLAYOUT");
+        
+        rules.footer();
+end

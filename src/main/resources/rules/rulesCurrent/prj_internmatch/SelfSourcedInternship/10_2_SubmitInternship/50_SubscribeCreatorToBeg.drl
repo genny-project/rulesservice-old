@@ -1,0 +1,29 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Subscribe CREATOR (current user )to BEG */
+rule "Submit Internship - Step 5"	
+	when
+		rules: QRules( 	isState("LINKED_BEG_TO_COMPANY") && 
+						isState("CREATED_LINK") && 
+						isState("HOSTCOMPANY") && 
+						isState("QUE_INTERNSHIP_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP5")) 
+
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP5");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		if(beg != null){
+			rules.subscribeUserToBaseEntity(rules.getUser().getCode(), beg);
+	 		rules.setState("SUBSCRIBED_CREATOR_TO_BEG");
+
+	 		rules.setState("SUBSCRIBE_COMPANY_TO_BEG");
+		}
+
+	 	rules.footer();      
+end

@@ -5,9 +5,6 @@ import life.genny.rules.QRules;
 rule "Create Host Company - STEP 1"
     when
 		rules: QRules(	isState("CREATE_HOST_COMPANY") &&
-						isState("HOST_COMPANY_DOESNT_EXISTS") &&
-						isState("PRI_IS_HOST_COMPANY") &&
-        				isState("PROFILE_NOT_COMPLETED") && 
 						!isState("LOOP_CREATE_HOST_COMPANY_STEP1") ) 
      then 
  		rules.header();
