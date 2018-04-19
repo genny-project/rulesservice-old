@@ -3906,7 +3906,7 @@ public class QRules {
 		        convListView.put("root", "null");
 		     }else
 		    	   convListView.put("root", chatCode);
-		    
+
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
@@ -4492,7 +4492,7 @@ public class QRules {
 	/*
 	 * Publish Search BE results
 	 */
-	public void sendSearhResults( SearchEntity searchBE) throws IOException {
+	public void sendSearchResults( SearchEntity searchBE) throws IOException {
 		System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
 	    String jsonSearchBE = JsonUtils.toJson(searchBE);
 	    String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
@@ -4506,13 +4506,13 @@ public class QRules {
 	 * Check if conversation between sender and receiver already exists
 	 */
 	public Boolean checkIfChatAlreadyExists(final String sender, final String receiver) {
-		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 500, true);
 
 		if (chats != null) {
 
 			for (BaseEntity chat : chats) {
 
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 500, true);
 				if (users != null) {
                      if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
 							return true;
@@ -4533,7 +4533,7 @@ public class QRules {
 
 			for (BaseEntity chat : chats) {
 
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 500, true);
 				if (users != null) {
                      if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
 							return chat;
