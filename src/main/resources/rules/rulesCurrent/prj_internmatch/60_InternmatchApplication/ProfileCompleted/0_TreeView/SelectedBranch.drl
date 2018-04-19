@@ -5,10 +5,9 @@ import life.genny.rules.QRules;
 
 rule "Selected Dashboard"
     when
-      m : QEventMessage( event_type == "TV_SELECT" && 
-                        (data.value.contains("GRP_DASHBOARD") || 
-                        data.value.contains("GRP_AVAILABLE")  )
-                      )
+      m : QEventMessage( event_type == "TV_SELECT" &&
+                        		(data.value.contains("GRP_DASHBOARD") || data.value.contains("GRP_AVAILABLE"))  
+                        )
       rules: QRules( !isState("SELECTED_HOMEPAGE"))
     then
       rules.header();

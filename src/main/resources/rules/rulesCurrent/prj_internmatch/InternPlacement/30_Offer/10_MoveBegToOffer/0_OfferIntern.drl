@@ -72,7 +72,7 @@ rule "Offer Intern - Step 0"
 			rules.set("applicationBe", application);
 			
 			rules.setState("OFFER_INTERN_READY");            
-			rules.setState("MOVE_BEG_TO_OFFERED");
+			rules.setState("CHANGE_BEG_STATUS");
         }
 	 	rules.footer();      
 end

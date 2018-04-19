@@ -5112,6 +5112,27 @@ public class QRules {
 		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
+	
+	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
+		this.updateBaseEntityStatus(be.getCode(), userCode, status);
+	}
+	
+	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
+
+		String attributeCode = "STA_" + userCode;
+		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
+	}
+	
+	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
+		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
+	}
+	
+	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
+
+		for(String userCode: userCodes) {
+			this.updateBaseEntityStatus(beCode, userCode, status);
+		}
+	}
 }
 
 
