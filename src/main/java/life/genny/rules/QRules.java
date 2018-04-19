@@ -3919,7 +3919,7 @@ public class QRules {
 	/*
 	 *  Publish all the messages that belongs to the given chat
 	 */
-	public void sendChatMessages(final String chatCode) {
+	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
 		//publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES", 0, 100, true);
 
 		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS","Chat Messages")
@@ -3932,8 +3932,8 @@ public class QRules {
 		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
 		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"MSG_%")
 
-		  	     .setPageStart(0)
-		  	     .setPageSize(500);
+		  	     .setPageStart(pageStart)
+		  	     .setPageSize(pageSize);
 
 		try {
 			sendSearchResults(sendAllMsgs);
