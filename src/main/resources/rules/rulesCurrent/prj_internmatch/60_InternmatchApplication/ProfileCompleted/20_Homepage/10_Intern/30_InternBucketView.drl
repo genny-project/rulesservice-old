@@ -7,7 +7,6 @@ rule "Home Page - Send Layout - INTERN BUCKET VIEW"
      when
         rules: QRules(  isState("HOME_PAGE_SENT_DATA") && 
                         isState("PRI_IS_INTERN") &&
-                        isState("INTERN_BUCKET_VIEW") &&
                         !isState("LOOP_HOME_PAGE_SEND_LAYOUT") ) 
      then      
         rules.header();
