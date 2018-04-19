@@ -3938,7 +3938,7 @@ public class QRules {
 		  	     .setPageSize(500);
 
 		try {
-			sendSearhResults(sendAllMsgs);
+			sendSearchResults(sendAllMsgs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Error! Unable to get Search Rsults");
