@@ -15,28 +15,30 @@ rule "Check if Offer is accepted by all 3 parties"
                                                 data.code == "PRI_EDU_PROVIDER_ACCEPTED" ||
                                                 data.code == "PRI_HOST_COMPANY_ACCEPTED" )
         
-        rules: QRules( isState("CHECK_OFFER_ACCEPTED") &&
-					   !isState("LOOP_CHECK_OFFER_ACCEPTED") )
+        rules: QRules( !isState("LOOP_CHECK_OFFER_ACCEPTED") )
      then
      	rules.header();
      	rules.setState("LOOP_CHECK_OFFER_ACCEPTED");
 
         BaseEntity beg = m.getBe();
         if(beg != null){
-            Optional<Boolean> internAccepted = beg.getValue("PRI_INTERN_ACCEPTED");
-            Optional<Boolean> eduProviderAccepted = beg.getValue("PRI_EDU_PROVIDER_ACCEPTED");
-            Optional<Boolean> hostCompanyAccepted = beg.getValue("PRI_HOST_COMPANY_ACCEPTED");
+			rules.println("begCode    ::   " + beg.getCode());
+            
+            Boolean internAccepted = beg.getValue("PRI_INTERN_ACCEPTED", false);
+            Boolean eduProviderAccepted = beg.getValue("PRI_EDU_PROVIDER_ACCEPTED", false);
+            Boolean hostCompanyAccepted = beg.getValue("PRI_HOST_COMPANY_ACCEPTED", false);
 
             rules.println("PRI_INTERN_ACCEPTED value         ::   " +  internAccepted);
             rules.println("PRI_EDU_PROVIDER_ACCEPTED value   ::   " +  eduProviderAccepted);
             rules.println("PRI_HOST_COMPANY_ACCEPTED value   ::   " +  hostCompanyAccepted);
             
-            if( internAccepted.isPresent() && internAccepted.get() == true &&
-                eduProviderAccepted.isPresent() && eduProviderAccepted.get() == true &&
-                hostCompanyAccepted.isPresent() && hostCompanyAccepted.get() == true  ) {
+            if( internAccepted == true &&
+                eduProviderAccepted == true &&
+                hostCompanyAccepted == true  ) {
                     
                 rules.setState("OFFER_ACCEPTED_BY_ALL");
             }
+            rules.println("checked");
         }
     	rules.footer();
 end

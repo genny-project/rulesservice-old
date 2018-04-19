@@ -29,7 +29,7 @@ rule "Send Offer Message To Host Company"
             return;
         }else{
         
-            String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_SHOW_OFFER\",\"data\":{\"value\":'{\"itemCode\":\"" + beg.getCode() + "\"}'}}";
+            String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_SHOW_OFFER\",\"data\":{\"value\": \"" + beg.getCode() + "\"}}";
 			String base64 = rules.encodeToBase64(json);
 			
 	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
