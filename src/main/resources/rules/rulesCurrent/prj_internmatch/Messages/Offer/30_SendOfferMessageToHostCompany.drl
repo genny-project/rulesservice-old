@@ -27,9 +27,9 @@ rule "Send Offer Message To Host Company"
         }else if(hostCompany == null){
             rules.println("hostCompany is null");
             return;
-        }else {
+        }else{
         
-            String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_SHOW_OFFER\",\"data\":{\"itemCode\": \"" + beg.getCode() + "\"}}";
+            String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_SHOW_OFFER\",\"data\":{\"value\":'{\"itemCode\":\"" + beg.getCode() + "\"}'}}";
 			String base64 = rules.encodeToBase64(json);
 			
 	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
