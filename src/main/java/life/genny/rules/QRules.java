@@ -66,6 +66,7 @@ import life.genny.qwanda.attribute.AttributeText;
 import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
@@ -673,8 +674,7 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
-				getDecodedTokenMap(), getToken(), parentCode, linkCode);
-
+				getDecodedTokenMap(), getToken(), parentCode, linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
 
@@ -3901,8 +3901,11 @@ public class QRules {
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
 		        convListView.put("root", "null");   
-		     }else
+		     }else {
 		    	   convListView.put("root", chatCode); 
+		    	    //Publish all the messages for this chat
+		    	   sendChatMessages(chatCode);
+		     }
 		    
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
@@ -3912,7 +3915,28 @@ public class QRules {
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: "+cmdViewJson);
+		
 		publishCmd(cmdViewJson);
+	}
+	
+	/*
+	 *  Publish all the messages that belongs to the given chat
+	 */
+	public void sendChatMessages(final String chatCode) {
+		publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES", 0, 100, true);
+		
+		SearchEntity report = new SearchEntity("SBE_CHATMSGS","Chat Messages")
+		  	     .addColumn("PRI_MESSAGE","Message")
+		  	     .addColumn("PRI_CREATOR","Creater ID")
+		  	     
+		  	     .setSourceCode(chatCode)
+		  	     
+		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)		  	     
+		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"MSG_%")
+		  	     
+		  	     .setPageStart(0)
+		  	     .setPageSize(100);
+		
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
