@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 /* Create Internship BaseEntity */
 rule "Add Internship - Step 2"
 	when
-		rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
+		rules: QRules(  isState("BTN_CREATE_INTERNSHIP") && 
 						isState("CREATE_INT") && 
 						isState("CREATED_BASE_ENTITY") && 
 						isState("BEG") && 
