@@ -34,8 +34,8 @@ rule "Send Offer Message To Host Company"
 			
 	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
 	        contextMap.put("BEG", beg.getCode());
-	        contextMap.put("INTERNSHIP", internship.getCode());
             contextMap.put("INTERN", intern.getCode());
+	        contextMap.put("INTERNSHIP", internship.getCode());
 	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
 	        contextMap.put("URL", "http://localhost:3000/?state=" + base64);
 	        
@@ -52,6 +52,7 @@ rule "Send Offer Message To Host Company"
                     i++;
                 }
             }
+            
             rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_TO_HOST", "EMAIL");
  		    rules.setState("SENT_OFFER_MESSAGE_TO_HOST_COMPANY");
  		}
