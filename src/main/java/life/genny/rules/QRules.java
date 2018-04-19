@@ -3902,11 +3902,9 @@ public class QRules {
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
 		        convListView.put("root", "null");
-		     }else {
+		     }else
 		    	   convListView.put("root", chatCode);
-		    	    //Publish all the messages for this chat
-		    	   sendChatMessages(chatCode);
-		     }
+		    
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
