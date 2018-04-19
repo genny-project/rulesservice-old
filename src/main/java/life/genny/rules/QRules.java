@@ -3916,25 +3916,6 @@ public class QRules {
 		publishCmd(cmdViewJson);
 	}
 
-	/*
-	 *  Publish all the messages that belongs to the given chat
-	 */
-	public void sendChatMessages(final String chatCode) {
-		publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES", 0, 100, true);
-
-		SearchEntity report = new SearchEntity("SBE_CHATMSGS","Chat Messages")
-		  	     .addColumn("PRI_MESSAGE","Message")
-		  	     .addColumn("PRI_CREATOR","Creater ID")
-
-		  	     .setSourceCode(chatCode)
-
-		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"MSG_%")
-
-		  	     .setPageStart(0)
-		  	     .setPageSize(100);
-
-	}
 
 	/*
 	 *  Publish all the messages that belongs to the given chat
