@@ -4505,48 +4505,6 @@ public class QRules {
 		return null;
 	}
 
-	
-	/*
-	 * Check if conversation between sender and receiver already exists
-	 */
-	public Boolean checkIfChatAlreadyExists(final String sender, final String receiver) {
-		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
-
-		if (chats != null) {
-
-			for (BaseEntity chat : chats) {
-
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
-				if (users != null) {
-                     if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
-							return true;
-						}
-					}
-				}
-			}
-		return false;
-			
-	}
-    
-	/*
-	 * Give oldChat for the given sender and receiver
-	 */
-	public BaseEntity getOldChatForSenderReceiver(final String sender, final String receiver) {	
-		List<BaseEntity> chats = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
-		if (chats != null) {
-
-			for (BaseEntity chat : chats) {
-
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
-				if (users != null) {
-                     if( users.contains(getBaseEntityByCode(sender)) && users.contains(getBaseEntityByCode(receiver)) ) {
-							return chat;
-						}
-					}
-				}
-			}
-		return null;
-	}
 
 	
 }
