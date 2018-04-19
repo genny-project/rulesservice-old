@@ -4,8 +4,8 @@ import life.genny.rules.QRules;
 /* LINK GRP_DRAFTS + INT || INTERNSHIP */
 rule "Add Internship - Step 4"
 	when
-	    rules: QRules( 	isState("BTN_CREATE_INTERSHIP") && 
-	    					isState("LINK_DRAFTS_TO_BEG") && 
+	    rules: QRules( 	isState("BTN_CREATE_INTERNSHIP") && 
+	    				isState("LINK_DRAFTS_TO_BEG") && 
 						isState("CREATED_LINK") &&
 						isState("INTERNSHIP") &&
 						isState("LINKED_BEG_TO_INT") &&

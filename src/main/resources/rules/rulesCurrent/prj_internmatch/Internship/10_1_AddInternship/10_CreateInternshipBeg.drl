@@ -4,8 +4,8 @@ import life.genny.rules.QRules;
 /* Create BEG BaseEntity */
 rule "Add Internship - Step 1"
 	when
-		rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
-						isState("EVENT_BTN_CLICK") && 
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("BTN_CREATE_INTERNSHIP") &&
 						!isState("LOOP_ADD_INTERNSHIP_STEP1") ) 
 	 then
 	 	rules.header();

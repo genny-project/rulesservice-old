@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 rule "Add Self Sourced Internship - Step 7"
 	when
         rules: QRules(  isState("BTN_CREATE_SELF_SOURCE_INTERNSHIP") &&
-        					isState("ASK_SELF_SOURCED_QUESTIONS") && 
+						isState("ASK_SELF_SOURCED_QUESTIONS") && 
 						isState("CREATED_LINK") && 
 						isState("LINKED_DRAFTS_TO_BEG") && 
                         !isState("LOOP_ADD_SS_INTERNSHIP_STEP7")  )
