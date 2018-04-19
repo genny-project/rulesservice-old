@@ -48,7 +48,6 @@ rule "Update BEG Status"
 		   			rules.updateBaseEntityStatus(beg, userCodes, "green");
 					
         			rules.setState("UPDATED_BEG_STATUS");
-            		rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
             		rules.setState("MOVE_BEG_TO_PLACED");
 					
 				}else{
