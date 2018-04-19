@@ -3859,7 +3859,7 @@ public class QRules {
 
 		LocalDateTime ldt = LocalDateTime.now();
 		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault());
-		String iso8601DateString = zdt.toString();
+		String iso8601DateString = ldt.toString(); // zdt.toString();   MUST USE UMT!!!!
 
 		System.out.println("datetime ::" + iso8601DateString);
 

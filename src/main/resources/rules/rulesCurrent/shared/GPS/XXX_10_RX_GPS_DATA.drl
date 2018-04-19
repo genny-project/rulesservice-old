@@ -28,7 +28,8 @@ rule "RX GPS Data"
 	    rules: QRules( isState("STARTED") && !isState("RX_GPS") )
      then
      	rules.setState("RX_GPS");
-	  	rules.updateGPS(m);
+ 	  	 rules.updateGPS(m); 
+
 
  		    	
 end

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -683,7 +684,18 @@ public class PaymentUtils {
 			System.out.println("fee Id ::" + feeId);
 
 			/* Get the title, description and job ID for this item from the base entity group */
-			String begTitle = loadBe.getValue("PRI_NAME", null);
+			String begTitle = loadBe.getValue("PRI_TITLE", null);
+			// Hack to stop undefined name
+			if (StringUtils.isBlank(begTitle)) {
+				begTitle = loadBe.getValue("PRI_NAME", null);
+				if (StringUtils.isBlank(begTitle)) {
+					begTitle = loadBe.getName();
+					if (StringUtils.isBlank(begTitle)) {
+						begTitle = "Job #"+loadBe.getId();
+						log.error("Job Name and Title are emoty , using job id");
+					}
+				}
+			}
 			String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
 			String begJobId = begBe.getValue("PRI_JOB_ID", null);
 
