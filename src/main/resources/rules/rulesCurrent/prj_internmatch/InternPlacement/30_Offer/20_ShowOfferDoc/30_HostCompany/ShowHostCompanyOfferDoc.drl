@@ -7,6 +7,7 @@ rule "Show Offer Document - Host Company"
 	when
 		rules: QRules( 	isState("REDIRECT_EVENT") &&
 						isState("REDIRECT_SHOW_OFFER") &&
+						isState("PRI_IS_HOST_COMPANY") && 
 						isState("EXIT_HOME_PAGE") &&
 						!isState("LOOP_SHOW_OFFER_DOCUMENT_HOST_COMPANY") ) 
 	 then
