@@ -20,6 +20,8 @@ rule "Submit Self Sourced Internship - Step 1"
 		rules.set("subLayoutRootCode", null);
 		rules.set("subLayoutIsPopup", false);
 		rules.setState("SEND_SUBLAYOUT");
+
+		rules.setState("SEND_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY");
         
         rules.footer();
 end

@@ -40,9 +40,6 @@ rule "Check if Offer is accepted by all 3 parties"
                 hostCompanyAccepted == true  ) {
                     
                 rules.setState("OFFER_ACCEPTED_BY_ALL");
-                
-            }else{
-         	    rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
             }
             rules.println("checked");
         }

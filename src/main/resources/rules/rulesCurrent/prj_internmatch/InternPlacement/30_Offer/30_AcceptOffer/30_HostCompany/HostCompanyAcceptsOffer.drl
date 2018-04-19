@@ -27,6 +27,7 @@ rule "Accept Offer - Host Company"
             rules.setState("HOST_COMPANY_ACCEPTED_OFFER");
 
             rules.setState("CHECK_OFFER_ACCEPTED");
+         	rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
          }
 	 	rules.footer();      
 end
