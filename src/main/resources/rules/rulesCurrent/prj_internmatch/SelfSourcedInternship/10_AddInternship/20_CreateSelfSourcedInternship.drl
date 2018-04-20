@@ -16,6 +16,7 @@ rule "Add Self Sourced Internship - Step 2"
 
 		/* GET newly created BEG BaseEntity */
 		BaseEntity beg = rules.getAsBaseEntity("baseEntity");
+		rules.set("begBe", beg);
 		
 		/* BEG is required to have atleast one attribute */
 		rules.saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
