@@ -51,7 +51,7 @@ rule "Send Self Sourced Internship Approval Message To Host Company"
                 }
             }
             
-            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST_COMPANY", "EMAIL");
+            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST", "EMAIL");
  		    rules.setState("SENT_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY_LOOP");
  		}
 	 	rules.footer();      
