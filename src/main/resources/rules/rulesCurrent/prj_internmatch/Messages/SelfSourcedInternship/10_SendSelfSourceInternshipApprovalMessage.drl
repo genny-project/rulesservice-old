@@ -41,7 +41,7 @@ rule "Send Self Sourced Internship Approval Message To Host Company"
 						String emailHostCompany = hostCompany.getValue("PRI_EMAIL", null);
 						if( emailHostCompany != null ) {
 							recipients[0] = emailHostCompany;
-  						rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST_COMPANY", "EMAIL");
+  						rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST", "EMAIL");
 						}
 
             /* Get all the HOSTCOMPANY staffs */
