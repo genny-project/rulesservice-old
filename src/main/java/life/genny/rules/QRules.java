@@ -3900,6 +3900,11 @@ public class QRules {
 		JsonObject codeListView = new JsonObject();
 		   codeListView.put("code", "MESSAGE_VIEW");
 		   codeListView.put("root", parentCode);
+		   //Adding selectedItem info to make this chat selected 
+		   if(chatCode == null || chatCode.isEmpty()) {
+			   codeListView.put("selectedItem", "null");
+	     }else
+	    	       codeListView.put("selectedItem", chatCode);
 		JsonObject convListView = new JsonObject();
 		    convListView.put("code", "CONVERSATION_VIEW");
 		    if(chatCode == null || chatCode.isEmpty()) {
