@@ -71,7 +71,7 @@ rule "Shortlist Internship - Step 0"
 			rules.set("internBe", intern );
 			
 			rules.setState("SHORTLIST_INTERN_READY");            
-			rules.setState("MOVE_NEW_BEG_TO_SHORTLIST");
+			rules.setState("PUBLISH_NEW_BEG_AND_KIDS_TO_HOST_COMPANY");
         }
 	 	rules.footer();      
 end

@@ -11,18 +11,15 @@ rule "Interview Intern - Step 0"
 	 	rules.header();
         rules.setState("LOOP_INTERVIEW_INTERN_STEP0");
 
-		String applicationCode = rules.getAsString("itemCode");
-		String begCode = rules.getAsString("hintCode");
+		String begCode = rules.getAsString("itemCode");
 
-		if(applicationCode == null){
-            rules.println("applicationCode is null");
-        }else if(begCode == null){
+		if(begCode == null){
             rules.println("begCode is null");
         }else{
 			BaseEntity beg = rules.getBaseEntityByCode(begCode);
 			rules.set("begBe", beg);
 			
-			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
+			/* BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			rules.set("applicationBe", application);
 
 			BaseEntity creator = rules.getChildren(beg.getCode(), "LNK_BEG", "CREATOR");
@@ -58,7 +55,7 @@ rule "Interview Intern - Step 0"
 			rules.set("companyBe", hostCompany);
 			rules.set("internshipBe", internship);
 			rules.set("internBe", intern );
-			
+ */			
 			rules.setState("INTERVIEW_INTERN_READY");            
 			rules.setState("MOVE_BEG_TO_INTERVIEW");
         }
