@@ -5,11 +5,11 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Link;
 
 import life.genny.qwandautils.QwandaUtils;
-
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 
+import java.util.Arrays;
 
 rule "Listen Link Change"
 ruleflow-group 'LinkChange'
