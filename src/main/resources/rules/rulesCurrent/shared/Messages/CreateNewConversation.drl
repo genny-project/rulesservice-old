@@ -90,16 +90,17 @@ rule "Create Conversation"
   		       // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
   		        //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
                 rules.publishData(newConvo, recipientCodeArray);
-               /* Send sender BE to receiver and receiver BE to sender  */
+               
+  		      }
+
+  		    /* redirect user to messaging screen */
+  		    /* Send sender BE to receiver and receiver BE to sender  */
                 String[] receiverCodeInArray = {receiverCode};
                 String[] senderCodeInArray = {userCode};
                 rules.publishData(rules.getBaseEntityByCode(userCode), receiverCodeInArray );
                 rules.publishData(rules.getBaseEntityByCode(receiverCode), senderCodeInArray );
-
+                rules.sendChatMessages(chatCode, 0, 500);
                 rules.publishData(rules.getBaseEntityByCode("GRP_MESSAGES"), receiverCodeInArray );
-  		      }
-
-  		    /* redirect user to messaging screen */
   		   // rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
   		    rules.sendCmdSplitView("GRP_MESSAGES", chatCode);
 
