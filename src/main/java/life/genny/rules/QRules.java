@@ -3301,7 +3301,7 @@ public class QRules {
 
 		String[] recipients = { userCode };
 		String verificationCode = generateVerificationCode();
-		if (System.getenv("DEV_MODE").equalsIgnoreCase("TRUE")) {
+		if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
 			println("The verification code is ::"+verificationCode);
 		}
 		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
