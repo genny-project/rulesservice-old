@@ -4,19 +4,19 @@ import life.genny.qwanda.message.QEventMessage;
 
 rule "Send Self Sourced Internship Approval Message To Host Company"
 	when
-		rules: QRules(  isState("SEND_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY") && 
+		rules: QRules(  isState("SEND_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY") &&
                         !isState("SEND_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY_LOOP") )
 	then
-	
+
 	 	rules.header();
 
  		rules.setState("SEND_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY_LOOP");
- 		
+
         BaseEntity beg = rules.getAsBaseEntity("begBe");
         BaseEntity intern = rules.getAsBaseEntity("internBe");
         BaseEntity internship = rules.getAsBaseEntity("internshipBe");
         BaseEntity hostCompany = rules.getAsBaseEntity("hostCompanyBe");
- 		
+
         if(beg == null){
             rules.println("beg is null");
             return;
@@ -30,29 +30,36 @@ rule "Send Self Sourced Internship Approval Message To Host Company"
             rules.println("hostCompany is null");
             return;
         }else{
-        			
-	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
+
+	 		HashMap<String, String> contextMap = new HashMap<String, String>();
 	        contextMap.put("BEG", beg.getCode());
 	        contextMap.put("INTERNSHIP", internship.getCode());
-            contextMap.put("INTERN", intern.getCode());
+          contextMap.put("INTERN", intern.getCode());
 	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
-	        
-            String[] recipients = null;
+
+            String[] recipients = new String [1];
+						String emailHostCompany = hostCompany.getValue("PRI_EMAIL", null);
+						if( emailHostCompany != null ) {
+							recipients[0] = emailHostCompany;
+  						rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST", "EMAIL");
+						}
 
             /* Get all the HOSTCOMPANY staffs */
-            List<BaseEntity> hostCompanyStaffs = rules.getChildrens(hostCompany.getCode(), "LNK_STAFF", "STAFF");
+            /* List<BaseEntity> hostCompanyStaffs = rules.getChildrens(hostCompany.getCode(), "LNK_STAFF", "STAFF");
             if(hostCompanyStaffs != null) {
-                rules.println("No. of hostCompanyStaffs   ::   " + hostCompanyStaffs.size() );	
+                rules.println("No. of hostCompanyStaffs   ::   " + hostCompanyStaffs.size() );
                 recipients = new String[hostCompanyStaffs.size()];
                 int i = 0;
                 for(BaseEntity hostCompanyStaff : hostCompanyStaffs) {
                     recipients[i] = hostCompanyStaff.getCode();
                     i++;
                 }
-            }
-            
-            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_APPROVAL_HOST_COMPANY", "EMAIL");
- 		    rules.setState("SENT_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY_LOOP");
+            } */
+
+
+
+
+ 		    		rules.setState("SENT_SELF_SOURCED_INTERNSHIP_APPROVAL_MESSAGE_TO_HOST_COMPANY_LOOP");
  		}
-	 	rules.footer();      
+	 	rules.footer();
 end
