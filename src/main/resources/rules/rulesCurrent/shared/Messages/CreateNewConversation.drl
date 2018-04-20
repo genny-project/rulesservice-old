@@ -25,8 +25,8 @@ rule "Create Conversation"
   		  // String offerCode = dataJson.getString("itemCode");
   		    String hint = dataJson.getString("hint");
   		    String userCode = rules.getUser().getCode();
-  		   
-            
+
+
   		    if(itemCode != null) {
   		       String receiverCode = null;
   		       String chatCode = "";
@@ -37,12 +37,12 @@ rule "Create Conversation"
                    BaseEntity receiver = rules.getChildren(itemCode, "LNK_OFR", "CREATOR");
                     receiverCode = receiver.getCode();
                  }
-                 
+
   		    		String[] recipientCodeArray = new String[2];
 	  			recipientCodeArray[0] = userCode;
 	  			recipientCodeArray[1] = receiverCode;
-	  			
-  		    		
+
+
   		    		rules.println("If chat already exists between users :: "+rules.checkIfChatAlreadyExists( userCode, receiverCode ));
   		    		//Check if conversation already exists
   		    		if(rules.checkIfChatAlreadyExists( userCode,receiverCode )){
@@ -87,7 +87,7 @@ rule "Create Conversation"
 	  			QwandaUtils.createLink(newConvo.getCode(), receiverCode, "LNK_USER", "receiver", 1.0, rules.getToken());
 
   		        /* Fetch new conversation and send it to relevant users */
-  		       // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);  		        
+  		       // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
   		        //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
                 rules.publishData(newConvo, recipientCodeArray);
                /* Send sender BE to receiver and receiver BE to sender  */
@@ -95,15 +95,15 @@ rule "Create Conversation"
                 String[] senderCodeInArray = {userCode};
                 rules.publishData(rules.getBaseEntityByCode(userCode), receiverCodeInArray );
                 rules.publishData(rules.getBaseEntityByCode(receiverCode), senderCodeInArray );
-                
+
                 rules.publishData(rules.getBaseEntityByCode("GRP_MESSAGES"), receiverCodeInArray );
   		      }
-  		      
+
   		    /* redirect user to messaging screen */
   		   // rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
   		    rules.sendCmdSplitView("GRP_MESSAGES", chatCode);
-  		    
-  		    
+
+
   		   }
 
   		}
