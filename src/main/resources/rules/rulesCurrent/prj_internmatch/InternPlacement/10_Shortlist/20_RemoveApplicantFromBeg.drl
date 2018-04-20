@@ -23,6 +23,8 @@ rule "Shortlist Internship - Step 2"
 		}else{
             rules.updateLink(oldBeg.getCode(), application.getCode(), "LNK_BEG", "APPLICATION", 0.0);  	
         	rules.setState("REMOVED_APPLICANT_FROM_OLD_BEG");
+
+        	rules.setState("PUBLISH_NEW_BEG_AND_KIDS_SHORTLIST_INTERNSHIP");
 		}
 	 	rules.footer();      
 end

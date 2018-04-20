@@ -1,0 +1,62 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish NEW_BEG TO Host Company bucket */
+rule "Publish NEW_BEG TO Host Company bucket"
+	when
+		rules: QRules( 	isState("PUBLISH_NEW_BEG_AND_KIDS_TO_HOST_COMPANY") &&
+						isState("SHORTLIST_INTERN_READY") &&
+						!isState("LOOP_PUBLISH_NEW_BEG_AND_KIDS_SHORTLIST_INTERNSHIP") )
+	 then
+	 	rules.header();
+        rules.setState("LOOP_PUBLISH_NEW_BEG_AND_KIDS_SHORTLIST_INTERNSHIP");
+
+        BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
+
+        if(newBeg != null){
+            BaseEntity creator = rules.getChildren(newBeg.getCode(), "LNK_BEG", "CREATOR");
+			BaseEntity hostCompany = rules.getChildren(newBeg.getCode(), "LNK_BEG", "HOSTCOMPANY");
+			BaseEntity application = rules.getChildren(newBeg.getCode(), "LNK_BEG", "APPLICATION");
+			BaseEntity internship = rules.getChildren(newBeg.getCode(), "LNK_BEG", "INTERNSHIP");
+			BaseEntity intern = rules.getChildren(newBeg.getCode(), "LNK_BEG", "INTERN");
+
+            BaseEntity staff = null;
+
+            if(hostCompany != null){
+                staff = rules.getChildren(hostCompany.getCode(), "LNK_STAFF", "STAFF");
+                if(staff == null){
+                    rules.println("staff is null");
+                }
+            }
+        
+            if(newBeg == null){
+                rules.println("newBeg is null");
+            }else if(internship == null){
+                rules.println("internship is null");
+            }else if(creator == null){
+                rules.println("creator is null");
+            }else if(hostCompany == null){
+                rules.println("hostCompany is null");
+            }else if(application == null){
+                rules.println("application is null");
+            }else if(intern == null){
+                rules.println("intern is null");
+            }else if(staff == null){
+                rules.println("intern is null");
+            }else{
+                String[] hostCompanyStaff = {staff.getCode()};
+
+                rules.publishBaseEntityByCode(newBeg.getCode(), "GRP_SHORTLISTED", "LNK_CORE", hostCompanyStaff);
+                rules.publishBaseEntityByCode(internship.getCode(), newBeg.getCode(), "LNK_BEG", hostCompanyStaff);
+                rules.publishBaseEntityByCode(creator.getCode(), newBeg.getCode(), "LNK_BEG", hostCompanyStaff); 
+                rules.publishBaseEntityByCode(hostCompany.getCode(), newBeg.getCode(), "LNK_BEG", hostCompanyStaff);
+                rules.publishBaseEntityByCode(application.getCode(), newBeg.getCode(), "LNK_BEG", hostCompanyStaff);
+                rules.publishBaseEntityByCode(intern.getCode(), newBeg.getCode(), "LNK_BEG", hostCompanyStaff);
+                
+                rules.setState("PUBLISHED_NEW_BEG_AND_KIDS_TO_HOST_COMPANY");
+                rules.setState("MOVE_NEW_BEG_TO_SHORTLIST");
+            }
+        }
+	 	rules.footer();
+end
