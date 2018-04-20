@@ -37,7 +37,7 @@ rule "Send Offer Message To Host Company"
             contextMap.put("INTERN", intern.getCode());
 	        contextMap.put("INTERNSHIP", internship.getCode());
 	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
-	        contextMap.put("URL", "http://localhost:3000/?state=" + base64);
+	        contextMap.put("URL", "https://interns.outcome-hub.com/?state=" + base64);
 	        
             String[] recipients = null;
 
@@ -52,7 +52,7 @@ rule "Send Offer Message To Host Company"
                     i++;
                 }
             }
-            
+
             rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_TO_HOST", "EMAIL");
  		    rules.setState("SENT_OFFER_MESSAGE_TO_HOST_COMPANY");
  		}
