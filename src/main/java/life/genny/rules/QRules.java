@@ -4550,4 +4550,39 @@ public class QRules {
 		return null;
 	}
 
+	public void processRoles(QDataAnswerMessage m)
+	{
+        Answer[] answers = m.getItems();
+        
+		if(answers != null && answers.length > 0) {
+			
+			for (Answer answer : answers) {
+			String attributeCode = answer.getAttributeCode();
+				
+			if(attributeCode.equals("LNK_USER_ROLE_LISTS")) {
+		        List<Answer> answersToSave = new ArrayList<Answer>();
+				// So save the SEL_OWNER as PRI_OWNER
+				if ("SEL_OWNER".equals(answer.getValue())) {
+					answersToSave.add(new Answer(getUser().getCode(),getUser().getCode(),"PRI_OWNER","TRUE"));
+					answersToSave.add(new Answer(getUser().getCode(),getUser().getCode(),"PRI_DRIVER","FALSE"));
+					println("OWNER SET!");
+				} else {
+					if ("SEL_DRIVER".equals(answer.getValue())) {
+					answersToSave.add(new Answer(getUser().getCode(),getUser().getCode(),"PRI_DRIVER","TRUE"));
+					answersToSave.add(new Answer(getUser().getCode(),getUser().getCode(),"PRI_OWNER","FALSE"));	
+					println("DRIVER SET!");			}
+				}
+			 saveAnswers(answersToSave);
+			 // force the roles to go out to the user
+				BaseEntity user = getBaseEntityByCode(getUser().getCode(),true);
+				publishBE(user);
+				break;
+			}
+			}
+		
+		}
+	   
+	
+	}
+	
 }
