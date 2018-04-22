@@ -14,31 +14,7 @@ ruleflow-group 'Answer'
     then    
         rules.header();
         	 rules.setState("CH40_ROLE_ANSWER");
-        Answer[] answers = $m.getItems();
-        List<Answer> answersToSave = new ArrayList<Answer>();
-        
-		if(answers != null && answers.length > 0) {
-			
-			for (Answer answer : answers) {
-			String attributeCode = answer.getAttributeCode();
-				
-			if(attributeCode.equals("LNK_USER_ROLE_LISTS")) {
-				// So save the SEL_OWNER as PRI_OWNER
-				if ("SEL_OWNER".equals(answer.getValue())) {
-					answersToSave.add(new Answer(rules.getUser().getCode(),rules.getUser().getCode(),"PRI_OWNER","TRUE"));
-					answersToSave.add(new Answer(rules.getUser().getCode(),rules.getUser().getCode(),"PRI_DRIVER","FALSE"));
-				} else {
-					if ("SEL_DRIVER".equals(answer.getValue())) {
-					answersToSave.add(new Answer(rules.getUser().getCode(),rules.getUser().getCode(),"PRI_DRIVER","TRUE"));
-					answersToSave.add(new Answer(rules.getUser().getCode(),rules.getUser().getCode(),"PRI_OWNER","FALSE"));				}
-				}
-				break;
-			}
-			}
-		
-		}
-	   
-	   rules.saveAnswers(answersToSave);
+		rules.processRoles($m);
 	   
 	  
        rules.footer();
