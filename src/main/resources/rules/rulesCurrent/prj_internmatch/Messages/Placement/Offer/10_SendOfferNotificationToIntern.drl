@@ -36,7 +36,8 @@ rule "Send offer notification to Intern"
             contextMap.put("INTERN", intern.getCode());
 	        contextMap.put("INTERNSHIP", internship.getCode());
 	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
-	        contextMap.put("URL", "https://interns.outcome-hub.com/?state=" + base64);
+	        // contextMap.put("URL", "https://interns.outcome-hub.com/?state=" + base64);
+	        contextMap.put("URL", "http://localhost:3000/?state=" + base64);
 
 			String[] recipients = new String[1];
 			recipients[0] = intern.getCode();

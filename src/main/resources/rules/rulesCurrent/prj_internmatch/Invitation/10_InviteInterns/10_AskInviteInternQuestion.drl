@@ -1,0 +1,26 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Invite Intern - Step 2"
+	when
+        rules: QRules(  isState("ASK_INVITE_INTERN_QUESTION") && 
+						isState("CREATED_TARGET_BASE_ENTITY") && 
+						isState("CREATED_BASE_ENTITY") && 
+						isState("PER") && 
+                        !isState("LOOP_ASK_INVITE_INTERN_QUESTION")  )
+     then 
+ 		rules.header();
+		rules.setState("LOOP_ASK_INVITE_INTERN_QUESTION");
+
+		BaseEntity internBe = rules.getAsBaseEntity("baseEntity");
+		if(internBe != null){
+			rules.set("questionSourceCode", rules.getUser().getCode());
+			rules.set("questionTargetCode", internBe.getCode());
+			rules.set("questionGroupCode", "QUE_INVITE_INTERNS_GRP");
+			rules.set("questionIsPopup", true);
+			
+			rules.setState("ASK_QUESTION");
+			rules.setState("ASKED_INVITE_INTERN_QUESTION");
+		}
+ 		rules.footer();
+end
