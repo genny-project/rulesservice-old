@@ -41,7 +41,8 @@ import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.utils.VertxUtils;
+import life.genny.verticle.utils.VertxUtils;
+
 
 public class RulesUtils {
 
