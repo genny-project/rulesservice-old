@@ -26,7 +26,7 @@ rule "SBE_OWNERS"
   	     
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	     
-  	     .addFilter("PRI_DRIVER",true)
+  	     .addFilter("PRI_OWNER",true)
   	     
   	     .setPageStart(0)
   	     .setPageSize(10000);
