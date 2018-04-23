@@ -17,7 +17,7 @@ rule "SBE_DRIVERS"
          rules.setState(drools.getRule().getName());
          rules.println("Generating "+drools.getRule().getName());
          
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Drivers")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Drivers")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")

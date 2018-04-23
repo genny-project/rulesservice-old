@@ -16,7 +16,7 @@ rule "SBE_OWNERS"
          rules.setState(drools.getRule().getName());
         rules.println("Generating "+drools.getRule().getName());
           
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Owners")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Owners")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")

@@ -17,7 +17,7 @@ rule "SBE_ALLJOBS"
          rules.setState(drools.getRule().getName());
          rules.println("Generating "+drools.getRule().getName());
          
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"All Loads")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Loads")
   	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_JOB_ID","Job ID")
   	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
