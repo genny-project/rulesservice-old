@@ -34,7 +34,7 @@ rule "Create Job"
      rules.println("The BEG code is   ::  "+beg.getCode());
 
     /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
-      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", null, (double) 1, rules.getToken());
+      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", "BEG", (double) 1, rules.getToken());
 
     /*  Add PRI_DROPOFF_DATETIME and set to null   */
       Answer loadDropOffDateTimeAns = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_DROPOFF_DATETIME", "null");

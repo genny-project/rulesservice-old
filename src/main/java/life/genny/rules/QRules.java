@@ -3707,7 +3707,7 @@ public class QRules {
 		publishBE(newJobDetails);
 
 		/* Moving the BEG */
-		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE", "BEG");
+		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE");
 		try {
 			String output = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/move/GRP_NEW_ITEMS",
 					JsonUtils.toJson(link), getToken());
