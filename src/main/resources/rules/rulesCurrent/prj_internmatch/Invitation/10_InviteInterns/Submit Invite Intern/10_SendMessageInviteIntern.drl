@@ -19,6 +19,7 @@ rule "Submit Invite Intern - Step 1"
                 rules.set("internBe", intern);
 		        /* Trigger Messages */
 	    	    rules.setState("SEND_INVITATION_MESSAGE_TO_INTERN");
+	    	    rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
             }
         }
  		rules.footer();
