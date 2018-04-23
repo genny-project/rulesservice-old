@@ -91,7 +91,7 @@ import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.utils.PaymentUtils;
-import life.genny.verticle.utils.VertxUtils;
+import life.genny.utils.VertxUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 
