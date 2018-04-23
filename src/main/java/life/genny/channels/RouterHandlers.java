@@ -13,7 +13,8 @@ import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import io.vertx.rxjava.ext.web.handler.CorsHandler;
-import life.genny.utils.VertxUtils;
+import life.genny.verticle.utils.VertxUtils;
+
 
 
 public class RouterHandlers {
