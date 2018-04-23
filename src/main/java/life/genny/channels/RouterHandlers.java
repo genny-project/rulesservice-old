@@ -4,16 +4,12 @@ import java.lang.invoke.MethodHandles;
 
 import org.apache.logging.log4j.Logger;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.http.HttpServerRequest;
-import io.vertx.rxjava.core.shareddata.AsyncMap;
-import io.vertx.rxjava.core.shareddata.SharedData;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import io.vertx.rxjava.ext.web.handler.CorsHandler;
-import life.genny.verticle.utils.VertxUtils;
+import life.genny.utils.VertxUtils;
 
 
 
