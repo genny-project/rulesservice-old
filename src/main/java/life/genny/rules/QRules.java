@@ -2915,14 +2915,14 @@ public class QRules {
 		 * "LNK_CHAT", 0, 100, true);
 		 */
 
-		List<BaseEntity> conversations = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+		List<BaseEntity> conversations = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 500, true);
 		List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
 
 		if (conversations != null) {
 
 			for (BaseEntity convo : conversations) {
 
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 100, true);
+				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 500, true);
 				if (users != null) {
                     if(users.contains(getUser()) ) {
 					    for (BaseEntity linkedUser : users) {
@@ -4469,30 +4469,35 @@ public class QRules {
      * Send Report based on the SearchBE
      */
 	public void sendReport(String reportCode) throws IOException {
+		
 		System.out.println("The report code is :: "+reportCode);
+		
 		BaseEntity searchBE = getBaseEntityByCode(reportCode);
 	    System.out.println("The search BE is :: "+ JsonUtils.toJson(searchBE));
+	    
 	    String jsonSearchBE = JsonUtils.toJson(searchBE);
 	    String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 	  				getToken());
+	    
 	    QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 	  	System.out.println("The result   ::  " + msg);
 	  	publishData(new JsonObject(resultJson));
-	    //sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
+
 	  	JsonArray columnHeaders = new JsonArray();
 	  	List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
+	  	
 	  	for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 	  		if (ea.getAttributeCode().startsWith("COL_")) {
 	  			columnAttributes.add(ea);
 	  		}
 	  	}
-	  	// Sort columns
 
 	  	columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
 	  	for (EntityAttribute ea : columnAttributes) {
 	  		columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
 	  	}
-	  	sendTableViewWithHeaders(reportCode, columnHeaders);
+
+	  	//sendTableViewWithHeaders(reportCode, columnHeaders);
 
 	}
 
@@ -4585,5 +4590,135 @@ public class QRules {
 	   
 	
 	}
+	
+	
+
+	/*
+	 *  Publish Search BE 
+	 *    TODO: Refactor
+	 */
+	public void publishSearhBE(final String reportGroupCode) {
+		BaseEntity user = getUser();
+		List<BaseEntity> results = new ArrayList<BaseEntity>();
+		String dataMsgParentCode = reportGroupCode;
+		if(reportGroupCode.equalsIgnoreCase("GRP_REPORTS")){
+			if ( user.is("PRI_DRIVER") ) {
+				dataMsgParentCode = "GRP_REPORTS_DRIVER";
+				Map<String,String> map = getMap("GRP", "GRP_REPORTS_DRIVER");  
+				for (Map.Entry<String, String> entry : map.entrySet()) {
+		      	      String key = entry.getKey();
+		      	      BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		      	    System.out.println("The Search BE is :: "+searchBe);
+		      	   results.add(searchBe);
+		      	}
+			}
+			else if ( user.is("PRI_OWNER") ) {
+				dataMsgParentCode = "GRP_REPORTS_OWNER";
+				Map<String,String> map = getMap("GRP", "GRP_REPORTS_OWNER");  
+				for (Map.Entry<String, String> entry : map.entrySet()) {
+		      	      String key = entry.getKey();
+		      	      BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		      	    System.out.println("The Search BE is :: "+searchBe);
+		      	   results.add(searchBe);
+		      	}
+			}
+			//Checking Admin - TODO: In future when role is seperated then this need toi be modified
+			if ( hasRole("admin") ) {
+				dataMsgParentCode = "GRP_REPORTS_ADMIN";
+				Map<String,String> map = getMap("GRP", "GRP_REPORTS_ADMIN");  
+				for (Map.Entry<String, String> entry : map.entrySet()) {
+		      	      String key = entry.getKey();
+		      	      BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		      	    System.out.println("The Search BE is :: "+searchBe);
+		      	   results.add(searchBe);
+		      	}
+			}
+		}else {			
+		   Map<String,String> map = getMap("GRP",reportGroupCode);     	 
+      	     //List<BaseEntity> results = new ArrayList<BaseEntity>();
+		   dataMsgParentCode = reportGroupCode;
+      	    for (Map.Entry<String, String> entry : map.entrySet()) {
+      	        String key = entry.getKey();
+      	        BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+      	        System.out.println("The Search BE is :: "+searchBe);
+      	        results.add(searchBe);
+            }     	
+		}
+        BaseEntity[] beArr = new BaseEntity[results.size()];
+		beArr = results.toArray(beArr);	
+		
+//		if ( hasRole("admin") ) {  //TODO: Refactor - Only for Tuesday 24th April's demonstration to Josh
+//			dataMsgParentCode = "GRP_REPORTS_ADMIN";
+//		}
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArr, dataMsgParentCode, null);		
+		msg.setToken(getToken());
+		System.out.println("The QDataBaseEntityMessage for "+reportGroupCode+" is :: "+JsonUtils.toJson(msg));		
+		String msgJson = JsonUtils.toJson(msg);
+		System.out.println("The Json value of data msg is :: "+msgJson);
+		publish("cmds", msgJson);	
+		
+	}
+	
+	/*
+	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display
+	 *   TODO: Refactor
+	 */
+	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
+		 QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+			JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+
+		JsonObject codeListView = new JsonObject();
+		   codeListView.put("code", "LIST_VIEW");
+		   codeListView.put("root", parentCode);
+
+		JsonObject reportListView = new JsonObject();
+		reportListView.put("code", "TABLE_VIEW");
+		    if(searchBECode == null || searchBECode.isEmpty()) {
+		       	reportListView.put("data", "null");
+		       	reportListView.put("root", "null");
+		     }else {
+		    	     JsonObject columns = new JsonObject();
+		    	     BaseEntity searchBE = getBaseEntityByCode(searchBECode);
+		    	     List<String> columnsAttribute = new ArrayList<String>();
+		    	     for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
+		    		  		if (ea.getAttributeCode().startsWith("COL_")) {
+		    		  			//columnAttributes.add(ea);
+		    		  			String attributeCode = ea.getAttributeCode();
+		    		  			String header = StringUtils.remove(attributeCode, "COL_");
+		    		  			columnsAttribute.add(header);
+		    		  			
+		    		  		}
+		    		  	}
+		    	        
+		    	        String[] beArr = new String[columnsAttribute.size()];
+		    			beArr = columnsAttribute.toArray(beArr);	
+		    			
+		    			JsonArray tColumns = new JsonArray();
+		    			JsonArray colHeaderArr = new JsonArray();
+		    			for(int i = 0; i < beArr.length; i++) {
+		    				String colS = beArr[i];
+		    				colHeaderArr.add(colS);
+		    				JsonObject obj = new JsonObject();
+		    				obj.put("code", colS);
+		    				tColumns.add(obj);
+		    			}
+		    	      
+		    			columns.put("columns", colHeaderArr);
+		    			reportListView.put("data", columns);
+		    			reportListView.put("root", searchBECode);
+		     }		    	  
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(reportListView);
+        System.out.println("The JsonArray is :: "+msgCodes);
+		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: "+cmdViewJson);
+
+		publishCmd(cmdViewJson);
+	}
+
+	
 	
 }
