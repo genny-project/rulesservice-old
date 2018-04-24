@@ -5990,6 +5990,7 @@ public class QRules {
 				}
 			}
 			rootKids.removeAll(toRemove);
+			println("2.1. rootKids after removing   ::   " + rootKids);
 			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
 
 

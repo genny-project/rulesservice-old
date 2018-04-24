@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 rule "Invite Intern - Step 2"
 	when
         rules: QRules(  isState("ASK_INVITE_INTERN_QUESTION") && 
-						isState("CREATED_TARGET_BASE_ENTITY") && 
+						isState("CREATED_INTERN_BASE_ENTITY") && 
 						isState("CREATED_BASE_ENTITY") && 
 						isState("PER") && 
                         !isState("LOOP_ASK_INVITE_INTERN_QUESTION")  )

@@ -5,10 +5,10 @@ rule "Invite Intern - Step 1"
 	when
         rules: QRules(  isState("EVENT_BTN_CLICK") && 
 						isState("BTN_INVITE_INTERN") && 
-                        !isState("LOOP_CREATE_TARGET_BASE_ENTITY")  )
+                        !isState("LOOP_CREATE_INTERN_BASE_ENTITY")  )
      then 
  		rules.header();
-		rules.setState("LOOP_CREATE_TARGET_BASE_ENTITY");
+		rules.setState("LOOP_CREATE_INTERN_BASE_ENTITY");
 
 		/* Create USER BaseEntity*/
 		rules.set("beCode", rules.getUser().getCode());
@@ -16,7 +16,7 @@ rule "Invite Intern - Step 1"
 		rules.set("beName", "PERSON");
 		rules.setState("CREATE_BASE_ENTITY");	
 
-		rules.setState("CREATED_TARGET_BASE_ENTITY");	
+		rules.setState("CREATED_INTERN_BASE_ENTITY");	
 		rules.setState("ASK_INVITE_INTERN_QUESTION");	
  		rules.footer();
 end
