@@ -290,7 +290,7 @@ public class PaymentUtils {
 			Object state = be.getValue("PRI_ADDRESS_STATE", null);
 			Object country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			Object postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
-			Object mobile = be.getValue("PRI_MOBILE", null);
+			// Object mobile = be.getValue("PRI_MOBILE", null);
 
 			/* Check a bunch of fields and store them in the object we send to Assembly if they exist */
 			if(firstName != null) {
@@ -314,10 +314,10 @@ public class PaymentUtils {
 			if(email != null) {
 				contactInfoObj.put("email", email.toString());
 			}
-			
-			if(mobile != null) {
-				contactInfoObj.put("mobile", mobile.toString());
-			}
+
+			// if(mobile != null) {
+			// 	contactInfoObj.put("mobile", mobile.toString());
+			// }
 
 			if(addressLine1 != null) {
 				locationObj.put("addressLine1", addressLine1.toString());
