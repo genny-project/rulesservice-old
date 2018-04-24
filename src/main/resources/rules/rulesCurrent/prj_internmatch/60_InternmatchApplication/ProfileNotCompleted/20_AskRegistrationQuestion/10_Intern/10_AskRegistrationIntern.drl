@@ -1,15 +1,15 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Ask Registration"
+rule "Ask Registration - Intern"
     when
         rules: QRules(  isState("PROFILE_NOT_COMPLETED") && 
 						isState("SENT_REGISTRATION_DATA") && 
-						!isState("PRI_IS_HOST_COMPANY") && 
-						!isState("LOOP_ASK_REGISTRATION") )
+						isState("PRI_IS_INTERN") && 
+						!isState("LOOP_ASK_REGISTRATION_INTERN") )
      then 
  		rules.header();
-		rules.setState("LOOP_ASK_REGISTRATION");
+		rules.setState("LOOP_ASK_REGISTRATION_INTERN");
 
 		String questionSourceCode = rules.getUser().getCode();
 		String questionTargetCode = rules.getUser().getCode();
