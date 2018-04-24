@@ -24,7 +24,7 @@ rule "Is Profile Completed"
         if(company != null)
         {
             companyCode = company.getCode();
-            isCompanyCompleted = rules.isMandatoryFieldsEntered(companyCode, "QUE_NEW_USER_COMPANY_GRP")
+            isCompanyCompleted = rules.isMandatoryFieldsEntered(companyCode, "QUE_NEW_USER_COMPANY_GRP");
         }
         else {
             isCompanyCompleted = true;
