@@ -87,6 +87,7 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
+import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -3776,7 +3777,7 @@ public class QRules {
 
 			/* Sending toast message to owner frontend */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
+ 
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
@@ -4499,7 +4500,7 @@ public class QRules {
 	  	//sendTableViewWithHeaders(reportCode, columnHeaders);
 
 	}
-
+	
 	/*
 	 * Publish Search BE results
 	 */
@@ -4534,6 +4535,25 @@ public class QRules {
 		return false;
 
 	}
+	
+	//attachments
+		public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+					String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+				if (recipientArray != null && recipientArray.length > 0) {
+
+					/* Adding project code to context */
+					String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+					contextMap.put("PROJECT", projectCode);
+
+					JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
+							recipientArray, attachmentList, getToken());
+					publish("messages", message);
+				} else {
+					log.error("Recipient array is null and so message cant be sent");
+				}
+
+		}
 
 	/*
 	 * Give oldChat for the given sender and receiver
@@ -4554,6 +4574,7 @@ public class QRules {
 			}
 		return null;
 	}
+	
 
 	public void processRoles(QDataAnswerMessage m)
 	{
