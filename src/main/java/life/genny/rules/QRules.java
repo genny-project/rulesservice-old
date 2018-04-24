@@ -3782,16 +3782,6 @@ public class QRules {
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
-			
-			/* Testing message with attachments */
-			String[] userarr = {"PER_USER2"};
-			List<QBaseMSGAttachment> attachmentList = new ArrayList<>();
-			QBaseMSGAttachment attachment1 = new QBaseMSGAttachment(AttachmentType.NON_INLINE, "image/png", "https://i.imgur.com/1Qe34Ol.png", false, "IMG");			
-			QBaseMSGAttachment attachment2 = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", "https://raw.githubusercontent.com/genny-project/layouts/master/email/templates/invoice-pdf-owner.html", true, "INVOICE");
-			attachmentList.add(attachment1);
-			attachmentList.add(attachment2);
-
-			sendMessage("", userarr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL", attachmentList);		
 		}
 
 
