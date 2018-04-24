@@ -36,7 +36,7 @@ rule "Is Profile Completed"
         rules.println("The isProfileCompleted status is :: " + isProfileCompleted);
         rules.println("The isUserCompanyDetailsEntered status is :: " + isCompanyCompleted);
 
-        if(isProfileCompleted && rules.isMandatoryFieldsEntered(companyCode, "QUE_NEW_USER_COMPANY_GRP") ){
+        if(isProfileCompleted && isCompanyCompleted ){
             rules.println("The User Profile has been accepted");
 		        rules.setState("NEW_USER_PROFILE_COMPLETION_CHECKED");
         }
