@@ -42,7 +42,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
-import org.json.simple.JSONObject;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -67,6 +66,8 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
+import life.genny.qwanda.message.QBaseMSGAttachment;
+import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -89,10 +90,10 @@ import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
-import life.genny.utils.PaymentUtils;
-import life.genny.utils.VertxUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
+import life.genny.utils.PaymentUtils;
+import life.genny.utils.VertxUtils;
 
 
 public class QRules {
@@ -4716,6 +4717,27 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
+	
+	
+	//Send message with attachments
+	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap,
+			String templateCode, String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+		if (recipientArray != null && recipientArray.length > 0) {
+
+			/* Adding project code to context */
+			String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+			contextMap.put("PROJECT", projectCode);
+
+			JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType,
+					contextMap, recipientArray, attachmentList, getToken());
+			publish("messages", message);
+		} else {
+			log.error("Recipient array is null and so message cant be sent");
+		}
+
+	}
+
 
 	
 	
