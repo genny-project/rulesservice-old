@@ -12,7 +12,8 @@ rule "Email Lecturer - Step 0"
 	 	rules.header();
         rules.setState("LOOP_EMAIL_LECTURER");
 
-        rules.set("internBe", rules.getUser().getCode());
+        rules.set("internBe", rules.getUser());
+
         rules.setState("TRIGGER_SEND_EMAIL_TO_LECTURER");
 
         rules.footer();
