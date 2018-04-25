@@ -15,8 +15,8 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.24</qwanda-utils.version>
-		<genny-verticle.version>1.0.24</genny-verticle.version>
+		<qwanda-utils.version>1.0.23</qwanda-utils.version>
+		<genny-verticle.version>1.0.23</genny-verticle.version>
 		
                 <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
