@@ -7,7 +7,7 @@ rule "Send Bucket Layout To Frontend"
     salience 660
     agenda-group "SendLayoutsAndData"
     when
-        rules: QRules( isState("STARTED") && isState("SEND_BUCKET_DATA") && isState("USER_IS_OWNER") && (!isState("SEND_BUCKET_LAYOUT")) ) 
+        rules: QRules( isState("STARTED") && isState("SEND_BUCKET_DATA") /*&& isState("USER_IS_OWNER")*/ && (!isState("SEND_BUCKET_LAYOUT")) ) 
      then
      	rules.header();
      	
