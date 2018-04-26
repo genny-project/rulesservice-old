@@ -30,7 +30,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.mortbay.util.ajax.JSON;
 
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
@@ -1066,10 +1065,13 @@ public class PaymentUtils {
 
 		/* Get the Assembly item ID */
 		Object itemId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ITEM_ID");
+		
+		JSONObject releasePaymentObj = new JSONObject();
+		releasePaymentObj.put("singleItemDisbursement", true);
 
 		if(itemId != null) {
 			try {
-				paymentResponse = PaymentEndpoint.releasePayment(itemId.toString(), authToken);
+				paymentResponse = PaymentEndpoint.releasePayment(itemId.toString(), JsonUtils.toJson(releasePaymentObj), authToken);
 				if(!paymentResponse.contains("error")) {
 					log.debug("release payment response ::"+paymentResponse);
 					isReleasePaymentSuccess = true;
@@ -1702,10 +1704,13 @@ public class PaymentUtils {
 
 		String paymentResponse = null;
 		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+		
+		JSONObject releasePaymentObj = new JSONObject();
+		releasePaymentObj.put("singleItemDisbursement", true);
 
 		if(itemId != null) {
 			try {
-				paymentResponse = PaymentEndpoint.releasePayment(itemId, authToken);
+				paymentResponse = PaymentEndpoint.releasePayment(itemId, JsonUtils.toJson(releasePaymentObj), authToken);
 				if(!paymentResponse.contains("error")) {
 					log.debug("release payment response ::"+paymentResponse);
 					isReleasePaymentSuccess = true;

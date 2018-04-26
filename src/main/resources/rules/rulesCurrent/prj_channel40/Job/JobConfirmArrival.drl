@@ -31,7 +31,8 @@ then
 			     Answer beAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "false");
 		         rules.publishData(beAnswer);  
 		            
-		    	 	rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
+		    	 	//rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
+		    	 	rules.moveBaseEntitySetLinkValue(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED", "LNK_CORE", "BEG"); 
 
 			    	BaseEntity jobBe = rules.getBaseEntityByCode(begCode);
 			    	String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
