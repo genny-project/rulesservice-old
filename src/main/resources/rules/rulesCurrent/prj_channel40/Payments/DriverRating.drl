@@ -19,7 +19,7 @@ rule "Display Dashboard On Rating Submission"
 	 	
 	    String begCode = user.getValue("STT_JOB_IS_RATING", null);
 	 	/* we mark the job as marked */
-         rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE"); 
+        /* rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE"); */ //Not waiting for rating to move job to paid anymore
        	 
        	 BaseEntity jobBe = rules.getBaseEntityByCode(begCode);
          String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
