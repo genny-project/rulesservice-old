@@ -148,12 +148,12 @@ public class PaymentEndpoint {
 	}
 	
 	
-	public static String releasePayment(String paymentItemId, String authToken) throws PaymentException {
+	public static String releasePayment(String paymentItemId, String releaseEntity, String authToken) throws PaymentException {
 		String releasePaymentResponse = null;
 		
 		try {
 			releasePaymentResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/items/" + paymentItemId + "/release-payment", authToken);
+					paymentServiceUrl + "/" + paymentProvider + "/items/" + paymentItemId + "/release-payment", releaseEntity, authToken);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
