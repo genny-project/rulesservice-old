@@ -20,7 +20,8 @@ then
 		
   		     String begCode = $m.getItemCode();
 		     if(begCode != null) {
-		    	 	rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT","LNK_CORE");
+		    	 	//rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT","LNK_CORE");
+		    	 	rules.moveBaseEntitySetLinkValue(begCode, "GRP_APPROVED",	"GRP_IN_TRANSIT", "LNK_CORE", "BEG"); 
 		     }
 		     
 		/* To save pick-up time as an attribute of a job */
