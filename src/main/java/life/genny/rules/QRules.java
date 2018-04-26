@@ -3702,15 +3702,9 @@ public class QRules {
 		/* publishing to Owner */
 		publishBE(newJobDetails);
 
-		/* Moving the BEG */
-		Link link = new Link("GRP_DRAFTS", jobCode, "LNK_CORE");
-		try {
-			String output = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/move/GRP_NEW_ITEMS",
-					JsonUtils.toJson(link), getToken());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		/* Moving the BEG to GRP_NEW_ITEMS */
+	  /*The moveBaseEntity without linkValue sets the linkValue to default value, "LINK". So using moveBaseEntitySetLinkValue() */
+		moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS",	"GRP_NEW_ITEMS", "LNK_CORE", "BEG"); 
 
 		/* Get the sourceCode(Company code) for this User */
 		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
