@@ -3730,12 +3730,13 @@ public class QRules {
 		/* Try sending different types of links to the frontend to get it to display */
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 		/* publishing to Owner */
-		publishBE(getBaseEntityByCode(loadCode));
+	//	publishBE(getBaseEntityByCode(loadCode));
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
 
