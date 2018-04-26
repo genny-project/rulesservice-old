@@ -3223,7 +3223,8 @@ public class QRules {
 						VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
 					}
 
-					moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+					//moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS",	"GRP_APPROVED", "LNK_CORE", "BEG"); 
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
