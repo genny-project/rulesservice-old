@@ -3721,19 +3721,17 @@ public class QRules {
 		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
-
-		/* SEND LOAD BE */
-		/* Try sending different types of links to the frontend to get it to display */
-		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-		/* publishing to Owner */
-		publishBE(getBaseEntityByCode(loadCode));
+		
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
 
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+		/* SEND LOAD BE */
+		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
+		publishBE(getBaseEntityByCode(loadCode));
 
 		if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
