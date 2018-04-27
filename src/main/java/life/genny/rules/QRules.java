@@ -1973,7 +1973,7 @@ public class QRules {
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
 				saveAnswers(answers);
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
+				
 				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
 				/* Publish chat to Receiver */
 				publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray);
@@ -1982,6 +1982,10 @@ public class QRules {
 																								// to get data from DB,
 																								// it was missing
 																								// attribute
+			   QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());//Creating link 
+			   																							    //after sending both chat
+			   																							//and msg BE as front-end wants 
+			   																							//BE's before linkChange message
 
 			}
 		}
@@ -4349,13 +4353,13 @@ public class QRules {
 	 */
 	/* TODO: refactor this. */
 	public void redirectToHomePage() {
-		if (getUser().is("PRI_OWNER")) {
+		//if (getUser().is("PRI_OWNER")) {  //removing user role check as all the users  needs to see BucketView
 			sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 			setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
-		} else if (getUser().is("PRI_DRIVER")) {
-			sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
-			setLastLayout("LIST_VIEW", "GRP_NEW_ITEMS");
-		}
+		//} else if (getUser().is("PRI_DRIVER")) {
+//			sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
+//			setLastLayout("LIST_VIEW", "GRP_NEW_ITEMS");
+//		}
 	}
 
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be) {
