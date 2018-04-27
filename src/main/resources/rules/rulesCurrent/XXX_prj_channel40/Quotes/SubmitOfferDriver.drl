@@ -190,11 +190,15 @@ rule "Submit Offer Driver"
                         rules.saveAnswer(offerActionAnswer3);
                     
                     /* Send Messages*/
+                    	   BaseEntity loadBe = rules.getChildren(begCode, "LNK_BEG", "LOAD");
+                    
                         HashMap<String,String> submitContextMapForOwner = new HashMap<String, String>();
                         submitContextMapForOwner.put("JOB", begCode);
                         submitContextMapForOwner.put("OFFER", offerCode);
                         submitContextMapForOwner.put("QUOTER", quoterCode);
                         submitContextMapForOwner.put("OWNER", ownerCode);
+                        submitContextMapForOwner.put("LOAD", loadBe.getCode());
+                        
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");

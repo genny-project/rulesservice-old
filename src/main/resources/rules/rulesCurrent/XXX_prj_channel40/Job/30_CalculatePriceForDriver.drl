@@ -23,12 +23,14 @@ rule "Calculate Price for Driver"
     then    
     
         rules.header();
-        rules.setState("CALCULATE_DRIVER_PRICE");
         
-        if(rules.getUser() != null && rules.getUser().is("PRI_DRIVER")) {
-        		
+        rules.setState("CALCULATE_DRIVER_PRICE");
+        Answer newAnswer = $m.getAnswer();
+        BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+        
+        if (source.is("PRI_DRIVER") == true) {	
         		String tokenString = rules.getToken();
-            Answer newAnswer = $m.getAnswer();
+            
             /* BaseEntity Code */
                 String begCode = newAnswer.getTargetCode();
             /* Get JSON */
@@ -60,17 +62,17 @@ rule "Calculate Price for Driver"
                 Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY);
             /* Get userRole */
                 String userRole = null;
-                if(isOffer) {           
-                    String offerCode = newAnswer.getTargetCode();
-                    System.out.println(" offerCode BE "+ offerCode);
-                    userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
-                }
-                System.out.println("targetCode   ::   " + newAnswer.getTargetCode() );
-                System.out.println("userRole     ::    " + userRole );
+          
+                    BaseEntity offer = rules.getBaseEntityByCode(newAnswer.getTargetCode());
+                    System.out.println(" offerCode BE "+ offer.getCode());                  
+                    userRole = offer.getValue("PRI_NEXT_ACTION",null);
+                    
+                rules.println("targetCode   ::   " + newAnswer.getTargetCode() );
+                rules.println("userRole     ::    " + userRole );
             
             /* Check if the amount is  not null or not negative */  
                 if( amountValue != null && amountValue >= 0){
-                    if( newAnswer.getTargetCode().startsWith("OFR_") && (userRole == null || userRole.equals("QUOTER") || userRole.equals("OWNER"))) {
+                    if(  (userRole == null || userRole.equals("QUOTER") || userRole.equals("OWNER"))) {
                          
                          /* Driver Fees */
 					   	fees = rules.calcDriverFee( answerPrice );       
@@ -87,14 +89,14 @@ rule "Calculate Price for Driver"
                         driverPriceIncGST = rules.includeGSTMoney(answerPrice);
                         ownerPriceExcGST = driverPriceExcGST.add(feePriceExcGST);
                         ownerPriceIncGST = rules.includeGSTMoney(ownerPriceExcGST);
-                        System.out.println("=======================================================================================================");
-                        System.out.println("QUOTER quoting     ::   ");
-                        System.out.println("targetCode         ::   " +newAnswer.getTargetCode() );
-                        System.out.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
-                        System.out.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
-                        System.out.println("driverPriceIncGST  ::   " + driverPriceIncGST);
-                        System.out.println("driverPriceExcGST  ::   " + driverPriceExcGST);
-                        System.out.println("=======================================================================================================");
+                        rules.println("=======================================================================================================");
+                        rules.println("QUOTER quoting     ::   ");
+                        rules.println("targetCode         ::   " +newAnswer.getTargetCode() );
+                        rules.println("ownerPriceExcGST   ::   " + ownerPriceExcGST);
+                        rules.println("ownerPriceIncGST   ::   " + ownerPriceIncGST);
+                        rules.println("driverPriceIncGST  ::   " + driverPriceIncGST);
+                        rules.println("driverPriceExcGST  ::   " + driverPriceExcGST);
+                        rules.println("=======================================================================================================");
                         /* Get amount values in String */
                             String ownerPriceIncGSTString = QwandaUtils.getMoneyString(ownerPriceIncGST);
                             String ownerPriceExcGSTString = QwandaUtils.getMoneyString(ownerPriceExcGST);
@@ -105,16 +107,20 @@ rule "Calculate Price for Driver"
                             
                             /* Save PRICES as Answer */
                             List<Answer> answers = new ArrayList<Answer>();
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
-                           /* answers.add(new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString)); */
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
-                            answers.add(new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
+                            answers.add(new Answer(newAnswer.getSourceCode(), begCode, ownerPriceIncGstCode, ownerPriceIncGSTString));
+                            answers.add(new Answer(newAnswer.getSourceCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString));
+                            answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString));
+                           /* answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString)); */
+                            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
+                            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
                             rules.saveAnswers(answers);
                     }
+                     else {
+                     	rules.println("ERROR: User Role not acceptable - "+userRole);
+                     }
+                } else {
+                	rules.println("ERROR: Amount is dodgy- "+amountValue);
                 }
-        }
-
+		}
         rules.footer();
 end

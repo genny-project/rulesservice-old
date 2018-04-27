@@ -29,6 +29,8 @@ then
 		
 		/* To find the owner of a job */
 		String ownerCode = null;
+		String loadCode = null;
+		
 		List<Link> links = rules.getLinks(begCode, "LNK_BEG");
 		if (links != null) {
 			for (Link link : links) {
@@ -38,6 +40,10 @@ then
 						ownerCode = link.getTargetCode();
 						rules.println("owner of the job ::"+ownerCode);
 					}
+					
+					if(linkValue != null && linkValue.equals("LOAD")) {
+		   				loadCode = link.getTargetCode();
+		  			 }
 				}
 		}
 			
@@ -45,6 +51,7 @@ then
 		HashMap<String, String> contextMap = new HashMap<String, String>();
 		contextMap.put("JOB", begCode);
 		contextMap.put("DRIVER", rules.getUser().getCode());
+		contextMap.put("LOAD", loadCode);
 		
 		String[] recipientArr = { ownerCode };
 		     

@@ -12,8 +12,7 @@ rule "User go offline event"
         
     		rules.header();
         
-        String userCode = rules.getUser().getCode();
-        rules.updateBaseEntityAttribute(userCode, userCode, "PRI_ONLINE", "false");
-        
+         rules.logoutCleanup();
+         
 		rules.footer();      
 end
