@@ -8,8 +8,8 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Select Conversation"
 
     when
-	    $m :  QEventMessage( event_type == "BTN_CLICK" && data.code != "GRP_NEW_ITEMS" )
-        rules: QRules( !isState("MESSAGES_SENT") )
+	    $m :  QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_SEE_CONVERSATION" )
+        rules: QRules( isState("STARTED") && !isState("MESSAGES_SENT") )
      then
 
      	rules.header();
@@ -29,7 +29,7 @@ rule "Select Conversation"
   		    		rules.sendCmdSplitView("GRP_MESSAGES", conversationCode);
   		        }
   		      }else{
-  		        rules.println("This is not related to Chat Messages");
+  		        rules.println("Error! The Chat Code is null.");
   		    }
   		    }
 
