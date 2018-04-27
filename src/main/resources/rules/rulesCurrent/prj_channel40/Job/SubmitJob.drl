@@ -1,0 +1,92 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.Answer;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.rules.RulesUtils;
+import life.genny.qwanda.entity.User;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import io.vertx.core.json.JsonObject;
+
+
+/* Rule handling Cancel and Submit Button click in the Create Load  */
+rule "Submit Job"
+    when
+      $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_JOB_DETAILS_GRP" )
+      rules: QRules( !isState("NEW_JOB_SAVED") )   
+    then
+         rules.header();  
+         rules.setState("NEW_JOB_SAVED"); 
+         
+         drools.setFocus("ispayments");  /* NOW Set up Payments */
+         
+        /* rules.showLoading("Creating your new load..."); */
+                
+       /*  Get data.value and decode    */
+        String dataString = $m.data.getValue();
+        JsonObject dataJson = new JsonObject(dataString);
+        String jobCode = dataJson.getString("targetCode");
+        BaseEntity job = rules.getBaseEntityByCode(jobCode);
+        String actionCode = dataJson.getString("action"); 
+        rules.println("The job code is   :: "+jobCode);
+        
+       if(actionCode.equalsIgnoreCase("submit")) {       
+           
+   		rules.saveJob(job);
+   		
+   		rules.println("sending email to admins");
+   		String author = job.getValue("PRI_AUTHOR",null);
+   		/* If job is a new job, send email to admins */
+   		if ((!job.getValue("PRI_JOB_IS_SUBMITTED", false))&&(!"PER_ADAMCROW63_AT_GMAILCOM".equals(author))) {
+   			
+   			/* Send email to admins*/
+   			HashMap<String, String> contextMap = new HashMap<String, String>();
+			contextMap.put("JOB", jobCode);
+			contextMap.put("OWNER", rules.getUser().getCode());
+		
+			String[] recipientCodes = { "PER_MULLENS1122_AT_GMAILCOM", "PER_DREW_AT_CH40COMAU", "PER_ADAMCROW63_AT_GMAILCOM"};
+
+			rules.println("The String Array is ::" + Arrays.toString(recipientCodes));
+
+			/* Sending message to BEG OWNER */
+			rules.sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			
+			/* Add new attribute to save that a job is existing */
+	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
+	      	rules.saveAnswer(newJobSubmitAnswer);
+   		
+   		}
+   		
+   		
+   		/*Sending email to quoters who have made offer to a job, when a job is edited */
+   		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+   		
+     		rules.triggerEmailForJobUpdate(jobCode);
+   		 
+   	 	}		
+        
+         /*  Calling the rule group : BucketView     */
+           drools.setFocus("SendLayoutsAndData"); 
+           
+      }
+      else if(actionCode.equalsIgnoreCase("cancel")){
+      
+       /*  String status =  rules.removeLink("GRP_DRAFTS", jobCode, "LNK_CORE");
+        rules.println("Status after removing link  :: " +status);   */
+       
+       /*    Calling the rule group : BucketView     */
+         drools.setFocus("SendLayoutsAndData");       
+      }
+             
+     rules.footer(); 
+        
+end

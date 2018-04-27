@@ -1,0 +1,17 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Select Freight Owner Role"
+	when
+	    rules: QRules( 	isState("BTN_SELECT_ROLE_FREIGHT_OWNER") && 
+						!isState("FREIGHT_OWNER_SELECTED") ) 	    
+	 then
+	    
+		rules.header();
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_FREIGHT_OWNER", "TRUE");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_DRIVER", "FALSE");
+		rules.setState("FREIGHT_OWNER_SELECTED");
+	    rules.footer();     		      
+end

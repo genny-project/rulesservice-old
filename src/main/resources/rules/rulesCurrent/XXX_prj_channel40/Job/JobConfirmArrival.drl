@@ -42,10 +42,13 @@ then
         			/* Add new attribute to save the time when load was dropped off */
 	      		Answer jobDeliveryDateTimeAnswer = new Answer(rules.getUser().getCode(), begCode, "PRI_DROPOFF_DATETIME", rules.getZonedCurrentLocalDateTime());
 	      		rules.saveAnswer(jobDeliveryDateTimeAnswer);
+	      		
+	      		BaseEntity loadBe = rules.getChildren(begCode, "LNK_BEG", "LOAD");
         
         			HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("JOB", begCode);
 				contextMap.put("DRIVER", quoterCode);
+				contextMap.put("LOAD", loadBe.getCode());
 				
 				String[] recipientCodes = {ownerCode};
 				    		

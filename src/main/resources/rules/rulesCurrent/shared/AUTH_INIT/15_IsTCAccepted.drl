@@ -8,27 +8,31 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Is TC Accepted"
     when
-        rules: QRules( isState("IS_LOGGED_IN") && isState("NEW_USER_PROFILE_COMPLETION_CHECKED") && isState("MOBILE_VERIFICATION_COMPLETED") && !isState("NEW_USER_CREATED") && !isState("USER_TC_ACCEPTION_CHECKED") ) 
+        rules: QRules( isState("IS_LOGGED_IN") && isState("NEW_USER_PROFILE_COMPLETION_CHECKED") && isState("MOBILE_VERIFICATION_COMPLETED") && !isState("NEW_USER_CREATED") && !isState("USER_TC_ACCEPTION_CHECKED") )
      then
         rules.header();
-  		       
-        String userCode =  rules.getUser().getCode();
-        if( rules.isMandatoryFieldsEntered(userCode, "QUE_NEW_USER_TC_GRP") ){
+
+        String userCode = rules.getUser().getCode();
+        if( rules.isMandatoryFieldsEntered(userCode, "QUE_NEW_USER_TC_GRP") ) {
+
             rules.println("The TC has been accepted");
-            
+
             if (rules.hasRole("admin")) {
         		    VertxUtils.subscribeAdmin( rules.realm(),userCode );
-             }      
-		    drools.setFocus("payments"); 
-		    rules.setState("USER_TC_ACCEPTION_CHECKED");
-         }else{
-             rules.println("The TC has not been accepted. Sending TC's again");
-             if(rules.isState("EVENT_AUTH_INIT")){
+            }
+
+            drools.setFocus("payments");
+		        rules.setState("USER_TC_ACCEPTION_CHECKED");
+        }
+        else {
+
+          rules.println("The TC has not been accepted. Sending TC's again");
+          if(rules.isState("EVENT_AUTH_INIT")){
   		       rules.sendLayout("LAY_FULL_SCREEN", "initial-profile-update.json");
-  		     }
-             rules.askQuestions(userCode,userCode,"QUE_NEW_USER_TC_GRP"); 
+  		    }
+
+          rules.askQuestions(userCode,userCode,"QUE_NEW_USER_TC_GRP");
        }
-        
-	  
-	   rules.footer();     		      
+
+	   rules.footer();
 end

@@ -1,0 +1,35 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends Buckets for Intern */
+rule "Send Buckets - INTERN" 
+    when    
+        rules: QRules(  isState("SEND_BUCKETS_INTERN") && 
+                        isState("SENT_GRP_AVAILABLE_BEG_KIDS_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_BUCKETS_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_BUCKETS_INTERN");
+		
+        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+
+		if(buckets != null){
+			for (BaseEntity bucket : buckets) {
+                /* Remove  GRP_AVAILABLE from GRP_DASHBOARD */
+				if (bucket.getCode().equalsIgnoreCase("GRP_AVAILABLE")) {
+					toRemove.add(bucket);
+				}
+			}
+			buckets.removeAll(toRemove);
+
+	        /* SEND Intern Buckets */
+			rules.publishCmd(buckets, "GRP_ROOT", "LNK_CORE");		
+			rules.set("internBuckets", buckets);
+
+        	rules.setState("SENT_BUCKETS_INTERN");
+        	rules.setState("SEND_BEGS_AND_KIDS_INTERN");
+		}
+	    rules.footer();      		      
+end

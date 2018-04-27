@@ -17,7 +17,7 @@ rule "SBE_USERS"
          rules.setState(drools.getRule().getName());
          rules.println("Generating "+drools.getRule().getName());
          
- 	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Users")
+ 	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of Users")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")
@@ -28,7 +28,7 @@ rule "SBE_USERS"
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	      	     
   	     .setPageStart(0)
-  	     .setPageSize(20);
+  	     .setPageSize(10000);
   	     
   		 rules.add("GRP","GRP_REPORTS_ADMIN",report);
 end

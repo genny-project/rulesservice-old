@@ -1,0 +1,16 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Exit Add To Group"
+    when
+        rules: QRules(  isState("ADDDED_TO_GROUP") && 
+                        !isState("DID_EXIT_ADD_TO_GROUP") ) 
+     then    
+        rules.header();
+        
+		rules.setState("DID_EXIT_ADD_TO_GROUP");
+		rules.setState("EXIT_ADD_TO_GROUP");
+        
+		rules.footer();
+      		      
+end

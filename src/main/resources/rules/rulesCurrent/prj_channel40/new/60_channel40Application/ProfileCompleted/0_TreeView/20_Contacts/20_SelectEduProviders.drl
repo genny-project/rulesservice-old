@@ -1,0 +1,26 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Select GRP_EDU_PROVIDERS - Contacts"
+    when
+      rules: QRules(  isState("EVENT_TV_SELECT") &&
+                      isState("TV1") &&
+                      isState("GRP_EDU_PROVIDERS") &&
+                      !isState("LOOP_SELECT_EDU_PROVIDERS") )
+    then
+      rules.header();
+      rules.setState("LOOP_SELECT_EDU_PROVIDERS");
+
+      String tvSelectValue = rules.getAsString("tvSelectValue");
+      
+      if(tvSelectValue.equals("GRP_EDU_PROVIDERS")){
+
+        rules.set("cmdViewType", "LIST_VIEW");
+        rules.set("cmdViewRootCode", tvSelectValue);
+        rules.setState("SEND_CMD_VIEW");
+
+        rules.setState("SELECTED_EDU_PROVIDERS");
+        rules.clearState(tvSelectValue);
+      }
+      rules.footer();
+end

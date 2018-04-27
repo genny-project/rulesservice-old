@@ -234,5 +234,17 @@ public class PaymentEndpoint {
 		return deleteAccountResponse;
 		
 	}
+	
+	public static String getAssemblyPaymentItem(final String itemId, final String authToken) throws PaymentException {
+
+		String itemResponse = null;
+		try {
+			itemResponse = PaymentUtils.apiGetPaymentResponse(
+					paymentServiceUrl + "/" + paymentProvider + "/items/" + itemId, authToken);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		return itemResponse;
+	}
 
 }

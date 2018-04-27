@@ -16,7 +16,7 @@ rule "SBE_DRIVERJOBS"
      then
          rules.setState(drools.getRule().getName());
          
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"Loads")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of all My Loads")
   	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_JOB_ID","Job ID")
   	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
@@ -27,7 +27,7 @@ rule "SBE_DRIVERJOBS"
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
   	     
   	     .setPageStart(0)
-  	     .setPageSize(500);
+  	     .setPageSize(10000);
   	     
   	   /*  .setStakeholder(rules.getUser().getCode()); */
   	     

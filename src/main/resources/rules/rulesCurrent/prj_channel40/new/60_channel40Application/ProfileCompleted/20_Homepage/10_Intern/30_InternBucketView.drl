@@ -1,0 +1,20 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Home Page - Send Layout - INTERN BUCKET VIEW"
+     when
+        rules: QRules(  isState("HOME_PAGE_SENT_DATA") && 
+                        isState("PRI_IS_INTERN") &&
+                        !isState("LOOP_HOME_PAGE_SEND_LAYOUT") ) 
+     then      
+        rules.header();
+        rules.setState("LOOP_HOME_PAGE_SEND_LAYOUT");
+
+        rules.sendSublayout("DASHBOARD", "homepage/dashboard.json", "GRP_DASHBOARD", false);
+        
+        rules.setState("HOME_PAGE_SENT_LAYOUT");
+		rules.footer();     		      
+end
+     	

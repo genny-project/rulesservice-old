@@ -11,7 +11,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "TV_SELECT Event - Generate Report"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.value !="GRP_REPORTS" && data.value.startsWith("GRP_REPORTS_") )
+       $m : QEventMessage( event_type == "TV_SELECT" && ( data.value =="GRP_REPORTS" || data.value.startsWith("GRP_REPORTS_")) )
        rules: QRules(!isState("REPORTS_LAYOUT_SENT"))
      then
 
@@ -21,7 +21,7 @@ rule "TV_SELECT Event - Generate Report"
        	String grpCode = $m.getData().getValue();
        	rules.println("The Group Id is :: "+grpCode );
        	
-       	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
+    /*   	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
        	Layout[] layoutArray = new Layout[1];
        	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
         QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", "ADMIN_REPORTS");
@@ -30,7 +30,21 @@ rule "TV_SELECT Event - Generate Report"
 		rules.println("the Layout array string is :: "+ layoutArray[0].getData());
 		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
 		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
-		rules.publishCmd(cmdJobSublayoutJson);
+		rules.publishCmd(cmdJobSublayoutJson);   */
+		
+		rules.publishSearhBE(grpCode);
+		BaseEntity user = rules.getUser();
+		String viewGrpCode = "";
+	    if ( user.is("PRI_DRIVER") ) {
+	        viewGrpCode = "GRP_REPORTS_DRIVER";
+	    }
+	    else if ( user.is("PRI_OWNER") ) {
+	        viewGrpCode = "GRP_REPORTS_OWNER";
+	    }
+	    	if ( rules.hasRole("admin") ) {
+	    	    viewGrpCode = "GRP_REPORTS_ADMIN";
+	    	}
+		rules.sendCmdReportsSplitView(viewGrpCode, null);
 
      rules.footer();
 end

@@ -1,0 +1,44 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends Students for EDU_PROVIDER */
+rule "Send Students - EDU_PROVIDER" 
+    when    
+        rules: QRules(  isState("SEND_STUDENTS_EDU_PROVIDER") && 
+                        isState("SENT_GRP_AVAILABLE_BEG_KIDS_EDU_PROVIDER") && 
+                        isState("PRI_IS_EDU_PROVIDER") && 
+                        !isState("LOOP_SEND_STUDENTS_EDU_PROVIDER") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_STUDENTS_EDU_PROVIDER");
+		
+		/* Get eduProvider BE */
+		BaseEntity eduProvider = rules.getParent(rules.getUser().getCode(), "LNK_EDU");
+
+		rules.set("eduProviderBe" , eduProvider);
+
+		if (eduProvider != null) {
+			/* Get all the students */
+			List<BaseEntity> students = rules.getChildrens(eduProvider.getCode(), "LNK_EDU", "STUDENT");
+			rules.println("No. of students   ::   " + students.size());
+
+			if(students != null){
+				rules.println("No. of Students   ::   " + students.size());
+				rules.set("studentsBeList" , students);
+			
+				/* subscribe eduProvider staff to all the students */
+				rules.subscribeUserToBaseEntities(rules.getUser().getCode(), students);
+
+				/* Send all the students */
+				rules.publishCmd(students, "GRP_INTERNS", "LNK_CORE");
+			}else{
+				rules.println("No students found");
+			}
+
+			rules.setState("SENT_STUDENTS_EDU_PROVIDER");
+        	rules.setState("SEND_BEGS_AND_KIDS_EDU_PROVIDER");
+		}else{
+			rules.println("eduProvider is null");
+		}
+	    rules.footer();      		      
+end
