@@ -3141,6 +3141,7 @@ public class QRules {
 					contextMapForDriver.put("JOB", begCode);
 					contextMapForDriver.put("OWNER", userCode);
 					contextMapForDriver.put("OFFER", offer.getCode());
+					contextMapForDriver.put("LOAD", loadBe.getCode());
 
 					String[] recipientArrForDriver = { quoterCode };
 
@@ -4282,7 +4283,8 @@ public class QRules {
 		List<Link> links = getLinks(jobCode, "LNK_BEG");
 		List<String> offerList = new ArrayList<String>();
 		String ownerCode = null;
-
+		String loadCode = null;
+		
 		if (links != null) {
 
 			for (Link link : links) {
@@ -4295,29 +4297,34 @@ public class QRules {
 				if (linkValue != null && linkValue.equals("OWNER")) {
 					ownerCode = link.getTargetCode();
 				}
+				
+				if (linkValue != null && linkValue.equals("LOAD")) {
+					loadCode = link.getTargetCode();
+				}
 
 			}
 		}
 
-		String[] recipientArr = new String[offerList.size()];
+		/* Iterating over each offer and sending email to the recipient individually, since each offer will have different owner-quoted price */
+		if(offerList.size() > 0) {
+			for (String offer : offerList) {
+				BaseEntity offerBe = getBaseEntityByCode(offer);
+				String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
 
-		int i = 0;
-		for (String offer : offerList) {
-			BaseEntity offerBe = getBaseEntityByCode(offer);
-			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
-			recipientArr[i] = quoterCode;
-			i++;
+				String[] recipientArr = {quoterCode};
+				
+				HashMap<String, String> contextMap = new HashMap<String, String>();
+				contextMap.put("JOB", jobCode);
+				contextMap.put("OWNER", ownerCode);
+				contextMap.put("LOAD", loadCode);
+				contextMap.put("OFFER", offer);
+				
+				println("sending edit-mail to driver : "+quoterCode+", with offer : "+offer);
+
+				sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
+			}
 		}
-
-		println("recipient array for edit job details email :" + Arrays.toString(recipientArr));
-		println("owner code ::" + ownerCode);
-
-		HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("JOB", jobCode);
-		contextMap.put("OWNER", ownerCode);
-
-		sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
-
+	
 	}
 
 	public void setSessionState(final String key, final Object value) {

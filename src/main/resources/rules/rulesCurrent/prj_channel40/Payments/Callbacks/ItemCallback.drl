@@ -27,8 +27,11 @@
 			BaseEntity owner = null;
 			BaseEntity driver = null;
 			BaseEntity load = null;
+			String offerCode = null;
 
 			if(begBe != null) {
+			
+				offerCode = begBe.getValue("STT_HOT_OFFER", null);
 
 				/* This attribute contains all call-back logs from assembly */
 				String currentPaymentStatusString = begBe.getValue("PRI_ITEM_STATUS", null);
@@ -102,6 +105,7 @@
 					contextMap.put("DRIVER", driver.getCode());
 					contextMap.put("OWNER", owner.getCode());
 					contextMap.put("LOAD", load.getCode());
+					contextMap.put("OFFER", offerCode);
 
 			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
 			     	rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
@@ -122,6 +126,7 @@
 				 		contextMap.put("OWNER", owner.getCode());
 				 		contextMap.put("DRIVER", driver.getCode());
 				 		contextMap.put("LOAD", load.getCode());
+				 		contextMap.put("OFFER", offerCode);
 
 				 		String[] messageToOwnerRecipients = new String[1];
 			     		messageToOwnerRecipients[0] = owner.getCode();
