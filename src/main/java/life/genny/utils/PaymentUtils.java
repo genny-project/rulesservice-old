@@ -1698,7 +1698,8 @@ public class PaymentUtils {
 	/* Releases a payment */
 	public static PaymentsResponse releasePaymentWithResponse(BaseEntity begBe, String authToken) {
 
-		Boolean isReleasePaymentSuccess = false;
+		Map<String, String> releasePaymentResponseMap = null;
+		
 		System.out.println("BEG Code for release payment ::"+begBe.getCode());
 		PaymentsResponse releasePaymentResponse = new PaymentsResponse();
 
@@ -1713,23 +1714,29 @@ public class PaymentUtils {
 				paymentResponse = PaymentEndpoint.releasePayment(itemId, JsonUtils.toJson(releasePaymentObj), authToken);
 				if(!paymentResponse.contains("error")) {
 					log.debug("release payment response ::"+paymentResponse);
-					isReleasePaymentSuccess = true;
 
-					releasePaymentResponse.setIsSuccess(isReleasePaymentSuccess);
+					JSONObject releasePaymentResponseObj = JsonUtils.fromJson(paymentResponse, JSONObject.class);
+					Map<String, Object> disbursementMap = (Map<String, Object>) releasePaymentResponseObj.get("disbursement");
+					String disbursementId = (String) disbursementMap.get("id");
+					System.out.println("disbursement id ::"+disbursementId);
+					
+					releasePaymentResponseMap = new HashMap<String, String>();
+					releasePaymentResponseMap.put("disbursementId", disbursementId);
+					
+					releasePaymentResponse.setIsSuccess(true);
 					releasePaymentResponse.setMessage("Release payment has succeeded");
+					releasePaymentResponse.setResponseMap(releasePaymentResponseMap);
 				}
 			} catch (PaymentException e) {
 				log.error("Exception occured during release payment");
-				isReleasePaymentSuccess = false;
 
-				releasePaymentResponse.setIsSuccess(isReleasePaymentSuccess);
+				releasePaymentResponse.setIsSuccess(false);
 				releasePaymentResponse.setMessage(e.getMessage());
+				releasePaymentResponse.setResponseMap(releasePaymentResponseMap);		
 			}
 
 		} else {
-			isReleasePaymentSuccess = false;
-
-			releasePaymentResponse.setIsSuccess(isReleasePaymentSuccess);
+			releasePaymentResponse.setIsSuccess(false);
 			releasePaymentResponse.setMessage("Item creation has failed, hence payment cannot be released. "+CONTACT_ADMIN_TEXT);
 		}
 
