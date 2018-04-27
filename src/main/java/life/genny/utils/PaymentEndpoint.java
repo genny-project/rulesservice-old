@@ -152,6 +152,7 @@ public class PaymentEndpoint {
 		String releasePaymentResponse = null;
 		
 		try {
+			System.out.println("Release Payment entity ::"+releaseEntity);
 			releasePaymentResponse = PaymentUtils.apiPostPaymentEntity(
 					paymentServiceUrl + "/" + paymentProvider + "/items/" + paymentItemId + "/release-payment", releaseEntity, authToken);
 		} catch (IOException e) {
