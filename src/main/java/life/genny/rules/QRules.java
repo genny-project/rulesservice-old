@@ -1985,8 +1985,17 @@ public class QRules {
 			   QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());//Creating link 
 			   																							    //after sending both chat
 			   																							//and msg BE as front-end wants 
-			   																							//BE's before linkChange message
+			   																							//BE's before linkChange event message
 
+		       	/* Sending Messages */
+		       HashMap<String,String> contextMap = new HashMap<String, String>();
+		       contextMap.put("SENDER", getUser().getCode());
+		       contextMap.put("CONVERSATION", newMessage.getCode());
+
+		       /* Sending toast message to all the beg frontends */
+		       sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");//TODO: TOAST needs to be removed when notification is implemented
+		       sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");//TODO: SMS needs to be removed when push notification in mobile is implemented
+		       sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 			}
 		}
 	}
