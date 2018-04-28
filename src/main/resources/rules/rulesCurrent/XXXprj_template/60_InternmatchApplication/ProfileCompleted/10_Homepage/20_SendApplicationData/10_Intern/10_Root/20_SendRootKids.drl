@@ -1,0 +1,41 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends ROOT */
+rule "Send Root Kids - INTERN" 
+    when    
+        rules: QRules(  isState("SEND_ROOT_KIDS_INTERN") && 
+                        isState("SENT_ROOT_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_ROOT_KIDS_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_ROOT_KIDS_INTERN");
+		
+		List<BaseEntity> rootKids = rules.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+
+		/* Remove  GRP_DASHBOARD_EDU_PROVIDER from GRP_ROOT */
+		if(rootKids != null){
+			for (BaseEntity rootKid : rootKids) {
+				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_EDU_PROVIDER")){
+					toRemove.add(rootKid);
+				}
+                if (rootKid.getCode().equalsIgnoreCase("GRP_BIN")) {
+					toRemove.add(rootKid);
+				}
+			}
+			rootKids.removeAll(toRemove);
+
+	        /* SEND ROOT Kids */
+			rules.printList("Root Kids", rootKids);
+			rules.publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");		
+			
+			 /* SET rootKids in MAP */
+			rules.set("rootKidsList", rootKids);
+        	rules.setState("SENT_ROOT_KIDS_INTERN");
+
+        	rules.setState("SEND_GRP_AVAILABLE_INTERN");
+		}
+	    rules.footer();      		      
+end

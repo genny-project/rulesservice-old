@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send GRP_AVAILABLE begs - INTERN */
+rule "Send GRP_AVAILABLE BEGS- INTERN" 
+    when    
+        rules: QRules(  isState("SEND_GRP_AVAILABLE_BEGS_INTERN") && 
+                        isState("SENT_GRP_AVAILABLE_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_GRP_AVAILABLE_BEGS_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_GRP_AVAILABLE_BEGS_INTERN");
+		
+        /* 	get all the begs of GRP_AVAILABLE */
+        List<BaseEntity> availableBegs = rules.getBaseEntitysByParentAndLinkCode("GRP_AVAILABLE", "LNK_CORE", 0, 500, false);
+
+        if(availableBegs != null){
+            /* subscribe to all the begs of GRP_AVAILABLE */
+            rules.subscribeUserToBaseEntities(rules.getUser().getCode(), availableBegs);
+
+            /* Publish alll the begs of GRP_AVAILABLE */
+			rules.printList("GRP_AVAILABLE BEGS", availableBegs);
+            rules.publishCmd(availableBegs, "GRP_AVAILABLE", "LNK_CORE");
+        }
+        rules.setState("SENT_GRP_AVAILABLE_BEGS_INTERN");
+        
+        rules.setState("SEND_GRP_AVAILABLE_BEG_KIDS_INTERN");
+	    rules.footer();      		      
+end

@@ -1,0 +1,24 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Subscribe Intern to BEG */
+rule "Submit Apply Internship - Step 7"
+	when
+		rules: QRules( 	isState("GO_TO_HOMEPAGE") && 
+										isState("PUBLISHED_APPLICATION_TO_BUCKET") && 
+										isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
+										isState("EVENT_FORM_SUBMIT") && 
+										isState("SUBMIT") && 
+										!isState("LOOP_SUBMIT_INTERNSHIP_STEP7")) 
+
+	 then
+	 	rules.header();
+		rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP7");
+		rules.setState("TRIGGER_DUPLICATE_BEG");
+
+ 		rules.setState("SUBMITTED_APPLICATION_FOR_INTERNSHIP");
+		rules.setState("SEND_APPLIED_MESSAGE_TO_INTERN");
+		rules.setState("SEND_APPLIED_MESSAGE_TO_HOSTCOMPANY");
+
+	 	rules.footer();
+end

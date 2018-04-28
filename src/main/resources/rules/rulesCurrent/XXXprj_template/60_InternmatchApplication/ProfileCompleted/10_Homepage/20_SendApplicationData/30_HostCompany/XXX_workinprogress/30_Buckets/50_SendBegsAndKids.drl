@@ -1,0 +1,69 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends BEGS and KIDS - INTERN */
+rule "Send Buckets - INTERN" 
+    when    
+        rules: QRules(  isState("SEND_BEGS_AND_KIDS_INTERN") && 
+                        isState("SENT_BUCKETS_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_BEGS_AND_KIDS_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_BEGS_AND_KIDS_INTERN");
+		
+		BaseEntity hostCompany = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		
+		if(hostCompany != null){
+			rules.println("hostCompany CODE   ::   " +hostCompany.getCode());
+
+			List<BaseEntity> buckets = rules.getAsBaseEntitys("hostCompanyBuckets");
+			if(buckets != null){
+				for(BaseEntity bucket : buckets){
+					rules.println("BUCKET code   ::   " + bucket.getCode());
+
+					/* Get the begs where the current hostCompany is stakeholder */
+					List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, hostCompany.getCode());
+					rules.println("No. of begs in this bucket   ::   " + begs.size() );
+
+					/* subscribe to begs */
+					rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begs);
+					
+					/* Send the begs */
+					rules.publishCmd(begs, bucket.getCode(), "LNK_CORE");
+
+					/* Send the beg Kids */
+					for(BaseEntity beg : begs){
+						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+						if(begkids != null){
+
+							/* subscribe to begKids */
+							rules.subscribeUserToBaseEntities(getUser().getCode(), begKids);
+
+							/* Send the begKids */
+							rules.publishCmd(begKids, beg.getCode(), "LNK_CORE");
+
+							for(BaseEntity begKid : begKids){
+							
+								if ( begKid.getName().equals("APPLICATION") ) {
+									BaseEntity applicant = rules.getChildren(begKid.getCode(), "LNK_APP", "APPLICANT");
+									if (applicant != null) {
+										/* subscribe to APPLICANT  */
+										rules.subscribeUserToBaseEntity(rules.getUser().getCode(), applicant.getCode());
+										rules.publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
+
+									}
+							}
+						}
+
+							rules.setState("SENT_BEGS_AND_KIDS_INTERN");
+						}
+					}
+					
+				}
+			}
+		}else{
+			rules.println("hostCompany is null");
+		}
+	    rules.footer();      		      
+end

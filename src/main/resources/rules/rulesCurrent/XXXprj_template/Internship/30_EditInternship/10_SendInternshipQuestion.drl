@@ -1,0 +1,31 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Update Internship - Step 1"
+    when
+	    rules: QRules(  isState("BTN_EDIT_INTERNSHIP") &&
+                        isState("EVENT_BTN_CLICK") &&	
+                        !isState("LOOP_EDIT_INTERNSHIP_STEP1")) 	
+     then
+        rules.header();    
+        rules.setState("LOOP_EDIT_INTERNSHIP_STEP1");
+
+        String begCode = rules.getAsString("itemCode");
+        if(begCode != null){
+            BaseEntity internship = rules.getChildren(begCode, "LNK_BEG", "INTERNSHIP");
+            if(internship != null){
+                rules.set("questionSourceCode", rules.getUser().getCode());
+                rules.set("questionTargetCode", internship.getCode());
+                rules.set("questionGroupCode", "QUE_INTERNSHIP_GRP");
+                rules.set("questionIsPopup", false);
+                
+                rules.setState("ASK_QUESTION");
+            }else{
+                rules.println("internship is null");
+            }
+        }else{
+            rules.println("begCode is null");
+        }
+		rules.setState("SENT_INTERNSHIP_QUESTION");
+        rules.footer();     		      
+end
