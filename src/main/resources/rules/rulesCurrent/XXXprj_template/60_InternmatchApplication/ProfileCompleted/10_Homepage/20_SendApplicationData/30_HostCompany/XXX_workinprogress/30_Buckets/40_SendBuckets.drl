@@ -1,0 +1,35 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends Buckets for HOST_COMPANY */
+rule "Send Buckets - HOST_COMPANY" 
+    when    
+        rules: QRules(  isState("SEND_BUCKETS_HOST_COMPANY") && 
+                        isState("SENT_GRP_AVAILABLE_BEG_KIDS_HOST_COMPANY") && 
+                        isState("PRI_IS_HOST_COMPANY") && 
+                        !isState("LOOP_SEND_BUCKETS_HOST_COMPANY") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_BUCKETS_HOST_COMPANY");
+		
+        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+
+		if(buckets != null){
+			for (BaseEntity bucket : buckets) {
+                /* Remove  GRP_APPLIED from GRP_DASHBOARD */
+				if (bucket.getCode().equalsIgnoreCase("GRP_APPLIED")) {
+					toRemove.add(bucket);
+				}
+			}
+			buckets.removeAll(toRemove);
+
+	        /* SEND HOST_COMPANY Buckets */
+			rules.publishCmd(buckets, "GRP_ROOT", "LNK_CORE");		
+			rules.set("hostCompanyBuckets", buckets);
+
+        	rules.setState("SENT_BUCKETS_HOST_COMPANY");
+        	rules.setState("SEND_BEGS_AND_KIDS_HOST_COMPANY");
+		}
+	    rules.footer();      		      
+end

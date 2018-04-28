@@ -1,0 +1,23 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add To Host Company Group - Step 1"
+     when
+        rules: QRules(  isState("ADD_TO_GROUP") && 
+						isState("PRI_IS_HOST_COMPANY") &&
+						!isState("LOOP_ADD_TO_HOST_COMPANY_GROUP_STEP1") )
+     then
+        rules.header();
+		rules.setState("LOOP_ADD_TO_HOST_COMPANY_GROUP_STEP1");
+     	
+		BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+        if(company != null){
+            Boolean result = rules.checkIfLinkExists("GRP_HOST_COMPANYS", "LNK_CORE", company.getCode());
+            rules.setState("CHECKED_COMPANY_EXISTS");
+            rules.set("companyBe", company);
+            rules.setState(result);
+        }else{
+            rules.println("company is null");
+        }
+	    rules.footer();     		      
+end

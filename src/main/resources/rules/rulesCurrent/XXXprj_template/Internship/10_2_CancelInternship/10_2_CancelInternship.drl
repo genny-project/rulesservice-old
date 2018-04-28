@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Dashboard */
+rule "Cancel Internship"
+	when
+		rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("CANCEL") && 
+						!isState("LOOP_CANCEL_INTERNSHIP")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_CANCEL_INTERNSHIP");
+
+		rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE_LAYOUT");
+
+		rules.setState("CANCELLED_INTERNSHIP");
+	 	rules.footer();      
+end

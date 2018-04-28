@@ -1,0 +1,26 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Dashboard on Update */
+rule "Edit Internship - Step 2"
+	when
+	    rules: QRules(	isState("SENT_INTERNSHIP_QUESTION") &&
+						isState("ASKED_QUESTION") && 
+						isState("QUE_INTERNSHIP_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_EDIT_INTERNSHIP_STEP2")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_EDIT_INTERNSHIP_STEP2");
+        rules.clearState("SENT_INTERNSHIP_QUESTION");
+
+		rules.set("subLayoutCode", "DASHBOARD");
+		rules.set("subLayoutPath", "homepage/dashboard_host_company.json");
+		rules.set("subLayoutRootCode", "GRP_DASHBOARD");
+		rules.set("subLayoutIsPopup", false);
+
+		rules.setState("SEND_SUBLAYOUT");
+
+	 	rules.footer();      
+end
