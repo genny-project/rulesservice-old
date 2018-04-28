@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add Self Sourced Internship - Step 5"
+	when
+	    rules: QRules(  isState("EXIT_CREATE_HOST_COMPANY") && 
+						isState("CREATED_SS_HOST_COMPANY") && 
+	                    !isState("LOOP_ADD_SS_INTERNSHIP_STEP5")  )
+	 then 
+		
+	 	rules.header();
+		rules.setState("LOOP_ADD_SS_INTERNSHIP_STEP5");
+
+		BaseEntity newCompany = rules.getAsBaseEntity("companyBe");
+		BaseEntity beg = rules.getAsBaseEntity("begBe");	
+		
+		if(newCompany != null && beg != null) {
+			
+			rules.set("linkSourceCode", beg.getCode());
+			rules.set("linkTargetCode", newCompany.getCode());
+			rules.set("linkCode", "LNK_BEG");
+			rules.set("linkValue", "HOST_COMPANY");
+			rules.set("linkWeight", 1.0);
+			rules.setState("CREATE_LINK");
+
+			rules.setState("LINKED_SS_HC_TO_BEG");
+		}
+		
+	    rules.footer();     		      
+end

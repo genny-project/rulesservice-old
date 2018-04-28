@@ -1,0 +1,22 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Select Education Provider Role"
+
+	when
+		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && 
+									data.code == "BTN_SELECT_ROLE_EDU_PROVIDER")
+	    rules: QRules( 	isState("STARTED") && 
+						!isState("EDU_PROVIDER_SELECTED") )   
+	 then
+	    rules.header();
+
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_EDU_PROVIDER", "TRUE");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "FALSE");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_HOST_COMPANY", "FALSE");
+
+		rules.setState("EDU_PROVIDER_SELECTED");
+	    rules.footer();     		      
+end
