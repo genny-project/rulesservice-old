@@ -368,15 +368,15 @@ public class QRules {
 		decodedTokenMap.put(key, value);
 
 	}
-	
+
 	public String encodeToBase64(String str) {
 		return Base64.getEncoder().encodeToString(str.getBytes());
 	}
-	
+
 	public String decodeBase64(byte[] base64str) {
-		return new String(Base64.getDecoder().decode(base64str)); 
+		return new String(Base64.getDecoder().decode(base64str));
 	}
-	
+
 	public String urlEncode(String str) {
 		try {
 			return URLEncoder.encode(str, "UTF-8");
@@ -624,7 +624,7 @@ public class QRules {
 		return bes;
 	}
 
-	
+
 
 	public List<BaseEntity> getBaseEntitysByParentLinkCodeAndLinkValue(final String parentCode, final String linkCode,
 			final String linkValue, Integer pageStart, Integer pageSize, Boolean cache) {
@@ -1529,12 +1529,12 @@ public class QRules {
 					+ "/linkcodes/" + linkCode + "/parents", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
-				
+
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				println("arrayList  :: " + arrayList);
 				ArrayList<BaseEntity> parents = new ArrayList<BaseEntity>();
 				for(Link lnk: arrayList) {
-					
+
 					BaseEntity linkedBe = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), lnk.getSourceCode(), false);
 					if(linkedBe != null) {
 						parents.add(linkedBe);
@@ -1654,32 +1654,29 @@ public class QRules {
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
+
 		try {
-			if (autoPushSelections) {
-				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken());
 
-				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			// Now auto push any selection data
+      // for (Ask ask : msg.getItems()) {
+	    //   if (ask.getAttributeCode().startsWith("LNK_")) {
+	    //   	sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 10);
+	    //   }
+      // }
 
-				publishData(msg);
+			questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
+					RulesUtils.toJson(qstMsg), getToken()));
+			/* QDataAskMessage */
+			questionJson.put("token", getToken());
+			publish("data", questionJson);
 
-				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, qstMsg.getRootQST().getQuestionCode());
-				publishCmd(cmdFormView);
-			} else {
-				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken()));
-				/* QDataAskMessage */
-				questionJson.put("token", getToken());
-				publish("data", questionJson);
+			// Now auto push any selection data
 
-				// Now auto push any selection data
-
-				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
-				JsonObject json = JsonObject.mapFrom(cmdFormView);
-				json.put("root", qstMsg.getRootQST().getQuestionCode());
-				json.put("token", getToken());
-				publish("cmds", json);
-			}
+			QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
+			JsonObject json = JsonObject.mapFrom(cmdFormView);
+			json.put("root", qstMsg.getRootQST().getQuestionCode());
+			json.put("token", getToken());
+			publish("cmds", json);
 
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
 
@@ -1723,29 +1720,20 @@ public class QRules {
 
 		try {
 
-			this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
+			// this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
 
-			if (autoPushSelections) {
-
-				// Now auto push any selection data
-				// for (Ask ask : msg.getItems()) {
-				// if (ask.getAttributeCode().startsWith("LNK_")) {
-				//
-				// // sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 10);
-				// }
-				// }
-
-				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
-				publishCmd(cmdFormView);
-
-			} else {
-
-				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
-				JsonObject json = JsonObject.mapFrom(cmdFormView);
-				json.put("root", questionCode);
-				json.put("token", getToken());
-				publish("cmds", json);
+			// Now auto push any selection data
+			for (Ask ask : msg.getItems()) {
+				if (ask.getAttributeCode().startsWith("LNK_")) {
+					sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 50);
+				}
 			}
+
+			QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
+			JsonObject json = JsonObject.mapFrom(cmdFormView);
+			json.put("root", questionCode);
+			json.put("token", getToken());
+			publish("cmds", json);
 
 			RulesUtils.println(questionCode + " SENT TO FRONTEND");
 
@@ -1850,7 +1838,7 @@ public class QRules {
 			RulesUtils.println(text + "   ::   No Kids found");
 		}
 	}
-	
+
 	public void println(final Object str) {
 		RulesUtils.println(str);
 	}
@@ -4631,7 +4619,7 @@ public class QRules {
 
 	public void sendInternApplicationData() {
 		String[] recipient = { getUser().getCode() };
-		
+
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> removeRootKids = new ArrayList<BaseEntity>();
 
@@ -4648,10 +4636,10 @@ public class QRules {
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		println("buckets   ::   " + buckets);
 
-		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();		
+		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();
 		if (buckets != null) {
 			for (BaseEntity bucket : buckets) {
-			
+
 				/* FOR GRP_AVAILABLE BEGS */
 				if (bucket.getCode().equalsIgnoreCase("GRP_AVAILABLE")) {
 
@@ -4729,7 +4717,7 @@ public class QRules {
 					subscribeUserToBaseEntities(getUser().getCode(), begKids);
 					publishCmd(begKids, beg.getCode(), "LNK_CORE");
 				}
-				
+
 			}
 		}
 	}
@@ -4812,10 +4800,10 @@ public class QRules {
 	}
 
 	public void sendEduProviderData() {
-		
+
 		List<BaseEntity> students = new ArrayList<BaseEntity>();
 		BaseEntity eduProvider = getParent(getUser().getCode(), "LNK_EDU");
-		
+
 		if (eduProvider == null) {
 			println("0. edu Provider is null");
 		}else{
@@ -4823,7 +4811,7 @@ public class QRules {
 			String[] recipient = { getUser().getCode() };
 
 			/* SEND ROOT BaseEntity */
-			publishBaseEntityByCode("GRP_ROOT", null, null, recipient);			
+			publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
 
 			List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 			println("2. rootKids   ::   " + rootKids);
@@ -4895,71 +4883,71 @@ public class QRules {
 	}
 
 	/* New QRules */
-	
+
 	public List<EntityEntity> getLinks(BaseEntity be) {
 		return this.getLinks(be.getCode());
 	}
 
 	public List<EntityEntity> getLinks(String beCode) {
-		
+
 		List<EntityEntity> links = new ArrayList<EntityEntity>();
 		BaseEntity be = this.getBaseEntityByCode(beCode);
 		if(be != null) {
-			
+
 			Set<EntityEntity> linkSet = be.getLinks();
 			links.addAll(linkSet);
 		}
-		
+
 		return links;
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be) {
 		return this.getLinkedBaseEntities(be.getCode(), null, null);
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(String beCode) {
 		return this.getLinkedBaseEntities(beCode, null, null);
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be, String linkCode) {
 		return this.getLinkedBaseEntities(be.getCode(), linkCode, null);
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(String beCode, String linkCode) {
 		return this.getLinkedBaseEntities(beCode, linkCode, null);
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be, String linkCode, String linkValue) {
 		return this.getLinkedBaseEntities(be.getCode(), linkCode, linkValue);
 	}
-	
+
 	public List<BaseEntity> getLinkedBaseEntities(String beCode, String linkCode, String linkValue) {
-		
+
 		List<BaseEntity> linkedBaseEntities = new ArrayList<BaseEntity>();
 		try {
-				
+
 			/* We grab all the links from the node passed as a parameter "beCode" */
 			List<EntityEntity> links = this.getLinks(beCode);
-			
+
 			/* We loop through all the links */
 			for(EntityEntity link: links) {
-				
+
 				if(link != null && link.getLink() != null) {
-					
+
 					Link entityLink = link.getLink();
-					
+
 					/* We get the targetCode */
 					String targetCode = entityLink.getTargetCode();
 					if(targetCode != null) {
-						
+
 						/* We use the targetCode to get the base entity */
 						BaseEntity targetBe = this.getBaseEntityByCode(targetCode);
 						if(targetBe != null) {
-							
+
 							/* If a linkCode is passed we filter using its value */
 							if(linkCode != null) {
 								if(entityLink.getAttributeCode() != null && entityLink.getAttributeCode().equals(linkCode)) {
-									
+
 									/* If a linkValue is passed we filter using its value */
 									if(linkValue != null) {
 										if(entityLink.getLinkValue() != null && entityLink.getLinkValue().equals(linkValue)) {
@@ -4967,14 +4955,14 @@ public class QRules {
 										}
 									}
 									else {
-										
+
 										/* If no link value was provided we just pass the base entity */
 										linkedBaseEntities.add(targetBe);
 									}
 								}
 							}
 							else {
-								
+
 								/* If not linkCode was provided we just pass the base entity */
 								linkedBaseEntities.add(targetBe);
 							}
@@ -4982,7 +4970,7 @@ public class QRules {
 					}
 				}
 			}
-		
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -4990,7 +4978,7 @@ public class QRules {
 
 		return linkedBaseEntities;
 	}
-	
+
 	/* returns a duplicated BaseEntity from an existing beCode */
 	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
@@ -5103,7 +5091,7 @@ public class QRules {
 		}
 		return getBaseEntityByCode(newBe.getCode());
 	}
-	
+
 	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
 
 		Boolean isLinkExists = false;
@@ -5138,21 +5126,21 @@ public class QRules {
 		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
 
 		String attributeCode = "STA_" + userCode;
 		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
 
 		for(String userCode: userCodes) {
@@ -5160,5 +5148,3 @@ public class QRules {
 		}
 	}
 }
-
-
