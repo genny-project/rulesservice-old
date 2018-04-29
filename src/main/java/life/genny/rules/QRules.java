@@ -3331,7 +3331,7 @@ public class QRules {
 					}
 
 					//moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS",	"GRP_APPROVED", "LNK_CORE", "BEG"); 
+					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS",	"GRP_APPROVED", "LNK_CORE", "BEG");
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
@@ -3812,7 +3812,7 @@ public class QRules {
 
 		/* Moving the BEG to GRP_NEW_ITEMS */
 	  /*The moveBaseEntity without linkValue sets the linkValue to default value, "LINK". So using moveBaseEntitySetLinkValue() */
-		moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS",	"GRP_NEW_ITEMS", "LNK_CORE", "BEG"); 
+		moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS",	"GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 
 		/* Get the sourceCode(Company code) for this User */
 		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
@@ -3823,7 +3823,7 @@ public class QRules {
 		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
-		
+
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);

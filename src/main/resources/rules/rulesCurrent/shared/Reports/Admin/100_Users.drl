@@ -26,7 +26,7 @@ rule "SBE_USERS"
   	     .addColumn("PRI_EMAIL","Email")
   	     
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
-  	      	     
+  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
   	     .setPageStart(0)
   	     .setPageSize(10000);
   	     
