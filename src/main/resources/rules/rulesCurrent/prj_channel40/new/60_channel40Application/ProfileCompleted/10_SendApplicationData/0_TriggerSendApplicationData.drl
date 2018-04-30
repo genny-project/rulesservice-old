@@ -2,10 +2,10 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Sends TreeView / Buckets / BEGs */
-rule "Trigger Send Internmatch Application Data"
+rule "Trigger Send Channel40 Application Data"
 
     when    
-         rules: QRules( isState("TRIGGER_SEND_INTERNMATCH_APPLICATION_DATA") && 
+         rules: QRules( isState("TRIGGER_SEND_CHANNEL40_APPLICATION_DATA") && 
                         !isState("LOOP_TRIGGER_SEND_APPLICATION_DATA") )
      then
      	rules.header();

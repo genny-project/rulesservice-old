@@ -17,9 +17,9 @@ rule "Send Layout Change To Frontend"
         rules.setState("LAYOUT_CHANGE_READY");
         
         BaseEntity user = rules.getUser();
-		if( user.is("PRI_DRIVER") ){
+		if( user.is("PRI_IS_DRIVER") ){
 		   rules.setState("USER_IS_DRIVER");
-		}else if( user.is("PRI_OWNER") ){
+		}else if( user.is("PRI_IS_OWNER") ){
 		    rules.setState("USER_IS_OWNER");
 		}
 	    rules.footer();

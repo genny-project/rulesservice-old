@@ -24,7 +24,6 @@ rule "Send Buckets"
         for(BaseEntity bucket: bucketList) {  
 
             begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, rules.getUser().getCode());
-            rules.println("FETCHED linked BEGS for the intern   ::   " + begs.size() );
 
             rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begs);
             

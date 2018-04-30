@@ -15,10 +15,8 @@ rule "Send Contacts"
      	rules.clearState("PUBLISHED_BASE_ENTITY_LIST");
      	
      	List<String> groupList = new ArrayList<String>();
-     	groupList.add("GRP_CONTACTS");
-     	groupList.add("GRP_HOST_COMPANYS");
-     	groupList.add("GRP_EDU_PROVIDERS");
-     	groupList.add("GRP_INTERNS");
+     	groupList.add("GRP_DRIVERS");
+     	groupList.add("GRP_FREIGHT_OWNERS");
         
         rules.set("beList", groupList);                    
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
