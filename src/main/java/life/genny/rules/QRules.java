@@ -430,6 +430,18 @@ public class QRules {
 		return be;
 	}
 
+	public SearchEntity getSearchEntityByCode(final String code) {
+		SearchEntity be = null;
+
+		be = (SearchEntity) VertxUtils.readFromDDT(code, getToken());
+		if (be == null) {
+			println("ERROR - be (" + code + ") fetched is NULL ");
+		} else {
+			addAttributes(be);
+		}
+		return be;
+	}
+	
 	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
 		BaseEntity be = null;
 
@@ -2973,7 +2985,7 @@ public class QRules {
 					}
 					// println(bucket.getCode() + ":" + begKid.getCode());
 				}
-			//	bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+				bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
 			}
 		}
 		/* Sending Draft Datas for the Owners */
@@ -4563,31 +4575,56 @@ public class QRules {
 	public void sendReport(String reportCode) throws IOException {
 
 		System.out.println("The report code is :: " + reportCode);
-
-		BaseEntity searchBE = getBaseEntityByCode(reportCode);
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
-
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		//BaseEntity searchBE = getBaseEntityByCode(reportCode);
+		String jsonSearchBE = null;
+				
+		if(reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS") ) {
+			//srchBE.setStakeholder(getUser().getCode());
+			SearchEntity srchBE = new SearchEntity(reportCode,"List of all My Loads")
+	  	     .addColumn("PRI_NAME","Load Name")
+	  	     .addColumn("PRI_JOB_ID","Job ID")
+	  	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
+	  	     .addColumn("PRI_DESCRIPTION","Description")
+	  	     
+	  	     .setStakeholder(getUser().getCode())
+	  	     
+	  	     .addSort("PRI_NAME","Name",SearchEntity.Sort.ASC)
+	  	     
+	  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+	  	     
+	  	     .setPageStart(0)
+	  	     .setPageSize(10000);
+			
+			jsonSearchBE = JsonUtils.toJson(srchBE);		
+			
+	     }
+		else {
+		   BaseEntity searchBE = getBaseEntityByCode(reportCode);
+		   jsonSearchBE = JsonUtils.toJson(searchBE);	
+	     }
+		
+		System.out.println("The search BE is :: " + jsonSearchBE);
+		//String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + msg);
+		//System.out.println("The result   ::  " + JsonUtils.toJson(msg));
 		publishData(new JsonObject(resultJson));
 
-		JsonArray columnHeaders = new JsonArray();
-		List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
-
-		for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
-			if (ea.getAttributeCode().startsWith("COL_")) {
-				columnAttributes.add(ea);
-			}
-		}
-
-		columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
-		for (EntityAttribute ea : columnAttributes) {
-			columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
-		}
+//		JsonArray columnHeaders = new JsonArray();
+//		List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
+//
+//		for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
+//			if (ea.getAttributeCode().startsWith("COL_")) {
+//				columnAttributes.add(ea);
+//			}
+//		}
+//
+//		columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
+//		for (EntityAttribute ea : columnAttributes) {
+//			columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
+//		}
 
 		// sendTableViewWithHeaders(reportCode, columnHeaders);
 
