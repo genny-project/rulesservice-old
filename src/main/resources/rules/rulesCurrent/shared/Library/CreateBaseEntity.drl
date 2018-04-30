@@ -8,7 +8,7 @@ rule "Create BaseEntity"
 	 then
 	    rules.header();
 
-        String beCode = rules.getAsString("beCode");
+        String beCode = rules.getUser().getCode();
         String bePrefix = rules.getAsString("bePrefix");
         String beName = rules.getAsString("beName");
  		

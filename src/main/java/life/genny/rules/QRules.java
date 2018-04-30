@@ -645,7 +645,7 @@ public class QRules {
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 	Integer pageStart, Integer pageSize, Boolean cache, final String stakeholderCode) {
 		List<BaseEntity> bes = null;
-		if (getUser().is("PRI_DRIVER")) {
+		if (getUser().is("PRI_IS_DRIVER")) {
 			RulesUtils.println("Is True");
 		}
 		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
@@ -1647,9 +1647,6 @@ public class QRules {
 			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
 			RulesUtils.toJson(qstMsg), getToken());
 			msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-
-			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
-
 			return msg;
 		} catch (IOException e) {
 			return msg;
@@ -2969,7 +2966,7 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, doCache);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (((user.is("PRI_DRIVER")))) {
+		if (((user.is("PRI_IS_DRIVER")))) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -2987,7 +2984,7 @@ public class QRules {
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
 		println("User is Admin " + hasRole("admin"));
 		// Checking for driver role
-		if ((user.is("PRI_DRIVER"))) {
+		if ((user.is("PRI_IS_DRIVER"))) {
 			for (BaseEntity be : reportsHeader) {
 				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 					reportsHeaderToRemove.add(be);
@@ -2995,7 +2992,7 @@ public class QRules {
 			}
 		}
 		// Checking for owner role
-		else if ((user.is("PRI_OWNER"))) {
+		else if ((user.is("PRI_IS_OWNER"))) {
 			for (BaseEntity be : reportsHeader) {
 				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
 					reportsHeaderToRemove.add(be);
@@ -3023,7 +3020,7 @@ public class QRules {
 		* getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		* publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		*/
-		if (!user.is("PRI_DRIVER")) {
+		if (!user.is("PRI_IS_DRIVER")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 			20, doCache);
 			publishCmd(bin, "GRP_BIN", "LNK_CORE");
@@ -3043,13 +3040,13 @@ public class QRules {
 				begs.addAll(driverbegs);
 			} else {
 
-				if (user.is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+				if (user.is("PRI_IS_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
 					List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
 					500, doCache);
 					begs.addAll(driverbegs);
 					VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
 				} else {
-					if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
+					if (user.is("PRI_IS_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
 						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
 						500, false, user.getCode());
 						for (BaseEntity beg : driverbegs) {
@@ -3074,7 +3071,7 @@ public class QRules {
 					}
 				}
 
-				if (user.is("PRI_OWNER")) {
+				if (user.is("PRI_IS_OWNER")) {
 					List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500,
 					false, user.getCode());
 					begs.addAll(ownerbegs);
@@ -3089,11 +3086,11 @@ public class QRules {
 				List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
 				for (BaseEntity begKid : begKids) {
 					if (begKid.getCode().startsWith("OFR_")) {
-						if (user.is("PRI_OWNER")) {
+						if (user.is("PRI_IS_OWNER")) {
 							filteredKids.add(begKid);
 							VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
 						}
-						if (user.is("PRI_DRIVER")) {
+						if (user.is("PRI_IS_DRIVER")) {
 							Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
 							if (quoterCode.isPresent()) {
 								if (user.getCode().equals(quoterCode.get())) {
@@ -3111,7 +3108,7 @@ public class QRules {
 			}
 		}
 		/* Sending Draft Datas for the Owners */
-		if (user.is("PRI_OWNER")) {
+		if (user.is("PRI_IS_OWNER")) {
 			List<BaseEntity> ownerDraftBegs = getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
 			user.getCode());
 			publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG");
@@ -3961,7 +3958,7 @@ public void saveJob(BaseEntity job) {
 
 		/* Getting all driver BEs */
 		for (BaseEntity stakeholderBe : people) {
-			Boolean isDriver = stakeholderBe.getValue("PRI_DRIVER", false);
+			Boolean isDriver = stakeholderBe.getValue("PRI_IS_DRIVER", false);
 			if (isDriver) {
 				driversBe.add(stakeholderBe);
 			}
@@ -4330,7 +4327,7 @@ public void sendAllDrivers(String searchBeCode) throws ClientProtocolException, 
 	println("The columnsArray is ::" + columnsArray);
 	// Sort Attribute
 	AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-	AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_DRIVER", "=");
+	AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_IS_DRIVER", "=");
 	// Pagination Attribute
 	AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
 	AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
@@ -4399,7 +4396,7 @@ public void sendAllOwners(String searchBeCode) throws ClientProtocolException, I
 	println("The columnsArray is ::" + columnsArray);
 	// Sort Attribute
 	AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-	AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_OWNER", "=");
+	AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_IS_OWNER", "=");
 	// Pagination Attribute
 	AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
 	AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
@@ -4563,10 +4560,10 @@ public Map<String, Object> getSessionStateMap() {
 */
 /* TODO: refactor this. */
 public void redirectToHomePage() {
-	if (getUser().is("PRI_OWNER")) {
+	if (getUser().is("PRI_IS_OWNER")) {
 		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
-	} else if (getUser().is("PRI_DRIVER")) {
+	} else if (getUser().is("PRI_IS_DRIVER")) {
 		sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
 		setLastLayout("LIST_VIEW", "GRP_NEW_ITEMS");
 	}
@@ -4723,17 +4720,17 @@ public void processRoles(QDataAnswerMessage m) {
 
 			if (attributeCode.equals("LNK_USER_ROLE_LISTS")) {
 				List<Answer> answersToSave = new ArrayList<Answer>();
-				// So save the SEL_OWNER as PRI_OWNER
+				// So save the SEL_OWNER as PRI_IS_OWNER
 				if ("SEL_OWNER".equals(answer.getValue())) {
-					answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "TRUE"));
-					answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "FALSE"));
+					answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_OWNER", "TRUE"));
+					answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_DRIVER", "FALSE"));
 					println("OWNER SET!");
 				} else {
 					if ("SEL_DRIVER".equals(answer.getValue())) {
 						answersToSave
-						.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "TRUE"));
+						.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_DRIVER", "TRUE"));
 						answersToSave
-						.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "FALSE"));
+						.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_OWNER", "FALSE"));
 						println("DRIVER SET!");
 					}
 				}
@@ -4757,7 +4754,7 @@ public void publishSearhBE(final String reportGroupCode) {
 	List<BaseEntity> results = new ArrayList<BaseEntity>();
 	String dataMsgParentCode = reportGroupCode;
 	if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-		if (user.is("PRI_DRIVER")) {
+		if (user.is("PRI_IS_DRIVER")) {
 			dataMsgParentCode = "GRP_REPORTS_DRIVER";
 			Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
 			for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -4766,7 +4763,7 @@ public void publishSearhBE(final String reportGroupCode) {
 				System.out.println("The Search BE is :: " + searchBe);
 				results.add(searchBe);
 			}
-		} else if (user.is("PRI_OWNER")) {
+		} else if (user.is("PRI_IS_OWNER")) {
 			dataMsgParentCode = "GRP_REPORTS_OWNER";
 			Map<String, String> map = getMap("GRP", "GRP_REPORTS_OWNER");
 			for (Map.Entry<String, String> entry : map.entrySet()) {
