@@ -14,7 +14,9 @@ rule "Select Dashboard Kids"
 		  BaseEntity parent = rules.getParent(tvSelectValue, "LNK_CORE");
 
       if(parent != null){
-        if(parent.getCode().equals("GRP_DASHBOARD") || parent.getCode().equals("GRP_DASHBOARD_EDU_PROVIDER")){
+        if( parent.getCode().equals("GRP_DASHBOARD") || 
+            parent.getCode().equals("GRP_DASHBOARD_EDU_PROVIDER") ||
+            parent.getCode().equals("GRP_DASHBOARD_HOST_COMPANY")){
           rules.set("cmdViewType", "LIST_VIEW");
           rules.set("cmdViewRootCode", tvSelectValue);
           rules.setState("SEND_CMD_VIEW");

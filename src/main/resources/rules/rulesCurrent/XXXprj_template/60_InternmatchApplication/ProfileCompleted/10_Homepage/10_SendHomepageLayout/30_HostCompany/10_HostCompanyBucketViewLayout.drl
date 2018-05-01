@@ -11,8 +11,8 @@ rule "Send Internmatch Homepage Layout - HOST COMPANY - BUCKETVIEW"
         rules.setState("LOOP_SEND_INTERNMATCH_HOMEPAGE_LAYOUT_BUECKETVIEW");
         
         rules.set("subLayoutCode", "BUCKETVIEW");
-		rules.set("subLayoutPath", "homepage/dashboard_host_company.json");
-		rules.set("subLayoutRootCode", "GRP_DASHBOARD");
+		rules.set("subLayoutPath", "homepage/dashboard_host_company_temp.json");
+		rules.set("subLayoutRootCode", "GRP_DASHBOARD_HOST_COMPANY");
 		rules.set("subLayoutIsPopup", false);
 		rules.setState("SEND_SUBLAYOUT");
 

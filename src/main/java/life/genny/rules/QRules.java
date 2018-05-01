@@ -4738,27 +4738,31 @@ public class QRules {
 		String[] recipient = { getUser().getCode() };
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> removeRootKids = new ArrayList<BaseEntity>();
-
+		printList("Root Kids for HC  ::  ", rootKids);
+		
 		/* Remove  GRP_DASHBOARD_EDU_PROVIDER from GRP_ROOT */
 		for (BaseEntity rootKid : rootKids) {
-			if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_EDU_PROVIDER")) {
+			if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_EDU_PROVIDER") ||
+				rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD")) {
 				removeRootKids.add(rootKid);
 			}
 		}
 		rootKids.removeAll(removeRootKids);
+		printList("Root Kids for HC  ::  " ,rootKids );
 		publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
 
-		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD_HOST_COMPANY", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();
 
-		/* Remove  GRP_APPLIED from GRP_DASHBOARD */
+		/* Remove  GRP_APPLIED from GRP_DASHBOARD_HOST_COMPANY 
 		for (BaseEntity bucket : buckets) {
 			if (bucket.getCode().equalsIgnoreCase("GRP_APPLIED")) {
 				removeBuckets.add(bucket);
 			}
-		}
+		}*/
 		buckets.removeAll(removeBuckets);
-		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
+		publishCmd(buckets, "GRP_DASHBOARD_HOST_COMPANY", "LNK_CORE");
+		
 
 		/* Send Contacts */
 		List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode("GRP_CONTACTS", "LNK_CORE", 0, 20, false);
@@ -4830,7 +4834,9 @@ public class QRules {
 
 			List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 			for (BaseEntity rootKid : rootKids) {
-				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD")) {
+				
+				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_HOST_COMPANY") || 
+					rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD")) {
 					toRemove.add(rootKid);
 				}
 			}
@@ -5124,6 +5130,26 @@ public class QRules {
 				return isLinkExists;
 			}
 
+		}
+		return isLinkExists;
+	}
+
+	/* Check If Link Exists and Available */
+	public Boolean checkIfLinkExistsAndAvailable(String parentCode, String linkCode, String linkValue, String childCode) {
+		Boolean isLinkExists = false;
+		List<Link> links = getLinks(parentCode, linkCode);
+		if (links != null) {
+			for (Link link : links) {
+				String linkVal = link.getLinkValue();
+				
+				if (linkVal != null && linkVal.equals(linkValue)) {
+					Double linkWeight = link.getWeight();
+					if(linkWeight == 1.0){
+						isLinkExists = true;
+						return isLinkExists;
+					}
+				}
+			}
 		}
 		return isLinkExists;
 	}

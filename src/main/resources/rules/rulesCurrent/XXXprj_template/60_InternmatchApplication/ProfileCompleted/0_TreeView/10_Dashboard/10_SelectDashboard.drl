@@ -6,7 +6,8 @@ rule "Select Dashboard"
       rules: QRules(  isState("EVENT_TV_SELECT") &&
                       isState("TV1") &&
                       ( isState("GRP_DASHBOARD") || 
-                        isState("GRP_DASHBOARD_EDU_PROVIDER")  )&&
+                        isState("GRP_DASHBOARD_EDU_PROVIDER")  ||
+                        isState("GRP_DASHBOARD_HOST_COMPANY")  )&&
                       !isState("LOOP_SELECT_DASHBOARD") )
     then
       rules.header();

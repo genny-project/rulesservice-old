@@ -13,7 +13,7 @@ rule "Send Internmatch Homepage Layout Data - HOST COMPANY - BUCKETVIEW"
         rules.header();
         rules.setState("LOOP_SEND_INTERNMATCH_HOMEPAGE_LAYOUT_DATA");
 
-		List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 500, false);
+		List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD_HOST_COMPANY", "LNK_CORE", 0, 500, false);
 		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();
         
         /* Remove  GRP_APPLIED bucket from GRP_DASHBOARD */

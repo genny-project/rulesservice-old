@@ -18,7 +18,8 @@ rule "Send Root Kids - EDU_PROVIDER"
 		/* Remove  GRP_DASHBOARD from GRP_ROOT */
 		if(rootKids != null){
 			for (BaseEntity rootKid : rootKids) {
-				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD")){
+				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD") ||
+					rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_HOST_COMPANY")){
 					toRemove.add(rootKid);
 				}
                 if (rootKid.getCode().equalsIgnoreCase("GRP_BIN")) {

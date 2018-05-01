@@ -12,7 +12,7 @@ rule "Send Buckets - HOST_COMPANY"
      	rules.header();
         rules.setState("LOOP_SEND_BUCKETS_HOST_COMPANY");
 		
-        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+        List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD_HOST_COMPANY", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 
 		if(buckets != null){
