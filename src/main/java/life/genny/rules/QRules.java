@@ -430,18 +430,6 @@ public class QRules {
 		return be;
 	}
 
-	public SearchEntity getSearchEntityByCode(final String code) {
-		SearchEntity be = null;
-
-		be = (SearchEntity) VertxUtils.readFromDDT(code, getToken());
-		if (be == null) {
-			println("ERROR - be (" + code + ") fetched is NULL ");
-		} else {
-			addAttributes(be);
-		}
-		return be;
-	}
-
 	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
 		BaseEntity be = null;
 
