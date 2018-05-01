@@ -6,6 +6,8 @@ import life.genny.utils.VertxUtils;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.Answer;
 
+import life.genny.qwandautils.QwandaUtils;
+
 
 rule "Is Logged In"
 
@@ -26,7 +28,9 @@ rule "Is Logged In"
         rules.setState("IS_LOGGED_IN");
         
         List<Answer> answers = new ArrayList<Answer>();
-        
+        Answer lastLoginDateTime = new Answer(user.getCode(), user.getCode(), "PRI_LAST_LOGIN_DATETIME", QwandaUtils.getZonedCurrentLocalDateTime());
+          answers.add(lastLoginDateTime);
+          
        String attributeCode =  "PRI_IS_ADMIN";	
        if (rules.hasRole("admin")) {
 	      if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null) )
