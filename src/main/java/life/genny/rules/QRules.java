@@ -2819,7 +2819,7 @@ public class QRules {
 		// QBulkMessage cached = cache;
 		// if (cached != null) {
 		if (!StringUtils.isBlank(bulkmsgJson)) {
-			showLoading("Loading your Cached Bucket Data...");
+			showLoading("Loading jobs...");
 			// publishCmd(bulkmsgJson);
 			// return;
 			QBulkMessage cached = JsonUtils.fromJson(bulkmsgJson, QBulkMessage.class);
@@ -2847,7 +2847,7 @@ public class QRules {
 				// log.error("bulk json is there, but not converted properly");
 			}
 		} else {
-			showLoading("Loading your Bucket Data...");
+			showLoading("Loading jobs...");
 		}
 
 		boolean doCache = false;
