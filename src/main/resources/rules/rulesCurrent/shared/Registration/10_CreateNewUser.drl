@@ -4,6 +4,8 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import io.vertx.core.json.JsonObject;
 
+import life.genny.qwanda.Answer;
+
 rule "Create New User"
 	no-loop true
 	salience 899
@@ -36,15 +38,20 @@ rule "Create New User"
 				}
 			}
 		}
+		
+		List<Answer> answers = new ArrayList<Answer>();
+		
+	   /*  saving user registration date time  */
+		answers.add(new Answer(be.getCode(), be.getCode(), "PRI_REGISTRATION_DATETIME", QwandaUtils.getZonedCurrentLocalDateTime()) );
 
       /*  saving the default profile image   */
-        rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IMAGE_URL",
-                 "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ");
+        answers.add( new Answer(be.getCode(), be.getCode(), "PRI_IMAGE_URL", "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ") );
 
       /*  saving the attribute PRI_IS_PROFILE_COMPLETED as FALSE for the new user */
         rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
-     	rules.updateBaseEntityAttribute(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "FALSE");
-
+        answers.add(new Answer(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "FALSE") );
+        rules.saveAnswers(answers);
+        
      	rules.setState("NEW_USER_CREATED");
         rules.println("The user created is  ::  " + be.toString() );
 
