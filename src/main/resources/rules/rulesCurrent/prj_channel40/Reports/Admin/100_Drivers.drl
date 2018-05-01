@@ -20,10 +20,11 @@ rule "SBE_DRIVERS"
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Drivers")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
-  	     .addColumn("PRI_FIRSTNAME","Firstname")
-  	     .addColumn("PRI_LASTNAME","Surname")
+  	     .addColumn("PRI_FIRSTNAME","First Name")
+  	     .addColumn("PRI_LASTNAME","Last Name")
   	     .addColumn("PRI_MOBILE","Mobile")
   	     .addColumn("PRI_EMAIL","Email")
+  	     .addColumn("PRI_RATING", "Star Rating")
   	     
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	     
