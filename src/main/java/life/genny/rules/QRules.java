@@ -91,10 +91,10 @@ import life.genny.qwanda.message.QMessage;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
+import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentUtils;
 import life.genny.utils.VertxUtils;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.utils.MoneyHelper;
 
 public class QRules {
 
@@ -3006,9 +3006,9 @@ public class QRules {
 						}
 						// println(bucket.getCode() + ":" + begKid.getCode());
 					}
-					// bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+					bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
 				}
-				bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+				//bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
 			}
 		} else {
 			// fetch all the jobs related to this person
