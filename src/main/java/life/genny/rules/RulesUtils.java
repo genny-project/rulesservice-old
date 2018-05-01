@@ -107,7 +107,7 @@ public class RulesUtils {
 
 	public static String getLayoutCacheURL(final String path) {
 
-		// https://raw.githubusercontent.com/genny-project/layouts/master
+		// https://raw.githubusercontent.com/genny-project/layouts/dev
 		// System.getenv("LAYOUT_CACHE_HOST");
 		// http://localhost:2223
 
@@ -129,9 +129,9 @@ public class RulesUtils {
 
 		if (activateCache == false) {
 			if (path.contains(".json")) {
-				host = "https://raw.githubusercontent.com/genny-project/layouts/master";
+				host = "https://raw.githubusercontent.com/genny-project/layouts/dev";
 			} else {
-				host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
+				host = "https://api.github.com/repos/genny-project/layouts/contents?ref=dev"; // TODO: this has a rate limit
 			}
 		}
 
@@ -167,7 +167,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -216,7 +216,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -228,7 +228,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -254,7 +254,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -266,9 +266,9 @@ public class RulesUtils {
 		return getBaseEntityJsonByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,value,1);
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -292,7 +292,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -318,7 +318,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -340,7 +340,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -359,7 +359,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -503,7 +503,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -522,7 +522,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -549,7 +549,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -573,7 +573,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -592,7 +592,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -614,7 +614,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -638,7 +638,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -659,7 +659,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -689,7 +689,7 @@ public class RulesUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
 	 * @param token
@@ -759,8 +759,8 @@ public class RulesUtils {
 		}
 		return null;
 	}
-	
-	
+
+
 	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
 
 		try {
