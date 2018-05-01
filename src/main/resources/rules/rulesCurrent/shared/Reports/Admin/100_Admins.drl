@@ -27,6 +27,7 @@ rule "SBE_ADMINS"
   	     
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	     
+  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
   	     .addFilter("PRI_IS_ADMIN",true)
   	     
   	     .setPageStart(0)
