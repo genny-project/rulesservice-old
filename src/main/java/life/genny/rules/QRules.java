@@ -3292,8 +3292,10 @@ public class QRules {
 
 					/* Allocate QUOTER as Driver */
 					updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-					/* Update link between BEG and Accepted OFFER to weight= 100 */
-					updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 100.0);
+
+					/* Update link between BEG and Accepted OFFER to weight = 100 */
+					updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
+
 					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
 					// get all offers
 					List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
