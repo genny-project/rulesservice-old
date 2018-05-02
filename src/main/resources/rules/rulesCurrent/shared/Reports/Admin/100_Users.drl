@@ -24,6 +24,8 @@ rule "SBE_USERS"
   	     .addColumn("PRI_LASTNAME","Surname")
   	     .addColumn("PRI_MOBILE","Mobile")
   	     .addColumn("PRI_EMAIL","Email")
+  	     .addColumn("PRI_REGISTRATION_DATETIME", "Registered Date")
+  	     .addColumn("PRI_LAST_LOGIN_DATETIME","Last Login Date")
   	     
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
