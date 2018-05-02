@@ -2946,6 +2946,9 @@ public class QRules {
 							List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),
 									"LNK_CORE", 0, 500, false, user.getCode());
 							for (BaseEntity beg : driverbegs) {
+								if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
+									log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
+								}
 								/* Getting begs related to this driver only */
 								String driverCode = beg.getValue("STT_IN_TRANSIT", null);
 								if (driverCode != null && driverCode.equals(user.getCode())) {
