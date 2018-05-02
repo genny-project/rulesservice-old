@@ -2866,32 +2866,43 @@ public class QRules {
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
 		// println("User is Admin " + hasRole("admin"));
-		// Checking for driver role
-		if ((user.is("PRI_DRIVER"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-					reportsHeaderToRemove.add(be);
+		if (reportsHeader != null) {
+			if (isRealm("channel40")) { // Removing USER Reports for channel40
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
-		}
-		// Checking for owner role
-		else if ((user.is("PRI_OWNER"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-					reportsHeaderToRemove.add(be);
+			// Checking for driver role
+			if ((user.is("PRI_DRIVER"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
-		}
-		// checking for admin role
-		if (!(hasRole("admin"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-					reportsHeaderToRemove.add(be);
+			// Checking for owner role
+			else if ((user.is("PRI_OWNER"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
+			// checking for admin role
+			if (!(hasRole("admin"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
+						reportsHeaderToRemove.add(be);
+					}
+				}
+			}
+			// Removing reports not related to the user based on their role
+			reportsHeader.removeAll(reportsHeaderToRemove);
+		} else {
+			println("The group GRP_REPORTS doesn't have any child");
 		}
-		// Removing reports not related to the user based on their role
-		reportsHeader.removeAll(reportsHeaderToRemove);
 		// println("Unrelated reports have been removed ");
 		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
 
