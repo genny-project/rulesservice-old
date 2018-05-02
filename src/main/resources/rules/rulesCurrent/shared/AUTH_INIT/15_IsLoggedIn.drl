@@ -7,7 +7,9 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Is Logged In"
     when
-        rules: QRules( isUserPresent() == true  && (!isState("IS_LOGGED_IN")) && isState("USER_CHECKED")) 
+        rules: QRules(  isUserPresent() == true  && 
+                        !isState("IS_LOGGED_IN") && 
+                        isState("USER_CHECKED")) 
 
      then
         rules.header();
@@ -25,8 +27,8 @@ rule "Is Logged In"
        if (rules.hasRole("admin")) {
 	      if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null) )
 		    {
-        		    Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
-        		    isAdminAnswer.setWeight(1.0);
+                Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+                isAdminAnswer.setWeight(1.0);
 		        rules.saveAnswer(isAdminAnswer);
 		    }
         }
