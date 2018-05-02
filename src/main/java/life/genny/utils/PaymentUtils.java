@@ -31,6 +31,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.google.gson.internal.LinkedTreeMap;
+
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.PaymentsResponse;
@@ -1832,6 +1834,44 @@ public class PaymentUtils {
 
 		return isAssemblyItemValid;
 	}
+	
+	public static LinkedTreeMap<String, String> getPaymentMethodSelectedByOwner(BaseEntity begBe, BaseEntity ownerBe) {
+		
+		LinkedTreeMap<String, String> selectedOwnerPaymentMethod = null; 
+		
+		/* Gives the payment method that is selected for payment by owner */
+ 		String paymentMethodSelected = begBe.getValue("PRI_ACCOUNT_ID", null);
+ 		System.out.println("payment method selected ::" + paymentMethodSelected);
+ 		
+ 		if(paymentMethodSelected != null) {
+ 			
+ 			/* give all payment methods of owner */
+ 			String paymentMethodsOfOwner = ownerBe.getValue("PRI_USER_PAYMENT_METHODS", null);
+ 			System.out.println("all payment methods of owners ::"+paymentMethodsOfOwner);
+ 			
+			if (paymentMethodsOfOwner != null) {
+				JSONArray paymentMethodArr = JsonUtils.fromJson(paymentMethodsOfOwner, JSONArray.class);
 
+				/* iterating through all owner payment methods */
+				for (Object paymentMethodObj : paymentMethodArr) {
+					LinkedTreeMap<String, String> paymentMethod = (LinkedTreeMap<String, String>) paymentMethodObj;
+					System.out.println("type ::" + paymentMethod.get("type"));
+					System.out.println("number" + paymentMethod.get("number"));
+					System.out.println("id ::" + paymentMethod.get("id"));
+
+					/*
+					 * if the payment method = payment method selected by owner to make payment, we
+					 * fetch that paymentMethod and save all values
+					 */
+					if (paymentMethodSelected.equals(paymentMethod.get("id").toString())) {
+						System.out.println("payment method selected is same");
+						selectedOwnerPaymentMethod = paymentMethod;
+					}
+				}
+			}
+ 		}
+ 		
+ 		return selectedOwnerPaymentMethod;
+	}
 
 }
