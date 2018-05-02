@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Random;
 import java.util.Scanner;
@@ -17,7 +18,9 @@ import javax.money.Monetary;
 import org.javamoney.moneta.Money;
 import org.junit.Test;
 
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.QRules;
+import life.genny.utils.StringFormattingUtils;
 
 public class FeeCalculationTest {
 	
@@ -137,5 +140,15 @@ public class FeeCalculationTest {
 		System.out.println(String.format("%04d", 12));
 		System.out.println(String.format("%04d", 123));
 		System.out.println(String.format("%04d", 1234));
+	}
+	
+	@Test
+	public void testBankCredentialMasking() {
+		String card = "4111-4111-4111-4111";
+		String bsb = "313-121";
+		String maskedCard = StringFormattingUtils.mask(card, card.length(), 6, "x");
+		String maskedBsb = StringFormattingUtils.mask(bsb, bsb.length(), 2, "x");
+		System.out.println("masked :" +maskedCard);
+		System.out.println("masked :" +maskedBsb);
 	}
 }
