@@ -29,6 +29,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
 
@@ -2865,32 +2866,43 @@ public class QRules {
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
 		// println("User is Admin " + hasRole("admin"));
-		// Checking for driver role
-		if ((user.is("PRI_DRIVER"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-					reportsHeaderToRemove.add(be);
+		if (reportsHeader != null) {
+			if (isRealm("channel40")) { // Removing USER Reports for channel40
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
-		}
-		// Checking for owner role
-		else if ((user.is("PRI_OWNER"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-					reportsHeaderToRemove.add(be);
+			// Checking for driver role
+			if ((user.is("PRI_DRIVER"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
-		}
-		// checking for admin role
-		if (!(hasRole("admin"))) {
-			for (BaseEntity be : reportsHeader) {
-				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-					reportsHeaderToRemove.add(be);
+			// Checking for owner role
+			else if ((user.is("PRI_OWNER"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
+						reportsHeaderToRemove.add(be);
+					}
 				}
 			}
+			// checking for admin role
+			if (!(hasRole("admin"))) {
+				for (BaseEntity be : reportsHeader) {
+					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
+						reportsHeaderToRemove.add(be);
+					}
+				}
+			}
+			// Removing reports not related to the user based on their role
+			reportsHeader.removeAll(reportsHeaderToRemove);
+		} else {
+			println("The group GRP_REPORTS doesn't have any child");
 		}
-		// Removing reports not related to the user based on their role
-		reportsHeader.removeAll(reportsHeaderToRemove);
 		// println("Unrelated reports have been removed ");
 		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
 
@@ -4817,8 +4829,7 @@ public class QRules {
 	}
 
 	/*
-	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO:
-	 * Refactor
+	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO: Refactor
 	 */
 	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
@@ -4836,19 +4847,22 @@ public class QRules {
 		} else {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = getBaseEntityByCode(searchBECode);
-			List<String> columnsAttribute = new ArrayList<String>();
+//			List<String> columnsAttribute = new ArrayList<String>();
+			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();	
+			
 			for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 				if (ea.getAttributeCode().startsWith("COL_")) {
-					// columnAttributes.add(ea);
-					String attributeCode = ea.getAttributeCode();
-					String header = StringUtils.remove(attributeCode, "COL_");
-					columnsAttribute.add(header);
-
+//					String attributeCode = ea.getAttributeCode();
+//					Double weight = ea.getWeight();
+//					String attributeName = ea.getAttributeName();
+//					String header = StringUtils.remove(attributeCode, "COL_");
+//					columnsAttribute.add(header);
+					eaList.add(ea);					
 				}
 			}
-
-			String[] beArr = new String[columnsAttribute.size()];
-			beArr = columnsAttribute.toArray(beArr);
+			List<String> sortedColumns =  sortEntityAttributeBasedOnWeight(eaList, "ASC");
+			String[] beArr = new String[sortedColumns.size()];
+			beArr = sortedColumns.toArray(beArr);
 
 			JsonArray tColumns = new JsonArray();
 			JsonArray colHeaderArr = new JsonArray();
@@ -4875,7 +4889,41 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
-
+	
+	
+	/*  Sorting Columns of a SearchEntity as per the weight in either Ascening or descending order  */
+	public List<String> sortEntityAttributeBasedOnWeight(final List<EntityAttribute> ea, final String sortOrder) {
+	
+		if (ea.size() > 1) {
+			Collections.sort(ea, new Comparator<EntityAttribute>() {
+				@Override
+				public int compare(EntityAttribute ea1, EntityAttribute ea2) {
+//					println("The weight value of " + ea1.getAttributeCode() + " is "
+//							+ ea1.getWeight());
+//					println("The weight value of " + ea2.getAttributeCode() + " is "
+//							+ ea2.getWeight());				
+					if (ea1.getWeight() != null && ea2.getWeight() != null) {
+						if(sortOrder.equalsIgnoreCase("ASC"))
+						  return ( ea1.getWeight()).compareTo(ea2.getWeight());
+						else
+						   return ( ea2.getWeight()).compareTo(ea1.getWeight());
+					
+					} else
+						return 0;
+				}
+			});
+		}
+		List<String> searchHeader = new ArrayList<String>();
+		for(EntityAttribute ea1 : ea) {
+//			String code = ea1.getAttributeCode();
+//			String name = ea1.getAttributeName();
+//			Double weight = ea1.getWeight();
+			searchHeader.add(ea1.getAttributeCode().substring("COL_".length()));
+		}
+	
+		return searchHeader;
+	}
+	
 	// attachments
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType, List<QBaseMSGAttachment> attachmentList) {

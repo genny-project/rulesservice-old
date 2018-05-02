@@ -16,15 +16,17 @@ rule "SBE_OWNERS"
          rules.setState(drools.getRule().getName());
         rules.println("Generating "+drools.getRule().getName());
           
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Owners")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Freight Owners")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")
   	     .addColumn("PRI_LASTNAME","Surname")
   	     .addColumn("PRI_MOBILE","Mobile")
   	     .addColumn("PRI_EMAIL","Email")
+  	     .addColumn("PRI_REGISTRATION_DATETIME", "Registered Date")
+  	     .addColumn("PRI_LAST_LOGIN_DATETIME","Last Login Date")
   	     
-  	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
+  	     //.addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
   	     
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
   	     .addFilter("PRI_OWNER",true)

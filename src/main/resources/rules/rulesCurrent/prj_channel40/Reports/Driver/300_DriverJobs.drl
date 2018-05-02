@@ -17,11 +17,15 @@ rule "SBE_DRIVERJOBS"
          rules.setState(drools.getRule().getName());
          
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of all My Loads")
-  	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_JOB_ID","Job ID")
-  	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
+  	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_DESCRIPTION","Description")
-  	     
+  	     .addColumn("PRI_JOB_CREATED_DATETIME", "Job Posted Date")
+  	     .addColumn("PRI_PICKUP_DATETIME", "Pick-up Date")
+  	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
+  	     .addColumn("PRI_DROPOFF_DATETIME", "Delivery Date")
+  	     .addColumn("PRI_DROPOFF_ADDRESS_FULL", "Delivery Address")
+  	   
   	     .addSort("PRI_NAME","Name",SearchEntity.Sort.ASC)
   	     
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
