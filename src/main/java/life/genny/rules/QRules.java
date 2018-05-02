@@ -2866,6 +2866,13 @@ public class QRules {
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
 		// println("User is Admin " + hasRole("admin"));
+		if(isRealm("channel40")) {  //Removing USER Reports for channel40
+			for (BaseEntity be : reportsHeader) {
+				if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
+					reportsHeaderToRemove.add(be);
+				}
+			}
+		}
 		// Checking for driver role
 		if ((user.is("PRI_DRIVER"))) {
 			for (BaseEntity be : reportsHeader) {
