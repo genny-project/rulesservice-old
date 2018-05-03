@@ -61,9 +61,7 @@
 
 						Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
 
-		           	 	rules.saveAnswer(paymentStatusAnswer);
-		            		rules.publishData(paymentStatusAnswer);
-						
+		           	 	rules.saveAnswer(paymentStatusAnswer);						
 		            		isUpdateAction = true;
 
 
@@ -80,10 +78,7 @@
 					rules.println("Payment method string ::"+paymentStatusObj.toString());
 
 					Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", "[" + paymentStatusObj.toString() + "]");
-
 		            	rules.saveAnswer(paymentStatusAnswer);
-		            	rules.publishData(paymentStatusAnswer);
-
 		            	isUpdateAction = true;
 				}
 			}
@@ -92,7 +87,8 @@
 			if(isUpdateAction) {
 
 				if(m.getObject_status().toString().equals("ITEM_PAYMENT_DEPOSITED")) {
-
+					/* ITEM_PAYMENT_DEPOSITED - payment deposited successfully in escrow */
+					/* toast and sms sent to both driver and owner, payment-escrow mail sent to owner */
 
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();
@@ -120,31 +116,22 @@
 
 
 		         } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
+		         	/* ITEM_PAYMENT_COMPLETED - Payment release is complete */
+		         	/* when payment release is complete, release-payment emails with invoices and toasts are sent to both owner and driver */
 
-		            		HashMap<String, String> contextMap = new HashMap<String, String>();
-						contextMap.put("JOB", begBe.getCode());
-				 		contextMap.put("OWNER", owner.getCode());
-				 		contextMap.put("DRIVER", driver.getCode());
-				 		contextMap.put("LOAD", load.getCode());
-				 		contextMap.put("OFFER", offerCode);
+		            		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+			     		rules.triggerReleasePaymentMailWithAttachment(owner, driver, offerBe, load, begBe);
 
-				 		String[] messageToOwnerRecipients = new String[1];
-			     		messageToOwnerRecipients[0] = owner.getCode();
-			     		rules.sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
-			     		rules.sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL");
-
-			     		String[] messageToDriverRecipients = new String[1];
-			     		messageToDriverRecipients[0] = driver.getCode();
-			     		rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
-			     		rules.sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL");
-
+						/* save status in database */
 			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed");
 			     		rules.saveAnswer(paymentStatus);
-		            		rules.publishData(paymentStatus);
 
 
 		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD")) {
 
+						/* ITEM_PAYMENT_HELD -  Payment held because of KYC information/Fraud */
+						/* Toast sent */
+						
 		            		HashMap<String, String> contextMap = new HashMap<String, String>();
 						contextMap.put("DRIVER", driver.getCode());
 						contextMap.put("JOB", begBe.getCode());
@@ -165,7 +152,9 @@
 						rules.saveAnswer(paymentStatus);
 
 		            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
-
+		            		/* ITEM_PAYMENT_INCOMING - make payment is done, but money transaction still getting processed */
+						/* status is saved in DB */
+						
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment incoming from Owner");
 						rules.saveAnswer(paymentStatus);
 

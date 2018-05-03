@@ -29,7 +29,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
 
@@ -43,7 +42,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
-import org.json.simple.JSONObject;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -69,6 +67,7 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
+import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
@@ -89,13 +88,17 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
+import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentUtils;
+import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
-import life.genny.qwandautils.QwandaUtils;
+
 
 public class QRules {
 
@@ -2481,13 +2484,8 @@ public class QRules {
 
 	}
 
-	public String getCurrentLocalDate() {
-		LocalDate date = LocalDate.now();
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-		Date currentDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		String dateString = df.format(currentDate);
-		return dateString;
-	}
+	
+
 
 	public void publishBE(final BaseEntity be) {
 		addAttributes(be);
@@ -3923,7 +3921,7 @@ public class QRules {
 
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-
+			
 		}
 
 	}
@@ -4940,6 +4938,196 @@ public class QRules {
 		} else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
+
+	}
+	
+	public void triggerReleasePaymentMailWithAttachment(BaseEntity ownerBe, BaseEntity driverBe, BaseEntity offerBe, BaseEntity loadBe,
+			BaseEntity begBe) {
+
+		Money ownerIncGST = null;
+		Money ownerExcGST = null;
+		Money driverExcGST = null;
+		Money driverIncGST = null;
+
+		//String offerCode = begBe.getValue("STT_HOT_OFFER", null);
+		if (offerBe != null) {
+			
+			ownerIncGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+			ownerExcGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
+			
+			driverIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+			driverExcGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
+
+			/* invoice attachments(buyer and seller) are attributes of ProjectBe */
+			BaseEntity projectBe = getProject();
+			String ownerInvoiceLayoutUrl = projectBe.getValue("PRI_INVOICE_LAYOUT_BUYER", null);
+			String driverInvoiceLayoutUrl = projectBe.getValue("PRI_INVOICE_LAYOUT_SELLER", null);
+
+			/* context map for sending email */
+			HashMap<String, String> contextMap = new HashMap<String, String>();
+
+			/* start of ---> merge with key and baseEntity code as value */
+			contextMap.put("JOB", begBe.getCode());
+			contextMap.put("OFFER", offerBe.getCode());
+			contextMap.put("OWNER", ownerBe.getCode());
+			contextMap.put("DRIVER", driverBe.getCode());
+			contextMap.put("LOAD", loadBe.getCode());
+
+			/* We get the driver & owner company */
+			if (driverBe != null) {
+				BaseEntity driverCompanyBe = getParent(driverBe.getCode(), "LNK_STAFF");
+
+				if (driverCompanyBe != null) {
+					contextMap.put("DRIVER_COMPANY", driverCompanyBe.getCode());
+				}
+			}
+
+			if (ownerBe != null) {
+				BaseEntity ownerCompanyBe = getParent(ownerBe.getCode(), "LNK_STAFF");
+
+				if (ownerCompanyBe != null) {
+					contextMap.put("OWNER_COMPANY", ownerCompanyBe.getCode());
+				}
+			}
+			/* end of ---> merge with key and baseEntity code as value */
+
+			/* start of ----> direct merging with no baseentities */
+			QwandaUtils.getZonedCurrentLocalDateTime();
+			contextMap.put("INVOICE_DATE", getFormattedCurrentLocalDateTime());
+
+			Double gstDoubleValue_owner = ownerIncGST.getNumber().doubleValue() - ownerExcGST.getNumber().doubleValue();
+			Double gstDoubleValue_driver = driverIncGST.getNumber().doubleValue() - driverExcGST.getNumber().doubleValue();
+
+			/* rounding off GST amount to 2 decimal points */
+			String roundedGstValue_owner = String.format("%.2f", gstDoubleValue_owner);
+			String roundedGstValue_driver = String.format("%.2f", gstDoubleValue_driver);
+
+			contextMap.put("PRI_GST_OWNER", roundedGstValue_owner);
+			contextMap.put("PRI_GST_DRIVER", roundedGstValue_driver);
+			
+			/* Channel40's ABN - Project attribute */
+			String projectCompanyABN = projectBe.getValue("PRI_ABN", null);
+			if(projectCompanyABN != null) {
+				contextMap.put("PROJECT_ABN", projectCompanyABN);
+			} else {
+				contextMap.put("PROJECT_ABN", "-");
+			}
+			
+
+			/* we get the payment method the freight owner selected for the job */
+			QPaymentMethod selectedOwnerPaymentMethod = PaymentUtils.getPaymentMethodSelectedByOwner(begBe, ownerBe);
+			if (selectedOwnerPaymentMethod != null) {
+
+				/* Getting owner-selected PaymentMethod in POJO */
+				PaymentType paymentMethodType = selectedOwnerPaymentMethod.getType();
+				contextMap.put("PAYMENT_TYPE", paymentMethodType.toString());
+
+				
+				Character[] toBeIgnoreCharacterArr = {'-'};
+				if (paymentMethodType.equals(PaymentType.CARD)) {
+					
+					String creditCardNumber = selectedOwnerPaymentMethod.getNumber();
+					
+					if (creditCardNumber != null) {
+						
+						/* Replacing all blabk spaces in credit-card with "-" */
+						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");		
+						
+						/* Masking credit card number */
+						String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(creditCardNumber, 0, 15, "x", toBeIgnoreCharacterArr);
+						
+						if(maskedCreditCardNumber != null) { 
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedCreditCardNumber);
+						} else {
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
+						}
+						
+					}
+
+				} else if (paymentMethodType.equals(PaymentType.BANK_ACCOUNT)) {
+
+					String bsb = selectedOwnerPaymentMethod.getBsb();
+					String accountNumber = selectedOwnerPaymentMethod.getAccountNumber();
+
+					if (bsb != null && accountNumber != null) {
+
+						bsb = bsb.replaceAll("\\s+", "-");
+						accountNumber = accountNumber.replaceAll("\\s+", "-");
+						
+						/* Masking bsb and account number */
+						String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
+						String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x", toBeIgnoreCharacterArr);
+
+						if (maskedAccountNumber != null && maskedBsb != null) {
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedAccountNumber + ", BSB:" + maskedBsb);
+						} else {
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
+						}
+					}
+				}
+			}
+
+			/* end of ----> direct merging with no baseentities */
+
+			List<QBaseMSGAttachment> ownerAttachmentList = null;
+			List<QBaseMSGAttachment> driverAttachmentList = null;
+
+			/* invoice attachment for owner */
+			if (ownerInvoiceLayoutUrl != null) {
+				ownerAttachmentList = new ArrayList<>();
+				QBaseMSGAttachment ownerInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", ownerInvoiceLayoutUrl, true, "INVOICE_PDF");
+				ownerAttachmentList.add(ownerInvoiceAttachment);
+			}
+
+			/* invoice attachment for driver */
+			if (driverInvoiceLayoutUrl != null) {
+				driverAttachmentList = new ArrayList<>();
+				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", driverInvoiceLayoutUrl, true, "INVOICE_PDF");
+				driverAttachmentList.add(driverInvoiceAttachment);
+			}
+
+			String[] messageToOwnerRecipients = new String[1];
+			messageToOwnerRecipients[0] = ownerBe.getCode();
+			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
+			sendMessage(messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL", ownerAttachmentList);
+
+			String[] messageToDriverRecipients = new String[1];
+			messageToDriverRecipients[0] = driverBe.getCode();
+			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
+			sendMessage(messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL", driverAttachmentList);
+
+		} else {
+			BaseEntity project = getProject();
+
+			if (project != null) {
+
+				String webhookURL = project.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				if (webhookURL != null) {
+
+					String message = "Tax invoice generation failed, offer is null, BEG :" + begBe.getCode()
+							+ ", LOAD :" + loadBe;
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+						sendSlackNotification(webhookURL, payload);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}
+	}
+
+	/* format date in format 10 May 2010 */
+	public String getFormattedCurrentLocalDateTime() {
+		LocalDateTime date = LocalDateTime.now();
+		DateFormat df = new SimpleDateFormat("dd MMM yyyy");
+		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+		String dateString = df.format(datetime);
+
+		return dateString;	
 
 	}
 
