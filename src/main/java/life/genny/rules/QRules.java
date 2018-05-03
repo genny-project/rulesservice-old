@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -1018,7 +1019,7 @@ public class QRules {
 		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
-		RulesUtils.println(layoutCode + " SENT TO FRONTEND");
+		println(layoutCode + " SENT TO FRONTEND");
 	}
 
 	public void sendPopupCmd(final String cmd_view, final String root) {
@@ -2404,7 +2405,13 @@ public class QRules {
 						/* grab sublayout from github */
 						println(i + ":" + url);
 
-						String subLayoutString = QwandaUtils.apiGet(url, null);
+						String subLayoutString = null;
+						
+						try {
+							subLayoutString = QwandaUtils.apiGet(url, null);
+						} catch (UnknownHostException e1) {
+							log.error("Unknown layout host "+url+":"+sublayoutData);
+						}
 						if (subLayoutString != null) {
 
 							try {
