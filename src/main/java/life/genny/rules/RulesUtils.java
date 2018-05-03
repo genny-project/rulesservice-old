@@ -132,7 +132,7 @@ public class RulesUtils {
 		if (System.getenv("GENNY_DEV") == null) {
 			activateCache = true;
 		} else {
-			activateCache = false; // FALSE = github || TRUE = cache
+			activateCache = true; // FALSE = github || TRUE = cache
 		}
 
 		String host = System.getenv("LAYOUT_CACHE_HOST");

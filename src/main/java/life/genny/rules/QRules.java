@@ -4859,12 +4859,12 @@ public class QRules {
 				publishCmd(students, "GRP_INTERNS", "LNK_CORE");
 
 				/* subscribe to all beg's where eduProvider's student is stakeholder */
-				for(BaseEntity student : students){
+				/* for(BaseEntity student : students){ */
 					if (buckets != null) {
 						for (BaseEntity bucket : buckets) {
 							println("5. BUCKET code   ::   " + bucket.getCode());
 
-							List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, student.getCode());
+							List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
 							println("6. BEGS eduprovider's student is invoved in   ::   " + begs);
 
 							/* subscribe to all the begs of student is stakeholder   */
@@ -4895,7 +4895,7 @@ public class QRules {
 							}
 						}
 					}
-				}
+				/* } */
 			}
 		}
 	}
