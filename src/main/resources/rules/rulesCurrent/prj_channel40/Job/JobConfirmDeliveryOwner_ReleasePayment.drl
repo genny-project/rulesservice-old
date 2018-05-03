@@ -89,11 +89,7 @@ then
        	           rules.saveAnswers(answers);
        	             /* rules.saveAnswer(paymentDoneAns); */
 
-		     		rules.sendRating($m.getData().getValue());
-
-		     		/* we mark the job as marked */
-          			//rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
-          			rules.moveBaseEntitySetLinkValue(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");  
+		     		rules.sendRating($m.getData().getValue()); 
 
           			/* redirecting user to bucket */
           			/*rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");*/
