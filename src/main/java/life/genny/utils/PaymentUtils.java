@@ -31,6 +31,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
 import io.vertx.core.json.JsonObject;
@@ -39,6 +41,7 @@ import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
@@ -1835,9 +1838,9 @@ public class PaymentUtils {
 		return isAssemblyItemValid;
 	}
 	
-	public static LinkedTreeMap<String, String> getPaymentMethodSelectedByOwner(BaseEntity begBe, BaseEntity ownerBe) {
+	public static QPaymentMethod getPaymentMethodSelectedByOwner(BaseEntity begBe, BaseEntity ownerBe) {
 		
-		LinkedTreeMap<String, String> selectedOwnerPaymentMethod = null; 
+		QPaymentMethod selectedOwnerPaymentMethod = null; 
 		
 		/* Gives the payment method that is selected for payment by owner */
  		String paymentMethodSelected = begBe.getValue("PRI_ACCOUNT_ID", null);
@@ -1850,22 +1853,31 @@ public class PaymentUtils {
  			System.out.println("all payment methods of owners ::"+paymentMethodsOfOwner);
  			
 			if (paymentMethodsOfOwner != null) {
+				
 				JSONArray paymentMethodArr = JsonUtils.fromJson(paymentMethodsOfOwner, JSONArray.class);
 
 				/* iterating through all owner payment methods */
 				for (Object paymentMethodObj : paymentMethodArr) {
+					
+					/* converting the individual payment method types to POJO */
 					LinkedTreeMap<String, String> paymentMethod = (LinkedTreeMap<String, String>) paymentMethodObj;
-					System.out.println("type ::" + paymentMethod.get("type"));
-					System.out.println("number" + paymentMethod.get("number"));
-					System.out.println("id ::" + paymentMethod.get("id"));
+					Gson gson = new Gson();
+					JsonElement jsonElement = gson.toJsonTree(paymentMethod);
+					QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
+					
+					System.out.println("type ::" + paymentMethodPojo.getType());
+					System.out.println("number" + paymentMethodPojo.getNumber());
+					System.out.println("id ::" + paymentMethodPojo.getId());
 
 					/*
 					 * if the payment method = payment method selected by owner to make payment, we
 					 * fetch that paymentMethod and save all values
 					 */
-					if (paymentMethodSelected.equals(paymentMethod.get("id").toString())) {
+					if (paymentMethodSelected.equals(paymentMethodPojo.getId())) {
+						
 						System.out.println("payment method selected is same");
-						selectedOwnerPaymentMethod = paymentMethod;
+						selectedOwnerPaymentMethod = new QPaymentMethod();
+						selectedOwnerPaymentMethod = paymentMethodPojo;
 					}
 				}
 			}
