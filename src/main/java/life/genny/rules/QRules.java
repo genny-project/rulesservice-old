@@ -3129,6 +3129,7 @@ public class QRules {
 	 * Method to send All the Chats for the current user
 	 */
 	public void sendAllChats(final int pageStart, final int pageSize) {
+		BaseEntity currentUser = getUser();
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
 		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
@@ -3137,7 +3138,7 @@ public class QRules {
 
 				.setStakeholder(getUser().getCode())
 
-				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
+				//.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
 																								// to be tested in prod before deploying
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%")
 				.setPageStart(pageStart).setPageSize(pageSize);
@@ -3168,45 +3169,29 @@ public class QRules {
 						if (users.contains(getUser())) {
 							for (BaseEntity linkedUser : users) {
 								/* if user is a stackholder of this conversation we send it */
-								if (linkedUser.getCode().equals(getUser().getCode())) {
-									VertxUtils.subscribe(realm(), convo, getUser().getCode());
+								if (linkedUser.getCode().equals(currentUser.getCode())) {
+									VertxUtils.subscribe(realm(), convo, currentUser.getCode());
 									userConversations.add(convo);
 								}
 								/* Sending the messages recipient User BE */
-								if (!linkedUser.getCode().equals(getUser().getCode())) {
+								if (!linkedUser.getCode().equals(currentUser.getCode())) {
 									VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
-									String[] senderCodeInArray = { getUser().getCode() };
-									bulkmsg.add(publishData(linkedUser, senderCodeInArray));
+									String[] senderCodeInArray = { currentUser.getCode() };
+									publishData(linkedUser, senderCodeInArray);
+									//bulkmsg.add(publishData(linkedUser, senderCodeInArray));
 								}
-
 							}
 						}
 					}
 				}
-				bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
+				publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
+				//bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
 			} else {
 				println("There are not chats for the current user");
 			}
 		} else {
 			println("Unable to get the list of chats using searchBE");
 		}
-
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-		bulk.setToken(getToken());
-		String[] rxa = new String[1];
-		rxa[0] = getUser().getCode();
-		bulk.setRecipientCodeArray(rxa);
-		String cachedBulkmsgJson = JsonUtils.toJson(bulk);
-		for (QDataBaseEntityMessage msg : bulk.getMessages()) {
-			if (msg instanceof QDataBaseEntityMessage) {
-				msg.setToken(getToken());
-				publishCmd(JsonUtils.toJson(msg));
-			}
-
-		}
-		// cache = bulk; //cachedBulkmsgJson;
-		// cache2 = cachedBulkmsgJson;
-		VertxUtils.putObject(realm(), "BULK_CHATS", getUser().getCode(), cachedBulkmsgJson);
 
 	}
 
