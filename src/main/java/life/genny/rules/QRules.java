@@ -3028,34 +3028,34 @@ public class QRules {
 		 * "LNK_CHAT", 0, 100, true);
 		 */
 
-		List<BaseEntity> conversations = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 500, true);
-		List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
-
-		if (conversations != null) {
-
-			for (BaseEntity convo : conversations) {
-
-				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 500, true);
-				if (users != null) {
-					if (users.contains(getUser())) {
-						for (BaseEntity linkedUser : users) {
-							/* if user is a stackholder of this conversation we send it */
-							if (linkedUser.getCode().equals(getUser().getCode())) {
-								VertxUtils.subscribe(realm(), convo, getUser().getCode());
-								userConversations.add(convo);
-							}
-							/* Sending the messages recipient User BE */
-							if (!linkedUser.getCode().equals(getUser().getCode())) {
-								VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
-								String[] senderCodeInArray = { getUser().getCode() };
-								bulkmsg.add(publishData(linkedUser, senderCodeInArray));
-							}
-
-						}
-					}
-				}
-			}
-		}
+//		List<BaseEntity> conversations = getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 500, true);
+//		List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
+//
+//		if (conversations != null) {
+//
+//			for (BaseEntity convo : conversations) {
+//
+//				List<BaseEntity> users = getBaseEntitysByParentAndLinkCode(convo.getCode(), "LNK_USER", 0, 500, true);
+//				if (users != null) {
+//					if (users.contains(getUser())) {
+//						for (BaseEntity linkedUser : users) {
+//							/* if user is a stackholder of this conversation we send it */
+//							if (linkedUser.getCode().equals(getUser().getCode())) {
+//								VertxUtils.subscribe(realm(), convo, getUser().getCode());
+//								userConversations.add(convo);
+//							}
+//							/* Sending the messages recipient User BE */
+//							if (!linkedUser.getCode().equals(getUser().getCode())) {
+//								VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
+//								String[] senderCodeInArray = { getUser().getCode() };
+//								bulkmsg.add(publishData(linkedUser, senderCodeInArray));
+//							}
+//
+//						}
+//					}
+//				}
+//			}
+//		}
 		//
 		// bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
 		//
@@ -3122,7 +3122,92 @@ public class QRules {
 			}
 		}
 	}
+    
+	/*
+	 * Method to send All the Chats for the current user
+	 */
+	public void sendAllChats(final int pageStart, final int pageSize) {
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		QDataBaseEntityMessage qMsg;
+		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
+				.addColumn("PRI_TITLE", "Title")
+				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On")
 
+				.setStakeholder(getUser().getCode())
+
+				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
+																								// to be tested in prod before deploying
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%")
+				.setPageStart(pageStart).setPageSize(pageSize);
+		try {
+			qMsg = getSearchResults(sendAllChats);
+		} catch (IOException e) {
+			System.out.println("Error! Unable to get Search Rsults");
+			qMsg = null;
+			e.printStackTrace();
+		}
+		if (qMsg != null) {
+			List<BaseEntity> conversations = Arrays.asList(qMsg.getItems());
+			List<BaseEntity> userConversations = new ArrayList<BaseEntity>();
+
+			if (conversations != null) {
+				for (BaseEntity convo : conversations) {
+					// Getting list of the users- sender and receiver of the chat
+					List<BaseEntity> users = new ArrayList<BaseEntity>();
+					Set<EntityEntity> chatUsers = convo.getLinks();
+					for (EntityEntity links : chatUsers) {
+						// String linkCode = links.getLink().getAttributeCode();
+						if (links.getLink().getAttributeCode().equalsIgnoreCase("LNK_USER")) {
+							// String userCode = links.getLink().getTargetCode();
+							users.add(getBaseEntityByCode(links.getLink().getTargetCode()));
+						}
+					}
+					if (users != null) {
+						if (users.contains(getUser())) {
+							for (BaseEntity linkedUser : users) {
+								/* if user is a stackholder of this conversation we send it */
+								if (linkedUser.getCode().equals(getUser().getCode())) {
+									VertxUtils.subscribe(realm(), convo, getUser().getCode());
+									userConversations.add(convo);
+								}
+								/* Sending the messages recipient User BE */
+								if (!linkedUser.getCode().equals(getUser().getCode())) {
+									VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
+									String[] senderCodeInArray = { getUser().getCode() };
+									bulkmsg.add(publishData(linkedUser, senderCodeInArray));
+								}
+
+							}
+						}
+					}
+				}
+				bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
+			} else {
+				println("There are not chats for the current user");
+			}
+		} else {
+			println("Unable to get the list of chats using searchBE");
+		}
+
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		bulk.setToken(getToken());
+		String[] rxa = new String[1];
+		rxa[0] = getUser().getCode();
+		bulk.setRecipientCodeArray(rxa);
+		String cachedBulkmsgJson = JsonUtils.toJson(bulk);
+		for (QDataBaseEntityMessage msg : bulk.getMessages()) {
+			if (msg instanceof QDataBaseEntityMessage) {
+				msg.setToken(getToken());
+				publishCmd(JsonUtils.toJson(msg));
+			}
+
+		}
+		// cache = bulk; //cachedBulkmsgJson;
+		// cache2 = cachedBulkmsgJson;
+		VertxUtils.putObject(realm(), "BULK_CHATS", getUser().getCode(), cachedBulkmsgJson);
+
+	}
+	
 	public void makePayment(QDataAnswerMessage m) {
 		/* Save Payment-related answers as user/BEG attributes */
 		String userCode = getUser().getCode();
@@ -4681,7 +4766,35 @@ public class QRules {
 		System.out.println("The result   ::  " + msg);
 		publishData(new JsonObject(resultJson));
 	}
-
+	
+	/*
+	 * Get search Results 
+	 * returns QDataBaseEntityMessage 
+	 */
+	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
+		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		System.out.println("The result   ::  " + msg);
+        
+		return msg;
+	}
+	
+	/*
+	 *  Get search Results
+	 *  return String
+	 */
+	public String getSearchResultsString(SearchEntity searchBE) throws IOException {
+		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+        
+		return resultJson;
+	}
+	
 	/*
 	 * Check if conversation between sender and receiver already exists
 	 */
