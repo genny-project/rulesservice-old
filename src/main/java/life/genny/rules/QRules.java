@@ -3138,7 +3138,7 @@ public class QRules {
 
 				.setStakeholder(getUser().getCode())
 
-				//.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
+				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
 																								// to be tested in prod before deploying
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%")
 				.setPageStart(pageStart).setPageSize(pageSize);
