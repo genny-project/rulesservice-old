@@ -4818,7 +4818,18 @@ public class QRules {
 	public void sendEduProviderData() {
 		
 		List<BaseEntity> students = new ArrayList<BaseEntity>();
-		BaseEntity eduProvider = getParent(getUser().getCode(), "LNK_EDU");
+
+		/* TODO to fix */
+		List<BaseEntity> eduProviderParents = getParents(getUser().getCode(), "LNK_EDU");
+		BaseEntity eduProvider = null;
+
+		for(BaseEntity parent: eduProviderParents) {
+			if(parent.getCode().startsWith("SEL_")) {
+				eduProvider = parent;
+			}
+		}
+
+		// BaseEntity eduProvider = getParent(getUser().getCode(), "LNK_EDU");
 		
 		if (eduProvider == null) {
 			println("0. edu Provider is null");
