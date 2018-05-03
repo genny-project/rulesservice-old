@@ -1997,11 +1997,11 @@ public class QRules {
 				}
 				List<Answer> answers = new ArrayList<Answer>();
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));		
+				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
 				saveAnswers(answers);
 				/* Add current date-time to char as  */
 				saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", QwandaUtils.getZonedCurrentLocalDateTime()));
-				
+
 				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
 				/* Publish chat to Receiver */
 				publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray);
@@ -2486,7 +2486,7 @@ public class QRules {
 
 	}
 
-	
+
 
 
 	public void publishBE(final BaseEntity be) {
@@ -3124,7 +3124,7 @@ public class QRules {
 			}
 		}
 	}
-    
+
 	/*
 	 * Method to send All the Chats for the current user
 	 */
@@ -3209,7 +3209,7 @@ public class QRules {
 		VertxUtils.putObject(realm(), "BULK_CHATS", getUser().getCode(), cachedBulkmsgJson);
 
 	}
-	
+
 	public void makePayment(QDataAnswerMessage m) {
 		/* Save Payment-related answers as user/BEG attributes */
 		String userCode = getUser().getCode();
@@ -4008,7 +4008,7 @@ public class QRules {
 
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-			
+
 		}
 
 	}
@@ -4768,10 +4768,10 @@ public class QRules {
 		System.out.println("The result   ::  " + msg);
 		publishData(new JsonObject(resultJson));
 	}
-	
+
 	/*
-	 * Get search Results 
-	 * returns QDataBaseEntityMessage 
+	 * Get search Results
+	 * returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
@@ -4780,10 +4780,10 @@ public class QRules {
 				getToken());
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + msg);
-        
+
 		return msg;
 	}
-	
+
 	/*
 	 *  Get search Results
 	 *  return String
@@ -4793,10 +4793,10 @@ public class QRules {
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-        
+
 		return resultJson;
 	}
-	
+
 	/*
 	 * Check if conversation between sender and receiver already exists
 	 */
@@ -4961,8 +4961,8 @@ public class QRules {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = getBaseEntityByCode(searchBECode);
 //			List<String> columnsAttribute = new ArrayList<String>();
-			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();	
-			
+			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();
+
 			for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 				if (ea.getAttributeCode().startsWith("COL_")) {
 //					String attributeCode = ea.getAttributeCode();
@@ -4970,7 +4970,7 @@ public class QRules {
 //					String attributeName = ea.getAttributeName();
 //					String header = StringUtils.remove(attributeCode, "COL_");
 //					columnsAttribute.add(header);
-					eaList.add(ea);					
+					eaList.add(ea);
 				}
 			}
 			List<String> sortedColumns =  sortEntityAttributeBasedOnWeight(eaList, "ASC");
@@ -5002,11 +5002,11 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
-	
-	
+
+
 	/*  Sorting Columns of a SearchEntity as per the weight in either Ascening or descending order  */
 	public List<String> sortEntityAttributeBasedOnWeight(final List<EntityAttribute> ea, final String sortOrder) {
-	
+
 		if (ea.size() > 1) {
 			Collections.sort(ea, new Comparator<EntityAttribute>() {
 				@Override
@@ -5014,13 +5014,13 @@ public class QRules {
 //					println("The weight value of " + ea1.getAttributeCode() + " is "
 //							+ ea1.getWeight());
 //					println("The weight value of " + ea2.getAttributeCode() + " is "
-//							+ ea2.getWeight());				
+//							+ ea2.getWeight());
 					if (ea1.getWeight() != null && ea2.getWeight() != null) {
 						if(sortOrder.equalsIgnoreCase("ASC"))
 						  return ( ea1.getWeight()).compareTo(ea2.getWeight());
 						else
 						   return ( ea2.getWeight()).compareTo(ea1.getWeight());
-					
+
 					} else
 						return 0;
 				}
@@ -5033,10 +5033,10 @@ public class QRules {
 //			Double weight = ea1.getWeight();
 			searchHeader.add(ea1.getAttributeCode().substring("COL_".length()));
 		}
-	
+
 		return searchHeader;
 	}
-	
+
 	// attachments
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType, List<QBaseMSGAttachment> attachmentList) {
@@ -5055,7 +5055,7 @@ public class QRules {
 		}
 
 	}
-	
+
 	public void triggerReleasePaymentMailWithAttachment(BaseEntity ownerBe, BaseEntity driverBe, BaseEntity offerBe, BaseEntity loadBe,
 			BaseEntity begBe) {
 
@@ -5066,10 +5066,10 @@ public class QRules {
 
 		//String offerCode = begBe.getValue("STT_HOT_OFFER", null);
 		if (offerBe != null) {
-			
+
 			ownerIncGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
 			ownerExcGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
-			
+
 			driverIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
 			driverExcGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
 
@@ -5119,7 +5119,7 @@ public class QRules {
 
 			contextMap.put("PRI_GST_OWNER", roundedGstValue_owner);
 			contextMap.put("PRI_GST_DRIVER", roundedGstValue_driver);
-			
+
 			/* Channel40's ABN - Project attribute */
 			String projectCompanyABN = projectBe.getValue("PRI_ABN", null);
 			if(projectCompanyABN != null) {
@@ -5127,7 +5127,7 @@ public class QRules {
 			} else {
 				contextMap.put("PROJECT_ABN", "-");
 			}
-			
+
 
 			/* we get the payment method the freight owner selected for the job */
 			QPaymentMethod selectedOwnerPaymentMethod = PaymentUtils.getPaymentMethodSelectedByOwner(begBe, ownerBe);
@@ -5137,26 +5137,26 @@ public class QRules {
 				PaymentType paymentMethodType = selectedOwnerPaymentMethod.getType();
 				contextMap.put("PAYMENT_TYPE", paymentMethodType.toString());
 
-				
+
 				Character[] toBeIgnoreCharacterArr = {'-'};
 				if (paymentMethodType.equals(PaymentType.CARD)) {
-					
+
 					String creditCardNumber = selectedOwnerPaymentMethod.getNumber();
-					
+
 					if (creditCardNumber != null) {
-						
+
 						/* Replacing all blabk spaces in credit-card with "-" */
-						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");		
-						
+						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");
+
 						/* Masking credit card number */
 						String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(creditCardNumber, 0, 15, "x", toBeIgnoreCharacterArr);
-						
-						if(maskedCreditCardNumber != null) { 
+
+						if(maskedCreditCardNumber != null) {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedCreditCardNumber);
 						} else {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
 						}
-						
+
 					}
 
 				} else if (paymentMethodType.equals(PaymentType.BANK_ACCOUNT)) {
@@ -5168,7 +5168,7 @@ public class QRules {
 
 						bsb = bsb.replaceAll("\\s+", "-");
 						accountNumber = accountNumber.replaceAll("\\s+", "-");
-						
+
 						/* Masking bsb and account number */
 						String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
 						String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x", toBeIgnoreCharacterArr);
@@ -5242,7 +5242,7 @@ public class QRules {
 		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
 		String dateString = df.format(datetime);
 
-		return dateString;	
+		return dateString;
 
 	}
 
