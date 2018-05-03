@@ -29,7 +29,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
 
@@ -46,7 +45,6 @@ import org.javamoney.moneta.Money;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import io.vertx.core.json.JsonArray;
@@ -90,6 +88,8 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
+import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -5010,44 +5010,58 @@ public class QRules {
 			if(projectCompanyABN != null) {
 				contextMap.put("PROJECT_ABN", projectCompanyABN);
 			} else {
-				contextMap.put("PROJECT_ABN", "61612991483");
+				contextMap.put("PROJECT_ABN", "-");
 			}
 			
 
 			/* we get the payment method the freight owner selected for the job */
-			LinkedTreeMap<String, String> selectedOwnerPaymentMethod = PaymentUtils.getPaymentMethodSelectedByOwner(begBe, ownerBe);
+			QPaymentMethod selectedOwnerPaymentMethod = PaymentUtils.getPaymentMethodSelectedByOwner(begBe, ownerBe);
 			if (selectedOwnerPaymentMethod != null) {
 
-				/* Getting paymentMasks in Array format for different types of payment method */
+				/* Getting owner-selected PaymentMethod in POJO */
+				PaymentType paymentMethodType = selectedOwnerPaymentMethod.getType();
+				contextMap.put("PAYMENT_TYPE", paymentMethodType.toString());
 
-				String paymentMethodType = selectedOwnerPaymentMethod.get("type").toUpperCase();
-				contextMap.put("PAYMENT_TYPE", paymentMethodType);
-
-				if (paymentMethodType.equalsIgnoreCase("CARD")) {
-
-					String creditCardNumber = selectedOwnerPaymentMethod.get("number");
+				
+				Character[] toBeIgnoreCharacterArr = {'-'};
+				if (paymentMethodType.equals(PaymentType.CARD)) {
+					
+					String creditCardNumber = selectedOwnerPaymentMethod.getNumber();
+					
 					if (creditCardNumber != null) {
-
-						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");
-						String maskedCreditCardNumber = StringFormattingUtils.mask(creditCardNumber, creditCardNumber.length(), 4, "x");
-						contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedCreditCardNumber);
+						
+						/* Replacing all blabk spaces in credit-card with "-" */
+						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");		
+						
+						/* Masking credit card number */
+						String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(creditCardNumber, 0, 15, "x", toBeIgnoreCharacterArr);
+						
+						if(maskedCreditCardNumber != null) { 
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedCreditCardNumber);
+						} else {
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
+						}
+						
 					}
 
-				} else if (paymentMethodType.equalsIgnoreCase("BANK_ACCOUNT")) {
+				} else if (paymentMethodType.equals(PaymentType.BANK_ACCOUNT)) {
 
-					String bsb = selectedOwnerPaymentMethod.get("bsb");
-					String accountNumber = selectedOwnerPaymentMethod.get("accountNumber");
+					String bsb = selectedOwnerPaymentMethod.getBsb();
+					String accountNumber = selectedOwnerPaymentMethod.getAccountNumber();
 
 					if (bsb != null && accountNumber != null) {
 
 						bsb = bsb.replaceAll("\\s+", "-");
 						accountNumber = accountNumber.replaceAll("\\s+", "-");
-
-						String maskedBsb = StringFormattingUtils.mask(bsb, bsb.length(), 2, "x");
-						String maskedAccountNumber = StringFormattingUtils.mask(accountNumber, accountNumber.length(), 3, "x");
+						
+						/* Masking bsb and account number */
+						String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
+						String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x", toBeIgnoreCharacterArr);
 
 						if (maskedAccountNumber != null && maskedBsb != null) {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedAccountNumber + ", BSB:" + maskedBsb);
+						} else {
+							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
 						}
 					}
 				}

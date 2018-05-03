@@ -1,60 +1,64 @@
 package life.genny.utils;
 
 public class StringFormattingUtils {
+
 	
-	/*
-	 * @param str: String - string to mask
-	 * @param start: int - length of the string
-	 * @param end: int - number of characters to be NOT masked 
-	 * @param maskCharacter: String - mask character
-	 * @return String - masked str
+	/**
+	 * 
+	 * @param str - String to be masked
+	 * @param start - start range for masking
+	 * @param end - end range for masking
+	 * @param maskCharacter - character to be used for masking
+	 * @param ignoreCharacterArrayForMask - If there are any character to be ignored while masking, they will put in the ignoreCharacterArrayForMask
+	 * @return masked String
 	 */
-	public static String mask(String str, int lengthOfWord, int numberOfIntegersTobeFormatted, String maskCharacter) {
+	/* Currently used for bank credential number masking */
+	public static String maskWithRange(String str, int start, int end, String maskCharacter, Character[] ignoreCharacterArrayForMask) {
 		
 		/* we check if we are not out of range or if the passed str is null */
-		if(str == null || lengthOfWord == 0)  {
-			return null;
-		}
+		if(str == null || str.length() == 0) return null; 
+		if(end - start < 0) return null;
 		
-			 
-		if(lengthOfWord - numberOfIntegersTobeFormatted < 0) {
-			return null;
-		}
-			
+		int maskLength = end - start;
+		if(maskLength > str.length()) return null;
 		
-		int maskLength = lengthOfWord - numberOfIntegersTobeFormatted; 
-		if(maskLength > str.length()) {
-			return null;
-		}
+		StringBuilder newStr = new StringBuilder();
 		
-		
-		/* we create a mask with the right length 
-		 * We skip masking if the string has '-' character since its the card seperator
-		 * */
-		StringBuilder maskedStr = new StringBuilder();
+		/* we create a mask with the right length */
 		for(int i = 0; i < maskLength; i++) {
 			
 			char c = str.charAt(i);
-			if(c == '-') {
-				maskedStr.append(c);
+			
+			/* If there are any character to be ignored while masking, they will put in the ignoreCharacterArrayForMask */
+			if(ignoreCharacterArrayForMask != null && ignoreCharacterArrayForMask.length > 0) {
+				
+				/* iterating through each ignoreMaskCharacter */
+				for(Character ignoreCharacterForMask : ignoreCharacterArrayForMask) {
+					if(c == ignoreCharacterForMask) {
+						/* If a character of word matched character to be ignored, then the character will not be masked */
+						newStr.append(c);
+					} else {
+						newStr.append(maskCharacter);
+					}
+				}
+				
 			} else {
-				maskedStr.append(maskCharacter);
+				newStr.append(maskCharacter);
 			}
+			
 			
 		}
 		
-		/* we return: originalString until start of mask + originalString from end of mask */
+		/* we return: originalString until start of mask + mask + originalString from end of mask */
 		/*
 		 * example:
 		 * str = 1234-1234
-		 * length = 9
-		 * numberOfIntegersToBeFormatted = 4
+		 * start = 0
+		 * end = 4
 		 * return: xxxx-1234
 		 */
-		String restoredCardDetail = str.substring(maskLength, str.length());
-		System.out.println("card detail ::"+(maskedStr + restoredCardDetail));
 		
-		return maskedStr + restoredCardDetail;
+		return str.substring(0, start) + newStr + str.substring(end, str.length());
 	}
 
 
