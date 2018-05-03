@@ -14,7 +14,7 @@ rule "TV_SELECT Messages Event"
      rules.header();
 
      /* rules.sendSublayout("messages-layout", "messages-layout.json");   */
-     /* rules.sendSelections($m.getData().getValue(), "LNK_CORE", rules.getUser().getCode(), 200);   */
+     rules.sendAllChats(0,1000);
      rules.sendCmdSplitView($m.getData().getValue(), null);
 
      rules.footer();
