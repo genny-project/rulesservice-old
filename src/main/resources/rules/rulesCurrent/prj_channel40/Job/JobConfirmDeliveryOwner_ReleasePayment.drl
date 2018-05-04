@@ -74,7 +74,6 @@ then
 
        } else{
 		/* when payment release process is flowing first time for an item */
-  		if(begBe != null && assemblyId != null) {
 
   			/* hitting release payment API */
 		     PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
@@ -161,7 +160,6 @@ then
 		    	 	}
 		      }
 		   }
-		}
        
        rules.footer();
 end
