@@ -28,6 +28,7 @@
 			BaseEntity driver = null;
 			BaseEntity load = null;
 			String offerCode = null;
+			List<String> userCodesForStatusColourChange = new ArrayList<>();
 
 			if(begBe != null) {
 			
@@ -41,6 +42,10 @@
 				owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
 				driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
 				load = rules.getChildren(begBe.getCode(), "LNK_BEG", "LOAD");
+				
+				/* Adding users who needs to get status-colour change */
+			    userCodesForStatusColourChange.add(driver.getCode());
+			    userCodesForStatusColourChange.add(owner.getCode());
 
 				JsonObject paymentStatusObj = new JsonObject();
 				paymentStatusObj.put("status", m.getObject_status().toString());
@@ -89,6 +94,9 @@
 				if(m.getObject_status().toString().equals("ITEM_PAYMENT_DEPOSITED")) {
 					/* ITEM_PAYMENT_DEPOSITED - payment deposited successfully in escrow */
 					/* toast and sms sent to both driver and owner, payment-escrow mail sent to owner */
+					
+					/* hitting the method to change status-colour to green (success) - escrow status */
+			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();
@@ -118,6 +126,9 @@
 		         } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
 		         	/* ITEM_PAYMENT_COMPLETED - Payment release is complete */
 		         	/* when payment release is complete, release-payment emails with invoices and toasts are sent to both owner and driver */
+		         	
+		         		/* hitting the method to change status-colour to green - Payment to driver completed */
+			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
 		            		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
 			     		rules.triggerReleasePaymentMailWithAttachment(owner, driver, offerBe, load, begBe);
@@ -125,15 +136,15 @@
 						/* save status in database */
 			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed");
 			     		rules.saveAnswer(paymentStatus);
-			     		
-			     		/* we mark the job as paid */
-          				rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG"); 
 
 
-		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD")) {
+		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD") || m.getObject_status().toString().equals("ITEM_PAYMENT_PROBLEM")) {
 
 						/* ITEM_PAYMENT_HELD -  Payment held because of KYC information/Fraud */
 						/* Toast sent */
+						
+						/* hitting the method to change status-colour to red - Payment held */
+			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
 						
 		            		HashMap<String, String> contextMap = new HashMap<String, String>();
 						contextMap.put("DRIVER", driver.getCode());
