@@ -3102,7 +3102,7 @@ public class QRules {
 		}
 		// cache = bulk; //cachedBulkmsgJson;
 		// cache2 = cachedBulkmsgJson;
-		VertxUtils.putObject(realm(), "BULK_AUTH_INIT", getUser().getCode(), cachedBulkmsgJson);
+		//VertxUtils.putObject(realm(), "BULK_AUTH_INIT", getUser().getCode(), cachedBulkmsgJson);
 	}
 
 	static QBulkMessage cache = null;
