@@ -136,9 +136,6 @@
 						/* save status in database */
 			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed");
 			     		rules.saveAnswer(paymentStatus);
-			     		
-			     		/* we mark the job as paid */
-          				rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG"); 
 
 
 		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD") || m.getObject_status().toString().equals("ITEM_PAYMENT_PROBLEM")) {
