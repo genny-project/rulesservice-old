@@ -8,6 +8,7 @@ import life.genny.channels.Routers;
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.rules.RulesLoader;
+import life.genny.security.SecureResources;
 
 public class ServiceVerticle extends AbstractVerticle {
 
@@ -25,16 +26,24 @@ public class ServiceVerticle extends AbstractVerticle {
       }
        RulesLoader.loadInitialRules(rulesDir).compose(p -> {
         Routers.routers(vertx);
+        
+        // Load in realm data
+        final Future<Void> rfut = Future.future();
+        SecureResources.setKeycloakJsonMap().compose(r -> {
+          Routers.routers(vertx);
+          rfut.complete();
+        }, rfut);
+        
         EBCHandlers.registerHandlers(CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
         
-        final Future<Void> reportfut = Future.future();
+        final Future<Void> startupfut = Future.future();
         if (rulesDir == null) {
           rulesDir = "rules";
         }
-         RulesLoader.generateReports(rulesDir).compose(q -> {
-            reportfut.complete();
+         RulesLoader.triggerStartupRules(rulesDir).compose(q -> {
+            startupfut.complete();
             
-        }, reportfut);
+        }, startupfut);
         fut.complete();
       }, fut);
     }, startFuture);

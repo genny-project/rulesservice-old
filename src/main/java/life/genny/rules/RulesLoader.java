@@ -98,6 +98,28 @@ public class RulesLoader {
 
 		return fut;
 	}
+	
+	/**
+	 * @param vertx
+	 * @return
+	 */
+	public static Future<Void> triggerStartupRules(final String rulesDir) {
+		System.out.println("Triggering Startup Rules for all realms");
+		final Future<Void> fut = Future.future();
+		Vertx.currentContext().owner().executeBlocking(exec -> {
+
+			for (String realm : realms) {
+		        // Trigger Startup Rules
+				System.out.println("---- Realm:"+realm+" Startup Rules ----------");
+		        EBCHandlers.initMsg("Event:INIT_STARTUP", realm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			}
+			 System.out.println("Startup Rules Triggered");
+			fut.complete();
+		}, failed -> {
+		});
+
+		return fut;
+	}
 
 	private static List<Tuple2<String, String>> processFile(String inputFileStr) {
 		File file = new File(inputFileStr);
@@ -236,6 +258,17 @@ public class RulesLoader {
 
 			for (final Tuple3<String, String, String> rule : rules) {
 				if (rule._1.equalsIgnoreCase("genny") || rule._1.equalsIgnoreCase(realm)) {
+					// if a realm rule with same name exists as the same name as a genny rule then ignore the genny rule
+					if (rule._1.equalsIgnoreCase("genny")) {
+						String filename = rule._2;
+						// check if realm rule exists, if so then continue
+						if (rules.stream().anyMatch(item -> ((!realm.equals("genny")) && realm.equals(item._1) && filename.equals(item._2.toString()))))
+						{
+							System.out.println(realm+" - Overriding genny rule "+rule._2);
+							continue;
+						} 
+						
+					}
 					if (rule._2.endsWith(".drl")) {
 						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
 						kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))

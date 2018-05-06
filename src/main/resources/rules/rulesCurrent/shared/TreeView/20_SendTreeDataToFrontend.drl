@@ -1,0 +1,36 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
+import life.genny.utils.VertxUtils;
+import life.genny.qwanda.message.QBulkMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwandautils.JsonUtils;
+
+
+rule "Send Tree Data To Frontend"
+    salience 670
+    agenda-group "SendLayoutsAndData"
+    when
+        rules: QRules(  !isState("SEND_TREE_DATA")  && isState("SUBLAYOUT_CHANGE_READY") ) 
+     then
+     	rules.header();
+     	
+     	rules.setState("SEND_TREE_DATA");
+     	
+     	rules.sendTreeData();
+	/*	QBulkMessage bulk =  VertxUtils.getObject(rules.realm(), "BASE_TREE", rules.realm(), QBulkMessage.class);
+       	   		
+       	for (QDataBaseEntityMessage msg : bulk.getMessages()) {
+			if (msg instanceof QDataBaseEntityMessage) {
+				msg.setToken(rules.getToken());
+				rules.publishCmd(JsonUtils.toJson(msg));
+			}
+
+		} */
+       	   		
+	    rules.footer();       		      
+end
