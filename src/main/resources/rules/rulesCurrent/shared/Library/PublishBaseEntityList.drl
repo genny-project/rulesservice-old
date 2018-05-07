@@ -5,10 +5,10 @@ import java.util.List;
 
 rule "Publish BaseEntity List"
     when
-        rules: QRules(  isState("PUBLISH_BASE_ENTITY_LIST") && 
-                        !isState("LOOP_PUBLISH_BASE_ENTITY_LIST")) 
+        rules: QRules(  isState("PUBLISH_BASE_ENTITY_LIST") &&
+                        !isState("LOOP_PUBLISH_BASE_ENTITY_LIST"))
      then
-        rules.header();    
+        rules.header();
         rules.setState("LOOP_PUBLISH_BASE_ENTITY_LIST");
 
         String beParentCode = rules.getAsString("beParentCode");
@@ -19,7 +19,7 @@ rule "Publish BaseEntity List"
 
         Boolean beCache = rules.getAsBoolean("beCache");
         String beStakeholderCode = rules.getAsString("beStakeholderCode");
-        
+
         if(beParentCode == null) {
             rules.println("Publish BaseEntity List :: missing beParentCode");
         }
@@ -36,7 +36,7 @@ rule "Publish BaseEntity List"
              rules.println("Publish BaseEntity List :: missing beCache");
         }
         else {
-           
+
             List<BaseEntity> beList = null;
             if( beStakeholderCode != null ) {
                 beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
@@ -48,6 +48,6 @@ rule "Publish BaseEntity List"
             rules.set("beList", beList);
             rules.setState("PUBLISHED_BASE_ENTITY_LIST");
         }
-        rules.clearState("PUBLISH_BASE_ENTITY_LIST");        
-	    rules.footer();     		      
+        rules.clearState("PUBLISH_BASE_ENTITY_LIST");
+	    rules.footer();
 end

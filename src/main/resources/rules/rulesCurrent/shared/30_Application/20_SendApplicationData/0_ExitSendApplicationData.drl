@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Exit Send Data"
+rule "Exit Send Application Data"
 
     when
          rules: QRules( isState("SENT_SUB_LAYOUTS") && !isState("LOOP_EXIT_SEND_DATA") )
