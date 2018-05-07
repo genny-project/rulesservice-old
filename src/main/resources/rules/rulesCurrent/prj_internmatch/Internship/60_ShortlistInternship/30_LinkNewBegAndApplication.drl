@@ -2,30 +2,27 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* LINK BEG + APPLICATION || APPLICATION */
-rule "Shortlist Intern - Step 2"
+rule "Shortlist Intern - Step 3"
 	when
-		rules: QRules(  isState("LINK_BEG_TO_APPLICATION") && 
-						isState("DUPLICATED_BEG") && 
+		rules: QRules(  isState("LINK_NEW_BEG_TO_APPLICATION") && 
+						isState("COPIED_LINKS_FROM_OLD_BEG") && 
 						isState("BTN_SHORTLIST_INTERN") && 
 						isState("EVENT_BTN_CLICK") && 
-						!isState("LOOP_SHORTLIST_INTERN_STEP2")) 
+						!isState("LOOP_SHORTLIST_INTERN_STEP3")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SHORTLIST_INTERN_STEP2");
+        rules.setState("LOOP_SHORTLIST_INTERN_STEP3");
 
         BaseEntity application = rules.getAsBaseEntity("applicationBe");
-        BaseEntity beg = rules.getAsBaseEntity("begBe");
         BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
         
-        if(beg == null){   
-            rules.println("beg is null");
-        }else if(application == null){
+        if(application == null){
             rules.println("application is null");    
         }else if(newBeg == null){
             rules.println("newBeg is null");    
         }else{
 
-            /* link NEW BEG to APPLICATION || APPLICATION */
+            /* link NEW BEG to APP || APPLICATION */
             rules.set("linkSourceCode",  newBeg.getCode());
             rules.set("linkTargetCode", application.getCode());
             rules.set("linkCode", "LNK_BEG");
@@ -33,8 +30,8 @@ rule "Shortlist Intern - Step 2"
             rules.set("linkWeight", 1.0);
             rules.setState("CREATE_LINK");
 
-            rules.setState("LINKED_BEG_TO_APPLICATION");
+            rules.setState("LINKED_NEW_BEG_TO_APPLICATION");
 
-            rules.setState("LINK_SHORTLIST_TO_BEG");
+            rules.setState("LINK_NEW_BEG_TO_INTERN");
         }
 end
