@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 rule "Send Sublayout"
 
     when
-        rules: QRules( 	isState("SEND_SUBLAYOUT") && 
+        rules: QRules( 	isState("SEND_SUBLAYOUT") &&
 						!isState("HAS_SENT_SUBLAYOUT") )
      then
         rules.header();
@@ -33,6 +33,6 @@ rule "Send Sublayout"
 			rules.sendSublayout(subLayoutCode, subLayoutPath, subLayoutRootCode, subLayoutIsPopup);
             rules.setState("SENT_SUBLAYOUT");
         }
-        rules.clearState("SEND_SUBLAYOUT");        
+        rules.clearState("SEND_SUBLAYOUT");
 	    rules.footer();
 end

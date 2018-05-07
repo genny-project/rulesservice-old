@@ -1,0 +1,23 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Check Host Company Profile Completion"
+      when
+        $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_HOST_COMPANY") )
+        rules: QRules( isState("STARTED") && !isState("HAS_CHECKED_PROFILE_INTERN") ) 
+     then
+        
+        rules.header();
+        
+		rules.setState("HAS_CHECKED_PROFILE_INTERN");
+     	rules.set("registration_question_grp", "QUE_HOST_COMPANY_GRP");
+     	
+     	rules.sendSelections("GRP_COMPANY_SELECTION", "LNK_CORE", 10);
+     	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
+     	
+     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
+	    rules.footer();     		      
+end
+     	
