@@ -6081,9 +6081,9 @@ public class QRules {
 		level--;
 		BaseEntity be = this.getBaseEntityByCode2(beCode);
 		if(be != null) {
-	
+
 			List<BaseEntity> beList = new ArrayList<BaseEntity>();
-			
+
 			Set<EntityEntity> entityEntities = be.getLinks();
 
 			//we interate through the links
@@ -6091,12 +6091,12 @@ public class QRules {
 
 				Link link = entityEntity.getLink();
 				if(link != null) {
-					
+
 					// we get the target BE
 					String targetCode = link.getTargetCode();
 					if(targetCode != null) {
 
-						// recursion 
+						// recursion
 						beList.addAll(this.getBaseEntityWithChildren(targetCode, level));
 					}
 				}
@@ -6130,5 +6130,16 @@ public class QRules {
 
 		}
 		return isLinkExists;
+	}
+
+	/* returns  subscribers of a baseEntity Code */
+	public String[] getSubscribers(final String subscriptionCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
+
+		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
+		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		return result;
 	}
 }
