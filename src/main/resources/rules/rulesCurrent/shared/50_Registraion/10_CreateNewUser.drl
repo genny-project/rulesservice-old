@@ -17,7 +17,7 @@ rule "Create New User"
         rules.saveAnswer( new Answer (user.getCode(),
                           user.getCode(),
                           "PRI_IMAGE_URL", "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ") );
-       
+
         /*  set PRI_IS_PROFILE_COMPLETED = FALSE */
         rules.saveAnswer( new Answer (user.getCode(),
                           user.getCode(),

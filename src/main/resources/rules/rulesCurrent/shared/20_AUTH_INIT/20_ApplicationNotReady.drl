@@ -4,15 +4,15 @@ import life.genny.rules.QRules;
 
 rule "Application Not Ready"
     when
-        rules: QRules(	isState("AUTH_INIT") && 
-						isUserPresent() == false &&  					
+        rules: QRules(	isState("AUTH_INIT") &&
+						isUserPresent() == false &&
 						!isState("LOOP_APPLICATION_NOT_READY"))
       then
 		rules.header();
 		rules.setState("LOOP_APPLICATION_NOT_READY");
-		
+
 		rules.setState("APPLICATION_NOT_READY");
 		rules.setState("TRIGGER_REGISTRATION");
 
-		rules.footer();     		      
+		rules.footer();
 end
