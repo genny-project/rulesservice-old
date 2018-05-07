@@ -4,13 +4,13 @@ import life.genny.rules.QRules;
 rule "Send Question"
 	when
 	    rules: QRules( isState("SEND_QUESTION") )
-	 then 	
+	 then
         rules.header();
 
         String questionSourceCode = rules.getAsString("questionSourceCode");
         String questionTargetCode = rules.getAsString("questionTargetCode");
         String questionGroupCode = rules.getAsString("questionGroupCode");
- 		
+
  		if(questionSourceCode == null) {
              rules.println("Send Question: missing questionSourceCode");
         }
@@ -22,11 +22,11 @@ rule "Send Question"
         }
         else {
             rules.sendQuestions(questionSourceCode, questionTargetCode, questionGroupCode, true);
-            
+
             rules.setState("SENT_QUESTION");
             rules.setState(questionGroupCode);
         }
 
         rules.clearState("SEND_QUESTION");
-	 	rules.footer();      
+	 	rules.footer();
 end

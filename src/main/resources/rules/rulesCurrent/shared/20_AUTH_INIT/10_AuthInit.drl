@@ -8,9 +8,9 @@ rule "Auth Init"
         m : QEventMessage( "AUTH_INIT" == data.code  )
         rules: QRules( isState("STARTED") && !isState("USER_CHECKED") && !isState("AUTH_INIT"))
      then
-     	rules.header();
 
      	rules.header();
+		
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 
