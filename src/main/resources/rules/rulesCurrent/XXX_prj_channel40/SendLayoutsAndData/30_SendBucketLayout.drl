@@ -1,0 +1,36 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+rule "Send Bucket Layout To Frontend"
+    salience 660
+    agenda-group "SendLayoutsAndData"
+    when
+        rules: QRules( isState("STARTED") && isState("SEND_BUCKET_DATA") /*&& isState("USER_IS_OWNER")*/ && (!isState("SEND_BUCKET_LAYOUT")) ) 
+     then
+     	rules.header();
+     	
+     	String layout = RulesUtils.getLayout("card.json");
+     	String viewCode = "BUCKET_DASHBOARD";
+     	String grpBE = "GRP_DASHBOARD";
+     	
+     	/* sending cmd BUCKET_VIEW */
+     	rules.sendSublayout(viewCode, "dashboard_channel40.json", grpBE);
+        rules.setLastLayout( viewCode, grpBE );
+        
+		rules.setState("SEND_BUCKET_LAYOUT");
+		
+		LocalDateTime startTime = VertxUtils.getObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"),LocalDateTime.class);
+ 		VertxUtils.putObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"), null); // clear
+
+		LocalDateTime endTime = LocalDateTime.now();
+		
+		Duration d = Duration.between(startTime,endTime);
+		rules.println("STARTUP TIME = "+d.toMillis());
+		
+	    rules.footer();     		      
+end

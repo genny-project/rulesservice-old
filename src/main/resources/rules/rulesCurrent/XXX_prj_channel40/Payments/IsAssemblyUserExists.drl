@@ -1,0 +1,45 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.utils.PaymentUtils;
+
+rule "Check if Payments User Exists"
+	agenda-group "ispayments"
+	no-loop true
+    when
+    	rules: QRules( isState("STARTED") && (!isState("IS_ASSEMBLY_USER_CREATED")) && isState("IS_ASSEMBLY_PAYMENTS") ) 
+    then
+     
+     rules.header();
+
+     
+    String assemblyUserId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
+     
+     if(assemblyUserId != null) {
+     
+     	 Boolean isExists = PaymentUtils.checkIfAssemblyUserExists(assemblyUserId);
+     	 if(!isExists) {
+     	 	rules.println("Invalid assembly ID for this tenant...creating new assembly user");
+     	 	rules.setState("NEW_ASSEMBLY_USER_CREATION");
+     	 	drools.setFocus("payments");
+     	 }
+     	 else {
+     	 	rules.println("Valid assembly ID exists for this tenant");
+     	 	rules.setState("IS_ASSEMBLY_USER_CREATED");  
+     	 	drools.setFocus("payments");
+     	 }
+     	 
+     	 
+          	
+     }
+    
+	 if(assemblyUserId == null) {
+     			
+     	rules.setState("NEW_ASSEMBLY_USER_CREATION");
+     	drools.setFocus("payments");
+     	
+      }	
+
+	  rules.footer();      		      
+end

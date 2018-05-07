@@ -1,0 +1,52 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+
+import life.genny.utils.PaymentUtils;
+import life.genny.qwandautils.QwandaUtils;
+
+
+rule "Assembly Company updation for attribute change - ACN"
+	ruleflow-group 'AttributeChange'
+    when
+    	m: QEventAttributeValueChangeMessage( data.code == "PRI_ACN"  && getAnswer().getTargetCode().startsWith("CPY_") )
+    	rules: QRules(!isState("COMPANY_UPDATE_ACN_LOOP"))
+    then
+		RulesUtils.header(drools.getRule().getName());
+
+        rules.setState("COMPANY_UPDATE_ACN_LOOP");
+
+        BaseEntity userBe = rules.getUser();
+     	BaseEntity companyBe = rules.getParent(userBe.getCode(), "LNK_STAFF");
+		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
+
+		String abn = companyBe.getValue("PRI_ABN", null);
+
+    	/* If ABN is not present, then ACN number will be saved to Assembly */
+    	if(assemblyId != null && abn != null) {
+
+    	/* extract answers */
+      	Answer answer = m.getAnswer();
+
+        String targetCode = answer.getTargetCode();
+        String sourceCode = answer.getSourceCode();
+        String value = answer.getValue();
+        String attributeCode = m.data.getCode();
+
+        rules.println("Printing Answer data recieved for Update in Assembly  ::");
+        rules.println("\nSource Code: " +sourceCode + "\nTarget Code: " +targetCode + "\nAttribute Code: " +attributeCode + "\nAttribute Value: " +value);
+
+        /* Updates assembly user profile */
+        String response = PaymentUtils.updateCompanyInfo(assemblyId, companyId, attributeCode, value, assemblyAuthToken);
+        		rules.println("updated payments response ::"+response);
+
+    	}
+
+        RulesUtils.footer(drools.getRule().getName());
+end
