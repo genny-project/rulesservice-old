@@ -22,13 +22,13 @@ rule "Select Report Item - SBE"
   		    String grpCode = dataJson.getString("hint");
   		    if(grpCode != null && grpCode.startsWith("GRP_REPORTS") )
   		    {
-               String searchBE = dataJson.getString("itemCode");          
+               String searchBE = dataJson.getString("itemCode");
   		        if(searchBE != null) {
   		    	        //rules.publishSearhBE(grpCode);
   		    	         rules.sendReport(searchBE);
   		    	         rules.sendCmdReportsSplitView(grpCode, searchBE);
   		         }else{
-  		            rules.println("Error!! The search BE is empty."); 
+  		            rules.println("Error!! The search BE is empty.");
   		         }
   		     }
   		   else

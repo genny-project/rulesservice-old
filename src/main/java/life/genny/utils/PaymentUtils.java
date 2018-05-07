@@ -1070,7 +1070,7 @@ public class PaymentUtils {
 
 		/* Get the Assembly item ID */
 		Object itemId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ITEM_ID");
-		
+
 		JSONObject releasePaymentObj = new JSONObject();
 		releasePaymentObj.put("singleItemDisbursement", true);
 
@@ -1704,13 +1704,13 @@ public class PaymentUtils {
 	public static PaymentsResponse releasePaymentWithResponse(BaseEntity begBe, String authToken) {
 
 		Map<String, String> releasePaymentResponseMap = null;
-		
+
 		System.out.println("BEG Code for release payment ::"+begBe.getCode());
 		PaymentsResponse releasePaymentResponse = new PaymentsResponse();
 
 		String paymentResponse = null;
 		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-		
+
 		JSONObject releasePaymentObj = new JSONObject();
 		releasePaymentObj.put("singleItemDisbursement", true);
 
@@ -1724,10 +1724,10 @@ public class PaymentUtils {
 					Map<String, Object> disbursementMap = (Map<String, Object>) releasePaymentResponseObj.get("disbursement");
 					String disbursementId = (String) disbursementMap.get("id");
 					System.out.println("disbursement id ::"+disbursementId);
-					
+
 					releasePaymentResponseMap = new HashMap<String, String>();
 					releasePaymentResponseMap.put("disbursementId", disbursementId);
-					
+
 					releasePaymentResponse.setIsSuccess(true);
 					releasePaymentResponse.setMessage("Release payment has succeeded");
 					releasePaymentResponse.setResponseMap(releasePaymentResponseMap);
@@ -1737,7 +1737,7 @@ public class PaymentUtils {
 
 				releasePaymentResponse.setIsSuccess(false);
 				releasePaymentResponse.setMessage(e.getMessage());
-				releasePaymentResponse.setResponseMap(releasePaymentResponseMap);		
+				releasePaymentResponse.setResponseMap(releasePaymentResponseMap);
 			}
 
 		} else {
@@ -1837,34 +1837,34 @@ public class PaymentUtils {
 
 		return isAssemblyItemValid;
 	}
-	
+
 	public static QPaymentMethod getPaymentMethodSelectedByOwner(BaseEntity begBe, BaseEntity ownerBe) {
-		
-		QPaymentMethod selectedOwnerPaymentMethod = null; 
-		
+
+		QPaymentMethod selectedOwnerPaymentMethod = null;
+
 		/* Gives the payment method that is selected for payment by owner */
  		String paymentMethodSelected = begBe.getValue("PRI_ACCOUNT_ID", null);
  		System.out.println("payment method selected ::" + paymentMethodSelected);
- 		
+
  		if(paymentMethodSelected != null) {
- 			
+
  			/* give all payment methods of owner */
  			String paymentMethodsOfOwner = ownerBe.getValue("PRI_USER_PAYMENT_METHODS", null);
  			System.out.println("all payment methods of owners ::"+paymentMethodsOfOwner);
- 			
+
 			if (paymentMethodsOfOwner != null) {
-				
+
 				JSONArray paymentMethodArr = JsonUtils.fromJson(paymentMethodsOfOwner, JSONArray.class);
 
 				/* iterating through all owner payment methods */
 				for (Object paymentMethodObj : paymentMethodArr) {
-					
+
 					/* converting the individual payment method types to POJO */
 					LinkedTreeMap<String, String> paymentMethod = (LinkedTreeMap<String, String>) paymentMethodObj;
 					Gson gson = new Gson();
 					JsonElement jsonElement = gson.toJsonTree(paymentMethod);
 					QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
-					
+
 					System.out.println("type ::" + paymentMethodPojo.getType());
 					System.out.println("number" + paymentMethodPojo.getNumber());
 					System.out.println("id ::" + paymentMethodPojo.getId());
@@ -1874,7 +1874,7 @@ public class PaymentUtils {
 					 * fetch that paymentMethod and save all values
 					 */
 					if (paymentMethodSelected.equals(paymentMethodPojo.getId())) {
-						
+
 						System.out.println("payment method selected is same");
 						selectedOwnerPaymentMethod = new QPaymentMethod();
 						selectedOwnerPaymentMethod = paymentMethodPojo;
@@ -1882,7 +1882,7 @@ public class PaymentUtils {
 				}
 			}
  		}
- 		
+
  		return selectedOwnerPaymentMethod;
 	}
 
