@@ -6,6 +6,8 @@ import life.genny.qwanda.message.QEventMessage;
 rule "Intern Registration Form Submit"
 	when
 	    rules: QRules( 	isState("QUE_INTERN_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 		
+						!isState("PRI_IS_PROFILE_COMPLETED") && 
 						!isState("LOOP_INTERN_REGISTRATION_FORM")) 
 	 then
 	 	rules.header();
