@@ -18,6 +18,11 @@ rule "Duplicate BEG - Step 6"
 		if(company != null && newBeg != null){
 			rules.subscribeUserToBaseEntityAndChildren(company.getCode(), newBeg.getCode(), "LNK_BEG");
 	 		rules.setState("SUBSCRIBED_COMPANY_TO_NEW_BEG_APPLY_INTERNSHIP");
+
+	 		rules.setState("SUBSCRIBE_INTERN_TO_NEW_BEG_APPLY_INTERNSHIP");
+		}else {
+			rules.println(company == null ? "No company" : company);
+			rules.println(newBeg == null ? "No newBeg" : newBeg);
 		}
 	 	rules.footer();
 end

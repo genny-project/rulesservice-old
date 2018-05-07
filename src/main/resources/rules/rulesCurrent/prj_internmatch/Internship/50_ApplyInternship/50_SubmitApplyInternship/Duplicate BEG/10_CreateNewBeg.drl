@@ -9,7 +9,6 @@ rule "Duplicate BEG - Step 1"
 	 then
 	 	rules.header();
         rules.setState("LOOP_DUPLICATE_BEG_STEP1");
-		rules.setState("CREATED_NEW_BEG_APPLY_INTERNSHIP");
 
 		/* Create BEG BaseEntity*/
 		rules.set("beCode", rules.getUser().getCode());
@@ -17,5 +16,7 @@ rule "Duplicate BEG - Step 1"
 		rules.set("beName", "BEG");
 		rules.setState("CREATE_BASE_ENTITY");
 
+		rules.setState("CREATED_NEW_BEG_APPLY_INTERNSHIP");
+		rules.setState("COPY_LINKS_FROM_OLD_BEG_APPLY_INTERNSHIP");
 	 	rules.footer();
 end

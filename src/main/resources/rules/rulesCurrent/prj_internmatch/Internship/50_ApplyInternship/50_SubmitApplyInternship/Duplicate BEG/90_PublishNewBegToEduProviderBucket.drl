@@ -5,7 +5,8 @@ import life.genny.utils.VertxUtils;
 /* Publish NEW_BEG TO bucket */
 rule "Duplicate BEG - Step 9"
 	when
-		rules: QRules( 	isState("SUBSCRIBE_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP") &&
+		rules: QRules( 	isState("PUBLISH_NEW_BEG_AND_KIDS_APPLY_INTERNSHIP") &&
+						isState("SUBSCRIBED_EDU_PROVIDER_TO_NEW_BEG_APPLY_INTERNSHIP") &&
 						!isState("LOOP_DUPLICATE_BEG_STEP9") )
 	 then
 	 	rules.header();
@@ -23,11 +24,9 @@ rule "Duplicate BEG - Step 9"
 			rules.println("newbeg is null");
 		}else if(internship == null){
 			rules.println("internship is null");
-		}
-		else if(creator == null){
+		}else if(creator == null){
 			rules.println("creator is null");
-		}
-		else if(company == null){
+		}else if(company == null){
 			rules.println("company is null");
 		}else if(application == null){
 			rules.println("application is null");
@@ -45,6 +44,8 @@ rule "Duplicate BEG - Step 9"
 			rules.publishBaseEntityByCode(intern.getCode(), newbeg.getCode(), "LNK_BEG", begSubscribers);
 
 			rules.setState("PUBLISHED_NEW_BEG_AND_KIDS_APPLY_INTERNSHIP");
+
+			rules.setState("LINK_GRP_APPLIED_TO_NEW_BEG_APPLY_INTERNSHIP");
 		}
 	 	rules.footer();
 end

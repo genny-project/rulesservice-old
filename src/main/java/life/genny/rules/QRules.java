@@ -612,6 +612,8 @@ public class QRules {
 		return bes;
 	}
 
+
+
 	public List<BaseEntity> getBaseEntitysByParentLinkCodeAndLinkValue(final String parentCode, final String linkCode,
 			final String linkValue, Integer pageStart, Integer pageSize, Boolean cache) {
 
@@ -5901,19 +5903,22 @@ public class QRules {
 	}
 
 	public void sendInternApplicationData() {
-
+		String[] recipient = { getUser().getCode() };
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-			println("rootKids   ::   " + rootKids);
-			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+		println("rootKids   ::   " + rootKids);
+		publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
 
-        List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
-			println("buckets   ::   " + buckets);
-			publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
+		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		println("buckets   ::   " + buckets);
 
-		if(buckets != null){
+		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+		if (buckets != null) {
+			for (BaseEntity bucket : buckets) {
 
-			for(BaseEntity bucket : buckets){
-				println("BUCKET code   ::   " + bucket.getCode());
+				/* FOR GRP_AVAILABLE BEGS */
+				if (bucket.getCode().equalsIgnoreCase("GRP_AVAILABLE")) {
+
+					toRemove.add(bucket);
 
 				/* FOR GRP_AVAILABLE BEGS */
 				if(bucket.getCode().equals("GRP_AVAILABLE")){
@@ -5922,14 +5927,15 @@ public class QRules {
 					subscribeUserToBaseEntity(getUser().getCode(), bucket.getCode());
 
 					// get all the begs of GRP_AVAILABLE
-					List<BaseEntity> availableBegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+					List<BaseEntity> availableBegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+							500, false);
 
-					if(availableBegs != null){
+					if (availableBegs != null) {
 						/* subscribe to all the begs of GRP_AVAILABLE   */
 						subscribeUserToBaseEntities(getUser().getCode(), availableBegs);
 						publishCmd(availableBegs, bucket.getCode(), "LNK_CORE");
 
-						for(BaseEntity beg : availableBegs){
+						for (BaseEntity beg : availableBegs) {
 
 							List<BaseEntity> applications = getChildrens(beg.getCode(), "LNK_BEG", "APPLICATION");
 
@@ -5975,9 +5981,9 @@ public class QRules {
 					subscribeUserToBaseEntities(getUser().getCode(), begKids);
 					publishCmd(begKids, beg.getCode(), "LNK_CORE");
 				}
+
 			}
 		}
-
 	}
 
 	public void sendHostCompanyApplicationData() {
@@ -5988,6 +5994,15 @@ public class QRules {
 
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		println("buckets   ::   " + buckets);
+
+		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+
+		for (BaseEntity bucket : buckets) {
+			if (bucket.getCode().equalsIgnoreCase("GRP_APPLIED")) {
+				toRemove.add(bucket);
+			}
+		}
+		buckets.removeAll(toRemove);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
 
 

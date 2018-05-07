@@ -493,6 +493,7 @@ public class RulesUtils {
 
 		try {
 			String beJson = null;
+			System.out.println("stakeholderCode is :: " + stakeholderCode);
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + parentCode + "/linkcodes/"
 					+ linkCode + "/attributes/" + stakeholderCode, token);
 			return beJson;
@@ -722,6 +723,7 @@ public class RulesUtils {
 		if (parentCode.equalsIgnoreCase("GRP_NEW_ITEMS")) {
 			println("Group New Items Debug");
 		}
+		println("stakeholderCode is :: " + stakeholderCode);
 		String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl,
 				decodedToken, token, parentCode, linkCode, stakeholderCode);
 		QDataBaseEntityMessage msg = fromJson(beJson, QDataBaseEntityMessage.class);

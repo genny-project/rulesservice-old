@@ -4,7 +4,10 @@ import life.genny.rules.QRules;
 /* LINK BEG + INTERN || INTERN */
 rule "Duplicate BEG - Step 4"
 	when
-		rules: QRules(  isState("LINKED_NEW_BEG_TO_APPLICATION_APPLY_INTERNSHIP") &&
+		rules: QRules(  isState("LINK_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP") &&
+		                isState("LINKED_NEW_BEG_TO_APPLICATION_APPLY_INTERNSHIP") &&
+						isState("CREATED_LINK") &&
+						isState("APPLICATION") &&
 						!isState("LOOP_DUPLICATE_BEG_STEP4"))
 	 then
 	 	rules.header();
@@ -18,8 +21,6 @@ rule "Duplicate BEG - Step 4"
         }else if(newBeg == null){
             rules.println("newBeg is null");
         }else{
-        	
-            rules.setState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP");
 
             /* link NEW BEG to APP || INTERN */
             rules.set("linkSourceCode",  newBeg.getCode());
@@ -29,5 +30,8 @@ rule "Duplicate BEG - Step 4"
             rules.set("linkWeight", 1.0);
             rules.setState("CREATE_LINK");
 
+            rules.setState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP");
+
+            rules.setState("SUBSCRIBE_CREATOR_TO_NEW_BEG_APPLY_INTERNSHIP");
         }
 end
