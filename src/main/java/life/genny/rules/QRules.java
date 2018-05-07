@@ -292,12 +292,12 @@ public class QRules {
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Object> getAsList(final String key) {
 		return (List<Object>) get(key);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Object[] getAsArray(final String key) {
 		return (Object[]) get(key);
@@ -2059,7 +2059,7 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void processChat2(QEventMessage m) {
 
 		String data = m.getData().getValue();
@@ -2097,7 +2097,7 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void processChat2(QEventMessage m) {
 
 		String data = m.getData().getValue();
@@ -2135,7 +2135,7 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void processChat2(QEventMessage m) {
 
 		String data = m.getData().getValue();
@@ -2534,7 +2534,7 @@ public class QRules {
 						println(i + ":" + url);
 
 						String subLayoutString = null;
-						
+
 						try {
 							subLayoutString = QwandaUtils.apiGet(url, null);
 						} catch (UnknownHostException e1) {
@@ -2934,7 +2934,7 @@ public class QRules {
 	}
 
 	public void sendLayoutsAndData() {
-		
+
 		BaseEntity user = getUser();
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
@@ -3209,7 +3209,7 @@ public class QRules {
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
 		}
-		
+
 	}
 
 	static QBulkMessage cache = null;
@@ -5347,12 +5347,12 @@ public class QRules {
 
 	public boolean loadRealmData()
 	{
-		
+
 			println("Loading in keycloak data and setting up service token for "+realm());
-			
+
 			for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet())  {
-			
-			
+
+
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
 				System.out.println("No keycloakMap for "+realm());
@@ -5362,43 +5362,43 @@ public class QRules {
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
-			
+
 			if (realm().equals(realm)) {
-			
+
 				// fetch token from keycloak
 				String key = null;
 				String initVector = "PRJ_"+realm().toUpperCase();
 				initVector = StringUtils.rightPad(initVector, 16,'*');
 				String encryptedPassword = null;
-				
+
 				try {
 					key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
 				} catch (Exception e) {
 					log.error("PRJ_"+realm().toUpperCase()+" ENV ENV_SECURITY_KEY  is missing!");
 				}
-				
+
 				try {
 					encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
 				} catch (Exception e) {
 					log.error("PRJ_"+realm().toUpperCase()+" attribute ENV_SECURITY_KEY  is missing!");
 				}
-				
-				
-				
+
+
+
 				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-				
+
 				// Now ask the bridge for the keycloak to use
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0, realmJson.getString("auth-server-url").length()-("/auth".length()));
-				
-				
-				
+
+
+
 				try {
 					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(), secret,
 							"service", password);
 					String token = accessToken.getToken();
-					
+
 					Map<String,Object> serviceDecodedTokenMap  = KeycloakUtils.getJsonMap(token);
-					
+
 					this.setDecodedTokenMap(serviceDecodedTokenMap);
 					this.setToken(token);
 					String dev = System.getenv("GENNYDEV");
@@ -5408,23 +5408,23 @@ public class QRules {
 					} else {
 						this.set("realm",realm);
 					}
-					
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				return true;
 			}
-			}	
-			
+			}
+
 
 		return false;
 	}
-	
+
 	public void generateTree()
 	{
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-		
+
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
 	    bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
 		// println(root);
@@ -5440,12 +5440,12 @@ public class QRules {
 
 		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
 	}
-	
+
 	public void sendTreeData()
 	{
 		println("treedata realm is "+realm());
 		QBulkMessage bulk =  VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
-	   		
+
        	for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 			if (msg instanceof QDataBaseEntityMessage) {
 				msg.setToken(getToken());
