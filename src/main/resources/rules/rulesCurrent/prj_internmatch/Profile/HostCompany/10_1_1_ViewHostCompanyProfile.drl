@@ -5,23 +5,22 @@ import life.genny.qwanda.message.QEventMessage;
 /* Send User Details Question */
 rule "View Host Company Profile Step - 1"
     when
-        m : QEventMessage(  event_type == "PROFILE" && 
+        m : QEventMessage(  event_type == "PROFILE" &&
                             data.code == "PROFILE")
-                            
+
 	    rules: QRules(  isState("ROLE_FOUND") &&
-                        isState("PRI_IS_HOST_COMPANY") &&	
-                        isState("PRI_IS_PROFILE_COMPLETED") &&	
-                        !isState("LOOP_VIEW_HOST_COMPANY_PROFILE_STEP1")) 	
+                        isState("PRI_IS_HOST_COMPANY") &&
+                        isState("PRI_IS_PROFILE_COMPLETED") &&
+                        !isState("LOOP_VIEW_HOST_COMPANY_PROFILE_STEP1"))
      then
-        rules.header();    
+        rules.header();
         rules.setState("LOOP_VIEW_HOST_COMPANY_PROFILE_STEP1");
-        
+
         /* send question group for USER */
 		rules.set("questionSourceCode", rules.getUser().getCode());
 		rules.set("questionTargetCode", rules.getUser().getCode());
 		rules.set("questionGroupCode", "QUE_USER_HOST_COMPANY_GRP");
-		rules.setState("SEND_QUESTION");	
+		rules.setState("SEND_QUESTION");
 
-        rules.footer(); 
+        rules.footer();
 end
-
