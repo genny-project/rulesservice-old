@@ -14,7 +14,4 @@ rule "Pre Init Answer"
  
         rules.setState("DATA_ANSWER");
         rules.setState("STARTED");
-		
-        	drools.setFocus("Answer");
-       		      
 end
