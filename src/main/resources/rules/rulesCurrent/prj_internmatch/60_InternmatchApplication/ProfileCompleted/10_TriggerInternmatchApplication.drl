@@ -3,15 +3,15 @@ import life.genny.rules.QRules;
 
 rule "Trigger Internmatch Application"
     when
-        rules: QRules(  (isState("PROFILE_IS_COMPLETED") || isState("PRI_IS_PROFILE_COMPLETED")) &&
-                        isState("APPLICATION_READY") &&
+        rules: QRules(  isState("TRIGGER_INTERNMATCH_APPLICATION") && 
                         !isState("LOOP_TRIGGER_INTERNMATCH_APPLICATION") ) 
      then       
         rules.header();
+
         rules.setState("LOOP_TRIGGER_INTERNMATCH_APPLICATION");
-        
         rules.setState("TRIGGER_SEND_INTERNMATCH_APPLICATION_DATA");
-        
+
+        // rules.clearState("LOOP_TRIGGER_INTERNMATCH_APPLICATION");
         rules.footer(); 		      
 end
 
