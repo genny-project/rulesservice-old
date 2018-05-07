@@ -57,7 +57,7 @@ rule "Send offer notification to Education Provider Representative"
                 }
             }
 	        
-            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_OFFER_EDU_PROVIDER", "EMAIL");
+            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INVITE_EDUCATION_PROVIDER", "EMAIL");
  		    rules.setState("SENT_OFFER_MESSAGE_TO_EDU_PROVIDER");
  		}
 	 	
