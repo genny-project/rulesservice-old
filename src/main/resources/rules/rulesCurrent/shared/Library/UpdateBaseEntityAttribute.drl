@@ -1,38 +1,35 @@
 package life.genny.rules;
-
 import life.genny.rules.QRules;
-
 
 rule "Update BaseEntity Attribute"
      when
-        rules: QRules(  isState("UPDATE_BASEENTITY_ATTRIBUTE") && 
-                        !isState("LOOP_UPDATE_BE_ATTRIBUTE")) 
+        rules: QRules( isState("UPDATE_BASEENTITY_ATTRIBUTE") ) 
      then
-        
         rules.header();
-        rules.setState("LOOP_UPDATE_BE_ATTRIBUTE");
         
-        String sourceCode= rules.getAsString("sourceCode");
-        String targetCode= rules.getAsString("targetCode");
-        String attributeCode= rules.getAsString("attributeCode");
-        String value= rules.getAsString("value");
+        String beSourceCode= rules.getAsString("beSourceCode");
+        String beTargetCode= rules.getAsString("beTargetCode");
+        String beAttributeCode= rules.getAsString("beAttributeCode");
+        String beValue= rules.getAsString("beValue");
 
-        if(sourceCode == null) {
-             rules.println("Update BaseEntity attribute: missing source code");
+        if(beSourceCode == null) {
+             rules.println("Update BaseEntity attribute :: missing beSourceCode ");
         }
-        else if(targetCode == null) {
-            rules.println("Update BaseEntity attribute: missing target code");
+        else if(beTargetCode == null) {
+            rules.println("Update BaseEntity attribute :: missing beTargetCode ");
         }
-        else if(attributeCode == null) {
-            rules.println("Update BaseEntity attribute: missing attributeCode code");
+        else if(beAttributeCode == null) {
+            rules.println("Update BaseEntity attribute :: missing beAttributeCode ");
         }
-        else if(value == null) {
-            rules.println("Update BaseEntity attribute: missing value code");
+        else if(beValue == null) {
+            rules.println("Update BaseEntity attribute :: missing beValue ");
         }
         else {
-            rules.updateBaseEntityAttribute(sourceCode, targetCode, attributeCode, value);
+            rules.updateBaseEntityAttribute(beSourceCode, beTargetCode, beAttributeCode, beValue);
+            rules.setState("UPDATED_BASEENTITY_ATTRIBUTE");
         }
 
+        rules.clearState("UPDATE_BASEENTITY_ATTRIBUTE");
 	    rules.footer();     		      
 end
      	

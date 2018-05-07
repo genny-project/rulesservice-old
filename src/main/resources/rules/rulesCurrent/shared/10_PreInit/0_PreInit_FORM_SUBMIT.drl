@@ -14,7 +14,6 @@ rule "Pre Init FORM Submit"
         rules.setDrools(drools);
         rules.println("RULE INIT FORM_SUBMIT: "+m);
         rules.setState("EVENT_FORM_SUBMIT");
-        rules.setState("STARTED");
 
         String quesCode = m.getData().getCode();
         
@@ -28,7 +27,5 @@ rule "Pre Init FORM Submit"
 	 		rules.set("quesTargetCode", targetCode);
 		}
 
-  		drools.setFocus("FormSubmit");
-        
-      		      
+  		drools.setFocus("FormSubmit");	      
 end
