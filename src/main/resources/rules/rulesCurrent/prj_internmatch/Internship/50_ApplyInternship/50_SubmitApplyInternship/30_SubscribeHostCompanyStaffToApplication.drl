@@ -4,12 +4,12 @@ import life.genny.rules.QRules;
 /* Subscribe STAFF of Host Company to APPLICATION */
 rule "Submit Apply Internship - Step 3"
 	when
-		rules: QRules( 	isState("SUBSCRIBE_HOST_COMPANY_STAFF_TO_APPLICATION") && 
-						isState("SUBSCRIBED_HOST_COMPANY_TO_APPLICATION") && 
-						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP3")) 
+		rules: QRules( 	isState("SUBSCRIBE_HOST_COMPANY_STAFF_TO_APPLICATION") &&
+						isState("SUBSCRIBED_HOST_COMPANY_TO_APPLICATION") &&
+						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP3"))
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP3");
@@ -23,7 +23,7 @@ rule "Submit Apply Internship - Step 3"
             if(companyStaff != null){
                 rules.subscribeUserToBaseEntity(companyStaff.getCode(), application.getCode());
                 rules.setState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION");
-                
+
                 rules.setState("LINK_BEG_TO_APPLICATION");
             }else{
                 rules.println("No staff found for company");
@@ -31,7 +31,5 @@ rule "Submit Apply Internship - Step 3"
         }else{
             rules.println("HOST company is null");
         }
-	 	rules.footer();      
+	 	rules.footer();
 end
-
-
