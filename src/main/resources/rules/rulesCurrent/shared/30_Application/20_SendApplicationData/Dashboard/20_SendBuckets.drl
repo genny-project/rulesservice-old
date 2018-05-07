@@ -38,6 +38,7 @@ rule "Send Buckets"
         
          
         rules.setState("SENT_BUCKETS");		
+        rules.setState("SEND_CONTACTS");		
 	    rules.footer();     		      
 end
 
