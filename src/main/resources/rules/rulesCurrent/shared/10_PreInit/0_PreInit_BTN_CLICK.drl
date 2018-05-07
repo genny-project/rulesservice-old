@@ -24,8 +24,12 @@ rule "Pre Init Btn Click"
 		rules.println("targetCode   ::   " + targetCode);
 
 		if(quesCode != null) {
-/* 	 		rules.setState(quesCode);
- */		}
+ 	 		rules.setState(quesCode);
+		}
+		if(targetCode != null) {
+			rules.set("quesTargetCode", targetCode);
+		}
+
 
   		drools.setFocus("ButtonClick");      		      
 end

@@ -333,6 +333,10 @@ public class QRules {
 		return (Attribute) get(key);
 	}
 
+	public Integer getAsInteger(final String key) {
+		return (Integer) get(key);
+	}
+
 	public Double getAsDouble(final String key) {
 		return (Double) get(key);
 	}
