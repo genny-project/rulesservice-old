@@ -375,13 +375,13 @@ public class QRules {
 		decodedTokenMap.put(key, value);
 
 	}
-	
+
 	public String encodeToBase64(String str) {
 		return Base64.getEncoder().encodeToString(str.getBytes());
 	}
-	
+
 	public String decodeBase64(byte[] base64str) {
-		return new String(Base64.getDecoder().decode(base64str)); 
+		return new String(Base64.getDecoder().decode(base64str));
 	}
 
 	public BaseEntity getProject() {
