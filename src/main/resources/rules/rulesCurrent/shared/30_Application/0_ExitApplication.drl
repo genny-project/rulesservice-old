@@ -4,12 +4,12 @@ import life.genny.rules.QRules;
 rule "Exit Application"
 
     when
-         rules: QRules( isState("EXIT_SEND_LAYOUTS") && 
+         rules: QRules( isState("EXIT_SEND_LAYOUTS") &&
                         !isState("LOOP_EXIT_APPLICATION_SETUP") )
      then
      	rules.header();
         rules.setState("LOOP_EXIT_APPLICATION_SETUP");
-    
+
         rules.setState("EXIT_APPLICATION_SETUP");
-	    rules.footer();      		      
+	    rules.footer();
 end

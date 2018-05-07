@@ -5,14 +5,14 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Application Ready"
     when
-        rules: QRules(  isState("AUTH_INIT") && 
-                        isState("EXIT_APPLICATION_SETUP") && 
-                        !isState("LOOP_APPLICATION_READY") ) 
+        rules: QRules(  isState("AUTH_INIT") &&
+                        isState("EXIT_APPLICATION_SETUP") &&
+                        !isState("LOOP_APPLICATION_READY") )
      then
         rules.header();
-        
+
         rules.setState("LOOP_APPLICATION_READY");
         rules.setState("APPLICATION_READY");
-        
-	    rules.footer();     		      
+
+	    rules.footer();
 end

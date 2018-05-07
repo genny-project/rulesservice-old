@@ -9,9 +9,9 @@ rule "Trigger Application"
      then
      	rules.header();
         rules.setState("LOOP_TRIGGER_APPLICATION_SETUP");
-        
+
         rules.setState("TRIGGER_SEND_SYSTEM_DATA");
         rules.setState("TRIGGER_SEND_LAYOUTS");
-    
-	    rules.footer();      		      
+
+	    rules.footer();
 end
