@@ -6,18 +6,14 @@ import java.util.List;
 rule "Selected Host Company Role"
      when
         $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_HOST_COMPANY") )
-        rules: QRules(  isState("STARTED") && 
-                        !isState("HAS_SELECTED_HOST_COMPANY") ) 
+        rules: QRules( isState("STARTED") && !isState("HAS_CHECKED_PROFILE_HOST_COMPANY") ) 
      then
         rules.header();
-		rules.setState("HAS_SELECTED_HOST_COMPANY");
         
+		rules.setState("HAS_CHECKED_PROFILE_HOST_COMPANY");
      	rules.set("registration_question_grp", "QUE_HOST_COMPANY_GRP");
      	rules.sendSelections("GRP_COMPANY_SELECTION", "LNK_CORE", 10);
-
-        /* Add Host Company to GRP_HOST_COMPANYS */
-/*     	rules.setState("TRIGGER_ADD_TO_GROUP");
- */    	rules.setState("TRIGGER_PROFILE_CHECK");
+     	rules.setState("CHECK_USER_PROFILE_COMPLETED");
 		
 		rules.footer();     		      
 end

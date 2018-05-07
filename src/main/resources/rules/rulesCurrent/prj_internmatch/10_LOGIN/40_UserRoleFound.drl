@@ -1,0 +1,15 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "User Role was found"
+    when
+         rules: QRules( isState("EXIT_SEND_LAYOUTS") && isState("ROLE_FOUND") && !isState("INTERNMATCH_USER_ROLE_FOUND"))
+     then
+     	rules.header();
+        rules.setState("INTERNMATCH_USER_ROLE_FOUND");
+        rules.clearState("DID_TRIGGER_ROLE_CHECK");
+        rules.setState("TRIGGER_PROFILE_CHECK");
+	    rules.footer();      		      
+end

@@ -27,5 +27,5 @@ rule "Check if Profile Completed - Intermatch"
    		   	rules.setState("PROFILE_IS_COMPLETED");
    		}
 
-    	    rules.footer();
+    	rules.footer();
 end
