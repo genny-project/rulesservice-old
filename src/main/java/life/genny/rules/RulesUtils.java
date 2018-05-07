@@ -834,14 +834,6 @@ public class RulesUtils {
 
 	}
 
-
-
-
-
-
-
-
-
 	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
 
 		try {
