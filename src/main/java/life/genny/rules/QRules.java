@@ -51,6 +51,7 @@ import com.google.gson.reflect.TypeToken;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
@@ -393,18 +394,6 @@ public class QRules {
 		String username = (String) getDecodedTokenMap().get("preferred_username");
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		be = getBaseEntityByCode(code);
-
-		/*
-		 * if this situation happens it just means that QRules has not registered the
-		 * user yet. setting it.
-		 */
-		if (isNull("USER") && be != null) {
-			set("USER", be);
-		} else {
-			// try again
-
-		}
-
 		return be;
 	}
 
@@ -416,11 +405,36 @@ public class QRules {
 
 	public Boolean isUserPresent() {
 
-		if (isNull("USER")) {
-			return false;
-		} else {
-			return true;
+		try {
+
+			/*
+			* if this situation happens it just means that QRules has not registered the
+			* user yet. setting it.
+			*/
+
+			BaseEntity be = this.getUser();
+			if (be != null) {
+
+				if(isNull("USER")) {
+					set("USER", be);
+				}
+
+				return true;
+
+			}
 		}
+		catch (Exception e) {
+
+		}
+
+		return false;
+
+
+		// if (isNull("USER")) {
+		// 	return false;
+		// } else {
+		// 	return true;
+		// }
 	}
 
 	/*
@@ -1500,13 +1514,13 @@ public class QRules {
 			;
 			break;
 		case "cmds":
-			Producer.getToWebCmds().write(payload).end();
+			Producer.getToWebCmds().write(payload);
 			break;
 		case "services":
-			Producer.getToServices().send(payload).end();
+			Producer.getToServices().write(payload);
 			break;
 		case "messages":
-			Producer.getToMessages().send(payload).end();
+			Producer.getToMessages().write(payload);
 			break;
 		default:
 			println("Channel does not exist: " + channel);
@@ -6027,17 +6041,18 @@ public class QRules {
 
 			/* get all the students of eduProvider */
 			students = getChildrens(eduProvider.getCode(), "LNK_EDU", "STUDENT");
-			println("4. No. of students of this edu provider   ::   " + students.size());
+			if(students!= null) {
+				println("4. No. of students of this edu provider   ::   " + students.size());
 
-			/* subscribe eduProvider staff to all the students of eduProvider */
-			subscribeUserToBaseEntities(getUser().getCode(), students);
-			publishCmd(students, "GRP_INTERNS", "LNK_CORE");
+				/* subscribe eduProvider staff to all the students of eduProvider */
+				subscribeUserToBaseEntities(getUser().getCode(), students);
+				publishCmd(students, "GRP_INTERNS", "LNK_CORE");
 
 
-			for(BaseEntity student : students){
-				if (buckets != null) {
-					for (BaseEntity bucket : buckets) {
-						println("5. BUCKET code   ::   " + bucket.getCode());
+				for(BaseEntity student : students){
+					if (buckets != null) {
+						for (BaseEntity bucket : buckets) {
+							println("5. BUCKET code   ::   " + bucket.getCode());
 
 						List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, student.getCode());
 						println("6. BEGS eduprovider's student is invoved in   ::   " + begs);
@@ -6046,23 +6061,23 @@ public class QRules {
 						subscribeUserToBaseEntities(getUser().getCode(), begs);
 						publishCmd(begs, bucket.getCode(), "LNK_CORE");
 
-						if(begs != null){
+							if(begs != null){
 
-							for (BaseEntity beg : begs) {
-								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
-								println("7. childrens of beg   ::   " + begKids);
+								for (BaseEntity beg : begs) {
+									List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+									println("7. childrens of beg   ::   " + begKids);
 
-								/* subscribe to all the begKids of beg   */
-								subscribeUserToBaseEntities(getUser().getCode(), begKids);
-								publishCmd(begKids, beg.getCode(), "LNK_BEG");
+									/* subscribe to all the begKids of beg   */
+									subscribeUserToBaseEntities(getUser().getCode(), begKids);
+									publishCmd(begKids, beg.getCode(), "LNK_BEG");
 
-								for(BaseEntity begKid : begKids){
-									BaseEntity applicant = getChildren(begKid.getCode(), "LNK_APP", "APPLICANT");
-									if (applicant != null) {
-										/* subscribe to APPLICANT  */
-										subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
-										String[] recipient = { getUser().getCode() };
-										publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
+									for(BaseEntity begKid : begKids){
+										BaseEntity applicant = getChildren(begKid.getCode(), "LNK_APP", "APPLICANT");
+										if (applicant != null) {
+											/* subscribe to APPLICANT  */
+											subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
+											String[] recipient = { getUser().getCode() };
+											publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
 
 									}
 								}

@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMessage.MessageData;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
-import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.rxjava.core.eventrules.EventBus;
 import io.vertx.core.buffer.Buffer;
 import com.google.gson.Gson;
 import life.genny.qwanda.Answer;
@@ -48,7 +48,7 @@ import life.genny.rules.QRules;
 rule "Show Offer Details"
 	when
 		$m : QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_SHOW_OFFER")
-        bus: EventBus()
+        rules: EventBus()
         $user: User(realm != null )
         $map : Map($value: this["token"] != null)
         $map1 : Map($value1: this["realm"] != null)
@@ -78,7 +78,7 @@ rule "Show Offer Details"
 		        cmdBe.put("msg_type", "DATA_MSG");
 		        cmdBe.put("data_type", "BaseEntity");
 		        cmdBe.put("items", array);
-		        bus.publish("cmds", cmdBe);
+		        rules.publish("cmds", cmdBe);
 
 				/* we grab the layout and send it to FE */
 				JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL(rules.realm() + "/accept_offer.json"), null));
@@ -89,7 +89,7 @@ rule "Show Offer Details"
 			    cmdSubLayout.put("token", $value);
 
                 /* Publish it to the EventBus */
-			    bus.publish("cmds", cmdSubLayout);
+			    rules.publish("cmds", cmdSubLayout);
 			}
 		}
         System.out.println(QwandaUtils.terminateRuleLogger("Show Offer Details"));

@@ -11,8 +11,11 @@ global java.lang.String REACT_APP_QWANDA_API_URL;
 
 
 rule "User Logout"
+    no-loop true
+	ruleflow-group 'UserLogout'
     when
-        m : QEventMessage( event_type == "LOGOUT" && data.code == "LOGOUT" )
+        m : QEventMessage(  event_type == "LOGOUT" && 
+                            data.code == "LOGOUT" )
  		rules: QRules( isState("STARTED") ) 
     then
         rules.header();
