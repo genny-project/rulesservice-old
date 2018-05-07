@@ -4,11 +4,12 @@ import life.genny.rules.QRules;
 rule "Trigger Role Check"
 
     when
-         rules: QRules(isState("TRIGGER_ROLE_CHECK") && !isState("LOOP_TRIGGER_ROLE_CHECK") )
+         rules: QRules( isState("TRIGGER_ROLE_CHECK") && 
+                        !isState("LOOP_TRIGGER_ROLE_CHECK") )
      then
      	rules.header();
         rules.setState("LOOP_TRIGGER_ROLE_CHECK");
     
-        rules.setState("ROLE_CHECK_USER");
+        rules.setState("CHECK_USER_ROLE");
 	    rules.footer();      		      
 end

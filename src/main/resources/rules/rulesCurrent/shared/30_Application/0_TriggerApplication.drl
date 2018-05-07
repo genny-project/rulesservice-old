@@ -4,14 +4,13 @@ import life.genny.rules.QRules;
 rule "Trigger Application"
 
     when
-         rules: QRules( isState("TRIGGER_SEND_APPLICATION_SETUP") &&
-         				!isState("LOOP_TRIGGER_APPLICATION") )
+         rules: QRules( isState("TRIGGER_APPLICATION_SETUP") &&
+         				!isState("LOOP_TRIGGER_APPLICATION_SETUP") )
      then
      	rules.header();
-
-        rules.setState("LOOP_TRIGGER_APPLICATION");
+        rules.setState("LOOP_TRIGGER_APPLICATION_SETUP");
         
-        rules.setState("TRIGGER_SEND_APPLICATION_DATA");
+        rules.setState("TRIGGER_SEND_DATA");
         rules.setState("TRIGGER_ROLE_CHECK");
         rules.setState("TRIGGER_SEND_LAYOUTS");
     
