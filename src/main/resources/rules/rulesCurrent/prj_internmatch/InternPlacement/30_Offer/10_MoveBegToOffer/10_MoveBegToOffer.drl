@@ -20,6 +20,8 @@ rule "Offer Intern - Step 1"
 
 			/* Trigger Messages */
         	rules.setState("SEND_OFFER_MESSAGE_TO_INTERN");
+        	rules.setState("SEND_OFFER_MESSAGE_TO_EDU_PROVIDER");
+        	rules.setState("SEND_OFFER_MESSAGE_TO_HOST_COMPANY");
 
 		}else{
 			rules.println("beg is null");

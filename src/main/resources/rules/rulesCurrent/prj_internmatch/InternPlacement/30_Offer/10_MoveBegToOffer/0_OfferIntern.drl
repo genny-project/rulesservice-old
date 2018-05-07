@@ -25,11 +25,17 @@ rule "Offer Intern - Step 0"
 			BaseEntity creator = rules.getChildren(beg.getCode(), "LNK_BEG", "CREATOR");
 			BaseEntity application = rules.getChildren(beg.getCode(), "LNK_BEG", "APPLICATION");
 			BaseEntity intern = null;
+			BaseEntity eduProvider = null;
 
 			if(application !=null){
 				intern = rules.getChildren(application.getCode(), "LNK_APP", "APPLICANT");
-
-				if (intern == null) {
+				if (intern != null) {
+					eduProvider = rules.getParent(intern.getCode(), "LNK_EDU");
+					if(eduProvider == null){
+						rules.println("eduProvider is null");
+						return;
+					}
+				}else{
 					rules.println("Intern is null");
 					return;
 				}
@@ -37,7 +43,6 @@ rule "Offer Intern - Step 0"
 				rules.println("Application of oldBeg is null");
 				return;
 			}
-
 			if (creator == null) {
             	rules.println("Creator of oldBeg is null");
 				return;
@@ -51,17 +56,19 @@ rule "Offer Intern - Step 0"
 				return;
 			} 
 
-            rules.println("beg           ::   " + beg.getCode());
-            rules.println("application   ::   " + application.getCode());
-            rules.println("creator       ::   " + creator.getCode());
-            rules.println("hostCompany   ::   " + hostCompany.getCode());
-            rules.println("internship    ::   " + internship);
-            rules.println("intern        ::   " + intern.getCode());
+            rules.println("beg           		::   " + beg.getCode());
+            rules.println("application   		::   " + application.getCode());
+            rules.println("creator       		::   " + creator.getCode());
+            rules.println("hostCompany   		::   " + hostCompany.getCode());
+            rules.println("internship    		::   " + internship);
+            rules.println("intern        		::   " + intern.getCode());
+            rules.println("eduProvider        	::   " + eduProvider.getCode());
 			
 			rules.set("creatorBe", creator);
-			rules.set("companyBe", hostCompany);
+			rules.set("hostCompanyBe", hostCompany);
 			rules.set("internshipBe", internship);
 			rules.set("internBe", intern );
+			rules.set("eduProviderBe", eduProvider );
 			rules.set("applicationBe", application);
 			
 			rules.setState("OFFER_INTERN_READY");            

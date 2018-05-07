@@ -39,6 +39,5 @@ rule "Send Offer Message To Intern"
             rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_INTERNSHIP_OFFER_INTERN", "EMAIL");
  		    rules.setState("SENT_OFFER_MESSAGE_TO_INTERN");
  		}
-	 	
 	 	rules.footer();      
 end
