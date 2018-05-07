@@ -135,10 +135,6 @@ public class QRules {
 		return this.drools;
 	}
 
-	public KnowledgeHelper getDrools() {
-		return this.drools;
-	}
-
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
 		super();
@@ -312,26 +308,6 @@ public class QRules {
 
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<Object> getAsList(final String key) {
-		return (List<Object>) get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public Object[] getAsArray(final String key) {
-		return (Object[]) get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<Object> getAsList(final String key) {
-		return (List<Object>) get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public Object[] getAsArray(final String key) {
-		return (Object[]) get(key);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1363,7 +1339,6 @@ public class QRules {
 			updateBaseEntityAttribute(getUser().getCode(), getUser().getCode(), "PRI_ONLINE", "TRUE");
 
 		}
-
 	}
 
 	public void publishData(final QDataAnswerMessage msg) {
@@ -3213,9 +3188,6 @@ public class QRules {
 							List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),
 									"LNK_CORE", 0, 500, false, user.getCode());
 							for (BaseEntity beg : driverbegs) {
-								if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
-									log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
-								}
 								/* Getting begs related to this driver only */
 								String driverCode = beg.getValue("STT_IN_TRANSIT", null);
 								if (driverCode != null && driverCode.equals(user.getCode())) {
@@ -4961,35 +4933,38 @@ public class QRules {
 		}
 	}
 
-	public void remove(final String keyPrefix, final String parentCode) {
+	public void remove(final String keyPrefix, final String parentCode)
+	{
 		VertxUtils.putMap(this.realm(), keyPrefix, parentCode, null);
 	}
 
-	public JsonObject generateLayout(final String reportGroupCode) {
-		Map<String, String> map = getMap("GRP", reportGroupCode);
-		println(map);
+	public JsonObject generateLayout(final String reportGroupCode)
+	{
+     	 Map<String,String> map = getMap("GRP",reportGroupCode);
+       	 println(map);
 
-		Integer cols = 1;
-		Integer rows = map.size();
+       	 Integer cols = 1;
+       	 Integer rows = map.size();
 
-		JsonObject layout = new JsonObject();
-		JsonObject grid = new JsonObject();
-		grid.put("cols", cols);
-		grid.put("rows", rows);
+       	 JsonObject layout = new JsonObject();
+       	 JsonObject grid = new JsonObject();
+       	 grid.put("cols", cols);
+       	 grid.put("rows", rows);
 
-		layout.put("Grid", grid);
+       	 layout.put("Grid", grid);
 
-		JsonArray children = new JsonArray();
-		grid.put("children", children);
-		for (String key : map.keySet()) {
-			BaseEntity searchBe = JsonUtils.fromJson(map.get(key), BaseEntity.class);
-			JsonObject button = generateGennyButton(key, searchBe.getName());
-			children.add(button);
-		}
-		return layout;
+       	 JsonArray children = new JsonArray();
+       	 grid.put("children", children);
+       	 for (String key : map.keySet()) {
+       		 BaseEntity searchBe = JsonUtils.fromJson(map.get(key), BaseEntity.class);
+       		 JsonObject button = generateGennyButton(key,searchBe.getName());
+       		 children.add(button);
+       	 }
+       	 return layout;
 	}
 
-	public JsonObject generateGennyButton(final String code, final String name) {
+	public JsonObject generateGennyButton(final String code, final String name)
+	{
 		JsonObject gennyButton = new JsonObject();
 
 		JsonObject ret = new JsonObject();

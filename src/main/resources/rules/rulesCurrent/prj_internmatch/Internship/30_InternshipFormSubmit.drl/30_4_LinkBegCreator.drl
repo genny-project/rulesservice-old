@@ -6,6 +6,7 @@ rule "Internship Form Submit - Step 4"
 	when
 		rules: QRules( 	isState("LINK_CREATED") && 
 						isState("COMPANY") && 		
+						isState("EVENT_FORM_SUBMIT") && 
 						!isState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP4")) 
 	 then
 	 	rules.header();

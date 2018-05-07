@@ -5,6 +5,7 @@ import life.genny.rules.QRules;
 rule "Internship Form Submit - Step 1"
 	when
 	    rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
 						!isState("LOOP_INTERNSHIP_FORM_SUBMIT")) 
 	 then
 	 	rules.header();
