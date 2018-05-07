@@ -145,28 +145,28 @@ public class FeeCalculationTest {
 		System.out.println(String.format("%04d", 123));
 		System.out.println(String.format("%04d", 1234));
 	}
-	
+
 	@Test
 	public void testBankCredentialMasking() {
 		String card = "4111-4111-4111-4111";
 		String bsb = "313-121";
 		Character[] characterToBeIgnoredArr = {'-'};
-		
-		
+
+
 		String maskedCard1 = StringFormattingUtils.maskWithRange(card, 0, 15, "x", characterToBeIgnoredArr);
 		System.out.println("masked card ::"+maskedCard1);
-		
+
 		String maskedBsb1 = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x",  characterToBeIgnoredArr);
 		System.out.println("masked BSB ::"+maskedBsb1);
-		
+
 		String account = "123456567";
 		String account1 = "123456567123";
-		
+
 		String maskedAccount1 = StringFormattingUtils.maskWithRange(account, 0, 6, "x", characterToBeIgnoredArr);
 		String maskedAccount3 = StringFormattingUtils.maskWithRange(account1, 0, 6, "x", null);
-		
+
 		System.out.println("masked account 1 ::"+maskedAccount1);
 		System.out.println("masked account 1 ::"+maskedAccount3);
 	}
-	
+
 }
