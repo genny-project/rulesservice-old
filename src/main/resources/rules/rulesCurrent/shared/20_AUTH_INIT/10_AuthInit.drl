@@ -10,6 +10,7 @@ rule "Auth Init"
      then
      	rules.header();
 
+     	rules.header();
         rules.setState("AUTH_INIT");
         rules.setState("LOOP_AUTH_INIT_EVT");
 
