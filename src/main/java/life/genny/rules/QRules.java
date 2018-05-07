@@ -309,6 +309,16 @@ public class QRules {
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object> getAsList(final String key) {
+		return (List<Object>) get(key);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Object[] getAsArray(final String key) {
+		return (Object[]) get(key);
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<Object> getAsList(final String key) {
