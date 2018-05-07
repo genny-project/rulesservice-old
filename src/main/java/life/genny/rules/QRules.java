@@ -1549,12 +1549,12 @@ public class QRules {
 					+ "/linkcodes/" + linkCode + "/parents", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
-				
+
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				println("arrayList  :: " + arrayList);
 				ArrayList<BaseEntity> parents = new ArrayList<BaseEntity>();
 				for(Link lnk: arrayList) {
-					
+
 					BaseEntity linkedBe = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), lnk.getSourceCode(), false);
 					if(linkedBe != null) {
 						parents.add(linkedBe);
@@ -1618,11 +1618,13 @@ public class QRules {
 	/*
 	 * Get all childrens for the given source code with the linkcode and linkValue
 	 */
-	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode) {
+
 		List<BaseEntity> childList = new ArrayList<BaseEntity>();
 		try {
+
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
-					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
+					+ "/linkcodes/" + linkCode + "/children/", getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));

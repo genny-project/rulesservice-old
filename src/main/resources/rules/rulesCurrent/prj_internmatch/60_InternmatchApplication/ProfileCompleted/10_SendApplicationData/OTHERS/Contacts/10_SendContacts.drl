@@ -7,26 +7,27 @@ import java.util.List;
 /* Sends Contacts */
 rule "Send Contacts"
     when
-        rules: QRules(  isState("SENT_ROOT") && 
-                        isState("SEND_CONTACTS") && 
-                        isState("SENT_BUCKETS") && 
+        rules: QRules(  isState("SEND_CONTACTS") && 
                         !isState("LOOP_SEND_CONTACTS") )
      then
      	rules.header();
      	rules.setState("LOOP_SEND_CONTACTS");
      	rules.clearState("PUBLISHED_BASE_ENTITY_LIST");
+     	
+     	List<String> groupList = new ArrayList<String>();
+     	groupList.add("GRP_CONTACTS");
+     	groupList.add("GRP_HOST_COMPANYS");
+     	groupList.add("GRP_EDU_PROVIDERS");
+     	groupList.add("GRP_INTERNS");
         
-        rules.set("beParentCode", "GRP_CONTACTS");                    
-        rules.set("beLinkCode", "LNK_CORE");
-        rules.set("bePageStart", 0);
-        rules.set("bePageSize", 20);
-        rules.set("beCache", false);
-        
+        rules.set("beList", groupList);                    
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
         
         rules.setState("SENT_CONTACTS");		
-        rules.setState("SEND_GROUPS");		
+        rules.setState("SEND_GROUPS");
+        rules.setState("SEND_DASHBOARD");		
+
 	    rules.footer();     		      
 end
 
