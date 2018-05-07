@@ -129,6 +129,10 @@ public class QRules {
 		this.drools = drools;
 	}
 
+	public KnowledgeHelper getDrools() {
+		return this.drools;
+	}
+
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
 		super();

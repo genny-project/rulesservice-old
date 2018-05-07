@@ -6,8 +6,8 @@ rule "Pre Init FORM Submit"
 	no-loop true
 	ruleflow-group 'Init'
     when
-          m : QEventMessage( event_type == "FORM_SUBMIT" )
-          rules: QRules(!isState("STARTED")) 
+        m : QEventMessage( event_type == "FORM_SUBMIT" )
+        rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT FORM_SUBMIT: "+m);
