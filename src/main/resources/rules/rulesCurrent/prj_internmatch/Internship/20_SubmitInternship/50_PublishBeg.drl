@@ -14,16 +14,22 @@ rule "Submit Internship - Step 5"
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP5");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
+		BaseEntity company = rules.getAsBaseEntity("companyBe");
 		
 		String[] begRecipients = VertxUtils.getSubscribers(rules.realm(), beg.getCode());
-		rules.publishBaseEntityByCode(	beg.getCode(), 
-										"GRP_AVAILABLE" , 
-										"LNK_CORE", 
-										begRecipients);
+		
+		rules.publishBaseEntityByCode(rules.getUser().getCode(), beg.getCode(), "LNK_BEG", begRecipients);
+		rules.publishBaseEntityByCode(company.getCode(), beg.getCode(), "LNK_BEG", begRecipients);
+		rules.publishBaseEntityByCode(internship.getCode(), beg.getCode(), "LNK_BEG", begRecipients);
+		rules.publishBaseEntityByCode(beg.getCode(), "GRP_AVAILABLE", "LNK_CORE", begRecipients);
 
-		rules.set("CMD_VIEW", "BUCKET_VIEW");
-		rules.set("root", "GRP_DASHBOARD");
-		rules.setState("CMD_VIEW");
+		rules.set("subLayoutCode", "DASHBOARD");
+		rules.set("subLayoutPath", "homepage/dashboard_host_company.json");
+		rules.set("subLayoutRootCode", "GRP_DASHBOARD");
+		rules.set("subLayoutIsPopup", false);
+
+		rules.setState("SEND_SUBLAYOUT");
 		
 		rules.setState("PUBLISHED_BEG");
 	 	rules.footer();      

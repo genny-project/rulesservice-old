@@ -10,15 +10,15 @@ rule "Ask Registration"
  		rules.header();
 		rules.setState("LOOP_ASK_REGISTRATION");
 
-		String sourceCode = rules.getUser().getCode();
-		String targetCode = rules.getUser().getCode();
+		String questionSourceCode = rules.getUser().getCode();
+		String questionTargetCode = rules.getUser().getCode();
  		String questionGroupCode = rules.getAsString("registration_question_grp");
-		Boolean isPopup = false;
+		Boolean questionIsPopup = false;
 
-		rules.set("sourceCode", sourceCode);
-		rules.set("targetCode", targetCode);
-		rules.set("questionGroup", questionGroupCode);
-		rules.set("isPopup", isPopup);
+		rules.set("questionSourceCode", questionSourceCode);
+		rules.set("questionTargetCode", questionTargetCode);
+		rules.set("questionGroupCode", questionGroupCode);
+		rules.set("questionIsPopup", questionIsPopup);
 		
 		rules.setState("ASK_QUESTION");
 		

@@ -1,7 +1,6 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Apply internship"
     no-loop true

@@ -4,10 +4,12 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
 
+/* Sends BEGs */
 rule "Send All Begs"
     when
         rules: QRules(  isState("SENT_DASHBOARD") && 
-                        isState("BASE_ENTITY_LIST_PUBLISHED") && 
+                        isState("SEND_ALL_BEGS") && 
+                        isState("PUBLISHED_BASE_ENTITY_LIST") && 
                         !isState("LOOP_SEND_DASHBOARD_BEGS") )
      then
      	rules.header();
@@ -18,7 +20,7 @@ rule "Send All Begs"
         List<BaseEntity> begList = rules.getAllBegs(buckets, "LNK_CORE", "0", "500", false);
 
         rules.println("begs   ::   " + begList);
-        rules.setState("PUBLISH_BASE_ENTITY_LIST");
+        //rules.setState("PUBLISH_BASE_ENTITY_LIST");
 
         // for (BaseEntity bucket : buckets) {
         //     println(bucket);

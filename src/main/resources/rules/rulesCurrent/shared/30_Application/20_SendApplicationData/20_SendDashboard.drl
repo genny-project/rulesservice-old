@@ -4,24 +4,28 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.List;
 
+/* Sends Buckets */
 rule "Send Dashboard"
     when
         rules: QRules(  isState("SENT_TREEVIEW") && 
-                        isState("BASE_ENTITY_LIST_PUBLISHED") && 
+                        isState("SEND_DASHBOARD") && 
+                        isState("PUBLISHED_BASE_ENTITY_LIST") && 
                         !isState("LOOP_SEND_DASHBOARD") )
      then
      	rules.header();
      	rules.setState("LOOP_SEND_DASHBOARD");
         
-        rules.set("parentCode", "GRP_DASHBOARD");            
-        rules.set("linkCode", "LNK_CORE");
-        rules.set("pageStart", 0);
-        rules.set("pageSize", 20);
-        rules.set("cache", false);
+        rules.set("beParentCode", "GRP_DASHBOARD");            
+        rules.set("beLinkCode", "LNK_CORE");
+        rules.set("bePageStart", 0);
+        rules.set("bePageSize", 20);
+        rules.set("beCache", false);
+        
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
          
         rules.setState("SENT_DASHBOARD");		
+        rules.setState("SEND_ALL_BEGS");		
 	    rules.footer();     		      
 end
 
