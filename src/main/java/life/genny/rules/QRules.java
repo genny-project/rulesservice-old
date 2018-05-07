@@ -1551,17 +1551,38 @@ public class QRules {
 	 */
 	public BaseEntity getChildren(final String sourceCode, final String linkCode, final String linkValue) {
 
+		List<BaseEntity> bes = this.getChildrens(sourceCode, linkCode, linkValue);
+		if(bes != null && bes.size() > 0) {
+			return bes.get(0);
+		}
+
+		return null;
+	}
+
+	/*
+	 * Get children of the source code with the linkcode and linkValue
+	 */
+	public List<BaseEntity> getChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+
 		try {
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
 					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
 			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
+				
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
-				Link first = arrayList.get(0);
-				RulesUtils.println("The Child BaseEnity code is   ::  " + first.getTargetCode());
-				return RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(),
-						first.getTargetCode(), false);
+				List<BaseEntity> bes = new ArrayList<BaseEntity>();
+				for(Link linkToBe: arrayList) {
+					
+					BaseEntity be = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(), getToken(), linkToBe.getTargetCode(), false);
+					if(be != null) {
+						bes.add(be);
+					}
+				}
+
+				return bes;
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -5813,4 +5834,150 @@ public class QRules {
 		}
 		return getBaseEntityByCode(newBe.getCode());
 	}
+
+	public void sendInternApplicationData() {
+		
+		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+			println("rootKids   ::   " + rootKids);
+			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+    
+        List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+			println("buckets   ::   " + buckets);
+			publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
+
+		if(buckets != null){
+			
+			for(BaseEntity bucket : buckets){
+				println("BUCKET code   ::   " + bucket.getCode());
+
+				/* FOR GRP_AVAILABLE BEGS */
+				if(bucket.getCode().equals("GRP_AVAILABLE")){
+					
+					/* subscribe to GRP_AVAILABLE  */
+					subscribeUserToBaseEntity(getUser().getCode(), bucket.getCode());
+					
+					// get all the begs of GRP_AVAILABLE 
+					List<BaseEntity> availableBegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false);
+					
+					if(availableBegs != null){
+						/* subscribe to all the begs of GRP_AVAILABLE   */
+						subscribeUserToBaseEntities(getUser().getCode(), availableBegs);
+						publishCmd(availableBegs, bucket.getCode(), "LNK_CORE");				
+						
+						for(BaseEntity beg : availableBegs){
+							
+							List<BaseEntity> applications = getChildrens(beg.getCode(), "LNK_BEG", "APPLICATION");
+
+							if(applications != null){
+								for(BaseEntity application : applications){
+								
+									BaseEntity applicant = getChildren(application.getCode(), "LNK_APP", "APPLICANT");
+									if(applicant != null){
+
+										/* if  current intern is applicant of this applicantion BE */
+										if( getUser().getCode().equals( applicant.getCode() ) ){
+
+											/* subscribe to APPLICATION  */
+											subscribeUserToBaseEntity(getUser().getCode(), application.getCode());
+											String [] recipient = {getUser().getCode()};
+											publishBaseEntityByCode(applicant.getCode(), application.getCode(), "LNK_APP", recipient);
+											
+										}
+									}
+								}	
+							}
+
+							List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+							println("childrens of beg   ::   " + begKids);
+
+							/* subscribe to all the begKids of beg   */
+							subscribeUserToBaseEntities(getUser().getCode(), begKids);
+							publishCmd(begKids, beg.getCode(), "LNK_CORE");
+						}
+					}
+					
+				}
+
+				/* FOR OTHER BUCKET BEGS */
+
+				/* Get the begs where the current intern is stakeholder */
+				List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, getUser().getCode());		
+				println("BEGS intern is invoved in   ::   " + begs );
+
+				/* subscribe to all the begs of GRP_AVAILABLE   */
+				subscribeUserToBaseEntities(getUser().getCode(), begs);
+				publishCmd(begs, bucket.getCode(), "LNK_CORE");
+				
+				for(BaseEntity beg : begs){
+					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+					println("childrens of beg   ::   " + begKids);
+
+					/* subscribe to all the begKids of beg   */
+					subscribeUserToBaseEntities(getUser().getCode(), begKids);				
+					publishCmd(begKids, beg.getCode(), "LNK_CORE");				
+				}
+			}	
+		}
+        
+	}
+
+	public void sendHostCompanyApplicationData() {
+		
+		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		println("rootKids   ::   " + rootKids);
+		publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+
+		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		println("buckets   ::   " + buckets);
+		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
+		
+		
+		if (buckets != null) {
+
+			BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
+			if(company != null){
+				println("company code   ::   " + company.getCode());
+				
+				for (BaseEntity bucket : buckets) {
+					println("BUCKET code   ::   " + bucket.getCode());
+
+					/* Get the begs where the current intern is stakeholder */
+					List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false,
+							company.getCode());
+					println("BEGS company is invoved in   ::   " + begs);
+
+					/* subscribe to all the begs of GRP_AVAILABLE   */
+					subscribeUserToBaseEntities(getUser().getCode(), begs);
+					publishCmd(begs, bucket.getCode(), "LNK_CORE");
+
+					for (BaseEntity beg : begs) {
+						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500,
+								false);
+						println("childrens of beg   ::   " + begKids);
+
+						/* subscribe to all the begKids of beg   */
+						subscribeUserToBaseEntities(getUser().getCode(), begKids);
+						publishCmd(begKids, beg.getCode(), "LNK_CORE");
+
+						for(BaseEntity begKid : begKids){
+							BaseEntity applicant = getChildren(begKid.getCode(), "LNK_APP", "APPLICANT");
+							if (applicant != null) {
+
+								/* subscribe to APPLICANT  */
+								subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
+								String[] recipient = { getUser().getCode() };
+								publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
+
+							}							
+						}
+					}
+				}
+			}else{
+				println("company is null");
+			}
+			
+		}
+		
+	}
+
 }
