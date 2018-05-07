@@ -6107,4 +6107,28 @@ public class QRules {
 
 		return null;
 	}
+
+	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
+
+		Boolean isLinkExists = false;
+		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
+
+		if (dataBEMessage != null) {
+			BaseEntity[] beArr = dataBEMessage.getItems();
+
+			if (beArr.length > 0) {
+				for (BaseEntity be : beArr) {
+					if (be.getCode().equals(childCode)) {
+						isLinkExists = true;
+						return isLinkExists;
+					}
+				}
+			} else {
+				isLinkExists = false;
+				return isLinkExists;
+			}
+
+		}
+		return isLinkExists;
+	}
 }
