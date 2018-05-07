@@ -14,6 +14,8 @@ rule "Shortlist Internship - Step 0"
 		String applicationCode = rules.getAsString("itemCode");
 		String begCode = rules.getAsString("hintCode");
 
+		
+
 		if(applicationCode == null){
             rules.println("applicationCode is null");
         }else if(begCode == null){
@@ -22,6 +24,13 @@ rule "Shortlist Internship - Step 0"
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			rules.set("applicationBe", application);
 
+			BaseEntity applicant = rules.getChildren(application, "LNK_APP", "APPLICANT");
+			if(applicant != null){
+				rules.set("applicantBe", applicant);
+			}else{
+            	rules.println("applicant is null");
+			}
+			
 			BaseEntity beg = rules.getBaseEntityByCode(begCode);
 			rules.set("begBe", beg);
 
