@@ -458,7 +458,16 @@ public class QRules {
 	public BaseEntity getBaseEntityByCode(final String code) {
 		BaseEntity be = null;
 
-		be = VertxUtils.readFromDDT(code, getToken());
+		/* use vertexUtils */
+		//be = VertxUtils.readFromDDT(code, getToken());
+
+		/* remove this try catch block from here */
+		try {
+			be= QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+
 		if (be == null) {
 			println("ERROR - be (" + code + ") fetched is NULL ");
 		} else {
@@ -5534,5 +5543,18 @@ public class QRules {
 			}
 
 		}
+	}
+	public List<BaseEntity> sendBaseEntityWithChildren( BaseEntity be, String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
+
+		List<BaseEntity> children = getBaseEntitysByParentAndLinkCode2(be.getCode(), linkCode, pageStart, pageSize, cache);
+
+		if(children != null && children.size() > 0) {
+
+			publishCmd(children, be.getCode(), linkCode);
+			println("FETCHED        ::   " + children.size() + " BEs ");
+			println("FETCHED BES   ::   " + children.toString() );
+		}
+
+		return children;
 	}
 }

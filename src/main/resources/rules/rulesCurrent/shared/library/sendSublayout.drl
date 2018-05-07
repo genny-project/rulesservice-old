@@ -21,10 +21,15 @@ rule "Send Sublayout"
         else if(subLayoutPath == null) {
             rules.println("Send SubLayout :: missing subLayoutPath");
         }
-        else if(subLayoutIsPopup == null) {
-            rules.println("Send SubLayout :: missing subLayoutIsPopup");
-        }
         else {
+            if(subLayoutRootCode == null) {
+                rules.println("Send SubLayout :: missing subLayoutIsPopup");
+                subLayoutRootCode = null;
+            }
+            if(subLayoutIsPopup == null) {
+                rules.println("Send SubLayout :: missing subLayoutIsPopup");
+                subLayoutIsPopup = false;
+            }
 			rules.sendSublayout(subLayoutCode, subLayoutPath, subLayoutRootCode, subLayoutIsPopup);
             rules.setState("SENT_SUBLAYOUT");
         }

@@ -20,14 +20,23 @@ rule "Pre Init Btn Click"
 		 
 		String dataString = m.getData().getValue();
 		JsonObject dataJson = new JsonObject(dataString);
+
+		/* Get targetCode */
 		String targetCode = dataJson.getString("targetCode");
 		rules.println("targetCode   ::   " + targetCode);
+
+		/* Get itemCode */		
+		String itemCode = dataJson.getString("itemCode");
+		rules.println("itemCode   ::   " + itemCode);
 
 		if(quesCode != null) {
  	 		rules.setState(quesCode);
 		}
 		if(targetCode != null) {
 			rules.set("quesTargetCode", targetCode);
+		}
+		if(itemCode != null) {
+			rules.set("itemCode", itemCode);
 		}
 
 
