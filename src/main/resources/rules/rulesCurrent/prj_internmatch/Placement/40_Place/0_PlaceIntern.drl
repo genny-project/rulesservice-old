@@ -2,14 +2,14 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Set BEG \ APP \ INTERN To Map */
-rule "Offer Intern - Step 0"
+rule "Place Intern - Step 0"
 	when
-		rules: QRules( 	isState("BTN_OFFER_INTERN") && 
+		rules: QRules( 	isState("BTN_PLACE_INTERN") && 
 						isState("EVENT_BTN_CLICK") && 
-						!isState("LOOP_OFFER_INTERN_STEP0") ) 
+						!isState("LOOP_PLACE_INTERN_STEP0") ) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_OFFER_INTERN_STEP0");
+        rules.setState("LOOP_PLACE_INTERN_STEP0");
 
 		String applicationCode = rules.getAsString("itemCode");
 		String begCode = rules.getAsString("hintCode");
@@ -59,8 +59,8 @@ rule "Offer Intern - Step 0"
 			rules.set("internshipBe", internship);
 			rules.set("internBe", intern );
 			
-			rules.setState("OFFER_INTERN_READY");            
-			rules.setState("MOVE_BEG_TO_OFFERED");
+			rules.setState("PLACE_INTERN_READY");            
+			rules.setState("MOVE_BEG_TO_PLACED");
         }
 	 	rules.footer();      
 end
