@@ -3,7 +3,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import java.util.List;
 
-rule "Exit Role Selection - channel40"
+rule "Exit Role Selection"
      when
         rules: QRules( 	isState("EXIT_ROLE_SELECTION") &&
 						!isState("EXITED_ROLE_SELECTION") ) 
@@ -11,7 +11,7 @@ rule "Exit Role Selection - channel40"
         rules.header();     
 		
 		rules.setState("EXITED_ROLE_SELECTION");
-		rules.setState("TRIGGER_PROFILE_CHECK");
+		rules.setState("TRIGGER_ROLE_CHECK");
 
 		rules.footer();     		      
 end

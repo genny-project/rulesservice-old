@@ -11,7 +11,7 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Profile is completed - step 3 - channel40"
     when
-	    rules: QRules( isState("USER_PROFILE_ANSWERED") && isState("USER_COMPANY_READY") && !isState("LOOP_PROFILE_COMPLETED") )
+	    rules: QRules( isState("USER_PROFILE_ANSWERED") && !isState("LOOP_PROFILE_COMPLETED") )
      then
      	rules.header();
 
@@ -20,7 +20,7 @@ rule "Profile is completed - step 3 - channel40"
 		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
 		rules.setState("PROFILE_IS_COMPLETED");
 		rules.setState("APPLICATION_READY");
-		rules.setState("TRIGGER_CHANNEL40_APPLICATION");
+		rules.setState("TRIGGER_APPLICATION");
 		
 
 	    rules.footer();

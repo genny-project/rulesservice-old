@@ -1,9 +1,9 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Trigger Internmatch Application"
+rule "Trigger Channel40 Application"
     when
-        rules: QRules(  isState("TRIGGER_CHANNEL40_APPLICATION") && 
+        rules: QRules(  isState("TRIGGER_APPLICATION") && 
                         !isState("LOOP_TRIGGER_CHANNEL40_APPLICATION") ) 
      then       
         rules.header();
