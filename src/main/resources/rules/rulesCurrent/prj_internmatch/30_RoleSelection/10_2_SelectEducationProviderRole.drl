@@ -12,11 +12,11 @@ rule "Select Education Provider Role"
 						!isState("EDU_PROVIDER_SELECTED") )   
 	 then
 	    rules.header();
-		rules.setState("HAS_SENT_SUBLAYOUT");
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), 
-										rules.getUser().getCode(), 
-										"PRI_IS_EDU_PROVIDER", 
-										"TRUE");
+
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_EDU_PROVIDER", "TRUE");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "FALSE");
+		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_HOST_COMPANY", "FALSE");
+
 		rules.setState("EDU_PROVIDER_SELECTED");
 	    rules.footer();     		      
 end

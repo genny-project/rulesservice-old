@@ -1,0 +1,34 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* MOVE BEG TO SHORTLIST */
+rule "Duplicate BEG - Step 10"
+	when
+		rules: QRules( 	isState("MOVE_NEW_BEG_TO_SHORTLIST") && 
+		                isState("PUBLISHED_NEW_BEG_AND_KIDS") && 
+						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") &&
+						!isState("LOOP_DUPLICATE_BEG_STEP10")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_DUPLICATE_BEG_STEP10");
+
+        BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
+        
+        if(newBeg == null){
+            rules.println("newBeg is null");    
+        }else{
+            /* link GRP_APPLIED to NEW_BEG || BEG */
+            rules.set("linkSourceCode", "GRP_APPLIED");
+            rules.set("linkTargetCode", newBeg.getCode());
+            rules.set("linkCode", "LNK_CORE");
+            rules.set("linkValue", "BEG");
+            rules.set("linkWeight", 1.0);
+            rules.setState("CREATE_LINK");
+
+            rules.setState("LINKED_GRP_APPLIED_TO_BEG");
+            
+        }
+	 	rules.footer();      
+end

@@ -13,7 +13,7 @@ rule "Submit Internship - Step 8"
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP8");
 		
-		rules.setState("TRIGGER_HOME_PAGE");
+		rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE");
  
 	 	rules.footer();      
 end

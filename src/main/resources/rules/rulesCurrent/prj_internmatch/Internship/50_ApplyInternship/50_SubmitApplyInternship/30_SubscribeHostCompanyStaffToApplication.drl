@@ -29,7 +29,9 @@ rule "Submit Apply Internship - Step 3"
                 rules.println("No staff found for company");
             }
         }else{
-            rules.println("company is null");
+            rules.println("HOST company is null");
         }
 	 	rules.footer();      
 end
+
+
