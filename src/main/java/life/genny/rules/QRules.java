@@ -5643,13 +5643,115 @@ public class QRules {
 	}
 	
 	/* returns a duplicated BaseEntity from an existing beCode */
-	public BaseEntity duplicateBaseEntity(final BaseEntity oldBe, final String bePrefix,  final String name) {
-		
-		BaseEntity newBe = RulesUtils.duplicateBaseEntity(oldBe, bePrefix, name, getQwandaServiceUrl(), getToken());
-		println("New BE after hitting api   ::   "+ newBe);
-		
-		VertxUtils.writeCachedJson(newBe.getCode(), JsonUtils.toJson(newBe));
-		return newBe;
+	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateAttributes(oldBe, newBe);
+		duplicateLinks(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+	
+	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateAttributes(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
 	}
 
+	public BaseEntity duplicateBaseEntityLinks(final BaseEntity oldBe, final String bePrefix, final String name) {
+		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+		duplicateLinks(oldBe, newBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
+		List<Answer> duplicateAnswerList = new ArrayList<>();
+		
+		for(EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
+			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
+		}
+		saveAnswers(duplicateAnswerList);
+	}
+	
+	public void duplicateLinks(final BaseEntity oldBe, final BaseEntity newBe) {
+		for(EntityEntity ee : oldBe.getLinks()) {
+			createLink(	newBe.getCode(), 
+						ee.getLink().getTargetCode(), 
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(), 
+						ee.getLink().getWeight() );
+		}
+	}
+
+	public void duplicateLink(final BaseEntity oldBe, final BaseEntity newBe, final BaseEntity childBe) {
+		for (EntityEntity ee : oldBe.getLinks()) {
+			if(ee.getLink().getTargetCode() == childBe.getCode()){
+				
+				createLink(	newBe.getCode(), 
+						ee.getLink().getTargetCode(), 
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(), 
+						ee.getLink().getWeight() );
+				break;
+			}
+		}
+	}
+
+	public void duplicateLinksExceptOne(final BaseEntity oldBe, final BaseEntity newBe, String linkValue) {
+		for (EntityEntity ee : oldBe.getLinks()) {
+			if(ee.getLink().getLinkValue() == linkValue){
+				continue;
+			}
+			createLink(	newBe.getCode(), 
+						ee.getLink().getTargetCode(), 
+						ee.getLink().getAttributeCode(),
+						ee.getLink().getLinkValue(), 
+						ee.getLink().getWeight() );
+		}
+	}
+
+	public BaseEntity cloneBeg(final BaseEntity oldBe,final BaseEntity newBe, final BaseEntity childBe, String linkValue){
+		duplicateLinksExceptOne(oldBe, newBe, linkValue);
+		duplicateLink(oldBe, newBe, childBe);
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	/* clones links of oldBe to newBe from supplied arraylist linkValues */
+	public BaseEntity copyLinks(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
+		println("linkvalues   ::   " + Arrays.toString(linkValues));
+		for (EntityEntity ee : oldBe.getLinks()) {
+			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
+			for(String linkValue : linkValues){
+				println("a linkvalue   ::   " + linkValue);
+				if(ee.getLink().getLinkValue().equals(linkValue)){
+					createLink(	newBe.getCode(), 
+								ee.getLink().getTargetCode(), 
+								ee.getLink().getAttributeCode(),
+								ee.getLink().getLinkValue(), 
+								ee.getLink().getWeight() );
+					println("creating link for   ::   " + linkValue);
+				}
+			}
+		}
+		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	/* clones all links of oldBe to newBe except the linkValues supplied in arraylist linkValues */
+	public BaseEntity copyLinksExcept(final BaseEntity oldBe, final BaseEntity newBe, final String[] linkValues) {
+		println("linkvalues   ::   " + Arrays.toString(linkValues));
+		for (EntityEntity ee : oldBe.getLinks()) {
+			println("old be linkValue   ::   " + ee.getLink().getLinkValue());
+			for (String linkValue : linkValues) {
+				println("a linkvalue   ::   " + linkValue);
+				if (ee.getLink().getLinkValue().equals(linkValue)) {
+					continue;
+				}
+				createLink(	newBe.getCode(), 
+							ee.getLink().getTargetCode(), 
+							ee.getLink().getAttributeCode(),
+							ee.getLink().getLinkValue(), 
+							ee.getLink().getWeight() );
+				println("creating link for   ::   " + linkValue);
+			}
+		}
+		return getBaseEntityByCode(newBe.getCode());
+	}
 }
