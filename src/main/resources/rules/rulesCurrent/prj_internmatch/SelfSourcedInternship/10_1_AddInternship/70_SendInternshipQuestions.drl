@@ -1,26 +1,24 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Add Internship - Step 5"
+rule "Add Self Sourced Internship - Step 7"
 	when
-        rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
-        					isState("ASK_INTERNSHIP_QUESTION") && 
+        rules: QRules(  isState("BTN_CREATE_SELF_SOURCE_INTERNSHIP") &&
+        					isState("ASK_SELF_SOURCED_QUESTIONS") && 
 						isState("CREATED_LINK") && 
-						isState("BEG") && 
 						isState("LINKED_DRAFTS_TO_BEG") && 
-                        !isState("LOOP_ADD_INTERNSHIP_STEP5")  )
+                        !isState("LOOP_ADD_SS_INTERNSHIP_STEP7")  )
      then 
  		rules.header();
-		rules.setState("LOOP_ADD_INTERNSHIP_STEP5");
+		rules.setState("LOOP_ADD_SS_INTERNSHIP_STEP7");
 
 		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
-
 		rules.set("questionSourceCode", rules.getUser().getCode());
 		rules.set("questionTargetCode", internship.getCode());
-		rules.set("questionGroupCode", "QUE_INTERNSHIP_GRP");
+		rules.set("questionGroupCode", "QUE_SELF_SOURCED_INTERNSHIP_GRP");
 		rules.set("questionIsPopup", false);
+
+		rules.setState("SEND_QUESTION");
 		
-		rules.setState("ASK_QUESTION");
-		rules.setState("ASKED_INTERNSHIP_QUESTION");
  		rules.footer();
 end

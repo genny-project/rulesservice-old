@@ -4,11 +4,8 @@ import life.genny.rules.QRules;
 /* TRIGGER Create HOST_COMPANY */
 rule "Trigger Create Host Company"
     when
-		rules: QRules(  isState("TRIGGER_CREATE_HOST_COMPANY") &&
-										isState("HOST_COMPANY_DOESNT_EXISTS") &&
-										isState("PRI_IS_HOST_COMPANY") &&
-										isState("PROFILE_NOT_COMPLETED") && 
-										!isState("LOOP_TRIGGER_CREATE_HOST_COMPANY") ) 
+    		rules: QRules(  	isState("TRIGGER_CREATE_HOST_COMPANY") &&
+						!isState("LOOP_TRIGGER_CREATE_HOST_COMPANY") ) 
      then 
  		rules.header();
 		rules.setState("LOOP_TRIGGER_CREATE_HOST_COMPANY");

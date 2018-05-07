@@ -5,9 +5,6 @@ import life.genny.rules.QRules;
 rule "Exit Create Host Company"
     when
 		rules: QRules(  isState("LINKED_HOST_COMPANY_TO_USER") &&
-						isState("PROFILE_NOT_COMPLETED") && 
-						isState("PRI_IS_HOST_COMPANY") &&
-						isState("HOST_COMPANY_DOESNT_EXISTS") &&
 						!isState("LOOP_EXIT_CREATE_HOST_COMPANY") ) 
      then 
  		rules.header();

@@ -2,17 +2,17 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Create Internship BaseEntity */
-rule "Add Internship - Step 2"
+rule "Add Self Sourced Internship - Step 2"
 	when
-		rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
+		rules: QRules(  isState("BTN_CREATE_SELF_SOURCE_INTERNSHIP") &&
 						isState("CREATE_INT") && 
 						isState("CREATED_BASE_ENTITY") && 
 						isState("BEG") && 
 						isState("CREATED_BEG") && 
-						!isState("LOOP_ADD_INTERNSHIP_STEP2") ) 
+						!isState("LOOP_ADD_SS_INTERNSHIP_STEP2") ) 
 	 then
 	    rules.header();
-		rules.setState("LOOP_ADD_INTERNSHIP_STEP2");
+		rules.setState("LOOP_ADD_SS_INTERNSHIP_STEP2");
 
 		/* GET newly created BEG BaseEntity */
 		BaseEntity beg = rules.getAsBaseEntity("baseEntity");
@@ -30,6 +30,6 @@ rule "Add Internship - Step 2"
 		rules.setState("CREATE_BASE_ENTITY");	
 
 		rules.setState("CREATED_INT");			
-        rules.setState("LINK_BEG_TO_INT");
+        rules.setState("LINK_BEG_TO_SS_INT");
 	    rules.footer();     		      
 end
