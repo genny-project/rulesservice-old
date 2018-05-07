@@ -6,7 +6,7 @@ rule "Trigger Send Application Data"
 
     when    
          rules: QRules( isState("TRIGGER_SEND_APPLICATION_DATA") && 
-                        isState("ROLE_FOUND") && 
+                        isState("PROFILE_IS_COMPLETED") && 
                         !isState("LOOP_TRIGGER_SEND_APPLICATION_DATA") )
      then
      	rules.header();

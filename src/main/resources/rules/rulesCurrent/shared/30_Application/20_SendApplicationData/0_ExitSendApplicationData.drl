@@ -4,11 +4,12 @@ import life.genny.rules.QRules;
 rule "Exit Send Application Data"
 
     when
-         rules: QRules( isState("SENT_SUB_LAYOUTS") && !isState("LOOP_EXIT_SEND_DATA") )
+         rules: QRules( isState("SENT_BUCKETS") && 
+                        !isState("LOOP_EXIT_SEND_APPLICATION_DATA") )
      then
      	rules.header();
-        rules.setState("LOOP_EXIT_SEND_DATA");
+        rules.setState("LOOP_EXIT_SEND_APPLICATION_DATA");
     
-        rules.setState("EXIT_SEND_DATA");
+        rules.setState("EXIT_SEND_APPLICATION_DATA");
 	    rules.footer();      		      
 end
