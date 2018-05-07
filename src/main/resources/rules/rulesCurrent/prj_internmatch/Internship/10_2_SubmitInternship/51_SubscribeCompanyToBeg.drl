@@ -3,14 +3,14 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
 /* Subscribe COMPANY (user's Host Company) to BEG */
-rule "Submit Internship - Step 5.1"	
+rule "Submit Internship - Step 5.1"
 	when
-		rules: QRules( 	isState("SUBSCRIBED_CREATOR_TO_BEG") && 
-						isState("SUBSCRIBE_COMPANY_TO_BEG") && 
-						isState("QUE_INTERNSHIP_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_INTERNSHIP_STEP5_1")) 
+		rules: QRules( 	isState("SUBSCRIBED_CREATOR_TO_BEG") &&
+						isState("SUBSCRIBE_COMPANY_TO_BEG") &&
+						isState("QUE_INTERNSHIP_GRP") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP5_1"))
 
 	 then
 	 	rules.header();
@@ -20,8 +20,8 @@ rule "Submit Internship - Step 5.1"
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
 
 		rules.subscribeUserToBaseEntity(company.getCode(), beg);
-	
+
  		rules.setState("SUBSCRIBED_COMPANY_TO_BEG");
  		rules.setState("SUBSCRIBE_ALL_INTERNS_TO_NEW_BEG");
-	 	rules.footer();      
+	 	rules.footer();
 end

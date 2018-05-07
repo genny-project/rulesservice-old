@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 /* Move BEG from GRP_DRAFTS >>> GRP_AVAILABLE  */
 rule "Submit Internship - Step 6"
 	when
-		rules: QRules( 	isState("SUBSCRIBED_TO_BEG") && 
+		rules: QRules( 	isState("SUBSCRIBED_COMPANY_TO_BEG") && 
 						isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
