@@ -159,6 +159,7 @@ public class QRules {
 				// Successfully got the value
 				fut.complete(resGet.result());
 			} else {
+
 				// Something went wrong!
 				fut.complete(RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code));
 
