@@ -25,7 +25,7 @@ rule "Submit Internship - Step 1"
 			BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
 			rules.set("companyBe", company);
 
-			rules.setState("BEG_INTERNSHIP_COMPANY_READY");            
+			rules.setState("SUBMIT_INTERNSHIP_READY");            
             
         }else{
             rules.println("internship is null");

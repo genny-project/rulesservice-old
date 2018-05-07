@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
 rule "Shortlist Internship - Step 1"
 	when
 		rules: QRules( 	isState("CREATE_NEW_BEG") && 
-						isState("BEG_APPLICATION_INTERN_READY") && 
+						isState("SHORTLIST_INTERN_READY") && 
 						isState("BTN_SHORTLIST_INTERN") && 
 						isState("EVENT_BTN_CLICK") && 
 						!isState("LOOP_SHORTLIST_INTERN_STEP1")) 

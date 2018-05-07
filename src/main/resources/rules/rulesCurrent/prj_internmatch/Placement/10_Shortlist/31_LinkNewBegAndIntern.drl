@@ -6,6 +6,8 @@ rule "Shortlist Intern - Step 3.1"
 	when
 		rules: QRules(  isState("LINK_NEW_BEG_TO_INTERN") && 
 						isState("LINKED_NEW_BEG_TO_APPLICATION") && 
+						isState("CREATED_LINK") && 
+						isState("APPLICATION") && 
 						isState("BTN_SHORTLIST_INTERN") && 
 						isState("EVENT_BTN_CLICK") && 
 						!isState("LOOP_SHORTLIST_INTERN_STEP3.1")) 
