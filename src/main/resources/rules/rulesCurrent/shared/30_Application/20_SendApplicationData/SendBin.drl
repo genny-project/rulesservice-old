@@ -9,11 +9,11 @@ rule "Send Bin"
      	rules.header();
      	rules.setState("LOOP_SEND_BIN");
         
-        rules.set("parentCode", "GRP_BIN");            
-        rules.set("linkCode", "LNK_CORE");
-        rules.set("pageStart", 0);
-        rules.set("pageSize", 200);
-        rules.set("cache", false);
+        rules.set("beParentCode", "GRP_BIN");            
+        rules.set("beLinkCode", "LNK_CORE");
+        rules.set("bePageStart", 0);
+        rules.set("bePageSize", 200);
+        rules.set("beCache", false);
         
         rules.clearState("LOOP_PUBLISH_BASE_ENTITY_LIST");
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
