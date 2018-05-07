@@ -6142,7 +6142,7 @@ public class QRules {
 		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
-	
+
 	/* returns a duplicated BaseEntity from an existing beCode */
 	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
@@ -6150,7 +6150,7 @@ public class QRules {
 		duplicateLinks(oldBe, newBe);
 		return getBaseEntityByCode(newBe.getCode());
 	}
-	
+
 	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
 		duplicateAttributes(oldBe, newBe);
@@ -6165,19 +6165,19 @@ public class QRules {
 
 	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
 		List<Answer> duplicateAnswerList = new ArrayList<>();
-		
+
 		for(EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
 			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
 		}
 		saveAnswers(duplicateAnswerList);
 	}
-	
+
 	public void duplicateLinks(final BaseEntity oldBe, final BaseEntity newBe) {
 		for(EntityEntity ee : oldBe.getLinks()) {
-			createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 		}
 	}
@@ -6185,11 +6185,11 @@ public class QRules {
 	public void duplicateLink(final BaseEntity oldBe, final BaseEntity newBe, final BaseEntity childBe) {
 		for (EntityEntity ee : oldBe.getLinks()) {
 			if(ee.getLink().getTargetCode() == childBe.getCode()){
-				
-				createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+
+				createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 				break;
 			}
@@ -6201,10 +6201,10 @@ public class QRules {
 			if(ee.getLink().getLinkValue() == linkValue){
 				continue;
 			}
-			createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 		}
 	}
@@ -6223,10 +6223,10 @@ public class QRules {
 			for(String linkValue : linkValues){
 				println("a linkvalue   ::   " + linkValue);
 				if(ee.getLink().getLinkValue().equals(linkValue)){
-					createLink(	newBe.getCode(), 
-								ee.getLink().getTargetCode(), 
+					createLink(	newBe.getCode(),
+								ee.getLink().getTargetCode(),
 								ee.getLink().getAttributeCode(),
-								ee.getLink().getLinkValue(), 
+								ee.getLink().getLinkValue(),
 								ee.getLink().getWeight() );
 					println("creating link for   ::   " + linkValue);
 				}
@@ -6245,10 +6245,10 @@ public class QRules {
 				if (ee.getLink().getLinkValue().equals(linkValue)) {
 					continue;
 				}
-				createLink(	newBe.getCode(), 
-							ee.getLink().getTargetCode(), 
+				createLink(	newBe.getCode(),
+							ee.getLink().getTargetCode(),
 							ee.getLink().getAttributeCode(),
-							ee.getLink().getLinkValue(), 
+							ee.getLink().getLinkValue(),
 							ee.getLink().getWeight() );
 				println("creating link for   ::   " + linkValue);
 			}
