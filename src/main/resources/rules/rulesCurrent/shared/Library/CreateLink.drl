@@ -4,7 +4,7 @@ import life.genny.qwanda.Link;
 
 rule "Create Link"
 	when
-	    rules: QRules(  isState("CREATE_LINK")  )   
+	    rules: QRules(  isState("CREATE_LINK")  )
 	 then
 	    rules.header();
 
@@ -13,7 +13,7 @@ rule "Create Link"
         String linkCode = rules.getAsString("linkCode");
         String linkValue = rules.getAsString("linkValue");
         Double linkWeight = rules.getAsDouble("linkWeight");
- 		
+
  		if (linkSourceCode == null) {
              rules.println("Create Link: missing linkSourceCode");
         }
@@ -30,12 +30,12 @@ rule "Create Link"
             rules.println("Create Link: missing linkWeight");
         }
         else {
-            rules.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);	
-                 
-		    rules.setState("CREATED_LINK");	             
-		    rules.setState(linkValue);	             
+            rules.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);
+
+		    rules.setState("CREATED_LINK");
+		    rules.setState(linkValue);
         }
 
         rules.clearState("CREATE_LINK");
-	    rules.footer();      	
+	    rules.footer();
 end
