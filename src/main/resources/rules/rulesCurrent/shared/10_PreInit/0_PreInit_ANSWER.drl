@@ -5,11 +5,11 @@ import life.genny.rules.QRules;
 rule "Pre Init Answer"
     when
         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-        rules: QRules(!isState("STARTED")) 
-     then    
+        rules: QRules(!isState("STARTED"))
+     then
         rules.setDrools(drools);
         rules.println("RULE INIT ANSWER: "+ m + " - " + m.getItems());
- 
+
         rules.setState("DATA_ANSWER");
         rules.setState("STARTED");
 
