@@ -1,18 +1,19 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
 
 /* Show Offer Document - Host Company */
 rule "Show Offer Document - Host Company"
 	when
-		rules: QRules( 	isState("REDIRECT_EVENT") && 
-						isState("REDIRECT_SHOW_OFFER") && 
-						isState("PRI_IS_HOST_COMPANY") && 
+		m : QEventMessage( event_type == "REDIRECT_EVENT" )
+		rules: QRules( 	isState("REDIRECT_EVENT") &&
+						isState("REDIRECT_SHOW_OFFER") &&
 						!isState("LOOP_SHOW_OFFER_DOCUMENT_HOST_COMPANY") ) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_SHOW_OFFER_DOCUMENT_HOST_COMPANY");
 
-		String begCode = rules.getAsString("itemCode");
+        String begCode = m.getData().getValue();
 
         if(begCode != null){
 		   	String questionSourceCode = rules.getUser().getCode();

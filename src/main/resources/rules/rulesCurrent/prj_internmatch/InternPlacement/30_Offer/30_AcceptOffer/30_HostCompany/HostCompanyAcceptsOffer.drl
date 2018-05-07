@@ -4,11 +4,10 @@ import life.genny.rules.QRules;
 /* Host Company Accepts Offer */
 rule "Accept Offer - Host Company"
 	when
-		rules: QRules( 	isState("BTN_ACCEPT_OFFER") && 
-						isState("EVENT_BTN_CLICK") && 
-						isState("PRI_IS_HOST_COMPANY") && 
+		rules: QRules( 	isState("EVENT_FORM_SUBMIT") && 
 						isState("QUE_HOST_COMPANY_AGREEMENT_GRP") && 
 						isState("SUBMIT") && 
+						isState("PRI_IS_HOST_COMPANY") && 
 						!isState("LOOP_HOST_COMPANY_ACCEPT_OFFER") ) 
 	 then
 	 	rules.header();
@@ -16,11 +15,18 @@ rule "Accept Offer - Host Company"
 
 		String begCode = rules.getAsString("quesTargetCode");
 
+		rules.println("rule was executed");
+
 		if(begCode != null){
-		    rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE");
+			rules.println("begCode    ::   " + begCode);
+			
+		    rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_INTERN_ACCEPTED", "TRUE");
+		    //rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_HOST_COMPANY_ACCEPTED", "TRUE");
+		    //rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "PRI_IS_EDU_PROVIDER", "TRUE");
+
             rules.setState("HOST_COMPANY_ACCEPTED_OFFER");
 
             rules.setState("CHECK_OFFER_ACCEPTED");
-        }
+         }
 	 	rules.footer();      
 end
