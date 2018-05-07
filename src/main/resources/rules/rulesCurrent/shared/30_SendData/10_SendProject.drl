@@ -1,0 +1,22 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Send Project"
+    when
+         rules: QRules( isState("SENT_ALL_ATTRIBUTES") && !isState("LOOP_SEND_PROJECT") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_PROJECT");
+
+     	String projectCode = "PRJ_" + rules.getAsString("realm").toUpperCase();
+     	BaseEntity project = rules.getBaseEntityByCode(projectCode);
+
+        if(project != null) {
+            rules.publishCmd(project, "PROJECT");
+        }
+
+        rules.setState("SENT_PROJECT");	
+	    rules.footer();      		      
+end

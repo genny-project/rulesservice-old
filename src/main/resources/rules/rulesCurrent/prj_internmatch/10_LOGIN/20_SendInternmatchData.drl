@@ -1,0 +1,18 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Send Internmatch Data"
+    when
+         rules: QRules( isState("SEND_INTERNMATCH_DATA") && (!isState("LOOP_SENT_DATA")) )
+     then
+     	rules.header();
+
+        rules.setState("LOOP_SENT_DATA");
+
+        /* we send application data */
+        rules.setState("TRIGGER_SEND_DATA");
+
+	    rules.footer();      		      
+end
