@@ -3,7 +3,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwandautils.MergeUtil;
 
-rule "Ask User Role - Channel40"
+rule "Ask User Role"
     when
         rules: QRules( 	isState("ASK_USER_ROLE") && 
 						!isState("ASKED_USER_ROLE")	)

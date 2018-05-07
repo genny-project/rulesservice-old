@@ -9,7 +9,8 @@ rule "Exit Application"
      then
      	rules.header();
         rules.setState("LOOP_EXIT_APPLICATION_SETUP");
-    
+        
+        rules.setState("APPLICATION_READY");
         rules.setState("EXIT_APPLICATION_SETUP");
 	    rules.footer();      		      
 end

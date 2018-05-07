@@ -4,7 +4,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
 import java.util.List;
 
-rule "Profile Completed Attribute Change - channel40"
+rule "Profile Completed Attribute Change"
      when
         m : QEventAttributeValueChangeMessage( data.code == "PRI_IS_PROFILE_COMPLETED" )
         rules: QRules(  isState("STARTED") && 
