@@ -7,6 +7,7 @@ rule "Submit Internship - Step 3"
 	when
 		rules: QRules( 	isState("LINKED_BEG_TO_COMPANY") && 
 						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP3")) 
 
 	 then

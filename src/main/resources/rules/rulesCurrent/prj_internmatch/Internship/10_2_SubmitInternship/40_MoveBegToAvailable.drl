@@ -11,7 +11,8 @@ import java.io.IOException;
 rule "Submit Internship - Step 4"
 	when
 		rules: QRules( 	isState("SUBSCRIBED_TO_BEG") && 
-						isState("EVENT_FORM_SUBMIT") && 	
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 	
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP4")) 
 	 then
 	 	rules.header();

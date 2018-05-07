@@ -4,10 +4,10 @@ import life.genny.rules.QRules;
 /* Send Dashboard */
 rule "Cancel Internship"
 	when
-		rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("CANCEL") && 
-						!isState("LOOP_CANCEL_INTERNSHIP")) 
+		rules: QRules( 	isState("QUE_INTERNSHIP_GRP") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("CANCEL") &&
+						!isState("LOOP_CANCEL_INTERNSHIP"))
 	 then
 	 	rules.header();
         rules.setState("LOOP_CANCEL_INTERNSHIP");
@@ -15,5 +15,5 @@ rule "Cancel Internship"
 		rules.setState("TRIGGER_HOME_PAGE");
 
 		rules.setState("CANCELLED_INTERNSHIP");
-	 	rules.footer();      
+	 	rules.footer();
 end
