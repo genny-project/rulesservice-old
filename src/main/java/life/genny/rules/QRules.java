@@ -3,9 +3,11 @@ package life.genny.rules;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -382,6 +384,14 @@ public class QRules {
 
 	public String decodeBase64(byte[] base64str) {
 		return new String(Base64.getDecoder().decode(base64str));
+	}
+
+	public String urlEncode(String str) {
+		try {
+			return URLEncoder.encode(str, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return null;
+		}
 	}
 
 	public BaseEntity getProject() {

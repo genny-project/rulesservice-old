@@ -49,7 +49,9 @@ rule "Setting user role"
 			else {
 				rules.setState("ROLE_NOT_FOUND");
 			}
-			rules.setState("ROLE_CHECKED");
 		}
+		
+		rules.setState("ROLE_CHECKED");
+		
 	    rules.footer();
 end
