@@ -6142,4 +6142,15 @@ public class QRules {
 		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
+	
+	/* returns a duplicated BaseEntity from an existing beCode */
+	public BaseEntity duplicateBaseEntity(final BaseEntity oldBe, final String bePrefix,  final String name) {
+		
+		BaseEntity newBe = RulesUtils.duplicateBaseEntity(oldBe, bePrefix, name, getQwandaServiceUrl(), getToken());
+		println("New BE after hitting api   ::   "+ newBe);
+		
+		VertxUtils.writeCachedJson(newBe.getCode(), JsonUtils.toJson(newBe));
+		return newBe;
+	}
+
 }

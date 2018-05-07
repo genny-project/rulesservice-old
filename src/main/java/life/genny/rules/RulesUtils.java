@@ -808,6 +808,35 @@ public class RulesUtils {
 		return null;
 	}
 
+	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
+		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(oldBe.getCode(), null, prefix, token), name);
+
+		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
+		println("Size of oldBe Attributes   ::   "+oldBe.getBaseEntityAttributes().size());
+
+		for(EntityEntity ee : oldBe.getLinks()) {
+			ee.getLink().setSourceCode(newBe.getCode());
+		}
+		newBe.setLinks(oldBe.getLinks());
+
+		//newBe.setBaseEntityAttributes(oldBe.getBaseEntityAttributes());
+		println("New BE before hitting api  ::   "+ newBe);
+
+		String jsonBE = JsonUtils.toJson(newBe);
+		try {
+			// save BE
+			QwandaUtils.apiPostEntity(qwandaUrl + "/qwanda/baseentitys", jsonBE, token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		println(newBe.getCode());
+		return newBe;
+
+	}
+
+
+
+
 
 
 
