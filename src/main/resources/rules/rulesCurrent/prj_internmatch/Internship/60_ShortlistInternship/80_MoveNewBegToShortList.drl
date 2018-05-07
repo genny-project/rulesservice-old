@@ -27,8 +27,8 @@ rule "Shortlist Internship - Step 8"
             rules.setState("CREATE_LINK");
 
             rules.setState("MOVED_NEW_BEG_TO_SHORTLIST");
-
-            rules.setState("GO_TO_HOMEPAGE");
+            
+            rules.setState("UNSUBSCRIBE_INTERN_FROM_OLD_BEG");
         }
 	 	rules.footer();      
 end
