@@ -15,18 +15,18 @@ rule "Create BaseEntity"
         String beName = rules.getAsString("beName");
  		
  		if (beCode == null) {
-             rules.println("Create Link: missing beCode");
+             rules.println("Create BaseEntity: missing beCode");
         }
         else if (bePrefix == null) {
-            rules.println("Create Link: missing bePrefix");
+            rules.println("Create BaseEntity: missing bePrefix");
         }
         else if (beName == null) {
-            rules.println("Create Link: missing beName");
+            rules.println("Create BaseEntity: missing beName");
         }
         else {
             BaseEntity be = rules.createBaseEntityByCode(   rules.getAsString("beCode"), 
-                                                        rules.getAsString("bePrefix"), 
-                                                        rules.getAsString("beName") );
+                                                            rules.getAsString("bePrefix"), 
+                                                            rules.getAsString("beName") );
 
             rules.set("baseEntity", be);
             rules.setState("BASE_ENTITY_CREATED");

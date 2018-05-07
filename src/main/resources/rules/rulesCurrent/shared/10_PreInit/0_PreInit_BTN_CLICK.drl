@@ -1,6 +1,8 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
 
 rule "Pre Init Btn Click"
 	no-loop true
@@ -13,5 +15,17 @@ rule "Pre Init Btn Click"
         rules.println("RULE INIT BTN_CLICK: "+m);
         rules.setState("EVENT_BTN_CLICK");
         rules.setState("STARTED");
+
+        String quesCode = m.getData().getCode();
+		 
+		String dataString = m.getData().getValue();
+		JsonObject dataJson = new JsonObject(dataString);
+		String targetCode = dataJson.getString("targetCode");
+		rules.println("targetCode   ::   " + targetCode);
+
+		if(quesCode != null) {
+/* 	 		rules.setState(quesCode);
+ */		}
+
   		drools.setFocus("ButtonClick");      		      
 end
