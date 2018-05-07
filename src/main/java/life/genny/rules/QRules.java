@@ -653,7 +653,7 @@ public class QRules {
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache, final String stakeholderCode) {
 		List<BaseEntity> bes = null;
-		if (getUser().is("PRI_DRIVER")) {
+		if (getUser().is("PRI_IS_DRIVER")) {
 			RulesUtils.println("Is True");
 		}
 		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
@@ -1676,9 +1676,6 @@ public class QRules {
 			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
 					RulesUtils.toJson(qstMsg), getToken());
 			msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-
-			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
-
 			return msg;
 		} catch (IOException e) {
 			return msg;
@@ -3319,7 +3316,7 @@ public class QRules {
 
 		}
 		/* Sending Draft Datas for the Owners */
-		if (user.is("PRI_OWNER")) {
+		if (user.is("PRI_IS_OWNER")) {
 			List<BaseEntity> ownerDraftBegs = getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
 					user.getCode());
 			 bulkmsg.add(publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"));

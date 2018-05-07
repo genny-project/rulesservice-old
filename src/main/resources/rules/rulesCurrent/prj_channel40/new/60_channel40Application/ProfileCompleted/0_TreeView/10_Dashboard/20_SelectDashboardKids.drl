@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Select Dashboard Kids"
+rule "Select Dashboard Kids - channel40"
     when
       rules: QRules(  isState("EVENT_TV_SELECT") &&
                       isState("TV1") &&

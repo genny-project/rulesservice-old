@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule "User Company is not setup - step 1 - channel40"
+    when
+	    rules: QRules( 	isState("PROFILE_NOT_COMPLETED") && 
+	    					isState("USER_COMPANY_NOT_READY") &&
+						!isState("LOOP_PROFILE_NOT_COMPLETED")	)
+     then
+     	rules.header();
+   	   	
+		rules.setState("LOOP_PROFILE_NOT_COMPLETED");
+		
+		BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		if(company != null) {
+	  		rules.askQuestions(rules.getUser().getCode(), company.getCode(), "QUE_NEW_USER_COMPANY_GRP");
+		}
+  		
+		rules.setState("ASKED_USER_COMPANY_QUESTIONS");
+		
+	    rules.footer();
+end

@@ -10,13 +10,13 @@ rule "SBE_DRIVERS"
     no-loop true
     salience 550
     ruleflow-group 'GenerateReports'
-    
+
     when
         rules: QRules( !isState("SBE_DRIVERS") )
      then
          rules.setState(drools.getRule().getName());
          rules.println("Generating "+drools.getRule().getName());
-         
+
   	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Drivers")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
@@ -27,14 +27,14 @@ rule "SBE_DRIVERS"
   	     .addColumn("PRI_RATING", "Star Rating")
   	     .addColumn("PRI_REGISTRATION_DATETIME", "Registered Date")
   	     .addColumn("PRI_LAST_LOGIN_DATETIME","Last Login Date")
-  	     
+
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
-  	     
+
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
   	     .addFilter("PRI_DRIVER",true)
-  	     
+
   	     .setPageStart(0)
   	     .setPageSize(10000);
-  	     
+
   		 rules.add("GRP","GRP_REPORTS_ADMIN",report);
 end
