@@ -3,14 +3,15 @@ import life.genny.rules.QRules;
 
 rule "Ask Registration"
     when
-        rules: QRules(  isState("PROFILE_NOT_COMPLETED") && !isState("ASK_REGISTRATION")  )
+        rules: QRules(  isState("PROFILE_NOT_COMPLETED") && 
+						!isState("PRI_IS_HOST_COMPANY") && 
+						!isState("LOOP_ASK_REGISTRATION") )
      then 
  		rules.header();
- 		
- 		String userCode = rules.getUser().getCode();
+		rules.setState("LOOP_ASK_REGISTRATION");
 
-		String sourceCode = userCode;
-		String targetCode = userCode;
+		String sourceCode = rules.getUser().getCode();
+		String targetCode = rules.getUser().getCode();
  		String questionGroupCode = rules.getAsString("registration_question_grp");
 		Boolean isPopup = false;
 
@@ -20,7 +21,6 @@ rule "Ask Registration"
 		rules.set("isPopup", isPopup);
 		
 		rules.setState("ASK_QUESTION");
-		rules.setState("ASK_REGISTRATION");
 		
  		rules.footer();
 end

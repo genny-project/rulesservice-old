@@ -6,11 +6,11 @@ import java.util.List;
 rule "Profile Completed"
      when
         $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_PROFILE_COMPLETED") )
-        rules: QRules( isState("STARTED") && !isState("HAS_CHECK_PROFILE_COMPLETEION") ) 
+        rules: QRules(!isState("LOOP_PROFILE_COMPLETED") ) 
      then      
         rules.header();
         
-		rules.setState("HAS_CHECK_PROFILE_COMPLETEION");
+		rules.setState("LOOP_PROFILE_COMPLETED");
 		rules.setState("TRIGGER_PROFILE_CHECK");
 		
 		rules.footer();     		      

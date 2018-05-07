@@ -1,0 +1,13 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Internship Form Submit"
+	when
+	    rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
+						!isState("LOOP_INTERNSHIP_FORM_SUBMIT")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_INTERNSHIP_FORM_SUBMIT");
+
+	 	rules.footer();      
+end
