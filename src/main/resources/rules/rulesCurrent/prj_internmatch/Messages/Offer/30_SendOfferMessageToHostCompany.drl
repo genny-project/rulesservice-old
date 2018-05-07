@@ -1,5 +1,6 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
 
 rule "Send Offer Message To Host Company"
 	when
@@ -26,12 +27,17 @@ rule "Send Offer Message To Host Company"
         }else if(hostCompany == null){
             rules.println("hostCompany is null");
             return;
-        }else{
+        }else {
+        
+            String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_SHOW_OFFER\",\"data\":{\"itemCode\": \"" + beg.getCode() + "\"}}";
+			String base64 = rules.encodeToBase64(json);
+			
 	 		HashMap<String, String> contextMap = new HashMap<String, String>(); 
 	        contextMap.put("BEG", beg.getCode());
 	        contextMap.put("INTERNSHIP", internship.getCode());
             contextMap.put("INTERN", intern.getCode());
 	        contextMap.put("HOSTCOMPANY", hostCompany.getCode());
+	        contextMap.put("URLREDIRECT", "http://localhost:3000/?state=" + base64);
 	        
             String[] recipients = null;
 
