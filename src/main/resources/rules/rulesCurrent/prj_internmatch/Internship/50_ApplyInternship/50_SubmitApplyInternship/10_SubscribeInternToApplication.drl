@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
 rule "Submit Apply Internship - Step 1"
 	when
 		rules: QRules( 	isState("SUBSCRIBE_INTERN_TO_APPLICATION") && 
-						isState("SUBMIT_APPLY_INTERNSHIP_READY") && 
+						isState("BEG_APPLICATION_COMPANY_READY") && 
 						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 

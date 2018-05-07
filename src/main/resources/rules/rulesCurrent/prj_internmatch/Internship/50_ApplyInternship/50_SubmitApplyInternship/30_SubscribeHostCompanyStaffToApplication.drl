@@ -21,11 +21,10 @@ rule "Submit Apply Internship - Step 3"
         if(company != null){
 		    BaseEntity companyStaff = rules.getChildren(company.getCode(), "LNK_STAFF", "STAFF");
             if(companyStaff != null){
-				rules.println("companyStaff is   ::   " + companyStaff.getCode());
                 rules.subscribeUserToBaseEntity(companyStaff.getCode(), application.getCode());
                 rules.setState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION");
                 
-                rules.setState("LINK_GRP_APPLIED_TO_BEG");
+                rules.setState("LINK_BEG_TO_APPLICATION");
             }else{
                 rules.println("No staff found for company");
             }

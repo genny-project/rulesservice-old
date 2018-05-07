@@ -2,17 +2,17 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Subscribe STAFF of Host Company to APPLICATION */
-rule "Submit Apply Internship - Step 5"
+rule "Submit Apply Internship - Step 3"
 	when
 		rules: QRules( 	isState("SUBSCRIBE_HOST_COMPANY_STAFF_TO_APPLICATION") && 
 						isState("SUBSCRIBED_HOST_COMPANY_TO_APPLICATION") && 
 						isState("QUE_INTERNSHIP_ADDITIONAL_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP5")) 
+						!isState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP3")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP5");
+        rules.setState("LOOP_SUBMIT_APPLY_INTERNSHIP_STEP3");
 
 		/* Get company & application BaseEntity */
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
@@ -21,10 +21,11 @@ rule "Submit Apply Internship - Step 5"
         if(company != null){
 		    BaseEntity companyStaff = rules.getChildren(company.getCode(), "LNK_STAFF", "STAFF");
             if(companyStaff != null){
+				rules.println("companyStaff is   ::   " + companyStaff.getCode());
                 rules.subscribeUserToBaseEntity(companyStaff.getCode(), application.getCode());
                 rules.setState("SUBSCRIBED_HOST_COMPANY_STAFF_TO_APPLICATION");
                 
-                rules.setState("PUBLISH_APPLICATION");
+                rules.setState("LINK_GRP_APPLIED_TO_BEG");
             }else{
                 rules.println("No staff found for company");
             }
