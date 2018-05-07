@@ -676,6 +676,12 @@ public class QRules {
 		publishBaseEntityByCode(be, null, null, recipientArray);
 	}
 
+	public void publishBaseEntityByCode(final String be, final Boolean delete) {
+		String[] recipientArray = new String[1];
+		recipientArray[0] = be;
+		publishBaseEntityByCode(be, null, null, recipientArray, delete);
+	}
+
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -684,6 +690,18 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+
+	}
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final Boolean delete) {
+
+		BaseEntity item = getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setDelete(delete);
 		publishData(msg, recipientCodes);
 
 	}
@@ -3018,11 +3036,33 @@ public class QRules {
 	}
 
 	public void subscribeUserToBaseEntityAndChildren(String userCode, String beCode, String linkCode) {
-		List<BaseEntity> beKids = new ArrayList<BaseEntity>();
-		beKids = getBaseEntitysByParentAndLinkCode(beCode, linkCode, 0, 500, false);
-		for(BaseEntity beKid : beKids){
-			VertxUtils.subscribe(realm(), beKid.getCode(), userCode);
+		List<BaseEntity> beList = new ArrayList<BaseEntity>();
+		BaseEntity parent = getBaseEntityByCode(beCode);
+		if(parent != null) {
+			beList = getBaseEntitysByParentAndLinkCode(beCode, linkCode, 0, 500, false);
+			beList.add(parent);
 		}
+		println("parent and child List ::  " +beList);
+		subscribeUserToBaseEntities(userCode,beList);
+	}
+
+	public void unsubscribeUserToBaseEntity(final String userCode, String beCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		Set<String> unsubscriberSet = new HashSet<String>();
+
+		unsubscriberSet.add(userCode);
+		println("unsubscriber is   ::   " + unsubscriberSet.toString());
+
+		Set<String> subscriberSet = VertxUtils.getSetString(realm(), SUB, beCode);
+		println("all subscribers   ::   " + subscriberSet.toString());
+
+		subscriberSet.removeAll(unsubscriberSet);
+		println("after removal, subscriber is   ::   " + subscriberSet.toString());
+
+		VertxUtils.putSetString(realm(), SUB, beCode, subscriberSet);
+
+
 	}
 
 	public void sendLayoutsAndData() {
@@ -5588,9 +5628,9 @@ public class QRules {
 		level--;
 		BaseEntity be = this.getBaseEntityByCode2(beCode);
 		if(be != null) {
-	
+
 			List<BaseEntity> beList = new ArrayList<BaseEntity>();
-			
+
 			Set<EntityEntity> entityEntities = be.getLinks();
 
 			//we interate through the links
@@ -5598,12 +5638,12 @@ public class QRules {
 
 				Link link = entityEntity.getLink();
 				if(link != null) {
-					
+
 					// we get the target BE
 					String targetCode = link.getTargetCode();
 					if(targetCode != null) {
 
-						// recursion 
+						// recursion
 						beList.addAll(this.getBaseEntityWithChildren(targetCode, level));
 					}
 				}
@@ -5649,7 +5689,18 @@ public class QRules {
 		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
-	
+
+	/* static public String[] getSubscribers(final String realm, final String subscriptionCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		String[] resultArray = getObject(realm, SUB, subscriptionCode, String[].class);
+
+		String[] resultAdmins = getObject(realm, "SUBADMIN", "ADMINS", String[].class);
+		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		return result;
+
+	} */
+
 	/* returns a duplicated BaseEntity from an existing beCode */
 	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
@@ -5657,7 +5708,7 @@ public class QRules {
 		duplicateLinks(oldBe, newBe);
 		return getBaseEntityByCode(newBe.getCode());
 	}
-	
+
 	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
 		duplicateAttributes(oldBe, newBe);
@@ -5672,19 +5723,19 @@ public class QRules {
 
 	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
 		List<Answer> duplicateAnswerList = new ArrayList<>();
-		
+
 		for(EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
 			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
 		}
 		saveAnswers(duplicateAnswerList);
 	}
-	
+
 	public void duplicateLinks(final BaseEntity oldBe, final BaseEntity newBe) {
 		for(EntityEntity ee : oldBe.getLinks()) {
-			createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 		}
 	}
@@ -5692,11 +5743,11 @@ public class QRules {
 	public void duplicateLink(final BaseEntity oldBe, final BaseEntity newBe, final BaseEntity childBe) {
 		for (EntityEntity ee : oldBe.getLinks()) {
 			if(ee.getLink().getTargetCode() == childBe.getCode()){
-				
-				createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+
+				createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 				break;
 			}
@@ -5708,10 +5759,10 @@ public class QRules {
 			if(ee.getLink().getLinkValue() == linkValue){
 				continue;
 			}
-			createLink(	newBe.getCode(), 
-						ee.getLink().getTargetCode(), 
+			createLink(	newBe.getCode(),
+						ee.getLink().getTargetCode(),
 						ee.getLink().getAttributeCode(),
-						ee.getLink().getLinkValue(), 
+						ee.getLink().getLinkValue(),
 						ee.getLink().getWeight() );
 		}
 	}
@@ -5730,10 +5781,10 @@ public class QRules {
 			for(String linkValue : linkValues){
 				println("a linkvalue   ::   " + linkValue);
 				if(ee.getLink().getLinkValue().equals(linkValue)){
-					createLink(	newBe.getCode(), 
-								ee.getLink().getTargetCode(), 
+					createLink(	newBe.getCode(),
+								ee.getLink().getTargetCode(),
 								ee.getLink().getAttributeCode(),
-								ee.getLink().getLinkValue(), 
+								ee.getLink().getLinkValue(),
 								ee.getLink().getWeight() );
 					println("creating link for   ::   " + linkValue);
 				}
@@ -5752,10 +5803,10 @@ public class QRules {
 				if (ee.getLink().getLinkValue().equals(linkValue)) {
 					continue;
 				}
-				createLink(	newBe.getCode(), 
-							ee.getLink().getTargetCode(), 
+				createLink(	newBe.getCode(),
+							ee.getLink().getTargetCode(),
 							ee.getLink().getAttributeCode(),
-							ee.getLink().getLinkValue(), 
+							ee.getLink().getLinkValue(),
 							ee.getLink().getWeight() );
 				println("creating link for   ::   " + linkValue);
 			}
