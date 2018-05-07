@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
 
 rule "Button Click"
 	when
@@ -10,9 +11,19 @@ rule "Button Click"
 	 then
 	 	rules.header();
  		rules.setState("BTN_CODE_SET");
+
 	 	String btnCode = m.getData().getCode();
+		 
+		String dataString = m.getData().getValue();
+		JsonObject dataJson = new JsonObject(dataString);
+		String targetCode = dataJson.getString("targetCode");
+		rules.println("targetCode   ::   " + targetCode);
+
 		if(btnCode != null) {
 	 		rules.setState(btnCode);
+	 		rules.set("quesTargetCode", targetCode);
 		}
 	 	rules.footer();
 end
+
+

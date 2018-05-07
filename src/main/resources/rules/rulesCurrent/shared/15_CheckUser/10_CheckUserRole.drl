@@ -3,19 +3,17 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import java.util.List;
 import java.util.stream.Collectors;
-import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.attribute.EntityAttribute;
 
 rule "Check User Role"
      when
-        /* rules: QRules( isState("USER_FOUND") &&  !isState("LOOP_CHECK_ROLE") )  */
-        rules: QRules(isState("USER_FOUND") && !isState("LOOP_CHECK_ROLE") )
+        /* rules: QRules( isState("USER_CHECKED") &&  !isState("LOOP_CHECK_ROLE") )  */
+        rules: QRules( (isState("STARTED") || isState("USER_CHECKED")) && !isState("LOOP_CHECK_ROLE") )
      then
         rules.header();
 		rules.setState("LOOP_CHECK_ROLE");
 
 		BaseEntity user = rules.getUser();
-		rules.println("user is   ::   " + user.toString());
 		Boolean has_role_been_found = false;
 
 		if(user != null) {
@@ -35,8 +33,6 @@ rule "Check User Role"
 					has_role_been_found = true;
 				}
 			}
-		}else{
-			rules.println("user is null");
 		}
 
 		if(has_role_been_found) {
