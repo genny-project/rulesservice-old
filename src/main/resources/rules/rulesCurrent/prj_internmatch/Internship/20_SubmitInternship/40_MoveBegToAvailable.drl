@@ -1,5 +1,11 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
+import life.genny.qwanda.Link;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.QwandaUtils;
+import java.io.IOException;
+
+
 
 /* Move BEG from GRP_DRAFTS >>> GRP_AVAILABLE  */
 rule "Submit Internship - Step 4"
@@ -13,7 +19,18 @@ rule "Submit Internship - Step 4"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
         
-        rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
+/*         rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
+ */
+		/* Moving the BEG */
+		Link link = new Link("GRP_DRAFTS", beg.getCode(), "LNK_CORE");
+		try {
+			String output = QwandaUtils.apiPostEntity(	rules.getQwandaServiceUrl() + "/qwanda/baseentitys/move/GRP_AVAILABLE",
+														JsonUtils.toJson(link), 
+														rules.getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         rules.setState("MOVED_BEG_TO_AVAILABLE");
         rules.setState("PUBLISH_BEG");

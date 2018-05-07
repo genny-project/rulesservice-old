@@ -4,11 +4,9 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Create BaseEntity"
 	when
-	    rules: QRules( isState("CREATE_BASE_ENTITY") && 
-                        !isState("LOOP_CREATE_BASE_ENTITY") )   
+	    rules: QRules( isState("CREATE_BASE_ENTITY") )   
 	 then
 	    rules.header();
-		rules.setState("LOOP_CREATE_BASE_ENTITY");
 
         String beCode = rules.getAsString("beCode");
         String bePrefix = rules.getAsString("bePrefix");
@@ -24,16 +22,15 @@ rule "Create BaseEntity"
             rules.println("Create BaseEntity: missing beName");
         }
         else {
-            BaseEntity be = rules.createBaseEntityByCode(   rules.getAsString("beCode"), 
-                                                            rules.getAsString("bePrefix"), 
-                                                            rules.getAsString("beName") );
+            BaseEntity be = rules.createBaseEntityByCode( beCode, bePrefix, beName );
 
             rules.set("baseEntity", be);
-            rules.setState("BASE_ENTITY_CREATED");
+            rules.setState("CREATED_BASE_ENTITY");
             rules.setState(bePrefix);  
 
             String[] begRecipients = {rules.getUser().getCode()};
             rules.publishBaseEntityByCode(be.getCode(), null , null , begRecipients);       
         }
+		rules.clearState("CREATE_BASE_ENTITY");        
 	    rules.footer();     		      
 end

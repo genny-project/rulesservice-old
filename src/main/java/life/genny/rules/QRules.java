@@ -567,6 +567,23 @@ public class QRules {
 
 		return bes;
 	}
+	/* added because of the bug */
+	public List<BaseEntity> getBaseEntitysByParentAndLinkCode2(final String parentCode, final String linkCode,
+			Integer pageStart, Integer pageSize, Boolean cache) {
+
+		List<BaseEntity> bes = null;
+
+		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
+
+		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes2(qwandaServiceUrl, getDecodedTokenMap(),
+				getToken(), parentCode, linkCode, pageStart, pageSize);
+
+		// } else {
+		// bes = getAsBaseEntitys("BES_" + parentCode.toUpperCase() + "_" + linkCode);
+		// }
+
+		return bes;
+	}
 
 	public List<BaseEntity> getBaseEntitysByParentLinkCodeAndLinkValue(final String parentCode, final String linkCode,
 			final String linkValue, Integer pageStart, Integer pageSize, Boolean cache) {
@@ -603,25 +620,14 @@ public class QRules {
 		return bes;
 	}
 
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
-			final String linkCode) {
-
-		// JsonObject begEntity = new JsonObject();
-		// begEntity.put("sourceCode", sourceCode);
-		// begEntity.put("targetCode", baseEntityCode);
-		// begEntity.put("attributeCode", linkCode);
-
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode)
+	{
 		Link link = new Link(sourceCode, baseEntityCode, linkCode);
-
-		try {
-
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), getToken());
-
-		} catch (IOException e) {
+		try{
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, JsonUtils.toJson(link), getToken());
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 
@@ -4248,6 +4254,25 @@ public class QRules {
 			return true;
 		}
 		return false;
+
+	public List<BaseEntity> getAllBegs( List<BaseEntity> beList, String linkCode, String pageStart, String pageSize, Boolean cache)
+	{
+		List<BaseEntity> begList = new ArrayList<BaseEntity>();
+		println(beList);
+		for (BaseEntity be : beList) {
+			List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(be.getCode(), "LNK_CORE", 0, 500, false);
+			println("bucket name " + be.getCode() + "items" + begs.size() );
+
+			println("begs of each bucket   ::   " +begs);
+			begList.addAll(begs);
+			publishCmd(begList, be.getCode(), "LNK_CORE");
+/* 			publishCmd(beList, null, null, null);
+ */
+		}
+
+
+		println("FETCHED " + begList.size() + " BEGS");
+		return begList;
 
 	}
 
