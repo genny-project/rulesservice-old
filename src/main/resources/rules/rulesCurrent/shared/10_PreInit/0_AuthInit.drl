@@ -11,22 +11,20 @@ rule "Pre Init Auth Init"
 	ruleflow-group 'Init'
     when
           m : QEventMessage( event_type == "AUTH_INIT" && data.code == "AUTH_INIT"  )
-          rules: QRules(!isState("STARTED")) 
-     then    
+          rules: QRules(!isState("STARTED"))
+     then
         rules.setDrools(drools);
         rules.println("RULE INIT AUTH_INIT: "+m);
- 		
+
  		/* Start init timer */
  		LocalDateTime start = LocalDateTime.now();
  		VertxUtils.putObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"), start);
  		rules.println("GOT TO HERE");
- 		
+
  		/* create startup service token */
- 		
+
          rules.setState("EVENT_AUTH_INIT");
         rules.setState("STARTED");
-
-        
         rules.footer();
-      		      
+
 end
