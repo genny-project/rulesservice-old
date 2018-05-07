@@ -3,9 +3,9 @@ import life.genny.rules.QRules;
 
 rule "Send Cmd View"
     when
-        rules: QRules( isState("SEND_CMD_VIEW") ) 
+        rules: QRules( isState("SEND_CMD_VIEW") )
      then
-        rules.header();    
+        rules.header();
 
         String cmdView = rules.getAsString("cmdView");
         String cmdViewRootCode = rules.getAsString("cmdViewRootCode");
@@ -22,5 +22,5 @@ rule "Send Cmd View"
         }
 
         rules.clearState("SEND_CMD_VIEW");
-	    rules.footer();     		      
+	    rules.footer();
 end

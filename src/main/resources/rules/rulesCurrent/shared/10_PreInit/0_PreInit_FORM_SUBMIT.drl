@@ -1,49 +1,20 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import life.genny.qwanda.message.QEventMessage;
-import io.vertx.core.json.JsonObject;
 
 rule "Pre Init FORM Submit"
 	no-loop true
 	ruleflow-group 'Init'
     when
-        m : QEventMessage( event_type == "FORM_SUBMIT" )
-        rules: QRules(!isState("STARTED")) 
+          m : QEventMessage( event_type == "FORM_SUBMIT" )
+          rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT FORM_SUBMIT: "+m);
         rules.setState("EVENT_FORM_SUBMIT");
         rules.setState("STARTED");
 
-        String quesCode = m.getData().getCode();
+  		drools.setFocus("FormSubmit");
         
-        String dataString = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(dataString);
-		
-        /* Get targetCode */		
-        String targetCode = dataJson.getString("targetCode");
-		rules.println("targetCode   ::   " + targetCode);
-
-        /* Get itemCode */		
-		String itemCode = dataJson.getString("itemCode");
-		rules.println("itemCode   ::   " + itemCode);
-
-        /* Get actionCode */		
-		String actionCode = dataJson.getString("action");
-		rules.println("actionCode   ::   " + actionCode);
-        
-        if(quesCode != null) {
- 	 		rules.setState(quesCode);
-		}
-        if(actionCode != null) {
-			rules.setState(actionCode);
-		}
-
-		if(targetCode != null) {
-			rules.set("quesTargetCode", targetCode);
-		}
-		if(itemCode != null) {
-			rules.set("itemCode", itemCode);
-		}
+      		      
 end

@@ -3,10 +3,10 @@ import life.genny.rules.QRules;
 
 rule "Update BaseEntity Attribute"
      when
-        rules: QRules( isState("UPDATE_BASEENTITY_ATTRIBUTE") ) 
+        rules: QRules( isState("UPDATE_BASEENTITY_ATTRIBUTE") )
      then
         rules.header();
-        
+
         String beSourceCode= rules.getAsString("beSourceCode");
         String beTargetCode= rules.getAsString("beTargetCode");
         String beAttributeCode= rules.getAsString("beAttributeCode");
@@ -30,6 +30,5 @@ rule "Update BaseEntity Attribute"
         }
 
         rules.clearState("UPDATE_BASEENTITY_ATTRIBUTE");
-	    rules.footer();     		      
+	    rules.footer();
 end
-     	
