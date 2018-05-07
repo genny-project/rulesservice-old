@@ -4,9 +4,9 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Subscribe Interns to GRP_AVAILABLE BEGs"
 	when
-		rules: QRules( 	isState("SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS") && 
+		rules: QRules( 	isState("SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS") &&
 						isState("PRI_IS_INTERN") &&
-						!isState("LOOP_SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS") ) 
+						!isState("LOOP_SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS") )
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBSCRIBE_INTERN_TO_GRP_AVAILABLE_BEGS");
@@ -18,7 +18,7 @@ rule "Subscribe Interns to GRP_AVAILABLE BEGs"
 			String[] recipents = rules.getSubscribers(beg.getCode());
 			rules.println("SUBSCRIBER of beg   ::   " + Arrays.toString(recipents));
 		}
-		
+
         rules.setState("SUBSCRIBED_INTERN_TO_GRP_AVAILABLE_BEGS");
-	 	rules.footer();      
+	 	rules.footer();
 end

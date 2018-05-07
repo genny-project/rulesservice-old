@@ -6,6 +6,7 @@ import life.genny.utils.VertxUtils;
 rule "Submit Internship - Step 7"	
 	when
 		rules: QRules( 	isState("MOVED_BEG_TO_AVAILABLE") && 
+						isState("PUBLISH_BEG_AND_KIDS") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP7") ) 
@@ -16,14 +17,24 @@ rule "Submit Internship - Step 7"
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		BaseEntity internship = rules.getAsBaseEntity("internshipBe");
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
-		
-		String[] begRecipients = VertxUtils.getSubscribers(rules.realm(), beg.getCode());
-		
-		rules.publishBaseEntityByCode(rules.getUser().getCode(), beg.getCode(), "LNK_BEG", begRecipients);
-		rules.publishBaseEntityByCode(company.getCode(), beg.getCode(), "LNK_BEG", begRecipients);
-		rules.publishBaseEntityByCode(internship.getCode(), beg.getCode(), "LNK_BEG", begRecipients);
-		rules.publishBaseEntityByCode(beg.getCode(), "GRP_AVAILABLE", "LNK_CORE", begRecipients);
-		
-		rules.setState("PUBLISHED_BEG_AND_KIDS");
+
+		if(beg == null){
+			rules.println("beg is null");			
+		}else if(internship == null){
+			rules.println("internship is null");
+		}else if(company == null){
+			rules.println("company is null");
+		}else{
+			String[] begSubscribers = VertxUtils.getSubscribers(rules.realm(), beg.getCode());
+			rules.println("BEG Subscribers   ::   " + Arrays.toString(begSubscribers));
+			
+			rules.publishBaseEntityByCode(rules.getUser().getCode(), beg.getCode(), "LNK_BEG", begSubscribers);
+			rules.publishBaseEntityByCode(company.getCode(), beg.getCode(), "LNK_BEG", begSubscribers);
+			rules.publishBaseEntityByCode(internship.getCode(), beg.getCode(), "LNK_BEG", begSubscribers);
+			rules.publishBaseEntityByCode(beg.getCode(), "GRP_AVAILABLE", "LNK_CORE", begSubscribers);
+			
+			rules.setState("PUBLISHED_BEG_AND_KIDS");
+			rules.setState("GO_TO_HOMEPAGE");
+		}
 	 	rules.footer();      
 end

@@ -5,17 +5,17 @@ import life.genny.utils.VertxUtils;
 /* Publish APPLICATION, INTERN BaseEntity To Bucket */
 rule "Submit Apply Internship - Step 6"
 	when
-		rules: QRules( 	isState("LINKED_APPLICATION_TO_INTERN") && 
-						isState("PUBLISH_APPLICATION_TO_BUCKET") && 
-						isState("CREATED_LINK") && 
-						isState("APPLICANT") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_INTERNSHIP_STEP6") ) 
+		rules: QRules( 	isState("LINKED_APPLICATION_TO_INTERN") &&
+						isState("PUBLISH_APPLICATION_TO_BUCKET") &&
+						isState("CREATED_LINK") &&
+						isState("APPLICANT") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP6") )
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP6");
-		
+
 		/* get application, beg from state map */
         BaseEntity application = rules.getAsBaseEntity("applicationBe");
         BaseEntity beg = rules.getAsBaseEntity("begBe");
@@ -28,9 +28,9 @@ rule "Submit Apply Internship - Step 6"
 			rules.publishBaseEntityByCode(beg.getCode(), "GRP_AVAILABLE", "LNK_BEG", applicationSubscribers);
 			rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", applicationSubscribers);
 			rules.publishBaseEntityByCode(intern.getCode(), application.getCode(), "LNK_APP", applicationSubscribers);
-			
+
 			rules.setState("PUBLISHED_APPLICATION_TO_BUCKET");
 			rules.setState("GO_TO_HOMEPAGE");
 		}
-	 	rules.footer();      
+	 	rules.footer();
 end
