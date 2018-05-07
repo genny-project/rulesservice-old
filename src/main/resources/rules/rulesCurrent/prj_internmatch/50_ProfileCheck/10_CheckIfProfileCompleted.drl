@@ -23,6 +23,8 @@ rule "Check if Profile Completed - Intermatch"
      	
 		Boolean isProfileCompleted = rules.getUser().getLoopValue("PRI_IS_PROFILE_COMPLETED", false);
 		
+		rules.println("PRI_IS_PROFILE_COMPLETED value   ::   " +  isProfileCompleted);
+		
 		if(isProfileCompleted == null || isProfileCompleted == false) {
    		 	rules.setState("PROFILE_NOT_COMPLETED");
    		}
