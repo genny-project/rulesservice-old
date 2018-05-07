@@ -7,17 +7,17 @@ rule "Send Cmd View"
      then
         rules.header();
 
-        String cmdView = rules.getAsString("cmdView");
+        String cmdViewType = rules.getAsString("cmdViewType");
         String cmdViewRootCode = rules.getAsString("cmdViewRootCode");
 
-        if(cmdView == null) {
-            rules.println("Send Cmd View :: missing cmdView");
+        if(cmdViewType == null) {
+            rules.println("Send Cmd View :: missing cmdViewType");
         }
         else if(cmdViewRootCode == null) {
             rules.println("Send Cmd View :: missing cmdViewRootCode");
         }
         else {
-			rules.sendViewCmd(cmdView, cmdViewRootCode);
+			rules.sendViewCmd(cmdViewType, cmdViewRootCode);
             rules.setState("SENT_CMD_VIEW");
         }
 
