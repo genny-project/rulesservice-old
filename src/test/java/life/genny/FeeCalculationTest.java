@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -136,7 +137,7 @@ public class FeeCalculationTest {
 	@Test
 	public void generatePasscodeTest() {
 		QRules rules = new QRules(null, null, null);
-		for(int i=0; i<= 100; i++) {
+		for(int i=0; i<= 10; i++) {
 		  System.out.println("The passcode is::"+rules.generateVerificationCode());
 
 		}
