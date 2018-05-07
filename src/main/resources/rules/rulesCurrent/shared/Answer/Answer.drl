@@ -10,10 +10,11 @@ rule "Answer"
 ruleflow-group 'Answer'
     when
         $m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-        rules: QRules( isState("STARTED") && !isState("ANSWER_PROCESSED"))
+        rules: QRules( 	isState("STARTED") && 
+						!isState("ANSWER_PROCESSED"))
     then    
         rules.header();
-        	 rules.setState("ANSWER_PROCESSED");
+		rules.setState("ANSWER_PROCESSED");
         Answer[] answers = $m.getItems();
         List<Answer> answersToSave = new ArrayList<Answer>();
         

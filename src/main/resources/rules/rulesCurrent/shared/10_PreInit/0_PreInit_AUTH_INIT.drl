@@ -7,9 +7,12 @@ import life.genny.qwanda.message.QEventMessage;
 
 rule "Pre Init"
 	no-loop true
+    ruleflow-group 'Init'
+    
     when
         m : QEventMessage( "AUTH_INIT" == data.code  )
-        rules: QRules( !isState("LOOP_PRE_INIT_EVT") )
+        rules: QRules(  !isState("LOOP_PRE_INIT_EVT") &&
+                        !isState("STARTED") )
      then   
         rules.setDrools(drools);
      	rules.header();
