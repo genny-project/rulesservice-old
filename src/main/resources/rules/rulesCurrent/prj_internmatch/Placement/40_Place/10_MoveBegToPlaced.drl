@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Move BEG from GRP_SHORTLISTED >>> GRP_PLACED  */
+rule "Place Intern - Step 1"
+	when
+		rules: QRules( 	isState("MOVE_BEG_TO_PLACED") && 
+						isState("PLACE_INTERN_READY") && 
+						isState("BTN_PLACE_INTERN") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_PLACE_INTERN_STEP1")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_PLACE_INTERN_STEP1");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+        if(beg != null){
+        	rules.moveBaseEntity(beg.getCode(), "GRP_OFFERED", "GRP_PLACED", "LNK_CORE");
+        	rules.setState("MOVED_BEG_TO_PLACED");
+
+		}else{
+			rules.println("beg is null");
+		}
+	 	rules.footer();      
+end

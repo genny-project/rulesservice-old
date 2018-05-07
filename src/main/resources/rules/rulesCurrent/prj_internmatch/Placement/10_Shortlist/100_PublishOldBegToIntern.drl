@@ -20,6 +20,7 @@ rule "Shortlist Internship - Step 10"
 		if(intern != null && oldBeg != null){
 			/* Intern is the recipient */
 			String[] oldBegRecipient= {intern.getCode()};
+			rules.println("oldBegRecipient   ::   " +  Arrays.toString(oldBegRecipient));
 
 			rules.publishBaseEntityByCode(oldBeg.getCode(), "GRP_AVAILABLE", "LNK_CORE", oldBegRecipient, true);
 	 		rules.setState("DELETED_OLD_BEG_FROM_INTERN");
