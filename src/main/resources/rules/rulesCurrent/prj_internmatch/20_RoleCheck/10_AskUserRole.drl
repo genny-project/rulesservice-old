@@ -4,16 +4,16 @@ import life.genny.rules.QRules;
 import life.genny.qwandautils.MergeUtil;
 
 rule "Ask User Role - Intermatch"
-    no-loop true
     when
-        rules: QRules( isState("ASK_USER_ROLE") && !isState("ASKED_USER_ROLE") )
+        rules: QRules( isState("ASK_USER_ROLE") && !isState("ASKED_USER_ROLE"))
      then
      	rules.header();
+     	rules.setState("ASK_USER_ROLE");
      	rules.setState("ASKED_USER_ROLE");
      	
      	rules.set("sublayoutcode", "LAY_ROLE_SELECTION");
      	rules.set("sublayoutpath", "registration/role_selection.json");
      	
 		rules.setState("SEND_SUBLAYOUT");
-    	    rules.footer();
+    	rules.footer();
 end

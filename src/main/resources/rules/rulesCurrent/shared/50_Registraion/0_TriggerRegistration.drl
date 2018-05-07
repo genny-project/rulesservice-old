@@ -10,7 +10,7 @@ rule "Trigger Registration"
      then
      	rules.header();
         rules.setState("LOOP_TRIGGER_REGISTRATION");
-    
+
         rules.setState("CREATE_NEW_USER");
-	    rules.footer();      		      
+	    rules.footer();
 end
