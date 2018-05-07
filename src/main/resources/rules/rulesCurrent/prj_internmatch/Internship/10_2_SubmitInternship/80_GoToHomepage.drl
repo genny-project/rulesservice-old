@@ -1,11 +1,11 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
 
 /* Redirect to HOMEPAGE */
 rule "Submit Internship - Step 8"	
 	when
-		rules: QRules( 	isState("GO_TO_HOMEPAGE") && 
-		 				isState("PUBLISHED_BEG_AND_KIDS") && 
+		rules: QRules( 	isState("PUBLISHED_BEG_AND_KIDS") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
 						!isState("LOOP_SUBMIT_INTERNSHIP_STEP8") ) 
