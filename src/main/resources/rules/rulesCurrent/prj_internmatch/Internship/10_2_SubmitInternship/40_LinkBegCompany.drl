@@ -4,13 +4,13 @@ import life.genny.rules.QRules;
 /* LINK BEG + CPY || COMPANY */
 rule "Submit Internship - Step 4"
 	when
-	    rules: QRules( 	isState("LINKED_BEG_TO_USER") && 
-						isState("CREATED_LINK") && 	
-						isState("CREATOR") && 	
-						isState("QUE_INTERNSHIP_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_SUBMIT_INTERNSHIP_STEP4")) 
+	    rules: QRules( 	isState("LINKED_BEG_TO_USER") &&
+						isState("CREATED_LINK") &&
+						isState("CREATOR") &&
+						isState("QUE_INTERNSHIP_GRP") &&
+						isState("EVENT_FORM_SUBMIT") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP4"))
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP4");
@@ -19,7 +19,7 @@ rule "Submit Internship - Step 4"
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
 
 		if(beg == null){
-			rules.println("beg not found");			
+			rules.println("beg not found");
 		}
 		else if(company == null){
 			rules.println("Company not found");

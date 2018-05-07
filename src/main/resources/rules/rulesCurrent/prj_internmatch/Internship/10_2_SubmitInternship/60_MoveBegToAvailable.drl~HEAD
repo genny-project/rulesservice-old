@@ -4,7 +4,8 @@ import life.genny.rules.QRules;
 /* Move BEG from GRP_DRAFTS >>> GRP_AVAILABLE  */
 rule "Submit Internship - Step 6"
 	when
-		rules: QRules( 	isState("SUBSCRIBED_TO_BEG") && 
+		rules: QRules( 	isState("SUBSCRIBED_ALL_INTERNS_TO_NEW_BEG") && 
+						isState("MOVE_BEG_TO_AVAILABLE") && 
 						isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
 						isState("SUBMIT") && 
@@ -16,9 +17,11 @@ rule "Submit Internship - Step 6"
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
         if(beg != null){
         	rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
+        	rules.setState("MOVED_BEG_TO_AVAILABLE");
+
+        	rules.setState("PUBLISH_BEG_AND_KIDS");
 		}else{
 			rules.println("beg is null");
 		}
-        rules.setState("MOVED_BEG_TO_AVAILABLE");
 	 	rules.footer();      
 end
