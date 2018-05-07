@@ -9,11 +9,10 @@ rule "Ask User Role - Intermatch"
      then
      	rules.header();
      	rules.setState("ASK_USER_ROLE");
+     	
+		rules.sendSublayout("ROLE_SELECTION","registration/role_selection.json", null, false);
+
      	rules.setState("ASKED_USER_ROLE");
-     	
-     	rules.set("sublayoutcode", "LAY_ROLE_SELECTION");
-     	rules.set("sublayoutpath", "registration/role_selection.json");
-     	
-		rules.setState("SEND_SUBLAYOUT");
+		
     	rules.footer();
 end
