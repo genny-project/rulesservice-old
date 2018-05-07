@@ -8,8 +8,9 @@ rule "Pre Init Auth Init"
     when
         m : QEventMessage( "AUTH_INIT" == data.code  )
         rules: QRules(!isState("STARTED")) 
-     then    
+     then       	  
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT AUTH_INIT: "+m);
  
         rules.setState("STARTED");
