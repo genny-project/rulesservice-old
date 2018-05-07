@@ -4,7 +4,9 @@ import life.genny.rules.QRules;
 
 rule "Check If Education Provider Profile Completion"
      when
-        rules: QRules(  isState("CHECK_INTERNMATCH_PROFILE") && !isState("LOOP_EDU_ROLE_CHECK") && isState("PRI_IS_EDU_PROVIDER")) 
+        rules: QRules(  isState("CHECK_INTERNMATCH_PROFILE") && 
+						isState("PRI_IS_EDU_PROVIDER") &&
+						!isState("LOOP_EDU_ROLE_CHECK") )
      then
         
         rules.header();

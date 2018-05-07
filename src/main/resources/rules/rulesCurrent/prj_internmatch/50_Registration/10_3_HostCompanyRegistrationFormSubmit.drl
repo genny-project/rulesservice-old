@@ -5,7 +5,8 @@ import life.genny.qwanda.message.QEventMessage;
 
 rule "Host Company Registration Form Submit"
 	when
-	    rules: QRules( isState("QUE_HOST_COMPANY_GRP") && !isState("LOOP_HOST_COMPANY_REGISTRATION_FORM")) 
+	    rules: QRules( 	isState("QUE_HOST_COMPANY_GRP") && 
+						!isState("LOOP_HOST_COMPANY_REGISTRATION_FORM")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_HOST_COMPANY_REGISTRATION_FORM");
