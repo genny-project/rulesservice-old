@@ -3709,7 +3709,7 @@ public class QRules {
 
 					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
 					// get all offers
-					List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
+					List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
 					println("All the Offers for the load " + begCode + " are: " + offers.toString());
 					for (BaseEntity be : offers) {
 						if (!(be.getCode().equals(offerCode))) {
