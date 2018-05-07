@@ -2,18 +2,23 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 rule "Ask Registration"
-    	no-loop true
     when
         rules: QRules(  isState("PROFILE_NOT_COMPLETED") && !isState("ASK_REGISTRATION")  )
      then 
  		rules.header();
  		
  		String userCode = rules.getUser().getCode();
- 		rules.setState("ASK_REGISTRATION");
+
+		String sourceCode = userCode;
+		String targetCode = userCode;
  		String questionGroupCode = rules.getAsString("registration_question_grp");
- 		if(questionGroupCode != null) {
- 			rules.askQuestions(userCode, userCode, questionGroupCode, false, false);
- 		}
- 		
+		Boolean isPopup = false;
+
+		rules.set("sourceCode", sourceCode);
+		rules.set("targetCode", targetCode);
+		rules.set("questionGroup", questionGroupCode);
+		rules.set("isPopup", isPopup);
+		
+		rules.setState("ASK_QUESTION");
  		rules.footer();
 end

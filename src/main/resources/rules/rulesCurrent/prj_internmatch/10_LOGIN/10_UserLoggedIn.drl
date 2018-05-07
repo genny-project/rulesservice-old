@@ -5,7 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "User Logs In"
     when
-         rules: QRules( isState("AUTH_INIT") && !isState("LOOP_USER_LOGGED_IN") ) 
+         rules: QRules( isState("AUTH_INIT") && !isState("LOOP_USER_LOGGED_IN") )
      then
      	rules.header();
 
@@ -14,5 +14,5 @@ rule "User Logs In"
         /* we send application data */
         rules.setState("SEND_INTERNMATCH_DATA");
 
-	    rules.footer();      		      
+	    rules.footer();
 end

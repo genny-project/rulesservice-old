@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Select Host Company Role"
 
 	when
-		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_SELECT_ROLE_HOST_COMPANY")
+		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_SELECT_ROLE_HOST_COMPANY")
 	    rules: QRules( isState("STARTED") && !isState("HOST_COMPANY_SELECTED") ) 
 	    
 	 then

@@ -4,9 +4,11 @@ import life.genny.rules.QRules;
 
 rule "Exit Profile check"
     when
-        rules: QRules(isState("PROFILE_CHECK_COMPLETED") && 
-                    !isState("DID_EXIT_ROLE_CHECK") ) 
-     then    
-        rules.setState("EXIT_PROFILE_CHECK");
-        rules.footer();    		      
+        rules: QRules( isState("PROFILE_CHECK_COMPLETED") && !isState("DID_EXIT_ROLE_CHECK") )
+     then
+
+        rules.setState("DID_EXIT_ROLE_CHECK");
+
+        rules.footer();
+
 end
