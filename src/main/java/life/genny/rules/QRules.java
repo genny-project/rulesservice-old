@@ -5874,22 +5874,29 @@ public class QRules {
 	}
 
 	public void sendHostCompanyApplicationData() {
-
+		String[] recipient = { getUser().getCode() };
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		println("rootKids   ::   " + rootKids);
+		List<BaseEntity> removeRootKids = new ArrayList<BaseEntity>();
+
+		/* Remove  GRP_DASHBOARD_EDU_PROVIDER from GRP_ROOT */
+		for (BaseEntity rootKid : rootKids) {
+			if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD_EDU_PROVIDER")) {
+				removeRootKids.add(rootKid);
+			}
+		}
+		rootKids.removeAll(removeRootKids);
 		publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
 
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
-		println("buckets   ::   " + buckets);
+		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();
 
-		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-
+		/* Remove  GRP_APPLIED from GRP_DASHBOARD */
 		for (BaseEntity bucket : buckets) {
 			if (bucket.getCode().equalsIgnoreCase("GRP_APPLIED")) {
-				toRemove.add(bucket);
+				removeBuckets.add(bucket);
 			}
 		}
-		buckets.removeAll(toRemove);
+		buckets.removeAll(removeBuckets);
 		publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
 
 
@@ -5949,10 +5956,23 @@ public class QRules {
 			println("0. edu Provider is null");
 		}else{
 			println("1. eduProvider code   ::   " + eduProvider.getCode());
+			String[] recipient = { getUser().getCode() };
+
+			/* SEND ROOT BaseEntity */
+			publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
 
 			List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 			println("2. rootKids   ::   " + rootKids);
+
+			List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
+			for (BaseEntity rootKid : rootKids) {
+				if (rootKid.getCode().equalsIgnoreCase("GRP_DASHBOARD")) {
+					toRemove.add(rootKid);
+				}
+			}
+			rootKids.removeAll(toRemove);
 			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+
 
 			List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", 0, 20, false);
 			println("3. buckets   ::   " + buckets);
