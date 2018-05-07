@@ -26,7 +26,7 @@ rule "Offer Intern - Step 0"
 			rules.set("applicationBe", application);
 
 			BaseEntity creator = rules.getChildren(beg.getCode(), "LNK_BEG", "CREATOR");
-			BaseEntity hostCompany = rules.getChildren(beg.getCode(), "LNK_BEG", "HOSTCOMPANY");
+			BaseEntity hostCompany = rules.getChildren(beg.getCode(), "LNK_BEG", "COMPANY");
 			BaseEntity internship = rules.getChildren(beg.getCode(), "LNK_BEG", "INTERNSHIP");
 			BaseEntity intern = rules.getChildren(application.getCode(), "LNK_APP", "APPLICANT");
 

@@ -23,9 +23,6 @@ rule "Ask Registration - Host Company - STEP 2"
 			String questionSourceCode = rules.getUser().getCode();
 			String questionTargetCode = company.getCode();
 
-			/* send registration selection data */
-     		rules.sendSelections("GRP_HOST_COMPANYS", "LNK_CORE", 20);
-			
 			/* send question group for host company */
 			rules.set("questionSourceCode", questionSourceCode);
 			rules.set("questionTargetCode", questionTargetCode);	

@@ -4,9 +4,9 @@ import life.genny.rules.QRules;
 /* Set BEG \ APP \ INTERN To Map */
 rule "Place Intern - Step 0"
 	when
-		rules: QRules( 	isState("BTN_PLACE_INTERN") && 
-						isState("EVENT_BTN_CLICK") && 
-						!isState("LOOP_PLACE_INTERN_STEP0") ) 
+		rules: QRules( 	isState("BTN_PLACE_INTERN") &&
+						isState("EVENT_BTN_CLICK") &&
+						!isState("LOOP_PLACE_INTERN_STEP0") )
 	 then
 	 	rules.header();
         rules.setState("LOOP_PLACE_INTERN_STEP0");
@@ -21,7 +21,7 @@ rule "Place Intern - Step 0"
         }else{
 			BaseEntity beg = rules.getBaseEntityByCode(begCode);
 			rules.set("begBe", beg);
-			
+
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			rules.set("applicationBe", application);
 
@@ -33,19 +33,19 @@ rule "Place Intern - Step 0"
 			if (creator == null) {
             	rules.println("Creator of oldBeg is null");
 				return;
-			} 
+			}
 			if (hostCompany == null) {
             	rules.println("Host Company of oldBeg is null");
 				return;
-			} 
+			}
 			if (internship == null) {
             	rules.println("Internship is null");
 				return;
-			} 
+			}
 			if (intern == null) {
             	rules.println("Intern is null");
 				return;
-			} 
+			}
 
             rules.println("beg   ::   " + beg);
             rules.println("application   ::   " + application);
@@ -53,14 +53,14 @@ rule "Place Intern - Step 0"
             rules.println("hostCompany   ::   " + hostCompany);
             rules.println("internship   ::   " + internship);
             rules.println("intern   ::   " + intern);
-			
+
 			rules.set("creatorBe", creator);
 			rules.set("companyBe", hostCompany);
 			rules.set("internshipBe", internship);
 			rules.set("internBe", intern );
-			
-			rules.setState("PLACE_INTERN_READY");            
+
+			rules.setState("PLACE_INTERN_READY");
 			rules.setState("MOVE_BEG_TO_PLACED");
         }
-	 	rules.footer();      
+	 	rules.footer();
 end

@@ -16,8 +16,8 @@ rule "Selected Host Company Role"
      	rules.sendSelections("GRP_COMPANY_SELECTION", "LNK_CORE", 10);
 
         /* Add Host Company to GRP_HOST_COMPANYS */
-    	rules.setState("TRIGGER_ADD_TO_GROUP");
-    	rules.setState("TRIGGER_PROFILE_CHECK");
+/*     	rules.setState("TRIGGER_ADD_TO_GROUP");
+ */    	rules.setState("TRIGGER_PROFILE_CHECK");
 		
 		rules.footer();     		      
 end

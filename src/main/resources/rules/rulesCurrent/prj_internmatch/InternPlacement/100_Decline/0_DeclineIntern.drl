@@ -4,9 +4,9 @@
 // /* Set BEG \ APP \ INTERN To Map */
 // rule "Decline Intern - Step 0"
 // 	when
-// 		rules: QRules( 	isState("BTN_DECLINE_INTERN") && 
-// 						isState("EVENT_BTN_CLICK") && 
-// 						!isState("LOOP_DECLINE_INTERN_STEP0") ) 
+// 		rules: QRules( 	isState("BTN_DECLINE_INTERN") &&
+// 						isState("EVENT_BTN_CLICK") &&
+// 						!isState("LOOP_DECLINE_INTERN_STEP0") )
 // 	 then
 // 	 	rules.header();
 //         rules.setState("LOOP_DECLINE_INTERN_STEP0");
@@ -21,7 +21,7 @@
 //         }else{
 // 			BaseEntity beg = rules.getBaseEntityByCode(begCode);
 // 			rules.set("begBe", beg);
-			
+
 // 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 // 			rules.set("applicationBe", application);
 
@@ -33,19 +33,19 @@
 // 			if (creator == null) {
 //             	rules.println("Creator of oldBeg is null");
 // 				return;
-// 			} 
+// 			}
 // 			if (hostCompany == null) {
 //             	rules.println("Host Company of oldBeg is null");
 // 				return;
-// 			} 
+// 			}
 // 			if (internship == null) {
 //             	rules.println("Internship is null");
 // 				return;
-// 			} 
+// 			}
 // 			if (intern == null) {
 //             	rules.println("Intern is null");
 // 				return;
-// 			} 
+// 			}
 
 //             rules.println("beg   ::   " + beg);
 //             rules.println("application   ::   " + application);
@@ -53,14 +53,14 @@
 //             rules.println("hostCompany   ::   " + hostCompany);
 //             rules.println("internship   ::   " + internship);
 //             rules.println("intern   ::   " + intern);
-			
+
 // 			rules.set("creatorBe", creator);
 // 			rules.set("companyBe", hostCompany);
 // 			rules.set("internshipBe", internship);
 // 			rules.set("internBe", intern );
-			
-// 			rules.setState("DECLINE_INTERN_READY");            
+
+// 			rules.setState("DECLINE_INTERN_READY");
 // 			rules.setState("MOVE_BEG_TO_DECLINE");
 //         }
-// 	 	rules.footer();      
+// 	 	rules.footer();
 // end

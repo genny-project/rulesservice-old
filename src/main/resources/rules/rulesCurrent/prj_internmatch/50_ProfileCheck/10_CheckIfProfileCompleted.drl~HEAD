@@ -15,13 +15,15 @@ rule "Check if Profile Completed - Intermatch"
 		
         rules: QRules( isUserPresent() == true && 
 					   isState("CHECK_USER_PROFILE_COMPLETED") &&
-					   !isState("PROFILE_CHECK_COMPLETED") )
+					   !isState("LOOP_CHECK_USER_PROFILE_COMPLETED") )
      then
      	rules.header();
      	
-     	rules.setState("PROFILE_CHECK_COMPLETED");
+     	rules.setState("LOOP_CHECK_USER_PROFILE_COMPLETED");
      	
 		Boolean isProfileCompleted = rules.getUser().getLoopValue("PRI_IS_PROFILE_COMPLETED", false);
+		
+		rules.println("PRI_IS_PROFILE_COMPLETED value   ::   " +  isProfileCompleted);
 		
 		if(isProfileCompleted == null || isProfileCompleted == false) {
    		 	rules.setState("PROFILE_NOT_COMPLETED");
@@ -29,6 +31,5 @@ rule "Check if Profile Completed - Intermatch"
    		else {
    		   	rules.setState("PROFILE_IS_COMPLETED");
    		}
-
     	rules.footer();
 end

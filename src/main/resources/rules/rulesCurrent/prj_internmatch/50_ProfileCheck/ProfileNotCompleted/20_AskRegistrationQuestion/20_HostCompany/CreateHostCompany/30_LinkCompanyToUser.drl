@@ -11,14 +11,14 @@ rule "Create Host Company - STEP 3"
         				isState("HOST_COMPANY_DOESNT_EXISTS") &&
         				isState("CREATED_LINK") &&
         				isState("HOSTCOMPANY") &&
-						!isState("LOOP_CREATE_HOST_COMPANY_STEP3") ) 
-     then 
+						!isState("LOOP_CREATE_HOST_COMPANY_STEP3") )
+     then
  		rules.header();
 		rules.setState("LOOP_CREATE_HOST_COMPANY_STEP3");
 
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
         if(company != null){
-		
+
 			/* link HOST_COMPANY to USER */
 			rules.set("linkSourceCode", company.getCode());
 			rules.set("linkTargetCode", rules.getUser().getCode());

@@ -13,7 +13,7 @@ rule "Add To Edu Provider Group"
      	/* link EDU_PROVIDER to GRP_EDU_PROVIDERS */
         rules.set("linkSourceCode",  "GRP_EDU_PROVIDERS");
         rules.set("linkTargetCode", rules.getUser().getCode());
-        rules.set("linkCode", "LNK_EDU");
+        rules.set("linkCode", "LNK_EDUPROVIDER");
         rules.set("linkValue", "EDU_PROVIDER");
         rules.set("linkWeight", 1.0);
         rules.setState("CREATE_LINK");
