@@ -6,8 +6,8 @@ rule "Pre Init EVT_TV_SELECT"
     no-loop true
 	ruleflow-group 'Init'
     when
-          m : QEventMessage( event_type == "TV_SELECT") 
-          rules: QRules(!isState("STARTED")) 
+        m : QEventMessage( event_type == "TV_SELECT") 
+        rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT TV_SELECT: "+m);
