@@ -7,8 +7,7 @@ rule "Select Education Provider Role"
 
 	when
 		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_SELECT_ROLE_EDU_PROVIDER")
-	    rules: QRules( isState("STARTED") && !isState("EDU_PROVIDER_SELECTED") ) 
-	    
+	    rules: QRules( isState("STARTED") && !isState("EDU_PROVIDER_SELECTED") )   
 	 then
 	    rules.header();
 		rules.setState("HAS_SENT_SUBLAYOUT");
