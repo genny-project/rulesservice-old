@@ -5,13 +5,11 @@ import life.genny.qwanda.entity.BaseEntity;
 import io.vertx.core.json.JsonObject;
 
 import life.genny.qwanda.Answer;
-
 rule "Create New User"
-	no-loop true
-	salience 899
-	ruleflow-group 'Registration'
     when
-        rules: QRules( isState("NEW_REGISTRATION") && (isState("TRIGGER_REGISTRATION")) && (!isState("NEW_USER_CREATED")))
+        rules: QRules( isState("NEW_REGISTRATION") &&
+						isState("TRIGGER_REGISTRATION") &&
+						!isState("NEW_USER_CREATED") )
       then
      	rules.header();
 
@@ -33,14 +31,14 @@ rule "Create New User"
 					String message = be.getName() + " just signed up";
 					JsonObject payload = new JsonObject();
 					payload.put("text", message);
-					
+
 					rules.sendSlackNotification(webhookURL, payload);
 				}
 			}
 		}
-		
+
 		List<Answer> answers = new ArrayList<Answer>();
-		
+
 	   /*  saving user registration date time  */
 		answers.add(new Answer(be.getCode(), be.getCode(), "PRI_REGISTRATION_DATETIME", QwandaUtils.getZonedCurrentLocalDateTime()) );
 
@@ -51,7 +49,7 @@ rule "Create New User"
         rules.println("Updating User attribute PRI_IS_PROFILE_COMPLETED");
         answers.add(new Answer(be.getCode(), be.getCode(), "PRI_IS_PROFILE_COMPLETED", "FALSE") );
         rules.saveAnswers(answers);
-        
+
      	rules.setState("NEW_USER_CREATED");
         rules.println("The user created is  ::  " + be.toString() );
 
