@@ -1,0 +1,52 @@
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.RulesUtils;
+import java.util.HashMap;
+
+
+rule "Geofence Enter Pickup Point"
+	when
+	  $m : QEventMessage( event_type == "GEOFENCE_ENTER" && data.code.contains("PICKUP"))
+	  rules: QRules()
+	then
+    
+		RulesUtils.header(drools.getRule().getName());
+  
+		String begCode = $m.data.getCode();
+		String action = $m.data.getValue();
+			
+		RulesUtils.println("---- ACTION ----");
+		RulesUtils.println("ARRIVED AT PICKUP POINT");
+		
+		List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+		String ownerCode = null;
+		String loadCode = null;
+		     
+		for(Link link : linkList) {
+		   if(link.getLinkValue().equals("OWNER")) {
+		     	ownerCode = link.getTargetCode();
+		   }
+		   
+		   if(link.getLinkValue().equals("LOAD")) {
+		   		loadCode = link.getTargetCode();
+		   }
+		}
+		
+		String[] recipients = new String[1];
+		recipients[0] = ownerCode;
+		
+		HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("JOB", begCode);
+		contextMap.put("DRIVER", rules.getUser().getCode());
+		contextMap.put("LOAD", loadCode);
+		
+		
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "TOAST");
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "SMS");
+		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_PICKUP", "EMAIL");
+
+		RulesUtils.footer(drools.getRule().getName());
+
+end

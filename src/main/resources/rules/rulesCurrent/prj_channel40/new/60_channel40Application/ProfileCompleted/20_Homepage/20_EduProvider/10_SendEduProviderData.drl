@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Home Page - Send Data - EDU PROVIDER"
+     when
+        rules: QRules(  isState("HOME_PAGE_SEND_DATA") && 
+                        isState("PRI_IS_EDU_PROVIDER") &&
+                        !isState("LOOP_HOME_PAGE_SEND_DATA") ) 
+     then      
+        rules.header();
+        rules.setState("LOOP_HOME_PAGE_SEND_DATA");
+        
+        String[] recipientArray = new String[1];
+		recipientArray[0] = rules.getUser().getCode();
+
+        rules.publishBaseEntityByCode("GRP_DASHBOARD_EDU_PROVIDER", "GRP_ROOT", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_INTERNS", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_APPLIED", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_SHORTLISTED", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_INTERVIEWS", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_OFFERED", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_PLACED", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+        rules.publishBaseEntityByCode("GRP_IN_PROGRESS", "GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", recipientArray);
+
+        rules.setState("HOME_PAGE_SENT_DATA");
+		rules.footer();     		      
+end
+     	

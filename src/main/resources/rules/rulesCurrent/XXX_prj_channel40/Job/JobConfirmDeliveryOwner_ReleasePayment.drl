@@ -19,7 +19,7 @@ when
         $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_DELIVERY_OWNER")
   		rules: QRules( !isState("CONFIRMED_DELIVERY_OWNER") && !isState("PAYMENT_RELEASED") )
 then
-       rules.header();       
+       rules.header();
 
         rules.println("Release Payment process started");
 		/*rules.setState("PAYMENT_DONE");*/
@@ -53,7 +53,7 @@ then
        }else{
 
   		if(begCode != null && assemblyId != null) {
-  		
+
   			BaseEntity begBe = rules.getBaseEntityByCode(begCode);
 		     /* Boolean isPaymentReleaseSuccess = PaymentUtils.releasePayment(begCode, assemblyAuthKey, rules.getToken()); */
 		     PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
@@ -72,20 +72,20 @@ then
 		     if(isPaymentReleaseSuccess) {
 
 		    	 	if(ownerCode != null && driverCode != null) {
-		    	 	
+
 		    	 	Map<String, String> releasePaymentResponseMap = releasePaymentResponse.getResponseMap();
 		    	 	List<Answer> answers = new ArrayList<Answer>();
 
 		    	 	 /*    Adding Release Payment Done status  */
        	           Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
        	           answers.add(paymentDoneAns);
-       	           
+
        	           /* save single-disbursement-id as an anwer for the beg once the payment is release */
        	           if(releasePaymentResponseMap != null) {
        	           	Answer releasePaymentDisbursementAns = new Answer(rules.getUser().getCode(), begCode, "PRI_PAYMENTS_DISBURSEMENT_ID", releasePaymentResponseMap.get("disbursementId").toString() );
        	           	answers.add(releasePaymentDisbursementAns);
        	           }
-       	           
+
        	           rules.saveAnswers(answers);
        	             /* rules.saveAnswer(paymentDoneAns); */
 
@@ -93,7 +93,7 @@ then
 
 		     		/* we mark the job as marked */
           			//rules.moveBaseEntity(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE");
-          			rules.moveBaseEntitySetLinkValue(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");  
+          			rules.moveBaseEntitySetLinkValue(begCode, "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
           			/* redirecting user to bucket */
           			/*rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");*/

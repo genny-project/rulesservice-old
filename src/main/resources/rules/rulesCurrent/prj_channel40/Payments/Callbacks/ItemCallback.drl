@@ -18,19 +18,19 @@
 			rules.println("item id fr callback ::"+m.getObjectId());
 			rules.println("item object status ::"+m.getObject_status());
 			rules.println("item callback status ::"+m.getObject_message());
-			
+
 			BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
-			
+
 			/* This variable is for checking if callback is an existing/new callback status */
 			Boolean isUpdateAction = false;
-			
+
 			BaseEntity owner = null;
 			BaseEntity driver = null;
 			BaseEntity load = null;
 			String offerCode = null;
 
 			if(begBe != null) {
-			
+
 				offerCode = begBe.getValue("STT_HOT_OFFER", null);
 
 				/* This attribute contains all call-back logs from assembly */
@@ -47,7 +47,7 @@
 				paymentStatusObj.put("statusUpdatedDateTime", rules.getCurrentLocalDateTime());
 				paymentStatusObj.put("assemblyMessage", m.getObject_message());
 
-				
+
 				/* If beg already has itemcallback logs, use the existing attribute */
 				if(currentPaymentStatusString != null) {
 
@@ -61,7 +61,7 @@
 
 						Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
 
-		           	 	rules.saveAnswer(paymentStatusAnswer);						
+		           	 	rules.saveAnswer(paymentStatusAnswer);
 		            		isUpdateAction = true;
 
 
@@ -73,7 +73,7 @@
 
 				}
 				else {
-				
+
 					/* if callbacks for an item is coming through for the first time, initialize and save the attribute as an array of callback logs */
 					rules.println("Payment method string ::"+paymentStatusObj.toString());
 
@@ -92,7 +92,7 @@
 
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();
-			     	
+
 			     	String[] messageDriverRecipient = new String[1];
 			     	messageDriverRecipient[0] = driver.getCode();
 
@@ -131,7 +131,7 @@
 
 						/* ITEM_PAYMENT_HELD -  Payment held because of KYC information/Fraud */
 						/* Toast sent */
-						
+
 		            		HashMap<String, String> contextMap = new HashMap<String, String>();
 						contextMap.put("DRIVER", driver.getCode());
 						contextMap.put("JOB", begBe.getCode());
@@ -154,7 +154,7 @@
 		            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
 		            		/* ITEM_PAYMENT_INCOMING - make payment is done, but money transaction still getting processed */
 						/* status is saved in DB */
-						
+
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment incoming from Owner");
 						rules.saveAnswer(paymentStatus);
 

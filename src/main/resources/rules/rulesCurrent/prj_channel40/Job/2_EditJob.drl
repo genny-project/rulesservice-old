@@ -1,0 +1,53 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import java.util.HashMap;
+import java.util.List;
+
+
+rule "Edit Jobs"
+     when
+       $m : QEventMessage( event_type == "BTN_CLICK" && data.getCode().startsWith("BEG_") )
+      rules: QRules( isState("EVENT_BTN_CLICK") )
+     then
+
+     rules.header();
+
+     drools.setFocus("CreateLoad");
+
+     String jobCode = $m.getData().getCode();
+
+     rules.publishCmd(rules.getBaseEntityByCode(jobCode),"job");
+
+    /*  Get load for the given job/BEG   */
+      BaseEntity load = rules.getChildren(jobCode, "LNK_BEG", "LOAD");
+     rules.publishCmd(load, "load");
+
+    /*    Getting Post Load Question GRP        */
+     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
+     qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
+     qPostLoad.put("aliasCode", $m.data.getCode());
+     qPostLoad.put("token", rules.getToken());
+     rules.println("QName Json: "+qPostLoad.toString());
+     rules.publish("cmds",qPostLoad);
+
+     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
+     qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
+     qPostJob.put("token", rules.getToken());
+     rules.println("QName Json: "+qPostJob.toString());
+     rules.publish("cmds",qPostJob);
+
+    /*    Sending cmd SUBLAYOUT_CHANGE      */
+     QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
+     JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
+     String createJobLayout = RulesUtils.getLayout(rules.realm() + "/create_job.json");
+       cmdJobSublayoutJson.put("items",createJobLayout);
+       cmdJobSublayoutJson.put("token", rules.getToken());
+      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
+
+    /*  Publish it to the EventBus   */
+      rules.publish("cmds", cmdJobSublayoutJson);
+
+     rules.footer();
+end

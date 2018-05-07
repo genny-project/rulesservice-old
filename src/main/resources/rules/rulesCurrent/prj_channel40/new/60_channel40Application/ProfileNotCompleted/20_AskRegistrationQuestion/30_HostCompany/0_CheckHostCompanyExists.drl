@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Check if Host Company BaseEntity exists ? */
+rule "Ask Registration - Host Company - STEP 0"
+     when
+		rules: QRules(  isState("PRI_IS_HOST_COMPANY") &&
+                        isState("PROFILE_NOT_COMPLETED") && 
+                        isState("SENT_REGISTRATION_DATA") &&
+						!isState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP0") )
+
+     then
+        rules.header();
+		rules.setState("LOOP_ASK_REGISTRATION_HOST_COMPANY_STEP0");
+     	
+		BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+        if(company != null){
+            Boolean result = rules.checkIfLinkExists(company.getCode(), "LNK_STAFF", rules.getUser().getCode());
+            if(result){
+                rules.setState("HOST_COMPANY_EXISTS");
+                rules.setState("SEND_USER_QUESTION");
+                rules.set("companyBe", company);
+            }
+        }else{
+            rules.println("company is null");
+            rules.setState("HOST_COMPANY_DOESNT_EXISTS");
+            rules.setState("TRIGGER_CREATE_HOST_COMPANY");
+        }
+	    rules.footer();     		      
+end

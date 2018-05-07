@@ -1,0 +1,106 @@
+
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdRedirectMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwandautils.JsonUtils;
+
+rule "TV_SELECT Event"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT"  && data.value != "GRP_MESSAGES")
+       rules: QRules()
+     then
+
+     rules.header();
+
+        /* TODO: refactor this. */
+       	String grpCode = $m.getData().getValue();
+        if(!grpCode.equals("GRP_MESSAGES") && grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") && !grpCode.equals("GRP_ADMIN_USERS") && !grpCode.equals("GRP_ADMIN_JOBS")
+             && !grpCode.equals("GRP_REPORTS")
+             && !grpCode.equals("GRP_REPORTS_ADMIN")  
+              && !grpCode.equals("GRP_REPORTS_USER")  
+              && !grpCode.equals("GRP_REPORTS_DRIVER")   
+              && !grpCode.equals("GRP_REPORTS_OWNER") 
+              ) {
+
+	        if( grpCode.equals("GRP_DASHBOARD") ) {
+	             rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", grpCode);
+	              rules.setLastLayout( "BUCKET_DASHBOARD", grpCode );
+	         }
+	        else {
+
+		        	/* sending cmd LIST_VIEW */
+		    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW", "LIST_VIEW");
+		    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+		    	     bucketViewJson.put("root", grpCode);
+		    	     bucketViewJson.put("token", rules.getToken());
+		    	     rules.publish("cmds",bucketViewJson);
+		    	     
+		    	     rules.setLastLayout( "LIST_VIEW", grpCode );
+		    	     rules.println( rules.getLastLayout() );
+	        }
+        }
+        else {
+
+        		if(grpCode.equals("GRP_ADMIN_USERS")) {
+
+        			rules.showLoading("Getting list of users...");
+
+        			 /* we send the list of users */
+        			List<BaseEntity> totalList = new ArrayList<BaseEntity>();
+        			List<BaseEntity> people = rules.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE","LNK_CORE", 0, 100, false) ;
+        			totalList.addAll(people);
+
+        			List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode("GRP_USERS","LNK_CORE", 0, 100, false) ;
+        			totalList.addAll(users);
+
+        			rules.publishCmd(totalList, grpCode, "LNK_CORE");
+
+                    /* we send the search form */
+                    rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_USERS_SEARCH", true);
+
+        			/* send list users layout */
+        			rules.sendSublayout("admin-user-list", "admin_users_channel40.json");
+
+        		}
+        		else if(grpCode.equals("GRP_ADMIN_JOBS")) {
+
+        			rules.showLoading("Getting list of jobs...");
+
+        			/* we send the list of jobs */
+        			List<BaseEntity> totalList = new ArrayList<BaseEntity>();
+        			List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 100, false) ;
+
+        			for (BaseEntity bucket : buckets )
+        	     	{
+        	     		List<BaseEntity> bucketBegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
+        	     		totalList.addAll(bucketBegs);
+        	     	}
+
+        			rules.publishCmd(totalList, grpCode, "LNK_CORE");
+
+                    /* we send the search form */
+                    rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_JOBS_SEARCH", true);
+
+                    /* send list jobs layout */
+        			rules.sendSublayout("admin-user-list", "admin_jobs_channel40.json");
+
+        		}
+
+    			/* if(sendTable) {
+
+    	   			 QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
+    	   	    	 JsonObject bucketViewJson = JsonObject.mapFrom(cmdBucketView);
+    	   	    	 bucketViewJson.put("root", grpCode);
+    	   	    	 bucketViewJson.put("token", rules.getToken());
+    	   	    	 rules.publish("cmds", bucketViewJson);
+    			} */
+        }
+
+     rules.footer();
+end

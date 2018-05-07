@@ -1,0 +1,150 @@
+package life.genny.rules;
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import java.lang.Double;
+import java.lang.String;
+import java.math.BigDecimal;
+import org.javamoney.moneta.Money;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+import org.json.simple.JSONObject;
+import java.util.ArrayList;
+import life.genny.qwandautils.JsonUtils;
+
+rule "Calculate Price for Owner"
+when
+$m: QEventAttributeValueChangeMessage(  (data.code == "PRI_OFFER_OWNER_PRICE_INC_GST"  && getAnswer().getTargetCode().startsWith("OFR_")) ||
+(data.code == "PRI_OWNER_PRICE_INC_GST"  && getAnswer().getTargetCode().startsWith("BEG_")) )
+rules : QRules ( isState("STARTED") && !isState("CALCULATE_OWNER_PRICE") )
+then
+rules.header();
+rules.setState("CALCULATE_OWNER_PRICE");
+
+       Answer newAnswer = $m.getAnswer();
+        BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
+ 
+if(source.is("PRI_OWNER")) {
+
+    String tokenString = rules.getToken();
+
+    rules.println("Am i owner ?" + source.is("PRI_OWNER"));
+    /* BaseEntity Code */
+    String begCode = newAnswer.getTargetCode();
+
+    /* Get JSON */
+    JSONObject moneyJson = JsonUtils.fromJson(newAnswer.getValue(), JSONObject.class);
+    /* Get amount and currency */
+    String amount = QwandaUtils.getAmountAsString(newAnswer.getValue());
+    String currency = QwandaUtils.getCurrencyAsString(newAnswer.getValue());
+    /* Generate CURRENCY and amount in Double */
+    Double amountValue = null;
+    if(amount.equals("")){
+        amountValue = 0.0;
+    }else {
+        amountValue = Double.parseDouble(amount);
+    }
+
+    CurrencyUnit DEFAULT_CURRENCY = Monetary.getCurrency(currency);
+    /* Generate price in Money Type */
+    Money answerPrice = Money.of(amountValue, DEFAULT_CURRENCY);
+    /* check if it's an OFFER or BEG */
+    Boolean isOffer = newAnswer.getTargetCode().startsWith("OFR_");
+    /* Price attributeCode and Other price atrributeCode generation */
+    String ownerPriceIncGstCode = null;
+    String ownerPriceExcGstCode = null;
+    String driverPriceIncGstCode = null;
+    String driverPriceExcGstCode = null;
+    String feePriceIncGstCode = null;
+    String feePriceExcGstCode = null;
+    if(isOffer) {
+        ownerPriceIncGstCode = "PRI_OFFER_OWNER_PRICE_INC_GST";
+        ownerPriceExcGstCode = "PRI_OFFER_OWNER_PRICE_EXC_GST";
+        driverPriceIncGstCode = "PRI_OFFER_DRIVER_PRICE_INC_GST";
+        driverPriceExcGstCode = "PRI_OFFER_DRIVER_PRICE_EXC_GST";
+        feePriceIncGstCode = "PRI_OFFER_FEE_INC_GST";
+        feePriceExcGstCode = "PRI_OFFER_FEE_EXC_GST";
+    }else {
+        ownerPriceIncGstCode = "PRI_OWNER_PRICE_INC_GST";
+        ownerPriceExcGstCode = "PRI_OWNER_PRICE_EXC_GST";
+        driverPriceIncGstCode = "PRI_DRIVER_PRICE_INC_GST";
+        driverPriceExcGstCode = "PRI_DRIVER_PRICE_EXC_GST";
+        feePriceIncGstCode = "PRI_FEE_INC_GST";
+        feePriceExcGstCode = "PRI_FEE_EXC_GST";
+    }
+
+    Money ownerPriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+    Money ownerPriceIncGST = Money.of(0, DEFAULT_CURRENCY);
+    Money driverPriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+    Money driverPriceIncGST = Money.of(0, DEFAULT_CURRENCY);
+    Money fees = Money.of(0, DEFAULT_CURRENCY);
+    Money feePriceExcGST = Money.of(0, DEFAULT_CURRENCY);
+    Money feePriceIncGST = Money.of(0, DEFAULT_CURRENCY);
+    /* Get userRole */
+    String userRole = null;
+    if(isOffer) {
+        String offerCode = newAnswer.getTargetCode();
+        BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+        rules.println(" offerCode BE "+ offerCode);
+        
+        /* userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);  */
+        
+        /* Next action has to be performed by the other party */
+        userRole = offerBe.getValue("PRI_NEXT_ACTION", null);
+        
+    }
+    rules.println("targetCode   ::   " + newAnswer.getTargetCode() );
+    rules.println("userRole     ::    " + userRole );
+    
+    /* Check if the amount is  not null or not negative */
+    if( amountValue != null && amountValue >= 0){
+		if( newAnswer.getTargetCode().startsWith("BEG_") || ( isOffer && userRole != null && userRole.equals("OWNER")) ) {
+		    
+		    /* Owner Fees */
+		   	fees = rules.calcOwnerFee(answerPrice);       
+   			if(answerPrice.compareTo(Money.of(300, DEFAULT_CURRENCY)) > 0) {
+				if(fees.compareTo(Money.of(100, DEFAULT_CURRENCY)) < 0) {
+			     	fees = Money.of(100, DEFAULT_CURRENCY);
+			     }
+  			}
+
+            feePriceExcGST = fees;
+            feePriceIncGST = rules.includeGSTMoney(feePriceExcGST);
+            
+            ownerPriceIncGST = answerPrice;
+            ownerPriceExcGST = rules.excludeGSTMoney(ownerPriceIncGST);
+            driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST);
+            driverPriceExcGST = ownerPriceExcGST.subtract(feePriceExcGST);
+            rules.println("=======================================================================================================");
+            rules.println("OWNER quoting      ::   ");
+            rules.println("targetCode         ::   " +newAnswer.getTargetCode() );
+            rules.println("ownerPriceExcGST   ::   " + ownerPriceExcGST.getNumber().doubleValue());
+            rules.println("ownerPriceIncGST   ::   " + ownerPriceIncGST.getNumber().doubleValue());
+            rules.println("driverPriceIncGST  ::   " + driverPriceIncGST.getNumber().doubleValue());
+            rules.println("driverPriceExcGST  ::   " + driverPriceExcGST.getNumber().doubleValue());
+            rules.println("=======================================================================================================");
+
+
+            /* Save PRICES as Answer */
+            List<Answer> answers = new ArrayList<Answer>();
+            
+            Answer owIncGST = new Answer(rules.getUser().getCode(), begCode, ownerPriceIncGstCode, JsonUtils.toJson(ownerPriceIncGST));
+            owIncGST.setChangeEvent(false);
+            
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, ownerPriceExcGstCode, JsonUtils.toJson(ownerPriceExcGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceIncGstCode, JsonUtils.toJson(driverPriceIncGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceExcGstCode, JsonUtils.toJson(driverPriceExcGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceIncGstCode, JsonUtils.toJson(feePriceIncGST)));
+            answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceExcGstCode, JsonUtils.toJson(feePriceExcGST)));
+            answers.add(owIncGST);
+            rules.saveAnswers(answers);
+        }
+    }
+}
+
+rules.footer();
+end

@@ -1,0 +1,150 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.MergeUtil;
+import life.genny.qwandautils.KeycloakUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.User;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.FieldNamingPolicy;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+rule "Cancel Offer"
+    when
+        $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CANCEL_OFFER")
+         rules: QRules( !isState("CANCELLED_OFFER") )
+    then
+        rules.header();
+        rules.setState("CANCELLED_OFFER");
+        /* Prepare Token & qwandaServiceUrl */
+            String qwandaServiceUrl = rules.getQwandaServiceUrl();
+            String tokenString = rules.getToken();  
+                 
+        /* Get offerCode, userCode */
+            String offerCode = $m.getItemCode();
+            rules.println("offerCode  ::   "+ offerCode);      
+                                
+            String userCode =  rules.getUser().getCode();            
+            rules.println("usercode   ::   "+ userCode);     
+        
+            String linkCode= "LNK_BEG";
+            String linkOffer= "OFFER";
+            String linkQuoter= "QUOTER";
+            String linkOwner = "OWNER";
+
+        /* GET OFFER BaseEntity */
+            BaseEntity offer =  rules.getBaseEntityByCode(offerCode);
+        
+        /* GET attributes of the OFFER BE */            
+            String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
+            String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE" , null);
+            rules.println("begCode          ::   " + begCode);
+            rules.println("quoterCode       ::   " + quoterCode);
+
+        /* GET BEG BE */
+            BaseEntity beg = rules.getBaseEntityByCode(begCode);           
+
+        /* GET ownerCode */
+            Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
+            String ownerCode = null;
+
+            if(optOwnerCode.isPresent()) {
+                ownerCode = optOwnerCode.get();
+                rules.println("PRI_AUTHOR   ::   " + ownerCode);
+            }else {
+                ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
+                rules.println("ownerCode   ::   " + ownerCode);
+            }
+
+        /* Update PRI_NEXT_ACTION = null */ 
+            rules.saveAnswer(new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE"));
+
+		/* Update link between BEG and OFFER to weight= 0.0 */
+            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);  	
+			
+		/* Update the number of offerCount for BEG */
+			Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
+			if(offerCount > 0){
+				offerCount = offerCount - 1;		
+			}
+			rules.println("Offer Count is   ::   " + offerCount);
+			rules.saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));	
+    
+		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
+	        System.out.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+	        
+	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+
+        /* Messages */
+             /* Prepare Recipient Array for Owner & Driver */
+                String [] recipientArrForOwner = {ownerCode};
+                String [] recipientArrForDriver = {quoterCode};
+                
+            /* Sending message to OWNER */
+                HashMap<String,String> contextMapForOwner = new HashMap<String, String>();
+                contextMapForOwner.put("JOB", begCode); 
+                contextMapForOwner.put("OFFER", offerCode); 
+                contextMapForOwner.put("QUOTER", quoterCode);
+                contextMapForOwner.put("OWNER", ownerCode);        			
+                rules.sendMessage("", recipientArrForOwner, contextMapForOwner, "MSG_CH40_CANCEL_OFFER_OWNER", "TOAST");
+      
+            /* Sending message to DRIVER */              
+                HashMap<String,String> contextMapForDriver = new HashMap<String, String>();
+                contextMapForDriver.put("JOB", begCode);
+                contextMapForDriver.put("OWNER", ownerCode);
+                contextMapForDriver.put("OFFER", offerCode);	
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "TOAST");
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "SMS");
+                rules.sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL"); 
+        rules.footer();
+end
+
+

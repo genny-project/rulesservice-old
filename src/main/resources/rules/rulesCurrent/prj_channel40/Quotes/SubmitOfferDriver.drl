@@ -1,0 +1,250 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.KeycloakUtils;
+
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.DateTimeDeserializer;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.User;
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QMessage.MessageData;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdViewMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.message.QMSGMessage;
+import life.genny.qwanda.message.QBaseMSGMessageType;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+rule "Submit Offer Driver"
+    when
+       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_DRIVER_GRP" )
+       rules: QRules(!isState("DRIVER_OFFER_MADE"))
+    then
+        rules.header();
+        rules.setState("DRIVER_OFFER_MADE");
+        
+        drools.setFocus("ispayments");  /* NOW Set up Payments */
+
+        /* Prepare Token & qwandaServiceUrl */
+            String qwandaServiceUrl = rules.getQwandaServiceUrl();
+            String tokenString = rules.getToken();
+
+        /* Get offerCode, username, userCode, userFullName */
+            String dataString = $m.getData().getValue();
+            JsonObject dataJson = new JsonObject(dataString);
+
+            String offerCode = dataJson.getString("targetCode");
+            rules.println("offerCode   ::   "+ offerCode);
+
+            String userName = rules.getAsString("preferred_username");
+            rules.println("username   ::   "+ userName);
+
+            String userCode =  rules.getUser().getCode();
+            rules.println("usercode   ::   "+ userCode);
+
+            String userFullName = rules.getFullName(rules.getUser());
+		    rules.println("user fullName   ::   " + userFullName);
+
+            String linkCode= "LNK_BEG";
+            String linkOffer= "OFFER";
+            String linkQuoter= "QUOTER";
+            String linkOwner = "OWNER";
+            String linkCreator = "CREATOR";
+
+        /* GET OFFER BE */
+            BaseEntity offer = rules.getBaseEntityByCodeWithAttributes(offerCode);	
+
+        /* GET  attributes of the OFFER BE */
+            String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
+            String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE" , null);
+            String quoterUname = offer.getLoopValue("PRI_QUOTER_USERNAME" , null);
+            String quoterFullName = offer.getLoopValue("PRI_QUOTER_FULLNAME" , null);
+            String priOfferCode = offer.getLoopValue("PRI_OFFER_CODE" , null);
+
+            rules.println("------------------------------------------------------------------------");
+            rules.println("BEG CODE          ::   " + begCode);
+            rules.println("QUOTER CODE       ::   " + quoterCode);
+            rules.println("QUOTER USERNAME   ::   " + quoterUname);
+            rules.println("QUOTER FULLNAME   ::   " + quoterFullName);
+            rules.println("PRI OFFER CODE    ::   " + priOfferCode);
+            rules.println("------------------------------------------------------------------------");
+        
+        /* GET BEG BE */
+            BaseEntity beg = rules.getBaseEntityByCode(begCode);
+
+        /* GET ownerCode */
+            Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
+            String ownerCode = null;
+
+            if (optOwnerCode.isPresent()) {
+                ownerCode = optOwnerCode.get();
+                 rules.println("PRI_AUTHOR   ::   " + ownerCode);
+            } else {
+                ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
+                rules.println("ownerCode   ::   " + ownerCode);
+            }
+            
+        /* Prepare Recipient Array for Owner & Driver */
+            String [] recipientArrForOwner = {ownerCode};
+            String [] recipientArrForDriver = {userCode};
+
+        /* Check if a link exists between BEG & OFFER */
+            Boolean linkBegOffer = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, offerCode, tokenString );
+            rules.println("LINK EXISTS FOR BEG & OFFER ?  ::    "+ linkBegOffer);
+
+            /* COUNTER OFFER HAPPENING */
+                if(linkBegOffer) {
+                    rules.println("The value of PRI_NEXT_ACTION for this offer :"+offerCode+": is ::"+ rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION"));
+                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("QUOTER") ){
+                      rules.println("Driver is giving counter offer");
+                      /* Send Messages*/
+                        HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
+                        counterContextMapForOwner.put("JOB", begCode);
+                        counterContextMapForOwner.put("OFFER", offerCode);
+                        counterContextMapForOwner.put("QUOTER", quoterCode);
+                        counterContextMapForOwner.put("OWNER", ownerCode);      
+                        rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_COUNTER_OFFER_FROM_DTO", "TOAST");
+
+                        HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
+                        counterContextMapForDriver.put("JOB", begCode);
+                        counterContextMapForDriver.put("OFFER", offerCode);
+                        counterContextMapForDriver.put("QUOTER", quoterCode);
+                        counterContextMapForDriver.put("OWNER", ownerCode);
+                        rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_FROM_DTD", "TOAST");
+
+                      /* Update PRI_NEXT_ACTION = OWNER */
+                      Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                      rules.saveAnswer(offerActionAnswer1); 
+                    }  
+                    
+                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){   
+                       rules.println("Driver is updating the offer price");
+                      /* Send Messages*/
+                        HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
+                        counterContextMapForOwner.put("JOB", begCode);
+                        counterContextMapForOwner.put("OFFER", offerCode);
+                        counterContextMapForOwner.put("QUOTER", quoterCode);
+                        counterContextMapForOwner.put("OWNER", ownerCode);      
+                        rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_OFFER_PRICE_UPDATED_FROM_DTO", "TOAST");
+
+                        HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
+                        counterContextMapForDriver.put("JOB", begCode);
+                        counterContextMapForDriver.put("OFFER", offerCode);
+                        counterContextMapForDriver.put("QUOTER", quoterCode);
+                        counterContextMapForDriver.put("OWNER", ownerCode);
+                        rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_OFFER_PRICE_UPDATED_FROM_DTD", "TOAST");
+                     /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	                    String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
+	                    rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+	                    rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);                     
+                   }    
+                }
+
+            /* SUBMIT OFFER HAPPENING */
+                if(!linkBegOffer) {
+                    rules.println("Driver is submiting an offer");
+                    /* owner and driver subscribing to offer BE */
+				        VertxUtils.subscribe(rules.realm(), offer, userCode);
+				        VertxUtils.subscribe(rules.realm(), offer, ownerCode);
+
+                    /* link BEG and OFFER BE || OFFER */
+                        rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
+
+                    /* link OFFER and QUOTER BE || CREATOR */
+                        rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);
+
+                    /* Update the number of offers for BEG */
+                        Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
+                        offerCount = offerCount + 1;
+                        rules.println("Offer Count is   ::   " + offerCount);
+                        rules.saveAnswer(new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString()));
+
+                    /* Update PRI_NEXT_ACTION = OWNER */
+                        Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
+                        rules.saveAnswer(offerActionAnswer3);
+                    
+                    /* Send Messages*/
+                    	   BaseEntity loadBe = rules.getChildren(begCode, "LNK_BEG", "LOAD");
+                    
+                        HashMap<String,String> submitContextMapForOwner = new HashMap<String, String>();
+                        submitContextMapForOwner.put("JOB", begCode);
+                        submitContextMapForOwner.put("OFFER", offerCode);
+                        submitContextMapForOwner.put("QUOTER", quoterCode);
+                        submitContextMapForOwner.put("OWNER", ownerCode);
+                        submitContextMapForOwner.put("LOAD", loadBe.getCode());
+                        
+                        rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
+                        rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
+                        rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
+
+                        HashMap<String,String> submitContextMapForDriver = new HashMap<String, String>();
+                        submitContextMapForDriver.put("JOB", begCode);
+                        submitContextMapForDriver.put("OFFER", offerCode);
+                        submitContextMapForDriver.put("OWNER", ownerCode);
+                        submitContextMapForDriver.put("QUOTER", quoterCode);
+					    rules.sendMessage("", recipientArrForDriver, submitContextMapForDriver, "MSG_CH40_SUBMIT_QUOTE_DRIVER", "TOAST");
+                }
+
+        /* Save OFFER_DATE as answer */
+            Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
+            rules.saveAnswer(offerDateTime);
+            
+        /* Sort Begs based on the offers Owner Price and set the linkweight as per the order of cheapest as highest */
+           rules.sortOffersInBeg(begCode);
+
+        /* Check if a link exists between USER & OFFER */
+            Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
+            rules.println("LINK EXISTS FOR USER & OFFER?  ::    "+ linkUserOffer);
+
+        /* link BEG and QUOTER BE || QUOTER */
+            if(!linkUserOffer){
+                rules.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
+                rules.createLink(begCode, quoterCode, linkCode, linkQuoter, 1.0);
+            }
+            
+        /* Update the Job status   */
+		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
+		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
+
+        /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
+	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
+	        rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
+
+	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
+            rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
+            
+            
+         
+            
+
+        /* Send BUCKETVIEW Cmd */
+            drools.setFocus("SendLayoutsAndData");
+        rules.footer();
+end

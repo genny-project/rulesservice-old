@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Selected Driver Role"
+     when
+        m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_DRIVER") )
+        rules: QRules( 	isState("STARTED") && 
+						!isState("HAS_SELECTED_DRIVER") ) 
+     then      
+        rules.header();     
+		rules.setState("HAS_SELECTED_DRIVER");
+		
+     	/* rules.set("registration_question_grp", "QUE_EDU_PROVIDER_GRP");
+     	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
+     	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10); */
+
+		/* Add Driver to GRP_DRIVERS */
+     	rules.setState("TRIGGER_ADD_TO_GROUP");
+     	rules.setState("TRIGGER_PROFILE_CHECK");
+
+		rules.footer();     		      
+end
+     	
