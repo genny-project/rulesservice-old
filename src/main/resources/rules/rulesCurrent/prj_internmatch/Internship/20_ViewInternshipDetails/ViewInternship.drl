@@ -4,9 +4,9 @@ import life.genny.rules.QRules;
 /* Send Sub Layout */
 rule "View Internship Details"
 	when
-		rules: QRules(  isState("BTN_VIEW_INTERNSHIP_DETAILS") && 
-						isState("EVENT_BTN_CLICK") && 
-						!isState("LOOP_VIEW_INTERNSHIP_DETAILS") ) 
+		rules: QRules(  isState("BTN_VIEW_INTERNSHIP_DETAILS") &&
+						isState("EVENT_BTN_CLICK") &&
+						!isState("LOOP_VIEW_INTERNSHIP_DETAILS") )
 	 then
 	 	rules.header();
         rules.setState("LOOP_VIEW_INTERNSHIP_DETAILS");
@@ -18,11 +18,11 @@ rule "View Internship Details"
 			rules.set("subLayoutPath", "internships/details.json");
 			rules.set("subLayoutRootCode", begCode);
 
-			rules.setState("SEND_SUBLAYOUT"); 
-        	rules.setState("VIEWED_INTERNSHIP_DETAILS");	
-				
+			rules.setState("SEND_SUBLAYOUT");
+        	rules.setState("VIEWED_INTERNSHIP_DETAILS");
+
 		}else{
 			rules.println("begCode is null");
 		}
-	 	rules.footer();      
+	 	rules.footer();
 end

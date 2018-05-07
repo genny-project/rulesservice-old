@@ -1,6 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
+/* Send User Company */
 rule "Ask Registration - Host Company - STEP 3"
     when
         rules: QRules(  isState("PROFILE_NOT_COMPLETED") &&
@@ -15,9 +16,9 @@ rule "Ask Registration - Host Company - STEP 3"
 		String questionTargetCode = rules.getUser().getCode();
 
 		/* send question group for user */
-		rules.set("questionSourceCode", questionSourceCode);
+		rules.set("questionSourceCode", questionTargetCode);
 		rules.set("questionTargetCode", questionTargetCode);
-		rules.set("questionGroupCode", "QUE_NEW_USER_DETAILS_GRP");
+		rules.set("questionGroupCode", "QUE_USER_HOST_COMPANY_GRP");
 		rules.setState("SEND_QUESTION");	
 		
  		rules.footer();
