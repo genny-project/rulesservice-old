@@ -3,10 +3,10 @@ import life.genny.rules.QRules;
 
 rule "Send BaseEntity By Code Parent And Link"
     when
-        rules: QRules(  isState("SEND_BASE_ENTITY") && 
-                        !isState("LOOP_SEND_BASE_ENTITY")) 
+        rules: QRules(  isState("SEND_BASE_ENTITY") &&
+                        !isState("LOOP_SEND_BASE_ENTITY"))
      then
-        rules.header();    
+        rules.header();
         rules.setState("LOOP_SEND_BASE_ENTITY");
 
         String beCode = rules.getAsString("beCode");
@@ -28,5 +28,5 @@ rule "Send BaseEntity By Code Parent And Link"
         }
 
         rules.setState("SENT_BASE_ENTITY");
-	    rules.footer();     		      
+	    rules.footer();
 end
