@@ -30,10 +30,12 @@ rule "Submit Apply Internship - Step 0"
 
 				BaseEntity internship = rules.getChildren(begCode, "LNK_BEG", "INTERNSHIP");
            	 	BaseEntity company = rules.getChildren(begCode, "LNK_BEG", "HOSTCOMPANY");
+           	 	BaseEntity creator = rules.getChildren(begCode, "LNK_BEG", "CREATOR");
 
-				if(company != null && internship != null) {
+				if(company != null && internship != null && creator != null) {
 
 					rules.set("companyBe", company);
+					rules.set("creatorBe", creator);
 					rules.set("internshipBe", internship);
 					rules.set("internBe", rules.getUser());
 

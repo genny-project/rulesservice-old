@@ -11,13 +11,13 @@ rule "Profile Completed Attribute Change"
                         !isState("LOOP_PROFILE_COMPLETED") ) 
      then      
         rules.header();
-        
 		rules.setState("LOOP_PROFILE_COMPLETED");
 
         String isCompleted = m.getAnswer().getValue();
         rules.println("isCompleted   ::   " + isCompleted );
         if( isCompleted.equals("TRUE") ) {
 		    rules.setState("TRIGGER_PROFILE_CHECK");
+		    rules.setState("TRIGGER_SUBSCRIPTION_AFTER_REGISTRATION");
         }
 		rules.footer();     		      
 end
