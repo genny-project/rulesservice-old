@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add To Intern Group"
+     when
+        rules: QRules(  isState("ADD_TO_GROUP") && 
+						isState("PRI_IS_INTERN") &&
+						!isState("LOOP_ADD_TO_INTERN_GROUP") )
+     then
+        rules.header();
+		rules.setState("LOOP_ADD_TO_INTERN_GROUP");
+     	
+     	/* link INTERN to GRP_INTERNS */
+        rules.set("linkSourceCode",  "GRP_INTERNS");
+        rules.set("linkTargetCode", rules.getUser().getCode());
+        rules.set("linkCode", "LNK_CORE");
+        rules.set("linkValue", "INTERN");
+        rules.set("linkWeight", 1.0);
+        rules.setState("CREATE_LINK");
+
+     	rules.setState("ADDED_TO_INTERN_GROUP");
+        rules.setState("ADDDED_TO_GROUP");         
+	    rules.footer();     		      
+end
+     	

@@ -21,6 +21,7 @@ rule "Send Root"
          
         rules.setState("SENT_ROOT");		
         rules.setState("SEND_DASHBOARD");		
+        rules.setState("SEND_CONTACT");		
 	    rules.footer();     		      
 end
 

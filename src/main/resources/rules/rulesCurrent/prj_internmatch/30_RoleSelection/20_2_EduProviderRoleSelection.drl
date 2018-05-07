@@ -16,6 +16,8 @@ rule "Selected Edu Provider Role"
      	rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
      	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
 
+		/* Add Education Provider to GRP_EDU_PROVIDERS */
+    	rules.setState("TRIGGER_ADD_TO_GROUP");
     	rules.setState("TRIGGER_PROFILE_CHECK");
 
 		rules.footer();     		      

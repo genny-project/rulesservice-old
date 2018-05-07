@@ -1,28 +1,24 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
-import life.genny.qwanda.Link;
-import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.QwandaUtils;
-import java.io.IOException;
-
-
 
 /* Move BEG from GRP_DRAFTS >>> GRP_AVAILABLE  */
-rule "Submit Internship - Step 4"
+rule "Submit Internship - Step 6"
 	when
 		rules: QRules( 	isState("SUBSCRIBED_TO_BEG") && 
+						isState("QUE_INTERNSHIP_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 	
-						!isState("LOOP_SUBMIT_INTERNSHIP_STEP4")) 
+						isState("SUBMIT") && 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP6")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP4");
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP6");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-        if(beg!=null){
+        if(beg != null){
         	rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_AVAILABLE", "LNK_CORE");
+		}else{
+			rules.println("beg is null");
 		}
         rules.setState("MOVED_BEG_TO_AVAILABLE");
-        rules.setState("PUBLISH_BEG");
 	 	rules.footer();      
 end
