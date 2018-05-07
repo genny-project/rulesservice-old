@@ -5,22 +5,19 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Create Internship"
 
 	when
-		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && 
-									data.code == "BTN_CREATE_INTERSHIP")
-	    rules: QRules( !isState("LOOP_CREATE_INTERNSHIP") )   
+		rules: QRules(  isState("BTN_CREATE_INTERSHIP") && 
+						!isState("LOOP_CREATE_INTERNSHIP") ) 
 	 then
 	    rules.header();
 		rules.setState("LOOP_CREATE_INTERNSHIP");
 
         /* Create Internship BaseEntity*/
-        BaseEntity internship = rules.createBaseEntityByCode(rules.getUser().getCode(), "INT", "INTERNSHIP");
-        rules.set("internshipBe", internship);
+		rules.set("beCode", rules.getUser().getCode());
+		rules.set("bePrefix", "INT");
+		rules.set("beName", "INTERNSHIP");
+		rules.setState("CREATE_BASE_ENTITY");	
 
-        rules.setState("ASK_INTERNSHIP_QUESTION");
+        rules.setState("LINK_TO_DRAFT");
 
 	    rules.footer();     		      
 end
-
-
-/* Host company subscribes to Internship */
-/* VertxUtils.subscribe(rules.realm(), internship, rules.getUser().getCode()); */

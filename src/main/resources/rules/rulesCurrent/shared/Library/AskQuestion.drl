@@ -3,7 +3,8 @@ import life.genny.rules.QRules;
 
 rule "Ask Question"
 	when
-	    rules: QRules( isState("ASK_QUESTION") && !isState("ASKED_QUESTION") )
+	    rules: QRules(  isState("ASK_QUESTION") &&
+                        !isState("ASKED_QUESTION") )
 	 then 	
         rules.header();
  		rules.setState("ASKED_QUESTION");

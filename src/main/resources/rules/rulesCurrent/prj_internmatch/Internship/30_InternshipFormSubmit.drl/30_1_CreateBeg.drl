@@ -1,13 +1,20 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Internship Form Submit"
+/* Create BEG  */
+rule "Internship Form Submit - Step 1"
 	when
 	    rules: QRules( 	isState("QUE_INTERNSHIP_GRP") && 
 						!isState("LOOP_INTERNSHIP_FORM_SUBMIT")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_INTERNSHIP_FORM_SUBMIT");
+
+		 /* Create BEG BaseEntity*/
+		rules.set("beCode", rules.getUser().getCode());
+		rules.set("bePrefix", "BEG");
+		rules.set("beName", "BEG");
+		rules.setState("CREATE_BASE_ENTITY");	
 
 	 	rules.footer();      
 end
