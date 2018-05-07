@@ -5,7 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Create New User"
     when
-        rules: QRules( isState("CREATE_NEW_USER") && 
+        rules: QRules( isState("CREATE_NEW_USER") &&
                     !isState("LOOP_CREATE_NEW_USER") )
     then
         rules.header();
@@ -14,20 +14,20 @@ rule "Create New User"
         BaseEntity user = rules.getUser();
 
         /*  saving the default profile image   */
-        rules.saveAnswer( new Answer (user.getCode(), 
-                          user.getCode(), 
+        rules.saveAnswer( new Answer (user.getCode(),
+                          user.getCode(),
                           "PRI_IMAGE_URL", "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ") );
        
         /*  set PRI_IS_PROFILE_COMPLETED = FALSE */
-        rules.saveAnswer( new Answer (user.getCode(), 
-                          user.getCode(), 
-                          "PRI_IS_PROFILE_COMPLETED", 
+        rules.saveAnswer( new Answer (user.getCode(),
+                          user.getCode(),
+                          "PRI_IS_PROFILE_COMPLETED",
                           "FALSE") );
 
         rules.setState("NEW_USER_CREATED");
         rules.setState("TRIGGER_APPLICATION_SETUP");
         rules.println("New User is   ::   " + user);
-        
+
         rules.clearState("PROFILE_CHECK_COMPLETED");
         rules.footer();
 end
