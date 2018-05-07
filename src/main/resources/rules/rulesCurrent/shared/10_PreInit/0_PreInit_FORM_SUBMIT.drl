@@ -24,18 +24,26 @@ rule "Pre Init FORM Submit"
         /* Get targetCode */		
         String targetCode = dataJson.getString("targetCode");
 		rules.println("targetCode   ::   " + targetCode);
-       
+
+        /* Get itemCode */		
+		String itemCode = dataJson.getString("itemCode");
+		rules.println("itemCode   ::   " + itemCode);
+
         /* Get actionCode */		
 		String actionCode = dataJson.getString("action");
 		rules.println("actionCode   ::   " + actionCode);
         
+        if(quesCode != null) {
+ 	 		rules.setState(quesCode);
+		}
         if(actionCode != null) {
 			rules.setState(actionCode);
 		}
-        if(quesCode != null) {
-	 		rules.setState(quesCode);
-	 		rules.set("quesTargetCode", targetCode);
-		}
 
-  		drools.setFocus("FormSubmit");	      
+		if(targetCode != null) {
+			rules.set("quesTargetCode", targetCode);
+		}
+		if(itemCode != null) {
+			rules.set("itemCode", itemCode);
+		}
 end

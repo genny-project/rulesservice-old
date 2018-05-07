@@ -6071,4 +6071,40 @@ public class QRules {
 			}
 		}
 	}
+
+	public List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level) {
+
+		if(level == 0) {
+			return null; // exit point;
+		}
+
+		level--;
+		BaseEntity be = this.getBaseEntityByCode2(beCode);
+		if(be != null) {
+	
+			List<BaseEntity> beList = new ArrayList<BaseEntity>();
+			
+			Set<EntityEntity> entityEntities = be.getLinks();
+
+			//we interate through the links
+			for(EntityEntity entityEntity: entityEntities) {
+
+				Link link = entityEntity.getLink();
+				if(link != null) {
+					
+					// we get the target BE
+					String targetCode = link.getTargetCode();
+					if(targetCode != null) {
+
+						// recursion 
+						beList.addAll(this.getBaseEntityWithChildren(targetCode, level));
+					}
+				}
+			}
+
+			return beList;
+		}
+
+		return null;
+	}
 }

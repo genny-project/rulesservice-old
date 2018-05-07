@@ -7,7 +7,7 @@ import java.util.List;
 /* Sends Buckets */
 rule "Send Dashboard"
     when
-        rules: QRules(  isState("SENT_TREEVIEW") && 
+        rules: QRules(  isState("SENT_ROOT") && 
                         isState("SEND_DASHBOARD") && 
                         isState("PUBLISHED_BASE_ENTITY_LIST") && 
                         !isState("LOOP_SEND_DASHBOARD") )
@@ -26,7 +26,7 @@ rule "Send Dashboard"
         rules.setState("PUBLISH_BASE_ENTITY_LIST");
         
         rules.setState("SENT_DASHBOARD");		
-        rules.setState("SEND_ALL_BEGS");		
+        rules.setState("SEND_BUCKETS");		
 	    rules.footer();     		      
 end
 
