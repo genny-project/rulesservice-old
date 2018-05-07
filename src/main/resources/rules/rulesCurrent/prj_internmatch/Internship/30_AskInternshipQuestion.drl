@@ -6,6 +6,7 @@ rule "Ask Internship Question"
         rules: QRules(  isState("ASK_INTERNSHIP_QUESTION") && 
 						isState("LINK_CREATED") && 
 						isState("INTERNSHIP") && 
+						isState("EVENT_BTN_CLICK") && 
                         !isState("LOOP_ASK_INTERNSHIP_QUESTION")  )
      then 
  		rules.header();

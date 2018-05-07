@@ -1,0 +1,51 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import java.util.List;
+
+
+rule "Publish BaseEntity List"
+    when
+        rules: QRules(  isState("PUBLISH_BASE_ENTITY_LIST") && 
+                        !isState("LOOP_PUBLISH_BASE_ENTITY_LIST")) 
+     then
+        rules.header();    
+        rules.setState("LOOP_PUBLISH_BASE_ENTITY_LIST");
+
+        String parentCode = rules.getAsString("parentCode");
+        String linkCode = rules.getAsString("linkCode");
+
+        Integer pageStart = rules.getAsInteger("pageStart");
+        Integer pageSize = rules.getAsInteger("pageSize");
+
+        Boolean cache = rules.getAsBoolean("cache");
+        String stakeholderCode = rules.getAsString("stakeholderCode");
+        
+        if(parentCode == null) {
+            rules.println("Publish BaseEntity List :: missing parentCode");
+        }
+        else if(linkCode == null) {
+            rules.println("Publish BaseEntity List :: missing linkCode");
+        }
+        else if(pageStart == null) {
+             rules.println("Publish BaseEntity List :: missing pageStart");
+        }
+        else if(pageSize == null) {
+             rules.println("Publish BaseEntity List :: missing pageSize");
+        }
+        else if(cache == null) {
+             rules.println("Publish BaseEntity List :: missing cache");
+        }
+        else {
+            List<BaseEntity> beList = null;
+            if( stakeholderCode != null ) {
+                beList = rules.getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, cache, stakeholderCode);
+            }
+            else{
+                beList = rules.getBaseEntitysByParentAndLinkCode(parentCode, linkCode, pageStart, pageSize, cache);
+            }
+            rules.publishCmd(beList, parentCode, linkCode);
+            rules.set("beList", beList);
+            rules.setState("BASE_ENTITY_LIST_PUBLISHED");
+        }
+	    rules.footer();     		      
+end

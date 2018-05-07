@@ -7,8 +7,9 @@ rule "Internship Form Submit - Step 7"
 	when
 		rules: QRules( 	isState("LINK_CREATED") && 
 						isState("BEG") && 
+						isState("EVENT_FORM_SUBMIT") && 
 						isState("PUBLISH_BEG") && 
-						!isState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP7")) 
+						!isState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP7") ) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_INTERNSHIP_FORM_SUBMIT_STEP7");
@@ -20,6 +21,11 @@ rule "Internship Form Submit - Step 7"
 										"GRP_AVAILABLE" , 
 										"LNK_CORE", 
 										begRecipients);
-		rules.setState("TRIGGER_HOME_PAGE");
-	 	rules.footer();      
+
+		rules.set("CMD_VIEW", "BUCKET_VIEW");
+		rules.set("root", "GRP_DASHBOARD");
+		rules.setState("CMD_VIEW");
+
+/* 		rules.setState("TRIGGER_HOME_PAGE");
+ */	 	rules.footer();      
 end

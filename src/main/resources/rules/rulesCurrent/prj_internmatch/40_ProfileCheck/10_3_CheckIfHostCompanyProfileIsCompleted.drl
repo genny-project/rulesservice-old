@@ -5,7 +5,9 @@ import java.util.List;
 
 rule "Check If Host Company Profile Completion"
       when
-        rules: QRules( isState("CHECK_INTERNMATCH_PROFILE") && !isState("LOOP_HOST_COMPANY_ROLE_CHECK") && isState("PRI_IS_HOST_COMPANY")) 
+        rules: QRules( 	isState("CHECK_INTERNMATCH_PROFILE") && 
+						isState("PRI_IS_HOST_COMPANY") &&
+						!isState("LOOP_HOST_COMPANY_ROLE_CHECK")  ) 
      then
         
         rules.header();
