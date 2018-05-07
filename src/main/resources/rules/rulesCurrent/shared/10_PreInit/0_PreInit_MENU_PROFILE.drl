@@ -6,7 +6,8 @@ rule "Pre Init Menu Profile"
     no-loop true
 	ruleflow-group 'Init'
     when
-          m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE" )
+          m : QEventMessage( event_type == "PROFILE" && 
+                            data.code == "PROFILE" )
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);

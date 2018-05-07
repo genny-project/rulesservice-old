@@ -6013,20 +6013,21 @@ public class QRules {
 		BaseEntity eduProvider = getParent(getUser().getCode(), "LNK_STAFF");
 
 		if (eduProvider == null) {
-			println("edu Provider is null");
+			println("0. edu Provider is null");
 		}else{
-			println("eduProvider code   ::   " + eduProvider.getCode());
+			println("1. eduProvider code   ::   " + eduProvider.getCode());
 
 			List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-			println("rootKids   ::   " + rootKids);
+			println("2. rootKids   ::   " + rootKids);
 			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
 
 			List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD_EDU_PROVIDER", "LNK_CORE", 0, 20, false);
-			println("buckets   ::   " + buckets);
+			println("3. buckets   ::   " + buckets);
 			publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE");
 
 			/* get all the students of eduProvider */
 			students = getChildrens(eduProvider.getCode(), "LNK_EDU", "STUDENT");
+			println("4. No. of students of this edu provider   ::   " + students.size());
 
 			/* subscribe eduProvider staff to all the students of eduProvider */
 			subscribeUserToBaseEntities(getUser().getCode(), students);
@@ -6036,10 +6037,10 @@ public class QRules {
 			for(BaseEntity student : students){
 				if (buckets != null) {
 					for (BaseEntity bucket : buckets) {
-						println("BUCKET code   ::   " + bucket.getCode());
+						println("5. BUCKET code   ::   " + bucket.getCode());
 
 						List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, student.getCode());
-						println("BEGS eduprovider's student is invoved in   ::   " + begs);
+						println("6. BEGS eduprovider's student is invoved in   ::   " + begs);
 
 						/* subscribe to all the begs of student is stakeholder   */
 						subscribeUserToBaseEntities(getUser().getCode(), begs);
@@ -6049,7 +6050,7 @@ public class QRules {
 
 							for (BaseEntity beg : begs) {
 								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
-								println("childrens of beg   ::   " + begKids);
+								println("7. childrens of beg   ::   " + begKids);
 
 								/* subscribe to all the begKids of beg   */
 								subscribeUserToBaseEntities(getUser().getCode(), begKids);

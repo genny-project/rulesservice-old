@@ -6,6 +6,7 @@ import java.util.List;
 rule "Home Page - Send Data"
      when
         rules: QRules(  isState("HOME_PAGE_SEND_DATA") &&
+                        !isState("PRI_IS_EDU_PROVIDER") &&
                         !isState("LOOP_HOME_PAGE_SEND_DATA") )
      then
         rules.header();

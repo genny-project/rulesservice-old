@@ -5,7 +5,8 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Ask User Role - Intermatch"
     when
-        rules: QRules( isState("ASK_USER_ROLE") && !isState("ASKED_USER_ROLE"))
+        rules: QRules( 	isState("ASK_USER_ROLE") && 
+						!isState("ASKED_USER_ROLE")	)
      then
      	rules.header();
      	rules.setState("ASK_USER_ROLE");
