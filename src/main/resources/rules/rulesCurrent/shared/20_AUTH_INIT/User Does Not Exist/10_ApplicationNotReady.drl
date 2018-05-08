@@ -10,9 +10,9 @@ rule "Application Not Ready"
       then
 		rules.header();
 		rules.setState("LOOP_APPLICATION_NOT_READY");
-
+		
+		BaseEntity be = rules.createUser();
 		rules.setState("APPLICATION_NOT_READY");
-		rules.setState("TRIGGER_REGISTRATION");
 
 		rules.footer();
 end

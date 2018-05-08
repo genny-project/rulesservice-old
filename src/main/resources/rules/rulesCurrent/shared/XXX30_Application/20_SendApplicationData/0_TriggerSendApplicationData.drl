@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
 rule "Trigger Send Application Data"
 
     when    
-         rules: QRules( isState("TRIGGER_SEND_APPLICATION_DATA") && 
+         rules: QRules( isState("EXIT_SEND_SYSTEM_DATA") && 
                         isState("PROFILE_IS_COMPLETED") && 
                         !isState("LOOP_TRIGGER_SEND_APPLICATION_DATA") )
      then

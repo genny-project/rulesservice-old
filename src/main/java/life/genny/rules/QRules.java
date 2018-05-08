@@ -412,7 +412,13 @@ public class QRules {
 		BaseEntity be = null;
 		String username = (String) getDecodedTokenMap().get("preferred_username");
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
-		be = getBaseEntityByCode(code);
+		try {
+			be = getBaseEntityByCode(code);
+		}
+		catch(Exception e ) {
+			
+		}
+		
 		return be;
 	}
 
@@ -1090,6 +1096,7 @@ public class QRules {
 	}
 
 	public BaseEntity createUser() {
+		
 		BaseEntity be = null;
 
 		String username = getAsString("preferred_username").toLowerCase();
@@ -1107,6 +1114,8 @@ public class QRules {
 			be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
+			this.setState("DID_CREATE_NEW_USER");
+
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -1634,6 +1643,31 @@ public class QRules {
 		}
 
 		return null;
+	}
+
+	/*
+	 * Get all childrens for the given source code with the linkcode and linkValue
+	 */
+	public List<BaseEntity> getAllChildrens(final String sourceCode, final String linkCode, final String linkValue) {
+		List<BaseEntity> childList = new ArrayList<BaseEntity>();
+		try {
+			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
+					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
+			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			if (linkArray.length > 0) {
+				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
+				for (Link link : arrayList) {
+					// RulesUtils.println("The Child BaseEnity code is :: " + link.getTargetCode());
+					childList.add(RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
+							getToken(), link.getTargetCode(), false));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return childList;
 	}
 
 	/*
@@ -2186,158 +2220,6 @@ public class QRules {
 																											// is
 																											// implemented
 				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
-			}
-		}
-	}
-
-	public void processChat2(QEventMessage m) {
-
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
-
-		if (text != null && chatCode != null) {
-
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
-
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					counter += 1;
-				}
-
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
-			}
-		}
-	}
-
-	public void processChat2(QEventMessage m) {
-
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
-
-		if (text != null && chatCode != null) {
-
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
-
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					counter += 1;
-				}
-
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
-			}
-		}
-	}
-
-	public void processChat2(QEventMessage m) {
-
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
-
-		if (text != null && chatCode != null) {
-
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
-
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					counter += 1;
-				}
-
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
-			}
-		}
-	}
-
-	public void processChat2(QEventMessage m) {
-
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
-
-		if (text != null && chatCode != null) {
-
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
-
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					counter += 1;
-				}
-
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
 			}
 		}
 	}
@@ -4425,6 +4307,7 @@ public class QRules {
 			return true;
 		}
 		return false;
+	}
 
 	public List<BaseEntity> getAllBegs( List<BaseEntity> beList, String linkCode, String pageStart, String pageSize, Boolean cache)
 	{
@@ -4826,6 +4709,7 @@ public class QRules {
 
 	/* Sorting Offers of a beg as per the price, lowest price being on top */
 	public void sortOffersInBeg(final String begCode) {
+
 		List<BaseEntity> offers = getAllChildrens(begCode, "LNK_BEG", "OFFER");
 		// println("All the Offers for the load " + begCode + " are: " +
 		// offers.toString());
@@ -5723,65 +5607,6 @@ public class QRules {
 		return children;
 	}
 
-	public List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level) {
-
-		if(level == 0) {
-			return null; // exit point;
-		}
-
-		level--;
-		BaseEntity be = this.getBaseEntityByCode2(beCode);
-		if(be != null) {
-
-			List<BaseEntity> beList = new ArrayList<BaseEntity>();
-
-			Set<EntityEntity> entityEntities = be.getLinks();
-
-			//we interate through the links
-			for(EntityEntity entityEntity: entityEntities) {
-
-				Link link = entityEntity.getLink();
-				if(link != null) {
-
-					// we get the target BE
-					String targetCode = link.getTargetCode();
-					if(targetCode != null) {
-
-						// recursion
-						beList.addAll(this.getBaseEntityWithChildren(targetCode, level));
-					}
-				}
-			}
-
-			return beList;
-		}
-
-		return null;
-	}
-
-	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
-
-		Boolean isLinkExists = false;
-		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
-
-		if (dataBEMessage != null) {
-			BaseEntity[] beArr = dataBEMessage.getItems();
-
-			if (beArr.length > 0) {
-				for (BaseEntity be : beArr) {
-					if (be.getCode().equals(childCode)) {
-						isLinkExists = true;
-						return isLinkExists;
-					}
-				}
-			} else {
-				isLinkExists = false;
-				return isLinkExists;
-			}
-
-		}
-		return isLinkExists;
-	}
 
 	/* returns  subscribers of a baseEntity Code */
 	public String[] getSubscribers(final String subscriptionCode) {
@@ -5854,7 +5679,6 @@ public class QRules {
 
 											/* subscribe to APPLICATION  */
 											subscribeUserToBaseEntity(getUser().getCode(), application.getCode());
-											String [] recipient = {getUser().getCode()};
 											publishBaseEntityByCode(applicant.getCode(), application.getCode(), "LNK_APP", recipient);
 
 										}
@@ -5888,8 +5712,11 @@ public class QRules {
 			}
 		}
 	}
+}
+}
 
 	public void sendHostCompanyApplicationData() {
+
 		String[] recipient = { getUser().getCode() };
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> removeRootKids = new ArrayList<BaseEntity>();
@@ -5949,7 +5776,6 @@ public class QRules {
 
 								/* subscribe to APPLICANT  */
 								subscribeUserToBaseEntity(getUser().getCode(), applicant.getCode());
-								String[] recipient = { getUser().getCode() };
 								publishBaseEntityByCode(applicant.getCode(), begKid.getCode(), "LNK_APP", recipient);
 
 							}
@@ -6044,6 +5870,7 @@ public class QRules {
 			}
 		}
 	}
+}
 
 	/* New QRules */
 
@@ -6202,17 +6029,6 @@ public class QRules {
 		return isLinkExists;
 	}
 
-	/* returns  subscribers of a baseEntity Code */
-	public String[] getSubscribers(final String subscriptionCode) {
-		final String SUB = "SUB";
-		// Subscribe to a code
-		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
-
-		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
-		return result;
-	}
-
 	/* returns a duplicated BaseEntity from an existing beCode */
 	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,  final String name) {
 		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
@@ -6324,5 +6140,26 @@ public class QRules {
 			}
 		}
 		return getBaseEntityByCode(newBe.getCode());
+	}
+
+	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
+		this.updateBaseEntityStatus(be.getCode(), userCode, status);
+	}
+
+	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
+
+		String attributeCode = "STA_" + userCode;
+		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
+	}
+
+	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
+		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
+	}
+
+	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
+
+		for(String userCode: userCodes) {
+			this.updateBaseEntityStatus(beCode, userCode, status);
+		}
 	}
 }

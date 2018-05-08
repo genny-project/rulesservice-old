@@ -11,7 +11,7 @@ rule "Exit Role Selection"
         rules.header();     
 		
 		rules.setState("EXITED_ROLE_SELECTION");
-		rules.setState("TRIGGER_ROLE_CHECK");
+		rules.setState("TRIGGER_PROFILE_CHECK");
 
 		rules.footer();     		      
 end

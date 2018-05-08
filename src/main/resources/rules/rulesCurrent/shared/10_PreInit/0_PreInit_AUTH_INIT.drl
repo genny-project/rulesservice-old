@@ -14,5 +14,6 @@ rule "Pre Init"
         rules.setDrools(drools);
      	rules.header();
         rules.setState("LOOP_PRE_INIT_EVT");
+        rules.setState("STARTED");
 	    rules.footer();
 end

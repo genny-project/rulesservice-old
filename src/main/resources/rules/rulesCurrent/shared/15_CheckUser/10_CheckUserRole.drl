@@ -29,12 +29,15 @@ rule "Setting user role"
 
       			for(EntityAttribute role: roles) {
       				
-      				if(role != null && role.getValue() != null && role.getAttributeCode().equals("PRI_IS_PROFILE_COMPLETED") == false) {
+      				if(role != null && role.getValue() != null) {
       					
       					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
       					if(isRole) {
       						rules.setState(role.getAttributeCode());
-      						has_role_been_found = true;
+      						
+      						if(role.getAttributeCode().equals("PRI_IS_PROFILE_COMPLETED") == false && role.getAttributeCode().equals("PRI_IS_ADMIN") == false) {
+      							has_role_been_found = true;
+      						}
       					}
       				}
       			}
@@ -50,8 +53,10 @@ rule "Setting user role"
       			rules.setState("ROLE_NOT_FOUND");
       		}
       	}
+      	else {
+      		rules.setState("ROLE_NOT_FOUND");
+      	}
 
       	rules.setState("ROLE_CHECKED");
-
-	      rules.footer();
+      	rules.footer();
 end
