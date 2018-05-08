@@ -2814,19 +2814,12 @@ public class QRules {
 		BaseEntity user = getUser();
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-		;
-		String bulkmsgJson = null;// VertxUtils.getObject(realm(), "BULK_AUTH_INIT", getUser().getCode(),
-									// String.class);
-		// String bulkmsgJson = cache2;
-		// QBulkMessage cached = cache;
-		// if (cached != null) {
-		if (!StringUtils.isBlank(bulkmsgJson)) {
-			showLoading("Loading jobs...");
-			// publishCmd(bulkmsgJson);
-			// return;
-			QBulkMessage cached = JsonUtils.fromJson(bulkmsgJson, QBulkMessage.class);
-			if (!(cached == null || cached.getMessages() == null)) {
-				for (QDataBaseEntityMessage msg : cached.getMessages()) {
+		
+		QBulkMessage availableJobs = VertxUtils.getObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", QBulkMessage.class);
+		if (availableJobs != null) {
+			showLoading("Loading Cached jobs...");
+			if (availableJobs.getMessages() != null) {
+				for (QDataBaseEntityMessage msg : availableJobs.getMessages()) {
 					if (msg instanceof QDataBaseEntityMessage) {
 						msg.setToken(getToken());
 						publishCmd(JsonUtils.toJson(msg));
@@ -2853,11 +2846,7 @@ public class QRules {
 		}
 
 
-		/* Show loading indicator */
-		// showLoading("Loading your Bucket Data...");
-
-	//	sendTreeViewData(bulkmsg, user);
-
+	
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		bulkmsg.add(publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE"));
 		// println(buckets);
@@ -2966,44 +2955,6 @@ public class QRules {
 		}
 
 
-		//
-		// bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
-		//
-		// Now find discrepancies between cached version and latest and send removals.
-		// TODO
-
-		// QBulkMessage cached2 = null;
-		// if (!StringUtils.isBlank(bulkmsgJson)) {
-		// cached2 = JsonUtils.fromJson(bulkmsgJson, QBulkMessage.class);
-		// if (! (cached2 == null || cached2.getMessages() == null)) {
-		// for (QMessage msg : cached2.getMessages()) {
-		// switch (msg.getMsg_type()) {
-		// default:
-		// log.info("Cached Message Type = "+msg.getMsg_type());
-		// }
-		// }
-		// }
-		// else {
-		// log.error("Bad cache");
-		// }
-		// }
-
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-		bulk.setToken(getToken());
-		String[] rxa = new String[1];
-		rxa[0] = getUser().getCode();
-		bulk.setRecipientCodeArray(rxa);
-		String cachedBulkmsgJson = JsonUtils.toJson(bulk);
-		for (QDataBaseEntityMessage msg : bulk.getMessages()) {
-			if (msg instanceof QDataBaseEntityMessage) {
-				msg.setToken(getToken());
-				publishCmd(JsonUtils.toJson(msg));
-			}
-
-		}
-		// cache = bulk; //cachedBulkmsgJson;
-		// cache2 = cachedBulkmsgJson;
-		//VertxUtils.putObject(realm(), "BULK_AUTH_INIT", getUser().getCode(), cachedBulkmsgJson);
 	}
 
 	/**
@@ -5245,7 +5196,7 @@ public class QRules {
 	public boolean loadRealmData()
 	{
 		
-			println("Loading in keycloak data and setting up service token for "+realm());
+			println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for "+realm());
 			
 			for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet())  {
 			
@@ -5349,6 +5300,29 @@ public class QRules {
 				publishCmd(JsonUtils.toJson(msg));
 			}
 
+		}
+	}
+	
+	public void generateJobsCache()
+	{
+		println("Jobs Cache realm is "+realm());
+		
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+	
+		BaseEntity searchAvailableJobs = getBaseEntityByCode("SBE_AVAIL_JOBS");
+		try {
+			List<BaseEntity> results=null;
+
+			results = QwandaUtils.fetchResults(searchAvailableJobs,getToken());
+		    bulkmsg.add(new QDataBaseEntityMessage(results.toArray(new BaseEntity[0]),"GRP_NEW_ITEMS", "LNK_CORE"));
+
+			QBulkMessage bulk = new QBulkMessage(bulkmsg);
+
+			VertxUtils.putObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", bulk);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
