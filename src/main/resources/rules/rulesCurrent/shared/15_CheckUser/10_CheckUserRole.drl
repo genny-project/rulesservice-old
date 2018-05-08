@@ -10,10 +10,10 @@ rule "Setting user role"
      when
         rules: QRules(  isState("STARTED") &&
                         isUserPresent() == true &&
-						            !isState("LOOP_CHECK_ROLE") )
+						!isState("LOOP_CHECK_ROLE") )
      then
         rules.header();
-    	  rules.setState("LOOP_CHECK_ROLE");
+		rules.setState("LOOP_CHECK_ROLE");
 
       	BaseEntity user = rules.getUser();
       	if(user != null){
@@ -49,8 +49,6 @@ rule "Setting user role"
       			rules.setState("ROLE_NOT_FOUND");
       		}
       	}
-
       	rules.setState("ROLE_CHECKED");
-
-	      rules.footer();
+	    rules.footer();
 end
