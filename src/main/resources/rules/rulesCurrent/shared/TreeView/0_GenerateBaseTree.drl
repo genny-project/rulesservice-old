@@ -12,8 +12,7 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
 rule "Generate Base Tree"
-   no-loop true
-    salience 550
+
     ruleflow-group 'GenerateTree'
  
      when
