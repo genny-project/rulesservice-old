@@ -119,7 +119,8 @@
 
 			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_ESCROW_OWNER", "EMAIL");
 
-			     	Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow");
+			     	/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow"); */
+			     	Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 			     	rules.saveAnswer(paymentStatus);
 
 
@@ -134,7 +135,8 @@
 			     		rules.triggerReleasePaymentMailWithAttachment(owner, driver, offerBe, load, begBe);
 
 						/* save status in database */
-			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed");
+			     		/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed"); */
+			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 			     		rules.saveAnswer(paymentStatus);
 
 			     		/* we mark the job as paid */
@@ -165,14 +167,15 @@
 						rules.sendMessage(null, messageOwnerRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 						rules.sendMessage(null, messageToDriverRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 
-						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held");
+						/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held"); */
+						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 						rules.saveAnswer(paymentStatus);
 
 		            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
 		            		/* ITEM_PAYMENT_INCOMING - make payment is done, but money transaction still getting processed */
 						/* status is saved in DB */
 
-						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment incoming from Owner");
+						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 						rules.saveAnswer(paymentStatus);
 
 		            	}
