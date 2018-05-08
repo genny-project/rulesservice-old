@@ -25,12 +25,13 @@ rule "Send Bucket Layout To Frontend"
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
 		LocalDateTime startTime = VertxUtils.getObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"),LocalDateTime.class);
- 		VertxUtils.putObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"), null); // clear
+ 		if(startTime != null){
+ 		  VertxUtils.putObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"), null); // clear
 
-		LocalDateTime endTime = LocalDateTime.now();
+		  LocalDateTime endTime = LocalDateTime.now();
 		
-		Duration d = Duration.between(startTime,endTime);
-		rules.println("STARTUP TIME = "+d.toMillis());
-		
+		  Duration d = Duration.between(startTime,endTime);
+		  rules.println("STARTUP TIME = "+d.toMillis());
+		}
 	    rules.footer();     		      
 end
