@@ -104,7 +104,6 @@ import life.genny.utils.PaymentUtils;
 import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
 
-
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
@@ -2004,8 +2003,9 @@ public class QRules {
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
 				saveAnswers(answers);
-				/* Add current date-time to char as  */
-				saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", QwandaUtils.getZonedCurrentLocalDateTime()));
+				/* Add current date-time to char as */
+				saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE",
+						QwandaUtils.getZonedCurrentLocalDateTime()));
 
 				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
 				/* Publish chat to Receiver */
@@ -2410,11 +2410,11 @@ public class QRules {
 						println(i + ":" + url);
 
 						String subLayoutString = null;
-						
+
 						try {
 							subLayoutString = QwandaUtils.apiGet(url, null);
 						} catch (UnknownHostException e1) {
-							log.error("Unknown layout host "+url+":"+sublayoutData);
+							log.error("Unknown layout host " + url + ":" + sublayoutData);
 						}
 						if (subLayoutString != null) {
 
@@ -2496,9 +2496,6 @@ public class QRules {
 		return dateString;
 
 	}
-
-
-
 
 	public void publishBE(final BaseEntity be) {
 		addAttributes(be);
@@ -2810,150 +2807,156 @@ public class QRules {
 	}
 
 	public void sendLayoutsAndData() {
-		
+
 		BaseEntity user = getUser();
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-		
-		QBulkMessage availableJobs = null;//VertxUtils.getObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", QBulkMessage.class);
-		if (availableJobs != null) {
-			showLoading("Loading Cached jobs...");
-			if (availableJobs.getMessages() != null) {
-				for (QDataBaseEntityMessage msg : availableJobs.getMessages()) {
+
+		if (!getUser().is("PRI_OWNER")) {
+		QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+
+		if (newItems != null) {
+			showLoading("Loading Cached new jobs...");
+			if (newItems.getMessages() != null) {
+				for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 					if (msg instanceof QDataBaseEntityMessage) {
 						msg.setToken(getToken());
 						publishCmd(JsonUtils.toJson(msg));
 					}
-
 				}
-				if (false) {
-					String layout = RulesUtils.getLayout("card.json");
-					String viewCode = "BUCKET_DASHBOARD";
-					String grpBE = "GRP_DASHBOARD";
-
-					/* sending cmd BUCKET_VIEW */
-					sendSublayout(viewCode, "dashboard_channel40.json", grpBE);
-					setLastLayout(viewCode, grpBE);
-				}
-				return;
-				// publishCmd(bulkmsgJson);
-				// now update as required...
-				// } else {
-				// log.error("bulk json is there, but not converted properly");
 			}
-		} else {
-			showLoading("Loading jobs...");
 		}
+		}
+		
+		QBulkMessage items = fetchStakeholderBucketItems(getUser());
 
-
-	
-		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
-		bulkmsg.add(publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE"));
-		// println(buckets);
-
-
-		if (true) {
-			for (BaseEntity bucket : buckets) {
-				// println(bucket);
-				List<BaseEntity> begs = new ArrayList<BaseEntity>();
-
-				if (hasRole("admin")) {
-					List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-							500, false);
-					begs.addAll(driverbegs);
-				} else {
-
-					if (getUser().is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
-						List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-								500, false);
-						begs.addAll(driverbegs);
-						VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in first bucket */
-					} else {
-						if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
-							List<BaseEntity> driverbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(),
-									"LNK_CORE", 0, 500, false, user.getCode());
-							for (BaseEntity beg : driverbegs) {
-								if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
-									log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
-								}
-								/* Getting begs related to this driver only */
-								String driverCode = beg.getValue("STT_IN_TRANSIT", null);
-								if (driverCode != null && driverCode.equals(user.getCode())) {
-									VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
-									begs.add(beg);
-								} else {
-									/*
-									 * Another check to handle loads which misses STT_IN_TRANSIT attribute in
-									 * Production due to bug (It was not saving STT_IN_TRANSIT attribute while
-									 * saving in bulk)
-									 */
-									BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
-									if (driver != null && driver.getCode().equals(user.getCode())) {
-										VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
-										begs.add(beg);
-									}
-
-								}
-
-							}
-
-							// begs.addAll(driverbegs);
-							// VertxUtils.subscribe(realm(), driverbegs, user.getCode());
-						}
-					}
-
-					if (user.is("PRI_OWNER")) {
-						if ("GRP_NEW_ITEMS".equals(bucket.getCode())) {
-							log.debug("Check owner debug");
-						}
-						List<BaseEntity> ownerbegs = getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-								500, false, user.getCode());
-						begs.addAll(ownerbegs);
-						VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+		if (items != null) {
+			showLoading("Loading the rest of the jobs...");
+			if (items.getMessages() != null) {
+				for (QDataBaseEntityMessage msg : items.getMessages()) {
+				
+					if (msg instanceof QDataBaseEntityMessage) {
+						msg.setToken(getToken());
+						publishCmd(JsonUtils.toJson(msg));
 					}
 				}
-				println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
-				bulkmsg.add(publishCmd(begs, bucket.getCode(), "LNK_CORE"));
-
-				for (BaseEntity beg : begs) {
-					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 20,
-							false);
-					List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
-					for (BaseEntity begKid : begKids) {
-						if (begKid.getCode().startsWith("OFR_")) {
-							if (user.is("PRI_OWNER")) {
-								filteredKids.add(begKid);
-								VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
-							}
-							if (user.is("PRI_DRIVER")) {
-								Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
-								if (quoterCode.isPresent()) {
-									if (user.getCode().equals(quoterCode.get())) {
-										filteredKids.add(begKid);
-										VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
-									}
-								}
-							}
-						} else {
-							filteredKids.add(begKid);
-						}
-						// println(bucket.getCode() + ":" + begKid.getCode());
-					}
-					bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
-				}
-				//bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
 			}
-		} else {
-			// fetch all the jobs related to this person
-
-		}
-		/* Sending Draft Datas for the Owners */
-		if (user.is("PRI_OWNER")) {
-			List<BaseEntity> ownerDraftBegs = getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
-					user.getCode());
-			 bulkmsg.add(publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"));
 		}
 
+
+		// List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
+		// "LNK_CORE", 0, 20, false);
+		// bulkmsg.add(publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE"));
+		// // println(buckets);
+		//
+		// if (true) {
+		// for (BaseEntity bucket : buckets) {
+		// // println(bucket);
+		// List<BaseEntity> begs = new ArrayList<BaseEntity>();
+		//
+		// if (hasRole("admin")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false);
+		// begs.addAll(driverbegs);
+		// } else {
+		//
+		// if (getUser().is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false);
+		// begs.addAll(driverbegs);
+		// VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in
+		// first bucket */
+		// } else {
+		// if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(),
+		// "LNK_CORE", 0, 500, false, user.getCode());
+		// for (BaseEntity beg : driverbegs) {
+		// if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
+		// log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
+		// }
+		// /* Getting begs related to this driver only */
+		// String driverCode = beg.getValue("STT_IN_TRANSIT", null);
+		// if (driverCode != null && driverCode.equals(user.getCode())) {
+		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+		// begs.add(beg);
+		// } else {
+		// /*
+		// * Another check to handle loads which misses STT_IN_TRANSIT attribute in
+		// * Production due to bug (It was not saving STT_IN_TRANSIT attribute while
+		// * saving in bulk)
+		// */
+		// BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
+		// if (driver != null && driver.getCode().equals(user.getCode())) {
+		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+		// begs.add(beg);
+		// }
+		//
+		// }
+		//
+		// }
+		//
+		// // begs.addAll(driverbegs);
+		// // VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+		// }
+		// }
+		//
+		// if (user.is("PRI_OWNER")) {
+		// if ("GRP_NEW_ITEMS".equals(bucket.getCode())) {
+		// log.debug("Check owner debug");
+		// }
+		// List<BaseEntity> ownerbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false, user.getCode());
+		// begs.addAll(ownerbegs);
+		// VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+		// }
+		// }
+		// println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
+		// bulkmsg.add(publishCmd(begs, bucket.getCode(), "LNK_CORE"));
+		//
+		// for (BaseEntity beg : begs) {
+		// List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),
+		// "LNK_BEG", 0, 20,
+		// false);
+		// List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
+		// for (BaseEntity begKid : begKids) {
+		// if (begKid.getCode().startsWith("OFR_")) {
+		// if (user.is("PRI_OWNER")) {
+		// filteredKids.add(begKid);
+		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
+		// }
+		// if (user.is("PRI_DRIVER")) {
+		// Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
+		// if (quoterCode.isPresent()) {
+		// if (user.getCode().equals(quoterCode.get())) {
+		// filteredKids.add(begKid);
+		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
+		// }
+		// }
+		// }
+		// } else {
+		// filteredKids.add(begKid);
+		// }
+		// // println(bucket.getCode() + ":" + begKid.getCode());
+		// }
+		// bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+		// }
+		// // bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+		// }
+		// } else {
+		// // fetch all the jobs related to this person
+		//
+		// }
+		// /* Sending Draft Datas for the Owners */
+		// if (user.is("PRI_OWNER")) {
+		// List<BaseEntity> ownerDraftBegs =
+		// getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
+		// user.getCode());
+		// bulkmsg.add(publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"));
+		// }
 
 	}
 
@@ -3036,7 +3039,7 @@ public class QRules {
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
 		}
-		
+
 	}
 
 	static QBulkMessage cache = null;
@@ -3073,16 +3076,17 @@ public class QRules {
 		BaseEntity currentUser = getUser();
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
-		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
-				.addColumn("PRI_TITLE", "Title")
+		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On")
 
 				.setStakeholder(getUser().getCode())
 
-				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)   //Sort doesn't work in local, need
-																								// to be tested in prod before deploying
-				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%")
-				.setPageStart(pageStart).setPageSize(pageSize);
+				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
+																							// local, need
+																							// to be tested in prod
+																							// before deploying
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
+				.setPageSize(pageSize);
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
@@ -3119,14 +3123,14 @@ public class QRules {
 									VertxUtils.subscribe(realm(), convo, linkedUser.getCode());
 									String[] senderCodeInArray = { currentUser.getCode() };
 									publishData(linkedUser, senderCodeInArray);
-									//bulkmsg.add(publishData(linkedUser, senderCodeInArray));
+									// bulkmsg.add(publishData(linkedUser, senderCodeInArray));
 								}
 							}
 						}
 					}
 				}
 				publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT");
-				//bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
+				// bulkmsg.add(publishCmd(userConversations, "GRP_MESSAGES", "LNK_CHAT"));
 			} else {
 				println("There are not chats for the current user");
 			}
@@ -3499,9 +3503,9 @@ public class QRules {
 	/* Verify the user entered passcode with the one in DB */
 	public boolean verifyPassCode(final String userCode, final String userPassCode) {
 
-		println("The Passcode in DB is ::"+Integer.parseInt(getBaseEntityValueAsString(userCode,
-		 "PRI_VERIFICATION_CODE")));
-		 println("User Entered Passcode is ::"+Integer.parseInt(userPassCode));
+		println("The Passcode in DB is ::"
+				+ Integer.parseInt(getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE")));
+		println("User Entered Passcode is ::" + Integer.parseInt(userPassCode));
 
 		if (getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE").equals(userPassCode)) {
 			return true;
@@ -4627,56 +4631,52 @@ public class QRules {
 	public void sendReport(String reportCode) throws IOException {
 
 		System.out.println("The report code is :: " + reportCode);
-		//BaseEntity searchBE = getBaseEntityByCode(reportCode);
+		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 		String jsonSearchBE = null;
 
-		if(reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS") ) {
-			//srchBE.setStakeholder(getUser().getCode());
-			SearchEntity srchBE = new SearchEntity(reportCode,"List of all My Loads")
-	  	     .addColumn("PRI_NAME","Load Name")
-	  	     .addColumn("PRI_JOB_ID","Job ID")
-	  	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
-	  	     .addColumn("PRI_DESCRIPTION","Description")
+		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
+			// srchBE.setStakeholder(getUser().getCode());
+			SearchEntity srchBE = new SearchEntity(reportCode, "List of all My Loads")
+					.addColumn("PRI_NAME", "Load Name").addColumn("PRI_JOB_ID", "Job ID")
+					.addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address").addColumn("PRI_DESCRIPTION", "Description")
 
-	  	     .setStakeholder(getUser().getCode())
+					.setStakeholder(getUser().getCode())
 
-	  	     .addSort("PRI_NAME","Name",SearchEntity.Sort.ASC)
+					.addSort("PRI_NAME", "Name", SearchEntity.Sort.ASC)
 
-	  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
 
-	  	     .setPageStart(0)
-	  	     .setPageSize(10000);
+					.setPageStart(0).setPageSize(10000);
 
 			jsonSearchBE = JsonUtils.toJson(srchBE);
 
-	     }
-		else {
-		   BaseEntity searchBE = getBaseEntityByCode(reportCode);
-		   jsonSearchBE = JsonUtils.toJson(searchBE);
-	     }
+		} else {
+			BaseEntity searchBE = getBaseEntityByCode(reportCode);
+			jsonSearchBE = JsonUtils.toJson(searchBE);
+		}
 
 		System.out.println("The search BE is :: " + jsonSearchBE);
-		//String jsonSearchBE = JsonUtils.toJson(searchBE);
+		// String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		//System.out.println("The result   ::  " + JsonUtils.toJson(msg));
+		// System.out.println("The result :: " + JsonUtils.toJson(msg));
 		publishData(new JsonObject(resultJson));
 
-//		JsonArray columnHeaders = new JsonArray();
-//		List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
-//
-//		for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
-//			if (ea.getAttributeCode().startsWith("COL_")) {
-//				columnAttributes.add(ea);
-//			}
-//		}
-//
-//		columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
-//		for (EntityAttribute ea : columnAttributes) {
-//			columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
-//		}
+		// JsonArray columnHeaders = new JsonArray();
+		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
+		//
+		// for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
+		// if (ea.getAttributeCode().startsWith("COL_")) {
+		// columnAttributes.add(ea);
+		// }
+		// }
+		//
+		// columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
+		// for (EntityAttribute ea : columnAttributes) {
+		// columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
+		// }
 
 		// sendTableViewWithHeaders(reportCode, columnHeaders);
 
@@ -4696,8 +4696,7 @@ public class QRules {
 	}
 
 	/*
-	 * Get search Results
-	 * returns QDataBaseEntityMessage
+	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
@@ -4711,8 +4710,7 @@ public class QRules {
 	}
 
 	/*
-	 *  Get search Results
-	 *  return String
+	 * Get search Results return String
 	 */
 	public String getSearchResultsString(SearchEntity searchBE) throws IOException {
 		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
@@ -4868,7 +4866,8 @@ public class QRules {
 	}
 
 	/*
-	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO: Refactor
+	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO:
+	 * Refactor
 	 */
 	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
@@ -4886,20 +4885,20 @@ public class QRules {
 		} else {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = getBaseEntityByCode(searchBECode);
-//			List<String> columnsAttribute = new ArrayList<String>();
+			// List<String> columnsAttribute = new ArrayList<String>();
 			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();
 
 			for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 				if (ea.getAttributeCode().startsWith("COL_")) {
-//					String attributeCode = ea.getAttributeCode();
-//					Double weight = ea.getWeight();
-//					String attributeName = ea.getAttributeName();
-//					String header = StringUtils.remove(attributeCode, "COL_");
-//					columnsAttribute.add(header);
+					// String attributeCode = ea.getAttributeCode();
+					// Double weight = ea.getWeight();
+					// String attributeName = ea.getAttributeName();
+					// String header = StringUtils.remove(attributeCode, "COL_");
+					// columnsAttribute.add(header);
 					eaList.add(ea);
 				}
 			}
-			List<String> sortedColumns =  sortEntityAttributeBasedOnWeight(eaList, "ASC");
+			List<String> sortedColumns = sortEntityAttributeBasedOnWeight(eaList, "ASC");
 			String[] beArr = new String[sortedColumns.size()];
 			beArr = sortedColumns.toArray(beArr);
 
@@ -4929,23 +4928,25 @@ public class QRules {
 		publishCmd(cmdViewJson);
 	}
 
-
-	/*  Sorting Columns of a SearchEntity as per the weight in either Ascening or descending order  */
+	/*
+	 * Sorting Columns of a SearchEntity as per the weight in either Ascening or
+	 * descending order
+	 */
 	public List<String> sortEntityAttributeBasedOnWeight(final List<EntityAttribute> ea, final String sortOrder) {
 
 		if (ea.size() > 1) {
 			Collections.sort(ea, new Comparator<EntityAttribute>() {
 				@Override
 				public int compare(EntityAttribute ea1, EntityAttribute ea2) {
-//					println("The weight value of " + ea1.getAttributeCode() + " is "
-//							+ ea1.getWeight());
-//					println("The weight value of " + ea2.getAttributeCode() + " is "
-//							+ ea2.getWeight());
+					// println("The weight value of " + ea1.getAttributeCode() + " is "
+					// + ea1.getWeight());
+					// println("The weight value of " + ea2.getAttributeCode() + " is "
+					// + ea2.getWeight());
 					if (ea1.getWeight() != null && ea2.getWeight() != null) {
-						if(sortOrder.equalsIgnoreCase("ASC"))
-						  return ( ea1.getWeight()).compareTo(ea2.getWeight());
+						if (sortOrder.equalsIgnoreCase("ASC"))
+							return (ea1.getWeight()).compareTo(ea2.getWeight());
 						else
-						   return ( ea2.getWeight()).compareTo(ea1.getWeight());
+							return (ea2.getWeight()).compareTo(ea1.getWeight());
 
 					} else
 						return 0;
@@ -4953,10 +4954,10 @@ public class QRules {
 			});
 		}
 		List<String> searchHeader = new ArrayList<String>();
-		for(EntityAttribute ea1 : ea) {
-//			String code = ea1.getAttributeCode();
-//			String name = ea1.getAttributeName();
-//			Double weight = ea1.getWeight();
+		for (EntityAttribute ea1 : ea) {
+			// String code = ea1.getAttributeCode();
+			// String name = ea1.getAttributeName();
+			// Double weight = ea1.getWeight();
 			searchHeader.add(ea1.getAttributeCode().substring("COL_".length()));
 		}
 
@@ -4982,15 +4983,15 @@ public class QRules {
 
 	}
 
-	public void triggerReleasePaymentMailWithAttachment(BaseEntity ownerBe, BaseEntity driverBe, BaseEntity offerBe, BaseEntity loadBe,
-			BaseEntity begBe) {
+	public void triggerReleasePaymentMailWithAttachment(BaseEntity ownerBe, BaseEntity driverBe, BaseEntity offerBe,
+			BaseEntity loadBe, BaseEntity begBe) {
 
 		Money ownerIncGST = null;
 		Money ownerExcGST = null;
 		Money driverExcGST = null;
 		Money driverIncGST = null;
 
-		//String offerCode = begBe.getValue("STT_HOT_OFFER", null);
+		// String offerCode = begBe.getValue("STT_HOT_OFFER", null);
 		if (offerBe != null) {
 
 			ownerIncGST = offerBe.getValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
@@ -5037,7 +5038,8 @@ public class QRules {
 			contextMap.put("INVOICE_DATE", getFormattedCurrentLocalDateTime());
 
 			Double gstDoubleValue_owner = ownerIncGST.getNumber().doubleValue() - ownerExcGST.getNumber().doubleValue();
-			Double gstDoubleValue_driver = driverIncGST.getNumber().doubleValue() - driverExcGST.getNumber().doubleValue();
+			Double gstDoubleValue_driver = driverIncGST.getNumber().doubleValue()
+					- driverExcGST.getNumber().doubleValue();
 
 			/* rounding off GST amount to 2 decimal points */
 			String roundedGstValue_owner = String.format("%.2f", gstDoubleValue_owner);
@@ -5048,12 +5050,11 @@ public class QRules {
 
 			/* Channel40's ABN - Project attribute */
 			String projectCompanyABN = projectBe.getValue("PRI_ABN", null);
-			if(projectCompanyABN != null) {
+			if (projectCompanyABN != null) {
 				contextMap.put("PROJECT_ABN", projectCompanyABN);
 			} else {
 				contextMap.put("PROJECT_ABN", "-");
 			}
-
 
 			/* we get the payment method the freight owner selected for the job */
 			QPaymentMethod selectedOwnerPaymentMethod = PaymentUtils.getPaymentMethodSelectedByOwner(begBe, ownerBe);
@@ -5063,8 +5064,7 @@ public class QRules {
 				PaymentType paymentMethodType = selectedOwnerPaymentMethod.getType();
 				contextMap.put("PAYMENT_TYPE", paymentMethodType.toString());
 
-
-				Character[] toBeIgnoreCharacterArr = {'-'};
+				Character[] toBeIgnoreCharacterArr = { '-' };
 				if (paymentMethodType.equals(PaymentType.CARD)) {
 
 					String creditCardNumber = selectedOwnerPaymentMethod.getNumber();
@@ -5075,9 +5075,10 @@ public class QRules {
 						creditCardNumber = creditCardNumber.replaceAll("\\s+", "-");
 
 						/* Masking credit card number */
-						String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(creditCardNumber, 0, 15, "x", toBeIgnoreCharacterArr);
+						String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(creditCardNumber, 0, 15,
+								"x", toBeIgnoreCharacterArr);
 
-						if(maskedCreditCardNumber != null) {
+						if (maskedCreditCardNumber != null) {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedCreditCardNumber);
 						} else {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", "");
@@ -5097,7 +5098,8 @@ public class QRules {
 
 						/* Masking bsb and account number */
 						String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
-						String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x", toBeIgnoreCharacterArr);
+						String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x",
+								toBeIgnoreCharacterArr);
 
 						if (maskedAccountNumber != null && maskedBsb != null) {
 							contextMap.put("PAYMENT_ACCOUNTNUMBER", maskedAccountNumber + ", BSB:" + maskedBsb);
@@ -5116,26 +5118,32 @@ public class QRules {
 			/* invoice attachment for owner */
 			if (ownerInvoiceLayoutUrl != null) {
 				ownerAttachmentList = new ArrayList<>();
-				QBaseMSGAttachment ownerInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", ownerInvoiceLayoutUrl, true, "INVOICE_PDF");
+				QBaseMSGAttachment ownerInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE,
+						"application/pdf", ownerInvoiceLayoutUrl, true, "INVOICE_PDF");
 				ownerAttachmentList.add(ownerInvoiceAttachment);
 			}
 
 			/* invoice attachment for driver */
 			if (driverInvoiceLayoutUrl != null) {
 				driverAttachmentList = new ArrayList<>();
-				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", driverInvoiceLayoutUrl, true, "INVOICE_PDF");
+				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE,
+						"application/pdf", driverInvoiceLayoutUrl, true, "INVOICE_PDF");
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
 
 			String[] messageToOwnerRecipients = new String[1];
 			messageToOwnerRecipients[0] = ownerBe.getCode();
-			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "TOAST");
-			sendMessage(messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL", ownerAttachmentList);
+			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER",
+					"TOAST");
+			sendMessage(messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
+					ownerAttachmentList);
 
 			String[] messageToDriverRecipients = new String[1];
 			messageToDriverRecipients[0] = driverBe.getCode();
-			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "TOAST");
-			sendMessage(messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL", driverAttachmentList);
+			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER",
+					"TOAST");
+			sendMessage(messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
+					driverAttachmentList);
 
 		} else {
 			BaseEntity project = getProject();
@@ -5171,130 +5179,130 @@ public class QRules {
 		return dateString;
 
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
 
 		String attributeCode = "STA_" + userCode;
 		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
 
-		for(String userCode: userCodes) {
+		for (String userCode : userCodes) {
 			this.updateBaseEntityStatus(beCode, userCode, status);
 		}
 	}
 
-	public boolean loadRealmData()
-	{
-		
-			println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for "+realm());
-			
-			for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet())  {
-			
-			
+	public boolean loadRealmData() {
+
+		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
+
+		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
+
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
-				System.out.println("No keycloakMap for "+realm());
+				System.out.println("No keycloakMap for " + realm());
 				return false;
 			}
 			JsonObject realmJson = new JsonObject(keycloakJson);
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
-			
+
 			if (realm().equals(realm)) {
-			
+
 				// fetch token from keycloak
 				String key = null;
-				String initVector = "PRJ_"+realm().toUpperCase();
-				initVector = StringUtils.rightPad(initVector, 16,'*');
+				String initVector = "PRJ_" + realm().toUpperCase();
+				initVector = StringUtils.rightPad(initVector, 16, '*');
 				String encryptedPassword = null;
-				
+
 				try {
 					key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
 				} catch (Exception e) {
-					log.error("PRJ_"+realm().toUpperCase()+" ENV ENV_SECURITY_KEY  is missing!");
+					log.error("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
 				}
-				
+
 				try {
 					encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
 				} catch (Exception e) {
-					log.error("PRJ_"+realm().toUpperCase()+" attribute ENV_SECURITY_KEY  is missing!");
+					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
 				}
-				
-				
-				
+
 				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-				
+
 				// Now ask the bridge for the keycloak to use
-				String keycloakurl = realmJson.getString("auth-server-url").substring(0, realmJson.getString("auth-server-url").length()-("/auth".length()));
-				
-				
-				
+				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+						realmJson.getString("auth-server-url").length() - ("/auth".length()));
+
 				try {
-					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(), secret,
-							"service", password);
+					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(),
+							secret, "service", password);
 					String token = accessToken.getToken();
-					
-					Map<String,Object> serviceDecodedTokenMap  = KeycloakUtils.getJsonMap(token);
-					
+
+					Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
+
 					this.setDecodedTokenMap(serviceDecodedTokenMap);
 					this.setToken(token);
 					String dev = System.getenv("GENNYDEV");
 					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) &&("TRUE".equalsIgnoreCase(dev))) {
+					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
 						this.set("realm", proj_realm);
 					} else {
-						this.set("realm",realm);
+						this.set("realm", realm);
 					}
-					
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				return true;
 			}
-			}	
-			
+		}
 
 		return false;
 	}
-	
-	public void generateTree()
-	{
+
+	public void generateTree() {
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-		
+
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
+		bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
 		// println(root);
 
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
-
+		bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]), "GRP_REPORTS", "LNK_CORE"));
 
 		List<BaseEntity> admin = getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
+		bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]), "GRP_ADMIN", "LNK_CORE"));
+
+		// Now get the buckets
+		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
+		// Save the buckets for future use
+		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+		VertxUtils.putObject(realm(), "BUCKETS", realm(), bucketMsg);
+		
+		
+		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]), "GRP_DASHBOARD", "LNK_CORE"));
 
 		QBulkMessage bulk = new QBulkMessage(bulkmsg);
 
 		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
 	}
-	
-	public void sendTreeData()
-	{
-		println("treedata realm is "+realm());
-		QBulkMessage bulk =  VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
-	   		
-       	for (QDataBaseEntityMessage msg : bulk.getMessages()) {
+
+	public void sendTreeData() {
+		println("treedata realm is " + realm());
+		QBulkMessage bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
+
+		for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 			if (msg instanceof QDataBaseEntityMessage) {
 				msg.setToken(getToken());
 				publishCmd(JsonUtils.toJson(msg));
@@ -5302,31 +5310,89 @@ public class QRules {
 
 		}
 	}
-	
-	public void generateJobsCache()
-	{
-		println("Jobs Cache realm is "+realm());
-		
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-	
-		BaseEntity searchAvailableJobs = getBaseEntityByCode("SBE_AVAIL_JOBS");
-		try {
-			QDataBaseEntityMessage results=null;
 
-			results = QwandaUtils.fetchResults(searchAvailableJobs,getToken());
-			if (results!=null) {
+	public void generateNewItemsCache() {
+		println("GENERATING NEW ITEMS  Cache realm is " + realm());
+
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		QDataBaseEntityMessage results = null;
+
+		/* Searches */
+		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
+
+		try {
+			results = QwandaUtils.fetchResults(searchNewItems, getToken());
+			if (results != null) {
 				results.setParentCode("GRP_NEW_ITEMS");
 				results.setLinkCode("LNK_CORE");
-		    bulkmsg.add(results);
+				bulkmsg.add(results);
 
-			QBulkMessage bulk = new QBulkMessage(bulkmsg);
-
-			VertxUtils.putObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", bulk);
+				QBulkMessage bulk = new QBulkMessage(bulkmsg);
 			}
 
+			for (BaseEntity beg : results.getItems()) {
+				List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100, false);
+				bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
+			}
+
+			QBulkMessage bulk = new QBulkMessage(bulkmsg);
+			VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
+
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder) {
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+
+		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
+		
+		
+		BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+		SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
+		if (!stakeholder.is("PRI_IS_ADMIN")) {
+			search.setStakeholder(stakeholder.getCode());
+		}
+		try {
+			QDataBaseEntityMessage results = QwandaUtils.fetchResults(search, getToken());
+			bulkmsg.add(results);
+			
+			// Create bucket Buckets!
+		 Map<String,List<BaseEntity>> bucketListMap = new HashMap<String,List<BaseEntity>>();
+		 for (BaseEntity bucket : bucketsMsg.getItems()) {
+			 bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
+		 }
+		 
+		 
+			//Now place each beg into the proper buckets
+			for (BaseEntity beg : results.getItems()) {
+				// Now search through the BEG links and match to bucket, and their laods, main offer, owner
+				 List<BaseEntity> begKids = new ArrayList<BaseEntity>();
+
+				for (EntityEntity link : beg.getLinks()) {
+					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
+					begKids.add(linkedBE);
+				}
+				bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
+		
+				
+			}
+	
+			for (BaseEntity bucket : bucketsMsg.getItems()) {
+				if (!bucketListMap.get(bucket.getCode()).isEmpty()) {
+				bulkmsg.add(new QDataBaseEntityMessage(bucketListMap.get(bucket.getCode()).toArray(new BaseEntity[0]), bucket.getCode(), "LNK_CORE"));
+				}
+				}
+
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		return bulk;
 	}
+
 }
