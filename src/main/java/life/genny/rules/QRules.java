@@ -2815,7 +2815,7 @@ public class QRules {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		
-		QBulkMessage availableJobs = VertxUtils.getObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", QBulkMessage.class);
+		QBulkMessage availableJobs = null;//VertxUtils.getObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", QBulkMessage.class);
 		if (availableJobs != null) {
 			showLoading("Loading Cached jobs...");
 			if (availableJobs.getMessages() != null) {
