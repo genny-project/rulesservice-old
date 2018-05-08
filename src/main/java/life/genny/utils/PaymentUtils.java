@@ -41,16 +41,11 @@ import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
-<<<<<<< HEAD
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
-=======
-import life.genny.qwanda.payments.QPaymentsUserContactInfo;
-import life.genny.qwanda.payments.QPaymentsUserInfo;
->>>>>>> 29bbf18f... Payment user creation refactor
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
@@ -279,27 +274,17 @@ public class PaymentUtils {
 	}
 
 	/* Creates a new user in Assembly */
-<<<<<<< HEAD
 	public static QPaymentsUserInfo getPaymentsUserInfo(BaseEntity userBe) throws IllegalArgumentException {
 		
 		QPaymentsUserInfo personalInfo = null;
 	
 		if(userBe != null) {
-=======
-	public static QPaymentsUserInfo getPaymentsUserInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
-		
-		String assemblyId = null;
-		QPaymentsUserInfo personalInfo = null;
-	
-		if(userBe != null && assemblyUserId != null) {
->>>>>>> 29bbf18f... Payment user creation refactor
 			
 			String formattedDOBString = null;
 			String firstName = userBe.getValue("PRI_FIRSTNAME", null);
 			String lastName = userBe.getValue("PRI_LASTNAME", null);
 			LocalDate dob = userBe.getValue("PRI_DOB", null);
 
-			
 			/* If the date of birth is provided format it correctly */
 			if(dob != null) {
 				System.out.println("dob string ::"+dob);
@@ -317,46 +302,27 @@ public class PaymentUtils {
 		
 	}
 	
-<<<<<<< HEAD
 	public static QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity userBe) throws IllegalArgumentException {
 		
 		QPaymentsUserContactInfo userContactInfo = null;
 		
 		if(userBe != null) {
-=======
-	public static QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
-		
-		QPaymentsUserContactInfo userContactInfo = null;
-		
-		if(userBe != null && assemblyUserId != null) {
->>>>>>> 29bbf18f... Payment user creation refactor
 			
 			String email = userBe.getValue("PRI_EMAIL", null);
 			userContactInfo = new QPaymentsUserContactInfo(email);
 		}
 		
 		return userContactInfo;
-<<<<<<< HEAD
 
 	}
 	
 	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe) throws IllegalArgumentException {
-=======
-		
-	}
-	
-	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
->>>>>>> 29bbf18f... Payment user creation refactor
 		
 		QPaymentsLocationInfo userLocationInfo = null;
 		String city = null;
 		String country = null;
 		
-<<<<<<< HEAD
 		if(userBe != null) {
-=======
-		if(userBe != null && assemblyUserId != null) {
->>>>>>> 29bbf18f... Payment user creation refactor
 			
 			String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
 			
@@ -380,7 +346,6 @@ public class PaymentUtils {
 		
 	}
 	
-
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
