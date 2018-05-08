@@ -11,7 +11,7 @@ rule "User Registration Form Submit - Step 0"
 	 	rules.header();
         
 		rules.setState("LOOP_USER_REGISTRATION_FORM_SUBMIT_STEP0");
-		rules.setState("SELLER_REGISTRATION_FORM_SUBMIT_READY");  
+		rules.setState("USER_REGISTRATION_FORM_SUBMIT_READY");  
 
 	 	rules.footer();      
 end

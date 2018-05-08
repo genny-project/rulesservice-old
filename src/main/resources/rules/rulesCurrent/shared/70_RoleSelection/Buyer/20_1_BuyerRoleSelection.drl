@@ -6,7 +6,7 @@ import java.util.List;
 rule "Selected Buyer Role"
      when
         $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_BUYER") )
-        rules: QRules( isState("STARTED") && !isState("HAS_SELECTED_PROFILE_BUYER") && isState("BTN_SELECT_ROLE_BUYER") )
+        rules: QRules( isState("STARTED") && !isState("HAS_SELECTED_PROFILE_BUYER") )
      then
 
         rules.header();

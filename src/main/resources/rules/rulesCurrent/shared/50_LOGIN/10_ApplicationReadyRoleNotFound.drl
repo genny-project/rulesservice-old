@@ -7,11 +7,11 @@ rule "Application is ready role is not found"
     when
          rules: QRules( isState("APPLICATION_READY") && 
                         isState("ROLE_NOT_FOUND") &&
-                        !isState("LOOP_APPLICATION_READY") ) 
+                        !isState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND") ) 
      then
      	rules.header();
 
-        rules.setState("LOOP_APPLICATION_READY");
+        rules.setState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND");
         rules.setState("TRIGGER_ROLE_CHECK");
 
 	    rules.footer();      		      

@@ -3,14 +3,14 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.BaseEntity;
 
-rule "Create New User"
+rule "Setup New User"
     when
-        rules: QRules( isState("CREATE_NEW_USER") &&
-                    !isState("LOOP_CREATE_NEW_USER") )
+        rules: QRules( isState("DID_CREATE_NEW_USER") && isState("APPLICATION_NOT_READY") &&
+                    !isState("LOOP_SETUP_NEW_USER") )
     then
         rules.header();
-        rules.setState("LOOP_CREATE_NEW_USER");
-        BaseEntity be = rules.createUser();
+        rules.setState("LOOP_SETUP_NEW_USER");
+
         BaseEntity user = rules.getUser();
 
         /*  saving the default profile image   */
@@ -24,7 +24,7 @@ rule "Create New User"
                           "PRI_IS_PROFILE_COMPLETED",
                           "FALSE") );
 
-        rules.setState("CREATED_NEW_USER");
+        rules.setState("DID_SETUP_NEW_USER");
 
         rules.println("New User is   ::   " + user);
 
