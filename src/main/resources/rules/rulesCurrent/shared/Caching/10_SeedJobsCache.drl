@@ -11,19 +11,19 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
-rule "Seed Jobs Cache"
+rule "Seed Items Cache"
 
     ruleflow-group 'GenerateSearches'
  
      when
-       rules: QRules( isState("SBE_AVAIL_JOBS1") && !isState("GENERATE_JOBS_CACHE"))
+       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
      then
 
      rules.header();
-        rules.setState("GENERATE_JOBS_CACHE");
-		rules.println("Generating  New Jobs Cache for "+rules.realm());
+        rules.setState("GENERATE_NEW_ITEMS_CACHE");
+		rules.println("Generating  New Items Cache for "+rules.realm());
 		
-		rules.generateJobsCache(); 
+		rules.generateNewItemsCache(); 
 
  
      rules.footer();

@@ -12,16 +12,16 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
 
-rule "SBE_AVAIL_JOBS"
+rule "SBE_NEW_ITEMS"
     ruleflow-group 'GenerateSearches'
     
     when
-        rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_AVAIL_JOBS1") )
+        rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_NEW_ITEMS1") )
      then
       rules.header();
          rules.setState(drools.getRule().getName()+"1");
-            rules.println("SBE_AVAIL_JOBS!!!");
-  	     SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All Available Jobs")
+            rules.println("SBE_NEW_ITEMS!!!");
+  	     SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
    	   
   	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
 

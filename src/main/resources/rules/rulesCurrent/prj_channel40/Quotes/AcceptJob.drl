@@ -65,5 +65,8 @@ rule "Accept Job"
                 
         /* Send BUCKETVIEW Cmd */
         drools.setFocus("SendLayoutsAndData"); 
+        
+        rules.generateNewItemsCache();       
+        
         rules.footer();
 end
