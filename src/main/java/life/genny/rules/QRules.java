@@ -5311,14 +5311,18 @@ public class QRules {
 	
 		BaseEntity searchAvailableJobs = getBaseEntityByCode("SBE_AVAIL_JOBS");
 		try {
-			List<BaseEntity> results=null;
+			QDataBaseEntityMessage results=null;
 
 			results = QwandaUtils.fetchResults(searchAvailableJobs,getToken());
-		    bulkmsg.add(new QDataBaseEntityMessage(results.toArray(new BaseEntity[0]),"GRP_NEW_ITEMS", "LNK_CORE"));
+			if (results!=null) {
+				results.setParentCode("GRP_NEW_ITEMS");
+				results.setLinkCode("LNK_CORE");
+		    bulkmsg.add(results);
 
 			QBulkMessage bulk = new QBulkMessage(bulkmsg);
 
 			VertxUtils.putObject(realm(), "SEARCH", "SBE_AVAILABLE_JOBS", bulk);
+			}
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
