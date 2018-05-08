@@ -5619,7 +5619,6 @@ public class QRules {
 				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE,
 						"application/pdf", driverInvoiceLayoutUrl, true, "RECEIPT_PDF");
 
-
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
 
