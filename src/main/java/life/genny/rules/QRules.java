@@ -354,7 +354,7 @@ public class QRules {
 	}
 
 	public Boolean isTrue(final String key) {
-		return getAsBoolean(key);
+		return ionAsBoolean(key);
 	}
 
 	public Boolean isFalse(final String key) {
@@ -1704,6 +1704,7 @@ public class QRules {
 	}
 
 	public QDataAskMessage getAskQuestions(final QDataQSTMessage qstMsg) {
+		
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		try {
@@ -1760,15 +1761,29 @@ public class QRules {
 			return msg;
 		}
 	}
+	
+	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
+		
+		String json;
+		try {
+			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+					+ questionCode + "/" + targetCode, getToken());
+			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);;
+			return msg;
+			
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
 	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
 			final boolean autoPushSelections) throws ClientProtocolException, IOException {
 
-		String json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-				+ questionCode + "/" + targetCode, getToken());
-
-		QDataAskMessage msg = null;
-		msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+		QDataAskMessage msg = this.getQuestions(sourceCode, targetCode, questionCode);
 		if (msg != null) {
 			publishData(msg);
 		} else {

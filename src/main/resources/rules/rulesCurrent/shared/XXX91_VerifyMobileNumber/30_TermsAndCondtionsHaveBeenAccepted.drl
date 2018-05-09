@@ -1,0 +1,17 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Terms and conditions have been accepted"
+    when
+        rules: QRules( isState("TERMS_AND_CONDITIONS_ACCEPTED") && 
+                    !isState("LOO_ACCEPTED_T_C") )
+    then
+        rules.header();
+        
+		rules.setState("LOO_ACCEPTED_T_C");
+        rules.setState("TRIGGER_PROFILE_CHECK");
+		
+        rules.footer();
+end

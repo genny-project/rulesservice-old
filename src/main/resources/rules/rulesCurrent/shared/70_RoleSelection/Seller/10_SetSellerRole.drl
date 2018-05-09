@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Select Seller Role - Step 0"
 
 	when
-		 rules: QRules( 	isState("BTN_SELECT_ROLE_SELLER") && 
+		 rules: QRules( 	isState("BTN_SELECT_ROLE_SELLER") &&  isState("ROLE_SELECTION") &&
 						!isState("SELLER_SELECTED") )   
 	 then
 	    rules.header();

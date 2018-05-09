@@ -5,7 +5,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Select Buyer Role"
 	when
-	    rules: QRules( 	isState("BTN_SELECT_ROLE_BUYER") && 
+	    rules: QRules( 	isState("BTN_SELECT_ROLE_BUYER") && isState("ROLE_SELECTION") &&
 						!isState("BUYER_SELECTED") ) 	    
 	 then
 	    
