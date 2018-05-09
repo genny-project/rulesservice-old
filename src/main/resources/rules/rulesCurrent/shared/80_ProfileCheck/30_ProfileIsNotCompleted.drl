@@ -16,7 +16,6 @@ rule "Profile is NOT completed - step 3 - channel40"
      	rules.header();
 
 		rules.setState("LOOP_PROFILE_NOT_COMPLETED");
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", "FALSE");
 		rules.setState("TRIGGER_REGISTRATION");
 
 	    rules.footer();
