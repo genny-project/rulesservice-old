@@ -33,6 +33,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
 
@@ -3064,6 +3065,48 @@ public class QRules {
 		VertxUtils.putSetString(realm(), SUB, beCode, subscriberSet);
 
 
+	}
+	
+	public void loadUserRole() {
+		
+		BaseEntity user = this.getUser();
+      	if(user != null){
+
+      		Boolean has_role_been_found = false;
+
+      		if(user != null) {
+
+      			List<EntityAttribute> roles = user.getBaseEntityAttributes()
+      								.stream()
+      								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
+      								.collect(Collectors.toList());
+
+      			for(EntityAttribute role: roles) {
+      				
+      				if(role != null && role.getValue() != null) {
+      					
+      					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
+      					if(isRole) {
+      						this.setState(role.getAttributeCode());
+      						
+      						if(role.getAttributeCode().equals("PRI_IS_PROFILE_COMPLETED") == false && role.getAttributeCode().equals("PRI_IS_ADMIN") == false) {
+      							has_role_been_found = true;
+      						}
+      					}
+      				}
+      			}
+      		}
+
+      		if(has_role_been_found) {
+      			this.setState("ROLE_FOUND");
+      		}
+      		else {
+      			this.setState("ROLE_NOT_FOUND");
+      		}
+      	}
+      	else {
+      		this.setState("ROLE_NOT_FOUND");
+      	}
 	}
 
 	public void sendLayoutsAndData() {
