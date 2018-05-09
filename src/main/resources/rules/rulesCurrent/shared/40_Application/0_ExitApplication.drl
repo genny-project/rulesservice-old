@@ -11,5 +11,7 @@ rule "Exit Application"
         rules.setState("LOOP_EXIT_APPLICATION_SETUP");
 
         rules.setState("EXIT_APPLICATION_SETUP");
+        rules.setState("SET_APPLICATION_IS_READY");
+        
 	    rules.footer();
 end

@@ -1,0 +1,18 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "User Selected Role"
+	when
+	    rules: QRules( 	(isState("BTN_SELECT_ROLE_BUYER") || isState("BTN_SELECT_ROLE_SELLER") || isState("BTN_SELECT_ROLE_COMPANY")) && 
+						!isState("ROLE_SELECTION") ) 	    
+	 then
+	    
+		rules.header();
+		
+		rules.showLoading("Setting up your account...");
+		rules.setState("ROLE_SELECTION");
+		
+	    rules.footer();     		      
+end

@@ -10,7 +10,7 @@ rule "User Registration Form Submit - Step 0"
 	 	rules.header();
         
 		rules.setState("LOOP_USER_REGISTRATION_FORM_SUBMIT_STEP0");
-		rules.setState("TRIGGER_PROFILE_CHECK");  
-
+		rules.setState("CHECK_TERMS_AND_CONDITIONS");  
+		
 	 	rules.footer();      
 end

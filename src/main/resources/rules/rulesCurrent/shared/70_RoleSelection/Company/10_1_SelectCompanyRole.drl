@@ -5,7 +5,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Select Company Role"
 	when
-	    rules: QRules( 	isState("BTN_SELECT_ROLE_COMPANY") && 
+	    rules: QRules( 	isState("BTN_SELECT_ROLE_COMPANY") &&  isState("ROLE_SELECTION") &&
 						!isState("COMPANY_SELECTED") ) 	    
 	 then
 	    

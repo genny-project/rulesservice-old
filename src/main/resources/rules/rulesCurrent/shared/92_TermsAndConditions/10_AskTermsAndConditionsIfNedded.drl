@@ -1,0 +1,22 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Ask terms and conditions if needed"
+    when
+        rules: QRules( isState("TERMS_AND_CONDITIONS_NOT_ACCEPTED") && 
+                    !isState("LOO_ASK_T_C") )
+    then
+        rules.header();
+        
+		rules.setState("LOO_ASK_T_C");
+        if(rules.isMandatoryFieldsEntered(rules.getUser().getCode(), "QUE_TERMS_AND_CONDITIONS_GRP")) {
+        		rules.setState("TERMS_AND_CONDITIONS_ACCEPTED");
+        }
+        else {
+            rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_TERMS_AND_CONDITIONS_GRP", false);
+        }
+		
+        rules.footer();
+end
