@@ -5299,15 +5299,18 @@ public class QRules {
 	}
 
 	public void sendTreeData() {
+		
 		println("treedata realm is " + realm());
 		QBulkMessage bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
-
-		for (QDataBaseEntityMessage msg : bulk.getMessages()) {
-			if (msg instanceof QDataBaseEntityMessage) {
-				msg.setToken(getToken());
-				publishCmd(JsonUtils.toJson(msg));
+		
+		if(bulk != null) {
+			
+			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
+				if (msg instanceof QDataBaseEntityMessage) {
+					msg.setToken(getToken());
+					publishCmd(JsonUtils.toJson(msg));
+				}
 			}
-
 		}
 	}
 
