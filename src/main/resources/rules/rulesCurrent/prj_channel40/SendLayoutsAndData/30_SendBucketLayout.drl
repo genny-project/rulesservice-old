@@ -24,6 +24,8 @@ rule "Send Bucket Layout To Frontend"
         
 		rules.setState("SEND_BUCKET_LAYOUT");
 		
+		/* Only do at startup */
+		if (rules.isState("EVENT_AUTH_INIT")) {
 		LocalDateTime startTime = VertxUtils.getObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"),LocalDateTime.class);
  		if(startTime != null){
  		  VertxUtils.putObject(rules.realm(), "TIMING", (String)rules.getDecodedTokenMap().get("session_state"), null); // clear
@@ -32,6 +34,7 @@ rule "Send Bucket Layout To Frontend"
 		
 		  Duration d = Duration.between(startTime,endTime);
 		  rules.println("STARTUP TIME = "+d.toMillis());
+		}
 		}
 	    rules.footer();     		      
 end
