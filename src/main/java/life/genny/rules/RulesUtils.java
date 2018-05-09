@@ -128,12 +128,12 @@ public class RulesUtils {
 		// System.getenv("LAYOUT_CACHE_HOST");
 		// http://localhost:2223
 
-		Boolean activateCache = null;
-		if (System.getenv("GENNY_DEV") == null) {
-			activateCache = true;
-		} else {
-			activateCache = true; // FALSE = github || TRUE = cache
-		}
+		// Boolean activateCache = null;
+		// if (System.getenv("GENNY_DEV") == null) {
+		// 	activateCache = true;
+		// } else {
+		// 	activateCache = true; // FALSE = github || TRUE = cache
+		// }
 
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if (host == null) {
@@ -144,13 +144,13 @@ public class RulesUtils {
 			}
 		}
 
-		if (activateCache == false) {
-			if (path.contains(".json")) {
-				host = "https://raw.githubusercontent.com/genny-project/layouts/master";
-			} else {
-				host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
-			}
-		}
+		// if (activateCache == false) {
+		// 	if (path.contains(".json")) {
+		// 		host = "https://raw.githubusercontent.com/genny-project/layouts/master";
+		// 	} else {
+		// 		host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
+		// 	}
+		// }
 
 		return String.format("%s/%s", host, path);
 	}

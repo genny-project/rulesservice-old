@@ -5209,6 +5209,103 @@ public class QRules {
 			}
 		}
 	}
+
+	public void sendHostCompanyData() {
+
+		String[] recipient = { getUser().getCode() };
+		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
+		
+		/* SEND ROOT BaseEntity */
+		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
+		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);		
+
+		if(rootKids != null){
+			printList("rootKids", rootKids);
+
+			/* subscribe to all the applicationGroups */
+			subscribeUserToBaseEntities(getUser().getCode(), rootKids);
+			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+
+			for (BaseEntity rootKid : rootKids) {
+
+				if(rootKid.getCode().equalsIgnoreCase("GRP_BEGS")){
+					List<BaseEntity> begGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if(begGroups != null){
+						printList("begGroups", begGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), begGroups);
+						publishCmd(begGroups, rootKid.getCode(), "LNK_CORE");
+						
+						for (BaseEntity begGroup : begGroups) {
+							
+							List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false, company.getCode());
+							if(begs != null){
+								printList("begs", begs);
+								
+								/* subscribe to all the begs of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), begs);
+								publishCmd(begs, begGroup.getCode(), "LNK_CORE");
+								
+								for (BaseEntity beg : begs) {
+									List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+
+									if(begKids != null){
+										printList("begKids", begKids);
+
+										/* subscribe to all the begKids of the company */
+										subscribeUserToBaseEntities(getUser().getCode(), begKids);
+										publishCmd(begKids, beg.getCode(), "LNK_BEG");
+										
+										/* Send Applicants */
+										for (BaseEntity begKid : begKids) {
+											
+											if (begKid.getName().equals("APPLICATION")) {
+
+												List<BaseEntity> applicationKids = getBaseEntitysByParentAndLinkCode(begKid.getCode(), "LNK_APP", 0, 500, false);
+												
+												if(applicationKids != null){
+													printList("applicationKids", applicationKids);
+
+													/* subscribe to all the applicationKids */
+													subscribeUserToBaseEntities(getUser().getCode(), applicationKids);
+													publishCmd(applicationKids, begKid.getCode(), "LNK_BEG");
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}else{
+						println("GRP_BEG begs is null");
+					}
+				}
+
+				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
+					List<BaseEntity> applicationGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if(applicationGroups != null){
+						printList("applicationGroups", applicationGroups);
+
+						/* subscribe to all the applicationGroups */
+						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
+						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the contactGroups */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+			}
+		}
+	}
 }
 
 
