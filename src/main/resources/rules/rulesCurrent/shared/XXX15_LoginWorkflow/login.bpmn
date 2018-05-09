@@ -24,7 +24,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_23</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:scriptTask id="ScriptTask_2" name="Load User Role" scriptFormat="java">
+    <bpmn2:scriptTask id="ScriptTask_2" name="Load User Role" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
         <drools:metaData name="elementname">
           <drools:metaValue><![CDATA[Load User Role]]></drools:metaValue>
@@ -32,7 +32,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_33</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_8</bpmn2:outgoing>
-      <bpmn2:script>kcontext.getProcessInstance().getVariable(&quot;rules&quot;).loadUserRole();</bpmn2:script>
+      <bpmn2:script>((life.genny.rules.QRules)((org.kie.api.runtime.process.WorkflowProcessInstance)kcontext.getProcessInstance()).getVariable(&quot;rules&quot;)).loadUserRole();</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:exclusiveGateway id="ExclusiveGateway_2" name="Is user role set ?" gatewayDirection="Diverging">
       <bpmn2:incoming>SequenceFlow_8</bpmn2:incoming>
@@ -40,30 +40,40 @@
       <bpmn2:outgoing>SequenceFlow_10</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_8" drools:priority="1" sourceRef="ScriptTask_2" targetRef="ExclusiveGateway_2"/>
-    <bpmn2:scriptTask id="ScriptTask_3" name="Ask For User Role" scriptFormat="java">
+    <bpmn2:scriptTask id="ScriptTask_3" name="Ask For User Role" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
         <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Load User Role]]></drools:metaValue>
+          <drools:metaValue><![CDATA[Ask For User Role]]></drools:metaValue>
         </drools:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_35</bpmn2:outgoing>
-      <bpmn2:script>kcontext.getProcessInstance().getVariable(&quot;rules&quot;).sendSublayout(&quot;ROLE_SELECTION&quot;, &quot;registration/role_selection.json&quot;, null, false);</bpmn2:script>
+      <bpmn2:script>((life.genny.rules.QRules)((org.kie.api.runtime.process.WorkflowProcessInstance)kcontext.getProcessInstance()).getVariable(&quot;rules&quot;)).sendSublayout(&quot;ROLE_SELECTION&quot;, &quot;registration/role_selection.json&quot;, null, false);</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_9" drools:priority="1" name="No" sourceRef="ExclusiveGateway_2" targetRef="ScriptTask_3">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_4" language="http://www.w3.org/1999/XPath">kcontext.getProcessInstance().getVariable(&quot;rules&quot;).isState(&quot;ROLE_NOT_FOUND&quot;);</bpmn2:conditionExpression>
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_4" language="http://www.java.com/java">return ((life.genny.rules.QRules)((org.kie.api.runtime.process.WorkflowProcessInstance)kcontext.getProcessInstance()).getVariable(&quot;rules&quot;)).isState(&quot;ROLE_NOT_FOUND&quot;);</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_10" drools:priority="1" name="Yes" sourceRef="ExclusiveGateway_2" targetRef="ScriptTask_4">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_5" language="http://www.w3.org/1999/XPath">kcontext.getProcessInstance().getVariable(&quot;rules&quot;).isState(&quot;ROLE_FOUND&quot;);</bpmn2:conditionExpression>
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_5" language="http://www.java.com/java">return ((life.genny.rules.QRules)((org.kie.api.runtime.process.WorkflowProcessInstance)kcontext.getProcessInstance()).getVariable(&quot;rules&quot;)).isState(&quot;ROLE_FOUND&quot;);</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_23" drools:priority="1" sourceRef="ScriptTask_4" targetRef="EndEvent_1"/>
-    <bpmn2:scriptTask id="ScriptTask_4" name="Print text">
+    <bpmn2:scriptTask id="ScriptTask_4" name="Print text" scriptFormat="http://www.java.com/java">
+      <bpmn2:extensionElements>
+        <drools:metaData name="elementname">
+          <drools:metaValue><![CDATA[Print text]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_10</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_23</bpmn2:outgoing>
-      <bpmn2:script>kcontext.getProcessInstance().getVariable(&quot;rules&quot;).println(&quot;hello world&quot;);</bpmn2:script>
+      <bpmn2:script>((life.genny.rules.QRules)((org.kie.api.runtime.process.WorkflowProcessInstance)kcontext.getProcessInstance()).getVariable(&quot;rules&quot;)).println(&quot;hello world&quot;);</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_33" drools:priority="1" sourceRef="StartEvent_1" targetRef="ScriptTask_2"/>
     <bpmn2:endEvent id="EndEvent_2" name="End Event 2">
+      <bpmn2:extensionElements>
+        <drools:metaData name="elementname">
+          <drools:metaValue><![CDATA[End Event 2]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_35</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_35" drools:priority="1" sourceRef="ScriptTask_3" targetRef="EndEvent_2"/>
@@ -90,25 +100,25 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ExclusiveGateway_2" bpmnElement="ExclusiveGateway_2" isMarkerVisible="true">
         <dc:Bounds height="50.0" width="50.0" x="407.0" y="213.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_2">
           <dc:Bounds height="11.0" width="73.0" x="396.0" y="263.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ScriptTask_3" bpmnElement="ScriptTask_3" isExpanded="true">
         <dc:Bounds height="50.0" width="110.0" x="378.0" y="380.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_4">
           <dc:Bounds height="11.0" width="79.0" x="393.0" y="399.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ScriptTask_4" bpmnElement="ScriptTask_4">
         <dc:Bounds height="50.0" width="110.0" x="527.0" y="213.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_5">
           <dc:Bounds height="11.0" width="41.0" x="561.0" y="232.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_2">
         <dc:Bounds height="36.0" width="36.0" x="414.0" y="523.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
           <dc:Bounds height="11.0" width="53.0" x="406.0" y="559.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
@@ -116,13 +126,13 @@
         <di:waypoint xsi:type="dc:Point" x="310.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="358.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="407.0" y="238.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_9" bpmnElement="SequenceFlow_9" sourceElement="BPMNShape_ExclusiveGateway_2" targetElement="BPMNShape_ScriptTask_3">
         <di:waypoint xsi:type="dc:Point" x="432.0" y="263.0"/>
         <di:waypoint xsi:type="dc:Point" x="432.0" y="321.0"/>
         <di:waypoint xsi:type="dc:Point" x="433.0" y="380.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_9">
           <dc:Bounds height="11.0" width="13.0" x="426.0" y="323.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
@@ -130,7 +140,7 @@
         <di:waypoint xsi:type="dc:Point" x="457.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="492.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="527.0" y="238.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_10">
           <dc:Bounds height="11.0" width="16.0" x="485.0" y="239.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
@@ -138,19 +148,19 @@
         <di:waypoint xsi:type="dc:Point" x="637.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="829.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="829.0" y="300.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_33" bpmnElement="SequenceFlow_33" sourceElement="BPMNShape_1" targetElement="BPMNShape_ScriptTask_2">
         <di:waypoint xsi:type="dc:Point" x="101.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="150.0" y="238.0"/>
         <di:waypoint xsi:type="dc:Point" x="200.0" y="238.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_12"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_35" bpmnElement="SequenceFlow_35" sourceElement="BPMNShape_ScriptTask_3" targetElement="BPMNShape_EndEvent_1">
         <di:waypoint xsi:type="dc:Point" x="433.0" y="430.0"/>
         <di:waypoint xsi:type="dc:Point" x="432.0" y="476.0"/>
         <di:waypoint xsi:type="dc:Point" x="432.0" y="523.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_13"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">

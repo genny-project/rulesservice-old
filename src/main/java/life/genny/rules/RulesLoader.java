@@ -347,7 +347,6 @@ public class RulesLoader {
 			}
 
 			kieSession.insert(keyValueMap);
-			kieSession.getWorkItemManager().registerWorkItemHandler("Awesome", new AwesomeHandler());
 
 			// Set the focus on the Init agenda group to force proper startup
 			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
