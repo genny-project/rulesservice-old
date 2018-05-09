@@ -48,7 +48,7 @@ public class RulesLoader {
 	}
 
 	static KieServices ks = KieServices.Factory.get();
-	
+
 	public static Set<String> realms = new HashSet<String>();
 
 	/**
@@ -76,7 +76,7 @@ public class RulesLoader {
 
 		return fut;
 	}
-	
+
 	/**
 	 * @param vertx
 	 * @return
@@ -98,7 +98,7 @@ public class RulesLoader {
 
 		return fut;
 	}
-	
+
 	/**
 	 * @param vertx
 	 * @return
@@ -266,8 +266,8 @@ public class RulesLoader {
 						{
 							System.out.println(realm+" - Overriding genny rule "+rule._2);
 							continue;
-						} 
-						
+						}
+
 					}
 					if (rule._2.endsWith(".drl")) {
 						final String inMemoryDrlFileName = "src/main/resources/" + rule._2;
@@ -316,7 +316,7 @@ public class RulesLoader {
 		}
 	}
 
-	// fact = gson.fromJson(msg.toString(), QEventMessage.class)
+  // fact = gson.fromJson(msg.toString(), QEventMessage.class)
 	public static void executeStatefull(final String rulesGroup, final EventBus bus,
 			final List<Tuple2<String, Object>> globals, final List<Object> facts,
 			final Map<String, String> keyValueMap) {
@@ -347,6 +347,7 @@ public class RulesLoader {
 			}
 
 			kieSession.insert(keyValueMap);
+			kieSession.getWorkItemManager().registerWorkItemHandler("Awesome", new AwesomeHandler());
 
 			// Set the focus on the Init agenda group to force proper startup
 			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
