@@ -2806,159 +2806,6 @@ public class QRules {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
 
-	public void sendLayoutsAndData() {
-
-		BaseEntity user = getUser();
-
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-
-		if (!getUser().is("PRI_OWNER")) {
-			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
-
-			if (newItems != null) {
-				showLoading("Loading Cached new jobs...");
-				if (newItems.getMessages() != null) {
-					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
-						if (msg instanceof QDataBaseEntityMessage) {
-							msg.setToken(getToken());
-							publishCmd(JsonUtils.toJson(msg));
-						}
-					}
-				}
-			}
-		}
-
-		QBulkMessage items = fetchStakeholderBucketItems(getUser());
-
-		if (items != null) {
-			showLoading("Loading the rest of the jobs...");
-			if (items.getMessages() != null) {
-				for (QDataBaseEntityMessage msg : items.getMessages()) {
-
-					if (msg instanceof QDataBaseEntityMessage) {
-						msg.setToken(getToken());
-						publishCmd(JsonUtils.toJson(msg));
-					}
-				}
-			}
-		}
-
-
-		// List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
-		// "LNK_CORE", 0, 20, false);
-		// bulkmsg.add(publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE"));
-		// // println(buckets);
-		//
-		// if (true) {
-		// for (BaseEntity bucket : buckets) {
-		// // println(bucket);
-		// List<BaseEntity> begs = new ArrayList<BaseEntity>();
-		//
-		// if (hasRole("admin")) {
-		// List<BaseEntity> driverbegs =
-		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-		// 500, false);
-		// begs.addAll(driverbegs);
-		// } else {
-		//
-		// if (getUser().is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
-		// List<BaseEntity> driverbegs =
-		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-		// 500, false);
-		// begs.addAll(driverbegs);
-		// VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in
-		// first bucket */
-		// } else {
-		// if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
-		// List<BaseEntity> driverbegs =
-		// getBaseEntitysByParentAndLinkCode(bucket.getCode(),
-		// "LNK_CORE", 0, 500, false, user.getCode());
-		// for (BaseEntity beg : driverbegs) {
-		// if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
-		// log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
-		// }
-		// /* Getting begs related to this driver only */
-		// String driverCode = beg.getValue("STT_IN_TRANSIT", null);
-		// if (driverCode != null && driverCode.equals(user.getCode())) {
-		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
-		// begs.add(beg);
-		// } else {
-		// /*
-		// * Another check to handle loads which misses STT_IN_TRANSIT attribute in
-		// * Production due to bug (It was not saving STT_IN_TRANSIT attribute while
-		// * saving in bulk)
-		// */
-		// BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
-		// if (driver != null && driver.getCode().equals(user.getCode())) {
-		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
-		// begs.add(beg);
-		// }
-		//
-		// }
-		//
-		// }
-		//
-		// // begs.addAll(driverbegs);
-		// // VertxUtils.subscribe(realm(), driverbegs, user.getCode());
-		// }
-		// }
-		//
-		// if (user.is("PRI_OWNER")) {
-		// if ("GRP_NEW_ITEMS".equals(bucket.getCode())) {
-		// log.debug("Check owner debug");
-		// }
-		// List<BaseEntity> ownerbegs =
-		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
-		// 500, false, user.getCode());
-		// begs.addAll(ownerbegs);
-		// VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
-		// }
-		// }
-		// println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
-		// bulkmsg.add(publishCmd(begs, bucket.getCode(), "LNK_CORE"));
-		//
-		// for (BaseEntity beg : begs) {
-		// List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),
-		// "LNK_BEG", 0, 20,
-		// false);
-		// List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
-		// for (BaseEntity begKid : begKids) {
-		// if (begKid.getCode().startsWith("OFR_")) {
-		// if (user.is("PRI_OWNER")) {
-		// filteredKids.add(begKid);
-		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
-		// }
-		// if (user.is("PRI_DRIVER")) {
-		// Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
-		// if (quoterCode.isPresent()) {
-		// if (user.getCode().equals(quoterCode.get())) {
-		// filteredKids.add(begKid);
-		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
-		// }
-		// }
-		// }
-		// } else {
-		// filteredKids.add(begKid);
-		// }
-		// // println(bucket.getCode() + ":" + begKid.getCode());
-		// }
-		// bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
-		// }
-		// // bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
-		// }
-		// } else {
-		// // fetch all the jobs related to this person
-		//
-		// }
-		// /* Sending Draft Datas for the Owners */
-		// if (user.is("PRI_OWNER")) {
-		// List<BaseEntity> ownerDraftBegs =
-		// getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
-		// user.getCode());
-		// bulkmsg.add(publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"));
-		// }
-
-	}
 
 	/**
 	 * @param bulkmsg
@@ -5352,54 +5199,243 @@ public class QRules {
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
-
-		BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
-		SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-		if (!stakeholder.is("PRI_IS_ADMIN")) {
-			search.setStakeholder(stakeholder.getCode());
+		
+		// Create bucket Buckets!
+		Map<String,List<BaseEntity>> bucketListMap = new HashMap<String,List<BaseEntity>>();
+		if(bucketsMsg != null) {
+			for (BaseEntity bucket : bucketsMsg.getItems()) {
+				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
+				
+				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
+				search.setCode(bucket.getCode());  // set the parent
+				if (!stakeholder.is("PRI_IS_ADMIN")) {
+					search.setStakeholder(stakeholder.getCode());
+				}
+				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(),stakeholder, search);
+				bulkmsg.addAll(bucketMsgs);
+			}
 		}
+
+
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		return bulk;
+	}
+
+	/**
+	 * @param stakeholder
+	 * @param bulkmsg
+	 * @param bucketsMsg
+	 * @param bucketListMap
+	 * @param search
+	 */
+	private List<QDataBaseEntityMessage> fetchBucketItems(final String sourceCode,final BaseEntity stakeholder, SearchEntity search) {
+		
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		try {
+			// force parent
+			search.setSourceCode(sourceCode);
 			QDataBaseEntityMessage results = QwandaUtils.fetchResults(search, getToken());
+			results.setParentCode(sourceCode);
+			results.setLinkCode("LNK_CORE");
 			bulkmsg.add(results);
 
-			// Create bucket Buckets!
-			Map<String,List<BaseEntity>> bucketListMap = new HashMap<String,List<BaseEntity>>();
-
-			if(bucketsMsg != null) {
-				for (BaseEntity bucket : bucketsMsg.getItems()) {
-					bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
-				}
-			}
-
-
+	
 			//Now place each beg into the proper buckets
 			for (BaseEntity beg : results.getItems()) {
+				
+				
 				// Now search through the BEG links and match to bucket, and their laods, main offer, owner
 				List<BaseEntity> begKids = new ArrayList<BaseEntity>();
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
+					if (stakeholder.is("PRI_DRIVER")) {
+						if (linkedBE.getCode().startsWith("OFR_")) {
+							// Get the only link and skip any outage if the offer does not belong to the driver
+							EntityEntity[] links = linkedBE.getLinks().toArray(new EntityEntity[0]);
+							String OffererCode = links[0].getLink().getTargetCode();
+							if (!OffererCode.equals(stakeholder.getCode())) {
+								continue;
+							}
+						}
+					}
 					begKids.add(linkedBE);
 				}
-				bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
+				
+				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
+				begMsg.setToken(getToken());
+				bulkmsg.add(begMsg);
 
 
 			}
 
-			if(bucketsMsg != null) {
-				for (BaseEntity bucket : bucketsMsg.getItems()) {
-					if (!bucketListMap.get(bucket.getCode()).isEmpty()) {
-						bulkmsg.add(new QDataBaseEntityMessage(bucketListMap.get(bucket.getCode()).toArray(new BaseEntity[0]), bucket.getCode(), "LNK_CORE"));
-					}
-				}
-			}
-
+	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-		return bulk;
+		
+		return bulkmsg;
 	}
+	
+	public void sendLayoutsAndData() {
+
+
+		if (!getUser().is("PRI_OWNER")) {
+			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+
+			if (newItems != null) {
+				showLoading("Loading Cached new jobs...");
+				if (newItems.getMessages() != null) {
+					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+						if (msg instanceof QDataBaseEntityMessage) {
+							msg.setToken(getToken());
+							publishCmd(JsonUtils.toJson(msg));
+						}
+					}
+				}
+			}
+		}
+
+		QBulkMessage items = fetchStakeholderBucketItems(getUser());
+
+		if ((items != null)&&(items.getMessages().length>0)) {
+			showLoading("Loading the rest of the jobs...");
+			if ((items.getMessages() != null)&&(items.getMessages().length>0)) {
+				
+				for (QDataBaseEntityMessage msg : items.getMessages()) {
+
+					if (msg instanceof QDataBaseEntityMessage) {
+						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
+							System.out.println("GRP_NEW_ITEMS DEBUG");
+						}
+						msg.setToken(getToken());
+						publishCmd(JsonUtils.toJson(msg));
+					}
+				}
+			}
+		}
+
+//		BaseEntity user = getUser();
+//
+//		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+		// List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
+		// "LNK_CORE", 0, 20, false);
+		// bulkmsg.add(publishCmd(buckets, "GRP_DASHBOARD", "LNK_CORE"));
+		// // println(buckets);
+		//
+		// if (true) {
+		// for (BaseEntity bucket : buckets) {
+		// // println(bucket);
+		// List<BaseEntity> begs = new ArrayList<BaseEntity>();
+		//
+		// if (hasRole("admin")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false);
+		// begs.addAll(driverbegs);
+		// } else {
+		//
+		// if (getUser().is("PRI_DRIVER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false);
+		// begs.addAll(driverbegs);
+		// VertxUtils.subscribe(realm(), bucket, user.getCode()); /* monitor anything in
+		// first bucket */
+		// } else {
+		// if (user.is("PRI_DRIVER") && !bucket.getCode().equals("GRP_NEW_ITEMS")) {
+		// List<BaseEntity> driverbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(),
+		// "LNK_CORE", 0, 500, false, user.getCode());
+		// for (BaseEntity beg : driverbegs) {
+		// if ("BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE".equals(beg.getCode())) {
+		// log.info("ANNOYING BEG BEG_TOCAD79753DCC0214BCE87A8863F74F4BAEE");
+		// }
+		// /* Getting begs related to this driver only */
+		// String driverCode = beg.getValue("STT_IN_TRANSIT", null);
+		// if (driverCode != null && driverCode.equals(user.getCode())) {
+		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+		// begs.add(beg);
+		// } else {
+		// /*
+		// * Another check to handle loads which misses STT_IN_TRANSIT attribute in
+		// * Production due to bug (It was not saving STT_IN_TRANSIT attribute while
+		// * saving in bulk)
+		// */
+		// BaseEntity driver = getChildren(beg.getCode(), "LNK_BEG", "DRIVER");
+		// if (driver != null && driver.getCode().equals(user.getCode())) {
+		// VertxUtils.subscribe(realm(), beg.getCode(), user.getCode());
+		// begs.add(beg);
+		// }
+		//
+		// }
+		//
+		// }
+		//
+		// // begs.addAll(driverbegs);
+		// // VertxUtils.subscribe(realm(), driverbegs, user.getCode());
+		// }
+		// }
+		//
+		// if (user.is("PRI_OWNER")) {
+		// if ("GRP_NEW_ITEMS".equals(bucket.getCode())) {
+		// log.debug("Check owner debug");
+		// }
+		// List<BaseEntity> ownerbegs =
+		// getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0,
+		// 500, false, user.getCode());
+		// begs.addAll(ownerbegs);
+		// VertxUtils.subscribe(realm(), ownerbegs, user.getCode());
+		// }
+		// }
+		// println("FETCHED " + begs.size() + " JOBS FOR " + user.getCode());
+		// bulkmsg.add(publishCmd(begs, bucket.getCode(), "LNK_CORE"));
+		//
+		// for (BaseEntity beg : begs) {
+		// List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),
+		// "LNK_BEG", 0, 20,
+		// false);
+		// List<BaseEntity> filteredKids = new ArrayList<BaseEntity>();
+		// for (BaseEntity begKid : begKids) {
+		// if (begKid.getCode().startsWith("OFR_")) {
+		// if (user.is("PRI_OWNER")) {
+		// filteredKids.add(begKid);
+		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
+		// }
+		// if (user.is("PRI_DRIVER")) {
+		// Optional<String> quoterCode = begKid.getLoopValue("PRI_QUOTER_CODE");
+		// if (quoterCode.isPresent()) {
+		// if (user.getCode().equals(quoterCode.get())) {
+		// filteredKids.add(begKid);
+		// VertxUtils.subscribe(realm(), begKid.getCode(), user.getCode());
+		// }
+		// }
+		// }
+		// } else {
+		// filteredKids.add(begKid);
+		// }
+		// // println(bucket.getCode() + ":" + begKid.getCode());
+		// }
+		// bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+		// }
+		// // bulkmsg.add(publishCmd(filteredKids, beg.getCode(), "LNK_BEG"));
+		// }
+		// } else {
+		// // fetch all the jobs related to this person
+		//
+		// }
+		// /* Sending Draft Datas for the Owners */
+		// if (user.is("PRI_OWNER")) {
+		// List<BaseEntity> ownerDraftBegs =
+		// getBaseEntitysByParentAndLinkCode("GRP_DRAFTS", "LNK_CORE", 0, 500, false,
+		// user.getCode());
+		// bulkmsg.add(publishCmd(ownerDraftBegs, "GRP_DRAFTS", "LNK_BEG"));
+		// }
+
+	}
+
 
 }
