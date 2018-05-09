@@ -1411,6 +1411,7 @@ public class QRules {
 			}
 		}
 
+		cmdMsg.setToken(getToken());
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
@@ -2770,6 +2771,8 @@ public class QRules {
 
 			
 		}
+		// Add the original token holder
+				recipientCodesSet.add(getUser().getCode());
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
@@ -2821,6 +2824,9 @@ public class QRules {
 			}
 
 		}
+		
+		// Add the original token holder
+		recipientCodesSet.add(getUser().getCode());
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
