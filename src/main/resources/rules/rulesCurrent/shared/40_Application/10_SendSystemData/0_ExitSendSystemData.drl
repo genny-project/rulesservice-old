@@ -10,5 +10,7 @@ rule "Exit Send System Data"
         rules.setState("LOOP_EXIT_SEND_SYSTEM_DATA");
     
         rules.setState("EXIT_SEND_SYSTEM_DATA");
+        rules.setState("TRIGGER_SEND_SYSTEM_LAYOUTS");
+
 	    rules.footer();      		      
 end

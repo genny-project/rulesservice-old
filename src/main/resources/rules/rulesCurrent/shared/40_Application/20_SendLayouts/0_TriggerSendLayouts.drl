@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 rule "Trigger Send Layouts"
 
     when
-         rules: QRules( isState("EXIT_SEND_SYSTEM_DATA")   &&
+         rules: QRules( isState("TRIGGER_SEND_SYSTEM_LAYOUTS")   &&
                         !isState("LOOP_TRIGGER_SEND_LAYOUTS")   ) 
      then
      	rules.header();

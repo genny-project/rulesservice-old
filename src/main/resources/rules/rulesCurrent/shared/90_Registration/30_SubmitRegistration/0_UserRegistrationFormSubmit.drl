@@ -4,14 +4,13 @@ import life.genny.rules.QRules;
 rule "User Registration Form Submit - Step 0"
 	when
 	    rules: QRules( 	(isState("QUE_SELLER_GRP") || isState("QUE_BUYER_GRP")) &&
-						isState("EVENT_FORM_SUBMIT") && 						
-						!isState("PRI_IS_PROFILE_COMPLETED") && 
+						isState("EVENT_FORM_SUBMIT") &&
 						!isState("LOOP_USER_REGISTRATION_FORM_SUBMIT_STEP0")) 
 	 then
 	 	rules.header();
         
 		rules.setState("LOOP_USER_REGISTRATION_FORM_SUBMIT_STEP0");
-		rules.setState("USER_REGISTRATION_FORM_SUBMIT_READY");  
+		rules.setState("TRIGGER_PROFILE_CHECK");  
 
 	 	rules.footer();      
 end

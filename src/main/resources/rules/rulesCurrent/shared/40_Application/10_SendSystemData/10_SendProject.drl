@@ -10,8 +10,7 @@ rule "Send Project"
      	rules.header();
         rules.setState("LOOP_SEND_PROJECT");
 
-     	String projectCode = "PRJ_" + rules.getAsString("realm").toUpperCase();
-     	BaseEntity project = rules.getBaseEntityByCode(projectCode);
+     	BaseEntity project = rules.getProject();
 
         if(project != null) {
             rules.publishCmd(project, "PROJECT");
