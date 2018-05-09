@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -2757,6 +2758,17 @@ public class QRules {
 			if (recipientArray2 != null) {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 			}
+			
+			if ((link.getTargetCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(link.getTargetCode());				
+			}
+			if ((link.getSourceCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(link.getSourceCode());				
+			}
+
+			
 		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
@@ -2777,6 +2789,16 @@ public class QRules {
 			if (recipientArray2 != null) {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 			}
+			
+			if ((link.getTargetCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(link.getTargetCode());				
+			}
+			if ((link.getSourceCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(link.getSourceCode());				
+			}
+
 		}
 
 		Link oldlink = msg.getOldLink();
@@ -2789,6 +2811,15 @@ public class QRules {
 			if (recipientArray2Old != null) {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2Old));
 			}
+			if ((oldlink.getTargetCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(oldlink.getTargetCode());				
+			}
+			if ((oldlink.getSourceCode().startsWith("PER_"))) {
+				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
+				recipientCodesSet.add(oldlink.getSourceCode());				
+			}
+
 		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
@@ -5194,7 +5225,7 @@ public class QRules {
 
 	}
 
-	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder) {
+	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
@@ -5214,6 +5245,10 @@ public class QRules {
 				}
 				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(),stakeholder, search);
 				bulkmsg.addAll(bucketMsgs);
+				
+				if (subscriptions.contains(bucket.getCode())) {
+					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode()); 
+				}
 			}
 		}
 
@@ -5222,6 +5257,8 @@ public class QRules {
 		return bulk;
 	}
 
+	
+	
 	/**
 	 * @param stakeholder
 	 * @param bulkmsg
@@ -5280,7 +5317,11 @@ public class QRules {
 	}
 	
 	public void sendLayoutsAndData() {
-
+		// Done send if user already has this data
+		
+		if (!this.isState("EVENT_AUTH_INIT")) {
+			return;
+		}
 
 		if (!getUser().is("PRI_OWNER")) {
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
@@ -5298,7 +5339,10 @@ public class QRules {
 			}
 		}
 
-		QBulkMessage items = fetchStakeholderBucketItems(getUser());
+		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		subscriptionCodes.add("GRP_NEW_ITEMS");
+
+		QBulkMessage items = fetchStakeholderBucketItems(getUser(),subscriptionCodes);
 
 		if ((items != null)&&(items.getMessages().length>0)) {
 			showLoading("Loading the rest of the jobs...");
