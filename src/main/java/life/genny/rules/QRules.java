@@ -417,9 +417,9 @@ public class QRules {
 			be = getBaseEntityByCode(code);
 		}
 		catch(Exception e ) {
-			
+
 		}
-		
+
 		return be;
 	}
 
@@ -1097,7 +1097,7 @@ public class QRules {
 	}
 
 	public BaseEntity createUser() {
-		
+
 		BaseEntity be = null;
 
 		String username = getAsString("preferred_username").toLowerCase();
@@ -1705,7 +1705,7 @@ public class QRules {
 	}
 
 	public QDataAskMessage getAskQuestions(final QDataQSTMessage qstMsg) {
-		
+
 		JsonObject questionJson = null;
 		QDataAskMessage msg = null;
 		try {
@@ -1762,16 +1762,16 @@ public class QRules {
 			return msg;
 		}
 	}
-	
+
 	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
-		
+
 		String json;
 		try {
 			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 					+ questionCode + "/" + targetCode, getToken());
 			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);;
 			return msg;
-			
+
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -2437,13 +2437,20 @@ public class QRules {
 		saveAnswers(answers, true);
 	}
 
-	public void startWorkflow(final String id) {
-		startWorkflow(id, new HashMap<String, Object>());
+  public void startWorkflow(final String id) {
+
+        Map<String,Object> params = new HashMap<String, Object>();
+        params.put("rules", this);
+
+		startWorkflow(id, params);
 	}
 
 	public void startWorkflow(final String id, Map<String, Object> parms) {
+
 		println("Starting process " + id);
 		if (drools != null) {
+
+			parms.put("rules", this);
 			drools.getKieRuntime().startProcess(id, parms);
 		}
 	}
@@ -3066,9 +3073,9 @@ public class QRules {
 
 
 	}
-	
+
 	public void loadUserRole() {
-		
+
 		BaseEntity user = this.getUser();
       	if(user != null){
 
@@ -3082,13 +3089,13 @@ public class QRules {
       								.collect(Collectors.toList());
 
       			for(EntityAttribute role: roles) {
-      				
+
       				if(role != null && role.getValue() != null) {
-      					
+
       					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
       					if(isRole) {
       						this.setState(role.getAttributeCode());
-      						
+
       						if(role.getAttributeCode().equals("PRI_IS_PROFILE_COMPLETED") == false && role.getAttributeCode().equals("PRI_IS_ADMIN") == false) {
       							has_role_been_found = true;
       						}
@@ -5541,21 +5548,21 @@ public class QRules {
 		return dateString;
 
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
 
 		String attributeCode = "STA_" + userCode;
 		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
 	}
-	
+
 	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
 		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
 	}
-	
+
 	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
 
 		for(String userCode: userCodes) {
