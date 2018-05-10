@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Select New Role - Step 1"
+
+	when
+		 rules: QRules( 	isState("ROLE_SELECTION") && (isState("SELLER_SELECTED") || isState("BUYER_SELECTED")) &&
+						!isState("CHECKED_COMPANY") )   
+	 then
+	    rules.header();
+		
+		rules.setState("CHECKED_COMPANY");
+		
+		BaseEntity userCompany = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		if(userCompany == null) {
+			rules.setState("COMPANY_DOES_NOT_EXISTS");
+		}
+		else {
+			rules.setState("COMPANY_EXISTS");
+		}
+		
+	    rules.footer();     		      
+end
