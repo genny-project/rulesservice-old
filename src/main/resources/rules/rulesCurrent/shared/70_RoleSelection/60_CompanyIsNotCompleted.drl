@@ -1,0 +1,26 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Select New Role - Step 5"
+
+	when
+		 rules: QRules( 	isState("ROLE_SELECTION") && isState("COMPANY_IS_NOT_READY") &&
+						!isState("ASKED_COMPANY_QUESTIONS") )   
+	 then
+	    rules.header();
+		
+		rules.setState("ASKED_COMPANY_QUESTIONS");
+		
+		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
+		
+		rules.set("questionSourceCode", rules.getUser().getCode());
+		rules.set("questionTargetCode", companyBe.getCode());
+		rules.set("questionGroupCode", "QUE_USER_COMPANY_GRP");
+		rules.set("questionIsPopup", false);
+		
+		rules.setState("ASK_QUESTION");
+		
+	    rules.footer();     		      
+end
