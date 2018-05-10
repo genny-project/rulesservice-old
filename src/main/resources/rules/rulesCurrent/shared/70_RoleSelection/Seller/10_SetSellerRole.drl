@@ -13,8 +13,6 @@ rule "Select Seller Role - Step 0"
 	
 		rules.setState("SELLER_SELECTED");
 		
-		/* TODO: bind this to realm roles */
-
 		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "FALSE");
 		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "TRUE");
 

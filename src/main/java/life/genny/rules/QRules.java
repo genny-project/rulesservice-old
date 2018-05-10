@@ -3101,6 +3101,36 @@ public class QRules {
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
+	
+	public void subscribeUserToBaseEntityAndChildren(String userCode, String beCode, String linkCode) {
+		List<BaseEntity> beList = new ArrayList<BaseEntity>();
+		BaseEntity parent = getBaseEntityByCode(beCode);
+		if(parent != null) {
+			beList = getBaseEntitysByParentAndLinkCode(beCode, linkCode, 0, 500, false);
+			beList.add(parent);
+		}
+		println("parent and child List ::  " +beList);
+		subscribeUserToBaseEntities(userCode,beList);
+	}
+
+	public void unsubscribeUserToBaseEntity(final String userCode, String beCode) {
+		final String SUB = "SUB";
+		// Subscribe to a code
+		Set<String> unsubscriberSet = new HashSet<String>();
+
+		unsubscriberSet.add(userCode);
+		println("unsubscriber is   ::   " + unsubscriberSet.toString());
+
+		Set<String> subscriberSet = VertxUtils.getSetString(realm(), SUB, beCode);
+		println("all subscribers   ::   " + subscriberSet.toString());
+
+		subscriberSet.removeAll(unsubscriberSet);
+		println("after removal, subscriber is   ::   " + subscriberSet.toString());
+
+		VertxUtils.putSetString(realm(), SUB, beCode, subscriberSet);
+
+
+	}
 
 	/**
 	 * @param bulkmsg
@@ -5093,6 +5123,7 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
+
 
 	/*
 	 * Sorting Columns of a SearchEntity as per the weight in either Ascening or
