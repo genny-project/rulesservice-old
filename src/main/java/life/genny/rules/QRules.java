@@ -5195,6 +5195,10 @@ public class QRules {
 					publishCmd(JsonUtils.toJson(msg));
 				}
 			}
+		} else {
+			log.error("Tree Data NOT in cache - forcing a cache load");
+			this.generateTree();
+			generateNewItemsCache();
 		}
 	}
 
