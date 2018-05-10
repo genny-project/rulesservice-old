@@ -137,7 +137,8 @@ public class RulesUtils {
 			println(url);
 			jsonStr = QwandaUtils.apiGet(url, null);
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			println(path + " not found.");
 		}
 		return jsonStr;
 	}

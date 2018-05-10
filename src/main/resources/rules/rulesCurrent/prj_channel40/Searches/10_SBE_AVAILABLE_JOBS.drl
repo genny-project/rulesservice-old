@@ -1,0 +1,31 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.SearchEntity;
+import life.genny.utils.VertxUtils;
+import java.util.ArrayList;
+
+
+rule "SBE_AVAIL_JOBS"
+
+    ruleflow-group 'GenerateSearches'
+    
+    when
+        rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_AVAIL_JOBS") )
+     then
+         rules.setState(drools.getRule().getName());
+         rules.println("SBE_AVAIL_JOBS!!! fom channel40");
+  	     SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All Available Jobs")
+   	   
+  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+
+  	     .setSourceCode("GRP_NEW_ITEMS")
+  	     
+  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+  	     
+  	     .setPageStart(0)
+  	     .setPageSize(10000);
+  	       	     
+  		 VertxUtils.writeCachedJson(drools.getRule().getName(), JsonUtils.toJson(searchBE));
+   		 
+end

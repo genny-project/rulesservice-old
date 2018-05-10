@@ -1,0 +1,37 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QBulkMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.SearchEntity;
+import life.genny.utils.VertxUtils;
+
+rule "SBE_NEW_ITEMS"
+    ruleflow-group 'GenerateSearches'
+     no-loop true
+    when
+        rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_NEW_ITEMS1") )
+     then
+      rules.header();
+         rules.setState(drools.getRule().getName()+"1");
+            rules.println("SBE_NEW_ITEMS!!!");
+  	     SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
+   	   
+  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+
+  	     .setSourceCode("GRP_NEW_ITEMS")
+  	     
+  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+  	     
+  	     .setPageStart(0)
+  	     .setPageSize(10000);
+  	       	     
+  		 VertxUtils.writeCachedJson(drools.getRule().getName(), JsonUtils.toJson(searchBE));
+   		 rules.footer();
+end

@@ -54,6 +54,7 @@ rule "Delete job"
         rules.sendMessage("", allBegRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
 
 		drools.setFocus("SendLayoutsAndData");
+    	rules.generateNewItemsCache();       
 
 	    rules.footer();
 end
