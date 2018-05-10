@@ -5137,7 +5137,7 @@ public class QRules {
 				System.out.println("key is "+key+", initVector is "+initVector+", encPass="+encryptedPassword);
 
 				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-				System.out.println("password = "+password.substring(1, 5));
+				System.out.println("password = "+password/*.substring(1, 5)*/);
 
 				// Now ask the bridge for the keycloak to use
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
