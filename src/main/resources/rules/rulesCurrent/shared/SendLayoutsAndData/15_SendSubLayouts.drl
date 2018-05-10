@@ -28,7 +28,8 @@ rule "Send Sub Layouts To Frontend"
 		rules.showLoading("Fetching data....");
 		
   		rules.sendAllLayouts();
-		
+        rules.navigateTo("/homepage");
+
 		rules.setState("SUBLAYOUT_CHANGE_READY");
 		
 	    rules.footer();     		      
