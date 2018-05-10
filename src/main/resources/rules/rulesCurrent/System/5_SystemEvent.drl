@@ -20,8 +20,9 @@ rule "System Event Listener"
       	rules.header();
  
  		rules.println("System Event:"+$m.getData().getCode());
+		rules.startupEvent();  // load up everything
  		QwandaUtils.apiGet("https://jenkins.outcome-hub.com/generic-webhook-trigger/invoke?token="+System.getenv("JENKINS_CODE"),null);
- 	   
+
    	    rules.footer();
   
 end

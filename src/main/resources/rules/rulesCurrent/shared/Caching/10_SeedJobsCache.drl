@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QBulkMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.utils.VertxUtils;
+
+rule "Seed Items Cache"
+
+    ruleflow-group 'GenerateSearches'
+ 
+     when
+       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
+     then
+
+     rules.header();
+        rules.setState("GENERATE_NEW_ITEMS_CACHE");
+		rules.println("Generating  New Items Cache for "+rules.realm());
+		rules.startupEvent();
+		rules.generateNewItemsCache(); 
+
+ 
+     rules.footer();
+end
