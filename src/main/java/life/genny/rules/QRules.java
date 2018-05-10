@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
 
@@ -2377,66 +2379,90 @@ public class QRules {
 
 	public void sendNotification(final String text, final String[] recipientCodes, final String style) {
 
-		Layout notificationLayout = new Layout(text, style);
+		Layout notificationLayout = new Layout(text, style, null, null);
 		QDataSubLayoutMessage data = new QDataSubLayoutMessage(notificationLayout, getToken());
 		data.setRecipientCodeArray(recipientCodes);
 		publishCmd(data);
 	}
 
-	private void sendSublayouts(final String realm) throws ClientProtocolException, IOException {
 
-		String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
-		if (subLayoutMap != null) {
-
-			JsonArray subLayouts = new JsonArray(subLayoutMap);
-			if (subLayouts != null) {
-
-				Layout[] layoutArray = new Layout[subLayouts.size()];
-				for (int i = 0; i < subLayouts.size(); i++) {
-					JsonObject sublayoutData = null;
-
-					try {
-						sublayoutData = subLayouts.getJsonObject(i);
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-
-					String url = sublayoutData.getString("download_url");
-					String name = sublayoutData.getString("name");
-					name = name.replace(".json", "");
-					name = name.replaceAll("\"", "");
-
-					if (url != null) {
-
-						/* grab sublayout from github */
-						println(i + ":" + url);
-
-						String subLayoutString = null;
-
-						try {
-							subLayoutString = QwandaUtils.apiGet(url, null);
-						} catch (UnknownHostException e1) {
-							log.error("Unknown layout host " + url + ":" + sublayoutData);
-						}
-						if (subLayoutString != null) {
-
-							try {
-								layoutArray[i] = new Layout(name, subLayoutString);
-							} catch (Exception e) {
-							}
-						}
-					}
-				}
-				/* send sublayout to FE */
-				QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
-				publishCmd(msg);
-			}
-		}
+	public void sendAllLayouts() {
+		
+		List<BaseEntity> beLayouts = this.getAllLayouts(realm());
+		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 	}
-
-	public void sendSubLayouts() throws ClientProtocolException, IOException {
-		this.sendSublayouts("shared");
-		this.sendSublayouts(realm());
+	
+	private List<BaseEntity> getAllLayouts(final String realmCode) {
+		
+		if(realmCode == null) {
+			System.out.println("No realm code was provided. Not getting layouts. ");
+			return null;
+		}
+		
+		if(token == null) {
+			System.out.println("No token was provided. Not getting layouts.");
+			return null;
+		}
+		
+		List<Layout> layouts  = new ArrayList<Layout>();
+		
+		/* we grab all the layouts */
+		
+		/* V1 layouts */
+		// TODO: to remove once web is switched over to V2 */
+		layouts.addAll(LayoutUtils.processLayouts("shared"));
+		layouts.addAll(LayoutUtils.processLayouts(realmCode));
+		
+		/* Layouts V2 */
+		layouts.addAll(LayoutUtils.processNewLayouts("shared"));
+		layouts.addAll(LayoutUtils.processNewLayouts(realmCode));
+		
+		return layouts.stream().map(x -> this.baseEntityForLayout(x)).collect(Collectors.toList());
+	}
+	
+	private BaseEntity baseEntityForLayout(Layout layout) {
+		
+		if(layout.getPath() == null) {
+			return null;
+		}
+		
+		BaseEntity beLayout = null;
+		
+		/* we check if the baseentity for this layout already exists */
+		beLayout = RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl, this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
+		
+		/* if the base entity does not exist, we create it */
+		if(beLayout == null) {
+			
+			/* otherwise we create it */
+			println("creating layout base entity.");
+			beLayout = createBaseEntityByCode(getUser().getCode(), "LAY", layout.getName());
+		}
+		
+		/* we get the modified time stored in the BE and we compare it to the layout one */
+		String beModifiedTime = beLayout.getLoopValue("PRI_LAYOUT_MODIFIED_DATE", null);
+		if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
+			
+			/* if the modified time is not the same, we update the layout BE */
+			
+			/* setting layout attributes */
+			List<Answer> answers = new ArrayList<Answer>();
+			
+			/* download the content of the layout */
+			String content = LayoutUtils.downloadLayoutContent(layout);
+			if(content != null) {
+				answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content));
+			}
+			
+			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath()));
+			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl()));
+			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName()));
+			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate()));
+			this.saveAnswers(answers);
+			return null; // we return null so the be is not being sent twice
+		}
+				
+		return beLayout;
 	}
 
 	/*
@@ -5337,12 +5363,6 @@ public class QRules {
 
 		return bulkmsg;
 	}
-
-  public void sendAllLayouts() {
-
-	  List<BaseEntity> layouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
-	  publishCmd(layouts, "GRP_LAYOUTS", "LNK_CORE");
-  }
 
 	public void sendLayoutsAndData() {
 		// Done send if user already has this data

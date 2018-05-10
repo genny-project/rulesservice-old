@@ -15,17 +15,19 @@ import io.vertx.core.json.JsonArray;
 
 
 rule "Send Sub Layouts To Frontend"
-    salience 680
-    agenda-group "SendLayoutsAndData"
+	salience 900
+	no-loop true
+	ruleflow-group "SendLayoutsAndData"
     when
         rules: QRules( isState("LAYOUT_CHANGE_READY") && (!isState("SUBLAYOUT_CHANGE_READY"))  ) 
      then
 
         rules.header();
-        /* Show loading indicator */
+        
+		/* Show loading indicator */
 		rules.showLoading("Fetching data....");
 		
-  		rules.sendSubLayouts();
+  		rules.sendAllLayouts();
 		
 		rules.setState("SUBLAYOUT_CHANGE_READY");
 		
