@@ -15,14 +15,14 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.27</qwanda-utils.version>
-		<genny-verticle.version>1.0.27</genny-verticle.version>
+		<qwanda-utils.version>1.0.28</qwanda-utils.version>
+		<genny-verticle.version>1.0.28</genny-verticle.version>
 		
                 <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
 		<junit-version>4.12</junit-version>
-		<keycloak-core.version>3.2.0.Final</keycloak-core.version>
-		<keycloak-adapter-core.version>3.2.0.Final</keycloak-adapter-core.version>
+		<keycloak-core.version>3.4.0.Final</keycloak-core.version>
+		<keycloak-adapter-core.version>3.4.0.Final</keycloak-adapter-core.version>
 		<version.resteasy>3.0.10.Final</version.resteasy>
 		<resteasy.version>3.0.9.Final</resteasy.version>
 		<hazelcast.version>3.9.3</hazelcast.version>
