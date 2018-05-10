@@ -13,6 +13,7 @@ import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
 
 rule "SBE_STAKEHOLDER_ITEMS"
+    no-loop true
     ruleflow-group 'GenerateSearches'
     when
         rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_STAKEHOLDER_ITEMS") )

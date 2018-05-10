@@ -13,7 +13,7 @@ import life.genny.utils.VertxUtils;
 
 rule "SBE_TEST"
     ruleflow-group 'GenerateSearches'
- 
+  no-loop true
      when
        rules: QRules(isState("GENERATE_STARTUP") && !isState("SBE_TEST"))
      then
