@@ -5100,16 +5100,16 @@ public class QRules {
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
 			String dev = System.getenv("GENNYDEV");
-//			String proj_realm = System.getenv("PROJECT_REALM");
-//			if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-//				this.set("realm", proj_realm);
-//				realm = proj_realm; // hacky
-//				System.out.println("Project Realm is  "+proj_realm);
-//
-//			} else {
-//				this.set("realm", realm);
-//				System.out.println("Project Realm is  "+realm);
-//			}
+			String proj_realm = System.getenv("PROJECT_REALM");
+			if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+				this.set("realm", proj_realm);
+			//	realm = proj_realm; // hacky
+				System.out.println("Project Realm is  "+proj_realm);
+
+			} else {
+				this.set("realm", realm);
+				System.out.println("Project Realm is  "+realm);
+			}
 
 			System.out.println("Realm Context = "+realm()+", loading realm data for "+realm);
 
