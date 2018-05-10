@@ -5090,7 +5090,6 @@ public class QRules {
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
 
 		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
-
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
 				System.out.println("No keycloakMap for " + realm());
@@ -5100,12 +5099,27 @@ public class QRules {
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
+			String dev = System.getenv("GENNYDEV");
+			String proj_realm = System.getenv("PROJECT_REALM");
+			if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+				this.set("realm", proj_realm);
+				realm = proj_realm; // hacky
+				System.out.println("Project Realm is  "+proj_realm);
+
+			} else {
+				this.set("realm", realm);
+				System.out.println("Project Realm is  "+realm);
+			}
+
+			System.out.println("Realm Context = "+realm()+", loading realm data for "+realm);
 
 			if (realm().equals(realm)) {
+				
+
 
 				// fetch token from keycloak
 				String key = null;
-				String initVector = "PRJ_" + realm().toUpperCase();
+				String initVector = "PRJ_" + realm.toUpperCase();
 				initVector = StringUtils.rightPad(initVector, 16, '*');
 				String encryptedPassword = null;
 
@@ -5120,12 +5134,15 @@ public class QRules {
 				} catch (Exception e) {
 					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
 				}
+				System.out.println("key is "+key+", initVector is "+initVector+", encPass="+encryptedPassword);
 
 				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+				System.out.println("password = "+password.substring(1, 5));
 
 				// Now ask the bridge for the keycloak to use
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
 						realmJson.getString("auth-server-url").length() - ("/auth".length()));
+				System.out.println("KeycloakUrl="+keycloakurl);
 
 				try {
 					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(),
@@ -5136,13 +5153,6 @@ public class QRules {
 
 					this.setDecodedTokenMap(serviceDecodedTokenMap);
 					this.setToken(token);
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
-					} else {
-						this.set("realm", realm);
-					}
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -5197,11 +5207,21 @@ public class QRules {
 			}
 		} else {
 			log.error("Tree Data NOT in cache - forcing a cache load");
+			this.loadRealmData();
 			this.generateTree();
 			generateNewItemsCache();
 		}
 	}
 
+	public void startupEvent()
+	{
+		println("Startup Event detected");
+		this.loadRealmData();
+		this.generateTree();
+		generateNewItemsCache();
+	}
+	
+	
 	public void generateNewItemsCache() {
 		println("GENERATING NEW ITEMS  Cache realm is " + realm());
 
@@ -5248,6 +5268,9 @@ public class QRules {
 				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
 
 				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+				if (searchStakeholderBucketItems==null) {
+					
+				}
 				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
 				search.setCode(bucket.getCode());  // set the parent
 				if (!stakeholder.is("PRI_IS_ADMIN")) {
