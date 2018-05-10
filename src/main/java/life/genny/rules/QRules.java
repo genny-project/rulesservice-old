@@ -1677,7 +1677,7 @@ public class QRules {
 					QwandaUtils.apiGet(
 							getQwandaServiceUrl() + "/qwanda/baseentitys/" + selectionRootCode + "/linkcodes/"
 									+ linkCode + "/attributes/" + stakeholderCode + "?pageStart=0&pageSize=" + maxItems,
-									getToken()));
+							getToken()));
 			selectionLists.put("token", getToken());
 			publish("cmds", selectionLists);
 			return true;
@@ -1698,7 +1698,7 @@ public class QRules {
 					QwandaUtils.apiGet(
 							getQwandaServiceUrl() + "/qwanda/baseentitys2/" + selectionRootCode + "/linkcodes/"
 									+ linkCode + "/linkValue/" + linkValue + "?pageStart=0&pageSize=" + maxItems,
-									getToken()));
+							getToken()));
 
 			selectionList.put("token", getToken());
 			publish("cmds", selectionList);
@@ -2759,20 +2759,21 @@ public class QRules {
 			if (recipientArray2 != null) {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 			}
-			
+
 			if ((link.getTargetCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(link.getTargetCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(link.getTargetCode());
 			}
 			if ((link.getSourceCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(link.getSourceCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(link.getSourceCode());
 			}
 
-			
 		}
 		// Add the original token holder
-				recipientCodesSet.add(getUser().getCode());
+		recipientCodesSet.add(getUser().getCode());
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
@@ -2792,14 +2793,16 @@ public class QRules {
 			if (recipientArray2 != null) {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2));
 			}
-			
+
 			if ((link.getTargetCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(link.getTargetCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(link.getTargetCode());
 			}
 			if ((link.getSourceCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(link.getSourceCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(link.getSourceCode());
 			}
 
 		}
@@ -2815,16 +2818,18 @@ public class QRules {
 				recipientCodesSet.addAll(Sets.newHashSet(recipientArray2Old));
 			}
 			if ((oldlink.getTargetCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(oldlink.getTargetCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(oldlink.getTargetCode());
 			}
 			if ((oldlink.getSourceCode().startsWith("PER_"))) {
-				// Assume that any change has been done by someone actually logged on! So assume we can spit out push
-				recipientCodesSet.add(oldlink.getSourceCode());				
+				// Assume that any change has been done by someone actually logged on! So assume
+				// we can spit out push
+				recipientCodesSet.add(oldlink.getSourceCode());
 			}
 
 		}
-		
+
 		// Add the original token holder
 		recipientCodesSet.add(getUser().getCode());
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
@@ -2842,7 +2847,6 @@ public class QRules {
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
-
 
 	/**
 	 * @param bulkmsg
@@ -3411,31 +3415,31 @@ public class QRules {
 
 			case ("PRI_UUID"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_FIRSTNAME"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_LASTNAME"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_EMAIL"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_USERNAME"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_KEYCLOAK_UUID"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 
 			case ("PRI_FB_BASIC"):
 				removeAttributes.add(attribute);
-			break;
+				break;
 			}
 
 		}
@@ -3525,7 +3529,7 @@ public class QRules {
 		List<Answer> answerList = new ArrayList<Answer>();
 		answerList.add(new Answer(getUser(), offer, "PRI_OFFER_PRICE", JsonUtils.toJson(begPrice)));
 		answerList
-		.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+				.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
 		/*
 		 * answerList .add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST",
 		 * JsonUtils.toJson(ownerPriceIncGST)));
@@ -4665,9 +4669,9 @@ public class QRules {
 					} else {
 						if ("SEL_DRIVER".equals(answer.getValue())) {
 							answersToSave
-							.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "TRUE"));
+									.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "TRUE"));
 							answersToSave
-							.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "FALSE"));
+									.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "FALSE"));
 							println("DRIVER SET!");
 						}
 					}
@@ -5038,7 +5042,7 @@ public class QRules {
 				if (webhookURL != null) {
 
 					String message = "Tax invoice generation failed, offer is null, BEG :" + begBe.getCode()
-					+ ", LOAD :" + loadBe;
+							+ ", LOAD :" + loadBe;
 					JsonObject payload = new JsonObject();
 					payload.put("text", message);
 
@@ -5090,6 +5094,7 @@ public class QRules {
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
 
 		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
+
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
 				System.out.println("No keycloakMap for " + realm());
@@ -5099,27 +5104,12 @@ public class QRules {
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
-			String dev = System.getenv("GENNYDEV");
-			String proj_realm = System.getenv("PROJECT_REALM");
-			if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-				this.set("realm", proj_realm);
-			//	realm = proj_realm; // hacky
-				System.out.println("Project Realm is  "+proj_realm);
-
-			} else {
-				this.set("realm", realm);
-				System.out.println("Project Realm is  "+realm);
-			}
-
-			System.out.println("Realm Context = "+realm()+", loading realm data for "+realm);
 
 			if (realm().equals(realm)) {
-				
-
 
 				// fetch token from keycloak
 				String key = null;
-				String initVector = "PRJ_" + realm.toUpperCase();
+				String initVector = "PRJ_" + realm().toUpperCase();
 				initVector = StringUtils.rightPad(initVector, 16, '*');
 				String encryptedPassword = null;
 
@@ -5134,16 +5124,13 @@ public class QRules {
 				} catch (Exception e) {
 					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
 				}
-				System.out.println("key is "+key+", initVector is "+initVector+", encPass="+encryptedPassword);
 
 				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-				System.out.println("password = "+password/*.substring(1, 5)*/);
 
 				// Now ask the bridge for the keycloak to use
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
 						realmJson.getString("auth-server-url").length() - ("/auth".length()));
-				System.out.println("KeycloakUrl="+keycloakurl);
-			
+
 				try {
 					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(),
 							secret, "service", password);
@@ -5153,6 +5140,13 @@ public class QRules {
 
 					this.setDecodedTokenMap(serviceDecodedTokenMap);
 					this.setToken(token);
+					String dev = System.getenv("GENNYDEV");
+					String proj_realm = System.getenv("PROJECT_REALM");
+					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+						this.set("realm", proj_realm);
+					} else {
+						this.set("realm", realm);
+					}
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -5181,9 +5175,9 @@ public class QRules {
 		// Now get the buckets
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		// Save the buckets for future use
-		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
+				"GRP_DASHBOARD", "LNK_CORE");
 		VertxUtils.putObject(realm(), "BUCKETS", realm(), bucketMsg);
-
 
 		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]), "GRP_DASHBOARD", "LNK_CORE"));
 
@@ -5197,7 +5191,7 @@ public class QRules {
 		println("treedata realm is " + realm());
 		QBulkMessage bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 
-		if(bulk != null) {
+		if (bulk != null) {
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 				if (msg instanceof QDataBaseEntityMessage) {
@@ -5213,15 +5207,13 @@ public class QRules {
 		}
 	}
 
-	public void startupEvent()
-	{
+	public void startupEvent() {
 		println("Startup Event detected");
 		this.loadRealmData();
 		this.generateTree();
 		generateNewItemsCache();
 	}
-	
-	
+
 	public void generateNewItemsCache() {
 		println("GENERATING NEW ITEMS  Cache realm is " + realm());
 
@@ -5239,14 +5231,14 @@ public class QRules {
 				bulkmsg.add(results);
 
 				QBulkMessage bulk = new QBulkMessage(bulkmsg);
-				
+
 				for (BaseEntity beg : results.getItems()) {
-					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100, false);
-					bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
+					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
+							false);
+					bulkmsg.add(
+							new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
 				}
 			}
-			
-			
 
 			QBulkMessage bulk = new QBulkMessage(bulkmsg);
 			VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
@@ -5261,39 +5253,37 @@ public class QRules {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
-		
+		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
+				QDataBaseEntityMessage.class);
+
 		// Create bucket Buckets!
-		Map<String,List<BaseEntity>> bucketListMap = new HashMap<String,List<BaseEntity>>();
-		if(bucketsMsg != null) {
+		Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
+		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
-				
+
 				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
-				if (searchStakeholderBucketItems==null) {
-					
+				if (searchStakeholderBucketItems == null) {
+
 				}
 				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-				search.setCode(bucket.getCode());  // set the parent
+				search.setCode(bucket.getCode()); // set the parent
 				if (!stakeholder.is("PRI_IS_ADMIN")) {
 					search.setStakeholder(stakeholder.getCode());
 				}
-				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(),stakeholder, search);
+				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
 				bulkmsg.addAll(bucketMsgs);
-				
+
 				if (subscriptions.contains(bucket.getCode())) {
-					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode()); 
+					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
 				}
 			}
 		}
-
 
 		QBulkMessage bulk = new QBulkMessage(bulkmsg);
 		return bulk;
 	}
 
-	
-	
 	/**
 	 * @param stakeholder
 	 * @param bulkmsg
@@ -5301,8 +5291,9 @@ public class QRules {
 	 * @param bucketListMap
 	 * @param search
 	 */
-	private List<QDataBaseEntityMessage> fetchBucketItems(final String sourceCode,final BaseEntity stakeholder, SearchEntity search) {
-		
+	private List<QDataBaseEntityMessage> fetchBucketItems(final String sourceCode, final BaseEntity stakeholder,
+			SearchEntity search) {
+
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		try {
 			// force parent
@@ -5312,19 +5303,19 @@ public class QRules {
 			results.setLinkCode("LNK_CORE");
 			bulkmsg.add(results);
 
-	
-			//Now place each beg into the proper buckets
+			// Now place each beg into the proper buckets
 			for (BaseEntity beg : results.getItems()) {
-				
-				
-				// Now search through the BEG links and match to bucket, and their laods, main offer, owner
+
+				// Now search through the BEG links and match to bucket, and their laods, main
+				// offer, owner
 				List<BaseEntity> begKids = new ArrayList<BaseEntity>();
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
 					if (stakeholder.is("PRI_DRIVER")) {
 						if (linkedBE.getCode().startsWith("OFR_")) {
-							// Get the only link and skip any outage if the offer does not belong to the driver
+							// Get the only link and skip any outage if the offer does not belong to the
+							// driver
 							EntityEntity[] links = linkedBE.getLinks().toArray(new EntityEntity[0]);
 							String OffererCode = links[0].getLink().getTargetCode();
 							if (!OffererCode.equals(stakeholder.getCode())) {
@@ -5334,26 +5325,25 @@ public class QRules {
 					}
 					begKids.add(linkedBE);
 				}
-				
-				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
+
+				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
+						beg.getCode(), "LNK_BEG");
 				begMsg.setToken(getToken());
 				bulkmsg.add(begMsg);
 
-
 			}
 
-	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return bulkmsg;
 	}
-	
+
 	public void sendLayoutsAndData() {
 		// Done send if user already has this data
-		
+
 		if (!this.isState("EVENT_AUTH_INIT")) {
 			return;
 		}
@@ -5377,12 +5367,12 @@ public class QRules {
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		subscriptionCodes.add("GRP_NEW_ITEMS");
 
-		QBulkMessage items = fetchStakeholderBucketItems(getUser(),subscriptionCodes);
+		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
 
-		if ((items != null)&&(items.getMessages().length>0)) {
+		if ((items != null) && (items.getMessages().length > 0)) {
 			showLoading("Loading the rest of the jobs...");
-			if ((items.getMessages() != null)&&(items.getMessages().length>0)) {
-				
+			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
+
 				for (QDataBaseEntityMessage msg : items.getMessages()) {
 
 					if (msg instanceof QDataBaseEntityMessage) {
@@ -5396,9 +5386,10 @@ public class QRules {
 			}
 		}
 
-//		BaseEntity user = getUser();
-//
-//		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		// BaseEntity user = getUser();
+		//
+		// List<QDataBaseEntityMessage> bulkmsg = new
+		// ArrayList<QDataBaseEntityMessage>();
 
 		// List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
 		// "LNK_CORE", 0, 20, false);
@@ -5515,6 +5506,5 @@ public class QRules {
 		// }
 
 	}
-
 
 }
