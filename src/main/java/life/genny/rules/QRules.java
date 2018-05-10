@@ -5153,10 +5153,12 @@ public class QRules {
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
 						realmJson.getString("auth-server-url").length() - ("/auth".length()));
 
+					
 				try {
-					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(),
+					String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(),
 							secret, "service", password);
-					String token = accessToken.getToken();
+//					String token = accessToken.getToken();
+//					String token = QwandaUtils.apiGet(qwandaServiceUrl+"/utils/token/"+keycloakurl+"/{realm}/"+secret+"/"+key+"/"+initVector+"/service/"+encryptedPassword,"DUMMY");
 
 					Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
 
@@ -5530,4 +5532,5 @@ public class QRules {
 
 	}
 
+	
 }
