@@ -5143,7 +5143,7 @@ public class QRules {
 				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
 						realmJson.getString("auth-server-url").length() - ("/auth".length()));
 				System.out.println("KeycloakUrl="+keycloakurl);
-
+			
 				try {
 					AccessTokenResponse accessToken = KeycloakUtils.getAccessToken(keycloakurl, realm(), realm(),
 							secret, "service", password);
