@@ -3,11 +3,10 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 
-rule "Select New Role - Step 4"
+rule "Check user company - Step 4"
 
 	when
-		 rules: QRules( 	isState("ROLE_SELECTION") && isState("COMPANY_EXISTS") &&
-						!isState("CHECK_COMPANY_QUESTIONS") )   
+		 rules: QRules( isState("CHECK_USER_COMPANY") && isState("COMPANY_EXISTS") && !isState("CHECK_COMPANY_QUESTIONS") )   
 	 then
 	    rules.header();
 		

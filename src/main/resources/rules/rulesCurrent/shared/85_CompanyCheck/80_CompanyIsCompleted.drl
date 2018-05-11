@@ -3,7 +3,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 
-rule "Select New Role - Step 7"
+rule "Check user company - Step 7"
 
 	when
 		 rules: QRules( isState("COMPANY_IS_READY") &&
