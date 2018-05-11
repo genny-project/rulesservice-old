@@ -17,6 +17,6 @@ rule "User not found check role"
         rules.setState("LOOP_CHECK_ROLE");
       	rules.setState("ROLE_NOT_FOUND");
       	rules.setState("ROLE_CHECKED");
-
-	      rules.footer();
+      	
+      	rules.footer();
 end
