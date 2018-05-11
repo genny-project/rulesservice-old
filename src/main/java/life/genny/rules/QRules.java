@@ -82,6 +82,7 @@ import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdNavigateMessage;
 import life.genny.qwanda.message.QCmdReloadMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
@@ -1201,6 +1202,18 @@ public class QRules {
 		}
 
 		publish("cmds", cmdJobSublayoutJson);
+	}
+	
+	public void navigateTo(String newRoute) {
+		
+		if (newRoute == null) {
+			return;
+		}
+		
+		QCmdNavigateMessage cmdRoute = new QCmdNavigateMessage(newRoute);
+		JsonObject json = JsonObject.mapFrom(cmdRoute);
+		json.put("token", getToken());
+		publish("cmds", json);
 	}
 
 	public void showLoading(String text) {
