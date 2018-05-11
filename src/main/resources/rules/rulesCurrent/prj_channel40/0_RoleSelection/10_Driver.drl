@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 rule "Selected Driver Role - channel40"
 
 	when
-		 evt: QEventAttributeValueChangeMessage(  event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_IS_SELLER" )
+		 evt: QEventAttributeValueChangeMessage(  event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_IS_SELLER" && getAnswer().getValue().equals("TRUE"))
 		 rules: QRules( !isState("SELECTED_DRIVER_ROLE") )   
 	 then
 	    rules.header();
