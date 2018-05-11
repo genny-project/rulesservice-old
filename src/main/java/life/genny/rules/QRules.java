@@ -1558,9 +1558,9 @@ public class QRules {
 			println("Channel does not exist: " + channel);
 		}
 	}
-	
+
 	public void loadUserRole() {
-		
+
 		BaseEntity user = this.getUser();
       	if(user != null){
 
@@ -2656,17 +2656,12 @@ public class QRules {
 
 	public void sendAllLayouts() {
 
-		/* none cached version */
-		List<BaseEntity> beLayouts = this.getAllLayouts();
+		List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
-		
-		/* cached version, but GenerateLayouts does not work */
-		/* List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
-		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */
 	}
 
 	public List<BaseEntity> getAllLayouts() {
-		
+
 		String realmCode = this.realm();
 		if(realmCode == null) {
 			System.out.println("No realm code was provided. Not getting layouts. ");
@@ -2835,7 +2830,7 @@ public class QRules {
 	}
 
 	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
-		
+
 		String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken());
 		if(uniqueId != null) {
 			BaseEntity beg = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, getToken());
@@ -2843,7 +2838,7 @@ public class QRules {
 			VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
 			return beg;
 		}
-		
+
 		return null;
 	}
 
@@ -5750,9 +5745,9 @@ public class QRules {
 
      	/* sending cmd BUCKET_VIEW */
      	sendSublayout(viewCode, "dashboard_"+realm()+".json", grpBE);
-        setLastLayout( viewCode, grpBE );
-
+      setLastLayout( viewCode, grpBE );
 	}
+
 	public List<BaseEntity> sendBaseEntityWithChildren( BaseEntity be, String linkCode, Integer pageStart, Integer pageSize, Boolean cache) {
 
 		List<BaseEntity> children = getBaseEntitysByParentAndLinkCode2(be.getCode(), linkCode, pageStart, pageSize, cache);
@@ -5770,9 +5765,9 @@ public class QRules {
 
 	/* returns  subscribers of a baseEntity Code */
 	public String[] getSubscribers(final String subscriptionCode) {
-		
+
 		final String SUB = "SUB";
-		
+
 		// Subscribe to a code
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
