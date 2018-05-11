@@ -1,0 +1,17 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Ask Registration Questions - SELLER"
+    when
+        rules: QRules( isState("PRI_IS_SELLER") && isState("ASK_REGISTRATION_QUESTIONS") &&
+                    !isState("LOOP_ASK_REGISTRATION_SELLER") )
+    then
+        rules.header();
+        
+		rules.setState("LOOP_ASK_REGISTRATION_SELLER");
+        rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_SELLER_GRP", false);
+		
+        rules.footer();
+end
