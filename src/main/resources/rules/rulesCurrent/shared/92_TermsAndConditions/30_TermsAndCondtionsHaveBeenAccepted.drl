@@ -5,12 +5,11 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Terms and conditions have been accepted"
     when
-        rules: QRules( isState("TERMS_AND_CONDITIONS_ACCEPTED") && 
-                    !isState("LOO_ACCEPTED_T_C") )
+        rules: QRules( isState("TERMS_AND_CONDITIONS_ACCEPTED") && !isState("LOOP_SUBMIT_ACCEPTED_T_C") )
     then
         rules.header();
         
-		rules.setState("LOO_ACCEPTED_T_C");
+		rules.setState("LOOP_SUBMIT_ACCEPTED_T_C");
         rules.setState("APPLICATION_READY");
         rules.setState("TRIGGER_APPLICATION");
 		
