@@ -1589,7 +1589,8 @@ public class QRules {
       			for(EntityAttribute role: roles) {
 
       				if(role != null && role.getValue() != null) {
-      					Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
+      					
+      					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
       					if(isRole) {
       						this.setState(role.getAttributeCode());
       						has_role_been_found = true;
