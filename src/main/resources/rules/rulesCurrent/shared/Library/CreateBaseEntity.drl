@@ -16,9 +16,11 @@ rule "Create BaseEntity"
         String beName = rules.getAsString("beName");
 
  		if (beCode == null) {
-             rules.println("Create BaseEntity: missing beCode");
+             rules.println("Create BaseEntity: missing beCode. defaulting to user code");
+             beCode = rules.getUser().getCode();
         }
-        else if (bePrefix == null) {
+        
+ 		if (bePrefix == null) {
             rules.println("Create BaseEntity: missing bePrefix");
         }
         else if (beName == null) {
