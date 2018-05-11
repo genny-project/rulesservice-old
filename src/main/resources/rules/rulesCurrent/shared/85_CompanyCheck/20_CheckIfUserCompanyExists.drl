@@ -13,6 +13,8 @@ rule "Check user company - step 1"
 		rules.setState("CHECKED_COMPANY");
 		
 		BaseEntity userCompany = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		rules.set("baseEntity", userCompany);
+		
 		if(userCompany == null) {
 			rules.setState("COMPANY_DOES_NOT_EXIST");
 		}

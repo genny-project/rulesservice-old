@@ -15,12 +15,15 @@ rule "Check user company - Step 5"
 		
 		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
 		
-		rules.set("questionSourceCode", rules.getUser().getCode());
-		rules.set("questionTargetCode", companyBe.getCode());
-		rules.set("questionGroupCode", "QUE_USER_COMPANY_GRP");
-		rules.set("questionIsPopup", false);
-		
-		rules.setState("ASK_QUESTION");
+		if(companyBe != null) {
+			
+			rules.set("questionSourceCode", rules.getUser().getCode());
+			rules.set("questionTargetCode", companyBe.getCode());
+			rules.set("questionGroupCode", "QUE_USER_COMPANY_GRP");
+			rules.set("questionIsPopup", false);
+			
+			rules.setState("ASK_QUESTION");
+		}
 		
 	    rules.footer();     		      
 end
