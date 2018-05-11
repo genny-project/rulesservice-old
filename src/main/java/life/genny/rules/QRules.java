@@ -2733,15 +2733,29 @@ public class QRules {
 			/* download the content of the layout */
 			String content = LayoutUtils.downloadLayoutContent(layout);
 			if(content != null) {
-				answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content));
+				
+				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
+				newAnswer.setChangeEvent(false);
+				answers.add(newAnswer);
 			}
+			
+			Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath());
+			newAnswer.setChangeEvent(false);
+			answers.add(newAnswer);
+			
+			Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl());
+			newAnswer2.setChangeEvent(false);
+			answers.add(newAnswer2);
+			
+			Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName());
+			newAnswer3.setChangeEvent(false);
+			answers.add(newAnswer3);
 
-			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath()));
-			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl()));
-			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName()));
-			answers.add(new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate()));
+			Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate());
+			newAnswer4.setChangeEvent(false);
+			answers.add(newAnswer4);
+					
 			this.saveAnswers(answers);
-			return null; // we return null so the be is not being sent twice
 		}
 
 		return beLayout;

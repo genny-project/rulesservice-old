@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 rule "Selected Owner Role - channel40"
 
 	when
-		 evt: QEventAttributeValueChangeMessage(  event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_IS_BUYER" )
+		 evt: QEventAttributeValueChangeMessage(  event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" && data.code == "PRI_IS_BUYER" && getAnswer().getValue().equals("TRUE") )
 		 rules: QRules( !isState("SELECTED_OWNER_ROLE") )   
 	 then
 	    rules.header();
