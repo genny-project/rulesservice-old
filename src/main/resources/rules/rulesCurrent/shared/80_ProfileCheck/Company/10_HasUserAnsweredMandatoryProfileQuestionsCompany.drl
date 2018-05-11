@@ -11,8 +11,7 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Has user answered mandatory profile questions - step 1 - COMPANY"
     when
-	    rules: QRules( isUserPresent() == true && 
-				      isState("CHECK_USER_PROFILE_COMPLETED") && 
+	    rules: QRules( isState("CHECK_USER_PROFILE_COMPLETED") && 
 				   	   isState("PRI_IS_COMPANY") && 
 	    				   !isState("LOOP_CHECK_USER_PROFILE_COMPLETED") )
      then
