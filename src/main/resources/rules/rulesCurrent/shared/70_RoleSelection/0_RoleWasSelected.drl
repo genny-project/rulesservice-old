@@ -13,7 +13,7 @@ rule "User Selected Role"
 		
 		rules.showLoading("Setting up your account...");
 		rules.setState("ROLE_SELECTION");
-		rules.startWorkflow("login");
+		/*rules.startWorkflow("login"); */
 		
 	    rules.footer();     		      
 end

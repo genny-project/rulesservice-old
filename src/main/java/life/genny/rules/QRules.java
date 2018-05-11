@@ -54,6 +54,7 @@ import org.keycloak.representations.AccessTokenResponse;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+import com.hazelcast.util.collection.ArrayUtils;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -354,7 +355,7 @@ public class QRules {
 	}
 
 	public Boolean isTrue(final String key) {
-		return ionAsBoolean(key);
+		return getAsBoolean(key);
 	}
 
 	public Boolean isFalse(final String key) {
@@ -1557,6 +1558,41 @@ public class QRules {
 			println("Channel does not exist: " + channel);
 		}
 	}
+	
+	public void loadUserRole() {
+		
+		BaseEntity user = this.getUser();
+      	if(user != null){
+
+      		Boolean has_role_been_found = false;
+
+      		if(user != null) {
+
+      			List<EntityAttribute> roles = user.getBaseEntityAttributes()
+      								.stream()
+      								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
+      								.collect(Collectors.toList());
+
+      			for(EntityAttribute role: roles) {
+
+      				if(role != null && role.getValue() != null) {
+      					Boolean isRole = role.getValueBoolean() != null && role.getValueBoolean() == true;
+      					if(isRole) {
+      						this.setState(role.getAttributeCode());
+      						has_role_been_found = true;
+      					}
+      				}
+      			}
+      		}
+
+      		if(has_role_been_found) {
+      			this.setState("ROLE_FOUND");
+      		}
+      		else {
+      			this.setState("ROLE_NOT_FOUND");
+      		}
+      	}
+	}
 
 	/*
 	 * Get user's company code
@@ -2611,7 +2647,7 @@ public class QRules {
 
 	public void sendNotification(final String text, final String[] recipientCodes, final String style) {
 
-		Layout notificationLayout = new Layout(text, style, null, null);
+		Layout notificationLayout = new Layout(text, style, null, null, null);
 		QDataSubLayoutMessage data = new QDataSubLayoutMessage(notificationLayout, getToken());
 		data.setRecipientCodeArray(recipientCodes);
 		publishCmd(data);
@@ -2620,12 +2656,18 @@ public class QRules {
 
 	public void sendAllLayouts() {
 
-		List<BaseEntity> beLayouts = this.getAllLayouts(realm());
+		/* none cached version */
+		List<BaseEntity> beLayouts = this.getAllLayouts();
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
+		
+		/* cached version, but GenerateLayouts does not work */
+		/* List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
+		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */
 	}
 
-	private List<BaseEntity> getAllLayouts(final String realmCode) {
-
+	public List<BaseEntity> getAllLayouts() {
+		
+		String realmCode = this.realm();
 		if(realmCode == null) {
 			System.out.println("No realm code was provided. Not getting layouts. ");
 			return null;
@@ -2793,11 +2835,16 @@ public class QRules {
 	}
 
 	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
-		BaseEntity beg = QwandaUtils.createBaseEntityByCode(
-				QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken()), name, qwandaServiceUrl, getToken());
-		addAttributes(beg);
-		VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
-		return beg;
+		
+		String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken());
+		if(uniqueId != null) {
+			BaseEntity beg = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, getToken());
+			addAttributes(beg);
+			VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
+			return beg;
+		}
+		
+		return null;
 	}
 
 	public BaseEntity createBaseEntityByCode2(final String beCode, final String name) {
@@ -3101,7 +3148,7 @@ public class QRules {
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
 		VertxUtils.subscribe(realm(), bes, userCode);
 	}
-	
+
 	public void subscribeUserToBaseEntityAndChildren(String userCode, String beCode, String linkCode) {
 		List<BaseEntity> beList = new ArrayList<BaseEntity>();
 		BaseEntity parent = getBaseEntityByCode(beCode);
@@ -5377,27 +5424,6 @@ public class QRules {
 
 	}
 
-	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
-		this.updateBaseEntityStatus(be.getCode(), userCode, status);
-	}
-
-	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
-
-		String attributeCode = "STA_" + userCode;
-		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
-	}
-
-	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
-		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
-	}
-
-	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
-
-		for (String userCode : userCodes) {
-			this.updateBaseEntityStatus(beCode, userCode, status);
-		}
-	}
-
 	public boolean loadRealmData() {
 
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
@@ -5744,12 +5770,15 @@ public class QRules {
 
 	/* returns  subscribers of a baseEntity Code */
 	public String[] getSubscribers(final String subscriptionCode) {
+		
 		final String SUB = "SUB";
+		
 		// Subscribe to a code
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
 		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
+		String[] result = new String[resultArray.length + resultAdmins.length];
+		ArrayUtils.concat(resultArray, resultAdmins, result);
 		return result;
 	}
 

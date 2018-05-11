@@ -1,14 +1,15 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
+import java.util.HashMap;
 
 rule "Send Applied for Internship Message to Intern"
 	when
-		rules: QRules(  isState("SEND_APPLIED_MESSAGE_TO_INTERN") && 
+		rules: QRules(  isState("SEND_APPLIED_MESSAGE_TO_INTERN") &&
 						        !isState("LOOP_SEND_APPLIED_MESSAGE_TO_INTERN") )
 	then
 	 	rules.header();
 		rules.setState("LOOP_SEND_APPLIED_MESSAGE_TO_INTERN");
-    
+
     BaseEntity intern = rules.getAsBaseEntity("internBe");
     BaseEntity internship = rules.getAsBaseEntity("internshipBe");
     BaseEntity hostcompany = rules.getAsBaseEntity("companyBe");
@@ -23,8 +24,8 @@ rule "Send Applied for Internship Message to Intern"
         rules.println("hostcompany is null");
         return;
     }else {
-      
-      HashMap<String, String> contextMap = new HashMap<String, String>(); 
+
+      HashMap<String, String> contextMap = new HashMap<String, String>();
       contextMap.put("INTERN", intern.getCode());
       contextMap.put("INTERNSHIP", internship.getCode());
       contextMap.put("HOSTCOMPANY", hostcompany.getCode());
@@ -40,6 +41,6 @@ rule "Send Applied for Internship Message to Intern"
 
       rules.setState("SENT_APPLIED_MESSAGE_TO_INTERN");
  		}
-	 	
-	 	rules.footer();      
+
+	 	rules.footer();
 end
