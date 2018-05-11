@@ -19,7 +19,7 @@ rule "Profile is completed - step 3 - channel40"
    	    
 		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
 		rules.setState("PROFILE_IS_COMPLETED");
-		rules.setState("CHECK_TERMS_AND_CONDITIONS");
-
+		rules.setState("CHECK_USER_COMPANY");
+		
 	    rules.footer();
 end

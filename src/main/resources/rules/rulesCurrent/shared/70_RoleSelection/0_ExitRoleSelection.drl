@@ -5,7 +5,7 @@ import java.util.List;
 
 rule "Exit Role Selection"
      when
-        rules: QRules( 	isState("EXIT_ROLE_SELECTION") &&
+        rules: QRules( 	isState("ROLE_SET") &&
 						!isState("EXITED_ROLE_SELECTION") ) 
      then      
         rules.header();     

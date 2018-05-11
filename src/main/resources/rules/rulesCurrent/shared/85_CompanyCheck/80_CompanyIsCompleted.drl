@@ -12,7 +12,7 @@ rule "Select New Role - Step 7"
 	    rules.header();
 		
 		rules.setState("COMPANY_IS_READY_LOOP");
-		rules.setState("EXIT_REGISTRATION");
+		rules.setState("CHECK_TERMS_AND_CONDITIONS");
 		
 	    rules.footer();     		      
 end
