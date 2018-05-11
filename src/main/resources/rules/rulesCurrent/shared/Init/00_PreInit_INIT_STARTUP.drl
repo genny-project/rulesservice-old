@@ -16,12 +16,13 @@ rule "Pre Init Startup"
         rules.setState("STARTED");
 		
 		/* set up a service user for each realm */
-			if (rules.loadRealmData() ) {
+		if (rules.loadRealmData() ) {
 		
-				drools.setFocus("GenerateReports");
-				drools.setFocus("GenerateSearches");
+			drools.setFocus("GenerateReports");
+			drools.setFocus("GenerateSearches");
         		drools.setFocus("GenerateTree");
         		drools.setFocus("GenerateCaches");
+        		drools.setFocus("GenerateLayouts");
         	}
        		      
 end
