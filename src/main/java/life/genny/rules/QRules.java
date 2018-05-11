@@ -5720,6 +5720,8 @@ public class QRules {
 		if (!this.isState("EVENT_AUTH_INIT")) {
 			return;
 		}
+		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
+		QBulkMessage allItems = new QBulkMessage(init);
 
 		if (!getUser().is("PRI_OWNER")) {
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
@@ -5727,14 +5729,15 @@ public class QRules {
 			if (newItems != null) {
 				showLoading("Loading Cached new jobs...");
 				if (newItems.getMessages() != null) {
-					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
-						if (msg instanceof QDataBaseEntityMessage) {
-							msg.setToken(getToken());
-							publishCmd(JsonUtils.toJson(msg));
-						}
-					}
+					allItems.add(newItems.getMessages());
+//					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+//						if (msg instanceof QDataBaseEntityMessage) {
+//							msg.setToken(getToken());
+//							publishCmd(JsonUtils.toJson(msg));
+//						}
+//					}
 				}
-				sendBucketLayouts(); // display to user
+//				sendBucketLayouts(); // display to user
 			}
 		}
 
@@ -5749,20 +5752,21 @@ public class QRules {
 			showLoading("Loading the rest of the jobs...");
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
-				for (QDataBaseEntityMessage msg : items.getMessages()) {
-
-					if (msg instanceof QDataBaseEntityMessage) {
-						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
-							System.out.println("GRP_NEW_ITEMS DEBUG");
-						}
-						msg.setToken(getToken());
-						publishCmd(JsonUtils.toJson(msg));
-					}
-				}
+				allItems.add(items.getMessages());
+//				for (QDataBaseEntityMessage msg : items.getMessages()) {
+//
+//					if (msg instanceof QDataBaseEntityMessage) {
+//						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
+//							System.out.println("GRP_NEW_ITEMS DEBUG");
+//						}
+//						msg.setToken(getToken());
+//						publishCmd(JsonUtils.toJson(msg));
+//					}
+//				}
 			}
 		}
 
-
+		publishCmd(JsonUtils.toJson(allItems));
 
 	}
 
