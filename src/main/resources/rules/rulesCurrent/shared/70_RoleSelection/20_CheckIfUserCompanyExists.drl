@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Select New Role - Step 1"
 
 	when
-		 rules: QRules( 	isState("ROLE_SELECTION") && isState("ROLE_SET") &&
+		 rules: QRules( 	isState("ROLE_SET") &&
 						!isState("CHECKED_COMPANY") )   
 	 then
 	    rules.header();
