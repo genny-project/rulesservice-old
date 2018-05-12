@@ -10,7 +10,7 @@ rule "Send Main Layout"
         rules.setState("LOOP_SEND_MAIN_LAYOUTS");
 
         rules.sendLayout("LAY_DEFAULT", "layout.json", rules.realm());
-        rules.navigateTo("/homepage");
+        rules.navigateTo("/home");
         rules.setState("MAIN_LAYOUTS_SENT");
 
 	    rules.footer();
