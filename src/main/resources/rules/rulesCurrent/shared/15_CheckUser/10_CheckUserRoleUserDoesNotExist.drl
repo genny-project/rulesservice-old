@@ -8,7 +8,7 @@ import life.genny.qwanda.attribute.EntityAttribute;
 
 rule "User not found check role"
      when
-        rules: QRules(  isState("STARTED") &&
+        rules: QRules(  isState("STARTED") && (!isState("GENERATE_STARTUP")) &&
                         isUserPresent() == false &&
 						            !isState("LOOP_CHECK_ROLE") )
      then

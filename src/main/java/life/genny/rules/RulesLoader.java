@@ -48,7 +48,7 @@ public class RulesLoader {
 	}
 
 	static KieServices ks = KieServices.Factory.get();
-
+	
 	public static Set<String> realms = new HashSet<String>();
 
 	/**
@@ -78,7 +78,7 @@ public class RulesLoader {
 
 		return fut;
 	}
-
+	
 	/**
 	 * @param vertx
 	 * @return
@@ -100,7 +100,7 @@ public class RulesLoader {
 
 		return fut;
 	}
-
+	
 	/**
 	 * @param vertx
 	 * @return
@@ -260,7 +260,7 @@ public class RulesLoader {
 			// Charset.forName("UTF-8"));
 			// System.out.println("Read New Rules set from File");
 
-
+			
 			// Write each rule into it's realm cache
 			for (final Tuple3<String, String, String> rule : rules) {
 				writeRulesIntoKieFileSystem(realm, rules, kfs, rule);
@@ -309,11 +309,11 @@ public class RulesLoader {
 //				{
 //					System.out.println(realm+" - Overriding genny rule "+rule._2);
 //					return;
-//				}
+//				} 
 				for (Tuple3<String, String, String> ruleCheck : rules) { // look for rules that are not genny rules
 					String realmCheck = ruleCheck._1;
 					if (realmCheck.equals(realm)) {
-
+		
 						String filenameCheck = ruleCheck._2;
 						if (filenameCheck.equalsIgnoreCase(filename)) {
 							if (("channel40".equalsIgnoreCase(realm))) {
@@ -322,8 +322,8 @@ public class RulesLoader {
 							return ; // do not save this genny rule as there is a proper realm rule with same name
 						}
 					}
-
-
+	
+					
 				}
 			}
 			if (rule._2.endsWith(".drl")) {
