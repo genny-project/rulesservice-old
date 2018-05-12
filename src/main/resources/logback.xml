@@ -21,10 +21,12 @@
         <logger name="com.hazelcast.internal.cluster.impl.MulticastJoiner" level="ERROR"/>
         <logger name="io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer" level="ERROR"/>
         <logger name="com.hazelcast.spi.impl.operationexecutor.impl.OperationExecutorImpl" level="ERROR"/>
-        <logger name="com.hazelcast.instance.AddressPicker" level="ERROR"/>
+        <logger name="com.hazelcast.instance.AddressPicker" level="OFF"/>
         <logger name="com.hazelcast.spi.impl.operationservice.impl.BackpressureRegulator" level="ERROR"/>
         <logger name="com.hazelcast.internal.diagnostics.Diagnostics" level="ERROR"/>
         <logger name="com.hazelcast.nio.tcp.TcpIpConnectionManager" level="ERROR"/>
+        <logger name="io.vertx.core.impl.BlockedThreadChecker" level="OFF" />
+        
     
 </configuration>
 
