@@ -3724,6 +3724,7 @@ public class QRules {
 		if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
 			println("The verification code is ::" + verificationCode);
 		}
+		
 		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		saveAnswer(verificationCodeAns);
 
@@ -3753,6 +3754,18 @@ public class QRules {
 			return true;
 		} else
 			return false;
+	}
+	
+	public boolean didUserVerifyPhoneNumber() {
+		
+		String enteredCode = this.getUser().getLoopValue("PRI_VERIFICATION_CODE_USER", null);
+		String realCode = this.getUser().getLoopValue("PRI_VERIFICATION_CODE", null);
+		Boolean enteredRightPasscode = false;
+		if(enteredCode != null && realCode != null && enteredCode.equals(realCode)) {
+			enteredRightPasscode = true;
+		}
+		
+		return this.isMandatoryFieldsEntered(this.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP") && enteredRightPasscode;
 	}
 
 	public void clearBaseEntityAttr(String userCode) {

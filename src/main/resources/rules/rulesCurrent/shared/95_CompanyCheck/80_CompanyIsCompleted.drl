@@ -12,7 +12,7 @@ rule "Check user company - Step 7"
 	    rules.header();
 		
 		rules.setState("COMPANY_IS_READY_LOOP");
-		rules.setState("CHECK_TERMS_AND_CONDITIONS");
+		rules.setState("CHECK_MOBILE_VERIFICATION");
 		
 	    rules.footer();     		      
 end
