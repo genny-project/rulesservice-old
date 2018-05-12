@@ -5,15 +5,16 @@ import life.genny.qwandautils.MergeUtil;
 
 rule "Ask User Role"
     when
-        rules: QRules( 	isState("ASK_USER_ROLE") && 
+        rules: QRules( 	isState("ASK_USER_ROLE") &&
 						!isState("ASKED_USER_ROLE")	)
      then
      	rules.header();
      	rules.setState("ASK_USER_ROLE");
-     	
-		rules.sendSublayout("ROLE_SELECTION", "registration/role_selection.json", null, false);
+
+		  rules.sendSublayout("ROLE_SELECTION", "registration/role_selection.json", null, false);
+      rules.navigateTo('/registration/role');
 
      	rules.setState("ASKED_USER_ROLE");
-		
+
     	rules.footer();
 end

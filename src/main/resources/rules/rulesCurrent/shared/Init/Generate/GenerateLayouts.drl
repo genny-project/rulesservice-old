@@ -5,18 +5,18 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.QRules;
 
 rule "Generate Layouts"
-    
+
 	ruleflow-group 'GenerateLayouts'
- 
+
      when
        rules: QRules( isState("GENERATE_STARTUP") && !isState("GENERATE_LAYOUTS_CACHE"))
      then
 
         rules.header();
         rules.setState("GENERATE_LAYOUTS_CACHE");
-		rules.println("Generating Layouts Cache for " + rules.realm());
-		rules.getAllLayouts(); 
-		rules.startupEvent();
-		
+		    rules.println("Generating Layouts Cache for " + rules.realm());
+		    rules.getAllLayouts();
+		    rules.startupEvent();
+
      rules.footer();
 end

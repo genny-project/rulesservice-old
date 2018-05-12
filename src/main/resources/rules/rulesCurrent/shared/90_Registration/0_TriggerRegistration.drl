@@ -8,9 +8,9 @@ rule "Trigger Registration"
          				!isState("LOOP_TRIGGER_REGISTRATION") )
      then
      	rules.header();
-       
-		rules.setState("LOOP_TRIGGER_REGISTRATION");
+
+		  rules.setState("LOOP_TRIGGER_REGISTRATION");
 	    rules.setState("ASK_REGISTRATION_QUESTIONS");
-	    
+
 	    rules.footer();
 end
