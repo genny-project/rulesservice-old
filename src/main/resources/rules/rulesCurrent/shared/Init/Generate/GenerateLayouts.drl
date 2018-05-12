@@ -5,9 +5,9 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.QRules;
 
 rule "Generate Layouts"
-    
+
 	ruleflow-group 'GenerateLayouts'
- 
+
      when
        rules: QRules( isState("GENERATE_STARTUP") && !isState("GENERATE_LAYOUTS_CACHE"))
      then
