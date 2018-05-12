@@ -12,10 +12,15 @@ rule "Ask Mobile verification if needeed"
         
 		rules.setState("LOO_ASK_MOBILE_VERIF");
         
-		if(rules.isMandatoryFieldsEntered(rules.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP")) {
+		if(rules.didUserVerifyPhoneNumber()) {
         		rules.setState("MOBILE_VERIFIED");
         }
         else {
+        	
+        		/* we send the verification code */
+        		rules.sendMobileVerificationPasscode(rules.getUser().getCode());
+        	
+        		/* we ask user to validate form */
             rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP", false);
         }
 		

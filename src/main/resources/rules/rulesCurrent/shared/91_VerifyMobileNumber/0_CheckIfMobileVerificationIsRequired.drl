@@ -17,7 +17,7 @@ rule "Check if mobile phone number verification is required"
 		}
 		else {
 			rules.setState("MOBILE_VERIFICATION_NOT_REQUIRED");
-			rules.setState("CHECK_USER_COMPANY");
+			rules.setState("MOBILE_VERIFIED");
 		}
 		
         rules.footer();

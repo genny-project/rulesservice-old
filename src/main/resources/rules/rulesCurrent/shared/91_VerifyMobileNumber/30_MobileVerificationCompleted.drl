@@ -10,7 +10,7 @@ rule "Mobile verification is completed"
         rules.header();
         
 		rules.setState("LOOP_MOBILE_VERIFIED_ACCEPTED");
-        rules.setState("TRIGGER_PROFILE_CHECK");
+        rules.setState("CHECK_USER_COMPANY");
 		
         rules.footer();
 end
