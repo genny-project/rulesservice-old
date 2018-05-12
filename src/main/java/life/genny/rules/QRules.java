@@ -1203,13 +1203,13 @@ public class QRules {
 
 		publish("cmds", cmdJobSublayoutJson);
 	}
-	
+
 	public void navigateTo(String newRoute) {
-		
+
 		if (newRoute == null) {
 			return;
 		}
-		
+
 		QCmdNavigateMessage cmdRoute = new QCmdNavigateMessage(newRoute);
 		JsonObject json = JsonObject.mapFrom(cmdRoute);
 		json.put("token", getToken());
@@ -1589,7 +1589,7 @@ public class QRules {
       			for(EntityAttribute role: roles) {
 
       				if(role != null && role.getValue() != null) {
-      					
+
       					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
       					if(isRole) {
       						this.setState(role.getAttributeCode());
@@ -2722,6 +2722,8 @@ public class QRules {
 			beLayout = createBaseEntityByCode(getUser().getCode(), "LAY", layout.getName());
 		}
 
+    if(beLayout == null) return null;
+
 		/* we get the modified time stored in the BE and we compare it to the layout one */
 		String beModifiedTime = beLayout.getLoopValue("PRI_LAYOUT_MODIFIED_DATE", null);
 		if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
@@ -2734,20 +2736,20 @@ public class QRules {
 			/* download the content of the layout */
 			String content = LayoutUtils.downloadLayoutContent(layout);
 			if(content != null) {
-				
+
 				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
 				newAnswer.setChangeEvent(false);
 				answers.add(newAnswer);
 			}
-			
+
 			Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath());
 			newAnswer.setChangeEvent(false);
 			answers.add(newAnswer);
-			
+
 			Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl());
 			newAnswer2.setChangeEvent(false);
 			answers.add(newAnswer2);
-			
+
 			Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName());
 			newAnswer3.setChangeEvent(false);
 			answers.add(newAnswer3);
@@ -2755,7 +2757,7 @@ public class QRules {
 			Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate());
 			newAnswer4.setChangeEvent(false);
 			answers.add(newAnswer4);
-					
+
 			this.saveAnswers(answers);
 		}
 
@@ -3724,7 +3726,7 @@ public class QRules {
 		if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
 			println("The verification code is ::" + verificationCode);
 		}
-		
+
 		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		saveAnswer(verificationCodeAns);
 
@@ -3755,16 +3757,16 @@ public class QRules {
 		} else
 			return false;
 	}
-	
+
 	public boolean didUserVerifyPhoneNumber() {
-		
+
 		String enteredCode = this.getUser().getLoopValue("PRI_VERIFICATION_CODE_USER", null);
 		String realCode = this.getUser().getLoopValue("PRI_VERIFICATION_CODE", null);
 		Boolean enteredRightPasscode = false;
 		if(enteredCode != null && realCode != null && enteredCode.equals(realCode)) {
 			enteredRightPasscode = true;
 		}
-		
+
 		return this.isMandatoryFieldsEntered(this.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP") && enteredRightPasscode;
 	}
 
