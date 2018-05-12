@@ -34,7 +34,7 @@ rule "SBE_OWNERJOBS"
   	     .setPageStart(0)
   	     .setPageSize(10000);
 
-  	  /*   .setStakeholder(rules.getUser().getCode()); */
+  	   /*  .setStakeholder(rules.getUser().getCode());  */
 
   		 rules.add("GRP","GRP_REPORTS_OWNER",report);
 

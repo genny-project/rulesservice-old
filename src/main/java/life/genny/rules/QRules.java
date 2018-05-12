@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collector;
@@ -2184,7 +2185,7 @@ public class QRules {
 			try {
 				answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
 				if (answer.getAttribute() == null) {
-					log.error("Null Attribute");
+					//log.error("Null Attribute");
 				} else
 					cachedBe.addAnswer(answer);
 
@@ -2670,7 +2671,10 @@ public class QRules {
 
 	public void sendAllLayouts() {
 
-		List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
+		/* List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
+		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */ 
+		
+		List<BaseEntity> beLayouts = this.getAllLayouts();
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 	}
 
@@ -2712,20 +2716,25 @@ public class QRules {
 		BaseEntity beLayout = null;
 
 		/* we check if the baseentity for this layout already exists */
-		beLayout = RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl, this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
-
+//		beLayout = RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl, this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
+		String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+		String layoutCode = ("LAY_"+realm()+"_"+precode).toUpperCase();
+		
+		beLayout = VertxUtils.readFromDDT(layoutCode, getToken());
 		/* if the base entity does not exist, we create it */
 		if(beLayout == null) {
 
 			/* otherwise we create it */
-			println("creating layout base entity.");
-			beLayout = createBaseEntityByCode(getUser().getCode(), "LAY", layout.getName());
+			beLayout  = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, getToken());
+			addAttributes(beLayout);
+			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
 
-    if(beLayout == null) return null;
+    if(beLayout == null) 
+    	return null;
 
 		/* we get the modified time stored in the BE and we compare it to the layout one */
-		String beModifiedTime = beLayout.getLoopValue("PRI_LAYOUT_MODIFIED_DATE", null);
+		String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
 		if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
 
 			/* if the modified time is not the same, we update the layout BE */
@@ -2759,6 +2768,9 @@ public class QRules {
 			answers.add(newAnswer4);
 
 			this.saveAnswers(answers);
+			
+			/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
+			this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 		}
 
 		return beLayout;
@@ -3157,7 +3169,8 @@ public class QRules {
 		}
 
 		// Add the original token holder
-		recipientCodesSet.add(getUser().getCode());
+		if (getUser()!=null)
+			recipientCodesSet.add(getUser().getCode());
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}

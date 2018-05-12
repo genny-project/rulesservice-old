@@ -31,7 +31,7 @@ rule "SBE_DRIVERS"
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
 
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
-  	     .addFilter("PRI_DRIVER",true)
+  	     .addFilter("PRI_IS_SELLER",true)
 
   	     .setPageStart(0)
   	     .setPageSize(10000);
