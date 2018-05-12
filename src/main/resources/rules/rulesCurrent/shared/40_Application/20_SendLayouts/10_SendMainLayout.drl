@@ -3,13 +3,14 @@ import life.genny.rules.QRules;
 
 rule "Send Main Layout"
     when
-        rules: QRules(  isState("SEND_MAIN_LAYOUTS") && 
+        rules: QRules(  isState("SEND_MAIN_LAYOUTS") &&
                         !isState("LOOP_SEND_MAIN_LAYOUTS") )
      then
      	rules.header();
         rules.setState("LOOP_SEND_MAIN_LAYOUTS");
 
         rules.sendLayout("LAY_DEFAULT", "layout.json", rules.realm());
+        rules.navigateTo("/homepage");
         rules.setState("MAIN_LAYOUTS_SENT");
 
 	    rules.footer();
