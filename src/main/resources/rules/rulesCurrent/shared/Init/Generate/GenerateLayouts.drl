@@ -16,7 +16,7 @@ rule "Generate Layouts"
         rules.setState("GENERATE_LAYOUTS_CACHE");
 		rules.println("Generating Layouts Cache for " + rules.realm());
 		rules.getAllLayouts(); 
-		rules.startupEvent();
+
 		
      rules.footer();
 end

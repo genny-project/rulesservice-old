@@ -1952,7 +1952,7 @@ public class QRules {
 	public void header() {
 		try {
 
-			RulesUtils.header(drools.getRule().getName() + " - "
+			RulesUtils.header(realm()+":"+drools.getRule().getName() + " - "
 					+ ((drools.getRule().getAgendaGroup() != null) ? drools.getRule().getAgendaGroup() : "") + " "
 					+ this.decodedTokenMap.get("preferred_username") // This is faster than calling getUser()
 					+ showStates());
@@ -5564,7 +5564,7 @@ public class QRules {
 
 		if ((bulk == null)||(bulk.getMessages()==null)||(bulk.getMessages().length==0)) {
 			log.error("Tree Data NOT in cache - forcing a cache load");
-			startupEvent();
+			startupEvent("Send Tree data");
 			 bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null)&& (bulk.getMessages()!=null)&&(bulk.getMessages().length>0)) {
@@ -5577,11 +5577,13 @@ public class QRules {
 		}
 	}
 
-	public void startupEvent() {
-		println("Startup Event detected");
+	public void startupEvent(String caller) {
+		println("Startup Event called from "+caller);
+		if (!isState("GENERATE_STARTUP")) {
 		this.loadRealmData();
 		this.generateTree();
 		generateNewItemsCache();
+		}
 	}
 
 	public void generateNewItemsCache() {

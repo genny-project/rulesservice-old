@@ -233,7 +233,7 @@ public class EBCHandlers {
 			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
 			qRules.set("realm", ruleGroup);
 
-			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
+			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String,Object>>(); //RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(qRules);

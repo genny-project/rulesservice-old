@@ -10,7 +10,7 @@ rule "Pre Init Startup"
           rules: QRules(!isState("STARTED"))
      then
         rules.setDrools(drools);
-         rules.println("RULE INIT STARTUP: Realms "+rules.realm());
+         rules.println("********* RULE INIT STARTUP: Realms "+rules.realm()+" ***************");
 
         rules.setState("GENERATE_STARTUP");
         rules.setState("STARTED");
@@ -18,8 +18,9 @@ rule "Pre Init Startup"
 			/* set up a service user for each realm */
 			if (rules.loadRealmData() ) {
 
-				 	drools.setFocus("GenerateReports");
-					drools.setFocus("GenerateSearches");
+			drools.setFocus("GenerateSearches");
+			drools.setFocus("GenerateReports");
+
 	        drools.setFocus("GenerateTree");
 	        drools.setFocus("GenerateCaches");
 	        drools.setFocus("GenerateLayouts");
