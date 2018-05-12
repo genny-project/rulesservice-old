@@ -5760,14 +5760,14 @@ public class QRules {
 				showLoading("Loading Cached new jobs...");
 				if (newItems.getMessages() != null) {
 					allItems.add(newItems.getMessages());
-//					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
-//						if (msg instanceof QDataBaseEntityMessage) {
-//							msg.setToken(getToken());
-//							publishCmd(JsonUtils.toJson(msg));
-//						}
-//					}
+					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+						if (msg instanceof QDataBaseEntityMessage) {
+							msg.setToken(getToken());
+							publishCmd(JsonUtils.toJson(msg));
+						}
+					}
 				}
-//				sendBucketLayouts(); // display to user
+				sendBucketLayouts(); // display to user
 			}
 		}
 
@@ -5783,16 +5783,16 @@ public class QRules {
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
 				allItems.add(items.getMessages());
-//				for (QDataBaseEntityMessage msg : items.getMessages()) {
-//
-//					if (msg instanceof QDataBaseEntityMessage) {
-//						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
-//							System.out.println("GRP_NEW_ITEMS DEBUG");
-//						}
-//						msg.setToken(getToken());
-//						publishCmd(JsonUtils.toJson(msg));
-//					}
-//				}
+				for (QDataBaseEntityMessage msg : items.getMessages()) {
+
+					if (msg instanceof QDataBaseEntityMessage) {
+						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
+							System.out.println("GRP_NEW_ITEMS DEBUG");
+						}
+						msg.setToken(getToken());
+						publishCmd(JsonUtils.toJson(msg));
+					}
+				}
 			}
 		}
 
