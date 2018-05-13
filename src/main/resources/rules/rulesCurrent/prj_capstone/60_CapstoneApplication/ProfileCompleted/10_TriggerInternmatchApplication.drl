@@ -1,0 +1,18 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Internmatch Application"
+    when
+        rules: QRules(  isState("TRIGGER_INTERNMATCH_APPLICATION") && 
+                        !isState("LOOP_TRIGGER_INTERNMATCH_APPLICATION") ) 
+     then       
+        rules.header();
+
+        rules.setState("LOOP_TRIGGER_INTERNMATCH_APPLICATION");
+        // rules.setState("TRIGGER_SEND_INTERNMATCH_APPLICATION_DATA");
+        rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE_LAYOUT");
+
+        // rules.clearState("LOOP_TRIGGER_INTERNMATCH_APPLICATION");
+        rules.footer(); 		      
+end
+

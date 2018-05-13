@@ -1,0 +1,43 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.QuestionSourceTarget;
+import life.genny.qwanda.message.QDataQSTMessage;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
+
+rule "Check if Interview is accepted by 2 parties"
+    no-loop true
+    when
+        m: QEventAttributeValueChangeMessage(   data.code == "PRI_HOST_COMPANY_INTERVIEW_COMPLETED" ||
+                                                data.code == "PRI_INTERN_INTERVIEW_COMPLETED" )
+        
+        rules: QRules( !isState("LOOP_CHECK_INTERVIEW_COMPLETED") )
+     then
+     	rules.header();
+     	rules.setState("LOOP_CHECK_INTERVIEW_COMPLETED");
+
+        String begCode = m.getBe().getCode();
+        BaseEntity beg = rules.getBaseEntityByCode(begCode);
+
+        if(beg != null){
+			rules.println("begCode    ::   " + beg.getCode());
+            rules.set("begBe", beg);
+            
+            Boolean internCompleted = beg.getValue("PRI_INTERN_INTERVIEW_COMPLETED", false);
+            Boolean hostCompanyCompleted = beg.getValue("PRI_HOST_COMPANY_INTERVIEW_COMPLETED", false);
+
+            rules.println("PRI_INTERN_INTERVIEW_COMPLETED value         ::   " +  internCompleted);
+            rules.println("PRI_HOST_COMPANY_INTERVIEW_COMPLETED value   ::   " +  hostCompanyCompleted);
+            
+            if( internCompleted == true &&
+                hostCompanyCompleted == true  ) {
+                    
+                rules.setState("INTERVIEW_COMPLETED_BY_ALL");
+            }
+            rules.println("checked");
+        }
+    	rules.footer();
+end

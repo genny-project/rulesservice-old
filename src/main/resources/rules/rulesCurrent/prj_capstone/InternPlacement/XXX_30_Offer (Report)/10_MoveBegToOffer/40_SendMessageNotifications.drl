@@ -1,0 +1,22 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Move BEG from GRP_SHORTLISTED >>> GRP_OFFERED  */
+rule "Offer Intern - Step 4"
+	when
+		rules: QRules( 	isState("MOVED_BEG_TO_OFFERED") && 
+						isState("OFFER_INTERN_READY") && 
+						isState("BTN_OFFER_INTERN") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_OFFER_INTERN_STEP4")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_OFFER_INTERN_STEP4");
+
+		/* Trigger Messages */
+	    	rules.setState("SEND_OFFER_MESSAGE_TO_HOST_COMPANY");
+        	rules.setState("SEND_OFFER_MESSAGE_TO_INTERN");
+        	rules.setState("SEND_OFFER_MESSAGE_TO_EDU_PROVIDER");
+   
+	 	rules.footer();      
+end

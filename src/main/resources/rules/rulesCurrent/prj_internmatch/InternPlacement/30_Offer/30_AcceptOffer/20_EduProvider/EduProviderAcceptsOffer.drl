@@ -1,0 +1,29 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Edu Provider Accepts Offer */
+rule "Accept Offer - Edu Provider"
+	when
+		rules: QRules( 	isState("EVENT_FORM_SUBMIT") && 
+						isState("QUE_EDU_PROVIDER_AGREEMENT_GRP") && 
+						isState("SUBMIT") && 
+						isState("PRI_IS_EDU_PROVIDER") && 
+						!isState("LOOP_EDU_PROVIDER_ACCEPT_OFFER") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_EDU_PROVIDER_ACCEPT_OFFER");
+
+		String begCode = rules.getAsString("quesTargetCode");
+
+		if(begCode != null){
+		    rules.println("begCode    ::   " + begCode);
+			rules.saveAnswer( new Answer(rules.getUser().getCode(), begCode, "PRI_EDU_PROVIDER_ACCEPTED", "TRUE") );
+
+            rules.setState("EDU_PROVIDER_ACCEPTED_OFFER");
+         	rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE_LAYOUT");
+			
+        }else{
+			rules.println("begCode is null");
+		}
+	 	rules.footer();      
+end

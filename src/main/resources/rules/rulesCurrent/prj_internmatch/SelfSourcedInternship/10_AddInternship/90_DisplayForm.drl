@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add Self Sourced Internship - Step 9"
+	when
+        rules: QRules(  isState("BTN_CREATE_SELF_SOURCE_INTERNSHIP") &&
+						isState("SENT_QUESTION") && 
+						isState("QUE_SELF_SOURCED_HOST_COMPANY_GRP") && 
+                        !isState("LOOP_ADD_SS_INTERNSHIP_STEP9")  )
+     then 
+ 		rules.header();
+		rules.setState("LOOP_ADD_SS_INTERNSHIP_STEP9");
+
+		rules.set("subLayoutCode", "LAY_SELFSOURCED");
+		rules.set("subLayoutPath", "internships/create_self_sourced_internship.json");
+		rules.set("subLayoutRootCode", null);
+		rules.set("subLayoutIsPopup", false);
+		rules.setState("SEND_SUBLAYOUT");
+		
+ 		rules.footer();
+end

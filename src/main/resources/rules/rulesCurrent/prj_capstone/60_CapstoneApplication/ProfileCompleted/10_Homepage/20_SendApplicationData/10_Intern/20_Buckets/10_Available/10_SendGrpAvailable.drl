@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send GRP_AVAILABLE as child of GRP_ROOT*/
+rule "Send GRP_AVAILABLE - INTERN" 
+    when    
+        rules: QRules(  isState("SEND_GRP_AVAILABLE_INTERN") && 
+                        isState("SENT_ROOT_KIDS_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_GRP_AVAILABLE_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_GRP_AVAILABLE_INTERN");
+		
+        /* Recipent Array */
+        String[] recipient = {rules.getUser().getCode()};
+
+        BaseEntity available = rules.getBaseEntityByCode("GRP_AVAILABLE");
+        if(available != null){
+            /* subscribe to GRP_AVAILABLE  */
+            rules.subscribeUserToBaseEntity(rules.getUser().getCode(), available);
+
+            /* send GRP_AVAILABLE as child of GRP_ROOT for list view */
+            rules.publishBaseEntityByCode(available.getCode(), "GRP_DASHBOARD", "LNK_CORE", recipient); // parent should be GRP_ROOT
+            rules.setState("SENT_GRP_AVAILABLE_INTERN");
+
+            rules.setState("SEND_GRP_AVAILABLE_BEGS_INTERN");
+        }
+	    rules.footer();      		      
+end

@@ -1,0 +1,20 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Show Compliance Document On Button Click */
+rule "Show Compliance Document On Click"
+    when
+        rules: QRules( 	isState("BTN_SHOW_COMPLIANCE_DOCUMENT") && 
+                        isState("EVENT_BTN_CLICK") && 
+                        !isState("LOOP_BTN_SHOW_COMPLIANCE_DOCUMENT") ) 
+    then
+        rules.header();
+        rules.setState("LOOP_BTN_SHOW_COMPLIANCE_DOCUMENT");
+
+		String begCode = rules.getAsString("itemCode");
+        if(begCode != null){
+            rules.set("begCode", begCode);
+            rules.setState("SHOW_COMPLIANCE_DOCUMENT");
+        }
+        rules.footer();      
+end

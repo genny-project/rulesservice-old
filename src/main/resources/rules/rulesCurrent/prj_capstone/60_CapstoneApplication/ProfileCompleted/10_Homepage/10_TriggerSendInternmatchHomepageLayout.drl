@@ -1,0 +1,15 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Send Internmatch Homepage Layout"
+    when
+        rules: QRules(  isState("TRIGGER_INTERNMATCH_APPLICATION") && 
+                        !isState("LOOP_TRIGGER_INTERNMATCH_APPLICATION") ) 
+     then       
+        rules.header();
+        rules.setState("LOOP_TRIGGER_INTERNMATCH_APPLICATION");
+
+        rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE_LAYOUT");
+        rules.footer(); 		      
+end
+

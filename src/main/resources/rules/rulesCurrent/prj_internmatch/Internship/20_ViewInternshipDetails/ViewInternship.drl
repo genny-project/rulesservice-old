@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Sub Layout */
+rule "View Internship Details"
+	when
+		rules: QRules(  isState("BTN_VIEW_INTERNSHIP_DETAILS") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_VIEW_INTERNSHIP_DETAILS") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_VIEW_INTERNSHIP_DETAILS");
+
+		/* get begCode (itemCode) from state */
+		String begCode = rules.getAsString("itemCode");
+		if(begCode != null){
+			rules.set("subLayoutCode", "INTERNSHIP_DETAILS");
+			rules.set("subLayoutPath", "internships/details.json");
+			rules.set("subLayoutRootCode", begCode);
+
+			rules.setState("SEND_SUBLAYOUT"); 
+        	rules.setState("VIEWED_INTERNSHIP_DETAILS");	
+				
+		}else{
+			rules.println("begCode is null");
+		}
+	 	rules.footer();      
+end

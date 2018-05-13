@@ -1,0 +1,13 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Add To Group"
+    when
+        rules: QRules(  isState("TRIGGER_ADD_TO_GROUP") && 
+                        !isState("DID_TRIGGER_ADD_TO_GROUP") ) 
+     then    
+        rules.setState("DID_TRIGGER_ADD_TO_GROUP");
+        rules.setState("ADD_TO_GROUP");
+        rules.footer();
+      		      
+end

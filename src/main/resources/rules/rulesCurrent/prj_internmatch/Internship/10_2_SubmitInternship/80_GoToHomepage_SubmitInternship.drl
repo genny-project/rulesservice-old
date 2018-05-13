@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Redirect to HOMEPAGE */
+rule "Submit Internship - Step 8"	
+	when
+		rules: QRules( 	isState("GO_TO_HOMEPAGE") && 
+		 				isState("PUBLISHED_BEG_AND_KIDS") && 
+						isState("EVENT_FORM_SUBMIT") && 
+						isState("SUBMIT") && 
+						!isState("LOOP_SUBMIT_INTERNSHIP_STEP8") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_INTERNSHIP_STEP8");
+		
+		rules.setState("TRIGGER_INTERNMATCH_HOMEPAGE_LAYOUT");
+
+		rules.setState("SEND_INTERNSHIP_ADDED_MESSAGE_TO_INTERN");
+
+	 	rules.footer();      
+end
