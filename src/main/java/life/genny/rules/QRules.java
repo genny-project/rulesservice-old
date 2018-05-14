@@ -416,7 +416,7 @@ public class QRules {
 		String username = (String) getDecodedTokenMap().get("preferred_username");
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		try {
-			be = getBaseEntityByCode(code);
+			be = VertxUtils.readFromDDT(code, getToken());
 		}
 		catch(Exception e ) {
 
