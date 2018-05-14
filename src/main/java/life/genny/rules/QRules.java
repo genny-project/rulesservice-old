@@ -2684,7 +2684,7 @@ public class QRules {
 		publishCmd(data);
 	}
 
-  private void sendSublayouts(realm) {
+  private void sendSublayouts(final String realm) {
 
     String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
     if (subLayoutMap != null) {
