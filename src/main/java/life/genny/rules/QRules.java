@@ -2684,12 +2684,66 @@ public class QRules {
 		publishCmd(data);
 	}
 
+  private void sendSublayouts(realm) {
+
+    String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
+    if (subLayoutMap != null) {
+
+      JsonArray subLayouts = new JsonArray(subLayoutMap);
+      if (subLayouts != null) {
+
+        Layout[] layoutArray = new Layout[subLayouts.size()];
+        for (int i = 0; i < subLayouts.size(); i++) {
+          JsonObject sublayoutData = null;
+
+          try {
+            sublayoutData = subLayouts.getJsonObject(i);
+          } catch (Exception e1) {
+            e1.printStackTrace();
+          }
+
+          String url = sublayoutData.getString("download_url");
+          String name = sublayoutData.getString("name");
+          name = name.replace(".json", "");
+          name = name.replaceAll("\"", "");
+
+          if (url != null) {
+
+            /* grab sublayout from github */
+            println(i + ":" + url);
+
+            String subLayoutString = QwandaUtils.apiGet(url, null);
+            if (subLayoutString != null) {
+
+              try {
+                layoutArray[i] = new Layout(name, subLayoutString);
+              } catch (Exception e) {
+              }
+            }
+          }
+        }
+        /* send sublayout to FE */
+        QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
+        publishCmd(msg);
+      }
+    }
+  }
+
+  private void sendAllSublayouts() {
+
+    this.sendSublayouts("shared");
+    this.sendSublayouts(realm());
+  }
 
 	public void sendAllLayouts() {
 
 		/* List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */
 
+    /* Layouts v1 */
+    this.sendAllSublayouts();
+
+    /* Layouts V2 */
 		List<BaseEntity> beLayouts = this.getAllLayouts();
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 	}
@@ -5815,7 +5869,8 @@ public class QRules {
 		}
 
 		publishCmd(JsonUtils.toJson(allItems));
-    this.setState("SEND_BUCKET_LAYOUT");
+    this.setState("APPLICATION_READY");
+    this.setState("TRIGGER_APPLICATION");
 
 	}
 
