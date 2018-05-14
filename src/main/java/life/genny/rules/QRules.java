@@ -1976,6 +1976,22 @@ public class QRules {
 			println("Error in rules: ", "ANSI_RED");
 		}
 	}
+	
+	/* Prints list of codes of a BaseEntity List */
+	public void printList(final String text, final List<BaseEntity> beList) {
+		Integer i = 1;
+		if(beList != null){
+			RulesUtils.println(text + "   ::   ");
+			RulesUtils.println("__________________________________");
+			for (BaseEntity be : beList) {
+				RulesUtils.println( i + "   ::   " + be.getCode());
+				i++;
+			}
+			RulesUtils.println("__________________________________");
+		}else{
+			RulesUtils.println(text + "   ::   No Kids found");
+		}
+	}
 
 	public void println(final Object str) {
 		RulesUtils.println(str);
