@@ -5823,11 +5823,7 @@ public class QRules {
 	}
 
 	public void sendLayoutsAndData() {
-		// Done send if user already has this data
 
-		if (!this.isState("LOOP_AUTH_INIT_EVT")) {
-			return;
-		}
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
@@ -5857,8 +5853,10 @@ public class QRules {
 		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
 
 		if ((items != null) && (items.getMessages().length > 0)) {
-			showLoading("Loading the rest of the jobs...");
-			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
+
+      showLoading("Loading jobs...");
+
+      if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
 				allItems.add(items.getMessages());
 				for (QDataBaseEntityMessage msg : items.getMessages()) {
@@ -5875,8 +5873,6 @@ public class QRules {
 		}
 
 		publishCmd(JsonUtils.toJson(allItems));
-    this.setState("APPLICATION_READY");
-    this.setState("TRIGGER_APPLICATION");
 
 	}
 
