@@ -12,10 +12,10 @@ rule "Send Ch40 BucketData To Frontend"
         rules: QRules( isState("BUCKET_DATA_CHANNEL40") && !isState("SEND_BUCKET_DATA") ) 
      then
      	rules.header();
-     	
+
      	rules.setState("SEND_BUCKET_DATA");
-	
-		rules.sendLayoutsAndData();
-       	   		
-	    rules.footer();       		      
+
+		  rules.sendLayoutsAndData();
+
+	    rules.footer();
 end

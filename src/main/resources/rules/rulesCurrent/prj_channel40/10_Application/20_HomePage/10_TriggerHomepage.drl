@@ -9,12 +9,12 @@ import life.genny.utils.VertxUtils;
 
 rule "Trigger channel40 homepage"
     when
-        rules: QRules( isState("TRIGGER_HOMEPAGE") && !isState("LOOP_HOMEPAGE") ) 
+        rules: QRules( isState("TRIGGER_HOMEPAGE") && !isState("LOOP_HOMEPAGE") )
      then
      	rules.header();
-     	
+
      	rules.setState("LOOP_HOMEPAGE");
-		rules.setState("BUCKET_DATA_CHANNEL40");
-       	   		
-	    rules.footer();       		      
+		  rules.setState("TREE_DATA_CHANNEL40");
+
+	    rules.footer();
 end
