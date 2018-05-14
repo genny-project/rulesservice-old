@@ -2716,7 +2716,7 @@ public class QRules {
             if (subLayoutString != null) {
 
               try {
-                layoutArray[i] = new Layout(name, subLayoutString);
+                layoutArray[i] = new Layout(name, subLayoutString, null, null, null);
               } catch (Exception e) {
               }
             }
