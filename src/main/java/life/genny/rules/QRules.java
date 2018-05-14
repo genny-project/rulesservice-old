@@ -2695,7 +2695,7 @@ public class QRules {
 	}
 
 	public List<BaseEntity> getAllLayouts() {
-		
+
 		String realmCode = this.realm();
 		if(realmCode == null) {
 			System.out.println("No realm code was provided. Not getting layouts. ");
@@ -2724,7 +2724,7 @@ public class QRules {
 	}
 
 	private BaseEntity baseEntityForLayout(Layout layout) {
-		
+
 		if(layout.getPath() == null) {
 			return null;
 		}
@@ -2737,7 +2737,7 @@ public class QRules {
 		String layoutCode = ("LAY_"+realm()+"_"+precode).toUpperCase();
 
 		beLayout = VertxUtils.readFromDDT(layoutCode, getToken());
-		
+
 		/* if the base entity does not exist, we create it */
 		if(beLayout == null) {
 
@@ -2746,7 +2746,7 @@ public class QRules {
 			addAttributes(beLayout);
 			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
-		
+
 		if(beLayout != null) {
 
 	    	/* we get the modified time stored in the BE and we compare it to the layout one */
@@ -2788,9 +2788,9 @@ public class QRules {
 				/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
 				this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 			}
-		
+
 	    }
-		
+
 		return beLayout;
 	}
 
@@ -5785,7 +5785,7 @@ public class QRules {
 						}
 					}
 				}
-				sendBucketLayouts(); // display to user
+				//sendBucketLayouts(); // display to user
 			}
 		}
 
@@ -5815,6 +5815,7 @@ public class QRules {
 		}
 
 		publishCmd(JsonUtils.toJson(allItems));
+    this.setState("SEND_BUCKET_LAYOUT");
 
 	}
 
