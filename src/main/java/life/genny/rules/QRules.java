@@ -2695,7 +2695,7 @@ public class QRules {
 	}
 
 	public List<BaseEntity> getAllLayouts() {
-
+		
 		String realmCode = this.realm();
 		if(realmCode == null) {
 			System.out.println("No realm code was provided. Not getting layouts. ");
@@ -2724,7 +2724,7 @@ public class QRules {
 	}
 
 	private BaseEntity baseEntityForLayout(Layout layout) {
-
+		
 		if(layout.getPath() == null) {
 			return null;
 		}
@@ -2737,6 +2737,7 @@ public class QRules {
 		String layoutCode = ("LAY_"+realm()+"_"+precode).toUpperCase();
 
 		beLayout = VertxUtils.readFromDDT(layoutCode, getToken());
+		
 		/* if the base entity does not exist, we create it */
 		if(beLayout == null) {
 
@@ -2746,11 +2747,7 @@ public class QRules {
 			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
 		
-
-	    
-		if (false ) {
-
-	    if(beLayout != null) {
+		if(beLayout != null) {
 
 	    	/* we get the modified time stored in the BE and we compare it to the layout one */
 			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
@@ -2793,9 +2790,7 @@ public class QRules {
 			}
 		
 	    }
-		} else {
-			return null;
-		}
+		
 		return beLayout;
 	}
 
