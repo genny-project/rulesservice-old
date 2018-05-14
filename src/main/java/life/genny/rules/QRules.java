@@ -1976,7 +1976,7 @@ public class QRules {
 			println("Error in rules: ", "ANSI_RED");
 		}
 	}
-	
+
 	/* Prints list of codes of a BaseEntity List */
 	public void printList(final String text, final List<BaseEntity> beList) {
 		Integer i = 1;
@@ -2688,8 +2688,8 @@ public class QRules {
 	public void sendAllLayouts() {
 
 		/* List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
-		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */ 
-		
+		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE"); */
+
 		List<BaseEntity> beLayouts = this.getAllLayouts();
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 	}
@@ -2735,7 +2735,7 @@ public class QRules {
 //		beLayout = RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl, this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
 		String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
 		String layoutCode = ("LAY_"+realm()+"_"+precode).toUpperCase();
-		
+
 		beLayout = VertxUtils.readFromDDT(layoutCode, getToken());
 		/* if the base entity does not exist, we create it */
 		if(beLayout == null) {
@@ -2746,7 +2746,7 @@ public class QRules {
 			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
 
-    if(beLayout == null) 
+    if(beLayout == null)
     	return null;
 
 		/* we get the modified time stored in the BE and we compare it to the layout one */
@@ -2784,7 +2784,7 @@ public class QRules {
 			answers.add(newAnswer4);
 
 			this.saveAnswers(answers);
-			
+
 			/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
 			this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 		}
@@ -6241,7 +6241,7 @@ public class QRules {
 		return null;
 	}
 
-	public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
+  public Boolean checkIfLinkExists(String parentCode, String linkCode, String childCode) {
 
 		Boolean isLinkExists = false;
 		QDataBaseEntityMessage dataBEMessage = QwandaUtils.getDataBEMessage(parentCode, linkCode, getToken());
@@ -6261,6 +6261,26 @@ public class QRules {
 				return isLinkExists;
 			}
 
+		}
+		return isLinkExists;
+	}
+
+	/* Check If Link Exists and Available */
+	public Boolean checkIfLinkExistsAndAvailable(String parentCode, String linkCode, String linkValue, String childCode) {
+		Boolean isLinkExists = false;
+		List<Link> links = getLinks(parentCode, linkCode);
+		if (links != null) {
+			for (Link link : links) {
+				String linkVal = link.getLinkValue();
+
+				if (linkVal != null && linkVal.equals(linkValue)) {
+					Double linkWeight = link.getWeight();
+					if(linkWeight == 1.0){
+						isLinkExists = true;
+						return isLinkExists;
+					}
+				}
+			}
 		}
 		return isLinkExists;
 	}
