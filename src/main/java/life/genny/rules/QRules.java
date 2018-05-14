@@ -2686,46 +2686,52 @@ public class QRules {
 
   private void sendSublayouts(final String realm) {
 
-    String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
-    if (subLayoutMap != null) {
+    try {
 
-      JsonArray subLayouts = new JsonArray(subLayoutMap);
-      if (subLayouts != null) {
+      String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
+      if (subLayoutMap != null) {
 
-        Layout[] layoutArray = new Layout[subLayouts.size()];
-        for (int i = 0; i < subLayouts.size(); i++) {
-          JsonObject sublayoutData = null;
+        JsonArray subLayouts = new JsonArray(subLayoutMap);
+        if (subLayouts != null) {
 
-          try {
-            sublayoutData = subLayouts.getJsonObject(i);
-          } catch (Exception e1) {
-            e1.printStackTrace();
-          }
+          Layout[] layoutArray = new Layout[subLayouts.size()];
+          for (int i = 0; i < subLayouts.size(); i++) {
+            JsonObject sublayoutData = null;
 
-          String url = sublayoutData.getString("download_url");
-          String name = sublayoutData.getString("name");
-          name = name.replace(".json", "");
-          name = name.replaceAll("\"", "");
+            try {
+              sublayoutData = subLayouts.getJsonObject(i);
+            } catch (Exception e1) {
+              e1.printStackTrace();
+            }
 
-          if (url != null) {
+            String url = sublayoutData.getString("download_url");
+            String name = sublayoutData.getString("name");
+            name = name.replace(".json", "");
+            name = name.replaceAll("\"", "");
 
-            /* grab sublayout from github */
-            println(i + ":" + url);
+            if (url != null) {
 
-            String subLayoutString = QwandaUtils.apiGet(url, null);
-            if (subLayoutString != null) {
+              /* grab sublayout from github */
+              println(i + ":" + url);
 
-              try {
-                layoutArray[i] = new Layout(name, subLayoutString, null, null, null);
-              } catch (Exception e) {
+              String subLayoutString = QwandaUtils.apiGet(url, null);
+              if (subLayoutString != null) {
+
+                try {
+                  layoutArray[i] = new Layout(name, subLayoutString, null, null, null);
+                } catch (Exception e) {
+                }
               }
             }
           }
+          /* send sublayout to FE */
+          QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
+          publishCmd(msg);
         }
-        /* send sublayout to FE */
-        QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
-        publishCmd(msg);
       }
+    }
+    catch( Exception e )  {
+
     }
   }
 
