@@ -14,10 +14,10 @@ rule "Ask Registration"
      	rules.header();
    	    String userCode = rules.getUser().getCode();
    		rules.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-   		
-   		
 
-  		rules.askQuestions(userCode,userCode,"QUE_NEW_USER_PROFILE_GRP");
+
+
+  		rules.sendQuestions(userCode,userCode,"QUE_NEW_USER_PROFILE_GRP");
 
   	  /*  Check if user is already added to the company   */
         BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
@@ -52,9 +52,11 @@ rule "Ask Registration"
            Link userCompanyLink =  QwandaUtils.createLink(companyCode, userCode, "LNK_STAFF", null, (double) 1, rules.getToken());
 
         }
-        rules.println("The Users Company code is   ::  "+companyCode);
-        rules.askQuestions(userCode, companyCode, "QUE_NEW_USER_COMPANY_GRP");
 
-		rules.setState("ASKED_REGISTRATION");
-	    rules.footer();
+        rules.println("The Users Company code is   ::  "+companyCode);
+        rules.sendQuestions(userCode, companyCode, "QUE_NEW_USER_COMPANY_GRP");
+        rules.sendSublayout("REGISTER", "create_user.json", "TEST");
+
+		    rules.setState("ASKED_REGISTRATION");
+	      rules.footer();
 end
