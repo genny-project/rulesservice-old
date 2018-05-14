@@ -7,12 +7,12 @@ rule "Check user company - Step 7"
 
 	when
 		 rules: QRules( isState("COMPANY_IS_READY") &&
-						!isState("COMPANY_IS_READY_LOOP") )   
+						!isState("COMPANY_IS_READY_LOOP") )
 	 then
 	    rules.header();
-		
+
 		rules.setState("COMPANY_IS_READY_LOOP");
-		rules.setState("CHECK_MOBILE_VERIFICATION");
-		
-	    rules.footer();     		      
+		rules.setState("CHECK_TERMS_AND_CONDITIONS");
+
+	    rules.footer();
 end
