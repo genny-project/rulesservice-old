@@ -8,10 +8,9 @@ rule "Terms and conditions have been accepted"
         rules: QRules( isState("TERMS_AND_CONDITIONS_ACCEPTED") && !isState("LOOP_SUBMIT_ACCEPTED_T_C") )
     then
         rules.header();
+
+		    rules.setState("LOOP_SUBMIT_ACCEPTED_T_C");
+		    rules.setState("APPLICATION_READY_SEND_DATA");
         
-		rules.setState("LOOP_SUBMIT_ACCEPTED_T_C");
-        rules.setState("APPLICATION_READY");
-        rules.setState("TRIGGER_APPLICATION");
-		
         rules.footer();
 end
