@@ -5873,7 +5873,8 @@ public class QRules {
 		}
 
 		publishCmd(JsonUtils.toJson(allItems));
-
+    this.setState("APPLICATION_READY");
+    this.setState("TRIGGER_APPLICATION");
 	}
 
 	public void sendBucketLayouts()
