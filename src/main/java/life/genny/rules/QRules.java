@@ -5663,7 +5663,7 @@ public class QRules {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
 
-				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+				BaseEntity searchStakeholderBucketItems =  VertxUtils.readFromDDT("SBE_STAKEHOLDER_ITEMS",getToken());
 				if (searchStakeholderBucketItems == null) {
 
 				}
@@ -5747,13 +5747,13 @@ public class QRules {
 	public void sendLayoutsAndData() {
 		// Done send if user already has this data
 
-		if (!this.isState("EVENT_AUTH_INIT")) {
+		if (!this.isState("LOOP_AUTH_INIT_EVT")) {
 			return;
 		}
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
-		if (!getUser().is("PRI_OWNER")) {
+		if (!getUser().is("PRI_BUYER")) {
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
