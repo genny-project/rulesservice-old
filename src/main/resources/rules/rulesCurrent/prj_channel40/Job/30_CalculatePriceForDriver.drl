@@ -76,7 +76,7 @@ rule "Calculate Price for Driver"
                          
                          /* Driver Fees */
 					   	fees = rules.calcDriverFee( answerPrice );       
-			   			if(answerPrice.compareTo(Money.of(300, DEFAULT_CURRENCY)) > 0) {
+			   			if(answerPrice.compareTo(Money.of(10, DEFAULT_CURRENCY)) > 0) {
 							if(fees.compareTo(Money.of(100, DEFAULT_CURRENCY)) < 0) {
 						     	fees = Money.of(100, DEFAULT_CURRENCY);
 						     }
