@@ -14,7 +14,7 @@ rule "Trigger channel40 homepage"
      	rules.header();
 
      	rules.setState("LOOP_HOMEPAGE");
-		  rules.setState("TREE_DATA_CHANNEL40");
+		  rules.setState("SEND_BUCKET_LAYOUT");
 
 	    rules.footer();
 end
