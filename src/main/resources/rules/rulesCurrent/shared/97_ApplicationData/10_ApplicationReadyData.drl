@@ -12,8 +12,5 @@ rule "Application Ready - send data"
 		    rules.setState("LOOP_APP_READY_SEND_DATA");
         rules.setState("SEND_TREE_DATA");
 
-        /* rules.setState("APPLICATION_READY");
-        rules.setState("TRIGGER_APPLICATION"); */
-
         rules.footer();
 end
