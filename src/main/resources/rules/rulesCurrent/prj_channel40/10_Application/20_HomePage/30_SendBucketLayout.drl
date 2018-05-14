@@ -5,19 +5,20 @@ import life.genny.rules.QRules;
 
 rule "Send Bucket Layout To Frontend"
     when
-        rules: QRules( isState("SEND_BUCKET_LAYOUT") && !isState("SENT_BUCKET_LAYOUT") ) 
+        rules: QRules( isState("SEND_BUCKET_LAYOUT") && !isState("SENT_BUCKET_LAYOUT") )
      then
      	rules.header();
-     	
+
+      rules.setState("SENT_BUCKET_LAYOUT");
+
      	String layout = RulesUtils.getLayout("card.json");
      	String viewCode = "BUCKET_DASHBOARD";
      	String grpBE = "GRP_DASHBOARD";
-     	
+
      	/* sending cmd BUCKET_VIEW */
      	rules.sendSublayout(viewCode, "dashboard_channel40.json", grpBE);
-        rules.setLastLayout( viewCode, grpBE );
-        
-		rules.setState("SENT_BUCKET_LAYOUT");
-		
-	    rules.footer();     		      
+      rules.setLastLayout( viewCode, grpBE );
+
+
+	    rules.footer();
 end

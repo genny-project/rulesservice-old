@@ -9,11 +9,11 @@ import life.genny.utils.VertxUtils;
 
 rule "Send Ch40 BucketData To Frontend"
     when
-        rules: QRules( isState("BUCKET_DATA_CHANNEL40") && !isState("SEND_BUCKET_DATA") ) 
+        rules: QRules( isState("BUCKET_DATA_CHANNEL40") && !isState("SENT_BUCKET_DATA_CH40") )
      then
      	rules.header();
 
-     	rules.setState("SEND_BUCKET_DATA");
+     	rules.setState("SENT_BUCKET_DATA_CH40");
 
 		  rules.sendLayoutsAndData();
 
