@@ -1,0 +1,16 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Submit Invite Intern - Step 3"
+	when
+        rules: QRules(  isState("SEND_MESSAGE_TO_INVITED_INTERN") && 
+                        isState("SAVED_UNI_NAME_AS_AN_ANSWER") && 
+                        !isState("LOOP_SEND_MESSAGE_TO_INVITED_INTERN")  )
+     then 
+ 		rules.header();
+		rules.setState("LOOP_SEND_MESSAGE_TO_INVITED_INTERN");
+        
+    /* Trigger Messages */
+    rules.setState("SEND_INVITATION_MESSAGE_TO_INTERN");        
+ 		rules.footer();
+end

@@ -1,0 +1,16 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Exit Sending INTERN DATA */
+rule "Exit Internmatch Application Data - INTERN" 
+    when    
+         rules: QRules( isState("SENT_BEGS_AND_KIDS_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_EXIT_INTERNMATCH_APPLICATION_DATA_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_EXIT_INTERNMATCH_APPLICATION_DATA_INTERN");
+
+        rules.setState("SENT_INTERNMATCH_APPLICATION_DATA");
+	    rules.footer();      		      
+end

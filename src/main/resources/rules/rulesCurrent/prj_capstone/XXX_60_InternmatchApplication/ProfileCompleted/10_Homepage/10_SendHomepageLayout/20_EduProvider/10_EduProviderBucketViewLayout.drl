@@ -1,0 +1,23 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Internmatch Homepage Layout - EDU PROVIDER - BUCKETVIEW"
+     when
+        rules: QRules(  isState("SEND_INTERNMATCH_HOMEPAGE_LAYOUT") &&
+                        isState("PRI_IS_EDU_PROVIDER") &&
+                        !isState("LOOP_SEND_INTERNMATCH_HOMEPAGE_LAYOUT_BUECKETVIEW") )
+     then
+        rules.header();
+        rules.setState("LOOP_SEND_INTERNMATCH_HOMEPAGE_LAYOUT_BUECKETVIEW");
+        
+        rules.set("subLayoutCode", "BUCKETVIEW");
+		rules.set("subLayoutPath", "homepage/dashboard_edu_provider.json");
+		rules.set("subLayoutRootCode", "GRP_DASHBOARD_EDU_PROVIDER");
+		rules.set("subLayoutIsPopup", false);
+		rules.setState("SEND_SUBLAYOUT");
+
+        rules.setState("SENT_INTERNMATCH_HOMEPAGE_LAYOUT");
+        rules.setState("SEND_INTERNMATCH_HOMEPAGE_LAYOUT_DATA");
+		rules.footer();
+end
+     	

@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* EXIT Create HOST_COMPANY */
+rule "Exit Create Host Company"
+    when
+		rules: QRules(  isState("LINKED_HOST_COMPANY_TO_USER") &&
+						!isState("LOOP_EXIT_CREATE_HOST_COMPANY") ) 
+     then 
+ 		rules.header();
+		rules.setState("LOOP_EXIT_CREATE_HOST_COMPANY");
+		
+		rules.setState("EXIT_CREATE_HOST_COMPANY");
+		
+		rules.clearState("HOST_COMPANY_DOESNT_EXISTS");
+		rules.setState("HOST_COMPANY_EXISTS");
+		
+ 		rules.footer();
+end
