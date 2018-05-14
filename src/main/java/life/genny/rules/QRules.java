@@ -1584,12 +1584,12 @@ public class QRules {
 
       			List<EntityAttribute> roles = user.getBaseEntityAttributes()
       								.stream()
-      								.filter(x -> (x.getAttributeCode().contains("PRI_IS")))
+      								.filter(x -> (x.getAttributeCode().startsWith("PRI_IS")))
       								.collect(Collectors.toList());
 
       			for(EntityAttribute role: roles) {
 
-      				if(role != null && role.getValue() != null) {
+      				if(role != null && role.getValue() != null && !role.getAttributeCode().equals("PRI_IS_PROFILE_COMPLETED") && !role.getAttributeCode().equals("PRI_IS_ADMIN")) {
 
       					Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true) || (role.getValueString() != null && role.getValueString().equals("TRUE"));
       					if(isRole) {
@@ -2713,8 +2713,8 @@ public class QRules {
 
 		/* V1 layouts */
 		// TODO: to remove once web is switched over to V2 */
-		layouts.addAll(LayoutUtils.processLayouts("shared"));
-		layouts.addAll(LayoutUtils.processLayouts(realmCode));
+		/* layouts.addAll(LayoutUtils.processLayouts("shared"));
+		layouts.addAll(LayoutUtils.processLayouts(realmCode)); */
 
 		/* Layouts V2 */
 		layouts.addAll(LayoutUtils.processNewLayouts("shared"));
@@ -2745,50 +2745,57 @@ public class QRules {
 			addAttributes(beLayout);
 			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
+		
 
-    if(beLayout == null)
-    	return null;
+	    
+		if (false ) {
 
-		/* we get the modified time stored in the BE and we compare it to the layout one */
-		String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
-		if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
+	    if(beLayout != null) {
 
-			/* if the modified time is not the same, we update the layout BE */
+	    	/* we get the modified time stored in the BE and we compare it to the layout one */
+			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
+			if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
 
-			/* setting layout attributes */
-			List<Answer> answers = new ArrayList<Answer>();
+				/* if the modified time is not the same, we update the layout BE */
 
-			/* download the content of the layout */
-			String content = LayoutUtils.downloadLayoutContent(layout);
-			if(content != null) {
+				/* setting layout attributes */
+				List<Answer> answers = new ArrayList<Answer>();
 
-				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
+				/* download the content of the layout */
+				String content = null; // TODO LayoutUtils.downloadLayoutContent(layout);
+				if(content != null) {
+
+					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
+					newAnswer.setChangeEvent(false);
+					answers.add(newAnswer);
+				}
+
+				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath());
 				newAnswer.setChangeEvent(false);
 				answers.add(newAnswer);
+
+				Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl());
+				newAnswer2.setChangeEvent(false);
+				answers.add(newAnswer2);
+
+				Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName());
+				newAnswer3.setChangeEvent(false);
+				answers.add(newAnswer3);
+
+				Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate());
+				newAnswer4.setChangeEvent(false);
+				answers.add(newAnswer4);
+
+				this.saveAnswers(answers);
+
+				/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
+				this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 			}
-
-			Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath());
-			newAnswer.setChangeEvent(false);
-			answers.add(newAnswer);
-
-			Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL", layout.getDownloadUrl());
-			newAnswer2.setChangeEvent(false);
-			answers.add(newAnswer2);
-
-			Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME", layout.getName());
-			newAnswer3.setChangeEvent(false);
-			answers.add(newAnswer3);
-
-			Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE", layout.getModifiedDate());
-			newAnswer4.setChangeEvent(false);
-			answers.add(newAnswer4);
-
-			this.saveAnswers(answers);
-
-			/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
-			this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
+		
+	    }
+		} else {
+			return null;
 		}
-
 		return beLayout;
 	}
 
