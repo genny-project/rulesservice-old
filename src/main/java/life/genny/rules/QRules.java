@@ -2881,12 +2881,9 @@ public class QRules {
 				/* download the content of the layout */
 				String content = LayoutUtils.downloadLayoutContent(layout);
 
-				if(content != null) {
-
-					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
-					newAnswer.setChangeEvent(false);
-					answers.add(newAnswer);
-				}
+        Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
+        newAnswerContent.setChangeEvent(true);
+        answers.add(newAnswerContent);
 
 				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI", layout.getPath());
 				newAnswer.setChangeEvent(false);
