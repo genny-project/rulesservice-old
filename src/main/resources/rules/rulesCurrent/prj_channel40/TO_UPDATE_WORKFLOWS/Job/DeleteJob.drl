@@ -53,7 +53,7 @@ rule "Delete job"
        /* Sending toast message to all the beg frontends */
         rules.sendMessage("", allBegRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
 
-		drools.setFocus("SendLayoutsAndData");
+		rules.setState("TRIGGER_HOMEPAGE");
     	rules.generateNewItemsCache();       
 
 	    rules.footer();

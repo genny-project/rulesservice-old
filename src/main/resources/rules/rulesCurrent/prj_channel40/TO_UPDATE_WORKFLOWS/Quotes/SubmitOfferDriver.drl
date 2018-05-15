@@ -48,7 +48,7 @@ rule "Submit Offer Driver"
     then
         rules.header();
         rules.setState("DRIVER_OFFER_MADE");
-        
+
         drools.setFocus("ispayments");  /* NOW Set up Payments */
 
         /* Prepare Token & qwandaServiceUrl */
@@ -78,7 +78,7 @@ rule "Submit Offer Driver"
             String linkCreator = "CREATOR";
 
         /* GET OFFER BE */
-            BaseEntity offer = rules.getBaseEntityByCodeWithAttributes(offerCode);	
+            BaseEntity offer = rules.getBaseEntityByCodeWithAttributes(offerCode);
 
         /* GET  attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
@@ -94,7 +94,7 @@ rule "Submit Offer Driver"
             rules.println("QUOTER FULLNAME   ::   " + quoterFullName);
             rules.println("PRI OFFER CODE    ::   " + priOfferCode);
             rules.println("------------------------------------------------------------------------");
-        
+
         /* GET BEG BE */
             BaseEntity beg = rules.getBaseEntityByCode(begCode);
 
@@ -109,7 +109,7 @@ rule "Submit Offer Driver"
                 ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
                 rules.println("ownerCode   ::   " + ownerCode);
             }
-            
+
         /* Prepare Recipient Array for Owner & Driver */
             String [] recipientArrForOwner = {ownerCode};
             String [] recipientArrForDriver = {userCode};
@@ -128,7 +128,7 @@ rule "Submit Offer Driver"
                         counterContextMapForOwner.put("JOB", begCode);
                         counterContextMapForOwner.put("OFFER", offerCode);
                         counterContextMapForOwner.put("QUOTER", quoterCode);
-                        counterContextMapForOwner.put("OWNER", ownerCode);      
+                        counterContextMapForOwner.put("OWNER", ownerCode);
                         rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_COUNTER_OFFER_FROM_DTO", "TOAST");
 
                         HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
@@ -140,17 +140,17 @@ rule "Submit Offer Driver"
 
                       /* Update PRI_NEXT_ACTION = OWNER */
                       Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                      rules.saveAnswer(offerActionAnswer1); 
-                    }  
-                    
-                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){   
+                      rules.saveAnswer(offerActionAnswer1);
+                    }
+
+                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){
                        rules.println("Driver is updating the offer price");
                       /* Send Messages*/
                         HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
                         counterContextMapForOwner.put("JOB", begCode);
                         counterContextMapForOwner.put("OFFER", offerCode);
                         counterContextMapForOwner.put("QUOTER", quoterCode);
-                        counterContextMapForOwner.put("OWNER", ownerCode);      
+                        counterContextMapForOwner.put("OWNER", ownerCode);
                         rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_OFFER_PRICE_UPDATED_FROM_DTO", "TOAST");
 
                         HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
@@ -162,8 +162,8 @@ rule "Submit Offer Driver"
                      /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	                    String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
 	                    rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
-	                    rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);                     
-                   }    
+	                    rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
+                   }
                 }
 
             /* SUBMIT OFFER HAPPENING */
@@ -188,17 +188,17 @@ rule "Submit Offer Driver"
                     /* Update PRI_NEXT_ACTION = OWNER */
                         Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
                         rules.saveAnswer(offerActionAnswer3);
-                    
+
                     /* Send Messages*/
                     	   BaseEntity loadBe = rules.getChildren(begCode, "LNK_BEG", "LOAD");
-                    
+
                         HashMap<String,String> submitContextMapForOwner = new HashMap<String, String>();
                         submitContextMapForOwner.put("JOB", begCode);
                         submitContextMapForOwner.put("OFFER", offerCode);
                         submitContextMapForOwner.put("QUOTER", quoterCode);
                         submitContextMapForOwner.put("OWNER", ownerCode);
                         submitContextMapForOwner.put("LOAD", loadBe.getCode());
-                        
+
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "SMS");
@@ -214,7 +214,7 @@ rule "Submit Offer Driver"
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
             rules.saveAnswer(offerDateTime);
-            
+
         /* Sort Begs based on the offers Owner Price and set the linkweight as per the order of cheapest as highest */
            rules.sortOffersInBeg(begCode);
 
@@ -227,7 +227,7 @@ rule "Submit Offer Driver"
                 rules.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
                 rules.createLink(begCode, quoterCode, linkCode, linkQuoter, 1.0);
             }
-            
+
         /* Update the Job status   */
 		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
 		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
@@ -239,12 +239,12 @@ rule "Submit Offer Driver"
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
-            
-            
-         
-            
+
+
+
+
 
         /* Send BUCKETVIEW Cmd */
-            drools.setFocus("SendLayoutsAndData");
+        rules.setState("TRIGGER_HOMEPAGE");
         rules.footer();
 end

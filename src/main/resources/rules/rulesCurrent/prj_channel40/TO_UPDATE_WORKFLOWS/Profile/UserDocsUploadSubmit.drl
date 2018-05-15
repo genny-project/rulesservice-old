@@ -25,7 +25,7 @@ rule "User-Docs upload Submit"
           /* Sending toast message */
           /*   rules.sendMessage("", recipients, contextMap, "TST_USER_DOCS_UPLOADED", "TOAST");  */
            rules.setState("DOCS_UPLOADED");
-           drools.setFocus("SendLayoutsAndData");  
+           rules.setState("TRIGGER_HOMEPAGE");  
         // }
 
         rules.footer();

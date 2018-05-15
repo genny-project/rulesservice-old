@@ -111,7 +111,7 @@ rule "Create Payment Item"
        	 		String[] recipientArray = {rules.getUser().getCode()};
        	 		
        	 		rules.sendMessage("", recipientArray, contextMap,"MSG_CH40_ITEM_CREATION_FAILED", "TOAST");
-       	 		drools.setFocus("SendLayoutsAndData");
+       	 		rules.setState("TRIGGER_HOMEPAGE");
        	 	}
         		
        	}

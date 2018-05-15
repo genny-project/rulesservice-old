@@ -79,7 +79,7 @@ rule "Create Job"
           rules.setState("LOAD_CREATED");
       }    
          /* Calling the rule group : BucketView     */
-          drools.setFocus("SendLayoutsAndData"); 
+          rules.setState("TRIGGER_HOMEPAGE"); 
      
      rules.footer();  
   

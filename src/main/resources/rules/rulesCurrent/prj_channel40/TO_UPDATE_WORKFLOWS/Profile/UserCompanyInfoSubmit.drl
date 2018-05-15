@@ -24,7 +24,7 @@ rule "User-Company Info Submit"
            /* rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
            rules.setState("COMPANY_INFO_UPDATED");
             
-           drools.setFocus("SendLayoutsAndData");
+           rules.setState("TRIGGER_HOMEPAGE");
             
         /*   HashMap<String,String> contextMap = new HashMap<String, String>();
            String[] recipients  = {userCode};    */

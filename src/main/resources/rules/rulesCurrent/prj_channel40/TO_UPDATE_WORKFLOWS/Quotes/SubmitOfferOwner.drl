@@ -148,6 +148,6 @@ rule "Submit Offer Owner"
                 rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
         		
         /* Send BUCKETVIEW Cmd */
-        drools.setFocus("SendLayoutsAndData");        
+        rules.setState("TRIGGER_HOMEPAGE");        
         rules.footer();
 end

@@ -35,54 +35,57 @@ rule "Make Offer"
     then
         rules.header();
         rules.setState("SUBMIT_QUOTE");
+
+        drools.setFocus("ispayments");  /* NOW Set up Payments */
+
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
 
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
-            rules.println("begCode  ::   "+ begCode);    
+            rules.println("begCode  ::   "+ begCode);
 
 			BaseEntity user = rules.getUser();
             String userCode = user.getCode();
             rules.println("userCode   ::   "+ userCode);
 
             String userName = rules.getAsString("preferred_username");
-            rules.println("username   ::   "+ userName);         
+            rules.println("username   ::   "+ userName);
 
             String userFullName = rules.getFullName(rules.getUser());
 		    rules.println("user fullName   ::   " + userFullName);
-        
+
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
             String linkQuoter= "QUOTER";
             String offerCode= "null";
             String dataString = user.getValue("PRI_USER_PAYMENT_METHODS", null);
-            
+
           if( dataString != null){
              int arraySize = 0;
              try{
                    JsonArray paymentsArray = new JsonArray(dataString);
                    if (paymentsArray.size() != 0){
-                       arraySize = paymentsArray.size(); 
+                       arraySize = paymentsArray.size();
                    }
                 }catch(Exception e){
                     System.out.println("Exception! Unable to create JsonArray ");
                }
            if(arraySize > 0){
-            
+
          /* Check if a link exists between BEG & OFFER */
             /* Boolean linkBegQuoter = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, linkQuoter, tokenString ); */
             Boolean linkExists = QwandaUtils.checkIfLinkExists(begCode, linkCode, userCode, "QUOTER", tokenString);
             rules.println("LINK EXISTS FOR BEG & QUOTER ?  ::    "+ linkExists);
-            
-            if(linkExists){           
+
+            if(linkExists){
                rules.println( "The baseEntity offer is"+rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString) );
                BaseEntity oldOffer =  rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
                offerCode = oldOffer.getCode();
              }
-           
-            if(!linkExists){ 
+
+            if(!linkExists){
 
         		/* Create Offer BE */
 	          BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
@@ -90,15 +93,15 @@ rule "Make Offer"
 	          /* Get Offer Code */
 	          offerCode = offer.getCode();
 	          rules.println("offerCode   ::   "+offerCode);
-            
+
            /* Save attributes for OFFER as answer */
              Answer offercode = new Answer(userCode, offerCode, "PRI_OFFER_CODE", offerCode);
              Answer quoterCode = new Answer(userCode, offerCode, "PRI_QUOTER_CODE", userCode);
              Answer quoterUname = new Answer(userCode, offerCode, "PRI_QUOTER_USERNAME", userName);
              Answer quoterFullName = new Answer(userCode, offerCode, "PRI_QUOTER_FULLNAME", userFullName);
              Answer jobCode = new Answer(userCode, offerCode, "PRI_BEG_CODE", begCode);
-            
-              List<Answer> answerList = new ArrayList<Answer>();	
+
+              List<Answer> answerList = new ArrayList<Answer>();
               answerList.add(offercode);
               answerList.add(quoterCode);
               answerList.add(quoterUname);
@@ -106,24 +109,27 @@ rule "Make Offer"
               answerList.add(jobCode);
 
 			  rules.saveAnswers(answerList);
-              rules.publishData(answerList);  
-            
-             }       
+              rules.publishData(answerList);
+
+             }
 
             /* Send Offer Questions */
             rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
-            
+
           }
           else{
+
            /* Send Payment Method Questions */
-           rules.askQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false, true); 
-          }         
+           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+           rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
+          }
         }else{
            /* Send Payment Method Questions */
-           rules.askQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false, true);
-           //Send question QUE_PAYMENT_METHOD_GRP 
+          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+           rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
+           //Send question QUE_PAYMENT_METHOD_GRP
        }
-          
-            
+
+
         rules.footer();
 end

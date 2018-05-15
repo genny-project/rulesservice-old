@@ -64,7 +64,7 @@ rule "Accept Job"
   		rules.setState("JOB_ACCEPTED");
                 
         /* Send BUCKETVIEW Cmd */
-        drools.setFocus("SendLayoutsAndData"); 
+        rules.setState("TRIGGER_HOMEPAGE"); 
         
         rules.generateNewItemsCache();       
         
