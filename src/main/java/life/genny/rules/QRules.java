@@ -8,7 +8,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -32,10 +31,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
@@ -50,7 +47,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
-import org.keycloak.representations.AccessTokenResponse;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -59,7 +55,6 @@ import com.hazelcast.util.collection.ArrayUtils;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
@@ -78,6 +73,7 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
+import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
@@ -104,10 +100,16 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
+import life.genny.qwanda.payments.QPaymentsLocationInfo;
+import life.genny.qwanda.payments.QPaymentsUser;
+import life.genny.qwanda.payments.QPaymentsUserContactInfo;
+import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.PaymentEndpoint;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
 import life.genny.security.SecureResources;
@@ -6579,6 +6581,7 @@ public class QRules {
 	}
 
 	public void createServiceUser() {
+
 		BaseEntity be = null;
 
 		String username = "service";
@@ -6606,5 +6609,196 @@ public class QRules {
 				log.error("Error in Creating User ");
 			}
 		}
+	}
+	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
+	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+		
+		QPaymentsUserInfo userInfo = null;
+		
+		/* Getting userInfo POJO -> handling errors with slack webhook reporting */
+		// TODO display user-info related question group
+		try {
+			
+			/* Fetch data from BE and set in POJO */
+			userInfo = PaymentUtils.getPaymentsUserInfo(userBe, assemblyUserId, assemblyAuthToken);
+			
+			/* If instance creation fails, throw exception */
+			if(userInfo == null) {
+				throw new IllegalArgumentException("QPaymentsUserInfo instance creation failed");
+			}
+			
+		} catch (IllegalArgumentException e) {
+
+			log.error(e.getMessage());
+			if (projectBe != null) {
+
+				String webhookURL = projectBe.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				if (webhookURL != null) {
+
+					String message = "Payments user creation would fail, since user information during registration is incomplete, ERROR MESSAGE :"
+							+ e.getMessage() + ", for USER: " + userBe.getCode();
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+						sendSlackNotification(webhookURL, payload);
+					} catch (IOException io) {
+						io.printStackTrace();
+					}
+				}
+			}
+		}
+		return userInfo;
+	}
+	
+	/* Get payments user email details, set in PaymentUserContact POJO */
+	public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+		
+		QPaymentsUserContactInfo userContactInfo = null;
+		
+		// TODO display user-email related question group
+		/* Getting userContactInfo -> handling errors with slack webhook reporting */
+		try {
+			userContactInfo = PaymentUtils.getPaymentsUserContactInfo(userBe, assemblyUserId, assemblyAuthToken);
+			
+			if(userContactInfo == null) {
+				throw new IllegalArgumentException("QPaymentsUserContactInfo instance creation failed");
+			}
+			
+		} catch (IllegalArgumentException e) {
+			
+			log.error(e.getMessage());
+			if (projectBe != null) {
+
+				String webhookURL = projectBe.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				if (webhookURL != null) {
+
+					String message = "Payments user creation would fail, since user email is missing or null : "
+							+ e.getMessage() + ", for USER: " + userBe.getCode();
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+						sendSlackNotification(webhookURL, payload);
+					} catch (IOException io) {
+						io.printStackTrace();
+					}
+				}
+			}		
+		}
+		return userContactInfo;
+		
+	}
+	
+	public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+		
+		QPaymentsLocationInfo userLocationInfo = null;
+		
+		// TODO display user-email related question group
+		/* Getting userLocationInfo -> handling errors with slack webhook reporting */
+		try {
+			userLocationInfo = PaymentUtils.getPaymentsLocationInfo(userBe, assemblyUserId, assemblyAuthToken);
+			
+			if(userLocationInfo == null) {
+				throw new IllegalArgumentException("QPaymentsLocationInfo instance creation failed");
+			}
+			
+		} catch (IllegalArgumentException e) {
+			
+			log.error(e.getMessage());
+			if (projectBe != null) {
+
+				String webhookURL = projectBe.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				if (webhookURL != null) {
+
+					String message = "Payments user creation would fail, since user address info is missing or null : "
+							+ e.getMessage() + ", for USER: " + userBe.getCode();
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+						sendSlackNotification(webhookURL, payload);
+					} catch (IOException io) {
+						io.printStackTrace();
+					}
+				}
+			}		
+		}
+		return userLocationInfo;
+		
+	}
+	
+	public void paymentUserCreation(String assemblyUserId, String assemblyAuthToken) {
+
+		BaseEntity userBe = getUser();
+		BaseEntity project = getProject();
+
+		QPaymentsUserInfo userInfo = getPaymentsUserInfo(project, userBe, assemblyUserId, assemblyAuthToken);
+		QPaymentsUserContactInfo userContactInfo = getPaymentsUserContactInfo(project, userBe, assemblyUserId,
+				assemblyAuthToken);
+		QPaymentsLocationInfo userLocationInfo = getPaymentsUserLocationInfo(project, userBe, assemblyUserId,
+				assemblyAuthToken);
+
+		String paymentUserCreationResponse = null;
+		String assemblyId = null;
+
+		try {
+			QPaymentsUser paymentsUser = new QPaymentsUser(assemblyUserId, userInfo, userContactInfo, userLocationInfo);
+
+			try {
+
+				paymentUserCreationResponse = PaymentEndpoint.createAssemblyUser(JsonUtils.toJson(paymentsUser),
+						assemblyAuthToken);
+
+				if (!paymentUserCreationResponse.contains("error") && paymentUserCreationResponse != null) {
+
+					/*QPaymentsAssemblyUserResponse responseUserPojo = JsonUtils.fromJson(paymentUserCreationResponse,
+							QPaymentsAssemblyUserResponse.class);
+					System.out.println("response user pojo ::" + responseUserPojo);*/
+					
+					assemblyId = assemblyUserId;
+					
+					/* Creates a new attribute for assembly user ID */
+		    	 		Answer assemblyIdAnswer = new Answer(userBe.getCode(), userBe.getCode() , "PRI_ASSEMBLY_USER_ID", assemblyId);
+		    	 		saveAnswer(assemblyIdAnswer);
+		    	 		println("assembly ID created in our system ::"+assemblyId); 
+		    	 		setState("IS_ASSEMBLY_USER_CREATED");
+		    	 		drools.setFocus("payments");
+					
+				}
+			} catch (PaymentException e) {
+				
+				log.error("Assembly user not found, returning null in exception handler");
+				assemblyId = null;
+				
+				/* Payments creation will fail if user already exists. In this case we check if the user is already available for the email ID, and fetch the userId */
+				setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
+				drools.setFocus("payments");
+				
+			}
+
+		} catch (IllegalArgumentException e) {
+			log.error(e.getMessage());
+			
+			if (project != null) {
+
+				String webhookURL = project.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				if (webhookURL != null) {
+
+					String message = "Payments user creation failed : "
+							+ e.getMessage() + ", for USER: " + userBe.getCode();
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+						sendSlackNotification(webhookURL, payload);
+					} catch (IOException io) {
+						io.printStackTrace();
+					}
+				}
+			}
+		}
+		
+
 	}
 }

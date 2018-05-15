@@ -42,6 +42,9 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentsLocationInfo;
+import life.genny.qwanda.payments.QPaymentsUserContactInfo;
+import life.genny.qwanda.payments.QPaymentsUserInfo;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
@@ -270,113 +273,80 @@ public class PaymentUtils {
 	}
 
 	/* Creates a new user in Assembly */
-	@SuppressWarnings("unchecked")
-	public static String createAssemblyUser(String assemblyUserId, String authToken, String token) {
-		/* Get user information */
-		String userCode = QwandaUtils.getUserCode(token);
-		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, token);
+	public static QPaymentsUserInfo getPaymentsUserInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
+		
 		String assemblyId = null;
-
-		/* Create objects to store the information we'll send to Assembly */
-		JSONObject userobj = new JSONObject();
-		JSONObject personalInfoObj = new JSONObject();
-		JSONObject contactInfoObj = new JSONObject();
-		JSONObject locationObj = new JSONObject();
-
-		if(be != null && assemblyUserId != null) {
-			/* Get all of the users information from their base entity */
-			Object firstName = be.getValue("PRI_FIRSTNAME", null);
-			Object lastName = be.getValue("PRI_LASTNAME", null);
-			Object dobString = be.getValue("PRI_DOB", null);
-			Object email = be.getValue("PRI_EMAIL", null);
-			Object addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
+		QPaymentsUserInfo personalInfo = null;
+	
+		if(userBe != null && assemblyUserId != null) {
 			
-			Object city = null;
-			city = be.getValue("PRI_ADDRESS_CITY", null);
-			if(city == null) {
-				city = be.getValue("PRI_ADDRESS_SUBURB", null);
-			}
+			String formattedDOBString = null;
+			String firstName = userBe.getValue("PRI_FIRSTNAME", null);
+			String lastName = userBe.getValue("PRI_LASTNAME", null);
+			LocalDate dob = userBe.getValue("PRI_DOB", null);
+
 			
-			
-			Object state = be.getValue("PRI_ADDRESS_STATE", null);
-			Object country = be.getValue("PRI_ADDRESS_COUNTRY", null);
-			Object postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
-			// Object mobile = be.getValue("PRI_MOBILE", null);
-
-			/* Check a bunch of fields and store them in the object we send to Assembly if they exist */
-			if(firstName != null) {
-				personalInfoObj.put("firstName", firstName.toString());
-			}
-
-			if(lastName != null) {
-				personalInfoObj.put("lastName", lastName.toString());
-			}
-
 			/* If the date of birth is provided format it correctly */
-			if(dobString != null) {
-				System.out.println("dob string ::"+dobString);
+			if(dob != null) {
+				System.out.println("dob string ::"+dob);
 				DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-				LocalDate dobDate = (LocalDate) dobString;
-				String formattedDOBString = assemblyDateFormatter.format(dobDate);
+				formattedDOBString = assemblyDateFormatter.format(dob);
 				System.out.println("another formatted dob ::"+formattedDOBString);
-				personalInfoObj.put("dob", formattedDOBString.toString());
+				
+				dob = LocalDate.parse(formattedDOBString, assemblyDateFormatter);					
 			}
-
-			if(email != null) {
-				contactInfoObj.put("email", email.toString());
-			}
-
-			// if(mobile != null) {
-			// 	contactInfoObj.put("mobile", mobile.toString());
-			// }
-
-			if(addressLine1 != null) {
-				locationObj.put("addressLine1", addressLine1.toString());
-			}
-
-			if(city != null) {
-				locationObj.put("city", city.toString());
-			}
-
-			if(state != null) {
-				locationObj.put("state", state.toString());
-			}
-
-			/* If a country code is defined then use that, otherwise use Australia */
-			if(country != null) {
-				locationObj.put("country", country.toString());
-			} else {
-				locationObj.put("country", "AU");
-			}
-
-			if(postCode != null) {
-				locationObj.put("postcode", postCode.toString());
-			}
+			
+			personalInfo = new QPaymentsUserInfo(firstName, lastName, dob);
 		}
-
-		/* Combine all of the individual objects into one object that'll well send off */
-		userobj.put("personalInfo", personalInfoObj);
-		userobj.put("contactInfo", contactInfoObj);
-		userobj.put("location", locationObj);
-		userobj.put("id", assemblyUserId);
-
-		System.out.println("user obj ::"+userobj);
-
-		/* Attempt creating the user in Assembly */
-		String paymentUserCreationResponse;
-		try {
-			paymentUserCreationResponse = PaymentEndpoint.createAssemblyUser(JsonUtils.toJson(userobj), authToken);
-			if(!paymentUserCreationResponse.contains("error") && paymentUserCreationResponse != null) {
-				assemblyId = assemblyUserId;
-			}
-		} catch (PaymentException e) {
-			log.error("Assembly user not found, returning null in exception handler");
-			assemblyId = null;
-		}
-
-		/* The user creation worked, return the user ID */
-		return assemblyId;
+		
+		return personalInfo;
+		
 	}
+	
+	public static QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
+		
+		QPaymentsUserContactInfo userContactInfo = null;
+		
+		if(userBe != null && assemblyUserId != null) {
+			
+			String email = userBe.getValue("PRI_EMAIL", null);
+			userContactInfo = new QPaymentsUserContactInfo(email);
+		}
+		
+		return userContactInfo;
+		
+	}
+	
+	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
+		
+		QPaymentsLocationInfo userLocationInfo = null;
+		String city = null;
+		String country = null;
+		
+		if(userBe != null && assemblyUserId != null) {
+			
+			String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+			
+			city = userBe.getValue("PRI_ADDRESS_CITY", null);
+			if(city == null) {
+				city = userBe.getValue("PRI_ADDRESS_SUBURB", null);	
+			}
+			
+			country = userBe.getValue("PRI_ADDRESS_COUNTRY", null);
+			if(country == null) {
+				city = "AU";
+			}
+			
+			String state = userBe.getValue("PRI_ADDRESS_STATE", null);
+			String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
+			
+			userLocationInfo = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
+		}
+		
+		return userLocationInfo;
+		
+	}
+
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
@@ -604,8 +574,10 @@ public class PaymentUtils {
 
 	/* Creates a new company in Assembly */
 	@SuppressWarnings("unchecked")
-	public static String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
-
+	public static String createCompany(String authtoken, String tokenString) {
+		/* Get the users information */
+		String userCode = QwandaUtils.getUserCode(tokenString);
+		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, tokenString);
 		String createCompanyResponse = null;
 		String companyCode = null;
 
@@ -616,16 +588,16 @@ public class PaymentUtils {
 		JSONObject locationObj = new JSONObject();
 
 		/* Get the provided company information from the base entity */
-		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
-		String taxNumber = companyBe.getValue("PRI_ABN", null);
-		Boolean chargeTax = companyBe.getValue("PRI_GST", false);
-		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
-		String countryName = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
-		
+		Object companyName = be.getValue("PRI_NAME", null);
+		Object taxNumber = be.getValue("PRI_ABN", null);
+		Object chargeTax = be.getValue("PRI_GST", null);
+		Object companyPhoneNumber = be.getValue("PRI_LANDLINE", null);
+		Object countryName = be.getValue("PRI_ADDRESS_COUNTRY", null);
+		Object assemblyUserId = be.getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		/* Check if each field is provided and add to request object if so */
 		if (companyName != null) {
-			companyObj.put("name", companyName);
+			companyObj.put("name", companyName.toString());
 		}
 
 		if (taxNumber != null) {
@@ -633,15 +605,15 @@ public class PaymentUtils {
 		}
 
 		if (chargeTax != null) {
-			companyObj.put("chargesTax",chargeTax);
+			companyObj.put("chargesTax", (Boolean) chargeTax);
 		}
 
 		if (companyPhoneNumber != null) {
-			contactObj.put("phone", companyPhoneNumber);
+			contactObj.put("phone", companyPhoneNumber.toString());
 		}
 
 		if (assemblyUserId != null) {
-			userObj.put("id", assemblyUserId);
+			userObj.put("id", assemblyUserId.toString());
 		}
 
 		/* If a country name was provided use that, otherwise use Australia */
@@ -1869,7 +1841,7 @@ public class PaymentUtils {
 					Gson gson = new Gson();
 					JsonElement jsonElement = gson.toJsonTree(paymentMethod);
 					QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
-
+					
 					System.out.println("type ::" + paymentMethodPojo.getType());
 					System.out.println("number" + paymentMethodPojo.getNumber());
 					System.out.println("id ::" + paymentMethodPojo.getId());
