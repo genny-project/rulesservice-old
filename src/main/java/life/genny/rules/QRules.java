@@ -3721,14 +3721,17 @@ public class QRules {
 					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
 					// get all offers
 					List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
-					println("All the Offers for the load " + begCode + " are: " + offers.toString());
-					for (BaseEntity be : offers) {
-						if (!(be.getCode().equals(offerCode))) {
-							println("The BE is : " + be.getCode());
-							/* Update PRI_NEXT_ACTION to Disabled */
-							updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
-						}
-					}
+
+          if(offers != null) {
+
+            for (BaseEntity be : offers) {
+  						if (!(be.getCode().equals(offerCode))) {
+  							println("The BE is : " + be.getCode());
+  							/* Update PRI_NEXT_ACTION to Disabled */
+  							updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+  						}
+  					}
+          }
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -4335,7 +4338,7 @@ public class QRules {
   				}
         }
         catch( Exception e) {
-          
+
         }
 			}
 
