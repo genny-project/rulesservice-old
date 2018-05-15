@@ -38,10 +38,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import java.lang.reflect.Type;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 rule "Make Offer"
     when
@@ -58,7 +54,8 @@ rule "Make Offer"
             String begCode = $m.getItemCode();
             rules.println("begCode  ::   "+ begCode);    
 
-            String userCode = rules.getUser().getCode();
+			BaseEntity user = rules.getUser();
+            String userCode = user.getCode();
             rules.println("userCode   ::   "+ userCode);
 
             String userName = rules.getAsString("preferred_username");
@@ -72,6 +69,20 @@ rule "Make Offer"
             String linkQuoter= "QUOTER";
             String offerCode= "null";
             
+          if(user.getValue("PRI_USER_PAYMENT_METHODS", null) != null){
+          
+             String dataString = user.getValue("PRI_USER_PAYMENT_METHODS", null);
+             int arraySize = 0;
+             try{
+                   JsonArray paymentsArray = new JsonArray(dataString);
+                   if (paymentsArray.size() != 0){
+                       arraySize = paymentsArray.size(); 
+                   }
+                }catch(Exception e){
+                    System.out.println("Exception! Unable to create JsonArray ");
+               }
+           if(arraySize > 0){
+            
          /* Check if a link exists between BEG & OFFER */
             /* Boolean linkBegQuoter = QwandaUtils.checkIfLinkExistsForTarget(begCode,  linkCode, linkQuoter, tokenString ); */
             Boolean linkExists = QwandaUtils.checkIfLinkExists(begCode, linkCode, userCode, "QUOTER", tokenString);
@@ -81,9 +92,9 @@ rule "Make Offer"
                rules.println( "The baseEntity offer is"+rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString) );
                BaseEntity oldOffer =  rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
                offerCode = oldOffer.getCode();
-           }
+             }
            
-          if(!linkExists){ 
+            if(!linkExists){ 
 
         		/* Create Offer BE */
 	          BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
@@ -111,8 +122,20 @@ rule "Make Offer"
             
              }       
 
-        /* Send Offer Questions */
+            /* Send Offer Questions */
             rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+            
+          }
+          else{
+           /* Send Payment Method Questions */
+           rules.askQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false, true); 
+          }         
+        }else{
+           /* Send Payment Method Questions */
+           rules.askQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false, true);
+           //Send question QUE_PAYMENT_METHOD_GRP 
+       }
+          
             
         rules.footer();
 end
