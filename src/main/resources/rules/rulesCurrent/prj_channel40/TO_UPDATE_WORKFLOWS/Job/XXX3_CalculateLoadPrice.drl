@@ -163,7 +163,7 @@
 // 	no-loop true
 //     when
 //     	$m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_OFFER_DRIVER_PRICE_EXC_GST")  && getAnswer().getTargetCode().startsWith("OFR_") )
-//     	rules : QRules( getUser().is("PRI_DRIVER") )
+//     	rules : QRules( getUser().is("PRI_IS_SELLER") )
 //     then    
 // 		rules.header();
 // 		String tokenString = rules.getToken();

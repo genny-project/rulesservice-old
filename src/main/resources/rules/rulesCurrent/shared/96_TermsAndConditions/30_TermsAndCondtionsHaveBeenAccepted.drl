@@ -11,6 +11,6 @@ rule "Terms and conditions have been accepted"
 
 		    rules.setState("LOOP_SUBMIT_ACCEPTED_T_C");
 		    rules.setState("APPLICATION_READY_SEND_DATA");
-        
+
         rules.footer();
 end
