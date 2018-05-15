@@ -63,6 +63,7 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
@@ -80,6 +81,7 @@ import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
+import life.genny.qwanda.message.QCmdFormMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -1830,6 +1832,60 @@ public class QRules {
 		}
 
 		return null;
+	}
+	
+	private void sendAsksRequiredData(Ask[] asks) {
+		
+		/* we loop through the asks and send the required data if necessary */
+		for(Ask ask: asks) {
+			
+			/* we get the attribute code. if it starts with "LNK_" it means it is a dropdown selection.*/
+			String attributeCode = ask.getAttributeCode();
+			if(attributeCode != null && attributeCode.startsWith("LNK_")) {
+				
+				/* we get the attribute validation to get the group code */
+				//TODO: call attributes API
+				
+				/* grab the group */
+				//TODO: get the group of BEs
+				
+				/* send group of BEs to frontend */
+				//TODO: send command
+				
+				/* recursive call */
+				Ask[] childAsks = ask.getChildAsks();
+				if(childAsks.length > 0) {
+					this.sendAsksRequiredData(childAsks);
+				}
+			}
+		}
+	}
+	
+	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode) {
+		
+		/* first we get the asks */
+		QDataAskMessage questions = this.getQuestions(sourceCode, targetCode, questionGroupCode);
+		if(questions != null) {
+			
+			/* if we have the questions, we loop through the asks and send the required data to front end */
+			Ask[] asks = questions.getItems();
+			if(asks != null) {
+				this.sendAsksRequiredData(asks);
+			}
+			
+			/* we send the asks to the user */
+			this.publishData(questions);
+			
+			/* we send the form CMD to front end */
+			
+			/* Layout V1 */
+			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
+			publishCmd(cmdFormView);
+			
+			/* Layout V2 */
+			QCmdFormMessage formCmd = new QCmdFormMessage(questionGroupCode);
+			this.publishCmd(formCmd);
+		}
 	}
 
 	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
