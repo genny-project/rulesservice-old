@@ -313,6 +313,10 @@ public class PaymentUtils {
 		}
 		
 		return userContactInfo;
+<<<<<<< HEAD
+=======
+		
+>>>>>>> 957b5666... Payment user creation refactor
 
 	}
 	
