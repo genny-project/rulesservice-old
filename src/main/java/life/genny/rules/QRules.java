@@ -2859,14 +2859,18 @@ public class QRules {
 
 			/* otherwise we create it */
 			beLayout  = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, getToken());
-			addAttributes(beLayout);
 			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 		}
 
 		if(beLayout != null) {
 
+      addAttributes(beLayout);
+
 	    	/* we get the modified time stored in the BE and we compare it to the layout one */
 			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
+      println(beModifiedTime);
+      println(layout.getModifiedDate());
+
 			if(beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
 
 				/* if the modified time is not the same, we update the layout BE */
@@ -2876,6 +2880,7 @@ public class QRules {
 
 				/* download the content of the layout */
 				String content = LayoutUtils.downloadLayoutContent(layout);
+
 				if(content != null) {
 
 					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
@@ -2907,7 +2912,7 @@ public class QRules {
 
 	    }
 
-		return beLayout;
+		return this.getBaseEntityByCodeWithAttributes(beLayout.getCode());
 	}
 
 	/*
@@ -3437,27 +3442,31 @@ public class QRules {
 	static String cache2 = null;
 
 	public void addAttributes(BaseEntity be) {
-		if (!be.getCode().startsWith("SBE_")) { // don't bother with search be
-			for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-				if (ea != null) {
-					Attribute attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
-					if (attribute != null) {
-						ea.setAttribute(attribute);
-					} else {
-						RulesUtils.loadAllAttributesIntoCache(getToken());
-						attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
-						if (attribute != null) {
-							ea.setAttribute(attribute);
-						} else {
-							log.error("Cannot get Attribute - " + ea.getAttributeCode());
-							Attribute dummy = new AttributeText(ea.getAttributeCode(), ea.getAttributeCode());
-							ea.setAttribute(dummy);
 
-						}
-					}
-				}
-			}
-		}
+    if(be != null) {
+
+      if (!be.getCode().startsWith("SBE_")) { // don't bother with search be
+  			for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+  				if (ea != null) {
+  					Attribute attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
+  					if (attribute != null) {
+  						ea.setAttribute(attribute);
+  					} else {
+  						RulesUtils.loadAllAttributesIntoCache(getToken());
+  						attribute = RulesUtils.attributeMap.get(ea.getAttributeCode());
+  						if (attribute != null) {
+  							ea.setAttribute(attribute);
+  						} else {
+  							log.error("Cannot get Attribute - " + ea.getAttributeCode());
+  							Attribute dummy = new AttributeText(ea.getAttributeCode(), ea.getAttributeCode());
+  							ea.setAttribute(dummy);
+
+  						}
+  					}
+  				}
+  			}
+  		}
+    }
 	}
 
 	/*
@@ -4322,7 +4331,8 @@ public class QRules {
 
 			/* Getting all driver BEs */
 			for (BaseEntity stakeholderBe : people) {
-				Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
+
+        Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
 				if (isDriver) {
 					driversBe.add(stakeholderBe);
 				}
