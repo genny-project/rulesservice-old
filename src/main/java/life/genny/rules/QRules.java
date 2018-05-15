@@ -3801,7 +3801,7 @@ public class QRules {
 							Status.NEEDS_NO_ACTION.value());
 
 					/* sending cmd BUCKETVIEW */
-					rules.setState("TRIGGER_HOMEPAGE");
+					this.setState("TRIGGER_HOMEPAGE");
 
 					/*
 					 * List<BaseEntity> listBe = new ArrayList<>(); listBe.add(getUser());
@@ -4327,10 +4327,16 @@ public class QRules {
 			/* Getting all driver BEs */
 			for (BaseEntity stakeholderBe : people) {
 
-        Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
-				if (isDriver) {
-					driversBe.add(stakeholderBe);
-				}
+        try {
+
+          Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
+  				if (isDriver) {
+  					driversBe.add(stakeholderBe);
+  				}
+        }
+        catch( Exception e) {
+          
+        }
 			}
 
 			int i = 0;
