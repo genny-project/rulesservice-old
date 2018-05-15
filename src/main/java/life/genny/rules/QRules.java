@@ -6692,7 +6692,7 @@ public class QRules {
 		}
 	}
 
-
+	
 	public void createServiceUser(){
 
 		BaseEntity be = null;
@@ -6974,5 +6974,4 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
-
 }
