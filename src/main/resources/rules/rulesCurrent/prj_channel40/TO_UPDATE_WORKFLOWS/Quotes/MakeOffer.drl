@@ -36,8 +36,6 @@ rule "Make Offer"
         rules.header();
         rules.setState("SUBMIT_QUOTE");
 
-        drools.setFocus("ispayments");  /* NOW Set up Payments */
-
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
