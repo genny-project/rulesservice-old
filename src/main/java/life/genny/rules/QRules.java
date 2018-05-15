@@ -6710,6 +6710,7 @@ public class QRules {
 			}
 		}
 	}
+
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
@@ -6718,6 +6719,8 @@ public class QRules {
 
 	}
 	
+
+
 	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
 	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
 		
@@ -6908,4 +6911,5 @@ public class QRules {
 		}
 		
 	}
+
 }
