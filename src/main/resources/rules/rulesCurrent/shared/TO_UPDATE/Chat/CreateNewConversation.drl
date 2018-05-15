@@ -105,7 +105,7 @@ rule "Create Conversation"
 					rules.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm")));
 
 				/* link GRP_MESSAGES and CHAT BE || list-item-conversation */
-					rules.createLink("GRP_MESSAGES", chat.getCode(), "LNK_CHAT", "list-item-conversation", 1.0);
+					rules.createLink("GRP_MESSAGES", chat.getCode(), "LNK_CHAT", "chat_conversation", 1.0);
 
 				/* Link users to chat */
 					rules.createLink(chat.getCode(), userCode, "LNK_USER", "sender", 1.0);
