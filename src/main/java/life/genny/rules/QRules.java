@@ -6975,4 +6975,5 @@ public class QRules {
 
 	}
 
+
 }
