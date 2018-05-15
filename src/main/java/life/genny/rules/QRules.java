@@ -6974,6 +6974,6 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
-
-
+	
+	
 }
