@@ -1200,9 +1200,7 @@ public class QRules {
 		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
-		if (root != null) {
-			cmdJobSublayoutJson.put("root", root);
-		}
+    cmdJobSublayoutJson.put("root", root != null ? root : "test");
 
 		publish("cmds", cmdJobSublayoutJson);
 	}
@@ -3636,7 +3634,7 @@ public class QRules {
 					/* Need to display error toast if make payment fails */
 					sendMessage(null, recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
 					/* sending cmd BUCKETVIEW */
-					drools.setFocus("SendLayoutsAndData");
+					this.setState("TRIGGER_HOMEPAGE");
 				}
 
 				if (makePaymentResponseObj.getIsSuccess()) {
@@ -3803,7 +3801,7 @@ public class QRules {
 							Status.NEEDS_NO_ACTION.value());
 
 					/* sending cmd BUCKETVIEW */
-					drools.setFocus("SendLayoutsAndData");
+					rules.setState("TRIGGER_HOMEPAGE");
 
 					/*
 					 * List<BaseEntity> listBe = new ArrayList<>(); listBe.add(getUser());
