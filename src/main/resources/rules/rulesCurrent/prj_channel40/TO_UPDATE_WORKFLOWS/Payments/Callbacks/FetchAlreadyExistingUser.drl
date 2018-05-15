@@ -1,0 +1,36 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+import life.genny.qwanda.Answer;
+import life.genny.utils.PaymentUtils;
+
+
+
+rule "Payment creation failure - Check for existing payment user in payments-service"
+	agenda-group "payments"
+	no-loop true
+    when
+    	rules: QRules( isState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS") && !isState("IS_ASSEMBLY_USER_CREATED") )
+    then
+     
+     RulesUtils.header(drools.getRule().getName());
+     	     
+     /* get assembly authKey   */
+     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+
+
+	/* Creation of assembly user will fail if user-email already exists in assembly! So fetching the existing assembly user ID here */     	
+     String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
+  		
+  	if(existingAssemblyId != null) {
+  		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
+     	rules.saveAnswer(assemblyIdAnswer);
+     	rules.println("assembly ID created in our system ::"+existingAssemblyId); 
+     	rules.setState("IS_ASSEMBLY_USER_CREATED");
+     	drools.setFocus("payments");
+  	}
+     	
+     
+     rules.footer();      		      
+end
