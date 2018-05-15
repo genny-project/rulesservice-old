@@ -1833,25 +1833,25 @@ public class QRules {
 
 		return null;
 	}
-	
+
 	private void sendAsksRequiredData(Ask[] asks) {
-		
+
 		/* we loop through the asks and send the required data if necessary */
 		for(Ask ask: asks) {
-			
+
 			/* we get the attribute code. if it starts with "LNK_" it means it is a dropdown selection.*/
 			String attributeCode = ask.getAttributeCode();
 			if(attributeCode != null && attributeCode.startsWith("LNK_")) {
-				
+
 				/* we get the attribute validation to get the group code */
 				//TODO: call attributes API
-				
+
 				/* grab the group */
 				//TODO: get the group of BEs
-				
+
 				/* send group of BEs to frontend */
 				//TODO: send command
-				
+
 				/* recursive call */
 				Ask[] childAsks = ask.getChildAsks();
 				if(childAsks.length > 0) {
@@ -1860,28 +1860,28 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode) {
-		
+
 		/* first we get the asks */
 		QDataAskMessage questions = this.getQuestions(sourceCode, targetCode, questionGroupCode);
 		if(questions != null) {
-			
+
 			/* if we have the questions, we loop through the asks and send the required data to front end */
 			Ask[] asks = questions.getItems();
 			if(asks != null) {
 				this.sendAsksRequiredData(asks);
 			}
-			
+
 			/* we send the asks to the user */
 			this.publishData(questions);
-			
+
 			/* we send the form CMD to front end */
-			
+
 			/* Layout V1 */
 			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
 			publishCmd(cmdFormView);
-			
+
 			/* Layout V2 */
 			QCmdFormMessage formCmd = new QCmdFormMessage(questionGroupCode);
 			this.publishCmd(formCmd);
@@ -2471,12 +2471,12 @@ public class QRules {
 					 */
 
 					Double newRatingAverage = ((currentRating * numberOfRating ) + newRating )/ (numberOfRating += 1);
-					
+
 					/* we increment the number of current ratings */
 					//numberOfRating += 1;
 					answerList.add(
 							new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating)));
-							
+
 					answerList.add(
 							new Answer(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage)));
 
@@ -2875,7 +2875,7 @@ public class QRules {
 				List<Answer> answers = new ArrayList<Answer>();
 
 				/* download the content of the layout */
-				String content = null; // TODO LayoutUtils.downloadLayoutContent(layout);
+				String content = LayoutUtils.downloadLayoutContent(layout);
 				if(content != null) {
 
 					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA", content);
@@ -3360,7 +3360,7 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (((user.is("PRI_DRIVER")))) {
+		if (((user.is("PRI_IS_SELLER")))) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -3386,7 +3386,7 @@ public class QRules {
 				}
 			}
 			// Checking for driver role
-			if ((user.is("PRI_DRIVER"))) {
+			if ((user.is("PRI_IS_SELLER"))) {
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 						reportsHeaderToRemove.add(be);
@@ -3425,7 +3425,7 @@ public class QRules {
 		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		 */
-		if (!user.is("PRI_DRIVER")) {
+		if (!user.is("PRI_IS_SELLER")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
@@ -4322,7 +4322,7 @@ public class QRules {
 
 			/* Getting all driver BEs */
 			for (BaseEntity stakeholderBe : people) {
-				Boolean isDriver = stakeholderBe.getValue("PRI_DRIVER", false);
+				Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
 				if (isDriver) {
 					driversBe.add(stakeholderBe);
 				}
@@ -4711,7 +4711,7 @@ public class QRules {
 		println("The columnsArray is ::" + columnsArray);
 		// Sort Attribute
 		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_DRIVER", "=");
+		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_IS_SELLER", "=");
 		// Pagination Attribute
 		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
 		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
@@ -4958,7 +4958,7 @@ public class QRules {
 		// needs to see BucketView
 		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
-		// } else if (getUser().is("PRI_DRIVER")) {
+		// } else if (getUser().is("PRI_IS_SELLER")) {
 		// sendViewCmd("LIST_VIEW", "GRP_NEW_ITEMS");
 		// setLastLayout("LIST_VIEW", "GRP_NEW_ITEMS");
 		// }
@@ -5204,12 +5204,12 @@ public class QRules {
 					// So save the SEL_OWNER as PRI_OWNER
 					if ("SEL_OWNER".equals(answer.getValue())) {
 						answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "TRUE"));
-						answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "FALSE"));
+						answersToSave.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_SELLER", "FALSE"));
 						println("OWNER SET!");
 					} else {
 						if ("SEL_DRIVER".equals(answer.getValue())) {
 							answersToSave
-									.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_DRIVER", "TRUE"));
+									.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_IS_SELLER", "TRUE"));
 							answersToSave
 									.add(new Answer(getUser().getCode(), getUser().getCode(), "PRI_OWNER", "FALSE"));
 							println("DRIVER SET!");
@@ -5235,7 +5235,7 @@ public class QRules {
 		List<BaseEntity> results = new ArrayList<BaseEntity>();
 		String dataMsgParentCode = reportGroupCode;
 		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-			if (user.is("PRI_DRIVER")) {
+			if (user.is("PRI_IS_SELLER")) {
 				dataMsgParentCode = "GRP_REPORTS_DRIVER";
 				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
 				for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -5757,31 +5757,40 @@ public class QRules {
 		/* Searches */
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
 
-		try {
-			results = QwandaUtils.fetchResults(searchNewItems, getToken());
-			if (results != null) {
-				itemCount = results.getItems().length;
-				results.setParentCode("GRP_NEW_ITEMS");
-				results.setLinkCode("LNK_CORE");
-				bulkmsg.add(results);
+    if(searchNewItems != null) {
 
-				QBulkMessage bulk = new QBulkMessage(bulkmsg);
+      try {
+  			results = QwandaUtils.fetchResults(searchNewItems, getToken());
 
-				for (BaseEntity beg : results.getItems()) {
-					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
-							false);
-					itemCount += begKids.size();
-					bulkmsg.add(
-							new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
-				}
-			}
+        if (results != null) {
 
-			QBulkMessage bulk = new QBulkMessage(bulkmsg);
-			VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
-			println("Loading New cache laoded "+itemCount+" BEs");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+          itemCount = results.getItems().length;
+  				results.setParentCode("GRP_NEW_ITEMS");
+  				results.setLinkCode("LNK_CORE");
+  				bulkmsg.add(results);
+
+  				QBulkMessage bulk = new QBulkMessage(bulkmsg);
+
+  				for (BaseEntity beg : results.getItems()) {
+  					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
+  							false);
+
+                if(begKids != null) {
+
+                  itemCount += begKids.size();
+                  bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG"));
+                }
+  				}
+  			}
+
+  			QBulkMessage bulk = new QBulkMessage(bulkmsg);
+  			VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
+  			println("Loading New cache laoded "+itemCount+" BEs");
+  		} catch (Exception e) {
+  			e.printStackTrace();
+  		}
+    }
+
 
 	}
 
@@ -5849,7 +5858,7 @@ public class QRules {
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
-					if (stakeholder.is("PRI_DRIVER")) {
+					if (stakeholder.is("PRI_IS_SELLER")) {
 						if (linkedBE.getCode().startsWith("OFR_")) {
 							// Get the only link and skip any outage if the offer does not belong to the
 							// driver
