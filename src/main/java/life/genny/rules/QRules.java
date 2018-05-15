@@ -2463,11 +2463,6 @@ public class QRules {
 					Double numberOfRating = Double.parseDouble(numberOfRatingString);
 					Double newRating = Double.parseDouble(value);
 
-					/* we increment the number of current ratings */
-					numberOfRating += 1;
-					answerList.add(
-							new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating)));
-
 					/* we compute the new rating */
 
 					/*
@@ -2475,8 +2470,13 @@ public class QRules {
 					 * rolling average
 					 */
 
-					Double newRatingAverage = currentRating / numberOfRating;
-					newRatingAverage += newRating / numberOfRating;
+					Double newRatingAverage = ((currentRating * numberOfRating ) + newRating )/ (numberOfRating += 1);
+					
+					/* we increment the number of current ratings */
+					//numberOfRating += 1;
+					answerList.add(
+							new Answer(sourceCode, targetCode, "PRI_NUMBER_RATING", Double.toString(numberOfRating)));
+							
 					answerList.add(
 							new Answer(sourceCode, targetCode, finalAttributeCode, Double.toString(newRatingAverage)));
 
