@@ -6718,8 +6718,6 @@ public class QRules {
 		saveAnswers(attributesAns);
 
 	}
-	
-
 
 	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
 	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
@@ -6838,6 +6836,6 @@ public class QRules {
 		return userLocationInfo;
 		
 	}
-
-
+	
+	
 }

@@ -316,7 +316,7 @@ public class PaymentUtils {
 		return userContactInfo;
 		
 	}
-	
+
 	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
 		
 		QPaymentsLocationInfo userLocationInfo = null;
@@ -347,6 +347,7 @@ public class PaymentUtils {
 		
 	}
 	
+
 
 
 	/* Returns a users information based upon their user ID */
