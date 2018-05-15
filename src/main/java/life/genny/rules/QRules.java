@@ -3249,7 +3249,9 @@ public class QRules {
 
 		}
 		// Add the original token holder
-		recipientCodesSet.add(getUser().getCode());
+		if (!getUser().getCode().equals("PER_SERVICE")) {
+			recipientCodesSet.add(getUser().getCode());
+		}
 		results = (String[]) FluentIterable.from(recipientCodesSet).toArray(String.class);
 		return results;
 	}
@@ -4325,16 +4327,16 @@ public class QRules {
 			/* Getting all people */
 			List<BaseEntity> people = getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
 			System.out.println("size ::" + people.size());
-			List<BaseEntity> driversBe = new ArrayList<>();
+			List<BaseEntity> sellersBe = new ArrayList<>();
 
 			/* Getting all driver BEs */
 			for (BaseEntity stakeholderBe : people) {
 
         try {
 
-          Boolean isDriver = stakeholderBe.getValue("PRI_IS_SELLER", false);
-  				if (isDriver) {
-  					driversBe.add(stakeholderBe);
+          Boolean isSeller = stakeholderBe.getValue("PRI_IS_SELLER", false);
+  				if (isSeller) {
+  					sellersBe.add(stakeholderBe);
   				}
         }
         catch( Exception e) {
@@ -4343,8 +4345,8 @@ public class QRules {
 			}
 
 			int i = 0;
-			String[] stakeholderArr = new String[driversBe.size()];
-			for (BaseEntity stakeholderBe : driversBe) {
+			String[] stakeholderArr = new String[sellersBe.size()];
+			for (BaseEntity stakeholderBe : sellersBe) {
 				stakeholderArr[i] = stakeholderBe.getCode();
 				i++;
 			}
@@ -6557,5 +6559,32 @@ public class QRules {
 		for(String userCode: userCodes) {
 			this.updateBaseEntityStatus(beCode, userCode, status);
 		}
+	}
+	
+	public void createServiceUser()
+	{
+		BaseEntity be = null;
+
+		String username = "service";
+		String firstname = "Service";
+		String lastname = "User";
+		String realm = realm();
+		String name = "Service User";
+		String email = "adamcrow63@gmail.com";
+		String keycloakId = getAsString("sub").toLowerCase();
+
+		try {
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+					keycloakId);
+			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
+			be = getUser();
+			set("USER", be);
+			println("New User Created " + be);
+			this.setState("DID_CREATE_NEW_USER");
+
+		} catch (IOException e) {
+			log.error("Error in Creating User ");
+		}
+
 	}
 }
