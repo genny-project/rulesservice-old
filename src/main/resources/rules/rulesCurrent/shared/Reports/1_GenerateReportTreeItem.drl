@@ -20,8 +20,8 @@ rule "TV_SELECT Event - Generate Report"
         /* TODO: refactor this. */
        	String grpCode = $m.getData().getValue();
        	rules.println("The Group Id is :: "+grpCode );
-       	
-    /*   	JsonObject buttonsLayout = rules.generateLayout(grpCode); 
+
+    /*   	JsonObject buttonsLayout = rules.generateLayout(grpCode);
        	Layout[] layoutArray = new Layout[1];
        	layoutArray[0] = new Layout(grpCode, buttonsLayout.toString());
         QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT", "ADMIN_REPORTS");
@@ -31,7 +31,7 @@ rule "TV_SELECT Event - Generate Report"
 		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
 		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
 		rules.publishCmd(cmdJobSublayoutJson);   */
-		
+
 		rules.publishSearhBE(grpCode);
 		BaseEntity user = rules.getUser();
 		String viewGrpCode = "";
@@ -44,7 +44,7 @@ rule "TV_SELECT Event - Generate Report"
 	    	if ( rules.hasRole("admin") ) {
 	    	    viewGrpCode = "GRP_REPORTS_ADMIN";
 	    	}
-		rules.sendCmdReportsSplitView(viewGrpCode, null);
+		rules.sendCmdReportsSplitView("GRP_REPORTS", viewGrpCode);
 
      rules.footer();
 end
