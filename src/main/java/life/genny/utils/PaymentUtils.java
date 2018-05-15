@@ -315,7 +315,6 @@ public class PaymentUtils {
 		
 		return userContactInfo;
 		
-
 	}
 	
 	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) throws IllegalArgumentException {
@@ -348,6 +347,7 @@ public class PaymentUtils {
 		
 	}
 	
+
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
@@ -575,8 +575,10 @@ public class PaymentUtils {
 
 	/* Creates a new company in Assembly */
 	@SuppressWarnings("unchecked")
-	public static String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
-
+	public static String createCompany(String authtoken, String tokenString) {
+		/* Get the users information */
+		String userCode = QwandaUtils.getUserCode(tokenString);
+		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, tokenString);
 		String createCompanyResponse = null;
 		String companyCode = null;
 
@@ -587,16 +589,16 @@ public class PaymentUtils {
 		JSONObject locationObj = new JSONObject();
 
 		/* Get the provided company information from the base entity */
-		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
-		String taxNumber = companyBe.getValue("PRI_ABN", null);
-		Boolean chargeTax = companyBe.getValue("PRI_GST", false);
-		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
-		String countryName = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
-		
+		Object companyName = be.getValue("PRI_NAME", null);
+		Object taxNumber = be.getValue("PRI_ABN", null);
+		Object chargeTax = be.getValue("PRI_GST", null);
+		Object companyPhoneNumber = be.getValue("PRI_LANDLINE", null);
+		Object countryName = be.getValue("PRI_ADDRESS_COUNTRY", null);
+		Object assemblyUserId = be.getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		/* Check if each field is provided and add to request object if so */
 		if (companyName != null) {
-			companyObj.put("name", companyName);
+			companyObj.put("name", companyName.toString());
 		}
 
 		if (taxNumber != null) {
@@ -604,15 +606,15 @@ public class PaymentUtils {
 		}
 
 		if (chargeTax != null) {
-			companyObj.put("chargesTax",chargeTax);
+			companyObj.put("chargesTax", (Boolean) chargeTax);
 		}
 
 		if (companyPhoneNumber != null) {
-			contactObj.put("phone", companyPhoneNumber);
+			contactObj.put("phone", companyPhoneNumber.toString());
 		}
 
 		if (assemblyUserId != null) {
-			userObj.put("id", assemblyUserId);
+			userObj.put("id", assemblyUserId.toString());
 		}
 
 		/* If a country name was provided use that, otherwise use Australia */
