@@ -17,7 +17,7 @@ rule "User-Profile"
   	    String userCode = user.getCode();
 
   	    drools.setFocus("ispayments");  /* NOW Set up Payments */
-  	    
+
 
         rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
        /*  Get Company Code of the current user   */
@@ -35,7 +35,7 @@ rule "User-Profile"
         /*  Send Bank Details asks   */
           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
 
-        if( user.is("PRI_IS_SELLER") ){
+        if( user.is("PRI_IS_SELLER")  || user.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")){
           /*  Send User Documents asks   */
            rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
 
