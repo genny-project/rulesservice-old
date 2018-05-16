@@ -5,28 +5,19 @@ import life.genny.qwanda.message.QEventMessage;
 import io.vertx.core.json.JsonObject;
 
 rule "User-Docs upload Submit"
-   no-loop true
-   ruleflow-group 'FormSubmit'
     when
-        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_USER_DOCUMENTS_GRP" )
-        rules: QRules( !isState("DOCS_UPLOADED") ) 
+       rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("QUE_USER_DOCUMENTS_GRP") && !isState("DOCS_UPLOADED") ) 
     then
        rules.header();
     	    /*  Get data.value and decode   */
-         String dataString = $m.data.getValue();
+        /* String dataString = $m.data.getValue();
          JsonObject dataJson = new JsonObject(dataString);
          String userCode = dataJson.getString("targetCode");
-         String actionCode = dataJson.getString("action"); 
+         String actionCode = dataJson.getString("action");  */
         
-  	    // if(actionCode.equalsIgnoreCase("submit")) { 
-          /*  rules.setState("COMPANY_INFO_UPDATED"); 
-           HashMap<String,String> contextMap = new HashMap<String, String>();
-           String[] recipients  = {userCode};   */ 
-          /* Sending toast message */
-          /*   rules.sendMessage("", recipients, contextMap, "TST_USER_DOCS_UPLOADED", "TOAST");  */
-           rules.setState("DOCS_UPLOADED");
-           rules.setState("TRIGGER_HOMEPAGE");  
-        // }
+         rules.setState("DOCS_UPLOADED");
+         //rules.setState("TRIGGER_HOMEPAGE");  
+	     rules.redirectToHomePage();
 
         rules.footer();
   end
