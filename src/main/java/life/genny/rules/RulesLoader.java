@@ -151,7 +151,8 @@ public class RulesLoader {
 					final String ruleText = buf.toString();
 
 					Tuple2<String, String> rule = (Tuple.of(fileName + "." + fileNameExt, ruleText));
-					System.out.println("Loading in Rule:" + rule._1 + " of " + inputFileStr);
+					String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
+					System.out.println("Loading in Rule:" + rule._1 + " of " +filerule);
 					rules.add(rule);
 				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																										// that start
@@ -211,7 +212,8 @@ public class RulesLoader {
 					final String ruleText = buf.toString();
 
 					Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
-					System.out.println(realm + " Loading in Rule:" + rule._1 + " of " + inputFileStr);
+					String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
+					System.out.println("Loading in Rule:" + rule._1 + " of " +filerule);
 					rules.add(rule);
 				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																										// that start
