@@ -441,7 +441,7 @@ public class QRules {
 			 * user yet. setting it.
 			 */
 
-			
+
 			BaseEntity be = this.getUser();
 			if (be != null) {
 
@@ -662,9 +662,7 @@ public class QRules {
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache, final String stakeholderCode) {
 		List<BaseEntity> bes = null;
-		if (getUser().is("PRI_IS_DRIVER")) {
-			RulesUtils.println("Is True");
-		}
+
 		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
 		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode, stakeholderCode);

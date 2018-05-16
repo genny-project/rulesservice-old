@@ -5,18 +5,18 @@ import java.util.List;
 
 rule "Selected Company Role"
      when
-        $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_OWNER") )
+        $m: QEventAttributeValueChangeMessage( QEventAttributeValueChangeMessage.getData().getCode().equals("PRI_IS_BUYER") )
         rules: QRules( isState("STARTED") && !isState("HAS_SELECTED_PROFILE_COMPANY") && isState("BTN_SELECT_ROLE_COMPANY"))
      then
 
         rules.header();
-		
+
         rules.setState("HAS_SELECTED_PROFILE_COMPANY");
-        
+
         /* we create the company */
-        /*BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());        
+        /*BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
         rules.createLink(companyCode, userCode, "LNK_STAFF", "REPRESENTATIVE", 1.0); */
-        
+
 		rules.setState("EXIT_ROLE_SELECTION");
 
 		rules.footer();
