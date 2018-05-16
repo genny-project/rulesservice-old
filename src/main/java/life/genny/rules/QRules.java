@@ -4380,6 +4380,11 @@ public class QRules {
 					Boolean isSeller = stakeholderBe.getValue("PRI_IS_SELLER", false);
 					if (isSeller) {
 						sellersBe.add(stakeholderBe);
+					} 
+					
+					String isSellerStr = stakeholderBe.getValue("PRI_IS_SELLER",null);
+					if ("TRUE".equalsIgnoreCase(isSellerStr)) {
+						sellersBe.add(stakeholderBe);
 					}
 
           String isSellerString = stakeholderBe.getValue("PRI_IS_SELLER", null);
