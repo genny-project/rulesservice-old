@@ -441,6 +441,7 @@ public class QRules {
 			 * user yet. setting it.
 			 */
 
+			
 			BaseEntity be = this.getUser();
 			if (be != null) {
 
