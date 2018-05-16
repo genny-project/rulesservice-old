@@ -3303,6 +3303,15 @@ public class QRules {
 				// we can spit out push
 				recipientCodesSet.add(link.getSourceCode());
 			}
+			if ((link.getSourceCode().startsWith("GRP_"))) {
+				String[] recipientArray3 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray3));
+			}
+			if ((link.getTargetCode().startsWith("GRP_"))) {
+				String[] recipientArray3 = VertxUtils.getSubscribers(realm(), link.getTargetCode());
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray3));
+			}
+
 
 		}
 
@@ -3325,6 +3334,14 @@ public class QRules {
 				// Assume that any change has been done by someone actually logged on! So assume
 				// we can spit out push
 				recipientCodesSet.add(oldlink.getSourceCode());
+			}
+			if ((oldlink.getSourceCode().startsWith("GRP_"))) {
+				String[] recipientArray = VertxUtils.getSubscribers(realm(), oldlink.getSourceCode());
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
+			}
+			if ((oldlink.getTargetCode().startsWith("GRP_"))) {
+				String[] recipientArray = VertxUtils.getSubscribers(realm(), oldlink.getTargetCode());
+				recipientCodesSet.addAll(Sets.newHashSet(recipientArray));
 			}
 
 		}
