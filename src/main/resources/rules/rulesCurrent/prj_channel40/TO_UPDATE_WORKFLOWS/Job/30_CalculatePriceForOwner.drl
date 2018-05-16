@@ -28,11 +28,10 @@ rules.setState("CALCULATE_OWNER_PRICE");
        Answer newAnswer = $m.getAnswer();
         BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
 
-if(source.is("PRI_IS_BUYER")) {
+if(source.is("PRI_IS_BUYER") || source.getValue("PRI_IS_BUYER", "FALSE").equals("TRUE")) {
 
     String tokenString = rules.getToken();
 
-    rules.println("Am i owner ?" + source.is("PRI_IS_BUYER"));
     /* BaseEntity Code */
     String begCode = newAnswer.getTargetCode();
 

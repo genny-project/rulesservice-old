@@ -18,7 +18,7 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 import java.util.Map;
-import java.util.HashMap; 
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -41,57 +41,57 @@ rule "Submit LOAD"
    agenda-group "BucketView"
    no-loop true
     when
-     /*  rules: QRules( isState("NEW_LOAD_SUBMISSION_COMPLETED") )     */  
-       rules: QRules( ) 
+     /*  rules: QRules( isState("NEW_LOAD_SUBMISSION_COMPLETED") )     */
+       rules: QRules( )
     then
         RulesUtils.header(drools.getRule().getName());
         BaseEntity user = rules.getUser();
-       	
+
      	 List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD","LNK_CORE", 0, 20, false) ;
      	 rules.publishCmd(buckets,"GRP_DASHBOARD","LNK_CORE");
   		RulesUtils.println(buckets);
-     	 
-     	for (BaseEntity bucket : buckets ) 
+
+     	for (BaseEntity bucket : buckets )
      	{
      		RulesUtils.println(bucket);
      		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if (user.is("PRI_IS_SELLER") && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+     		if ((user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) && bucket.getCode().equals("GRP_NEW_ITEMS")) {
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
      		} else {
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(driverbegs);
-    		
+
      		}
- 
+
     			if (user.is("PRI_OWNER")) {
      			List<BaseEntity> ownerbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false, user.getCode()) ;
      		    begs.addAll(ownerbegs);
      		}
- 
+
      		 rules.publishCmd(begs,bucket.getCode(),"LNK_CORE");
-     		 
-     		 
+
+
      		for (BaseEntity beg : begs) {
      			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(),"LNK_BEG", 0, 20, false) ;
      			rules.publishCmd(begKids,beg.getCode(),"LNK_BEG");
-     			for (BaseEntity begKid : begKids) {   	 			
+     			for (BaseEntity begKid : begKids) {
      	 			RulesUtils.println(bucket.getCode()+":"+begKid.getCode());
      	 		}
      		}
      	}
-       
+
        String layout = RulesUtils.getLayout("card.json");
      	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
         bucketViewJson.put("root", "GRP_DASHBOARD");
         bucketViewJson.put("token",rules.getToken());
-  		
+
         rules.publish("cmds",bucketViewJson);
-           
+
         RulesUtils.println("  Submit LOAD :: BUCKET  LAYOUT (CMD VIEW) SENT TO FRONTEND");
 	/*	rules.clearState("NEW_LOAD_SUBMISSION_COMPLETED");
         update(rules);   */
-	    RulesUtils.footer(drools.getRule().getName()); 
+	    RulesUtils.footer(drools.getRule().getName());
 end

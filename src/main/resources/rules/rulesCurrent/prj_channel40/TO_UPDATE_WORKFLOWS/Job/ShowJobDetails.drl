@@ -45,7 +45,7 @@ rule "Show more info about job"
 
 				     rules.sendSublayout("LOAD_DETAILS", "loadLayout.json", baseEntityCode);
 
-             if(rules.getUser().is("PRI_IS_SELLER")) {
+             if(rules.getUser().is("PRI_IS_SELLER") || rules.getUser().getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
 
                /* we refresh the assembly tokens so driver can submit a quote */
                drools.setFocus("ispayments");  /* NOW Set up Payments */

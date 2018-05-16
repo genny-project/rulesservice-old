@@ -28,7 +28,7 @@ rule "Calculate Price for Driver"
         Answer newAnswer = $m.getAnswer();
         BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
 
-        if (source.is("PRI_IS_SELLER") == true) {
+        if (source.is("PRI_IS_SELLER") == true || source.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
         		String tokenString = rules.getToken();
 
             /* BaseEntity Code */
