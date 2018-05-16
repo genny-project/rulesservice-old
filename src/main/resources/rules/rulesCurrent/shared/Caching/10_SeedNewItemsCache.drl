@@ -13,7 +13,7 @@ import life.genny.utils.VertxUtils;
 
 rule "Seed New Items Cache"
 
-    ruleflow-group 'GenerateCaches'
+    ruleflow-group 'GenerateSearches'
  
      when
        rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
