@@ -35,10 +35,10 @@ rule "TV_SELECT Event - Generate Report"
 		rules.publishSearhBE(grpCode);
 		BaseEntity user = rules.getUser();
 		String viewGrpCode = "";
-	    if ( user.is("PRI_IS_DRIVER") ) {
+	    if ( user.is("PRI_IS_SELLER") ) {
 	        viewGrpCode = "GRP_REPORTS_DRIVER";
 	    }
-	    else if ( user.is("PRI_IS_OWNER") ) {
+	    else if ( user.is("PRI_IS_BUYER") ) {
 	        viewGrpCode = "GRP_REPORTS_OWNER";
 	    }
 	    	if ( rules.hasRole("admin") ) {
