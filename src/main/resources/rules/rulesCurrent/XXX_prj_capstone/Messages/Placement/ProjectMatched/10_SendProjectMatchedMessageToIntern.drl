@@ -11,7 +11,7 @@ rule "Send Project Matched Message to Student"
         rules.println("SEND MESSAGES TO INTERNS");
          
         BaseEntity beg = rules.getAsBaseEntity("begBe");
-        BaseEntity hostCompany = rules.getAsBaseEntity("hostCompanyBe");
+        BaseEntity hostCompany = rules.getAsBaseEntity("companyBe");
         BaseEntity internship = rules.getAsBaseEntity("internshipBe");
 
         
@@ -25,7 +25,7 @@ rule "Send Project Matched Message to Student"
             rules.println("internship is null");
             return;
         }else{
-         
+            
             HashMap<String, String> contextMap = new HashMap<String, String>(); 
             contextMap.put("BEG", beg.getCode());
             contextMap.put("HOSTCOMPANY", hostCompany.getCode());
@@ -33,10 +33,21 @@ rule "Send Project Matched Message to Student"
 
             
             
-            String[] recipients = {rules.getUser().getCode()};
+            String[] recipients = null;
+
+            List<BaseEntity> students = rules.getChildrens(beg.getCode(), "LNK_BEG", "INTERN");
+            if(students != null) {
+                rules.println("No. of students   ::   " + students.size() );
+                recipients = new String[students.size()];
+                int i = 0;
+                for(BaseEntity student : students) {
+                    recipients[i] = student.getCode();
+                    i++;
+                }
+            }
              
             // rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_CPM_CAPSTONE_PRJ_APPROVAL_INTERN", "EMAIL");
-            // rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_CPM_CAPSTONE_PRJ_APPROVAL_INTERN", "SMS");
+            rules.sendMessage(null, recipients, contextMap, "MSG_INTERNMATCH_CPM_CAPSTONE_PRJ_APPROVAL_INTERN", "SMS");
             
             rules.setState("SENT_PROJECT_MATCHED_MESSAGE_TO_INTERN");
          }

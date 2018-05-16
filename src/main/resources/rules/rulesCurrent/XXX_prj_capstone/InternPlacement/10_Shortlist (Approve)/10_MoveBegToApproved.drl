@@ -18,6 +18,7 @@ rule "Shortlist Internship - Step 1"
         if(beg != null){
         	rules.moveBaseEntity(beg.getCode(), "GRP_AVAILABLE", "GRP_APPROVED", "LNK_CORE");
         	rules.setState("MOVED_BEG_TO_APPROVED");
+					rules.setState("SEND_PROJECT_MATCHED_MESSAGE_TO_INTERN");
 		}else{
 			rules.println("beg is null");
 		}
