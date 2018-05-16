@@ -290,7 +290,14 @@ public class PaymentUtils {
 			Object dobString = be.getValue("PRI_DOB", null);
 			Object email = be.getValue("PRI_EMAIL", null);
 			Object addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
-			Object city = be.getValue("PRI_ADDRESS_CITY", null);
+			
+			Object city = null;
+			city = be.getValue("PRI_ADDRESS_CITY", null);
+			if(city == null) {
+				city = be.getValue("PRI_ADDRESS_SUBURB", null);
+			}
+			
+			
 			Object state = be.getValue("PRI_ADDRESS_STATE", null);
 			Object country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			Object postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
