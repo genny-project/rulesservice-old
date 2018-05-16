@@ -41,7 +41,9 @@ rule "Create Conversation"
   		    		String[] recipientCodeArray = new String[2];
 	  			recipientCodeArray[0] = userCode;
 	  			recipientCodeArray[1] = receiverCode;
-
+                 
+                rules.sendAllChats(0,1000); //Need to send all old chat, because the old chats are not being sent at AUTH_INIT. 
+                                            //Won't be required if we can check if Chats have been already sent 
 
   		    		rules.println("If chat already exists between users :: "+rules.checkIfChatAlreadyExists( userCode, receiverCode ));
   		    		//Check if conversation already exists
