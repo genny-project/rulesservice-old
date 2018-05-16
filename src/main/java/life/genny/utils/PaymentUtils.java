@@ -314,7 +314,6 @@ public class PaymentUtils {
 		}
 		
 		return userContactInfo;
-		
 
 	}
 	
@@ -348,6 +347,7 @@ public class PaymentUtils {
 		
 	}
 	
+
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
