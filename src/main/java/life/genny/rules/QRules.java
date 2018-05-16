@@ -3403,7 +3403,7 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (((user.is("PRI_IS_SELLER")))) {
+		if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -3429,7 +3429,7 @@ public class QRules {
 				}
 			}
 			// Checking for driver role
-			if ((user.is("PRI_IS_SELLER"))) {
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 						reportsHeaderToRemove.add(be);
@@ -3468,7 +3468,7 @@ public class QRules {
 		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		 */
-		if (!user.is("PRI_IS_SELLER")) {
+		if (!user.is("PRI_IS_SELLER") && user.getValue("PRI_IS_SELLER", "FALSE").equals("FALSE")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
@@ -5308,7 +5308,7 @@ public class QRules {
 		List<BaseEntity> results = new ArrayList<BaseEntity>();
 		String dataMsgParentCode = reportGroupCode;
 		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-			if (user.is("PRI_IS_SELLER")) {
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
 				dataMsgParentCode = "GRP_REPORTS_DRIVER";
 				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
 				for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -5936,7 +5936,7 @@ public class QRules {
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
-					if (stakeholder.is("PRI_IS_SELLER")) {
+					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
 						if (linkedBE.getCode().startsWith("OFR_")) {
 							// Get the only link and skip any outage if the offer does not belong to the
 							// driver
