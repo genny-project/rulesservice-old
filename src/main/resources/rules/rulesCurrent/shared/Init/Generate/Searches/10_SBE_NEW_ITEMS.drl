@@ -19,19 +19,16 @@ rule "SBE_NEW_ITEMS"
         rules: QRules( isState("GENERATE_STARTUP") && !isState("SBE_NEW_ITEMS1") )
      then
       rules.header();
-         rules.setState(drools.getRule().getName()+"1");
-            rules.println("SBE_NEW_ITEMS!!!");
-  	     SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
-   	   
-  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
 
+         rules.setState(drools.getRule().getName()+"1");
+
+         SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
+  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
   	     .setSourceCode("GRP_NEW_ITEMS")
-  	     
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
-  	     
   	     .setPageStart(0)
   	     .setPageSize(10000);
-  	       	     
+
   		 VertxUtils.writeCachedJson(drools.getRule().getName(), JsonUtils.toJson(searchBE));
    		 rules.footer();
 end
