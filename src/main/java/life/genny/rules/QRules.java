@@ -4386,6 +4386,12 @@ public class QRules {
 					if ("TRUE".equalsIgnoreCase(isSellerStr)) {
 						sellersBe.add(stakeholderBe);
 					}
+
+          String isSellerString = stakeholderBe.getValue("PRI_IS_SELLER", null);
+					if (isSellerString != null) {
+						sellersBe.add(stakeholderBe);
+					}
+
 				} catch (Exception e) {
 
 				}
@@ -4495,7 +4501,7 @@ public class QRules {
 	public List<BaseEntity> getAllBegs(List<BaseEntity> beList, String linkCode, String pageStart, String pageSize,
 			Boolean cache) {
 		List<BaseEntity> begList = new ArrayList<BaseEntity>();
-		println(beList);
+		// println(beList);
 		for (BaseEntity be : beList) {
 			List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(be.getCode(), "LNK_CORE", 0, 500, false);
 			println("bucket name " + be.getCode() + "items" + begs.size());
@@ -5811,7 +5817,8 @@ public class QRules {
 	}
 
 	public void startupEvent(String caller) {
-		println("Startup Event called from " + caller);
+
+  	println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
 			this.generateTree();
@@ -5820,13 +5827,16 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-		println("GENERATING NEW ITEMS  Cache realm is " + realm());
-		Integer itemCount = 0;
+
+  	println("GENERATING NEW ITEMS  Cache realm is " + realm());
+
+  	Integer itemCount = 0;
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage results = null;
 
 		/* Searches */
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
+    // BaseEntity searchNewItems = VertxUtils.readFromDDT("SBE_NEW_ITEMS", getToken());
 
 		if (searchNewItems != null) {
 
@@ -5843,7 +5853,8 @@ public class QRules {
 					QBulkMessage bulk = new QBulkMessage(bulkmsg);
 
 					for (BaseEntity beg : results.getItems()) {
-						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
+
+          List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
 								false);
 
 						if (begKids != null) {
@@ -5858,6 +5869,8 @@ public class QRules {
 				QBulkMessage bulk = new QBulkMessage(bulkmsg);
 				VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
 				println("Loading New cache laoded " + itemCount + " BEs");
+
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -5962,21 +5975,25 @@ public class QRules {
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
-		if (getUser().is("PRI_IS_SELLER")) {
-			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+    showLoading("Loading jobs...");
+
+		if (getUser().is("PRI_IS_SELLER") || getUser().getValue("PRI_IS_SELLER", "FALSE").equals("TRUE")) {
+
+      QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
-				showLoading("Loading Cached new jobs...");
-				if (newItems.getMessages() != null) {
-					allItems.add(newItems.getMessages());
-					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+
+        if (newItems.getMessages() != null) {
+
+        	allItems.add(newItems.getMessages());
+
+          for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 						if (msg instanceof QDataBaseEntityMessage) {
 							msg.setToken(getToken());
 							publishCmd(JsonUtils.toJson(msg));
 						}
 					}
 				}
-				// sendBucketLayouts(); // display to user
 			}
 		}
 
@@ -5987,25 +6004,31 @@ public class QRules {
 
 		if ((items != null) && (items.getMessages().length > 0)) {
 
-			showLoading("Loading jobs...");
-
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
-				allItems.add(items.getMessages());
+				// allItems.add(items.getMessages());
 				for (QDataBaseEntityMessage msg : items.getMessages()) {
 
 					if (msg instanceof QDataBaseEntityMessage) {
 						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
-							System.out.println("GRP_NEW_ITEMS DEBUG");
+							// System.out.println(JsonUtils.toJson(msg));
 						}
+
 						msg.setToken(getToken());
 						publishCmd(JsonUtils.toJson(msg));
+            allItems.add(msg);
 					}
 				}
 			}
 		}
 
-		publishCmd(JsonUtils.toJson(allItems));
+
+    String msg = JsonUtils.toJson(allItems);
+
+    if(msg != null) {
+      publishCmd(msg);
+    }
+
 		this.setState("APPLICATION_READY");
 		this.setState("TRIGGER_APPLICATION");
 	}
