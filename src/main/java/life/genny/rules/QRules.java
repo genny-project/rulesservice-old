@@ -3437,7 +3437,7 @@ public class QRules {
 				}
 			}
 			// Checking for owner role
-			else if ((user.is("PRI_OWNER"))) {
+			else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER", "FALSE").equals("TRUE")) {
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
 						reportsHeaderToRemove.add(be);
@@ -4380,8 +4380,8 @@ public class QRules {
 					Boolean isSeller = stakeholderBe.getValue("PRI_IS_SELLER", false);
 					if (isSeller) {
 						sellersBe.add(stakeholderBe);
-					} 
-					
+					}
+
 					String isSellerStr = stakeholderBe.getValue("PRI_IS_SELLER",null);
 					if ("TRUE".equalsIgnoreCase(isSellerStr)) {
 						sellersBe.add(stakeholderBe);
