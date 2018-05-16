@@ -23,13 +23,16 @@ rule "Create Payments Assembly Company"
 
     	/*  Gets assembly userId */
     	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
+    	
+    	/* Getting company baseentity of the user */
+    	BaseEntity companyBe = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
 
      	RulesUtils.println("Company not found for user..So creating a Company now..");
 
-     	if(assemblyId != null) {
+     	if(assemblyId != null && companyBe != null) {
 
 			/* Create Assembly Company for user */
-			String companyId = PaymentUtils.createCompany(assemblyAuthToken, rules.getToken());
+			String companyId = PaymentUtils.createCompany(companyBe, assemblyId, assemblyAuthToken);
 
 			/* Save companyId as an attribute for the user */
 			RulesUtils.println("create payment company response -"+companyId);
