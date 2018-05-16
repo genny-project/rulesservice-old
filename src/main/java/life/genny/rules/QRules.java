@@ -5105,8 +5105,16 @@ public class QRules {
 				getToken());
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		// System.out.println("The result :: " + JsonUtils.toJson(msg));
-		publishData(new JsonObject(resultJson));
+    try {
+
+      JsonObject dt = new JsonObject(resultJson);
+      if(dt != null) {
+        publishData(dt);
+      }
+    }
+    catch( Exception e) {
+
+    }
 
 		// JsonArray columnHeaders = new JsonArray();
 		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
@@ -6562,7 +6570,7 @@ public class QRules {
 			this.updateBaseEntityStatus(beCode, userCode, status);
 		}
 	}
-	
+
 	public void createServiceUser()
 	{
 		BaseEntity be = null;
