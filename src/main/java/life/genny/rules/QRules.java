@@ -5573,6 +5573,7 @@ public class QRules {
 			/* invoice attachment for driver */
 			if (driverInvoiceLayoutUrl != null) {
 				driverAttachmentList = new ArrayList<>();
+
 				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE, "application/pdf", driverInvoiceLayoutUrl, true, "RECEIPT_PDF");
 
 				driverAttachmentList.add(driverInvoiceAttachment);
@@ -6590,6 +6591,7 @@ public class QRules {
 		}
 
 	}
+
 	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
 	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
 		
@@ -6781,4 +6783,5 @@ public class QRules {
 		
 
 	}
+
 }

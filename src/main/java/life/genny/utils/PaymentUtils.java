@@ -346,6 +346,7 @@ public class PaymentUtils {
 		return userLocationInfo;
 		
 	}
+	
 
 
 	/* Returns a users information based upon their user ID */
