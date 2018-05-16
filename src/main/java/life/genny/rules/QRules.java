@@ -5076,6 +5076,7 @@ public class QRules {
 
 		System.out.println("The report code is :: " + reportCode);
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
+
 		String jsonSearchBE = null;
 
 		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
@@ -5103,6 +5104,8 @@ public class QRules {
 		// String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
+
+    this.println(resultJson);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
     try {
