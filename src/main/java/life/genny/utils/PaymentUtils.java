@@ -575,10 +575,8 @@ public class PaymentUtils {
 
 	/* Creates a new company in Assembly */
 	@SuppressWarnings("unchecked")
-	public static String createCompany(String authtoken, String tokenString) {
-		/* Get the users information */
-		String userCode = QwandaUtils.getUserCode(tokenString);
-		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, tokenString);
+	public static String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
+
 		String createCompanyResponse = null;
 		String companyCode = null;
 
@@ -589,16 +587,16 @@ public class PaymentUtils {
 		JSONObject locationObj = new JSONObject();
 
 		/* Get the provided company information from the base entity */
-		Object companyName = be.getValue("PRI_NAME", null);
-		Object taxNumber = be.getValue("PRI_ABN", null);
-		Object chargeTax = be.getValue("PRI_GST", null);
-		Object companyPhoneNumber = be.getValue("PRI_LANDLINE", null);
-		Object countryName = be.getValue("PRI_ADDRESS_COUNTRY", null);
-		Object assemblyUserId = be.getValue("PRI_ASSEMBLY_USER_ID", null);
+		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
+		String taxNumber = companyBe.getValue("PRI_ABN", null);
+		Boolean chargeTax = companyBe.getValue("PRI_GST", false);
+		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
+		String countryName = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
+		
 
 		/* Check if each field is provided and add to request object if so */
 		if (companyName != null) {
-			companyObj.put("name", companyName.toString());
+			companyObj.put("name", companyName);
 		}
 
 		if (taxNumber != null) {
@@ -606,15 +604,15 @@ public class PaymentUtils {
 		}
 
 		if (chargeTax != null) {
-			companyObj.put("chargesTax", (Boolean) chargeTax);
+			companyObj.put("chargesTax",chargeTax);
 		}
 
 		if (companyPhoneNumber != null) {
-			contactObj.put("phone", companyPhoneNumber.toString());
+			contactObj.put("phone", companyPhoneNumber);
 		}
 
 		if (assemblyUserId != null) {
-			userObj.put("id", assemblyUserId.toString());
+			userObj.put("id", assemblyUserId);
 		}
 
 		/* If a country name was provided use that, otherwise use Australia */
