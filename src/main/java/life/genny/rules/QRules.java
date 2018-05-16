@@ -5100,6 +5100,7 @@ public class QRules {
 
 		System.out.println("The report code is :: " + reportCode);
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
+
 		String jsonSearchBE = null;
 
 		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
@@ -5128,9 +5129,19 @@ public class QRules {
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
+    this.println(resultJson);
+
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		// System.out.println("The result :: " + JsonUtils.toJson(msg));
-		publishData(new JsonObject(resultJson));
+    try {
+
+      JsonObject dt = new JsonObject(resultJson);
+      if(dt != null) {
+        publishData(dt);
+      }
+    }
+    catch( Exception e) {
+
+    }
 
 		// JsonArray columnHeaders = new JsonArray();
 		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
@@ -5931,7 +5942,7 @@ public class QRules {
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
-		if (!getUser().is("PRI_BUYER")) {
+		if (getUser().is("PRI_IS_SELLER")) {
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
@@ -6022,11 +6033,11 @@ public class QRules {
 	 * static public String[] getSubscribers(final String realm, final String
 	 * subscriptionCode) { final String SUB = "SUB"; // Subscribe to a code String[]
 	 * resultArray = getObject(realm, SUB, subscriptionCode, String[].class);
-	 * 
+	 *
 	 * String[] resultAdmins = getObject(realm, "SUBADMIN", "ADMINS",
 	 * String[].class); String[] result = ArrayUtils.addAll(resultArray,
 	 * resultAdmins); return result;
-	 * 
+	 *
 	 * }
 	 */
 
@@ -6581,7 +6592,8 @@ public class QRules {
 		}
 	}
 
-	public void createServiceUser() {
+	public void createServiceUser()
+	{
 		BaseEntity be = null;
 
 		String username = "service";

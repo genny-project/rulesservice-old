@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.Answer;
+import io.vertx.core.json.JsonObject;
+import java.io.IOException;
 
 rule "Job Confirm Delivery - Owner and Release Payment"
   when
@@ -76,10 +78,10 @@ rule "Job Confirm Delivery - Owner and Release Payment"
           /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
           rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-          rules.setState("CONFIRMED_DELIVERY_OWNER");
-
           /* we move the job to PAID */
           rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+          
+          rules.setState("CONFIRMED_DELIVERY_OWNER");
 
         }
         else {
@@ -118,6 +120,8 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
               /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
               rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+              
+              rules.setState("CONFIRMED_DELIVERY_OWNER");
 
             }
             else {
@@ -125,6 +129,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
               /* release-payment has failed */
 
               /* Sometimes release-payment fails coz of KYC, but gets marked as Completed in Assembly dashboard..so handling this situation with checking for callback status */
+              paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
               if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
 
                 /*    Adding Release Payment Done status  */
@@ -136,6 +141,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
                 /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
                 rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+                
                 rules.setState("CONFIRMED_DELIVERY_OWNER");
               }
               else {
@@ -158,7 +164,26 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
                 /* change status color to red - release payment failure */
                 rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
+                
+                BaseEntity project = rules.getProject();
 
+				/* send slack message when release payment fails */
+				if (project != null) {
+
+					String webhookURL = project.getLoopValue("PRI_SLACK_ERROR_URL", null);
+					if (webhookURL != null) {
+
+					String message = "Release payment has failed for , BEG :" + begCode + ", CallBack from assembly - ITEM_PAYMENT_COMPLETED has not come through yet. All the callbacks for this Job-Item is : "+paymentStatus ;
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+							rules.sendSlackNotification(webhookURL, payload);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
               }
             }
           }
