@@ -5921,7 +5921,7 @@ public class QRules {
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
-		if (!getUser().is("PRI_BUYER")) {
+		if (getUser().is("PRI_IS_SELLER")) {
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
@@ -5938,8 +5938,6 @@ public class QRules {
 				//sendBucketLayouts(); // display to user
 			}
 		}
-
-
 
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		subscriptionCodes.add("GRP_NEW_ITEMS");
