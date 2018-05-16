@@ -1,0 +1,47 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Sends BEGS and KIDS - INTERN */
+rule "Send BEGS AND KIDS - INTERN" 
+    when    
+        rules: QRules(  isState("SEND_BEGS_AND_KIDS_INTERN") && 
+                        isState("SENT_BUCKETS_INTERN") && 
+                        isState("PRI_IS_INTERN") && 
+                        !isState("LOOP_SEND_BEGS_AND_KIDS_INTERN") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_BEGS_AND_KIDS_INTERN");
+		
+		List<BaseEntity> buckets = rules.getAsBaseEntitys("internBuckets");
+		if(buckets != null){
+			for(BaseEntity bucket : buckets){
+				rules.println("BUCKET code   ::   " + bucket.getCode());
+
+				/* Get the begs where the current intern is stakeholder */
+				List<BaseEntity> begs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(), "LNK_CORE", 0, 500, false, rules.getUser().getCode());
+
+				/* subscribe to begs */
+				rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begs);
+				
+				/* Send the begs */
+				rules.printList(bucket.getCode(), begs);
+				rules.publishCmd(begs, bucket.getCode(), "LNK_CORE");
+
+				/* Send the beg Kids */
+				for(BaseEntity beg : begs){
+					List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+					if(begKids != null){
+						/* subscribe to all the begKids of beg   */
+						rules.subscribeUserToBaseEntities(rules.getUser().getCode(), begKids);
+
+						rules.printList(beg.getCode(), begKids);
+						rules.publishCmd(begKids, beg.getCode(), "LNK_BEG");
+
+						rules.setState("SENT_BEGS_AND_KIDS_INTERN");
+					}
+				}
+				
+			}
+		}
+	    rules.footer();      		      
+end

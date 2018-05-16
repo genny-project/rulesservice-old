@@ -1,0 +1,14 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Exit Internmatch Homepage Layout"
+    when
+        rules: QRules(  isState("SENT_INTERNMATCH_HOMEPAGE_LAYOUT_DATA") && 
+                        !isState("LOOP_EXIT_INTERNMATCH_HOMEPAGE_LAYOUT") ) 
+     then           
+        rules.header();  
+        rules.setState("LOOP_EXIT_INTERNMATCH_HOMEPAGE_LAYOUT"); 
+
+        rules.setState("EXIT_INTERNMATCH_HOMEPAGE_LAYOUT"); 
+        rules.footer();
+end

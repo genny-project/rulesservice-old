@@ -1,0 +1,37 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* LINK BEG + INTERN || INTERN */
+rule "Duplicate BEG - Step 4"
+	when
+		rules: QRules(  isState("LINK_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP") &&
+		                isState("LINKED_NEW_BEG_TO_APPLICATION_APPLY_INTERNSHIP") &&
+						isState("CREATED_LINK") &&
+						isState("APPLICATION") &&
+						!isState("LOOP_DUPLICATE_BEG_STEP4"))
+	 then
+	 	rules.header();
+        rules.setState("LOOP_DUPLICATE_BEG_STEP4");
+
+        BaseEntity intern = rules.getAsBaseEntity("internBe");
+        BaseEntity newBeg = rules.getAsBaseEntity("newBegBe");
+
+        if(intern == null){
+            rules.println("intern is null");
+        }else if(newBeg == null){
+            rules.println("newBeg is null");
+        }else{
+
+            /* link NEW BEG to APP || INTERN */
+            rules.set("linkSourceCode",  newBeg.getCode());
+            rules.set("linkTargetCode", intern.getCode());
+            rules.set("linkCode", "LNK_BEG");
+            rules.set("linkValue", "INTERN");
+            rules.set("linkWeight", 1.0);
+            rules.setState("CREATE_LINK");
+
+            rules.setState("LINKED_NEW_BEG_TO_INTERN_APPLY_INTERNSHIP");
+
+            rules.setState("SUBSCRIBE_CREATOR_TO_NEW_BEG_APPLY_INTERNSHIP");
+        }
+end
