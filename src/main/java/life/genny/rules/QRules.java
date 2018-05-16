@@ -162,42 +162,43 @@ public class QRules {
 
 	public BaseEntity getBaseEntityByCode2(final String code) {
 
-		CompletableFuture<BaseEntity> fut = new CompletableFuture<BaseEntity>();
-		RulesUtils.baseEntityMap.get(code, resGet -> {
-			if (resGet.succeeded()) {
-				// Successfully got the value
-				fut.complete(resGet.result());
-			} else {
-
-				// Something went wrong!
-				fut.complete(RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code));
-
-				try {
-					RulesUtils.baseEntityMap.put(code, fut.get(), resPut -> {
-						if (resPut.succeeded()) {
-							// Successfully put the value
-							println("BaseEntity " + code + " stored in cache");
-						} else {
-							// Something went wrong!
-							println("ERROR: BaseEntity " + code + " NOT stored in cache");
-						}
-					});
-				} catch (InterruptedException | ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
-
-		});
-
-		try {
-			return fut.get();
-		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+			return getBaseEntityByCode(code);
+//		CompletableFuture<BaseEntity> fut = new CompletableFuture<BaseEntity>();
+//		RulesUtils.baseEntityMap.get(code, resGet -> {
+//			if (resGet.succeeded()) {
+//				// Successfully got the value
+//				fut.complete(resGet.result());
+//			} else {
+//
+//				// Something went wrong!
+//				fut.complete(RulesUtils.getBaseEntityByCode(qwandaServiceUrl, getDecodedTokenMap(), getToken(), code));
+//
+//				try {
+//					RulesUtils.baseEntityMap.put(code, fut.get(), resPut -> {
+//						if (resPut.succeeded()) {
+//							// Successfully put the value
+//							println("BaseEntity " + code + " stored in cache");
+//						} else {
+//							// Something went wrong!
+//							println("ERROR: BaseEntity " + code + " NOT stored in cache");
+//						}
+//					});
+//				} catch (InterruptedException | ExecutionException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//
+//			}
+//
+//		});
+//
+//		try {
+//			return fut.get();
+//		} catch (InterruptedException | ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return null;
 
 	}
 
@@ -418,7 +419,7 @@ public class QRules {
 		String username = (String) getDecodedTokenMap().get("preferred_username");
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		try {
-			be = VertxUtils.readFromDDT(code, getToken());
+			be = getBaseEntityByCode(code);
 		} catch (Exception e) {
 
 		}
@@ -502,25 +503,7 @@ public class QRules {
 	}
 
 	public BaseEntity getBaseEntityByCode(final String code) {
-		BaseEntity be = null;
-
-		/* use vertexUtils */
-		be = VertxUtils.readFromDDT(code, getToken());
-
-		if (be == null) {
-			/* remove this try catch block from here */
-			try {
-				be = QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-			}
-		}
-		if (be == null) {
-			println("ERROR - be (" + code + ") fetched is NULL ");
-		} else {
-			addAttributes(be);
-		}
-		return be;
+		return getBaseEntityByCode(code,true);
 	}
 
 	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
@@ -536,24 +519,7 @@ public class QRules {
 	}
 
 	public BaseEntity getBaseEntityByCodeWithAttributes(final String code) {
-		BaseEntity be = null;
-
-		be = VertxUtils.readFromDDT(code, true, getToken());
-		if (be == null) {
-			println("ERROR - be (" + code + ") fetched is NULL ");
-		} else {
-			if (be.getBaseEntityAttributes().isEmpty()) {
-				try {
-					be = QwandaUtils.getBaseEntityByCodeWithAttributes(code, getToken());
-					VertxUtils.writeCachedJson(code, JsonUtils.toJson(be));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			addAttributes(be);
-		}
-		return be;
+		return getBaseEntityByCode(code,true);
 	}
 
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
@@ -575,7 +541,7 @@ public class QRules {
 	}
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode) {
-		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, 0, 10, false);
+		return getBaseEntitysByParentAndLinkCode(parentCode, linkCode, 0, 100, false);
 	}
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
@@ -611,7 +577,7 @@ public class QRules {
 				VertxUtils.putObject(this.realm(), "LIST", key, beCodes);
 			} else {
 				for (String beCode : beCodes) {
-					BaseEntity be = VertxUtils.readFromDDT(beCode, true, getToken());
+					BaseEntity be = getBaseEntityByCode(beCode);
 					bes.add(be);
 				}
 			}
@@ -1635,8 +1601,7 @@ public class QRules {
 				ArrayList<BaseEntity> parents = new ArrayList<BaseEntity>();
 				for (Link lnk : arrayList) {
 
-					BaseEntity linkedBe = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
-							getToken(), lnk.getSourceCode(), false);
+					BaseEntity linkedBe = getBaseEntityByCode(lnk.getSourceCode());
 					if (linkedBe != null) {
 						parents.add(linkedBe);
 					}
@@ -1680,8 +1645,7 @@ public class QRules {
 				List<BaseEntity> bes = new ArrayList<BaseEntity>();
 				for (Link linkToBe : arrayList) {
 
-					BaseEntity be = RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
-							getToken(), linkToBe.getTargetCode(), false);
+					BaseEntity be = getBaseEntityByCode( linkToBe.getTargetCode());
 					if (be != null) {
 						bes.add(be);
 					}
@@ -1710,8 +1674,7 @@ public class QRules {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				for (Link link : arrayList) {
 					// RulesUtils.println("The Child BaseEnity code is :: " + link.getTargetCode());
-					childList.add(RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
-							getToken(), link.getTargetCode(), false));
+					childList.add(getBaseEntityByCode( link.getTargetCode()));
 				}
 			}
 		} catch (Exception e) {
@@ -1737,8 +1700,7 @@ public class QRules {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				for (Link link : arrayList) {
 					// RulesUtils.println("The Child BaseEnity code is :: " + link.getTargetCode());
-					childList.add(RulesUtils.getBaseEntityByCode(getQwandaServiceUrl(), getDecodedTokenMap(),
-							getToken(), link.getTargetCode(), false));
+					childList.add(getBaseEntityByCode( link.getTargetCode()));
 				}
 			}
 		} catch (Exception e) {
@@ -2251,7 +2213,7 @@ public class QRules {
 		BaseEntity cachedBe = null;
 
 		if (firstanswer != null) {
-			cachedBe = this.getBaseEntityByCodeWithAttributes(firstanswer.getTargetCode());
+			cachedBe = this.getBaseEntityByCode(firstanswer.getTargetCode());
 		} else {
 			return null;
 		}
@@ -2863,7 +2825,7 @@ public class QRules {
 		String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
 		String layoutCode = ("LAY_" + realm() + "_" + precode).toUpperCase();
 
-		beLayout = VertxUtils.readFromDDT(layoutCode, getToken());
+		beLayout = getBaseEntityByCode(layoutCode);
 
 		/* if the base entity does not exist, we create it */
 		if (beLayout == null) {
@@ -2928,7 +2890,7 @@ public class QRules {
 
 		}
 
-		return this.getBaseEntityByCodeWithAttributes(beLayout.getCode());
+		return this.getBaseEntityByCode(beLayout.getCode());
 	}
 
 	/*
@@ -5891,7 +5853,7 @@ public class QRules {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
 
-				BaseEntity searchStakeholderBucketItems = VertxUtils.readFromDDT("SBE_STAKEHOLDER_ITEMS", getToken());
+				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
 				if (searchStakeholderBucketItems == null) {
 
 				}
@@ -6437,7 +6399,7 @@ public class QRules {
 		}
 
 		level--;
-		BaseEntity be = this.getBaseEntityByCode2(beCode);
+		BaseEntity be = this.getBaseEntityByCode(beCode);
 		if (be != null) {
 
 			List<BaseEntity> beList = new ArrayList<BaseEntity>();
