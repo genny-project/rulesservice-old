@@ -66,8 +66,8 @@ package life.genny.rules;
 
 						Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
 
-		           	 	rules.saveAnswer(paymentStatusAnswer);
-		            		isUpdateAction = true;
+		        rules.saveAnswer(paymentStatusAnswer);
+		        isUpdateAction = true;
 
 
 					} else {
@@ -97,6 +97,9 @@ package life.genny.rules;
 
 					/* hitting the method to change status-colour to green (success) - escrow status */
 			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+
+            /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
+            rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();

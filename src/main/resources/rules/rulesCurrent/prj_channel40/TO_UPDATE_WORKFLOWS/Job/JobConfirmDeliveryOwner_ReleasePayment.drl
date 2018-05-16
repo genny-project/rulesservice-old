@@ -14,155 +14,156 @@ import life.genny.qwanda.Link;
 import life.genny.qwanda.Answer;
 
 rule "Job Confirm Delivery - Owner and Release Payment"
-when
-        $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_DELIVERY_OWNER")
-  		rules: QRules( !isState("CONFIRMED_DELIVERY_OWNER") && !isState("PAYMENT_RELEASED") )
-then
-       rules.header();
+  when
+      $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_DELIVERY_OWNER")
+      rules: QRules( !isState("CONFIRMED_DELIVERY_OWNER") && !isState("PAYMENT_RELEASED") )
+  then
+      rules.header();
 
-       drools.setFocus("ispayments");  /* NOW Set up Payments */
+      rules.setState("PAYMENT_RELEASED");
+      rules.println("Release Payment process started");
 
+      String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+      String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
 
-        rules.println("Release Payment process started");
+      BaseEntity user = rules.getUser();
+      String ownerCode = user.getCode();
+      String driverCode = null;
+      BaseEntity begBe = null;
 
-		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
-       	BaseEntity user = rules.getUser();
-       	rules.println("The User BEG is ::"+user);
+      /* list of users for status-change */
+      List<String> userCodesForStatusColourChange = new ArrayList<>();
 
-       	String ownerCode = user.getCode();
-       	String driverCode = null;
-       	BaseEntity begBe = null;
+      String dataFromFE = $m.getData().getValue();
+      JsonObject dataJson = new JsonObject(dataFromFE);
 
-       	/* list of users for status-change */
-       	List<String> userCodesForStatusColourChange = new ArrayList<>();
+      String begCode = dataJson.getString("itemCode");
+      RulesUtils.println("Beg code in release payment ::"+begCode);
 
-       	String dataFromFE = $m.getData().getValue();
-       	JsonObject dataJson = new JsonObject(dataFromFE);
+      if(begCode != null) {
 
-		String begCode = dataJson.getString("itemCode");
-		RulesUtils.println("Beg code in release payment ::"+begCode);
+        begBe = rules.getBaseEntityByCode(begCode);
 
-		if(begCode != null) {
+        /* getting driver code from links */
+        List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
 
-			 begBe = rules.getBaseEntityByCode(begCode);
+        if(linkList != null) {
 
-			/* getting driver code from links */
-		     List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+          for(Link link : linkList) {
+            if(link.getLinkValue().equals("DRIVER")) {
+              driverCode = link.getTargetCode();
+            }
+          }
+        }
 
-		     	for(Link link : linkList) {
-		     		if(link.getLinkValue().equals("DRIVER")) {
-		     			driverCode = link.getTargetCode();
-		     		}
-		     	}
+        rules.sendRating(dataFromFE);
 
-		     /* adding users for status change */
-			userCodesForStatusColourChange.add(ownerCode);
-			userCodesForStatusColourChange.add(driverCode);
-		}
+        /* adding users for status change */
+        userCodesForStatusColourChange.add(ownerCode);
+        if(driverCode != null) {
+          userCodesForStatusColourChange.add(driverCode);
+        }
 
-      	String isRealeasePaymentDone = rules.getBaseEntityValueAsString(begCode, "PRI_IS_RELEASE_PAYMENT_DONE");
-      	String paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
+        Boolean isRealeasePaymentDone = begBe.getLoopValue("PRI_IS_RELEASE_PAYMENT_DONE", false);
+        String paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
 
-	   /* if payment is already released and is successful, set success states */
-       if( isRealeasePaymentDone != null && isRealeasePaymentDone.equalsIgnoreCase("true") ){
+        /* if payment is already released and is successful, set success states */
 
-		   rules.sendRating(dataFromFE);
+        rules.println(isRealeasePaymentDone);
 
-		   /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
-		   rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+        if(isRealeasePaymentDone) {
 
-		   rules.setState("PAYMENT_RELEASED");
-           rules.setState("CONFIRMED_DELIVERY_OWNER");
+          /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
+          rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-       } else{
-		/* when payment release process is flowing first time for an item */
+          rules.setState("CONFIRMED_DELIVERY_OWNER");
 
-  			/* hitting release payment API */
-		     PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
+          /* we move the job to PAID */
+          rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
-		     /* getting release-payment status */
-		     Boolean isPaymentReleaseSuccess = releasePaymentResponse.getIsSuccess();
+        }
+        else {
 
-		     if(ownerCode != null && driverCode != null) {
+          /* when payment release process is flowing first time for an item */
 
-		     	/* when release-payment is success */
-		    		 if(isPaymentReleaseSuccess) {
+          if(ownerCode != null && driverCode != null) {
 
-		    		 	rules.sendRating(dataFromFE);
+            /* hitting release payment API */
+            PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
 
-		    	 		Map<String, String> releasePaymentResponseMap = releasePaymentResponse.getResponseMap();
-		    	 		List<Answer> answers = new ArrayList<Answer>();
+            /* getting release-payment status */
+            Boolean isPaymentReleaseSuccess = releasePaymentResponse.getIsSuccess();
 
-		    	 		 /*    Adding Release Payment Done status  */
-       	           	Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
-       	           	answers.add(paymentDoneAns);
+            /* when release-payment is success */
+            if(isPaymentReleaseSuccess) {
 
-       	          	 /* save single-disbursement-id as an anwer for the beg once the payment is release */
-       	           	if(releasePaymentResponseMap != null) {
-       	           		Answer releasePaymentDisbursementAns = new Answer(rules.getUser().getCode(), begCode, "PRI_PAYMENTS_DISBURSEMENT_ID", releasePaymentResponseMap.get("disbursementId").toString() );
-       	           		answers.add(releasePaymentDisbursementAns);
-       	           	}
+              Map<String, String> releasePaymentResponseMap = releasePaymentResponse.getResponseMap();
+              List<Answer> answers = new ArrayList<Answer>();
 
-       	           	rules.saveAnswers(answers);
+              /*    Adding Release Payment Done status  */
+              Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE");
+              answers.add(paymentDoneAns);
 
+              /* save single-disbursement-id as an anwer for the beg once the payment is release */
+              String disbursementId = releasePaymentResponseMap.get("disbursementId");
+              if(releasePaymentResponseMap != null && disbursementId != null) {
+                Answer releasePaymentDisbursementAns = new Answer(rules.getUser().getCode(), begCode, "PRI_PAYMENTS_DISBURSEMENT_ID", disbursementId );
+                answers.add(releasePaymentDisbursementAns);
+              }
 
-		     		/* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
-          			rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+              rules.saveAnswers(answers);
 
-          			/* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+              /* we move the job to GRP_PAID */
+              rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
+              /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+              rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-		    }
-		    /* release-payment has failed - send toast */
-		    else {
+            }
+            else {
 
-					/* Sometimes release-payment fails coz of KYC, but gets marked as Completed in Assembly dashboard..so handling this situation with checking for callback status */
-		    			if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
+              /* release-payment has failed */
 
-           				rules.sendRating(dataFromFE);
+              /* Sometimes release-payment fails coz of KYC, but gets marked as Completed in Assembly dashboard..so handling this situation with checking for callback status */
+              if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
 
-           				/*    Adding Release Payment Done status  */
-       	           		Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
-       	           		rules.saveAnswer(paymentDoneAns);
+                /*    Adding Release Payment Done status  */
+                Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
+                rules.saveAnswer(paymentDoneAns);
 
-		   				/* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+                /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
-		   				/* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
-          				rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+                /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
+                rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+                rules.setState("CONFIRMED_DELIVERY_OWNER");
+              }
+              else {
 
-          				rules.setState("PAYMENT_RELEASED");
-           				rules.setState("CONFIRMED_DELIVERY_OWNER");
+                RulesUtils.println("Release payment failed::"+begCode);
 
-		    			} else {
-		    				RulesUtils.println("Release payment failed::"+begCode);
+                /*  Adding Release Payment Done status  */
+                Answer paymentNotDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "FALSE" );
+                rules.saveAnswer(paymentNotDoneAns);
 
-		    	    			/*  Adding Release Payment Done status  */
-       	           		Answer paymentNotDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "FALSE" );
-       	           		rules.saveAnswer(paymentNotDoneAns);
+                HashMap<String, String> contextMap1 = new HashMap<String, String>();
+                contextMap1.put("JOB", begCode);
+                contextMap1.put("OWNER", ownerCode);
+                contextMap1.put("DRIVER", driverCode);
 
-		    				HashMap<String, String> contextMap1 = new HashMap<String, String>();
-						contextMap1.put("JOB", begCode);
-			 			contextMap1.put("OWNER", ownerCode);
-			 			contextMap1.put("DRIVER", driverCode);
+                String[] messageToOwnerRecipients1 = new String[1];
+                messageToOwnerRecipients1[0] = ownerCode;
 
-			 			String[] messageToOwnerRecipients1 = new String[1];
-		     			messageToOwnerRecipients1[0] = ownerCode;
+                rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
 
-			 			rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
+                /* change status color to red - release payment failure */
+                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
 
-			 			/* redirecting user to bucket */
-          				rules.sendSublayout("bucket-dashboard", "dashboard_channel40.json");
+              }
+            }
+          }
+        }
+      }
 
-          				/* change status color to red - release payment failure */
-			 			rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
-
-		    			}
-		    	 	}
-		      }
-		   }
-
-       rules.footer();
+      rules.footer();
 end
