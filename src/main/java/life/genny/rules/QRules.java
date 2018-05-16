@@ -4381,6 +4381,12 @@ public class QRules {
 					if (isSeller) {
 						sellersBe.add(stakeholderBe);
 					}
+
+          String isSellerString = stakeholderBe.getValue("PRI_IS_SELLER", null);
+					if (isSellerString != null) {
+						sellersBe.add(stakeholderBe);
+					}
+
 				} catch (Exception e) {
 
 				}
@@ -5815,8 +5821,10 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-		println("GENERATING NEW ITEMS  Cache realm is " + realm());
-		Integer itemCount = 0;
+
+  	println("GENERATING NEW ITEMS  Cache realm is " + realm());
+
+  	Integer itemCount = 0;
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage results = null;
 
@@ -5958,20 +5966,23 @@ public class QRules {
 		QBulkMessage allItems = new QBulkMessage(init);
 
 		if (getUser().is("PRI_IS_SELLER")) {
-			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+
+      QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
-				showLoading("Loading Cached new jobs...");
-				if (newItems.getMessages() != null) {
+
+        showLoading("Loading jobs...");
+
+        if (newItems.getMessages() != null) {
 					allItems.add(newItems.getMessages());
-					for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+
+          for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 						if (msg instanceof QDataBaseEntityMessage) {
 							msg.setToken(getToken());
 							publishCmd(JsonUtils.toJson(msg));
 						}
 					}
 				}
-				// sendBucketLayouts(); // display to user
 			}
 		}
 
@@ -5981,8 +5992,6 @@ public class QRules {
 		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
 
 		if ((items != null) && (items.getMessages().length > 0)) {
-
-			showLoading("Loading jobs...");
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
@@ -6000,7 +6009,15 @@ public class QRules {
 			}
 		}
 
-		publishCmd(JsonUtils.toJson(allItems));
+    String msg = JsonUtils.toJson(allItems);
+    if(msg != null) {
+      publishCmd(msg);
+      println( msg );
+    }
+    else {
+      println("NO MESSAGES");
+    }
+
 		this.setState("APPLICATION_READY");
 		this.setState("TRIGGER_APPLICATION");
 	}
