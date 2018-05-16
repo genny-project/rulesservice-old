@@ -49,8 +49,6 @@ rule "Submit Offer Driver"
         rules.header();
         rules.setState("DRIVER_OFFER_MADE");
 
-        drools.setFocus("ispayments");  /* NOW Set up Payments */
-
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
             String tokenString = rules.getToken();
@@ -246,5 +244,7 @@ rule "Submit Offer Driver"
 
         /* Send BUCKETVIEW Cmd */
         rules.setState("TRIGGER_HOMEPAGE");
+        drools.setFocus("ispayments");  /* NOW Set up Payments */
+
         rules.footer();
 end
