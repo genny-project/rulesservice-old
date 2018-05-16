@@ -44,7 +44,7 @@ import java.time.format.DateTimeFormatter;
 
 rule "Submit Offer Owner"
     when
-       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_OWNER_GRP" ) 
+       $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_OFFER_OWNER_GRP" )
        rules: QRules(!isState("OWNER_OFFER_MADE"))
     then
         rules.header();
@@ -52,8 +52,8 @@ rule "Submit Offer Owner"
 
         /* Prepare Token & qwandaServiceUrl */
             String qwandaServiceUrl = rules.getQwandaServiceUrl();
-            String tokenString = rules.getToken();        
-        
+            String tokenString = rules.getToken();
+
         /* Get offerCode, username, userCode, userFullName */
             String dataString = $m.getData().getValue();
             JsonObject dataJson = new JsonObject(dataString);
@@ -69,15 +69,15 @@ rule "Submit Offer Owner"
 
             String userFullName = rules.getFullName(rules.getUser());
 		    rules.println("user fullName   ::   " + userFullName);
-        
+
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";  
+            String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
             String linkCreator = "CREATOR";
 
         /* GET OFFER BE */
-            BaseEntity offer = rules.getBaseEntityByCode(offerCode);	
+            BaseEntity offer = rules.getBaseEntityByCode(offerCode);
 
         /* GET attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
@@ -108,19 +108,19 @@ rule "Submit Offer Owner"
                 ownerCode = QwandaUtils.getSourceOrTargetForGroupLink("GRP_NEW_ITEMS", linkCode, begCode, linkOwner, false, rules.getToken());
                 rules.println("ownerCode   ::   " + ownerCode);
             }
-        
-        /* Update PRI_NEXT_ACTION = OWNER */ 
+
+        /* Update PRI_NEXT_ACTION = OWNER */
             Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
             rules.saveAnswer(offerActionAnswer);
 
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
-            rules.saveAnswer(offerDateTime);        
-		
+            rules.saveAnswer(offerDateTime);
+
 		 /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
 	        rules.println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients) );
-	        
+
 	        rules.publishBaseEntityByCode(offerCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(quoterCode, begCode ,"LNK_BEG", offerRecipients);
@@ -133,21 +133,21 @@ rule "Submit Offer Owner"
 
             /* Sending message to OWNER */
                 HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
-                counterContextMapForOwner.put("JOB", begCode);  
-                counterContextMapForOwner.put("OFFER", offerCode); 
+                counterContextMapForOwner.put("JOB", begCode);
+                counterContextMapForOwner.put("OFFER", offerCode);
                 counterContextMapForOwner.put("QUOTER",quoterCode);
                 counterContextMapForOwner.put("OWNER", ownerCode);
                 rules.sendMessage("", recipientArrForOwner, counterContextMapForOwner, "MSG_CH40_COUNTER_OFFER_OTO", "TOAST");
 
-             /* Sending message to DRIVER */  
+             /* Sending message to DRIVER */
                 HashMap<String,String> counterContextMapForDriver = new HashMap<String, String>();
                 counterContextMapForDriver.put("JOB", begCode);
                 counterContextMapForDriver.put("OFFER", offerCode);
                 counterContextMapForDriver.put("QUOTER", quoterCode);
                 counterContextMapForDriver.put("OWNER", ownerCode);
                 rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
-        		
+
         /* Send BUCKETVIEW Cmd */
-        rules.setState("TRIGGER_HOMEPAGE");        
+        rules.setState("TRIGGER_HOMEPAGE");
         rules.footer();
 end
