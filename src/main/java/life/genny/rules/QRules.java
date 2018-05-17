@@ -764,7 +764,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
 
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", JsonUtils.toJsonObject(msg));
 
 	}
 
@@ -1212,7 +1212,7 @@ public class QRules {
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
 
 			msg.setToken(getToken());
-			final JsonObject json = RulesUtils.toJsonObject(msg);
+			final JsonObject json = JsonUtils.toJsonObject(msg);
 			json.put("items", latestLinks);
 			publishData(json);
 			// publish("cmds",json);
@@ -1275,7 +1275,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", JsonUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -1286,7 +1286,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJsonObject(msg));
 		return msg;
 	}
 
@@ -1294,7 +1294,7 @@ public class QRules {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJsonObject(msg));
 		return msg;
 	}
 
@@ -1302,7 +1302,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", JsonUtils.toJsonObject(msg));
 		return msg;
 	}
 
@@ -1395,7 +1395,7 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJsonObject(msg));
 	}
 
 	public void publishData(final QDataAttributeMessage msg) {
@@ -1419,7 +1419,7 @@ public class QRules {
 			msg.setRecipientCodeArray(recipientCodes);
 		}
 
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", JsonUtils.toJsonObject(msg));
 		return msg;
 
 	}
@@ -1450,7 +1450,7 @@ public class QRules {
 			bigMsg.setRecipientCodeArray(recipientCodes);
 
 		}
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", JsonUtils.toJsonObject(msg));
 	}
 
 	// public void publishUpdatedLink(final String parentCode, final String
@@ -1460,7 +1460,7 @@ public class QRules {
 	// msg.setParentCode(parentCode);
 	// msg.setLinkCode(linkCode);
 	// msg.setToken(getToken());
-	// publish("cmds", RulesUtils.toJsonObject(msg));
+	// publish("cmds", JsonUtils.toJsonObject(msg));
 	// }
 
 	public Link[] getUpdatedLink(String parentCode, String linkCode) {
@@ -1472,7 +1472,7 @@ public class QRules {
 
 	public void publishCmd(final QCmdMessage cmdMsg) {
 		cmdMsg.setToken(getToken());
-		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
+		publish("cmds", JsonUtils.toJsonObject(cmdMsg));
 	}
 
 	public void publishCmd(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
@@ -1512,7 +1512,7 @@ public class QRules {
 	public void publishMsg(final QMSGMessage msg) {
 
 		msg.setToken(getToken());
-		publish("messages", RulesUtils.toJsonObject(msg));
+		publish("messages", JsonUtils.toJsonObject(msg));
 	}
 
 	public void publish(String channel, final Object payload) {
@@ -1728,7 +1728,7 @@ public class QRules {
 		QDataAskMessage msg = null;
 		try {
 			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-					RulesUtils.toJson(qstMsg), getToken());
+					JsonUtils.toJson(qstMsg), getToken());
 			msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 			return msg;
 		} catch (IOException e) {
@@ -1749,7 +1749,7 @@ public class QRules {
 		try {
 			if (autoPushSelections) {
 				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken());
+						JsonUtils.toJson(qstMsg), getToken());
 
 				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
@@ -1759,7 +1759,7 @@ public class QRules {
 				publishCmd(cmdFormView);
 			} else {
 				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken()));
+						JsonUtils.toJson(qstMsg), getToken()));
 				/* QDataAskMessage */
 				questionJson.put("token", getToken());
 				publish("data", questionJson);
@@ -2054,7 +2054,7 @@ public class QRules {
 	public String updateBaseEntity(BaseEntity be) {
 		try {
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
-			return QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys", RulesUtils.toJson(be),
+			return QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys", JsonUtils.toJson(be),
 					getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2118,7 +2118,7 @@ public class QRules {
 							String newAttributeCode = attributeCode.replace("JSON", valueEntry);
 							answer.setAttributeCode(newAttributeCode);
 							answer.setValue(addressDataJson.getString(key));
-							String jsonAnswer = RulesUtils.toJson(answer);
+							String jsonAnswer = JsonUtils.toJson(answer);
 							Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 							newAnswerList.add(answerObj);
 
@@ -2134,7 +2134,7 @@ public class QRules {
 
 					if (latitude != null) {
 						answer.setValue(Double.toString(latitude));
-						String jsonAnswer = RulesUtils.toJson(answer);
+						String jsonAnswer = JsonUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 						println("The answer object for latitude attribute is  :: " + answerObj.toString());
 						newAnswerList.add(answerObj);
@@ -2150,7 +2150,7 @@ public class QRules {
 
 					if (longitude != null) {
 						answer.setValue(Double.toString(longitude));
-						String jsonAnswer = RulesUtils.toJson(answer);
+						String jsonAnswer = JsonUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 						newAnswerList.add(answerObj);
 						i++;
@@ -2170,7 +2170,7 @@ public class QRules {
 
 					/* set new answers */
 					// m.setItems(newAnswers);
-					// String json = RulesUtils.toJson(m);
+					// String json = JsonUtils.toJson(m);
 					// println("updated answer json string ::" + json);
 
 					/* send new answers to api */
@@ -2246,7 +2246,7 @@ public class QRules {
 
 		try {
 			updateCachedBaseEntity(answer);
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", RulesUtils.toJson(answer), getToken());
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), getToken());
 			// Now update the Cache
 
 		} catch (IOException e) {
@@ -2516,7 +2516,7 @@ public class QRules {
 
 		updateCachedBaseEntity(answers);
 
-		String jsonAnswer = RulesUtils.toJson(msg);
+		String jsonAnswer = JsonUtils.toJson(msg);
 		jsonAnswer.replace("\\\"", "\"");
 
 		try {
@@ -2563,7 +2563,7 @@ public class QRules {
 			println("QDataAskMessage for payments question group ::" + msg);
 
 			msg.setToken(getToken());
-			publish("cmds", RulesUtils.toJsonObject(msg));
+			publish("cmds", JsonUtils.toJsonObject(msg));
 
 			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionCode);
 			publishCmd(cmdFormView);
@@ -2626,7 +2626,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2639,7 +2639,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2652,7 +2652,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
