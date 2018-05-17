@@ -49,10 +49,10 @@ rule "Show more info about job"
 
                /* we check if the user is a driver and if they have any payment methods link to their account */
                String dataString = rules.getUser().getValue("PRI_USER_PAYMENT_METHODS", null);
+               int arraySize = 0;
 
                if(dataString != null) {
 
-                  int arraySize = 0;
 
                   try {
                         JsonArray paymentsArray = new JsonArray(dataString);
