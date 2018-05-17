@@ -3943,8 +3943,7 @@ public class QRules {
 			enteredRightPasscode = true;
 		}
 
-		return this.isMandatoryFieldsEntered(this.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP")
-				&& enteredRightPasscode;
+		return enteredRightPasscode;
 	}
 
 	public void clearBaseEntityAttr(String userCode) {
@@ -5844,7 +5843,7 @@ public class QRules {
 					}
 
           allowedChildren.add(parent);
-          
+
 					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
 							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
 					filteredMsg.setToken(getToken());
