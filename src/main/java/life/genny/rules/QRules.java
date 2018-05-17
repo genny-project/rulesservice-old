@@ -5619,6 +5619,7 @@ public class QRules {
 				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE,
 						"application/pdf", driverInvoiceLayoutUrl, true, "RECEIPT_PDF");
 
+
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
 
@@ -6692,7 +6693,7 @@ public class QRules {
 	}
 
 		public void createServiceUser(){
-
+			
 		BaseEntity be = null;
 
 		String username = "service";
@@ -6971,4 +6972,5 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
+
 }
