@@ -1179,8 +1179,8 @@ public class QRules {
 			return;
 		}
 
-		QCmdNavigateMessage cmdRoute = new QCmdNavigateMessage(newRoute);
-		JsonObject json = JsonObject.mapFrom(cmdRoute);
+    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+		JsonObject json = JsonObject.mapFrom(cmdNavigate);
 		json.put("token", getToken());
 		publish("cmds", json);
 	}
