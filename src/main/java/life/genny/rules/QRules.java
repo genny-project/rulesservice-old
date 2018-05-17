@@ -3765,7 +3765,7 @@ public class QRules {
 					publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
 					publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
 					publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-					publishBaseEntityByCode("GRP_NEW_ITEMS", begCode, "LNK_CORE", offerRecipients);
+					publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 					/* Set progression of LOAD delivery to 0 */
 					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
@@ -3799,20 +3799,6 @@ public class QRules {
 						}
 
 						println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
-
-						/* Move BEG to GRP_APPROVED */
-					/* 	fastClearBaseEntity(begCode, unsubscribeArr);
-
-						BaseEntity begbe = getBaseEntityByCode(begCode);
-						println("be   ::   " + begbe);
-
-						Set<EntityAttribute> attributes = begbe.getBaseEntityAttributes();
-						begbe.setBaseEntityAttributes(attributes);
-
-						QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begbe);
-						beMsg.setDelete(true);
-						publishData(beMsg, unsubscribeArr); */
-
 						VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
 					}
 
