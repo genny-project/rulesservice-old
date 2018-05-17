@@ -6731,7 +6731,7 @@ public class QRules {
 
 	/*
 	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
-	 * role "admin"
+	 * role "admin" and set to FALSE if the attribute existed in DB but the role has been removed from keycloak.
 	 */
 	public void setAdminRoleIfAdmin() {
 		String attributeCode = "PRI_IS_ADMIN";
