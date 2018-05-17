@@ -55,7 +55,7 @@ rule "Submit LOAD"
      	{
      		RulesUtils.println(bucket);
      		List<BaseEntity> begs = new ArrayList<BaseEntity>();
-     		if ((user.is("PRI_IS_SELLER") ) && bucket.getCode().equals("GRP_NEW_ITEMS")) {
+     		if ((user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) && bucket.getCode().equals("GRP_NEW_ITEMS")) {
      			List<BaseEntity> driverbegs = rules.getBaseEntitysByParentAndLinkCode(bucket.getCode(),"LNK_CORE", 0, 500, false) ;
      			begs.addAll(driverbegs);
      		} else {
