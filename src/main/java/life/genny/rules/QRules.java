@@ -4471,11 +4471,24 @@ public class QRules {
 	}
 
 	public boolean hasRole(final String role) {
-		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
-		ArrayList roles = (ArrayList) rolesMap.get("roles");
-		if (roles.contains(role)) {
-			return true;
-		}
+
+  	LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
+    if(rolesMap != null) {
+
+      try {
+
+        Object rolesObj = rolesMap.get("roles");
+        if(rolesObj != null) {
+          ArrayList roles = (ArrayList)rolesObj;
+          if (roles.contains(role)) {
+            return true;
+          }
+        }
+      }
+      catch (Exception e) {
+      }
+    }
+
 		return false;
 	}
 
@@ -5843,7 +5856,9 @@ public class QRules {
 						}
 					}
 
-          allowedChildren.add(parent);
+          if(parent.getCode().equals("GRP_ROOT")) {
+            allowedChildren.add(parent);
+          }
 
 					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
 							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
@@ -6704,7 +6719,7 @@ public class QRules {
 	}
 
 		public void createServiceUser(){
-			
+
 		BaseEntity be = null;
 
 		String username = "service";
@@ -6733,7 +6748,7 @@ public class QRules {
 			}
 		}
 	}
-	
+
 
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
@@ -6742,7 +6757,7 @@ public class QRules {
 		saveAnswers(attributesAns);
 
 	}
-	
+
 	/*
 	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
 	 * role "admin" and set to FALSE if the attribute existed in DB but the role has
@@ -6780,118 +6795,118 @@ public class QRules {
 
 	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
 	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe) {
-		
+
 		QPaymentsUserInfo userInfo = null;
-		
+
 		/* Getting userInfo POJO -> handling errors with slack webhook reporting */
 		// TODO display user-info related question group
 		try {
-			
+
 			/* Fetch data from BE and set in POJO */
 			userInfo = PaymentUtils.getPaymentsUserInfo(userBe);
-			
+
 			/* If instance creation fails, throw exception */
 			if(userInfo == null) {
 				throw new IllegalArgumentException("QPaymentsUserInfo instance creation failed");
 			}
-			
+
 		} catch (IllegalArgumentException e) {
 
 			log.error(e.getMessage());
 			String message = "Payments user creation would fail, since user information during registration is incomplete :"
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
-		
-			
+
+
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : "
 					+ e.getMessage() + ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
-			
+
 			/* send slack message */
 			sendSlackNotification(message);
-			
+
 		}
 		return userInfo;
 	}
-	
+
 	/* Get payments user email details, set in PaymentUserContact POJO */
 	public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe) {
-		
+
 		QPaymentsUserContactInfo userContactInfo = null;
-		
+
 		// TODO display user-email related question group
 		/* Getting userContactInfo -> handling errors with slack webhook reporting */
 		try {
 			userContactInfo = PaymentUtils.getPaymentsUserContactInfo(userBe);
-			
+
 			if(userContactInfo == null) {
 				throw new IllegalArgumentException("QPaymentsUserContactInfo instance creation failed");
 			}
-			
+
 		} catch (IllegalArgumentException e) {
-			
+
 			log.error(e.getMessage());
 			String message = "Payments user creation would fail, since user email is missing or null : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
-		
-			
+
+
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : "
 					+ e.getMessage() + ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
-			
+
 			/* send slack message  */
 			sendSlackNotification(message);
 		}
 		return userContactInfo;
-		
+
 	}
-	
+
 	public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe) {
-		
+
 		QPaymentsLocationInfo userLocationInfo = null;
-		
+
 		// TODO display user-email related question group
 		/* Getting userLocationInfo -> handling errors with slack webhook reporting */
 		try {
 			userLocationInfo = PaymentUtils.getPaymentsLocationInfo(userBe);
-			
+
 			if(userLocationInfo == null) {
 				throw new IllegalArgumentException("QPaymentsLocationInfo instance creation failed");
 			}
-			
+
 		} catch (IllegalArgumentException e) {
-			
+
 			log.error(e.getMessage());
 			String message = "Payments user creation would fail, since user address info is missing or null : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
-			
+
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : "
 					+ e.getMessage() + ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
-			
+
 			/* send slack message */
 			sendSlackNotification(message);
 		}
 		return userLocationInfo;
-		
+
 	}
-	
+
 	public String paymentUserCreation(String paymentsUserId, String assemblyAuthToken) {
 
 		BaseEntity userBe = getUser();
 		BaseEntity project = getProject();
-		
+
 		/* user - firstname, lastname, dob info */
 		QPaymentsUserInfo userInfo = getPaymentsUserInfo(project, userBe);
-		
+
 		/* user email info */
 		QPaymentsUserContactInfo userContactInfo = getPaymentsUserContactInfo(project, userBe);
-		
+
 		/* user address info */
 		QPaymentsLocationInfo userLocationInfo = getPaymentsUserLocationInfo(project, userBe);
 
@@ -6899,12 +6914,12 @@ public class QRules {
 		String paymentUserId = null;
 
 		try {
-			
+
 			/* create the entire payments-user object */
 			QPaymentsUser paymentsUser = new QPaymentsUser(paymentsUserId, userInfo, userContactInfo, userLocationInfo);
 
 			try {
-				
+
 				/* converting user object into stringifies json and hitting create user API */
 				paymentUserCreationResponse = PaymentEndpoint.createPaymentsUser(JsonUtils.toJson(paymentsUser),
 						assemblyAuthToken);
@@ -6915,73 +6930,73 @@ public class QRules {
 					QPaymentsAssemblyUserResponse responseUserPojo = JsonUtils.fromJson(paymentUserCreationResponse,
 							QPaymentsAssemblyUserResponse.class);
 					System.out.println("response user pojo ::" + responseUserPojo);
-					
+
 					paymentUserId = responseUserPojo.getId();
-					
+
 				}
 			} catch (PaymentException e) {
-					
+
 				/* Payments creation will fail if user already exists. In this case we check if the user is already available for the email ID, and fetch the userId */
 				setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
 				drools.setFocus("payments");
-				
+
 			}
 
 		} catch (IllegalArgumentException e) {
-			
+
 			/* send slack message */
 			log.error(e.getMessage());
 			String message = "Payments user creation failed : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 			sendSlackNotification(message);
-				
+
 		}
 		return paymentUserId;
 	}
-	
-	
+
+
 	public String findExistingPaymentsUserAndSetAttribute(String authKey) {
-		
+
 		BaseEntity userBe = getUser();
 		BaseEntity project = getProject();
 		String paymentsUserId = null;
-		
+
 		if(userBe != null && authKey != null) {
-			
-			String email = userBe.getValue("PRI_EMAIL", null);		
+
+			String email = userBe.getValue("PRI_EMAIL", null);
 			try {
-				
+
 				/* Get all payments users for search criteria based on email */
 				String paymentUsersResponse = PaymentEndpoint.searchPaymentsUser(email, authKey);
-								
+
 				/* converting response into Object */
 				QPaymentsAssemblyUserSearchResponse userSearchObj = JsonUtils.fromJson(paymentUsersResponse, QPaymentsAssemblyUserSearchResponse.class);
-				
+
 				/* use util to get the payments user id from search results based on email */
-				paymentsUserId = PaymentUtils.getPaymentsUserIdFromSearch(userSearchObj, email); 
+				paymentsUserId = PaymentUtils.getPaymentsUserIdFromSearch(userSearchObj, email);
 				return paymentsUserId;
-				
+
 			} catch (PaymentException e) {
-				
+
 				String message = "Payments user creation failed as well as existing user search has failed : "
 						+ e.getMessage() + ", for USER: " + userBe.getCode();
-				
-				
+
+
 				/* send toast to user */
 				/*String toastMessage = "Payments user creation failed : "
 						+ e.getMessage() ;
 				String[] recipientArr = { userBe.getCode() };
 				sendDirectToast(recipientArr, toastMessage, "warning");*/
-				sendSlackNotification(message);			
+				sendSlackNotification(message);
 			}
-			
+
 		}
-		return paymentsUserId;			
+		return paymentsUserId;
 	}
-	
+
 	/* To send critical slack message to slack channel */
 	public void sendSlackNotification(String message) {
-	
+
 		/* send critical slack notifications only for production mode */
 		System.out.println("dev mode ::"+devMode);
 		BaseEntity project = getProject();
@@ -6999,9 +7014,9 @@ public class QRules {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	//TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
 	public void sendDirectToast(String[] recipientArr, String toastMsg, String priority) {
