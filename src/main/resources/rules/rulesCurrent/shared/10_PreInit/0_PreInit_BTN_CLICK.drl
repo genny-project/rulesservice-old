@@ -40,9 +40,6 @@ rule "Pre Init Btn Click"
             rules.println("actionCode   ::   " + actionCode);
 
 
-          if(quesCode != null) {
-            rules.setState(quesCode);
-          }
           if(targetCode != null) {
             rules.set("quesTargetCode", targetCode);
           }
@@ -55,5 +52,9 @@ rule "Pre Init Btn Click"
         }
         catch( Exception e) {
           rules.println("button click event   ::   " +  m.getData());
+        }
+
+        if(quesCode != null) {
+          rules.setState(quesCode);
         }
 end
