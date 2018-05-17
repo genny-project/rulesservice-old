@@ -15,7 +15,6 @@ rule "TV_SELECT Messages Event"
 
      /* rules.sendSublayout("messages-layout", "messages-layout.json");   */
      rules.sendAllChats(0,1000);
-     rules.sendChatMessages(chatCode, 0, 500);
      rules.sendCmdSplitView($m.getData().getValue(), null);
 
      rules.footer();

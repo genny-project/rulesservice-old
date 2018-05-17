@@ -3505,18 +3505,17 @@ public class QRules {
 	 * Method to send All the Chats for the current user
 	 */
 	public void sendAllChats(final int pageStart, final int pageSize) {
-		BaseEntity currentUser = getUser();
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+  	BaseEntity currentUser = getUser();
+
+  	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
-		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
+
+  	SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
+        .addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On")
-
 				.setStakeholder(getUser().getCode())
-
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
-				// local, need
-				// to be tested in prod
-				// before deploying
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
 		try {
