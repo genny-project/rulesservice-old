@@ -5769,6 +5769,9 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
+			
+			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
+			
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 				if (msg instanceof QDataBaseEntityMessage) {
 					String grpCode = msg.getParentCode();
@@ -5812,9 +5815,20 @@ public class QRules {
 					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
 							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
 					filteredMsg.setToken(getToken());
-					publishCmd(JsonUtils.toJson(filteredMsg));
+					baseEntityMsgs.add(filteredMsg);
 				}
 			}
+			
+			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
+			try {
+				String str = JsonUtils.toJson(newBulkMsg);
+				JsonObject bulkJson = new JsonObject(str);
+				this.publishData(bulkJson);
+			}
+			catch(Exception e) {
+			   System.out.println("Error in JSON conversion");
+			}
+			
 		}
 	}
 
