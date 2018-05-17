@@ -1777,6 +1777,37 @@ public class QRules {
 		}
 	}
 
+	public Boolean doesQuestionGroupExist(final String questionCode) {
+
+		/* we grab the question group using the questionCode */
+		QDataAskMessage questions = this.getQuestions(this.getUser().getCode(), this.getUser().getCode(), questionCode);
+
+		/* we check if the question payload is not empty */
+		if(questions != null) {
+
+			/* we check if the question group contains at least one question */
+			if(questions.getItems() != null && questions.getItems().length > 0) {
+				
+				Ask firstQuestion = questions.getItems()[0];
+				
+				/* we check if the question is a question group */
+				if(firstQuestion.getAttributeCode().contains("QQQ_QUESTION_GROUP_BUTTON_SUBMIT")) {
+					
+					/* we see if this group contains at least one question */
+					return firstQuestion.getChildAsks().length > 0;
+				}
+				else {
+					
+					/* if it is an ask we return true */
+					return true;
+				}
+			}			
+		}
+
+		/* we return false otherwise */
+		return false;
+	}
+
 	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 
 		String json;
