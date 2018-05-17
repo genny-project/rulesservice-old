@@ -5950,7 +5950,8 @@ public class QRules {
           try {
 
             String str = JsonUtils.toJson(newItems);
-            publishCmd(str);
+            JsonObject obj = new JsonObject(str);
+            publishData(obj);
           }
           catch (Exception e) {
             println("Error sending it");
@@ -5980,13 +5981,15 @@ public class QRules {
         try {
 
           String str = JsonUtils.toJson(items);
-          publishCmd(str);
+          JsonObject obj = new JsonObject(str);
+          publishData(obj);
         }
         catch (Exception e) {
           println("Error sending it");
         }
+
 				// allItems.add(items.getMessages());
-			/*	for (QDataBaseEntityMessage msg : items.getMessages()) {
+				/*for (QDataBaseEntityMessage msg : items.getMessages()) {
 
 					if (msg instanceof QDataBaseEntityMessage) {
 						if (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
@@ -5997,15 +6000,21 @@ public class QRules {
 						publishCmd(JsonUtils.toJson(msg));
             allItems.add(msg);
 					}
-				} */
+				}  */
 			}
 		}
 
 
-    String msg = JsonUtils.toJson(allItems);
 
-    if(msg != null) {
-      publishCmd(msg);
+
+    try {
+      String msg = JsonUtils.toJson(allItems);
+      JsonObject obj = new JsonObject(msg);
+      println("SENT MESSAGES");
+      publishData(obj);
+    }
+    catch(Exception e) {
+
     }
 
 		this.setState("APPLICATION_READY");
