@@ -11,10 +11,12 @@ rule "New Payments User"
 	agenda-group "payments"
 	no-loop true
     when
-    	rules: QRules( isState("NEW_ASSEMBLY_USER_CREATION") && !isState("IS_ASSEMBLY_USER_CREATED") )
+    	rules: QRules( isState("NEW_ASSEMBLY_USER_CREATION") && !isState("IS_ASSEMBLY_USER_CREATED") && !isState("LOOP_ASSEMBLY_USER_CREATION") )
     then
      
      RulesUtils.header(drools.getRule().getName());
+     
+     rules.setState("LOOP_ASSEMBLY_USER_CREATION");
      	     
      /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
@@ -24,7 +26,16 @@ rule "New Payments User"
      
      			
      /* logic to create assembly user & set the payments userProfileExists flag  */
-     rules.paymentUserCreation(assemblyId, assemblyAuthToken);
+     assemblyId = rules.paymentUserCreation(assemblyId, assemblyAuthToken);
+     
+     if(assemblyId != null) {
+      /* Creates a new attribute for assembly user ID */
+		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode() , "PRI_ASSEMBLY_USER_ID", assemblyId);
+		rules.saveAnswer(assemblyIdAnswer);
+		rules.println("assembly ID created in our system ::"+assemblyId); 
+		rules.setState("IS_ASSEMBLY_USER_CREATED");
+	 	drools.setFocus("payments");
+     }
     
         
 	 rules.footer();      		      

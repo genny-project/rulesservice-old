@@ -21,7 +21,7 @@ rule "Payment creation failure - Check for existing payment user in payments-ser
 
 
 	/* Creation of assembly user will fail if user-email already exists in assembly! So fetching the existing assembly user ID here */     	
-     String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
+     String existingAssemblyId = rules.findExistingPaymentsUserAndSetAttribute(assemblyAuthToken);
   		
   	if(existingAssemblyId != null) {
   		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
