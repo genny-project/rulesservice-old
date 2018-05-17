@@ -66,7 +66,7 @@ then
           rules.showLoading("Creating new conversation...");
 
           /* create new conversation */
-          BaseEntity newConvo = rules.createBaseEntityByCode(rules.getUser().getCode(), "CTH", "Chat");
+          BaseEntity newConvo = rules.createBaseEntityByCode(rules.getUser().getCode(), "CHT", "Chat");
 
           if(newConvo != null) {
 
