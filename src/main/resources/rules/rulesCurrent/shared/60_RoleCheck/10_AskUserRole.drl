@@ -11,8 +11,11 @@ rule "Ask User Role"
      	rules.header();
      	rules.setState("ASK_USER_ROLE");
 
-		rules.sendSublayout("ROLE_SELECTION", "registration/role_selection.json", null, false);
-        rules.navigateTo("/registration/role");
+		  rules.sendSublayout("ROLE_SELECTION", "registration/role_selection.json", null, false);
+
+      /* TODO: to remove. test for the guys */
+      rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_BUYER_GRP", false);
+      rules.navigateTo("/homepage");
 
      	rules.setState("ASKED_USER_ROLE");
 
