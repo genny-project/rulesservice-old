@@ -5774,12 +5774,66 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
+			
+			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
+			
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 				if (msg instanceof QDataBaseEntityMessage) {
-					msg.setToken(getToken());
-					publishCmd(JsonUtils.toJson(msg));
+					String grpCode = msg.getParentCode();
+					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+						System.out.println("Dubug");
+					}
+					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
+					for (BaseEntity child : msg.getItems()) {
+						String childCode = child.getCode();
+						// Getting the attributes GRP_XX of parent that has roles not allowed
+						Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
+						if (roleAttribute.isPresent()) {
+							// Getting the value of
+							String rolesAllowedStr = roleAttribute.get().getValue();
+							// creating array as it can have multiple roles
+							String[] rolesAllowed = rolesAllowedStr.split(",");
+							Boolean match = false;
+							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
+									try { // handling exception when the value is not saved as valueBoolean
+										if (ea.getValueBoolean()) {
+											for (String role : rolesAllowed) {
+												match = role.equalsIgnoreCase(ea.getAttributeCode());
+												if (match) {
+													allowedChildren.add(child);
+
+												}
+											}
+										}
+									} catch (Exception e) {
+										System.out.println("Error!! The attribute value is not in boolean format");
+									}
+								}
+
+							}
+						} else {
+							allowedChildren.add(child);
+						}
+					}
+					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
+							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
+					filteredMsg.setToken(getToken());
+					baseEntityMsgs.add(filteredMsg);
 				}
 			}
+			
+			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
+			try {
+				String str = JsonUtils.toJson(newBulkMsg);
+				JsonObject bulkJson = new JsonObject(str);
+				this.publishData(bulkJson);
+			}
+			catch(Exception e) {
+			   System.out.println("Error in JSON conversion");
+			}
+			
 		}
 	}
 
@@ -6657,5 +6711,13 @@ public class QRules {
 				log.error("Error in Creating User ");
 			}
 		}
+	}
+	
+	public void generateTreeRules() {
+		List<Answer> attributesAns = new ArrayList<>();
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
+		saveAnswers(attributesAns);
+				
 	}
 }
