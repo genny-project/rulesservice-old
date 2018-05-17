@@ -6731,25 +6731,36 @@ public class QRules {
 
 	/*
 	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
-	 * role "admin" and set to FALSE if the attribute existed in DB but the role has been removed from keycloak.
+	 * role "admin" and set to FALSE if the attribute existed in DB but the role has
+	 * been removed from keycloak.
 	 */
 	public void setAdminRoleIfAdmin() {
 		String attributeCode = "PRI_IS_ADMIN";
 		BaseEntity user = getUser();
-		if (hasRole("admin")) {
-			if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null)) {
-				Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
-				isAdminAnswer.setWeight(1.0);
-				saveAnswer(isAdminAnswer);
-				setState("USER_ROLE_ADMIN_SET");
+		if (user != null) {
+			try {
+				Boolean isAdmin = user.getValue(attributeCode, null);
+				Answer isAdminAnswer;
+				if (hasRole("admin")) {
+					if (isAdmin == null || !isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+						setState("USER_ROLE_ADMIN_SET");
+					}
+				} else if (!hasRole("admin")) {
+					if (isAdmin != null && isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error!! while updating " + attributeCode + " attribute value");
 			}
-		}
-		else if(!hasRole("admin")) {
-			if (user.getValue(attributeCode, null) != null && (Boolean) user.getValue(attributeCode, null)) {
-				Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
-				isAdminAnswer.setWeight(1.0);
-				saveAnswer(isAdminAnswer);
-			}
+		} else {
+			System.out.println("Error!! User BaseEntity is null");
 		}
 	}
 }
