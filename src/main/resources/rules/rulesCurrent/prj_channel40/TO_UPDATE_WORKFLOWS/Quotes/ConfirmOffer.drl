@@ -95,6 +95,9 @@ rule "Confirm Offer"
 
 						/* we calculate the payment price for the BEG */
 						String ownerOfferPrice = rules.getBaseEntityValueAsString(offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST");
+            rules.println("=====");
+            rules.println(ownerOfferPrice);
+
 						if(ownerOfferPrice != null) {
 
 							/* copy OFR price as temporary price for the BEG */

@@ -5766,10 +5766,14 @@ public class QRules {
 	}
 
 	public void generateTree() {
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
-		bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
+  	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+    BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
+    bulkmsg.add(new QDataBaseEntityMessage(root, "GRP_ROOT", "LNK_CORE"));
+
+		List<BaseEntity> rootGrp = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
+		bulkmsg.add(new QDataBaseEntityMessage(rootGrp.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
 		// println(root);
 
 		List<BaseEntity> reportsHeader = getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
@@ -5855,10 +5859,6 @@ public class QRules {
 							allowedChildren.add(child);
 						}
 					}
-
-          if(parent.getCode().equals("GRP_ROOT")) {
-            allowedChildren.add(parent);
-          }
 
 					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
 							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
