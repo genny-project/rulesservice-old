@@ -3763,7 +3763,7 @@ public class QRules {
 					answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode,
 							Status.NEEDS_ACTION.value()));
           answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-    							Status.NEEDS_NO_ACTION.value());
+    							Status.NEEDS_NO_ACTION.value()));
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3776,7 +3776,7 @@ public class QRules {
 					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
           answers.add(updateProgressAnswer);
           this.saveAnswers(answers);
-          
+
 					/* We ask FE to monitor GPS */
 					geofenceJob(begCode, getUser().getCode(), 10.0);
 
