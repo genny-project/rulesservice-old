@@ -82,7 +82,7 @@ then
           msg.setRecipientCodeArray(recipientCodeArray);
           msg.setToken(rules.getToken());
 
-          String jsonAnswer = RulesUtils.toJson(msg);
+          String jsonAnswer = JsonUtils.toJson(msg);
           QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken());
 
           /* Link convo to GRP_MESSAGES */
