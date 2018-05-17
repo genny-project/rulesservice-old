@@ -3759,13 +3759,19 @@ public class QRules {
 						}
 					}
 
+					/* Update the Job status */
+					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + quoterCode,
+							Status.NEEDS_ACTION.value());
+					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+							Status.NEEDS_NO_ACTION.value());
+
+
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
 					println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
 					publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
 					publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
 					publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-					publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 					/* Set progression of LOAD delivery to 0 */
 					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
@@ -3804,29 +3810,14 @@ public class QRules {
 
 					// moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
 					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
+          publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
 					saveAnswer(begNextAction);
 
-					/* Update the Job status */
-					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + quoterCode,
-							Status.NEEDS_ACTION.value());
-					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-							Status.NEEDS_NO_ACTION.value());
-
 					/* sending cmd BUCKETVIEW */
 					this.setState("TRIGGER_HOMEPAGE");
-
-					/*
-					 * List<BaseEntity> listBe = new ArrayList<>(); listBe.add(getUser());
-					 * listBe.add(getBaseEntityByCode(quoterCode));
-					 * listBe.add(getBaseEntityByCode(offerCode));
-					 * listBe.add(getBaseEntityByCode(begCode)); publishCmd(listBe, "GRP_ROOT",
-					 * "LNK_CORE"); sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json",
-					 * "GRP_DASHBOARD"); setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
-					 */
-
 				}
 				setState("PAYMENT_DONE");
 
