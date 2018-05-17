@@ -357,6 +357,8 @@ public class RulesLoader {
 			final List<Tuple2<String, Object>> globals, final List<Object> facts,
 			final Map<String, String> keyValueMap) {
 
+		
+		
 		try {
 			KieSession kieSession = null;
 			if (getKieBaseCache().get(rulesGroup) == null) {
