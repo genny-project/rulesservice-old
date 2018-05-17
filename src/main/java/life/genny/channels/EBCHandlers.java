@@ -171,7 +171,12 @@ public class EBCHandlers {
 
 	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
+			
+			
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
+			// check for token expiry
+			
+			
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
 
