@@ -4563,14 +4563,12 @@ public class QRules {
 		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
 		// 0, 100, true);
 
-		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
+		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages")
+        .addColumn("PRI_MESSAGE", "Message")
 				.addColumn("PRI_CREATOR", "Creater ID")
-
 				.setSourceCode(chatCode).setSourceStakeholder(getUser().getCode())
-
 				.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%")
-
 				.setPageStart(pageStart).setPageSize(pageSize);
 
 		try {

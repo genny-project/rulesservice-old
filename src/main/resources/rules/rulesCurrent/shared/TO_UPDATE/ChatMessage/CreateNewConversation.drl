@@ -9,10 +9,11 @@ rule "Create Conversation"
 
 when
     $m :  QEventMessage( event_type == "BTN_CLICK" && data.code == "BTN_CREATE_CONVERSATION" )
-    rules: QRules( )
+    rules: QRules( !isState("CREATE_CONVERATION_MESSAGE") )
 then
 
     rules.header();
+    rules.setState("CREATE_CONVERATION_MESSAGE");
 
     String data = $m.getData().getValue();
 
@@ -52,7 +53,6 @@ then
         if(rules.checkIfChatAlreadyExists( userCode,receiverCode )){
 
           rules.showLoading("Loading Message...");
-          //getChatCode
           BaseEntity oldChat = rules.getOldChatForSenderReceiver( userCode,receiverCode );
           chatCode = oldChat.getCode();
           VertxUtils.subscribe(rules.realm(), oldChat, recipientCodeArray);
@@ -64,39 +64,43 @@ then
           rules.showLoading("Creating new conversation...");
 
           /* create new conversation */
-          BaseEntity newConvo = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "CHT", rules.getToken()), "New Chat", rules.getQwandaServiceUrl(), rules.getToken());
-          chatCode = newConvo.getCode();
-          /* VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray); */
+          BaseEntity newConvo = createBaseEntityByCode(rules.getUser().getCode(), "CHT", "Chat");
 
-          /* title of the convo = name of the load */
-          String nameLoad = rules.getBaseEntityValueAsString(hint, "PRI_TITLE");
-          if(nameLoad == null) nameLoad = "New Conversation";
+          if(newConvo != null) {
 
-          Answer titleConvo = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_TITLE", nameLoad);
-          Answer lastMessageDate = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm"));
-          Answer items[] = new Answer[2];
-          items[0] = titleConvo;
-          items[1] = lastMessageDate;
+            chatCode = newConvo.getCode();
+            /* VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray); */
 
-          QDataAnswerMessage msg = new QDataAnswerMessage(items);
-          msg.setRecipientCodeArray(recipientCodeArray);
-          msg.setToken(rules.getToken());
+            /* title of the convo = name of the load */
+            String nameLoad = rules.getBaseEntityValueAsString(hint, "PRI_TITLE");
+            if(nameLoad == null) nameLoad = "New Conversation";
 
-          String jsonAnswer = JsonUtils.toJson(msg);
-          QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken());
+            Answer titleConvo = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_TITLE", nameLoad);
+            Answer lastMessageDate = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm"));
+            Answer items[] = new Answer[2];
+            items[0] = titleConvo;
+            items[1] = lastMessageDate;
 
-          /* Link convo to GRP_MESSAGES */
-          /* QwandaUtils.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT", "chat_conversation", 1.0, rules.getToken()); */
-          rules.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "CHAT", 1.0);
+            QDataAnswerMessage msg = new QDataAnswerMessage(items);
+            msg.setRecipientCodeArray(recipientCodeArray);
+            msg.setToken(rules.getToken());
 
-          /* Link users to chat */
-          rules.createLink(newConvo.getCode(), rules.getUser().getCode(), "LNK_USER", "sender", 1.0);
-          rules.createLink(newConvo.getCode(), receiverCode, "LNK_USER",  "receiver", 1.0);
+            String jsonAnswer = JsonUtils.toJson(msg);
+            QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl() + "/qwanda/answers/bulk", jsonAnswer, rules.getToken());
 
-          /* Fetch new conversation and send it to relevant users */
-          // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
-          //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
-          rules.publishData(newConvo, recipientCodeArray);
+            /* Link convo to GRP_MESSAGES */
+            /* QwandaUtils.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT", "chat_conversation", 1.0, rules.getToken()); */
+            rules.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "CHAT", 1.0);
+
+            /* Link users to chat */
+            rules.createLink(newConvo.getCode(), rules.getUser().getCode(), "LNK_USER", "sender", 1.0);
+            rules.createLink(newConvo.getCode(), receiverCode, "LNK_USER",  "receiver", 1.0);
+
+            /* Fetch new conversation and send it to relevant users */
+            // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+            //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
+            rules.publishData(newConvo, recipientCodeArray);
+          }
         }
 
         /* redirect user to messaging screen */
