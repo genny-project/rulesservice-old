@@ -1557,7 +1557,12 @@ public class QRules {
 
 						Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true)
 								|| (role.getValueString() != null && role.getValueString().equals("TRUE"));
-						if (isRole) {
+
+            this.println(role.getAttributeCode());
+            this.println(role.getValueBoolean());
+            this.println(role.getValueString());
+
+            if (isRole) {
 							this.setState(role.getAttributeCode());
 							has_role_been_found = true;
 						}
