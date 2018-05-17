@@ -884,7 +884,7 @@ public class QRules {
 		}
 	}
 
-	public void sendSlackNotification(String webhookURL, JsonObject message) throws IOException {
+	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
 		try {
 
@@ -5650,7 +5650,7 @@ public class QRules {
 					payload.put("text", message);
 
 					try {
-						sendSlackNotification(webhookURL, payload);
+						postSlackNotification(webhookURL, payload);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -6809,7 +6809,7 @@ public class QRules {
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
 			/* send slack message */
-			sendCriticalSlackNotification(message);
+			sendSlackNotification(message);
 			
 		}
 		return userInfo;
@@ -6843,7 +6843,7 @@ public class QRules {
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
 			/* send slack message  */
-			sendCriticalSlackNotification(message);
+			sendSlackNotification(message);
 		}
 		return userContactInfo;
 		
@@ -6875,7 +6875,7 @@ public class QRules {
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
 			/* send slack message */
-			sendCriticalSlackNotification(message);
+			sendSlackNotification(message);
 		}
 		return userLocationInfo;
 		
@@ -6933,7 +6933,7 @@ public class QRules {
 			log.error(e.getMessage());
 			String message = "Payments user creation failed : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
-			sendCriticalSlackNotification(message);
+			sendSlackNotification(message);
 				
 		}
 		return paymentUserId;
@@ -6972,7 +6972,7 @@ public class QRules {
 						+ e.getMessage() ;
 				String[] recipientArr = { userBe.getCode() };
 				sendDirectToast(recipientArr, toastMessage, "warning");*/
-				sendCriticalSlackNotification(message);			
+				sendSlackNotification(message);			
 			}
 			
 		}
@@ -6980,7 +6980,7 @@ public class QRules {
 	}
 	
 	/* To send critical slack message to slack channel */
-	public void sendCriticalSlackNotification(String message) {
+	public void sendSlackNotification(String message) {
 	
 		/* send critical slack notifications only for production mode */
 		System.out.println("dev mode ::"+devMode);
@@ -6993,7 +6993,7 @@ public class QRules {
 				payload.put("text", message);
 
 				try {
-					sendSlackNotification(webhookURL, payload);
+					postSlackNotification(webhookURL, payload);
 				} catch (IOException io) {
 					io.printStackTrace();
 				}
