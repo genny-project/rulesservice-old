@@ -6722,6 +6722,7 @@ public class QRules {
 			}
 		}
 	}
+	
 
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
@@ -6730,9 +6731,44 @@ public class QRules {
 		saveAnswers(attributesAns);
 
 	}
+	
+	/*
+	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
+	 * role "admin" and set to FALSE if the attribute existed in DB but the role has
+	 * been removed from keycloak.
+	 */
+	public void setAdminRoleIfAdmin() {
+		String attributeCode = "PRI_IS_ADMIN";
+		BaseEntity user = getUser();
+		if (user != null) {
+			try {
+				Boolean isAdmin = user.getValue(attributeCode, null);
+				Answer isAdminAnswer;
+				if (hasRole("admin")) {
+					if (isAdmin == null || !isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+						setState("USER_ROLE_ADMIN_SET");
+					}
+				} else if (!hasRole("admin")) {
+					if (isAdmin != null && isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error!! while updating " + attributeCode + " attribute value");
+			}
+		} else {
+			System.out.println("Error!! User BaseEntity is null");
+		}
+	}
 
 	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
-	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe) {
 		
 		QPaymentsUserInfo userInfo = null;
 		
@@ -6761,7 +6797,7 @@ public class QRules {
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
-			/* send slack message to channel40 channel */
+			/* send slack message */
 			sendCriticalSlackNotification(message);
 			
 		}
@@ -6769,7 +6805,7 @@ public class QRules {
 	}
 	
 	/* Get payments user email details, set in PaymentUserContact POJO */
-	public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+	public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe) {
 		
 		QPaymentsUserContactInfo userContactInfo = null;
 		
@@ -6795,14 +6831,14 @@ public class QRules {
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
-			/* send slack message to channel40 channel */
+			/* send slack message  */
 			sendCriticalSlackNotification(message);
 		}
 		return userContactInfo;
 		
 	}
 	
-	public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe, String assemblyUserId, String assemblyAuthToken) {
+	public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe) {
 		
 		QPaymentsLocationInfo userLocationInfo = null;
 		
@@ -6827,7 +6863,7 @@ public class QRules {
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 			
-			/* send slack message to channel40 channel */
+			/* send slack message */
 			sendCriticalSlackNotification(message);
 		}
 		return userLocationInfo;
@@ -6840,15 +6876,13 @@ public class QRules {
 		BaseEntity project = getProject();
 		
 		/* user - firstname, lastname, dob info */
-		QPaymentsUserInfo userInfo = getPaymentsUserInfo(project, userBe, paymentsUserId, assemblyAuthToken);
+		QPaymentsUserInfo userInfo = getPaymentsUserInfo(project, userBe);
 		
 		/* user email info */
-		QPaymentsUserContactInfo userContactInfo = getPaymentsUserContactInfo(project, userBe, paymentsUserId,
-				assemblyAuthToken);
+		QPaymentsUserContactInfo userContactInfo = getPaymentsUserContactInfo(project, userBe);
 		
 		/* user address info */
-		QPaymentsLocationInfo userLocationInfo = getPaymentsUserLocationInfo(project, userBe, paymentsUserId,
-				assemblyAuthToken);
+		QPaymentsLocationInfo userLocationInfo = getPaymentsUserLocationInfo(project, userBe);
 
 		String paymentUserCreationResponse = null;
 		String paymentUserId = null;
@@ -6934,7 +6968,7 @@ public class QRules {
 		return paymentsUserId;			
 	}
 	
-	/* To send critical slack message to Channel40 channel */
+	/* To send critical slack message to slack channel */
 	public void sendCriticalSlackNotification(String message) {
 	
 		/* send critical slack notifications only for production mode */

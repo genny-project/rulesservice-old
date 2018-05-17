@@ -11,10 +11,12 @@ rule "Payment creation failure - Check for existing payment user in payments-ser
 	agenda-group "payments"
 	no-loop true
     when
-    	rules: QRules( isState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS") && !isState("IS_ASSEMBLY_USER_CREATED") )
+    	rules: QRules( isState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS") && !isState("IS_ASSEMBLY_USER_CREATED") && !isState("LOOP_CHECK_PAYMENTS_USER_EXISTS"))
     then
      
-     RulesUtils.header(drools.getRule().getName());
+     rules.header();
+     
+     rules.setState("LOOP_CHECK_PAYMENTS_USER_EXISTS");
      	     
      /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
