@@ -22,7 +22,8 @@ rule "Check if Payments User Exists"
      	 if(!isExists) {
      	 	rules.println("Invalid assembly ID for this tenant...creating new assembly user");
      	 	rules.setState("NEW_ASSEMBLY_USER_CREATION");
-		drools.setFocus("payments");
+			drools.setFocus("payments");
+
      	 }
      	 else {
      	 	rules.println("Valid assembly ID exists for this tenant");

@@ -5642,7 +5642,7 @@ public class QRules {
 
 			if (project != null) {
 
-				String webhookURL = project.getLoopValue("PRI_SLACK_SIGNUP_WEBHOOK", null);
+				String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
 				if (webhookURL != null) {
 
 					String message = "Tax invoice generation failed, offer is null, BEG :" + begBe.getCode()
@@ -6974,6 +6974,5 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
-	
-	
+
 }
