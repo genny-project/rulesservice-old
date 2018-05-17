@@ -5774,24 +5774,34 @@ public class QRules {
 			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
-				if (msg instanceof QDataBaseEntityMessage) {
-					String grpCode = msg.getParentCode();
+
+        if (msg instanceof QDataBaseEntityMessage) {
+
+        	String grpCode = msg.getParentCode();
 					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
 						System.out.println("Dubug");
 					}
-					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
-					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
-					for (BaseEntity child : msg.getItems()) {
-						String childCode = child.getCode();
-						// Getting the attributes GRP_XX of parent that has roles not allowed
+
+          BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+
+          List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
+
+          for (BaseEntity child : msg.getItems()) {
+
+          	String childCode = child.getCode();
+
+          	// Getting the attributes GRP_XX of parent that has roles not allowed
 						Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
 						if (roleAttribute.isPresent()) {
-							// Getting the value of
+
+          		// Getting the value of
 							String rolesAllowedStr = roleAttribute.get().getValue();
-							// creating array as it can have multiple roles
+
+          		// creating array as it can have multiple roles
 							String[] rolesAllowed = rolesAllowedStr.split(",");
 							Boolean match = false;
-							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+
+          		for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
 								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
 									try { // handling exception when the value is not saved as valueBoolean
 										if (ea.getValueBoolean()) {
@@ -5799,7 +5809,6 @@ public class QRules {
 												match = role.equalsIgnoreCase(ea.getAttributeCode());
 												if (match) {
 													allowedChildren.add(child);
-
 												}
 											}
 										}
@@ -5813,6 +5822,9 @@ public class QRules {
 							allowedChildren.add(child);
 						}
 					}
+
+          allowedChildren.add(parent);
+          
 					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
 							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
 					filteredMsg.setToken(getToken());
