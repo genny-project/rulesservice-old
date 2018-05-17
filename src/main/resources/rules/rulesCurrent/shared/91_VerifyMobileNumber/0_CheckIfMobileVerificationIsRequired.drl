@@ -11,8 +11,9 @@ rule "Check if mobile phone number verification is required"
         rules.header();
         
 		rules.setState("LOOP_VERIFY_MOBILE_PHONE_NUMBER");
-        
-		if(rules.getQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP") != null) {
+	
+		
+		if(rules.doesQuestionGroupExist("QUE_MOBILE_VERIFICATION_GRP")) {
 			rules.setState("MOBILE_VERIFICATION_REQUIRED");
 		}
 		else {
