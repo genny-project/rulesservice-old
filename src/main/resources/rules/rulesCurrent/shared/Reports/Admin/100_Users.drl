@@ -32,5 +32,5 @@ rule "SBE_USERS"
   	     .setPageSize(10000);
   	     
   		rules.add("GRP","GRP_REPORTS_ADMIN",report);
-  		 rules.add("GRP","GRP_REPORTS",report); 
+  		
 end
