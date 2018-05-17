@@ -45,7 +45,7 @@ rule "Submit Job"
        		String author = job.getValue("PRI_AUTHOR",null);
        		/* If job is a new job, send email to admins */
        		if ((!job.getValue("PRI_JOB_IS_SUBMITTED", false))&&(!"PER_ADAMCROW63_AT_GMAILCOM".equals(author))) {
-       	
+
 
        			/* Send email to admins*/
        			HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -62,18 +62,15 @@ rule "Submit Job"
     			/* Add new attribute to save that a job is existing */
     	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
     	      	rules.saveAnswer(newJobSubmitAnswer);
-    	      	
+
     	      	/* Send slack message that new job is created */
-    	      	rules.sendCriticalSlackNotification("New job has been created by user : "+rules.getUser().getCode() + ". Job code is : "+ jobCode);
-    	      	
-    	      	
+    	      	rules.sendSlackNotification("New job has been created by user : "+rules.getUser().getCode() + ". Job code is : "+ jobCode);
 
        		}
 
 
          		/*Sending email to quoters who have made offer to a job, when a job is edited */
          		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
-
            		rules.triggerEmailForJobUpdate(jobCode);
 
          	 	}
