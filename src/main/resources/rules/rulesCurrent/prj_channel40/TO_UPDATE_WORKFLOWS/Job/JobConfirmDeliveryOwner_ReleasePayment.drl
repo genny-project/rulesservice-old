@@ -170,7 +170,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 				/* send slack message when release payment fails */
 				if (project != null) {
 
-					String webhookURL = project.getLoopValue("PRI_SLACK_ERROR_URL", null);
+					String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
 					if (webhookURL != null) {
 
 					String message = "Release payment has failed for , BEG :" + begCode + ", CallBack from assembly - ITEM_PAYMENT_COMPLETED has not come through yet. All the callbacks for this Job-Item is : "+paymentStatus ;
