@@ -3828,6 +3828,8 @@ public class QRules {
 					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
 					publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
+          this.generateNewItemsCache();
+
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
 					saveAnswer(begNextAction);
@@ -5364,8 +5366,8 @@ public class QRules {
 	 * Refactor
 	 */
 	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
-		
-		
+
+
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 
@@ -5937,8 +5939,8 @@ public class QRules {
 
 	}
 
-	
-	
+
+
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
@@ -7031,7 +7033,7 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
-	
+
 	public QDataBaseEntityMessage  getMappedBEs(final String parentCode)
 	{
 		List<BaseEntity> searches = new ArrayList<BaseEntity>();
@@ -7042,11 +7044,11 @@ public class QRules {
 			searches.add(searchBE);
 		}
 		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),parentCode,"LNK_CORE");
-  
+
 		return ret;
 	}
 
-	
+
 	public void selectReport(String data)
 	{
 		if(data != null) {
@@ -7066,7 +7068,7 @@ public class QRules {
 						if(msg != null) {
 			       			msg.setParentCode(search.getCode());
 			       					try {
-			       		
+
 			       						String str = JsonUtils.toJson(msg);
 			       						JsonObject obj = new JsonObject(str);
 			       						publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
@@ -7078,7 +7080,7 @@ public class QRules {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					} // send back the list of cached children associated wirth this report branch
-       			
+
   		         }else{
   		            println("Error!! The search BE is empty.");
   		         }
@@ -7090,24 +7092,24 @@ public class QRules {
 
            }
 	}
-	
+
 	public void generateReport(QEventMessage m)
 	{
     	String grpCode = m.getData().getValue();
        	println("The Group Id is :: "+grpCode );
-       	
+
        	QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth this report branch
        	if(msg != null) {
-       		
+
        		try {
-       		
+
        			String str = JsonUtils.toJson(msg);
        			JsonObject obj = new JsonObject(str);
        			publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
 	       	}
 	       	catch( Exception e ) { }
        	}
-       	
+
        	sendCmdReportsSplitView(grpCode, null);
 	}
 }
