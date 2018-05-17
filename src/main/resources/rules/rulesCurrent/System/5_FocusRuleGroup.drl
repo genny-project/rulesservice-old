@@ -17,7 +17,7 @@ no-loop true
     ruleflow-group 'SystemEvent'
     when
         $m: QEventSystemMessage( event_type == "EVT_SYSTEM"  && data.code == "FOCUS_RULE_GROUP")
-        rules : QRules( !isState("FOCUS_RULE_GROUP") && hasRole("dev"))
+        rules : QRules( !isState("FOCUS_RULE_GROUP") && (hasRole("dev") == true) )
      then    
       	rules.header();
  		/* user must be dev */
