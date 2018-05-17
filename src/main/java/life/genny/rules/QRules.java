@@ -1557,7 +1557,12 @@ public class QRules {
 
 						Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true)
 								|| (role.getValueString() != null && role.getValueString().equals("TRUE"));
-						if (isRole) {
+
+            this.println(role.getAttributeCode());
+            this.println(role.getValueBoolean());
+            this.println(role.getValueString());
+
+            if (isRole) {
 							this.setState(role.getAttributeCode());
 							has_role_been_found = true;
 						}
@@ -3372,7 +3377,9 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (user.is("PRI_IS_SELLER")) {
+
+		if (user.is("PRI_IS_SELLER")  || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -3398,7 +3405,9 @@ public class QRules {
 				}
 			}
 			// Checking for driver role
-			if (user.is("PRI_IS_SELLER")) {
+
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 						reportsHeaderToRemove.add(be);
@@ -3406,7 +3415,9 @@ public class QRules {
 				}
 			}
 			// Checking for owner role
-			else if (user.is("PRI_IS_BUYER")) {
+
+			else if (user.is("PRI_IS_BUYER")  || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
+
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
 						reportsHeaderToRemove.add(be);
@@ -3437,7 +3448,9 @@ public class QRules {
 		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		 */
-		if (!user.is("PRI_IS_SELLER")) {
+
+		if (!user.is("PRI_IS_SELLER") && user.getValue("PRI_IS_SELLER").equals("FALSE")) {
+
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
@@ -5281,7 +5294,9 @@ public class QRules {
 		List<BaseEntity> results = new ArrayList<BaseEntity>();
 		String dataMsgParentCode = reportGroupCode;
 		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-			if (user.is("PRI_IS_SELLER")) {
+
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+
 				dataMsgParentCode = "GRP_REPORTS_DRIVER";
 				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
 				for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -5779,12 +5794,66 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
+			
+			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
+			
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 				if (msg instanceof QDataBaseEntityMessage) {
-					msg.setToken(getToken());
-					publishCmd(JsonUtils.toJson(msg));
+					String grpCode = msg.getParentCode();
+					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+						System.out.println("Dubug");
+					}
+					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
+					for (BaseEntity child : msg.getItems()) {
+						String childCode = child.getCode();
+						// Getting the attributes GRP_XX of parent that has roles not allowed
+						Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
+						if (roleAttribute.isPresent()) {
+							// Getting the value of
+							String rolesAllowedStr = roleAttribute.get().getValue();
+							// creating array as it can have multiple roles
+							String[] rolesAllowed = rolesAllowedStr.split(",");
+							Boolean match = false;
+							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
+									try { // handling exception when the value is not saved as valueBoolean
+										if (ea.getValueBoolean()) {
+											for (String role : rolesAllowed) {
+												match = role.equalsIgnoreCase(ea.getAttributeCode());
+												if (match) {
+													allowedChildren.add(child);
+
+												}
+											}
+										}
+									} catch (Exception e) {
+										System.out.println("Error!! The attribute value is not in boolean format");
+									}
+								}
+
+							}
+						} else {
+							allowedChildren.add(child);
+						}
+					}
+					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
+							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
+					filteredMsg.setToken(getToken());
+					baseEntityMsgs.add(filteredMsg);
 				}
 			}
+			
+			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
+			try {
+				String str = JsonUtils.toJson(newBulkMsg);
+				JsonObject bulkJson = new JsonObject(str);
+				this.publishData(bulkJson);
+			}
+			catch(Exception e) {
+			   System.out.println("Error in JSON conversion");
+			}
+			
 		}
 	}
 
@@ -5913,7 +5982,9 @@ public class QRules {
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
-					if (stakeholder.is("PRI_IS_SELLER")) {
+
+					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
+
 						if (linkedBE.getCode().startsWith("OFR_")) {
 							// Get the only link and skip any outage if the offer does not belong to the
 							// driver
@@ -5949,7 +6020,7 @@ public class QRules {
 
 		showLoading("Loading jobs...");
 
-		if (getUser().is("PRI_IS_SELLER")) {
+		if (getUser().is("PRI_IS_SELLER") || getUser().getValue("PRI_IS_SELLER").equals("TRUE")) {
 
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
@@ -6652,5 +6723,13 @@ public class QRules {
 				log.error("Error in Creating User ");
 			}
 		}
+	}
+	
+	public void generateTreeRules() {
+		List<Answer> attributesAns = new ArrayList<>();
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
+		saveAnswers(attributesAns);
+				
 	}
 }
