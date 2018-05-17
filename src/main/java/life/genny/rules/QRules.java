@@ -1558,10 +1558,6 @@ public class QRules {
 						Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true)
 								|| (role.getValueString() != null && role.getValueString().equals("TRUE"));
 
-            this.println(role.getAttributeCode());
-            this.println(role.getValueBoolean());
-            this.println(role.getValueString());
-
             if (isRole) {
 							this.setState(role.getAttributeCode());
 							has_role_been_found = true;
@@ -5794,9 +5790,9 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
-			
+
 			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
-			
+
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 				if (msg instanceof QDataBaseEntityMessage) {
 					String grpCode = msg.getParentCode();
@@ -5843,7 +5839,7 @@ public class QRules {
 					baseEntityMsgs.add(filteredMsg);
 				}
 			}
-			
+
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
 			try {
 				String str = JsonUtils.toJson(newBulkMsg);
@@ -5853,7 +5849,7 @@ public class QRules {
 			catch(Exception e) {
 			   System.out.println("Error in JSON conversion");
 			}
-			
+
 		}
 	}
 
@@ -6724,12 +6720,12 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
 		saveAnswers(attributesAns);
-				
+
 	}
 }
