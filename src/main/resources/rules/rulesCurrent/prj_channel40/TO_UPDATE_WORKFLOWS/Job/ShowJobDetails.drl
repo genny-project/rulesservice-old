@@ -47,9 +47,29 @@ rule "Show more info about job"
 
              if(rules.getUser().is("PRI_IS_SELLER") || rules.getUser().getValue("PRI_IS_SELLER").equals("TRUE")) {
 
-               /* we refresh the assembly tokens so driver can submit a quote */
-               drools.setFocus("ispayments");  /* NOW Set up Payments */
-             }
+               /* we check if the user is a driver and if they have any payment methods link to their account */
+               String dataString = rules.getUser().getValue("PRI_USER_PAYMENT_METHODS", null);
+
+               if(dataString != null) {
+
+                  int arraySize = 0;
+
+                  try {
+                        JsonArray paymentsArray = new JsonArray(dataString);
+                        if (paymentsArray.size() != 0){
+                            arraySize = paymentsArray.size();
+                        }
+                    }
+                     catch(Exception e){
+                         System.out.println("Exception! Unable to create JsonArray ");
+                    }
+                    if(arraySize == 0) {
+
+                     /* we refresh the assembly tokens so driver can submit a quote */
+                     drools.setFocus("ispayments");  /* NOW Set up Payments */
+                    }
+                  }
+              }
 
 				break;
 
