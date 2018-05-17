@@ -3759,12 +3759,11 @@ public class QRules {
 						}
 					}
 
-					/* Update the Job status */
-					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + quoterCode,
-							Status.NEEDS_ACTION.value());
-					updateBaseEntityAttribute(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-							Status.NEEDS_NO_ACTION.value());
-
+          List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode,
+							Status.NEEDS_ACTION.value()));
+          answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+    							Status.NEEDS_NO_ACTION.value());
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3775,8 +3774,9 @@ public class QRules {
 
 					/* Set progression of LOAD delivery to 0 */
 					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-					saveAnswer(updateProgressAnswer);
-
+          answers.add(updateProgressAnswer);
+          this.saveAnswers(answers);
+          
 					/* We ask FE to monitor GPS */
 					geofenceJob(begCode, getUser().getCode(), 10.0);
 
