@@ -8,12 +8,10 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -42,6 +40,12 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentsLocationInfo;
+import life.genny.qwanda.payments.QPaymentsUser;
+import life.genny.qwanda.payments.QPaymentsUserContactInfo;
+import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
@@ -255,7 +259,7 @@ public class PaymentUtils {
 
 			/* Attempt to get the user with the specified ID, if it returns an error we know the user doesn't exist */
 			try {
-				assemblyUserString = PaymentEndpoint.getAssemblyUserById(assemblyUserId, authToken);
+				assemblyUserString = PaymentEndpoint.getPaymentsUserById(assemblyUserId, authToken);
 				if(assemblyUserString != null && !assemblyUserString.contains("error")) {
 					System.out.println("assembly user string ::"+assemblyUserString);
 					isExists = true;
@@ -270,119 +274,84 @@ public class PaymentUtils {
 	}
 
 	/* Creates a new user in Assembly */
-	@SuppressWarnings("unchecked")
-	public static String createAssemblyUser(String assemblyUserId, String authToken, String token) {
-		/* Get user information */
-		String userCode = QwandaUtils.getUserCode(token);
-		BaseEntity be = MergeUtil.getBaseEntityForAttr(userCode, token);
-		String assemblyId = null;
-
-		/* Create objects to store the information we'll send to Assembly */
-		JSONObject userobj = new JSONObject();
-		JSONObject personalInfoObj = new JSONObject();
-		JSONObject contactInfoObj = new JSONObject();
-		JSONObject locationObj = new JSONObject();
-
-		if(be != null && assemblyUserId != null) {
-			/* Get all of the users information from their base entity */
-			Object firstName = be.getValue("PRI_FIRSTNAME", null);
-			Object lastName = be.getValue("PRI_LASTNAME", null);
-			Object dobString = be.getValue("PRI_DOB", null);
-			Object email = be.getValue("PRI_EMAIL", null);
-			Object addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
+	public static QPaymentsUserInfo getPaymentsUserInfo(BaseEntity userBe) throws IllegalArgumentException {
+		
+		QPaymentsUserInfo personalInfo = null;
+	
+		if(userBe != null) {
 			
-			Object city = null;
-			city = be.getValue("PRI_ADDRESS_CITY", null);
-			if(city == null) {
-				city = be.getValue("PRI_ADDRESS_SUBURB", null);
-			}
-			
-			
-			Object state = be.getValue("PRI_ADDRESS_STATE", null);
-			Object country = be.getValue("PRI_ADDRESS_COUNTRY", null);
-			Object postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
-			// Object mobile = be.getValue("PRI_MOBILE", null);
-
-			/* Check a bunch of fields and store them in the object we send to Assembly if they exist */
-			if(firstName != null) {
-				personalInfoObj.put("firstName", firstName.toString());
-			}
-
-			if(lastName != null) {
-				personalInfoObj.put("lastName", lastName.toString());
-			}
+			String formattedDOBString = null;
+			String firstName = userBe.getValue("PRI_FIRSTNAME", null);
+			String lastName = userBe.getValue("PRI_LASTNAME", null);
+			LocalDate dob = userBe.getValue("PRI_DOB", null);
 
 			/* If the date of birth is provided format it correctly */
-			if(dobString != null) {
-				System.out.println("dob string ::"+dobString);
+			if(dob != null) {
+				System.out.println("dob string ::"+dob);
 				DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-				LocalDate dobDate = (LocalDate) dobString;
-				String formattedDOBString = assemblyDateFormatter.format(dobDate);
+				formattedDOBString = assemblyDateFormatter.format(dob);
 				System.out.println("another formatted dob ::"+formattedDOBString);
-				personalInfoObj.put("dob", formattedDOBString.toString());
+				
+				dob = LocalDate.parse(formattedDOBString, assemblyDateFormatter);					
 			}
-
-			if(email != null) {
-				contactInfoObj.put("email", email.toString());
-			}
-
-			// if(mobile != null) {
-			// 	contactInfoObj.put("mobile", mobile.toString());
-			// }
-
-			if(addressLine1 != null) {
-				locationObj.put("addressLine1", addressLine1.toString());
-			}
-
-			if(city != null) {
-				locationObj.put("city", city.toString());
-			}
-
-			if(state != null) {
-				locationObj.put("state", state.toString());
-			}
-
-			/* If a country code is defined then use that, otherwise use Australia */
-			if(country != null) {
-				locationObj.put("country", country.toString());
-			} else {
-				locationObj.put("country", "AU");
-			}
-
-			if(postCode != null) {
-				locationObj.put("postcode", postCode.toString());
-			}
+			
+			personalInfo = new QPaymentsUserInfo(firstName, lastName, dob);
 		}
-
-		/* Combine all of the individual objects into one object that'll well send off */
-		userobj.put("personalInfo", personalInfoObj);
-		userobj.put("contactInfo", contactInfoObj);
-		userobj.put("location", locationObj);
-		userobj.put("id", assemblyUserId);
-
-		System.out.println("user obj ::"+userobj);
-
-		/* Attempt creating the user in Assembly */
-		String paymentUserCreationResponse;
-		try {
-			paymentUserCreationResponse = PaymentEndpoint.createAssemblyUser(JsonUtils.toJson(userobj), authToken);
-			if(!paymentUserCreationResponse.contains("error") && paymentUserCreationResponse != null) {
-				assemblyId = assemblyUserId;
-			}
-		} catch (PaymentException e) {
-			log.error("Assembly user not found, returning null in exception handler");
-			assemblyId = null;
-		}
-
-		/* The user creation worked, return the user ID */
-		return assemblyId;
+		
+		return personalInfo;
+		
 	}
+	
+	public static QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity userBe) throws IllegalArgumentException {
+		
+		QPaymentsUserContactInfo userContactInfo = null;
+		
+		if(userBe != null) {
+			
+			String email = userBe.getValue("PRI_EMAIL", null);
+			userContactInfo = new QPaymentsUserContactInfo(email);
+		}
+		
+		return userContactInfo;
+
+	}
+	
+	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe) throws IllegalArgumentException {
+		
+		QPaymentsLocationInfo userLocationInfo = null;
+		String city = null;
+		String country = null;
+		
+		if(userBe != null) {
+			
+			String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+			
+			city = userBe.getValue("PRI_ADDRESS_CITY", null);
+			if(city == null) {
+				city = userBe.getValue("PRI_ADDRESS_SUBURB", null);	
+			}
+			
+			country = userBe.getValue("PRI_ADDRESS_COUNTRY", null);
+			if(country == null) {
+				city = "AU";
+			}
+			
+			String state = userBe.getValue("PRI_ADDRESS_STATE", null);
+			String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
+			
+			userLocationInfo = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
+		}
+		
+		return userLocationInfo;
+		
+	}
+	
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
 		String responseString = null;
 		try {
-			responseString = PaymentEndpoint.getAssemblyUserById(assemblyUserId, authToken);
+			responseString = PaymentEndpoint.getPaymentsUserById(assemblyUserId, authToken);
 		} catch (PaymentException e) {
 			e.printStackTrace();
 		}
@@ -395,99 +364,100 @@ public class PaymentUtils {
 		/* Log the attribute for debugging purposes */
 		System.out.println("attributeCode ::" + attributeCode + ", value ::" + value);
 		String responseString = null;
+		QPaymentsUserInfo personalInfo = null;
+		QPaymentsLocationInfo locationInfo = null;
+		QPaymentsUserContactInfo userContactInfo = null;
+		QPaymentsUser user = null;
 
 		/* Personal Info Update Objects  */
-		JSONObject userobj = null;
-		JSONObject personalInfoObj = null;
-		JSONObject personalContactInfoObj = null;
-		JSONObject locationObj = null;
-
+		
 		/* Check which value was updated and update in Assembly accordingly */
 		switch (attributeCode) {
 			case "PRI_FIRSTNAME":
-			personalInfoObj = new JSONObject();
-			personalInfoObj.put("firstName", value);
-			break;
+				personalInfo = new QPaymentsUserInfo();
+				personalInfo.setFirstName(value);
+				break;
 
 			case "PRI_LASTNAME":
-			personalInfoObj = new JSONObject();
-			personalInfoObj.put("lastName", value);
-			break;
+				personalInfo = new QPaymentsUserInfo();
+				personalInfo.setLastName(value);
+				break;
 
 			case "PRI_DOB":
 			/* Format the date of birth */
-			personalInfoObj = new JSONObject();
-			DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate date = LocalDate.parse(value.toString(), formatter);
-			String formattedDOBString = assemblyDateFormatter.format(date);
-			System.out.println("another formatted dob ::" + formattedDOBString);
-			personalInfoObj.put("dob", formattedDOBString.toString());
-			break;
+				personalInfo = new QPaymentsUserInfo();
+				DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				LocalDate date = LocalDate.parse(value.toString(), formatter);
+				String formattedDOBString = assemblyDateFormatter.format(date);
+				System.out.println("another formatted dob ::" + formattedDOBString);
+				personalInfo.setDob(LocalDate.parse(formattedDOBString, assemblyDateFormatter));
+				break;
 
 			case "PRI_EMAIL":
-			personalContactInfoObj = new JSONObject();
-			personalContactInfoObj.put("email", value);
-			break;
+				userContactInfo = new QPaymentsUserContactInfo();
+				userContactInfo.setEmail(value);
+				break;
 
 			case "PRI_MOBILE":
-			personalContactInfoObj = new JSONObject();
-			personalContactInfoObj.put("mobile", value);
-			break;
-
+				userContactInfo = new QPaymentsUserContactInfo();
+				userContactInfo.setMobile(value);
+				break;
 
 			case "PRI_ADDRESS_ADDRESS1":
-			locationObj = new JSONObject();
-			locationObj.put("addressLine1", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setAddressLine1(value);
+				break;
 
 			case "PRI_ADDRESS_SUBURB":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setCity(value);
+				break;
 
 			case "PRI_ADDRESS_CITY":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setCity(value);
+				break;
 
 			case "PRI_ADDRESS_STATE":
-			locationObj = new JSONObject();
-			locationObj.put("state", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setState(value);
+				break;
+				
 			case "PRI_ADDRESS_COUNTRY":
-			locationObj = new JSONObject();
-			locationObj.put("country", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setCountry(value);
+				break;
+				
 			case "PRI_ADDRESS_POSTCODE":
-			locationObj = new JSONObject();
-			locationObj.put("postcode", value);
-			break;
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setPostcode(value);
+				break;
 		}
 
 		/* For Assembly Personal Information Update */
-		if(personalInfoObj != null  && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("personalInfo", personalInfoObj);
-			userobj.put("id", assemblyUserId);
+		if(personalInfo != null  && assemblyUserId != null) {
+			user = new QPaymentsUser();
+			user.setId(assemblyUserId);
+			user.setPersonalInfo(personalInfo);
 		}
 
-		if (personalContactInfoObj != null && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("contactInfo", personalContactInfoObj);
-			userobj.put("id", assemblyUserId);
+		if (userContactInfo != null && assemblyUserId != null) {
+			user = new QPaymentsUser();
+			user.setId(assemblyUserId);
+			user.setContactInfo(userContactInfo);
 		}
 
-		if (locationObj != null && assemblyUserId != null) {
-			userobj = new JSONObject();
-			userobj.put("location", locationObj);
-			userobj.put("id", assemblyUserId);
+		if (locationInfo != null && assemblyUserId != null) {
+			user = new QPaymentsUser();
+			user.setId(assemblyUserId);
+			user.setLocation(locationInfo);
 		}
 
 		/* Make the request to Assembly and update */
-		if(userobj != null && assemblyUserId!= null) {
+		if(user != null && assemblyUserId!= null) {
 			try {
-				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userobj), assemblyAuthToken);
+				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user), assemblyAuthToken);
 				System.out.println("response string from payments user updation ::"+responseString);
 			} catch (PaymentException e) {
 				log.error("Exception occured user updation");
@@ -1149,70 +1119,6 @@ public class PaymentUtils {
 		return disburseAccountResponse;
 	}
 
-	public static String findExistingAssemblyUserAndSetAttribute(String userId, String tokenString, String authToken) {
-
-		BaseEntity userBe = MergeUtil.getBaseEntityForAttr(userId, tokenString);
-		Object email = MergeUtil.getBaseEntityAttrObjectValue(userBe, "PRI_EMAIL");
-		String assemblyUserId = null;
-
-		if (email != null) {
-
-			String paymentUsersResponse;
-			try {
-				paymentUsersResponse = PaymentEndpoint.searchUser(email.toString(), authToken);
-
-				if (!paymentUsersResponse.contains("error")) {
-
-					System.out.println("payment user search response ::" + paymentUsersResponse);
-					JSONObject userObj = JsonUtils.fromJson(paymentUsersResponse, JSONObject.class);
-
-					Map<String, Object> metaInfo = (Map<String, Object>) userObj.get("meta");
-					Double total = (Double) metaInfo.get("total");
-
-					if(total > 0) {
-						ArrayList<Map> userList = (ArrayList<Map>) userObj.get("users");
-
-						if (userList.size() > 0) {
-							for (Map userDetails : userList) {
-
-								Map<String, Object> contactInfoMap = (Map<String, Object>) userDetails.get("contactInfo");
-								Object contactEmail = contactInfoMap.get("email");
-
-								if (contactEmail != null && contactEmail.equals(email)) {
-
-									assemblyUserId = userDetails.get("id").toString();
-									return assemblyUserId;
-
-								} else {
-									log.error("USER HAS NOT SET ASSEMBLY EMAIL ID");
-									assemblyUserId = null;
-								}
-							}
-						} else {
-							log.error("No user found in assembly user");
-							assemblyUserId = null;
-						}
-					} else {
-						assemblyUserId = null;
-					}
-
-				}
-
-			} catch (PaymentException e) {
-				log.error("Payment user search has returned a null response and handling by returning null");
-				assemblyUserId = null;
-				e.printStackTrace();
-			}
-
-
-		} else {
-			log.error("BASEENTITY HAS NULL EMAIL ATTRIBUTE");
-			assemblyUserId = null;
-		}
-
-		return assemblyUserId;
-	}
-
 	/* Fully updates a user in Assembly */
 	public static String updateCompleteUserProfile(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
 		String responseString = null;
@@ -1283,7 +1189,7 @@ public class PaymentUtils {
 		/* Attempt to update the user in Assembly */
 		if(userObj != null && assemblyUserId != null) {
 			try {
-				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
+				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
 				System.out.println("response string from payments user updation ::"+responseString);
 			} catch (PaymentException e) {
 				log.error("Exception occured user updation");
@@ -1772,7 +1678,7 @@ public class PaymentUtils {
 
 		if(userObj != null && assemblyUserId != null) {
 			try {
-				responseString = PaymentEndpoint.updateAssemblyUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
+				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
 				System.out.println("response string from payments user mobile-number updation ::"+responseString);
 			} catch (PaymentException e) {
 				log.error("Exception occured during phone updation");
@@ -1869,7 +1775,7 @@ public class PaymentUtils {
 					Gson gson = new Gson();
 					JsonElement jsonElement = gson.toJsonTree(paymentMethod);
 					QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
-
+					
 					System.out.println("type ::" + paymentMethodPojo.getType());
 					System.out.println("number" + paymentMethodPojo.getNumber());
 					System.out.println("id ::" + paymentMethodPojo.getId());
@@ -1889,6 +1795,31 @@ public class PaymentUtils {
  		}
 
  		return selectedOwnerPaymentMethod;
+	}
+	
+	/* Utils to get the payments user from search results based on email */
+	public static String getPaymentsUserIdFromSearch(QPaymentsAssemblyUserSearchResponse response, String searchEmail) throws PaymentException{
+		
+		String paymentsUserId = null;
+		int searchCount = response.getMeta().getTotal();
+		
+		/* if response is greater than 0 */
+		if(searchCount > 0) {
+			
+			/* Iterate through all users in search response */
+			for(QPaymentsAssemblyUserResponse userResponseObj : response.getUsers()) {
+				
+				/* If the email matches, fetch the assembly ID of the user and return it */
+				String userResponseEmail = userResponseObj.getContactInfo().getEmail();
+				if(userResponseEmail != null && userResponseEmail.equals(searchEmail)) {
+					paymentsUserId = userResponseObj.getId();
+					return paymentsUserId;
+				}						
+			}
+		} else {
+			throw new PaymentException("No user found in Payments-service for the emailId :"+searchEmail);
+		}
+		return paymentsUserId;				
 	}
 
 }

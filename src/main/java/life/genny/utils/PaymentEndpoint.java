@@ -15,7 +15,7 @@ public class PaymentEndpoint {
 	public static final String paymentServiceUrl = System.getenv("PAYMENT_SERVICE_API_URL");
 	public static final String paymentProvider = System.getenv("PAYMENT_PROVIDER");
 
-	public static String createAssemblyUser(final String entityString, final String authToken) throws PaymentException {
+	public static String createPaymentsUser(final String entityString, final String authToken) throws PaymentException {
 
 		String newpaymentsUserResponse = null;
 		try {
@@ -30,19 +30,19 @@ public class PaymentEndpoint {
 		return newpaymentsUserResponse;
 	}
 
-	public static String getAssemblyUserById(final String assemblyUserId, final String authToken) throws PaymentException {
+	public static String getPaymentsUserById(final String paymentsUserId, final String authToken) throws PaymentException {
 
 		String userResponse = null;
 		try {
 			userResponse = PaymentUtils.apiGetPaymentResponse(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + assemblyUserId, authToken);
+					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId, authToken);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
 		return userResponse;
 	}
 
-	public static String updateAssemblyUser(final String assemblyUserId, final String entityString,
+	public static String updatePaymentsUser(final String paymentsUserId, final String entityString,
 			final String authToken) throws PaymentException {
 
 		String editPaymentResponse = null;
@@ -50,7 +50,7 @@ public class PaymentEndpoint {
 			
 			System.out.println("Request Entity ::"+entityString);
 			editPaymentResponse = PaymentUtils.apiPutPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + assemblyUserId, entityString, authToken);
+					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId, entityString, authToken);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -178,7 +178,7 @@ public class PaymentEndpoint {
 		
 	}
 	
-	public static String searchUser(String emailId, String authToken) throws PaymentException {
+	public static String searchPaymentsUser(String emailId, String authToken) throws PaymentException {
 		
 		String searchUserResponse = null;
 		

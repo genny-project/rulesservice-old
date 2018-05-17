@@ -11,10 +11,12 @@ rule "New Payments User"
 	agenda-group "payments"
 	no-loop true
     when
-    	rules: QRules( isState("NEW_ASSEMBLY_USER_CREATION") && !isState("IS_ASSEMBLY_USER_CREATED") )
+    	rules: QRules( isState("NEW_ASSEMBLY_USER_CREATION") && !isState("IS_ASSEMBLY_USER_CREATED") && !isState("LOOP_ASSEMBLY_USER_CREATION") )
     then
      
      RulesUtils.header(drools.getRule().getName());
+     
+     rules.setState("LOOP_ASSEMBLY_USER_CREATION");
      	     
      /* get assembly authKey   */
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
@@ -24,37 +26,17 @@ rule "New Payments User"
      
      			
      /* logic to create assembly user & set the payments userProfileExists flag  */
-     String responseAssemblyUserId = PaymentUtils.createAssemblyUser(assemblyId, assemblyAuthToken, rules.getToken());
-       
-     if(responseAssemblyUserId != null) {
+     assemblyId = rules.paymentUserCreation(assemblyId, assemblyAuthToken);
      
-     	/* Creates a new attribute for assembly user ID */
-    	 	Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", responseAssemblyUserId);
-     	/* PaymentUtils.saveAnswer(rules.getQwandaServiceUrl(), assemblyIdAnswer, rules.getToken()); */
-     	rules.saveAnswer(assemblyIdAnswer);
-     	rules.println("assembly ID created in our system ::"+responseAssemblyUserId); 
-     	rules.setState("IS_ASSEMBLY_USER_CREATED");
-     	drools.setFocus("payments");
-     
-     } 
-     
-     /* Creation of assembly user will fail if user-email already exists in assembly! So fetching the existing assembly user ID here */
-     if(responseAssemblyUserId == null) {
-     	
-     	String existingAssemblyId = PaymentUtils.findExistingAssemblyUserAndSetAttribute(rules.getUser().getCode(), rules.getToken(), assemblyAuthToken);
-  		
-  		if(existingAssemblyId != null) {
-  			Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
-     		rules.saveAnswer(assemblyIdAnswer);
-     		rules.println("assembly ID created in our system ::"+existingAssemblyId); 
-     		rules.setState("IS_ASSEMBLY_USER_CREATED");
-     		drools.setFocus("payments");
-  		}
-     	
+     if(assemblyId != null) {
+      /* Creates a new attribute for assembly user ID */
+		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode() , "PRI_ASSEMBLY_USER_ID", assemblyId);
+		rules.saveAnswer(assemblyIdAnswer);
+		rules.println("assembly ID created in our system ::"+assemblyId); 
+		rules.setState("IS_ASSEMBLY_USER_CREATED");
+	 	drools.setFocus("payments");
      }
-     	 	    
-     
-     
- 
+    
+        
 	 rules.footer();      		      
 end
