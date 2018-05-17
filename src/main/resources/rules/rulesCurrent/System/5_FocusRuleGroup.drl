@@ -24,7 +24,7 @@ no-loop true
  		
  		rules.println("Focus Rule");
 		String ruleGroup = $m.getData().getValue();
-		drools.focus(ruleGroup);
+		drools.setFocus(ruleGroup);
    	    rules.footer();
   
 end
