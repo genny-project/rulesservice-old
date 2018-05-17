@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.Layout;
 import life.genny.rules.QRules;
 import io.vertx.core.json.JsonObject;
@@ -11,15 +12,17 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "TV_SELECT Event - Generate Report"
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && ( data.value =="GRP_REPORTS" || data.value.startsWith("GRP_REPORTS_")) )
+       $m : QEventMessage( event_type == "TV_SELECT" && ( data.value =="GRP_REPORTS" || data.value.startsWith("GRP_REPORTS")) )
        rules: QRules(!isState("REPORTS_LAYOUT_SENT"))
      then
 
      rules.header();
         rules.setState("REPORTS_LAYOUT_SENT");
         /* TODO: refactor this. */
-       	String grpCode = $m.getData().getValue();
-       	rules.println("The Group Id is :: "+grpCode );
+   	rules.generateReport($m);
+        	
+      /* 	  rules.sendReport(searchBE);
+  		  rules.sendCmdReportsSplitView(grpCode, searchBE); */
 
     /*   	JsonObject buttonsLayout = rules.generateLayout(grpCode);
        	Layout[] layoutArray = new Layout[1];
@@ -30,9 +33,9 @@ rule "TV_SELECT Event - Generate Report"
 		rules.println("the Layout array string is :: "+ layoutArray[0].getData());
 		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
 		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
-		rules.publishCmd(cmdJobSublayoutJson);   */
+		rules.publishCmd(cmdJobSublayoutJson);   
 
-		rules.publishSearhBE(grpCode);
+		rules.publishSearchBE(grpCode);
 		BaseEntity user = rules.getUser();
 		String viewGrpCode = "";
 	    if ( user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE") ) {
@@ -45,6 +48,6 @@ rule "TV_SELECT Event - Generate Report"
 	    	    viewGrpCode = "GRP_REPORTS_ADMIN";
 	    	}
 		rules.sendCmdReportsSplitView("GRP_REPORTS", viewGrpCode);
-
+*/
      rules.footer();
 end

@@ -5017,6 +5017,9 @@ public class QRules {
 
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be) {
 		// Add this be to the static
+		if ("GRP_REPORTS".equals(parentCode)) {
+			System.out.println("GRP_REPORTS being added to");
+		}
 		Map<String, String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
 			map = new HashMap<String, String>();
@@ -5289,68 +5292,68 @@ public class QRules {
 	/*
 	 * Publish Search BE TODO: Refactor
 	 */
-	public void publishSearhBE(final String reportGroupCode) {
-		BaseEntity user = getUser();
-		List<BaseEntity> results = new ArrayList<BaseEntity>();
-		String dataMsgParentCode = reportGroupCode;
-		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-
-			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
-
-				dataMsgParentCode = "GRP_REPORTS_DRIVER";
-				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
-				for (Map.Entry<String, String> entry : map.entrySet()) {
-					String key = entry.getKey();
-					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-					System.out.println("The Search BE is :: " + searchBe);
-					results.add(searchBe);
-				}
-			} else if (user.is("PRI_OWNER")) {
-				dataMsgParentCode = "GRP_REPORTS_OWNER";
-				Map<String, String> map = getMap("GRP", "GRP_REPORTS_OWNER");
-				for (Map.Entry<String, String> entry : map.entrySet()) {
-					String key = entry.getKey();
-					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-					System.out.println("The Search BE is :: " + searchBe);
-					results.add(searchBe);
-				}
-			}
-			// Checking Admin - TODO: In future when role is seperated then this need toi be
-			// modified
-			if (hasRole("admin")) {
-				dataMsgParentCode = "GRP_REPORTS_ADMIN";
-				Map<String, String> map = getMap("GRP", "GRP_REPORTS_ADMIN");
-				for (Map.Entry<String, String> entry : map.entrySet()) {
-					String key = entry.getKey();
-					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-					System.out.println("The Search BE is :: " + searchBe);
-					results.add(searchBe);
-				}
-			}
-		} else {
-			Map<String, String> map = getMap("GRP", reportGroupCode);
-			// List<BaseEntity> results = new ArrayList<BaseEntity>();
-			dataMsgParentCode = reportGroupCode;
-			for (Map.Entry<String, String> entry : map.entrySet()) {
-				String key = entry.getKey();
-				BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-				System.out.println("The Search BE is :: " + searchBe);
-				results.add(searchBe);
-			}
-		}
-		BaseEntity[] beArr = new BaseEntity[results.size()];
-		beArr = results.toArray(beArr);
-
-		// if ( hasRole("admin") ) { //TODO: Refactor - Only for Tuesday 24th April's
-		// demonstration to Josh
-		// dataMsgParentCode = "GRP_REPORTS_ADMIN";
-		// }
-		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArr, dataMsgParentCode, null);
-		msg.setToken(getToken());
-		System.out.println("The QDataBaseEntityMessage for " + reportGroupCode + " is :: " + JsonUtils.toJson(msg));
-		String msgJson = JsonUtils.toJson(msg);
-		System.out.println("The Json value of data msg is :: " + msgJson);
-		publish("cmds", msgJson);
+	public void publishSearchBE(final String reportGroupCode) {
+//		BaseEntity user = getUser();
+//		List<BaseEntity> results = new ArrayList<BaseEntity>();
+//		String dataMsgParentCode = reportGroupCode;
+//		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
+//
+//			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+//
+//				dataMsgParentCode = "GRP_REPORTS_DRIVER";
+//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
+//				for (Map.Entry<String, String> entry : map.entrySet()) {
+//					String key = entry.getKey();
+//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+//					System.out.println("The Search BE is :: " + searchBe);
+//					results.add(searchBe);
+//				}
+//			} else if (user.is("PRI_OWNER")) {
+//				dataMsgParentCode = "GRP_REPORTS_OWNER";
+//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_OWNER");
+//				for (Map.Entry<String, String> entry : map.entrySet()) {
+//					String key = entry.getKey();
+//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+//					System.out.println("The Search BE is :: " + searchBe);
+//					results.add(searchBe);
+//				}
+//			}
+//			// Checking Admin - TODO: In future when role is seperated then this need toi be
+//			// modified
+//			if (hasRole("admin")) {
+//				dataMsgParentCode = "GRP_REPORTS_ADMIN";
+//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_ADMIN");
+//				for (Map.Entry<String, String> entry : map.entrySet()) {
+//					String key = entry.getKey();
+//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+//					System.out.println("The Search BE is :: " + searchBe);
+//					results.add(searchBe);
+//				}
+//			}
+//		} else {
+//			Map<String, String> map = getMap("GRP", reportGroupCode);
+//			// List<BaseEntity> results = new ArrayList<BaseEntity>();
+//			dataMsgParentCode = reportGroupCode;
+//			for (Map.Entry<String, String> entry : map.entrySet()) {
+//				String key = entry.getKey();
+//				BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+//				System.out.println("The Search BE is :: " + searchBe);
+//				results.add(searchBe);
+//			}
+//		}
+//		BaseEntity[] beArr = new BaseEntity[results.size()];
+//		beArr = results.toArray(beArr);
+//
+//		// if ( hasRole("admin") ) { //TODO: Refactor - Only for Tuesday 24th April's
+//		// demonstration to Josh
+//		// dataMsgParentCode = "GRP_REPORTS_ADMIN";
+//		// }
+//		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArr, dataMsgParentCode, null);
+//		msg.setToken(getToken());
+//		System.out.println("The QDataBaseEntityMessage for " + reportGroupCode + " is :: " + JsonUtils.toJson(msg));
+//		String msgJson = JsonUtils.toJson(msg);
+//		System.out.println("The Json value of data msg is :: " + msgJson);
+//		publish("cmds", msgJson);
 
 	}
 
@@ -5359,6 +5362,8 @@ public class QRules {
 	 * Refactor
 	 */
 	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
+		
+		
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 
@@ -5930,6 +5935,8 @@ public class QRules {
 
 	}
 
+	
+	
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
@@ -5948,7 +5955,7 @@ public class QRules {
 
 				}
 				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-				search.setCode(bucket.getCode()); // set the parent
+				search.setCode(bucket.getCode()) ;// set the parent
 				if (!stakeholder.is("PRI_IS_ADMIN")) {
 					search.setStakeholder(stakeholder.getCode());
 				}
@@ -6068,16 +6075,16 @@ public class QRules {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
-				try {
+//				try {
+//
+//					String str = JsonUtils.toJson(items);
+//					JsonObject obj = new JsonObject(str);
+//					publishData(obj);
+//				} catch (Exception e) {
+//					println("Error sending it");
+//				}
 
-					String str = JsonUtils.toJson(items);
-					JsonObject obj = new JsonObject(str);
-					publishData(obj);
-				} catch (Exception e) {
-					println("Error sending it");
-				}
-
-				// allItems.add(items.getMessages());
+				 allItems.add(items.getMessages());
 				/*
 				 * for (QDataBaseEntityMessage msg : items.getMessages()) {
 				 *
@@ -7022,5 +7029,83 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
+	
+	public QDataBaseEntityMessage  getMappedBEs(final String parentCode)
+	{
+		List<BaseEntity> searches = new ArrayList<BaseEntity>();
+		Map<String, String> searchBes = getMap("GRP",parentCode);
+		for (String searchBeCode : searchBes.keySet()) {
+			String searchJson = searchBes.get(searchBeCode);
+			BaseEntity searchBE = JsonUtils.fromJson(searchJson, BaseEntity.class);
+			searches.add(searchBE);
+		}
+		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),parentCode,"LNK_CORE");
+  
+		return ret;
+	}
 
+	
+	public void selectReport(String data)
+	{
+		if(data != null) {
+
+  			JsonObject dataJson = new JsonObject(data);
+  		    String grpCode = dataJson.getString("hint");
+  		    println("Grp Code = "+grpCode);
+  		    if(grpCode != null && grpCode.startsWith("GRP_REPORTS") )
+  		    {
+               String searchBE = dataJson.getString("itemCode");
+  		        if(searchBE != null) {
+  		        println("Search BE = "+searchBE);
+  		        BaseEntity search = getBaseEntityByCode(searchBE);
+   					QDataBaseEntityMessage msg=null;
+					try {
+						msg = QwandaUtils.fetchResults(search,getToken());
+						if(msg != null) {
+			       			msg.setParentCode(search.getCode());
+			       					try {
+			       		
+			       						String str = JsonUtils.toJson(msg);
+			       						JsonObject obj = new JsonObject(str);
+			       						publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
+				       				}
+				       				catch( Exception e ) { }
+			       				}
+			  		    	     sendCmdReportsSplitView(grpCode, searchBE);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} // send back the list of cached children associated wirth this report branch
+       			
+  		         }else{
+  		            println("Error!! The search BE is empty.");
+  		         }
+  		     }
+  		   else
+  		    {
+  		       println("This is not related to Reports");
+  		   }
+
+           }
+	}
+	
+	public void generateReport(QEventMessage m)
+	{
+    	String grpCode = m.getData().getValue();
+       	println("The Group Id is :: "+grpCode );
+       	
+       	QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth this report branch
+       	if(msg != null) {
+       		
+       		try {
+       		
+       			String str = JsonUtils.toJson(msg);
+       			JsonObject obj = new JsonObject(str);
+       			publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
+	       	}
+	       	catch( Exception e ) { }
+       	}
+       	
+       	sendCmdReportsSplitView(grpCode, null);
+	}
 }

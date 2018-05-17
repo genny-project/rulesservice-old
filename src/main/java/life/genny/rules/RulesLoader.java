@@ -41,6 +41,9 @@ public class RulesLoader {
 	final static String qwandaApiUrl = System.getenv("REACT_APP_QWANDA_API_URL");
 	final static String vertxUrl = System.getenv("REACT_APP_VERTX_URL");
 	final static String hostIp = System.getenv("HOSTIP");
+	final static String mainrealm = System.getenv("PROJECT_REALM");
+	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
+
 
 	private static Map<String, KieBase> kieBaseCache = null;
 	static {
@@ -79,27 +82,7 @@ public class RulesLoader {
 		return fut;
 	}
 	
-	/**
-	 * @param vertx
-	 * @return
-	 */
-	public static Future<Void> generateReports(final String rulesDir) {
-		System.out.println("Generating Reports for all realms");
-		final Future<Void> fut = Future.future();
-		Vertx.currentContext().owner().executeBlocking(exec -> {
 
-			for (String realm : realms) {
-		        // Generate the reports
-				System.out.println("---- Realm:"+realm+"----------");
-		        EBCHandlers.initMsg("Event:GEN_REPORTS", realm,new QEventMessage("EVT_MSG","GEN_REPORTS"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-			}
-			 System.out.println("Rules Loaded up");
-			fut.complete();
-		}, failed -> {
-		});
-
-		return fut;
-	}
 	
 	/**
 	 * @param vertx
@@ -110,9 +93,16 @@ public class RulesLoader {
 		final Future<Void> fut = Future.future();
 		Vertx.currentContext().owner().executeBlocking(exec -> {//Force Genny first
 			System.out.println("---- Realm:genny Startup Rules ----------");
-	        EBCHandlers.initMsg("Event:INIT_STARTUP", "genny",new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-
+			
+//			if (devMode) {
+//				EBCHandlers.initMsg("Event:INIT_STARTUP", mainrealm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+//
+//			} else {
+				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny",new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+//			}
+			
 			for (String realm : realms) {
+
 		        // Trigger Startup Rules
 				System.out.println("---- Realm:"+realm+" Startup Rules ----------");
 		        EBCHandlers.initMsg("Event:INIT_STARTUP", realm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
