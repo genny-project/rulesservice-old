@@ -6,23 +6,22 @@ import life.genny.utils.VertxUtils;
 import java.util.ArrayList;
 
 
-rule "SBE_ALLJOBS"
-
+rule "SBE_OWNERJOBS"
+    no-loop true
+    salience 550
     ruleflow-group 'GenerateReports'
 
     when
-        rules: QRules( !isState("SBE_ALLJOBS") )
+        rules: QRules( !isState("SBE_OWNERJOBS") )
      then
          rules.setState(drools.getRule().getName());
-         rules.println("Generating "+drools.getRule().getName());
 
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Loads")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All My Loads")
   	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_JOB_ID","Job ID")
   	     .addColumn("PRI_NAME","Load Name")
   	     .addColumn("PRI_DESCRIPTION","Description")
   	     .addColumn("PRI_JOB_CREATED_DATETIME", "Job Posted Date")
-  	     .addColumn("PRI_AUTHOR", "Freight Owner")
   	     .addColumn("PRI_PICKUP_DATETIME", "Pick-up Date")
   	     .addColumn("PRI_PICKUP_ADDRESS_FULL","Pickup Address")
   	     .addColumn("PRI_DROPOFF_DATETIME", "Delivery Date")
@@ -35,7 +34,9 @@ rule "SBE_ALLJOBS"
   	     .setPageStart(0)
   	     .setPageSize(10000);
 
-  		 rules.add("GRP","GRP_REPORTS_ADMIN",report);
+  	   /*  .setStakeholder(rules.getUser().getCode());  */
+
+  		 rules.add("GRP","GRP_REPORTS_OWNER",report);
 
 
 
