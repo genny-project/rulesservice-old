@@ -63,11 +63,13 @@ rule "Show more info about job"
                      catch(Exception e){
                          System.out.println("Exception! Unable to create JsonArray ");
                     }
-                    if(arraySize == 0) {
+
+                  }
+
+                  if(arraySize == 0 || dataString == null) {
 
                      /* we refresh the assembly tokens so driver can submit a quote */
                      drools.setFocus("ispayments");  /* NOW Set up Payments */
-                    }
                   }
               }
 
