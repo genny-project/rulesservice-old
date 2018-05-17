@@ -5770,7 +5770,9 @@ public class QRules {
   	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
     BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
-    bulkmsg.add(new QDataBaseEntityMessage(root, "GRP_ROOT", "LNK_CORE"));
+    BaseEntity[] bes = new BaseEntity[1];
+    bes[0] = root;
+    bulkmsg.add(new QDataBaseEntityMessage(bes, "GRP_ROOT", "LNK_CORE"));
 
 		List<BaseEntity> rootGrp = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
 		bulkmsg.add(new QDataBaseEntityMessage(rootGrp.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
