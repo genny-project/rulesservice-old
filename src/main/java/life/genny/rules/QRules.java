@@ -6911,12 +6911,12 @@ public class QRules {
 				String message = "Payments user creation failed as well as existing user search has failed : "
 						+ e.getMessage() + ", for USER: " + userBe.getCode();
 				
-				String toastMessage = "Payments user creation failed : "
-						+ e.getMessage() ;
 				
 				/* send toast to user */
+				/*String toastMessage = "Payments user creation failed : "
+						+ e.getMessage() ;
 				String[] recipientArr = { userBe.getCode() };
-				sendDirectToast(recipientArr, toastMessage, "warning");
+				sendDirectToast(recipientArr, toastMessage, "warning");*/
 				sendCriticalSlackNotification(message);			
 			}
 			
@@ -6962,5 +6962,6 @@ public class QRules {
 		publish("data", toastJson);
 
 	}
+
 
 }
