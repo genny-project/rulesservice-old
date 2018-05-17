@@ -72,6 +72,8 @@ then
 
             chatCode = newConvo.getCode();
 
+            VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray);
+
             Answer titleConvo = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_TITLE", "New chat");
             Answer lastMessageDate = new Answer(newConvo.getCode(), newConvo.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm"));
             List<Answer> answers = new ArrayList<Answer>();
