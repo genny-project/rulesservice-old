@@ -12,18 +12,19 @@ import life.genny.qwanda.message.QEventSystemMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 
 
-rule "System Event Listener"
+rule "Focus Rule Group"
+no-loop true
     ruleflow-group 'SystemEvent'
     when
-        $m: QEventSystemMessage( event_type == "EVT_SYSTEM" && data.code == "EVT_QWANDA_SERVICE_STARTED")
-        rules : QRules()
+        $m: QEventSystemMessage( event_type == "EVT_SYSTEM"  && data.code == "FOCUS_RULE_GROUP")
+        rules : QRules( !isState("FOCUS_RULE_GROUP") && hasRole("dev"))
      then    
       	rules.header();
- 
- 		rules.println("System Event:"+$m.getData().getCode());
-		rules.startupEvent("System Event");  // load up everything except searches
- 		QwandaUtils.apiGet("https://jenkins.outcome-hub.com/generic-webhook-trigger/invoke?token="+System.getenv("JENKINS_CODE"),null);
-
+ 		/* user must be dev */
+ 		
+ 		rules.println("Focus Rule");
+		String ruleGroup = $m.getData().getValue();
+		drools.focus(ruleGroup);
    	    rules.footer();
   
 end
