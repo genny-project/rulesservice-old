@@ -1179,8 +1179,8 @@ public class QRules {
 			return;
 		}
 
-		QCmdNavigateMessage cmdRoute = new QCmdNavigateMessage(newRoute);
-		JsonObject json = JsonObject.mapFrom(cmdRoute);
+    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+		JsonObject json = JsonObject.mapFrom(cmdNavigate);
 		json.put("token", getToken());
 		publish("cmds", json);
 	}
@@ -1728,7 +1728,7 @@ public class QRules {
 		QDataAskMessage msg = null;
 		try {
 			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-					RulesUtils.toJson(qstMsg), getToken());
+					JsonUtils.toJson(qstMsg), getToken());
 			msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 			return msg;
 		} catch (IOException e) {
@@ -1749,7 +1749,7 @@ public class QRules {
 		try {
 			if (autoPushSelections) {
 				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken());
+						JsonUtils.toJson(qstMsg), getToken());
 
 				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
 
@@ -1759,7 +1759,7 @@ public class QRules {
 				publishCmd(cmdFormView);
 			} else {
 				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						RulesUtils.toJson(qstMsg), getToken()));
+						JsonUtils.toJson(qstMsg), getToken()));
 				/* QDataAskMessage */
 				questionJson.put("token", getToken());
 				publish("data", questionJson);
@@ -2054,7 +2054,7 @@ public class QRules {
 	public String updateBaseEntity(BaseEntity be) {
 		try {
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
-			return QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys", RulesUtils.toJson(be),
+			return QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys", JsonUtils.toJson(be),
 					getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2118,7 +2118,7 @@ public class QRules {
 							String newAttributeCode = attributeCode.replace("JSON", valueEntry);
 							answer.setAttributeCode(newAttributeCode);
 							answer.setValue(addressDataJson.getString(key));
-							String jsonAnswer = RulesUtils.toJson(answer);
+							String jsonAnswer = JsonUtils.toJson(answer);
 							Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 							newAnswerList.add(answerObj);
 
@@ -2134,7 +2134,7 @@ public class QRules {
 
 					if (latitude != null) {
 						answer.setValue(Double.toString(latitude));
-						String jsonAnswer = RulesUtils.toJson(answer);
+						String jsonAnswer = JsonUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 						println("The answer object for latitude attribute is  :: " + answerObj.toString());
 						newAnswerList.add(answerObj);
@@ -2150,7 +2150,7 @@ public class QRules {
 
 					if (longitude != null) {
 						answer.setValue(Double.toString(longitude));
-						String jsonAnswer = RulesUtils.toJson(answer);
+						String jsonAnswer = JsonUtils.toJson(answer);
 						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
 						newAnswerList.add(answerObj);
 						i++;
@@ -2170,7 +2170,7 @@ public class QRules {
 
 					/* set new answers */
 					// m.setItems(newAnswers);
-					// String json = RulesUtils.toJson(m);
+					// String json = JsonUtils.toJson(m);
 					// println("updated answer json string ::" + json);
 
 					/* send new answers to api */
@@ -2246,7 +2246,7 @@ public class QRules {
 
 		try {
 			updateCachedBaseEntity(answer);
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", RulesUtils.toJson(answer), getToken());
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), getToken());
 			// Now update the Cache
 
 		} catch (IOException e) {
@@ -2516,7 +2516,7 @@ public class QRules {
 
 		updateCachedBaseEntity(answers);
 
-		String jsonAnswer = RulesUtils.toJson(msg);
+		String jsonAnswer = JsonUtils.toJson(msg);
 		jsonAnswer.replace("\\\"", "\"");
 
 		try {
@@ -2626,7 +2626,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2639,7 +2639,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -2652,7 +2652,7 @@ public class QRules {
 		Link link = new Link(groupCode, targetCode, linkCode);
 		link.setWeight(weight);
 		try {
-			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", RulesUtils.toJson(link), getToken());
+			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), getToken());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -3505,18 +3505,17 @@ public class QRules {
 	 * Method to send All the Chats for the current user
 	 */
 	public void sendAllChats(final int pageStart, final int pageSize) {
-		BaseEntity currentUser = getUser();
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+  	BaseEntity currentUser = getUser();
+
+  	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
-		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
+
+  	SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
+        .addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On")
-
 				.setStakeholder(getUser().getCode())
-
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
-				// local, need
-				// to be tested in prod
-				// before deploying
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
 		try {
@@ -4563,14 +4562,12 @@ public class QRules {
 		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
 		// 0, 100, true);
 
-		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
+		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages")
+        .addColumn("PRI_MESSAGE", "Message")
 				.addColumn("PRI_CREATOR", "Creater ID")
-
 				.setSourceCode(chatCode).setSourceStakeholder(getUser().getCode())
-
 				.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%")
-
 				.setPageStart(pageStart).setPageSize(pageSize);
 
 		try {

@@ -15,7 +15,7 @@ rule "Ask User Role"
 
       /* TODO: to remove. test for the guys */
       rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_BUYER_GRP", false);
-      rules.navigateTo("/homepage");
+      rules.navigateTo("/registration/role");
 
      	rules.setState("ASKED_USER_ROLE");
 
