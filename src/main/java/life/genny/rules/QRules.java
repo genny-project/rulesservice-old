@@ -3365,7 +3365,7 @@ public class QRules {
 		List<BaseEntity> root = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
-		if (user.is("PRI_IS_SELLER") ) {
+		if (user.is("PRI_IS_SELLER")  || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
 					toRemove.add(be);
@@ -3391,7 +3391,7 @@ public class QRules {
 				}
 			}
 			// Checking for driver role
-			if (user.is("PRI_IS_SELLER") ) {
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
 						reportsHeaderToRemove.add(be);
@@ -3399,7 +3399,7 @@ public class QRules {
 				}
 			}
 			// Checking for owner role
-			else if (user.is("PRI_IS_BUYER") ) {
+			else if (user.is("PRI_IS_BUYER")  || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
 						reportsHeaderToRemove.add(be);
@@ -3430,7 +3430,7 @@ public class QRules {
 		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
 		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		 */
-		if (!user.is("PRI_IS_SELLER") ) {
+		if (!user.is("PRI_IS_SELLER") && user.getValue("PRI_IS_SELLER").equals("FALSE")) {
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, false);
 			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
@@ -5275,7 +5275,7 @@ public class QRules {
 		List<BaseEntity> results = new ArrayList<BaseEntity>();
 		String dataMsgParentCode = reportGroupCode;
 		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-			if (user.is("PRI_IS_SELLER") ) {
+			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
 				dataMsgParentCode = "GRP_REPORTS_DRIVER";
 				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
 				for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -5903,7 +5903,7 @@ public class QRules {
 
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
-					if (stakeholder.is("PRI_IS_SELLER") ) {
+					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
 						if (linkedBE.getCode().startsWith("OFR_")) {
 							// Get the only link and skip any outage if the offer does not belong to the
 							// driver
@@ -5939,7 +5939,7 @@ public class QRules {
 
     showLoading("Loading jobs...");
 
-		if (getUser().is("PRI_IS_SELLER")) {
+		if (getUser().is("PRI_IS_SELLER") || getUser().getValue("PRI_IS_SELLER").equals("TRUE")) {
 
       QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
