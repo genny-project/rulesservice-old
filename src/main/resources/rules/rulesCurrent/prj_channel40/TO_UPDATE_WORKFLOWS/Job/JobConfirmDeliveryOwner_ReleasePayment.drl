@@ -80,7 +80,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
           /* we move the job to PAID */
           rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
-          
+
           rules.setState("CONFIRMED_DELIVERY_OWNER");
 
         }
@@ -120,7 +120,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
               /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
               rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
-              
+
               rules.setState("CONFIRMED_DELIVERY_OWNER");
 
             }
@@ -141,7 +141,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
                 /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
                 rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
-                
+
                 rules.setState("CONFIRMED_DELIVERY_OWNER");
               }
               else {
@@ -164,7 +164,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
                 /* change status color to red - release payment failure */
                 rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
-                
+
                 BaseEntity project = rules.getProject();
 
 				/* send slack message when release payment fails */
@@ -178,7 +178,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 					payload.put("text", message);
 
 					try {
-							rules.sendSlackNotification(webhookURL, payload);
+							rules.postSlackNotification(webhookURL, payload);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
