@@ -6065,11 +6065,11 @@ public class QRules {
 				// allItems.add(items.getMessages());
 				/*
 				 * for (QDataBaseEntityMessage msg : items.getMessages()) {
-				 * 
+				 *
 				 * if (msg instanceof QDataBaseEntityMessage) { if
 				 * (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) { //
 				 * System.out.println(JsonUtils.toJson(msg)); }
-				 * 
+				 *
 				 * msg.setToken(getToken()); publishCmd(JsonUtils.toJson(msg));
 				 * allItems.add(msg); } }
 				 */
@@ -6727,5 +6727,29 @@ public class QRules {
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
 		saveAnswers(attributesAns);
 
+	}
+
+	/*
+	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
+	 * role "admin"
+	 */
+	public void setAdminRoleIfAdmin() {
+		String attributeCode = "PRI_IS_ADMIN";
+		BaseEntity user = getUser();
+		if (hasRole("admin")) {
+			if (user.getValue(attributeCode, null) == null || !(Boolean) user.getValue(attributeCode, null)) {
+				Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+				isAdminAnswer.setWeight(1.0);
+				saveAnswer(isAdminAnswer);
+				setState("USER_ROLE_ADMIN_SET");
+			}
+		}
+		else if(!hasRole("admin")) {
+			if (user.getValue(attributeCode, null) != null && (Boolean) user.getValue(attributeCode, null)) {
+				Answer isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+				isAdminAnswer.setWeight(1.0);
+				saveAnswer(isAdminAnswer);
+			}
+		}
 	}
 }
