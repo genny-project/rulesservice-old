@@ -6077,16 +6077,16 @@ public class QRules {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 
-//				try {
-//
-//					String str = JsonUtils.toJson(items);
-//					JsonObject obj = new JsonObject(str);
-//					publishData(obj);
-//				} catch (Exception e) {
-//					println("Error sending it");
-//				}
+				try {
 
-				 allItems.add(items.getMessages());
+					String str = JsonUtils.toJson(items);
+					JsonObject obj = new JsonObject(str);
+					publishData(obj);
+				} catch (Exception e) {
+					println("Error sending it");
+				}
+
+			//	 allItems.add(items.getMessages());
 				/*
 				 * for (QDataBaseEntityMessage msg : items.getMessages()) {
 				 *
