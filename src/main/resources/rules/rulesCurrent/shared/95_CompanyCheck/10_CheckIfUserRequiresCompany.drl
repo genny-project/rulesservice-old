@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - step 0"
+
+	when
+		 rules: QRules( isState("CHECK_IF_USER_REQUIRE_COMPANY") && 
+                        !isState("CHECKED_IF_USER_REQUIRE_COMPANY") )   
+	 then
+	    rules.header();
+		
+		rules.setState("CHECKED_IF_USER_REQUIRE_COMPANY");
+		
+		BaseEntity project = rules.getProject();
+        if(project != null){
+            Boolean companyRequired = project.getValue("CAN_USER_HAVE_COMPANY", false);
+        
+            if(companyRequired){
+                rules.setState("CHECK_USER_COMPANY");
+            }else{
+                rules.setState("COMPANY_IS_READY_LOOP");
+                rules.setState("CHECK_TERMS_AND_CONDITIONS");
+            }
+        }else{
+            rules.println("project Be is null");
+        }
+	    rules.footer();     		      
+end
