@@ -17,6 +17,11 @@ rule "Setup New User"
         rules.saveAnswer( new Answer (user.getCode(),
                           user.getCode(),
                           "PRI_IMAGE_URL", "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ") );
+        /*  saving user registration date time  */
+	    rules.saveAnswer( new Answer(user.getCode(), 
+	   							    user.getCode(), 
+	   							    "PRI_REGISTRATION_DATETIME", QwandaUtils.getCurrentUTCDateTime()) 
+	   				    );
 
         rules.setState("DID_SETUP_NEW_USER");
 
