@@ -3801,7 +3801,7 @@ public class QRules {
 						println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
 
 						/* Move BEG to GRP_APPROVED */
-						fastClearBaseEntity(begCode, unsubscribeArr);
+					/* 	fastClearBaseEntity(begCode, unsubscribeArr);
 
 						BaseEntity begbe = getBaseEntityByCode(begCode);
 						println("be   ::   " + begbe);
@@ -3811,7 +3811,7 @@ public class QRules {
 
 						QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begbe);
 						beMsg.setDelete(true);
-						publishData(beMsg, unsubscribeArr);
+						publishData(beMsg, unsubscribeArr); */
 
 						VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
 					}
