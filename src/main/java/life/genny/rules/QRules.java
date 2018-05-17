@@ -6065,11 +6065,11 @@ public class QRules {
 				// allItems.add(items.getMessages());
 				/*
 				 * for (QDataBaseEntityMessage msg : items.getMessages()) {
-				 * 
+				 *
 				 * if (msg instanceof QDataBaseEntityMessage) { if
 				 * (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) { //
 				 * System.out.println(JsonUtils.toJson(msg)); }
-				 * 
+				 *
 				 * msg.setToken(getToken()); publishCmd(JsonUtils.toJson(msg));
 				 * allItems.add(msg); } }
 				 */
@@ -6727,5 +6727,40 @@ public class QRules {
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
 		saveAnswers(attributesAns);
 
+	}
+
+	/*
+	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
+	 * role "admin" and set to FALSE if the attribute existed in DB but the role has
+	 * been removed from keycloak.
+	 */
+	public void setAdminRoleIfAdmin() {
+		String attributeCode = "PRI_IS_ADMIN";
+		BaseEntity user = getUser();
+		if (user != null) {
+			try {
+				Boolean isAdmin = user.getValue(attributeCode, null);
+				Answer isAdminAnswer;
+				if (hasRole("admin")) {
+					if (isAdmin == null || !isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+						setState("USER_ROLE_ADMIN_SET");
+					}
+				} else if (!hasRole("admin")) {
+					if (isAdmin != null && isAdmin) {
+						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+						isAdminAnswer.setWeight(1.0);
+						saveAnswer(isAdminAnswer);
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error!! while updating " + attributeCode + " attribute value");
+			}
+		} else {
+			System.out.println("Error!! User BaseEntity is null");
+		}
 	}
 }
