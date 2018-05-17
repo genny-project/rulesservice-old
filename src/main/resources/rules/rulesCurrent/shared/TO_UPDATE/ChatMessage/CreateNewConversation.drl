@@ -5,8 +5,6 @@ import life.genny.rules.QRules;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.message.QEventMessage;
 
-
-
 rule "Create Conversation"
 
 when
@@ -66,9 +64,9 @@ then
           rules.showLoading("Creating new conversation...");
 
           /* create new conversation */
-          BaseEntity newConvo = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "CHT", rules.getToken()), "Chat", rules.getQwandaServiceUrl(), rules.getToken());
+          BaseEntity newConvo = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode , null, "CHT", rules.getToken()), "New Chat", rules.getQwandaServiceUrl(), rules.getToken());
           chatCode = newConvo.getCode();
-          VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray);
+          /* VertxUtils.subscribe(rules.realm(), newConvo, recipientCodeArray); */
 
           /* title of the convo = name of the load */
           String nameLoad = rules.getBaseEntityValueAsString(hint, "PRI_TITLE");
@@ -89,7 +87,7 @@ then
 
           /* Link convo to GRP_MESSAGES */
           /* QwandaUtils.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT", "chat_conversation", 1.0, rules.getToken()); */
-          rules.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "chat_conversation", 1.0);
+          rules.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "CHAT", 1.0);
 
           /* Link users to chat */
           rules.createLink(newConvo.getCode(), rules.getUser().getCode(), "LNK_USER", "sender", 1.0);
@@ -99,7 +97,6 @@ then
           // rules.publishBaseEntitysByParentAndLinkCodeWithAttributes("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
           //rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_ROOT", "LNK_CORE", recipientCodeArray);
           rules.publishData(newConvo, recipientCodeArray);
-
         }
 
         /* redirect user to messaging screen */
