@@ -2,21 +2,20 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.entity.SearchEntity;
-import life.genny.utils.VertxUtils;
 import java.util.ArrayList;
 
 
-rule "SBE_ADMINS"
+rule "SBE_OWNERS"
 
     ruleflow-group 'GenerateReports'
 
     when
-        rules: QRules( !isState("SBE_ADMINS") )
+        rules: QRules( !isState("SBE_OWNERS") )
      then
          rules.setState(drools.getRule().getName());
-         rules.println("Generating "+drools.getRule().getName());
+        rules.println("Generating "+drools.getRule().getName());
 
-  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of Admins")
+  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of All Freight Owners")
   	     .addColumn("PRI_IMAGE_URL","Image")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")
@@ -29,10 +28,10 @@ rule "SBE_ADMINS"
   	     .addSort("PRI_FIRSTNAME","Firstname",SearchEntity.Sort.ASC)
 
   	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"PER_%")
-  	     .addFilter("PRI_IS_ADMIN",true)
+  	     .addFilter("PRI_OWNER",true)
 
   	     .setPageStart(0)
-  	     .setPageSize(1000);
+  	     .setPageSize(10000);
 
   		 rules.add("GRP","GRP_REPORTS_ADMIN",report);
   		 rules.add("GRP","GRP_REPORTS",report);
