@@ -1562,7 +1562,7 @@ public class QRules {
 						Boolean isRole = (role.getValueBoolean() != null && role.getValueBoolean() == true)
 								|| (role.getValueString() != null && role.getValueString().equals("TRUE"));
 
-            if (isRole) {
+						if (isRole) {
 							this.setState(role.getAttributeCode());
 							has_role_been_found = true;
 						}
@@ -3234,6 +3234,18 @@ public class QRules {
 				// we can spit out push
 				recipientCodesSet.add(link.getSourceCode());
 			}
+			if ((link.getSourceCode().startsWith("GRP_"))) {
+				String[] recipientArray3 = VertxUtils.getSubscribers(realm(), link.getSourceCode());
+				if (recipientArray3 != null) {
+					recipientCodesSet.addAll(Sets.newHashSet(recipientArray3));
+				}
+			}
+			if ((link.getTargetCode().startsWith("GRP_"))) {
+				String[] recipientArray3 = VertxUtils.getSubscribers(realm(), link.getTargetCode());
+				if (recipientArray3 != null) {
+					recipientCodesSet.addAll(Sets.newHashSet(recipientArray3));
+				}
+			}
 
 		}
 		// Add the original token holder
@@ -3378,7 +3390,7 @@ public class QRules {
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
 
-		if (user.is("PRI_IS_SELLER")  || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+		if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
 
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
@@ -3416,7 +3428,7 @@ public class QRules {
 			}
 			// Checking for owner role
 
-			else if (user.is("PRI_IS_BUYER")  || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
+			else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
 
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
@@ -3759,11 +3771,11 @@ public class QRules {
 						}
 					}
 
-          List<Answer> answers = new ArrayList<Answer>();
-					answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode,
-							Status.NEEDS_ACTION.value()));
-          answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-    							Status.NEEDS_NO_ACTION.value()));
+					answers = new ArrayList<Answer>();
+					answers.add(
+							new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
+					answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+							Status.NEEDS_NO_ACTION.value()));
 
 					/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
 					String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
@@ -3774,8 +3786,8 @@ public class QRules {
 
 					/* Set progression of LOAD delivery to 0 */
 					Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-          answers.add(updateProgressAnswer);
-          this.saveAnswers(answers);
+					answers.add(updateProgressAnswer);
+					this.saveAnswers(answers);
 
 					/* We ask FE to monitor GPS */
 					geofenceJob(begCode, getUser().getCode(), 10.0);
@@ -3810,7 +3822,7 @@ public class QRules {
 
 					// moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
 					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
-          publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
+					publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
@@ -4449,22 +4461,21 @@ public class QRules {
 
 	public boolean hasRole(final String role) {
 
-  	LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
-    if(rolesMap != null) {
+		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
+		if (rolesMap != null) {
 
-      try {
+			try {
 
-        Object rolesObj = rolesMap.get("roles");
-        if(rolesObj != null) {
-          ArrayList roles = (ArrayList)rolesObj;
-          if (roles.contains(role)) {
-            return true;
-          }
-        }
-      }
-      catch (Exception e) {
-      }
-    }
+				Object rolesObj = rolesMap.get("roles");
+				if (rolesObj != null) {
+					ArrayList roles = (ArrayList) rolesObj;
+					if (roles.contains(role)) {
+						return true;
+					}
+				}
+			} catch (Exception e) {
+			}
+		}
 
 		return false;
 	}
@@ -5608,7 +5619,6 @@ public class QRules {
 				QBaseMSGAttachment driverInvoiceAttachment = new QBaseMSGAttachment(AttachmentType.INLINE,
 						"application/pdf", driverInvoiceLayoutUrl, true, "RECEIPT_PDF");
 
-
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
 
@@ -5744,12 +5754,12 @@ public class QRules {
 
 	public void generateTree() {
 
-  	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-    BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
-    BaseEntity[] bes = new BaseEntity[1];
-    bes[0] = root;
-    bulkmsg.add(new QDataBaseEntityMessage(bes, "GRP_ROOT", "LNK_CORE"));
+		BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
+		BaseEntity[] bes = new BaseEntity[1];
+		bes[0] = root;
+		bulkmsg.add(new QDataBaseEntityMessage(bes, "GRP_ROOT", "LNK_CORE"));
 
 		List<BaseEntity> rootGrp = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
 		bulkmsg.add(new QDataBaseEntityMessage(rootGrp.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
@@ -5791,33 +5801,33 @@ public class QRules {
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
 
-        if (msg instanceof QDataBaseEntityMessage) {
+				if (msg instanceof QDataBaseEntityMessage) {
 
-        	String grpCode = msg.getParentCode();
+					String grpCode = msg.getParentCode();
 					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
 						System.out.println("Dubug");
 					}
 
-          BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
 
-          List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
+					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
 
-          for (BaseEntity child : msg.getItems()) {
+					for (BaseEntity child : msg.getItems()) {
 
-          	String childCode = child.getCode();
+						String childCode = child.getCode();
 
-          	// Getting the attributes GRP_XX of parent that has roles not allowed
+						// Getting the attributes GRP_XX of parent that has roles not allowed
 						Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
 						if (roleAttribute.isPresent()) {
 
-          		// Getting the value of
+							// Getting the value of
 							String rolesAllowedStr = roleAttribute.get().getValue();
 
-          		// creating array as it can have multiple roles
+							// creating array as it can have multiple roles
 							String[] rolesAllowed = rolesAllowedStr.split(",");
 							Boolean match = false;
 
-          		for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
 								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
 									try { // handling exception when the value is not saved as valueBoolean
 										if (ea.getValueBoolean()) {
@@ -5851,9 +5861,8 @@ public class QRules {
 				String str = JsonUtils.toJson(newBulkMsg);
 				JsonObject bulkJson = new JsonObject(str);
 				this.publishData(bulkJson);
-			}
-			catch(Exception e) {
-			   System.out.println("Error in JSON conversion");
+			} catch (Exception e) {
+				System.out.println("Error in JSON conversion");
 			}
 
 		}
@@ -6697,7 +6706,7 @@ public class QRules {
 		}
 	}
 
-		public void createServiceUser(){
+	public void createServiceUser() {
 
 		BaseEntity be = null;
 
@@ -6727,7 +6736,6 @@ public class QRules {
 			}
 		}
 	}
-
 
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
@@ -6772,7 +6780,10 @@ public class QRules {
 		}
 	}
 
-	/* Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo POJO */
+	/*
+	 * Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo
+	 * POJO
+	 */
 	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe) {
 
 		QPaymentsUserInfo userInfo = null;
@@ -6785,7 +6796,7 @@ public class QRules {
 			userInfo = PaymentUtils.getPaymentsUserInfo(userBe);
 
 			/* If instance creation fails, throw exception */
-			if(userInfo == null) {
+			if (userInfo == null) {
 				throw new IllegalArgumentException("QPaymentsUserInfo instance creation failed");
 			}
 
@@ -6795,10 +6806,9 @@ public class QRules {
 			String message = "Payments user creation would fail, since user information during registration is incomplete :"
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-
 			/* send toast to user */
-			String toastMessage = "User information during registration is incomplete : "
-					+ e.getMessage() + ". Please complete it for payments to get through.";
+			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
+					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 
@@ -6819,7 +6829,7 @@ public class QRules {
 		try {
 			userContactInfo = PaymentUtils.getPaymentsUserContactInfo(userBe);
 
-			if(userContactInfo == null) {
+			if (userContactInfo == null) {
 				throw new IllegalArgumentException("QPaymentsUserContactInfo instance creation failed");
 			}
 
@@ -6829,14 +6839,13 @@ public class QRules {
 			String message = "Payments user creation would fail, since user email is missing or null : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-
 			/* send toast to user */
-			String toastMessage = "User information during registration is incomplete : "
-					+ e.getMessage() + ". Please complete it for payments to get through.";
+			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
+					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 
-			/* send slack message  */
+			/* send slack message */
 			sendSlackNotification(message);
 		}
 		return userContactInfo;
@@ -6852,7 +6861,7 @@ public class QRules {
 		try {
 			userLocationInfo = PaymentUtils.getPaymentsLocationInfo(userBe);
 
-			if(userLocationInfo == null) {
+			if (userLocationInfo == null) {
 				throw new IllegalArgumentException("QPaymentsLocationInfo instance creation failed");
 			}
 
@@ -6863,8 +6872,8 @@ public class QRules {
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
 			/* send toast to user */
-			String toastMessage = "User information during registration is incomplete : "
-					+ e.getMessage() + ". Please complete it for payments to get through.";
+			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
+					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			sendDirectToast(recipientArr, toastMessage, "warning");
 
@@ -6915,7 +6924,10 @@ public class QRules {
 				}
 			} catch (PaymentException e) {
 
-				/* Payments creation will fail if user already exists. In this case we check if the user is already available for the email ID, and fetch the userId */
+				/*
+				 * Payments creation will fail if user already exists. In this case we check if
+				 * the user is already available for the email ID, and fetch the userId
+				 */
 				setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
 				drools.setFocus("payments");
 
@@ -6925,14 +6937,12 @@ public class QRules {
 
 			/* send slack message */
 			log.error(e.getMessage());
-			String message = "Payments user creation failed : "
-					+ e.getMessage() + ", for USER: " + userBe.getCode();
+			String message = "Payments user creation failed : " + e.getMessage() + ", for USER: " + userBe.getCode();
 			sendSlackNotification(message);
 
 		}
 		return paymentUserId;
 	}
-
 
 	public String findExistingPaymentsUserAndSetAttribute(String authKey) {
 
@@ -6940,7 +6950,7 @@ public class QRules {
 		BaseEntity project = getProject();
 		String paymentsUserId = null;
 
-		if(userBe != null && authKey != null) {
+		if (userBe != null && authKey != null) {
 
 			String email = userBe.getValue("PRI_EMAIL", null);
 			try {
@@ -6949,7 +6959,8 @@ public class QRules {
 				String paymentUsersResponse = PaymentEndpoint.searchPaymentsUser(email, authKey);
 
 				/* converting response into Object */
-				QPaymentsAssemblyUserSearchResponse userSearchObj = JsonUtils.fromJson(paymentUsersResponse, QPaymentsAssemblyUserSearchResponse.class);
+				QPaymentsAssemblyUserSearchResponse userSearchObj = JsonUtils.fromJson(paymentUsersResponse,
+						QPaymentsAssemblyUserSearchResponse.class);
 
 				/* use util to get the payments user id from search results based on email */
 				paymentsUserId = PaymentUtils.getPaymentsUserIdFromSearch(userSearchObj, email);
@@ -6960,12 +6971,12 @@ public class QRules {
 				String message = "Payments user creation failed as well as existing user search has failed : "
 						+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-
 				/* send toast to user */
-				/*String toastMessage = "Payments user creation failed : "
-						+ e.getMessage() ;
-				String[] recipientArr = { userBe.getCode() };
-				sendDirectToast(recipientArr, toastMessage, "warning");*/
+				/*
+				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
+				 * String[] recipientArr = { userBe.getCode() }; sendDirectToast(recipientArr,
+				 * toastMessage, "warning");
+				 */
 				sendSlackNotification(message);
 			}
 
@@ -6977,7 +6988,7 @@ public class QRules {
 	public void sendSlackNotification(String message) {
 
 		/* send critical slack notifications only for production mode */
-		System.out.println("dev mode ::"+devMode);
+		System.out.println("dev mode ::" + devMode);
 		BaseEntity project = getProject();
 		if (project != null && !devMode) {
 			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
@@ -6996,7 +7007,7 @@ public class QRules {
 
 	}
 
-	//TODO Priority field needs to be made as enum : error,info, warning
+	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
 	public void sendDirectToast(String[] recipientArr, String toastMsg, String priority) {
 
