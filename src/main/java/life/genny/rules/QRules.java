@@ -100,6 +100,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentsErrorResponse;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
@@ -6946,11 +6947,11 @@ public class QRules {
 		}
 		return paymentUserId;
 	}
-
+	
+	/* Payments - user search method */
 	public String findExistingPaymentsUserAndSetAttribute(String authKey) {
 
 		BaseEntity userBe = getUser();
-		BaseEntity project = getProject();
 		String paymentsUserId = null;
 
 		if (userBe != null && authKey != null) {
@@ -7103,5 +7104,83 @@ public class QRules {
        	}
 
        	sendCmdReportsSplitView(grpCode, null);
+	}
+	
+	
+	/* Payments user updation */
+	public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value, String paymentsAuthToken) {
+		
+		String userUpdateResponseString = null;		
+		try {
+			
+			if(attributeCode != null && value != null ) {
+				
+				/* Get payments user after setting to-be-updated fields in the object */
+				QPaymentsUser paymentsUser = PaymentUtils.updateUserInfo(paymentsUserId, attributeCode, value);
+				
+				/* Make the request to Assembly and update */
+				if(paymentsUser != null && paymentsUserId != null) {
+					try {	
+						/* Hitting payments-service API for updating */
+						userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId, JsonUtils.toJson(paymentsUser), paymentsAuthToken);
+						QPaymentsAssemblyUserResponse userResponsePOJO = JsonUtils.fromJson(userUpdateResponseString, QPaymentsAssemblyUserResponse.class);	
+						println("User updation response :: "+userResponsePOJO);
+						
+						//TODO We get user out-payment method ID in update-user response, we may have to save this as an attribute				
+										
+					} catch (PaymentException e) {
+						log.error("Exception occured user updation : "+e.getMessage());
+						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+						throw new IllegalArgumentException("User payments profile updation has not succeeded for the field : "+ attributeCode.replace("PRI_", "") +". "+getFormattedErrorMessage);
+					}
+				}				
+			} else {
+				if(value == null || value.trim().isEmpty()) {
+					throw new IllegalArgumentException("Updated value for the field "+attributeCode.replace("PRI_", "") + " is empty/invalid");
+				}
+			}
+			
+		} catch (IllegalArgumentException e){
+			
+			/* Send toast message the payments-user updation failed when the field updated is invalid */
+			String toastMessage = e.getMessage();
+			String[] recipientArr = { getUser().getCode() };
+			sendDirectToast(recipientArr, toastMessage, "warning");			
+		}		
+	}
+	
+	/* Converts payments error into Object and formats into a string error message */
+	public String getPaymentsErrorResponseMessage(String paymentsErrorResponseStr) {
+
+		QPaymentsErrorResponse errorResponse = JsonUtils.fromJson(paymentsErrorResponseStr,
+				QPaymentsErrorResponse.class);
+
+		StringBuilder errorMessage = new StringBuilder();
+		List<Map<String,Object>> errorMapList = new ArrayList<Map<String,Object>>();
+		errorMapList.add(errorResponse.getError());
+		errorMapList.add(errorResponse.getErrors());
+		
+		/* getErrors -> errors from external payment service */
+		/* getError -> error from payments service */
+		/* Iterating through Assembly errors and payment-service errors and formatting them */
+		for(Map<String, Object> errorMap : errorMapList) {
+			if (errorMap != null && errorMap.size() > 0) {
+				for (Map.Entry<String, Object> entry : errorMap.entrySet()) {
+					String errVar = entry.getKey();
+					List<String> errVal = (List<String>) entry.getValue();
+
+					StringBuilder errValBuilder = new StringBuilder();
+					for (String err : errVal) {
+						errValBuilder.append(err);
+					}
+
+					System.out.println("Error Key = " + errVar + ", Value = " + errValBuilder);
+			
+					/* appending and formatting error messages */
+					errorMessage.append(errVar + " : " + errVal.toString());
+				}
+			}
+		}
+		return errorMessage.toString();
 	}
 }

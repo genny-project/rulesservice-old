@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -210,7 +211,7 @@ public class PaymentUtils {
 
 		/* If the response code isn't a valid one throw an error */
 		if(responseCode > 299) {
-			throw new PaymentException("Payment exception, " + retJson);
+			throw new PaymentException(retJson);
 		}
 
 		/* Return the response JSON */
@@ -359,11 +360,8 @@ public class PaymentUtils {
 	}
 
 	/* Called when a particular attribute is updated for a user */
-	@SuppressWarnings({ "unchecked"})
-	public static String updateUserInfo(String assemblyUserId, String attributeCode, String value, String assemblyAuthToken) {
-		/* Log the attribute for debugging purposes */
-		System.out.println("attributeCode ::" + attributeCode + ", value ::" + value);
-		String responseString = null;
+	public static QPaymentsUser updateUserInfo(String paymentsUserId, String attributeCode, String value) {
+		
 		QPaymentsUserInfo personalInfo = null;
 		QPaymentsLocationInfo locationInfo = null;
 		QPaymentsUserContactInfo userContactInfo = null;
@@ -436,37 +434,26 @@ public class PaymentUtils {
 		}
 
 		/* For Assembly Personal Information Update */
-		if(personalInfo != null  && assemblyUserId != null) {
+		if(personalInfo != null  && paymentsUserId != null) {
 			user = new QPaymentsUser();
-			user.setId(assemblyUserId);
+			user.setId(paymentsUserId);
 			user.setPersonalInfo(personalInfo);
 		}
 
-		if (userContactInfo != null && assemblyUserId != null) {
+		if (userContactInfo != null && paymentsUserId != null) {
 			user = new QPaymentsUser();
-			user.setId(assemblyUserId);
+			user.setId(paymentsUserId);
 			user.setContactInfo(userContactInfo);
 		}
 
-		if (locationInfo != null && assemblyUserId != null) {
+		if (locationInfo != null && paymentsUserId != null) {
 			user = new QPaymentsUser();
-			user.setId(assemblyUserId);
+			user.setId(paymentsUserId);
 			user.setLocation(locationInfo);
 		}
 
-		/* Make the request to Assembly and update */
-		if(user != null && assemblyUserId!= null) {
-			try {
-				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user), assemblyAuthToken);
-				System.out.println("response string from payments user updation ::"+responseString);
-			} catch (PaymentException e) {
-				log.error("Exception occured user updation");
-				e.printStackTrace();
-			}
-		}
-
 		/* Return the response */
-		return responseString;
+		return user;
 	}
 
 	/* Called when a particular attribute is updated for a company */
