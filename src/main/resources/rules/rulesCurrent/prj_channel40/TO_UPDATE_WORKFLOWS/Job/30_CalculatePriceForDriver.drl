@@ -16,9 +16,8 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 
 rule "Calculate Price for Driver"
-    no-loop true
     when
-        $m: QEventAttributeValueChangeMessage( data.code == "PRI_OFFER_DRIVER_PRICE_EXC_GST"  && getAnswer().getTargetCode().startsWith("OFR_") )
+        $m: QEventAttributeValueChangeMessage( data.code.equals("PRI_OFFER_DRIVER_PRICE_EXC_GST")  && getAnswer().getTargetCode().startsWith("OFR_") )
         rules : QRules( isState("STARTED") && !isState("CALCULATE_DRIVER_PRICE") )
     then
 
