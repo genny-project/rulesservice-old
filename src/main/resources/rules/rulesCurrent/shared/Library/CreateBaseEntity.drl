@@ -1,0 +1,41 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Create BaseEntity"
+	when
+	    rules: QRules( isState("CREATE_BASE_ENTITY") &&
+                        !isState("LOOP_CREATE_BASE_ENTITY") )
+	 then
+	    rules.header();
+
+			rules.setState("LOOP_CREATE_BASE_ENTITY");
+
+        String beCode = rules.getAsString("beCode");
+        String bePrefix = rules.getAsString("bePrefix");
+        String beName = rules.getAsString("beName");
+
+ 		if (beCode == null) {
+             rules.println("Create BaseEntity: missing beCode. defaulting to user code");
+             beCode = rules.getUser().getCode();
+        }
+        
+ 		if (bePrefix == null) {
+            rules.println("Create BaseEntity: missing bePrefix");
+        }
+        else if (beName == null) {
+            rules.println("Create BaseEntity: missing beName");
+        }
+        else {
+            BaseEntity be = rules.createBaseEntityByCode( beCode, bePrefix, beName );
+
+            rules.set("baseEntity", be);
+            rules.setState("CREATED_BASE_ENTITY");
+            rules.setState(bePrefix);
+
+            String[] begRecipients = {rules.getUser().getCode()};
+            rules.publishBaseEntityByCode(be.getCode(), null , null , begRecipients);
+        }
+		rules.clearState("CREATE_BASE_ENTITY");
+	    rules.footer();
+end

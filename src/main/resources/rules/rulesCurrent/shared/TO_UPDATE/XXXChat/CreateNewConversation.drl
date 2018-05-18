@@ -1,0 +1,127 @@
+package life.genny.rules;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import life.genny.rules.RulesUtils;
+import life.genny.utils.VertxUtils;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Create Conversation"
+    when
+		$m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CREATE_CONVERSATION")
+		rules: QRules( !isState("CREATE_CONVERSATION") )
+     then
+     	rules.header();
+		rules.setState("CREATE_CONVERSATION");
+
+		String receiverCode = $m.getItemCode();
+		String begCode = $m.getHint();
+		String userCode = rules.getUser().getCode();
+
+		rules.println("receiverCode  ::   "+ receiverCode);
+		rules.println("begCode  ::   " + begCode);
+
+		if(receiverCode != null && begCode != null) {
+
+			List<BaseEntity> chats = rules.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+			Boolean foundConversation = false;
+			String chatCode = null;
+
+			if (chats != null) {
+
+				for(int i = 0; i < chats.size(); i++) {
+
+					BaseEntity chat = chats.get(i);
+
+					List<BaseEntity> users = rules.getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+					if (users != null) {
+
+						Boolean foundCurrentUser = false;
+						Boolean foundReceiver = false;
+
+						for(int j = 0; j < users.size(); j++) {
+
+							BaseEntity linkedUser = users.get(j);
+
+							/* if user is a stackholder of this conversation we add it to  */
+							if (linkedUser.getCode().equals(userCode)) {
+								foundCurrentUser = true;
+							}
+							else if(linkedUser.getCode().equals(receiverCode)) {
+								foundReceiver = true;
+							}
+							if(foundReceiver == true && foundCurrentUser == true) {
+								foundConversation = true;
+								chatCode = 	chats.get(i).getCode();
+							}
+						}
+
+						if(foundCurrentUser == true && foundReceiver == true) {
+							break;
+						}
+					}
+				}
+			}
+
+			/* Conversation exists */
+			if(foundConversation == true) {
+				if(chatCode != null){
+					rules.println("Chat Exists   ::   TRUE" );
+					rules.println("OLD CHAT CODE   ::   " + chatCode);
+					rules.showLoading("Loading Chat History ...");
+				 	rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
+				}
+			}
+			else {
+				rules.showLoading("Creating a new conversation...");
+
+				/* GET beg BE */
+					BaseEntity beg = rules.getBaseEntityByCode(begCode);
+
+				/* Create chat BE */
+					BaseEntity chat = rules.createBaseEntityByCode(userCode, "CHT", "Chat");
+					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
+					RulesUtils.ruleLogger("CHAT BaseEntity", chat);
+
+				/* Subscribe Users to chat BaseEntity */
+					VertxUtils.subscribe(rules.realm(), chat, userCode);
+					VertxUtils.subscribe(rules.realm(), chat, receiverCode);
+
+				/* Set attributes for chat BaseEntity */
+					String chatTitle = beg.getLoopValue("PRI_TITLE", null);
+					if(chatTitle == null) chatTitle = "New Conversation";
+
+					rules.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_TITLE", chatTitle));
+					rules.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm")));
+
+				/* link GRP_MESSAGES and CHAT BE || list-item-conversation */
+					rules.createLink("GRP_MESSAGES", chat.getCode(), "LNK_CHAT", "chat_conversation", 1.0);
+
+				/* Link users to chat */
+					rules.createLink(chat.getCode(), userCode, "LNK_USER", "sender", 1.0);
+					rules.createLink(chat.getCode(), receiverCode, "LNK_USER", "receiver", 1.0);
+
+				/* SEND (GRP_MESSAGES, CHAT, SENDER, RECIEVER) BaseEntitys to recipients */
+					String[] chatRecipients = VertxUtils.getSubscribers(rules.realm(), chat.getCode());
+					rules.println("CHAT subscribers   ::   " + Arrays.toString(chatRecipients));
+
+					rules.publishBaseEntityByCode("GRP_MESSAGES", "GRP_MESSAGES", "LNK_BEG", chatRecipients);
+					rules.publishBaseEntityByCode(chat.getCode(), userCode, "LNK_USER", chatRecipients);
+					rules.publishBaseEntityByCode(chat.getCode(), receiverCode, "LNK_USER", chatRecipients);
+
+				/* redirect user to messaging screen */
+					rules.sendSublayout("messages-layout", "messages-layout.json", chat.getCode());
+			}
+		}
+     	rules.footer();
+end

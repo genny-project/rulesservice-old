@@ -1,0 +1,41 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.Link;
+
+rule "Create Link"
+	when
+	    rules: QRules(  isState("CREATE_LINK")  )
+	 then
+	    rules.header();
+
+        String linkSourceCode = rules.getAsString("linkSourceCode");
+        String linkTargetCode = rules.getAsString("linkTargetCode");
+        String linkCode = rules.getAsString("linkCode");
+        String linkValue = rules.getAsString("linkValue");
+        Double linkWeight = rules.getAsDouble("linkWeight");
+
+ 		if (linkSourceCode == null) {
+             rules.println("Create Link: missing linkSourceCode");
+        }
+        else if (linkTargetCode == null) {
+            rules.println("Create Link: missing linkTargetCode");
+        }
+        else if (linkCode == null) {
+            rules.println("Create Link: missing linkCode");
+        }
+        else if (linkValue == null) {
+            rules.println("Create Link: missing linkValue");
+        }
+        else if (linkWeight == null) {
+            rules.println("Create Link: missing linkWeight");
+        }
+        else {
+            rules.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);
+
+		    rules.setState("CREATED_LINK");
+		    rules.setState(linkValue);
+        }
+
+        rules.clearState("CREATE_LINK");
+	    rules.footer();
+end

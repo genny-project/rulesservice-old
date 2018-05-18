@@ -1,0 +1,136 @@
+package life.genny.rules;
+
+import life.genny.rules.RulesUtils;
+import life.genny.rules.QRules;
+
+import life.genny.qwanda.Answer;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+import life.genny.utils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
+import java.util.HashMap;
+
+
+rule "Create Payment Item"
+	agenda-group "payments"
+	when
+		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER" )
+		rules: QRules( !isState("CREATED_PAYMENT_ITEM") )
+	then
+		rules.header();
+		rules.println("Item creation process started");
+
+		String offerCode = m.getItemCode();
+		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+
+
+		/*Getting BEG code from offerCode that has been confirmed */
+		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
+		RulesUtils.println("BEG CODE ::"+BEGCode);
+		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
+		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+		BaseEntity loadBe = rules.getChildren(BEGCode, "LNK_BEG", "LOAD");
+		BaseEntity ownerBe = rules.getUser();
+		BaseEntity driverBe = null;
+
+      	if(assemblyId != null) {
+
+       		RulesUtils.println("Refreshing tokens");
+
+  			String oneTimeTransactionCardToken = null;
+  			String oneTimeTransactionBankToken = null;
+       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
+       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+			
+			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
+			/* rules.publishData(cardTokenAnswer); */
+
+			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
+			/* rules.publishData(bankTokenAnswer); */
+			
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(cardTokenAnswer);
+			answers.add(bankTokenAnswer);
+
+			rules.saveAnswers(answers);
+			
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
+			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
+
+       	}
+       	
+       	
+       	String quoterCode_driver = offerBe.getValue("PRI_QUOTER_CODE", null);
+       	if(quoterCode_driver != null) {
+       		/* if OFFER has an attribute has attribute PRI_QUOTER_CODE, fetch it as the confirmed driver */
+       		driverBe = rules.getBaseEntityByCode(quoterCode_driver);
+       	} else {
+       		/* if attribute PRI_QUOTER_CODE returns null, then fetch the Driver BE from the links of the OFFER */
+       		driverBe = rules.getChildren(offerCode, "LNK_OFR", "CREATOR");
+       	}
+       	
+
+       	/* Checking if item already exists */
+       	String paymentItemId = begBe.getValue("PRI_ITEM_ID", null);
+       	Boolean isNewItem = false;
+       	
+       	if(paymentItemId == null) {
+       		/* If payment Item ID is not present for a BEG, create a new payment item */
+       		isNewItem = true;
+       	} else {
+       		/* Check if item already present is valid or not */
+       		Boolean isItemValid = PaymentUtils.checkForAssemblyItemValidity(paymentItemId, offerBe, ownerBe, driverBe, assemblyAuthKey);
+       		rules.println("is item valid ::"+isItemValid);
+       		
+       		if(isItemValid) {
+       			isNewItem = false;
+       		} else {
+       			isNewItem = true;
+       		}
+       	}
+       	
+       	rules.println("New item needs to be created ::"+isNewItem);
+       	
+       	/* create a new payment item */
+       	if(isNewItem) {
+       		
+       		String itemId = null;
+			itemId = PaymentUtils.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
+       	 	rules.println("Payment item Id="+itemId);
+       	 	
+       	 	if(itemId != null) {
+       	 		rules.println("Saving Answer");
+				Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
+	    			rules.saveAnswer(itemIdAnswer);
+       	 	} 
+       	 	else {
+       	 		HashMap<String,String> contextMap = new HashMap<String, String>();
+       	 		contextMap.put("JOB",BEGCode);
+       	 		
+       	 		String[] recipientArray = {rules.getUser().getCode()};
+       	 		
+       	 		rules.sendMessage("", recipientArray, contextMap,"MSG_CH40_ITEM_CREATION_FAILED", "TOAST");
+       	 		rules.setState("TRIGGER_HOMEPAGE");
+       	 	}
+        		
+       	}
+       	
+       	
+		/* Ugly way of checking */
+		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
+		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
+
+		if(paymentIdAttributeValue != null && assemblyId != null) {
+		
+			//To save the datetime of item creation
+			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
+			rules.saveAnswer(itemCreationDateTime);
+		
+			RulesUtils.println("BEG CODE ::"+BEGCode);
+			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
+	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
+		}
+		rules.setState("CREATED_PAYMENT_ITEM");
+		rules.footer();
+end

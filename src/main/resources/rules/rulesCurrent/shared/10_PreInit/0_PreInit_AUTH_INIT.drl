@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Pre Init"
+	no-loop true
+    ruleflow-group 'Init'
+
+    when
+        m : QEventMessage( data.code == "AUTH_INIT")
+        rules: QRules(  !isState("STARTED") &&
+                        !isState("LOOP_PRE_INIT_EVT") )
+     then
+        rules.setDrools(drools);
+     	rules.header();
+        rules.setState("LOOP_PRE_INIT_EVT");
+        rules.setState("STARTED");
+        /* rules.setState("TRIGGER_LOGIN_WORKFLOW"); */
+        
+	    rules.footer();
+end

@@ -1,0 +1,18 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Exit Role Selection"
+     when
+        rules: QRules( 	isState("ROLE_SET") &&
+						!isState("EXITED_ROLE_SELECTION") ) 
+     then      
+        rules.header();     
+		
+		rules.setState("EXITED_ROLE_SELECTION");
+		rules.setState("TRIGGER_PROFILE_CHECK");
+
+		rules.footer();     		      
+end
+     	

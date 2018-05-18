@@ -1,0 +1,53 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import java.util.List;
+
+
+rule "Publish BaseEntity List"
+    when
+        rules: QRules(  isState("PUBLISH_BASE_ENTITY_LIST") &&
+                        !isState("LOOP_PUBLISH_BASE_ENTITY_LIST"))
+     then
+        rules.header();
+        rules.setState("LOOP_PUBLISH_BASE_ENTITY_LIST");
+
+        String beParentCode = rules.getAsString("beParentCode");
+        String beLinkCode = rules.getAsString("beLinkCode");
+
+        Integer bePageStart = rules.getAsInteger("bePageStart");
+        Integer bePageSize = rules.getAsInteger("bePageSize");
+
+        Boolean beCache = rules.getAsBoolean("beCache");
+        String beStakeholderCode = rules.getAsString("beStakeholderCode");
+
+        if(beParentCode == null) {
+            rules.println("Publish BaseEntity List :: missing beParentCode");
+        }
+        else if(beLinkCode == null) {
+            rules.println("Publish BaseEntity List :: missing beLinkCode");
+        }
+        else if(bePageStart == null) {
+             rules.println("Publish BaseEntity List :: missing bePageStart");
+        }
+        else if(bePageSize == null) {
+             rules.println("Publish BaseEntity List :: missing bePageSize");
+        }
+        else if(beCache == null) {
+             rules.println("Publish BaseEntity List :: missing beCache");
+        }
+        else {
+
+            List<BaseEntity> beList = null;
+            if( beStakeholderCode != null ) {
+                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
+            }
+            else{
+                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache);
+            }
+            rules.publishCmd(beList, beParentCode, beLinkCode);
+            rules.set("beList", beList);
+            rules.setState("PUBLISHED_BASE_ENTITY_LIST");
+        }
+        rules.clearState("PUBLISH_BASE_ENTITY_LIST");
+	    rules.footer();
+end

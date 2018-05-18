@@ -39,7 +39,7 @@ public class EBCHandlers {
 
 //	protected static final Logger log = org.apache.logging.log4j.LogManager
 //			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
-	
+
 	static Logger log = LoggerFactory.getLogger(EBCHandlers.class);
 
 	static Map<String, Object> decodedToken = null;
@@ -127,14 +127,14 @@ public class EBCHandlers {
 					}
 				}
 				else if (payload.getString("data_type").equals(GPS.class.getSimpleName())) {
-						
+
 					QDataGPSMessage dataGPSMsg = null;
 					try {
 						dataGPSMsg = JsonUtils.fromJson(payload.toString(), QDataGPSMessage.class);
 						processMsg("GPS", payload.getString("ruleGroup"), dataGPSMsg, eventBus, payload.getString("token"));
-					} 
+					}
 					catch (com.google.gson.JsonSyntaxException e) {
-						
+
 						log.error("BAD Syntax converting to json from " + dataGPSMsg);
 						JsonObject json = new JsonObject(payload.toString());
 						JsonObject answerData = json.getJsonObject("items");
@@ -149,9 +149,9 @@ public class EBCHandlers {
 					try {
 						dataCallbackMsg = JsonUtils.fromJson(payload.toString(), QDataPaymentsCallbackMessage.class);
 						processMsg("Data:"+dataCallbackMsg.getData_type(), payload.getString("ruleGroup"), dataCallbackMsg, eventBus, payload.getString("token"));
-					} 
+					}
 					catch (com.google.gson.JsonSyntaxException e) {
-						
+
 						log.error("BAD Syntax converting to json from " + dataCallbackMsg);
 						JsonObject json = new JsonObject(payload.toString());
 						dataCallbackMsg = JsonUtils.fromJson(json.toString(), QDataPaymentsCallbackMessage.class);
@@ -171,10 +171,15 @@ public class EBCHandlers {
 
 	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
+			
+			
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
+			// check for token expiry
+			
+			
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
-	
+
 			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
 			String fullName = adecodedTokenMap.get("name").toString();
 			String realm = adecodedTokenMap.get("realm").toString();
@@ -184,8 +189,8 @@ public class EBCHandlers {
 			qRules.set("realm", realm);
 
 
-			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
-	
+			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>();
+			RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(qRules);
@@ -199,7 +204,7 @@ public class EBCHandlers {
 				usersSession.put(adecodedTokenMap.get("preferred_username").toString(), currentUser);
 				facts.add(currentUser);
 			}
-					
+
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
@@ -222,18 +227,18 @@ public class EBCHandlers {
 		});
 
 	}
-	
+
 	public static void initMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
 			Map<String,Object> adecodedTokenMap = new HashMap<String,Object>();
 			Set<String> auserRoles = new HashSet<String>();
 			auserRoles.add("admin");
 			auserRoles.add("user");
-	
+
 			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
 			qRules.set("realm", ruleGroup);
 
-			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
+			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String,Object>>(); //RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(qRules);
@@ -243,8 +248,8 @@ public class EBCHandlers {
 	            User currentUser = new User("user1", "User1", ruleGroup, "admin");
 				usersSession.put("user", currentUser);
 				facts.add(currentUser);
-	
-					
+
+
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
@@ -267,7 +272,7 @@ public class EBCHandlers {
 		});
 
 	}
-   
+
 	  public static class Message {
 
 	        public static final int HELLO = 0;

@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.utils.DateUtils;
+
+rule "User logged in"
+    when
+        rules: QRules(	isState("AUTH_INIT") && 
+						isUserPresent() == true &&  					
+						!isState("LOOP_USER_LOGGED_IN"))
+      then
+		rules.header();
+		rules.setState("LOOP_USER_LOGGED_IN");
+		BaseEntity user = rules.getUser();
+		if( user != null ){
+	      /*  saving user logged in date time  */
+	      rules.saveAnswer( new Answer(user.getCode(), 
+	   							      user.getCode(), 
+	   							      "PRI_LAST_LOGIN_DATETIME", DateUtils.getCurrentUTCDateTime()) 
+	   					  );
+	   	 }
+	   	else{
+	   	   System.out.println("Error!! Unable to set users login data and time because the User BaseEntity is null");
+	   	 }
+		
+		rules.setState("TRIGGER_APPLICATION_SETUP");
+
+		rules.footer();     		      
+end

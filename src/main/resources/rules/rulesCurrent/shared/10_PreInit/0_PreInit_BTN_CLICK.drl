@@ -1,0 +1,60 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Btn Click"
+	no-loop true
+	ruleflow-group 'Init'
+    when
+	  m : QEventMessage( event_type == "BTN_CLICK" )
+	  rules: QRules(!isState("STARTED"))
+     then
+        rules.setDrools(drools);
+        rules.println("RULE INIT BTN_CLICK: "+m);
+        rules.setState("EVENT_BTN_CLICK");
+        rules.setState("STARTED");
+
+        String quesCode = m.getData().getCode();
+
+        try {
+
+            String dataString = m.getData().getValue();
+            JsonObject dataJson = new JsonObject(dataString);
+
+            /* Get targetCode */
+            String targetCode = dataJson.getString("targetCode");
+            rules.println("targetCode   ::   " + targetCode);
+
+            /* Get itemCode */
+            String itemCode = dataJson.getString("itemCode");
+            rules.println("itemCode   ::   " + itemCode);
+
+            /* Get itemCode */
+            String hintCode = dataJson.getString("hint");
+            rules.println("hintCode   ::   " + hintCode);
+
+            /* Get actionCode */
+            String actionCode = dataJson.getString("action");
+            rules.println("actionCode   ::   " + actionCode);
+
+
+          if(targetCode != null) {
+            rules.set("quesTargetCode", targetCode);
+          }
+          if(itemCode != null) {
+            rules.set("itemCode", itemCode);
+          }
+          if(hintCode != null) {
+            rules.set("hintCode", hintCode);
+          }
+        }
+        catch( Exception e) {
+          rules.println("button click event   ::   " +  m.getData());
+        }
+
+        if(quesCode != null) {
+          rules.setState(quesCode);
+        }
+end

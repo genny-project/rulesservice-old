@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "User-Docs upload Submit"
+    when
+       rules: QRules( isState("EVENT_FORM_SUBMIT") && isState("QUE_USER_DOCUMENTS_GRP") && !isState("DOCS_UPLOADED") ) 
+    then
+       rules.header();
+    	    /*  Get data.value and decode   */
+        /* String dataString = $m.data.getValue();
+         JsonObject dataJson = new JsonObject(dataString);
+         String userCode = dataJson.getString("targetCode");
+         String actionCode = dataJson.getString("action");  */
+        
+         rules.setState("DOCS_UPLOADED");
+         //rules.setState("TRIGGER_HOMEPAGE");  
+	     rules.redirectToHomePage();
+
+        rules.footer();
+  end
+

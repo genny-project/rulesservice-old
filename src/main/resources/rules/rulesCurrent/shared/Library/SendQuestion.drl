@@ -1,0 +1,32 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Question"
+	when
+	    rules: QRules( isState("SEND_QUESTION") )
+	 then
+        rules.header();
+
+        String questionSourceCode = rules.getAsString("questionSourceCode");
+        String questionTargetCode = rules.getAsString("questionTargetCode");
+        String questionGroupCode = rules.getAsString("questionGroupCode");
+
+ 		if(questionSourceCode == null) {
+             rules.println("Send Question: missing questionSourceCode");
+        }
+        else if(questionTargetCode == null) {
+            rules.println("Send Question: missing questionTargetCode");
+        }
+        else if(questionGroupCode == null) {
+            rules.println("Send Question: missing questionGroupCode");
+        }
+        else {
+            rules.sendQuestions(questionSourceCode, questionTargetCode, questionGroupCode, true);
+
+            rules.setState("SENT_QUESTION");
+            rules.setState(questionGroupCode);
+        }
+
+        rules.clearState("SEND_QUESTION");
+	 	rules.footer();
+end

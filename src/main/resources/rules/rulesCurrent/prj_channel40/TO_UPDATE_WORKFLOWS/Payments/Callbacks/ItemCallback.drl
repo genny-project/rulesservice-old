@@ -1,0 +1,192 @@
+package life.genny.rules;
+
+	import life.genny.rules.RulesUtils;
+	import life.genny.rules.QRules;
+	import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
+
+
+	rule "Assembly item callback"
+		agenda-group "payment-callback"
+		no-loop true
+		when
+			m : QDataPaymentsCallbackMessage( QDataPaymentsCallbackMessage.getData_type().equals(QDataPaymentsCallbackMessage.class.getSimpleName()) &&  QDataPaymentsCallbackMessage.getObject_type() == QDataPaymentsCallbackMessage.ObjectType.ITEM)
+			rules: QRules( isState("STARTED") && !isState("ITEM_CALLBACK") )
+		then
+			rules.header();
+
+			/* m has all item callback information, this is coming from Assembly */
+			rules.println("item id fr callback ::"+m.getObjectId());
+			rules.println("item object status ::"+m.getObject_status());
+			rules.println("item callback status ::"+m.getObject_message());
+
+			BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
+
+			/* This variable is for checking if callback is an existing/new callback status */
+			Boolean isUpdateAction = false;
+
+			BaseEntity owner = null;
+			BaseEntity driver = null;
+			BaseEntity load = null;
+			String offerCode = null;
+			List<String> userCodesForStatusColourChange = new ArrayList<>();
+
+			if(begBe != null) {
+
+				offerCode = begBe.getValue("STT_HOT_OFFER", null);
+
+				/* This attribute contains all call-back logs from assembly */
+				String currentPaymentStatusString = begBe.getValue("PRI_ITEM_STATUS", null);
+
+				rules.println("current payment status ::"+currentPaymentStatusString);
+
+				owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
+				driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
+				load = rules.getChildren(begBe.getCode(), "LNK_BEG", "LOAD");
+
+				/* Adding users who needs to get status-colour change */
+			    userCodesForStatusColourChange.add(driver.getCode());
+			    userCodesForStatusColourChange.add(owner.getCode());
+
+				JsonObject paymentStatusObj = new JsonObject();
+				paymentStatusObj.put("status", m.getObject_status().toString());
+				paymentStatusObj.put("statusUpdatedDateTime", rules.getCurrentLocalDateTime());
+				paymentStatusObj.put("assemblyMessage", m.getObject_message());
+
+
+				/* If beg already has itemcallback logs, use the existing attribute */
+				if(currentPaymentStatusString != null) {
+
+					rules.println("payment status is not null ::"+currentPaymentStatusString);
+
+					if(!currentPaymentStatusString.contains(m.getObject_status().toString())) {
+
+						JsonArray currentPaymentStatus = new JsonArray(currentPaymentStatusString);
+						currentPaymentStatus.add(paymentStatusObj);
+						String finalPaymentStatus = currentPaymentStatus.toString();
+
+						Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
+
+		        rules.saveAnswer(paymentStatusAnswer);
+		        isUpdateAction = true;
+
+
+					} else {
+						/* If callbacks with same status keep hitting rules, they will not be saved */
+						rules.println("Repetitive callbacks for same callback status");
+
+					}
+
+				}
+				else {
+
+					/* if callbacks for an item is coming through for the first time, initialize and save the attribute as an array of callback logs */
+					rules.println("Payment method string ::"+paymentStatusObj.toString());
+
+					Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", "[" + paymentStatusObj.toString() + "]");
+		            	rules.saveAnswer(paymentStatusAnswer);
+		            	isUpdateAction = true;
+				}
+			}
+
+
+			if(isUpdateAction) {
+
+				if(m.getObject_status().toString().equals("ITEM_PAYMENT_DEPOSITED")) {
+					/* ITEM_PAYMENT_DEPOSITED - payment deposited successfully in escrow */
+					/* toast and sms sent to both driver and owner, payment-escrow mail sent to owner */
+
+					/* hitting the method to change status-colour to green (success) - escrow status */
+			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+
+            /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
+            rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+
+				 	String[] messageOwnerRecipient = new String[1];
+			     	messageOwnerRecipient[0] = owner.getCode();
+
+			     	String[] messageDriverRecipient = new String[1];
+			     	messageDriverRecipient[0] = driver.getCode();
+
+			     	HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("JOB", begBe.getCode());
+					contextMap.put("DRIVER", driver.getCode());
+					contextMap.put("OWNER", owner.getCode());
+					contextMap.put("LOAD", load.getCode());
+					contextMap.put("OFFER", offerCode);
+
+			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
+			     	rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
+
+			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
+			     	rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "SMS");
+
+			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_ESCROW_OWNER", "EMAIL");
+
+			     	/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow"); */
+			     	Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
+			     	rules.saveAnswer(paymentStatus);
+
+
+		         } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
+		         	/* ITEM_PAYMENT_COMPLETED - Payment release is complete */
+		         	/* when payment release is complete, release-payment emails with invoices and toasts are sent to both owner and driver */
+
+		         		/* hitting the method to change status-colour to green - Payment to driver completed */
+			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+
+		            		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+			     		rules.triggerReleasePaymentMailWithAttachment(owner, driver, offerBe, load, begBe);
+
+						/* save status in database */
+			     		/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed"); */
+			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
+			     		rules.saveAnswer(paymentStatus);
+
+			     		/* we mark the job as paid */
+          				rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+
+
+		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD") || m.getObject_status().toString().equals("ITEM_PAYMENT_PROBLEM")) {
+
+						/* ITEM_PAYMENT_HELD -  Payment held because of KYC information/Fraud */
+						/* Toast sent */
+
+						/* hitting the method to change status-colour to red - Payment held */
+			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
+
+		            		HashMap<String, String> contextMap = new HashMap<String, String>();
+						contextMap.put("DRIVER", driver.getCode());
+						contextMap.put("JOB", begBe.getCode());
+						contextMap.put("QUOTER", driver.getCode());
+						String[] recipientArr = { rules.getUser().getCode() };
+
+						String[] messageOwnerRecipient = new String[1];
+			     		messageOwnerRecipient[0] = owner.getCode();
+
+			     		String[] messageToDriverRecipient = new String[1];
+			     		messageToDriverRecipient[0] = driver.getCode();
+
+						/* Need to display error toast if make payment fails */
+						rules.sendMessage(null, messageOwnerRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
+						rules.sendMessage(null, messageToDriverRecipient, contextMap, "MSG_CH40_MAKE_PAYMENT_FAILED", "TOAST");
+
+						/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held"); */
+						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
+						rules.saveAnswer(paymentStatus);
+
+		            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
+		            		/* ITEM_PAYMENT_INCOMING - make payment is done, but money transaction still getting processed */
+						/* status is saved in DB */
+
+						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
+						rules.saveAnswer(paymentStatus);
+
+		            	}
+
+			}
+
+
+	     	rules.setState("ITEM_CALLBACK");
+
+			RulesUtils.footer(drools.getRule().getName());
+	end

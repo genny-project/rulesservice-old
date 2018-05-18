@@ -1,0 +1,194 @@
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.rules.RulesUtils;
+import life.genny.utils.PaymentUtils;
+import life.genny.qwandautils.MergeUtil;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.Set;
+import life.genny.qwanda.PaymentsResponse;
+import java.util.HashSet;
+import java.util.HashMap;
+import life.genny.qwanda.Link;
+import life.genny.qwanda.Answer;
+import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+
+rule "Job Confirm Delivery - Owner and Release Payment"
+  when
+      $m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_DELIVERY_OWNER")
+      rules: QRules( !isState("CONFIRMED_DELIVERY_OWNER") && !isState("PAYMENT_RELEASED") )
+  then
+      rules.header();
+
+      rules.setState("PAYMENT_RELEASED");
+      rules.println("Release Payment process started");
+
+      String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+      String assemblyId = MergeUtil.getAttrValue(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", rules.getToken());
+
+      BaseEntity user = rules.getUser();
+      String ownerCode = user.getCode();
+      String driverCode = null;
+      BaseEntity begBe = null;
+
+      /* list of users for status-change */
+      List<String> userCodesForStatusColourChange = new ArrayList<>();
+
+      String dataFromFE = $m.getData().getValue();
+      JsonObject dataJson = new JsonObject(dataFromFE);
+
+      String begCode = dataJson.getString("itemCode");
+      RulesUtils.println("Beg code in release payment ::"+begCode);
+
+      if(begCode != null) {
+
+        begBe = rules.getBaseEntityByCode(begCode);
+
+        /* getting driver code from links */
+        List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+
+        if(linkList != null) {
+
+          for(Link link : linkList) {
+            if(link.getLinkValue().equals("DRIVER")) {
+              driverCode = link.getTargetCode();
+            }
+          }
+        }
+
+        rules.sendRating(dataFromFE);
+
+        /* adding users for status change */
+        userCodesForStatusColourChange.add(ownerCode);
+        if(driverCode != null) {
+          userCodesForStatusColourChange.add(driverCode);
+        }
+
+        Boolean isRealeasePaymentDone = begBe.getLoopValue("PRI_IS_RELEASE_PAYMENT_DONE", false);
+        String paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
+
+        /* if payment is already released and is successful, set success states */
+
+        rules.println(isRealeasePaymentDone);
+
+        if(isRealeasePaymentDone) {
+
+          /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
+          rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+
+          /* we move the job to PAID */
+          rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+
+          rules.setState("CONFIRMED_DELIVERY_OWNER");
+
+        }
+        else {
+
+          /* when payment release process is flowing first time for an item */
+
+          if(ownerCode != null && driverCode != null) {
+
+            /* hitting release payment API */
+            PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
+
+            /* getting release-payment status */
+            Boolean isPaymentReleaseSuccess = releasePaymentResponse.getIsSuccess();
+
+            /* when release-payment is success */
+            if(isPaymentReleaseSuccess) {
+
+              Map<String, String> releasePaymentResponseMap = releasePaymentResponse.getResponseMap();
+              List<Answer> answers = new ArrayList<Answer>();
+
+              /*    Adding Release Payment Done status  */
+              Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE");
+              answers.add(paymentDoneAns);
+
+              /* save single-disbursement-id as an anwer for the beg once the payment is release */
+              String disbursementId = releasePaymentResponseMap.get("disbursementId");
+              if(releasePaymentResponseMap != null && disbursementId != null) {
+                Answer releasePaymentDisbursementAns = new Answer(rules.getUser().getCode(), begCode, "PRI_PAYMENTS_DISBURSEMENT_ID", disbursementId );
+                answers.add(releasePaymentDisbursementAns);
+              }
+
+              rules.saveAnswers(answers);
+
+              /* we move the job to GRP_PAID */
+              rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+
+              /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+              rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+
+              rules.setState("CONFIRMED_DELIVERY_OWNER");
+
+            }
+            else {
+
+              /* release-payment has failed */
+
+              /* Sometimes release-payment fails coz of KYC, but gets marked as Completed in Assembly dashboard..so handling this situation with checking for callback status */
+              paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
+              if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
+
+                /*    Adding Release Payment Done status  */
+                Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
+                rules.saveAnswer(paymentDoneAns);
+
+                /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+
+                /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
+                rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+
+                rules.setState("CONFIRMED_DELIVERY_OWNER");
+              }
+              else {
+
+                RulesUtils.println("Release payment failed::"+begCode);
+
+                /*  Adding Release Payment Done status  */
+                Answer paymentNotDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "FALSE" );
+                rules.saveAnswer(paymentNotDoneAns);
+
+                HashMap<String, String> contextMap1 = new HashMap<String, String>();
+                contextMap1.put("JOB", begCode);
+                contextMap1.put("OWNER", ownerCode);
+                contextMap1.put("DRIVER", driverCode);
+
+                String[] messageToOwnerRecipients1 = new String[1];
+                messageToOwnerRecipients1[0] = ownerCode;
+
+                rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
+
+                /* change status color to red - release payment failure */
+                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
+
+                BaseEntity project = rules.getProject();
+
+				/* send slack message when release payment fails */
+				if (project != null) {
+
+					String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
+					if (webhookURL != null) {
+
+					String message = "Release payment has failed for , BEG :" + begCode + ", CallBack from assembly - ITEM_PAYMENT_COMPLETED has not come through yet. All the callbacks for this Job-Item is : "+paymentStatus ;
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
+
+					try {
+							rules.postSlackNotification(webhookURL, payload);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+              }
+            }
+          }
+        }
+      }
+
+      rules.footer();
+end

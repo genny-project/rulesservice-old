@@ -1,0 +1,35 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Ask Question"
+	when
+	    rules: QRules( isState("ASK_QUESTION") )
+	 then
+        rules.header();
+
+        String questionSourceCode = rules.getAsString("questionSourceCode");
+        String questionTargetCode = rules.getAsString("questionTargetCode");
+        String questionGroupCode = rules.getAsString("questionGroupCode");
+        Boolean questionIsPopup = rules.getAsBoolean("questionIsPopup");
+
+ 		if(questionSourceCode == null) {
+             rules.println("Ask Question: missing questionSourceCode");
+        }
+        else if(questionTargetCode == null) {
+            rules.println("Ask Question: missing questionTargetCode");
+        }
+        else if(questionGroupCode == null) {
+            rules.println("Ask Question: missing questionGroupCode");
+        }
+        else {
+            rules.askQuestions( questionSourceCode,
+                                questionTargetCode,
+                                questionGroupCode,
+                                false,
+                                questionIsPopup );
+ 		    rules.setState("ASKED_QUESTION");
+        }
+
+        rules.clearState("ASK_QUESTION");
+	 	rules.footer();
+end

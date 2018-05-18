@@ -1,0 +1,19 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+
+rule "Form Submit"
+	when
+		m : QEventMessage( event_type == "FORM_SUBMIT" )
+	    rules: QRules( !isState("QUESTION_CODE_SET"))
+	 then
+	 	rules.header();
+
+		rules.setState("QUESTION_CODE_SET");
+	 	String quesCode = m.getData().getCode();
+		if(quesCode != null) {
+	 		rules.setState(quesCode);
+		}
+	 	rules.footer();
+end

@@ -1,0 +1,16 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Application Ready - send data"
+    when
+        rules: QRules( isState("APPLICATION_READY_SEND_DATA") && !isState("LOOP_APP_READY_SEND_DATA") )
+    then
+        rules.header();
+
+		    rules.setState("LOOP_APP_READY_SEND_DATA");
+        rules.setState("SEND_TREE_DATA");
+
+        rules.footer();
+end
