@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwandautils.JsonUtils;
 
-rule "TV_SELECT Event"
+rule "TV_SELECT Event - dashboard"
      when
        $m : QEventMessage( event_type == "TV_SELECT"  && data.value.equals("GRP_DASHBOARD") )
        rules: QRules( !isState("SELECTED_DASHBOARD_TREE") )
