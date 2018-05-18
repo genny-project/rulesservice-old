@@ -9,6 +9,6 @@ rule "Send Bucket Data"
      	rules.header();
 
      	rules.setState("LOOP_SENT_BUCKET_DATA_CH40");
-		  rules.sendLayoutsAndData();
+		rules.sendLayoutsAndData();
 	    rules.footer();
 end
