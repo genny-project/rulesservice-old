@@ -1,0 +1,22 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+import java.util.stream.Collectors;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.EntityAttribute;
+
+rule "User not found check role"
+     when
+        rules: QRules(  isState("STARTED") && (!isState("GENERATE_STARTUP")) &&
+                        isUserPresent() == false &&
+						            !isState("LOOP_CHECK_ROLE") )
+     then
+        rules.header();
+
+        rules.setState("LOOP_CHECK_ROLE");
+      	rules.setState("ROLE_NOT_FOUND");
+      	rules.setState("ROLE_CHECKED");
+      	
+      	rules.footer();
+end

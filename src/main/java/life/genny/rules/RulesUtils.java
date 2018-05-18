@@ -20,7 +20,10 @@ import io.vertx.rxjava.core.shareddata.AsyncMap;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.attribute.Attribute;
+import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -107,17 +110,6 @@ public class RulesUtils {
 
 	public static String getLayoutCacheURL(final String path) {
 
-		// https://raw.githubusercontent.com/genny-project/layouts/dev
-		// System.getenv("LAYOUT_CACHE_HOST");
-		// http://localhost:2223
-
-		// Boolean activateCache = null;
-		// if (System.getenv("GENNY_DEV") == null) {
-		// 	activateCache = true;
-		// } else {
-		// 	activateCache = false;
-		// }
-
 		String host = System.getenv("LAYOUT_CACHE_HOST");
 		if (host == null) {
 			if (System.getenv("HOSTIP") == null) {
@@ -127,16 +119,6 @@ public class RulesUtils {
 			}
 		}
 
-		// Boolean isFolder = false;
-		// if (activateCache == false) {
-		// 	if (path.contains(".json")) {
-		// 		host = "https://raw.githubusercontent.com/genny-project/layouts/dev";
-		// 	} else {
-		// 		isFolder = true;
-		// 		host = "https://api.github.com/repos/genny-project/layouts/contents"; // TODO: this has a rate limit
-		// 	}
-		// }
-		
 		return String.format("%s/%s", host, path);
 	}
 
@@ -155,7 +137,8 @@ public class RulesUtils {
 			println(url);
 			jsonStr = QwandaUtils.apiGet(url, null);
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			println(path + " not found.");
 		}
 		return jsonStr;
 	}
@@ -435,6 +418,24 @@ public class RulesUtils {
 
 	}
 
+	/* added because of the bug */
+	public static String getBaseEntitysJsonByParentAndLinkCode2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
+
+		try {
+			String beJson = null;
+			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + parentCode + "/linkcodes/"
+					+ linkCode + "?pageStart=" + pageStart + "&pageSize=" + pageSize, token);
+			return beJson;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
 	public static String getBaseEntitysJsonByParentAndLinkCodeAndLinkValue(final String qwandaServiceUrl,
 			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
 			final String linkValue, final Integer pageStart, final Integer pageSize) {
@@ -493,6 +494,7 @@ public class RulesUtils {
 
 		try {
 			String beJson = null;
+			System.out.println("stakeholderCode is :: " + stakeholderCode);
 			beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/" + parentCode + "/linkcodes/"
 					+ linkCode + "/attributes/" + stakeholderCode, token);
 			return beJson;
@@ -546,6 +548,28 @@ public class RulesUtils {
 			BaseEntity[] beArray = new BaseEntity[0];
 			msg = new QDataBaseEntityMessage(beArray);
 		}
+		return msg.getItems();
+
+	}
+	/** added because of bug /
+	/**
+	 *
+	 * @param qwandaServiceUrl
+	 * @param decodedToken
+	 * @param token
+	 * @param parentCode
+	 * @param linkCode
+	 * @param pageStart
+	 * @param pageSize
+	 * @return baseEntitys
+	 */
+	public static BaseEntity[] getBaseEntitysArrayByParentAndLinkCodeWithAttributes2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
+
+		String beJson = getBaseEntitysJsonByParentAndLinkCode2(qwandaServiceUrl, decodedToken, token, parentCode,
+				linkCode, pageStart, pageSize);
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson, QDataBaseEntityMessage.class);
 		return msg.getItems();
 
 	}
@@ -616,6 +640,30 @@ public class RulesUtils {
 	}
 
 	/**
+	*
+	* @param qwandaServiceUrl
+	* @param decodedToken
+	* @param token
+	* @param parentCode
+	* @param linkCode
+	* @param pageStart
+	* @param pageSize
+	* @return baseEntitys
+	*/
+
+	/* added because of bug */
+	public static List<BaseEntity> getBaseEntitysByParentAndLinkCodeWithAttributes2(final String qwandaServiceUrl,
+			Map<String, Object> decodedToken, final String token, final String parentCode, final String linkCode,
+			final Integer pageStart, final Integer pageSize) {
+
+		BaseEntity[] beArray = getBaseEntitysArrayByParentAndLinkCodeWithAttributes2(qwandaServiceUrl, decodedToken,
+				token, parentCode, linkCode, pageStart, pageSize);
+		ArrayList<BaseEntity> arrayList = new ArrayList<BaseEntity>(Arrays.asList(beArray));
+		return arrayList;
+
+	}
+
+	/**
 	 *
 	 * @param qwandaServiceUrl
 	 * @param decodedToken
@@ -676,6 +724,7 @@ public class RulesUtils {
 		if (parentCode.equalsIgnoreCase("GRP_NEW_ITEMS")) {
 			println("Group New Items Debug");
 		}
+		println("stakeholderCode is :: " + stakeholderCode);
 		String beJson = getBaseEntitysJsonByParentAndLinkCodeWithAttributesAndStakeholderCode(qwandaServiceUrl,
 				decodedToken, token, parentCode, linkCode, stakeholderCode);
 		QDataBaseEntityMessage msg = fromJson(beJson, QDataBaseEntityMessage.class);
@@ -780,6 +829,32 @@ public class RulesUtils {
 		}
 
 		return null;
+	}
+
+	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
+		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(oldBe.getCode(), null, prefix, token), name);
+
+		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
+		println("Size of oldBe Attributes   ::   "+oldBe.getBaseEntityAttributes().size());
+
+		for(EntityEntity ee : oldBe.getLinks()) {
+			ee.getLink().setSourceCode(newBe.getCode());
+		}
+		newBe.setLinks(oldBe.getLinks());
+
+		//newBe.setBaseEntityAttributes(oldBe.getBaseEntityAttributes());
+		println("New BE before hitting api  ::   "+ newBe);
+
+		String jsonBE = JsonUtils.toJson(newBe);
+		try {
+			// save BE
+			QwandaUtils.apiPostEntity(qwandaUrl + "/qwanda/baseentitys", jsonBE, token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		println(newBe.getCode());
+		return newBe;
+
 	}
 
 }

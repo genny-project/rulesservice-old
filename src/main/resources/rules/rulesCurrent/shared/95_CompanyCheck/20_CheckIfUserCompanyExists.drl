@@ -1,0 +1,26 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - step 1"
+
+	when
+		 rules: QRules( 	isState("CHECK_USER_COMPANY") && !isState("CHECKED_COMPANY") )   
+	 then
+	    rules.header();
+		
+		rules.setState("CHECKED_COMPANY");
+		
+		BaseEntity userCompany = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		rules.set("baseEntity", userCompany);
+		
+		if(userCompany == null) {
+			rules.setState("COMPANY_DOES_NOT_EXIST");
+		}
+		else {
+			rules.setState("COMPANY_EXISTS");
+		}
+		
+	    rules.footer();     		      
+end

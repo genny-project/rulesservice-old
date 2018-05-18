@@ -4,6 +4,7 @@ import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.QwandaUtils;
 
 rule "Select Report Item - SBE"
 
@@ -16,26 +17,6 @@ rule "Select Report Item - SBE"
      	rules.setState("REPORTS_SENT");
 	    String data = $m.getData().getValue();
 
-  		if(data != null) {
-
-  			JsonObject dataJson = new JsonObject(data);
-  		    String grpCode = dataJson.getString("hint");
-  		    if(grpCode != null && grpCode.startsWith("GRP_REPORTS") )
-  		    {
-               String searchBE = dataJson.getString("itemCode");          
-  		        if(searchBE != null) {
-  		    	        //rules.publishSearhBE(grpCode);
-  		    	         rules.sendReport(searchBE);
-  		    	         rules.sendCmdReportsSplitView(grpCode, searchBE);
-  		         }else{
-  		            rules.println("Error!! The search BE is empty."); 
-  		         }
-  		     }
-  		   else
-  		    {
-  		       rules.println("This is not related to Reports");
-  		   }
-
-           }
+  		rules.selectReport(data);
      	rules.footer();
 end

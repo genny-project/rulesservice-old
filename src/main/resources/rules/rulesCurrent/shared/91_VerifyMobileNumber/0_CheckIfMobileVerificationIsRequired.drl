@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Check if mobile phone number verification is required"
+    when
+        rules: QRules( isState("CHECK_USER_PHONE_NUMBER") && 
+                    !isState("LOOP_VERIFY_MOBILE_PHONE_NUMBER") )
+    then
+        rules.header();
+        
+		rules.setState("LOOP_VERIFY_MOBILE_PHONE_NUMBER");
+        
+		if(rules.getQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP") != null) {
+			rules.setState("MOBILE_VERIFICATION_REQUIRED");
+		}
+		else {
+			rules.setState("MOBILE_VERIFICATION_NOT_REQUIRED");
+			rules.setState("MOBILE_VERIFIED");
+		}
+		
+        rules.footer();
+end

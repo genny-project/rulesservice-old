@@ -1,0 +1,26 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Cmd View"
+    when
+        rules: QRules( isState("SEND_CMD_VIEW") )
+     then
+        rules.header();
+
+        String cmdViewType = rules.getAsString("cmdViewType");
+        String cmdViewRootCode = rules.getAsString("cmdViewRootCode");
+
+        if(cmdViewType == null) {
+            rules.println("Send Cmd View :: missing cmdViewType");
+        }
+        else if(cmdViewRootCode == null) {
+            rules.println("Send Cmd View :: missing cmdViewRootCode");
+        }
+        else {
+			rules.sendViewCmd(cmdViewType, cmdViewRootCode);
+            rules.setState("SENT_CMD_VIEW");
+        }
+
+        rules.clearState("SEND_CMD_VIEW");
+	    rules.footer();
+end

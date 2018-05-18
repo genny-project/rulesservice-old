@@ -7,19 +7,25 @@ rule "Pre Init Startup"
 	ruleflow-group 'Init'
     when
        m : QEventMessage( event_type == "EVT_MSG" && "INIT_STARTUP"  == data.code)
-          rules: QRules(!isState("STARTED")) 
-     then    
+          rules: QRules(!isState("STARTED"))
+     then
         rules.setDrools(drools);
-         rules.println("RULE INIT STARTUP: Realms ");
- 
+         rules.println("********* RULE INIT STARTUP: Realms "+rules.realm()+" ***************");
+
         rules.setState("GENERATE_STARTUP");
         rules.setState("STARTED");
-		
-		/* set up a service user for each realm */
+
+			
+
+			/* set up a service user for each realm */
 			if (rules.loadRealmData() ) {
-		
-				drools.setFocus("GenerateReports");
-        		drools.setFocus("GenerateTree");
-        	}
-       		      
+			rules.createServiceUser();
+			drools.setFocus("GenerateSearches");
+			drools.setFocus("GenerateReports");
+
+	        drools.setFocus("GenerateTree");
+	        drools.setFocus("GenerateCaches");
+	        drools.setFocus("GenerateLayouts");
+	     }
+
 end

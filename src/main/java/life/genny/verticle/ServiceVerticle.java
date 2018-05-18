@@ -25,28 +25,32 @@ public class ServiceVerticle extends AbstractVerticle {
         rulesDir = "rules";
       }
        RulesLoader.loadInitialRules(rulesDir).compose(p -> {
-        Routers.routers(vertx);
+  //      Routers.routers(vertx);
         
         // Load in realm data
         final Future<Void> rfut = Future.future();
         SecureResources.setKeycloakJsonMap().compose(r -> {
+     	    final Future<Void> startupfut = Future.future();
+    	    if (rulesDir == null) {
+    	      rulesDir = "rules";
+    	    }
+    	     RulesLoader.triggerStartupRules(rulesDir).compose(q -> {
+    	        startupfut.complete();
+    	        
+    	    }, startupfut);
           Routers.routers(vertx);
           rfut.complete();
         }, rfut);
         
         EBCHandlers.registerHandlers(CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
         
-        final Future<Void> startupfut = Future.future();
-        if (rulesDir == null) {
-          rulesDir = "rules";
-        }
-         RulesLoader.triggerStartupRules(rulesDir).compose(q -> {
-            startupfut.complete();
-            
-        }, startupfut);
+
         fut.complete();
       }, fut);
+       
+  
     }, startFuture);
    
+
   }
 }

@@ -1,0 +1,16 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Mobile verification is completed"
+    when
+        rules: QRules( isState("MOBILE_VERIFIED") && !isState("LOOP_MOBILE_VERIFIED_ACCEPTED") )
+    then
+        rules.header();
+        
+		rules.setState("LOOP_MOBILE_VERIFIED_ACCEPTED");
+        rules.setState("CHECK_USER_COMPANY");
+		
+        rules.footer();
+end
