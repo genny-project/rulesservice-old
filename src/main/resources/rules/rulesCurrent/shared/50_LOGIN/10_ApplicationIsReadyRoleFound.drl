@@ -5,14 +5,15 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Application is ready role is found"
     when
-         rules: QRules( isState("APPLICATION_READY") && 
+         rules: QRules( isState("APPLICATION_READY") &&
                         isState("ROLE_FOUND") &&
-                        !isState("LOOP_APPLICATION_READY_ROLE_FOUND") ) 
+                        !(isState("BTN_SELECT_ROLE_BUYER") || isState("BTN_SELECT_ROLE_SELLER") || isState("BTN_SELECT_ROLE_COMPANY")) &&
+                        !isState("LOOP_APPLICATION_READY_ROLE_FOUND") )
      then
      	rules.header();
 
         rules.setState("LOOP_APPLICATION_READY_ROLE_FOUND");
      	rules.setState("TRIGGER_PROFILE_CHECK");
 
-	    rules.footer();      		      
+	    rules.footer();
 end
