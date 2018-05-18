@@ -14,16 +14,16 @@ import life.genny.utils.VertxUtils;
 rule "Generate Tree Roles"
 
     ruleflow-group 'GenerateTree'
- 
+    salience 690
+     
      when
-       rules: QRules(isState("GENERATE_TREE") && !isState("GENERATE_TREE_RULES"))
+       rules: QRules( isState("GENERATE_TREE") && !isState("LOOP_GENERATE_TREE") )
      then
-
-     rules.header();
-        rules.setState("GENERATE_TREE_RULES");
+		rules.header();
+		rules.setState("LOOP_GENERATE_TREE");
+		
 		rules.println("Generating Base Tree Rules for "+rules.realm());
-	    
-	    rules.generateTreeRules();	
-	
-     rules.footer();
+		rules.saveAnswer( new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_ADMIN", "PRI_IS_ADMIN") );		
+		rules.setState("GENERATE_TREE_RULES");	
+     	rules.footer();
 end
