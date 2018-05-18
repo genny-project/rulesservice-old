@@ -7085,23 +7085,35 @@ public class QRules {
            }
 	}
 
-	public void generateReport(QEventMessage m)
-	{
-    	String grpCode = m.getData().getValue();
-       	println("The Group Id is :: "+grpCode );
+	public void generateReport(QEventMessage m) {
+		String grpCode = m.getData().getValue();
+		println("The Group Id is :: " + grpCode);
+		/* TODO: refactor this. */
+		BaseEntity user = getUser();
+		if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
+			if (hasRole("admin")) {
+				grpCode = "GRP_REPORTS_ADMIN";
+			}else if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+				grpCode = "GRP_REPORTS_DRIVER";
+			} else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
+				grpCode = "GRP_REPORTS_OWNER";
+			}
 
-       	QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth this report branch
-       	if(msg != null) {
+		}
 
-       		try {
+		QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth
+															// this report branch
+		if (msg != null) {
 
-       			String str = JsonUtils.toJson(msg);
-       			JsonObject obj = new JsonObject(str);
-       			publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
-	       	}
-	       	catch( Exception e ) { }
-       	}
+			try {
 
-       	sendCmdReportsSplitView(grpCode, null);
+				String str = JsonUtils.toJson(msg);
+				JsonObject obj = new JsonObject(str);
+				publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
+			} catch (Exception e) {
+			}
+		}
+
+		sendCmdReportsSplitView(grpCode, null);
 	}
 }
