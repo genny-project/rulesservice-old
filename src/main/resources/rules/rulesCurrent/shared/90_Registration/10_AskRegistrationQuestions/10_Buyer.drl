@@ -12,7 +12,7 @@ rule "Ask Registration Questions - BUYER"
 
 		    rules.setState("LOOP_ASK_REGISTRATION_BUYER");
         rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_BUYER_GRP", false);
-        rules.navigateTo('/registration/buyer')
+        rules.navigateTo('/registration/buyer');
 
         rules.footer();
 end
