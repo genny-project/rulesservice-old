@@ -12,18 +12,21 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
 rule "Generate Tree Roles"
-
     ruleflow-group 'GenerateTree'
  
      when
-       rules: QRules(isState("GENERATE_TREE") && !isState("GENERATE_TREE_RULES"))
+       rules: QRules( isState("GENERATE_TREE") && 
+                      !isState("GENERATE_TREE_RULES"))
      then
-
-     rules.header();
+        rules.header();
         rules.setState("GENERATE_TREE_RULES");
-		rules.println("Generating Base Tree Rules for "+rules.realm());
-	    
-	    rules.generateTreeRules();	
-	
-     rules.footer();
+
+        rules.println("Generating Base Tree Rules for "+rules.realm());
+        
+        List<Answer> attributesAns = new ArrayList<>();
+        attributesAns.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_SELLER"));
+        attributesAns.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_SELLER"));
+        rules.saveAnswers(attributesAns);
+        
+        rules.footer();
 end

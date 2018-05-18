@@ -5825,6 +5825,14 @@ public class QRules {
 		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
 	}
 
+	public void generateTreeRules() {
+		List<Answer> attributesAns = new ArrayList<>();
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
+		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
+		saveAnswers(attributesAns);
+
+	}
+	
 	public void sendTreeData() {
 
 		println("treedata realm is " + realm());
@@ -5907,6 +5915,9 @@ public class QRules {
 
 		}
 	}
+
+
+	
 
 	public void startupEvent(String caller) {
 
@@ -6777,14 +6788,6 @@ public class QRules {
 				log.error("Error in Creating User ");
 			}
 		}
-	}
-
-	public void generateTreeRules() {
-		List<Answer> attributesAns = new ArrayList<>();
-		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
-		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
-		saveAnswers(attributesAns);
-
 	}
 
 	/*

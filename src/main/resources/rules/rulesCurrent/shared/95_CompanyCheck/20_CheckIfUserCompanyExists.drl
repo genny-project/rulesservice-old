@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Check user company - step 1"
 
 	when
-		 rules: QRules( 	isState("CHECK_USER_COMPANY") && !isState("CHECKED_COMPANY") )   
+		 rules: QRules( isState("CHECK_USER_COMPANY") && !isState("CHECKED_COMPANY") )   
 	 then
 	    rules.header();
 		

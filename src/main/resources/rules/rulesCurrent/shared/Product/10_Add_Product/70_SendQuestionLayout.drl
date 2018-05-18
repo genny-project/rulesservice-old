@@ -1,0 +1,20 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add Internship - Step 7"
+	when
+        rules: QRules(  isState("SEND_ADD_PRODUCT_QUESTION_LAYOUT") && 
+                        !isState("ASKED_QUESTION")  &&
+                        !isState("LOOP_SEND_ADD_PRODUCT_QUESTION_LAYOUT")  )
+     then 
+ 		rules.header();
+		rules.setState("LOOP_SEND_ADD_PRODUCT_QUESTION_LAYOUT");
+
+		rules.set("subLayoutCode", "ADD_PRODUCT_LAYOUT");
+		rules.set("subLayoutPath", "product/add_product.json");
+		rules.set("subLayoutRootCode", null);
+		rules.set("subLayoutIsPopup", false);
+		
+		rules.setState("SEND_SUBLAYOUT");
+ 		rules.footer();
+end
