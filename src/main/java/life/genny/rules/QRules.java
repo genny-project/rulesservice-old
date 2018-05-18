@@ -6748,14 +6748,6 @@ public class QRules {
 		}
 	}
 
-	public void generateTreeRules() {
-		List<Answer> attributesAns = new ArrayList<>();
-		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
-		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
-		saveAnswers(attributesAns);
-
-	}
-
 	/*
 	 * Sets "PRI_IS_ADMIN" attribute to TRUE if the token from the keycloak has the
 	 * role "admin" and set to FALSE if the attribute existed in DB but the role has

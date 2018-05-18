@@ -1,0 +1,37 @@
+package life.genny.rules;
+
+
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+
+/* TODO: Need to remove this ch40 specific rules to ch40 prj folder later, its kept here in shared folder only because
+ * there is issue with startup rules being fired only from shared folder.
+ * It will be moved once this issue is solved.
+ */
+rule "Generate ch40 Tree Roles"
+
+    ruleflow-group 'GenerateTree'
+    salience 680
+    
+     when
+       rules: QRules( realm() == "channel40" && isState("GENERATE_TREE_RULES") && !isState("LOOP_GENERATE_TREE_RULES") )
+     then
+
+     rules.header();
+        rules.setState("LOOP_GENERATE_TREE_RULES");
+		rules.println("Generating specific Tree Roles for "+rules.realm());
+		/* Roles related to TreeView Root */
+		List<Answer> attributesAnsRoot = new ArrayList<>();
+		attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
+		attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
+		rules.saveAnswers(attributesAnsRoot);
+		
+		/* Roles related to TreeView item Reports */
+	    List<Answer> attributesAns = new ArrayList<>();
+		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_USER", "PRI_IS_NOTHING")); //Hiding User report from Ch40	
+		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_DRIVER", "PRI_IS_SELLER"));		
+		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_OWNER", "PRI_IS_BUYER"));	
+		rules.saveAnswers(attributesAns);
+	
+     rules.footer();
+end
