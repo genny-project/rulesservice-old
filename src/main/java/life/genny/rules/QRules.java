@@ -5962,6 +5962,7 @@ public class QRules {
 					search.setStakeholder(stakeholder.getCode());
 				}
 				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
+								
 				bulkmsg.addAll(bucketMsgs);
 
 				if (subscriptions.contains(bucket.getCode())) {
@@ -6015,7 +6016,37 @@ public class QRules {
 							}
 						}
 					}
+					if (linkedBE.getCode().startsWith("PER_")) {
+						if (linkedBE.getCode().equals(getUser().getCode())) {
+							continue; // assume no need to send the user details again
+						} else {
+							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
+							// strip privates
+							String attributeCode = entityAttribute.getAttributeCode();
+							switch(attributeCode) {
+							case "PRI_FIRSTNAME":
+							case "PRI_LASTNAME":
+							case "PRI_EMAIL":
+							case "PRI_MOBILE":
+							case "PRI_ADMIN":
+							case "PRI_DRIVER":
+							case "PRI_OWNER":
+							case "PRI_IMAGE_URL":
+							case "PRI_CODE":
+							case "PRI_NAME":
+							case "PRI_USERNAME":
+								allowedAttributes.add(entityAttribute);
+							default:
+								
+							}
+							
+							}
+							linkedBE.setBaseEntityAttributes(allowedAttributes);
+						}
+					}
 					begKids.add(linkedBE);
+		
 				}
 
 				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
