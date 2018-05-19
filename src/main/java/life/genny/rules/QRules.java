@@ -1185,7 +1185,7 @@ public class QRules {
 		// json.put("token", getToken());
 		// publish("cmds", json);
 
-    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+		QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
 		JsonObject json = JsonObject.mapFrom(cmdNavigate);
 		json.put("token", getToken());
 		publish("cmds", json);
@@ -3512,15 +3512,13 @@ public class QRules {
 	 */
 	public void sendAllChats(final int pageStart, final int pageSize) {
 
-  	BaseEntity currentUser = getUser();
+		BaseEntity currentUser = getUser();
 
-  	List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
 
-  	SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats")
-        .addColumn("PRI_TITLE", "Title")
-				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On")
-				.setStakeholder(getUser().getCode())
+		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
+				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On").setStakeholder(getUser().getCode())
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
@@ -3829,7 +3827,7 @@ public class QRules {
 					moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
 					publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
-          this.generateNewItemsCache();
+					this.generateNewItemsCache();
 
 					/* Update PRI_NEXT_ACTION = OWNER */
 					Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
@@ -4570,13 +4568,11 @@ public class QRules {
 		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
 		// 0, 100, true);
 
-		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages")
-        .addColumn("PRI_MESSAGE", "Message")
-				.addColumn("PRI_CREATOR", "Creater ID")
-				.setSourceCode(chatCode).setSourceStakeholder(getUser().getCode())
-				.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%")
-				.setPageStart(pageStart).setPageSize(pageSize);
+		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
+				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
+				.setSourceStakeholder(getUser().getCode()).addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%").setPageStart(pageStart)
+				.setPageSize(pageSize);
 
 		try {
 			sendSearchResults(sendAllMsgs);
@@ -5298,67 +5294,71 @@ public class QRules {
 	 * Publish Search BE TODO: Refactor
 	 */
 	public void publishSearchBE(final String reportGroupCode) {
-//		BaseEntity user = getUser();
-//		List<BaseEntity> results = new ArrayList<BaseEntity>();
-//		String dataMsgParentCode = reportGroupCode;
-//		if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
-//
-//			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
-//
-//				dataMsgParentCode = "GRP_REPORTS_DRIVER";
-//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
-//				for (Map.Entry<String, String> entry : map.entrySet()) {
-//					String key = entry.getKey();
-//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-//					System.out.println("The Search BE is :: " + searchBe);
-//					results.add(searchBe);
-//				}
-//			} else if (user.is("PRI_OWNER")) {
-//				dataMsgParentCode = "GRP_REPORTS_OWNER";
-//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_OWNER");
-//				for (Map.Entry<String, String> entry : map.entrySet()) {
-//					String key = entry.getKey();
-//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-//					System.out.println("The Search BE is :: " + searchBe);
-//					results.add(searchBe);
-//				}
-//			}
-//			// Checking Admin - TODO: In future when role is seperated then this need toi be
-//			// modified
-//			if (hasRole("admin")) {
-//				dataMsgParentCode = "GRP_REPORTS_ADMIN";
-//				Map<String, String> map = getMap("GRP", "GRP_REPORTS_ADMIN");
-//				for (Map.Entry<String, String> entry : map.entrySet()) {
-//					String key = entry.getKey();
-//					BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-//					System.out.println("The Search BE is :: " + searchBe);
-//					results.add(searchBe);
-//				}
-//			}
-//		} else {
-//			Map<String, String> map = getMap("GRP", reportGroupCode);
-//			// List<BaseEntity> results = new ArrayList<BaseEntity>();
-//			dataMsgParentCode = reportGroupCode;
-//			for (Map.Entry<String, String> entry : map.entrySet()) {
-//				String key = entry.getKey();
-//				BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
-//				System.out.println("The Search BE is :: " + searchBe);
-//				results.add(searchBe);
-//			}
-//		}
-//		BaseEntity[] beArr = new BaseEntity[results.size()];
-//		beArr = results.toArray(beArr);
-//
-//		// if ( hasRole("admin") ) { //TODO: Refactor - Only for Tuesday 24th April's
-//		// demonstration to Josh
-//		// dataMsgParentCode = "GRP_REPORTS_ADMIN";
-//		// }
-//		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArr, dataMsgParentCode, null);
-//		msg.setToken(getToken());
-//		System.out.println("The QDataBaseEntityMessage for " + reportGroupCode + " is :: " + JsonUtils.toJson(msg));
-//		String msgJson = JsonUtils.toJson(msg);
-//		System.out.println("The Json value of data msg is :: " + msgJson);
-//		publish("cmds", msgJson);
+		// BaseEntity user = getUser();
+		// List<BaseEntity> results = new ArrayList<BaseEntity>();
+		// String dataMsgParentCode = reportGroupCode;
+		// if (reportGroupCode.equalsIgnoreCase("GRP_REPORTS")) {
+		//
+		// if (user.is("PRI_IS_SELLER") ||
+		// user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+		//
+		// dataMsgParentCode = "GRP_REPORTS_DRIVER";
+		// Map<String, String> map = getMap("GRP", "GRP_REPORTS_DRIVER");
+		// for (Map.Entry<String, String> entry : map.entrySet()) {
+		// String key = entry.getKey();
+		// BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		// System.out.println("The Search BE is :: " + searchBe);
+		// results.add(searchBe);
+		// }
+		// } else if (user.is("PRI_OWNER")) {
+		// dataMsgParentCode = "GRP_REPORTS_OWNER";
+		// Map<String, String> map = getMap("GRP", "GRP_REPORTS_OWNER");
+		// for (Map.Entry<String, String> entry : map.entrySet()) {
+		// String key = entry.getKey();
+		// BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		// System.out.println("The Search BE is :: " + searchBe);
+		// results.add(searchBe);
+		// }
+		// }
+		// // Checking Admin - TODO: In future when role is seperated then this need toi
+		// be
+		// // modified
+		// if (hasRole("admin")) {
+		// dataMsgParentCode = "GRP_REPORTS_ADMIN";
+		// Map<String, String> map = getMap("GRP", "GRP_REPORTS_ADMIN");
+		// for (Map.Entry<String, String> entry : map.entrySet()) {
+		// String key = entry.getKey();
+		// BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		// System.out.println("The Search BE is :: " + searchBe);
+		// results.add(searchBe);
+		// }
+		// }
+		// } else {
+		// Map<String, String> map = getMap("GRP", reportGroupCode);
+		// // List<BaseEntity> results = new ArrayList<BaseEntity>();
+		// dataMsgParentCode = reportGroupCode;
+		// for (Map.Entry<String, String> entry : map.entrySet()) {
+		// String key = entry.getKey();
+		// BaseEntity searchBe = JsonUtils.fromJson(entry.getValue(), BaseEntity.class);
+		// System.out.println("The Search BE is :: " + searchBe);
+		// results.add(searchBe);
+		// }
+		// }
+		// BaseEntity[] beArr = new BaseEntity[results.size()];
+		// beArr = results.toArray(beArr);
+		//
+		// // if ( hasRole("admin") ) { //TODO: Refactor - Only for Tuesday 24th April's
+		// // demonstration to Josh
+		// // dataMsgParentCode = "GRP_REPORTS_ADMIN";
+		// // }
+		// QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArr,
+		// dataMsgParentCode, null);
+		// msg.setToken(getToken());
+		// System.out.println("The QDataBaseEntityMessage for " + reportGroupCode + " is
+		// :: " + JsonUtils.toJson(msg));
+		// String msgJson = JsonUtils.toJson(msg);
+		// System.out.println("The Json value of data msg is :: " + msgJson);
+		// publish("cmds", msgJson);
 
 	}
 
@@ -5367,7 +5367,6 @@ public class QRules {
 	 * Refactor
 	 */
 	public void sendCmdReportsSplitView(final String parentCode, final String searchBECode) {
-
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
@@ -5940,8 +5939,6 @@ public class QRules {
 
 	}
 
-
-
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
@@ -5960,7 +5957,7 @@ public class QRules {
 
 				}
 				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-				search.setCode(bucket.getCode()) ;// set the parent
+				search.setCode(bucket.getCode());// set the parent
 				if (!stakeholder.is("PRI_IS_ADMIN")) {
 					search.setStakeholder(stakeholder.getCode());
 				}
@@ -6036,21 +6033,26 @@ public class QRules {
 		return bulkmsg;
 	}
 
-	public void sendLayoutsAndData() {
+	public void sendLayoutsAndData(final String itemName, final String filterPrefix, final BaseEntity stakeholder) {
 
+		if (!(isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT"))) {
+			return;
+		}
+		System.out.println("Entering sendLayoutsAndAdata");
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 
-		showLoading("Loading jobs...");
-
-		if (getUser().is("PRI_IS_SELLER") || getUser().getValue("PRI_IS_SELLER").equals("TRUE")) {
-
+		if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
+			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 
 			if (newItems != null) {
+				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
 
 				if (newItems.getMessages() != null) {
-
+					showLoading("processing driver jobs...");
+					// filter out non associated filter BEG Kids
+					FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
 					try {
 
 						String str = JsonUtils.toJson(newItems);
@@ -6059,47 +6061,26 @@ public class QRules {
 					} catch (Exception e) {
 						println("Error sending it");
 					}
-
-					allItems.add(newItems.getMessages());
-
-					/*
-					 * for (QDataBaseEntityMessage msg : newItems.getMessages()) { if (msg
-					 * instanceof QDataBaseEntityMessage) { msg.setToken(getToken());
-					 * publishCmd(JsonUtils.toJson(msg)); } }
-					 */
 				}
+
+				allItems.add(newItems.getMessages());
+
 			}
+		} else {
+			showLoading("fetching " + itemName + "'s...");
 		}
 
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		subscriptionCodes.add("GRP_NEW_ITEMS");
 
 		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
+		System.out.println("Number of item messages found in searched Items = " + items.getMessages());
+		showLoading("loading " + itemName + "'s...");
 
 		if ((items != null) && (items.getMessages().length > 0)) {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
-
-				try {
-
-					String str = JsonUtils.toJson(items);
-					JsonObject obj = new JsonObject(str);
-					publishData(obj);
-				} catch (Exception e) {
-					println("Error sending it");
-				}
-
-			//	 allItems.add(items.getMessages());
-				/*
-				 * for (QDataBaseEntityMessage msg : items.getMessages()) {
-				 *
-				 * if (msg instanceof QDataBaseEntityMessage) { if
-				 * (msg.getParentCode().equalsIgnoreCase("GRP_NEW_ITEMS")) { //
-				 * System.out.println(JsonUtils.toJson(msg)); }
-				 *
-				 * msg.setToken(getToken()); publishCmd(JsonUtils.toJson(msg));
-				 * allItems.add(msg); } }
-				 */
+				allItems.add(items.getMessages());
 			}
 		}
 
@@ -6112,8 +6093,34 @@ public class QRules {
 
 		}
 
-		this.setState("APPLICATION_READY");
-		this.setState("TRIGGER_APPLICATION");
+	}
+
+	/**
+	 * @param filterPrefix
+	 * @param stakeholder
+	 * @param newItems
+	 */
+	private void FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
+		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
+			// remove any unwanted kids not associated with the stakeholder
+			if (msg instanceof QDataBaseEntityMessage) {
+				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
+				for (BaseEntity beg : msg.getItems()) {
+					if (beg.getCode().startsWith(filterPrefix)) {
+						Optional<EntityAttribute> personCode = beg.findEntityAttribute("PRI_QUOTER_CODE");
+						if (personCode.isPresent()) {
+							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+								continue;
+							}
+						}
+					}
+
+					allowedItems.add(beg);
+				}
+
+				msg.setItems(allowedItems.toArray(new BaseEntity[allowedItems.size()]));
+			}
+		}
 	}
 
 	public void sendBucketLayouts() {
@@ -6947,7 +6954,7 @@ public class QRules {
 		}
 		return paymentUserId;
 	}
-	
+
 	/* Payments - user search method */
 	public String findExistingPaymentsUserAndSetAttribute(String authKey) {
 
@@ -7027,63 +7034,59 @@ public class QRules {
 
 	}
 
-	public QDataBaseEntityMessage  getMappedBEs(final String parentCode)
-	{
+	public QDataBaseEntityMessage getMappedBEs(final String parentCode) {
 		List<BaseEntity> searches = new ArrayList<BaseEntity>();
-		Map<String, String> searchBes = getMap("GRP",parentCode);
+		Map<String, String> searchBes = getMap("GRP", parentCode);
 		for (String searchBeCode : searchBes.keySet()) {
 			String searchJson = searchBes.get(searchBeCode);
 			BaseEntity searchBE = JsonUtils.fromJson(searchJson, BaseEntity.class);
 			searches.add(searchBE);
 		}
-		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),parentCode,"LNK_CORE");
+		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),
+				parentCode, "LNK_CORE");
 
 		return ret;
 	}
 
+	public void selectReport(String data) {
+		if (data != null) {
 
-	public void selectReport(String data)
-	{
-		if(data != null) {
-
-  			JsonObject dataJson = new JsonObject(data);
-  		    String grpCode = dataJson.getString("hint");
-  		    println("Grp Code = "+grpCode);
-  		    if(grpCode != null && grpCode.startsWith("GRP_REPORTS") )
-  		    {
-               String searchBE = dataJson.getString("itemCode");
-  		        if(searchBE != null) {
-  		        println("Search BE = "+searchBE);
-  		        BaseEntity search = getBaseEntityByCode(searchBE);
-   					QDataBaseEntityMessage msg=null;
+			JsonObject dataJson = new JsonObject(data);
+			String grpCode = dataJson.getString("hint");
+			println("Grp Code = " + grpCode);
+			if (grpCode != null && grpCode.startsWith("GRP_REPORTS")) {
+				String searchBE = dataJson.getString("itemCode");
+				if (searchBE != null) {
+					println("Search BE = " + searchBE);
+					BaseEntity search = getBaseEntityByCode(searchBE);
+					QDataBaseEntityMessage msg = null;
 					try {
-						msg = QwandaUtils.fetchResults(search,getToken());
-						if(msg != null) {
-			       			msg.setParentCode(search.getCode());
-			       					try {
+						msg = QwandaUtils.fetchResults(search, getToken());
+						if (msg != null) {
+							msg.setParentCode(search.getCode());
+							try {
 
-			       						String str = JsonUtils.toJson(msg);
-			       						JsonObject obj = new JsonObject(str);
-			       						publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
-				       				}
-				       				catch( Exception e ) { }
-			       				}
-			  		    	     sendCmdReportsSplitView(grpCode, searchBE);
+								String str = JsonUtils.toJson(msg);
+								JsonObject obj = new JsonObject(str);
+								publishData(
+										obj); /* send the reports to the frontend that are linked to this tree branch */
+							} catch (Exception e) {
+							}
+						}
+						sendCmdReportsSplitView(grpCode, searchBE);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					} // send back the list of cached children associated wirth this report branch
 
-  		         }else{
-  		            println("Error!! The search BE is empty.");
-  		         }
-  		     }
-  		   else
-  		    {
-  		       println("This is not related to Reports");
-  		   }
+				} else {
+					println("Error!! The search BE is empty.");
+				}
+			} else {
+				println("This is not related to Reports");
+			}
 
-           }
+		}
 	}
 
 	public void generateReport(QEventMessage m) {
@@ -7094,7 +7097,7 @@ public class QRules {
 		if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
 			if (hasRole("admin")) {
 				grpCode = "GRP_REPORTS_ADMIN";
-			}else if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+			} else if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
 				grpCode = "GRP_REPORTS_DRIVER";
 			} else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
 				grpCode = "GRP_REPORTS_OWNER";
@@ -7117,65 +7120,79 @@ public class QRules {
 
 		sendCmdReportsSplitView(grpCode, null);
 	}
-	
-	
+
 	/* Payments user updation */
-	public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value, String paymentsAuthToken) {
-		
-		String userUpdateResponseString = null;		
+	public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value,
+			String paymentsAuthToken) {
+
+		String userUpdateResponseString = null;
 		try {
-			
-			if(attributeCode != null && value != null ) {
-				
+
+			if (attributeCode != null && value != null) {
+
 				/* Get payments user after setting to-be-updated fields in the object */
 				QPaymentsUser paymentsUser = PaymentUtils.updateUserInfo(paymentsUserId, attributeCode, value);
-				
+
 				/* Make the request to Assembly and update */
-				if(paymentsUser != null && paymentsUserId != null) {
-					try {	
+				if (paymentsUser != null && paymentsUserId != null) {
+					try {
 						/* Hitting payments-service API for updating */
-						userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId, JsonUtils.toJson(paymentsUser), paymentsAuthToken);
-						QPaymentsAssemblyUserResponse userResponsePOJO = JsonUtils.fromJson(userUpdateResponseString, QPaymentsAssemblyUserResponse.class);	
-						println("User updation response :: "+userResponsePOJO);
-						
-						//TODO We get user out-payment method ID in update-user response, we may have to save this as an attribute				
-										
+						userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId,
+								JsonUtils.toJson(paymentsUser), paymentsAuthToken);
+						QPaymentsAssemblyUserResponse userResponsePOJO = JsonUtils.fromJson(userUpdateResponseString,
+								QPaymentsAssemblyUserResponse.class);
+						println("User updation response :: " + userResponsePOJO);
+
+						// TODO We get user out-payment method ID in update-user response, we may have
+						// to save this as an attribute
+
 					} catch (PaymentException e) {
-						log.error("Exception occured user updation : "+e.getMessage());
+						log.error("Exception occured user updation : " + e.getMessage());
 						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-						throw new IllegalArgumentException("User payments profile updation has not succeeded for the field : "+ attributeCode.replace("PRI_", "") +". "+getFormattedErrorMessage);
+						throw new IllegalArgumentException(
+								"User payments profile updation has not succeeded for the field : "
+										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage);
 					}
-				}				
+				}
 			} else {
-				if(value == null || value.trim().isEmpty()) {
-					throw new IllegalArgumentException("Updated value for the field "+attributeCode.replace("PRI_", "") + " is empty/invalid");
+				if (value == null || value.trim().isEmpty()) {
+					throw new IllegalArgumentException(
+							"Updated value for the field " + attributeCode.replace("PRI_", "") + " is empty/invalid");
 				}
 			}
-			
-		} catch (IllegalArgumentException e){
-			
-			/* Send toast message the payments-user updation failed when the field updated is invalid */
+
+		} catch (IllegalArgumentException e) {
+
+			/*
+			 * Send toast message the payments-user updation failed when the field updated
+			 * is invalid
+			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");			
-		}		
+			sendDirectToast(recipientArr, toastMessage, "warning");
+		}
 	}
-	
-	/* Converts payments error into Object and formats into a string error message */
+
+	/*
+	 * Converts payments error into Object and formats into a string error message
+	 */
 	public String getPaymentsErrorResponseMessage(String paymentsErrorResponseStr) {
 
 		QPaymentsErrorResponse errorResponse = JsonUtils.fromJson(paymentsErrorResponseStr,
 				QPaymentsErrorResponse.class);
 
 		StringBuilder errorMessage = new StringBuilder();
-		List<Map<String,Object>> errorMapList = new ArrayList<Map<String,Object>>();
+		List<Map<String, Object>> errorMapList = new ArrayList<Map<String, Object>>();
 		errorMapList.add(errorResponse.getError());
 		errorMapList.add(errorResponse.getErrors());
-		
+
 		/* getErrors -> errors from external payment service */
 		/* getError -> error from payments service */
-		/* Iterating through Assembly errors and payment-service errors and formatting them */
-		for(Map<String, Object> errorMap : errorMapList) {
+		/*
+		 * Iterating through Assembly errors and payment-service errors and formatting
+		 * them
+		 */
+		for (Map<String, Object> errorMap : errorMapList) {
 			if (errorMap != null && errorMap.size() > 0) {
 				for (Map.Entry<String, Object> entry : errorMap.entrySet()) {
 					String errVar = entry.getKey();
@@ -7187,7 +7204,7 @@ public class QRules {
 					}
 
 					System.out.println("Error Key = " + errVar + ", Value = " + errValBuilder);
-			
+
 					/* appending and formatting error messages */
 					errorMessage.append(errVar + " : " + errVal.toString());
 				}
