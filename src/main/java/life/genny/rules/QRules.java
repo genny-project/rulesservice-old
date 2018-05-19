@@ -6113,7 +6113,39 @@ public class QRules {
 								continue;
 							}
 						}
+					} else {
+						// filter attributes
+						if (beg.getCode().startsWith("PER_")) {
+							if (beg.getCode().equals(getUser().getCode())) {
+								continue;
+							} else {
+								Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+								for (EntityAttribute entityAttribute : beg.getBaseEntityAttributes()) {
+								// strip privates
+								String attributeCode = entityAttribute.getAttributeCode();
+								switch(attributeCode) {
+								case "PRI_FIRSTNAME":
+								case "PRI_LASTNAME":
+								case "PRI_EMAIL":
+								case "PRI_MOBILE":
+								case "PRI_ADMIN":
+								case "PRI_DRIVER":
+								case "PRI_OWNER":
+								case "PRI_IMAGE_URL":
+								case "PRI_CODE":
+								case "PRI_NAME":
+								case "PRI_USERNAME":
+									allowedAttributes.add(entityAttribute);
+								default:
+									
+								}
+								
+								}
+								beg.setBaseEntityAttributes(allowedAttributes);
+							}
+						}
 					}
+					
 
 					allowedItems.add(beg);
 				}
