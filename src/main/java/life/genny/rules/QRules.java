@@ -6112,17 +6112,31 @@ public class QRules {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 				allItems.add(items.getMessages());
+				
+				// send because bulk not working
+				for (QDataBaseEntityMessage msg : items.getMessages()) {
+					try {
+
+						String str = JsonUtils.toJson(msg);
+						JsonObject obj = new JsonObject(str);
+						publishData(obj);
+					} catch (Exception e) {
+						println("Error sending it");
+					}
+				}
+				
+				
 			}
 		}
 
-		try {
-			String msg = JsonUtils.toJson(allItems);
-			JsonObject obj = new JsonObject(msg);
-			println("SENT MESSAGES");
-			publishData(obj);
-		} catch (Exception e) {
-
-		}
+//		try {
+//			String msg = JsonUtils.toJson(allItems);
+//			JsonObject obj = new JsonObject(msg);
+//			println("SENT MESSAGES");
+//			publishData(obj);
+//		} catch (Exception e) {
+//
+//		}
 
 	}
 
