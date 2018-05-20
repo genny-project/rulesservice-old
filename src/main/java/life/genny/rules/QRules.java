@@ -1271,7 +1271,7 @@ public class QRules {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
 
-		publish("cmds", JsonUtils.toJson(msg));
+		publish("cmds",msg);
 	}
 
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
@@ -1292,7 +1292,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("data", msg);
 		return msg;
 	}
 
@@ -1308,7 +1308,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", msg);
 		return msg;
 	}
 
@@ -6161,14 +6161,6 @@ public class QRules {
 					showLoading("processing driver jobs...");
 					// filter out non associated filter BEG Kids
 					newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
-//					try {
-//
-//						String str = JsonUtils.toJson(newItems);
-//						JsonObject obj = new JsonObject(str);
-//						publishData(obj);
-//					} catch (Exception e) {
-//						println("Error sending it");
-//					}
 				}
 
 				allItems.add(newItems.getMessages());
@@ -6189,26 +6181,10 @@ public class QRules {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 				allItems.add(items.getMessages());
-
-				// send because bulk not working
-//				for (QDataBaseEntityMessage msg : items.getMessages()) {
-//					try {
-//
-//						String str = JsonUtils.toJson(msg);
-//						JsonObject obj = new JsonObject(str);
-//						publishData(obj);
-//					} catch (Exception e) {
-//						println("Error sending it");
-//					}
-//				}
-
 			}
 		}
 
 		 try {
-//		 String msg = JsonUtils.toJson(allItems);
-//		 JsonObject obj = new JsonObject(msg);
-//		 println("SENT MESSAGES");
 		 publishCmd(allItems);
 		 } catch (Exception e) {
 		
@@ -6223,6 +6199,8 @@ public class QRules {
 	 */
 	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
 		QBulkMessage ret = new QBulkMessage();
+		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
+		
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
@@ -6273,8 +6251,10 @@ public class QRules {
 
 				msg.setItems(allowedItems.toArray(new BaseEntity[allowedItems.size()]));
 			}
+			messages.add(msg);
 		}
-		return newItems;
+		ret.setMessages(messages.toArray(new QDataBaseEntityMessage[messages.size()]));
+		return ret;
 	}
 
 	public void sendBucketLayouts() {
