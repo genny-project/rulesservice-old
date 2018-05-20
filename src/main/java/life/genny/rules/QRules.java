@@ -1332,6 +1332,10 @@ public class QRules {
 		return msg;
 	}
 
+	public void publishCmd(final QBulkMessage msg) {
+		msg.setToken(getToken());
+		publish("cmds", msg);
+	}
 	public QMessage publishCmd(final QDataSubLayoutMessage msg) {
 		msg.setToken(getToken());
 		String json = JsonUtils.toJson(msg);
@@ -1554,7 +1558,7 @@ public class QRules {
 		if (payload instanceof QDataBaseEntityMessage) {
 			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage)payload));
 		} else if (payload instanceof QBulkMessage) {
-			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage)payload));
+			return JsonUtils.toJson(privacyFilter((QBulkMessage)payload));
 		}else
 			return payload;
 	}
@@ -6156,15 +6160,15 @@ public class QRules {
 				if (newItems.getMessages() != null) {
 					showLoading("processing driver jobs...");
 					// filter out non associated filter BEG Kids
-					FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
-					try {
-
-						String str = JsonUtils.toJson(newItems);
-						JsonObject obj = new JsonObject(str);
-						publishData(obj);
-					} catch (Exception e) {
-						println("Error sending it");
-					}
+					newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+//					try {
+//
+//						String str = JsonUtils.toJson(newItems);
+//						JsonObject obj = new JsonObject(str);
+//						publishData(obj);
+//					} catch (Exception e) {
+//						println("Error sending it");
+//					}
 				}
 
 				allItems.add(newItems.getMessages());
@@ -6187,28 +6191,28 @@ public class QRules {
 				allItems.add(items.getMessages());
 
 				// send because bulk not working
-				for (QDataBaseEntityMessage msg : items.getMessages()) {
-					try {
-
-						String str = JsonUtils.toJson(msg);
-						JsonObject obj = new JsonObject(str);
-						publishData(obj);
-					} catch (Exception e) {
-						println("Error sending it");
-					}
-				}
+//				for (QDataBaseEntityMessage msg : items.getMessages()) {
+//					try {
+//
+//						String str = JsonUtils.toJson(msg);
+//						JsonObject obj = new JsonObject(str);
+//						publishData(obj);
+//					} catch (Exception e) {
+//						println("Error sending it");
+//					}
+//				}
 
 			}
 		}
 
-		// try {
-		// String msg = JsonUtils.toJson(allItems);
-		// JsonObject obj = new JsonObject(msg);
-		// println("SENT MESSAGES");
-		// publishData(obj);
-		// } catch (Exception e) {
-		//
-		// }
+		 try {
+//		 String msg = JsonUtils.toJson(allItems);
+//		 JsonObject obj = new JsonObject(msg);
+//		 println("SENT MESSAGES");
+		 publishCmd(allItems);
+		 } catch (Exception e) {
+		
+		 }
 
 	}
 
@@ -6217,7 +6221,8 @@ public class QRules {
 	 * @param stakeholder
 	 * @param newItems
 	 */
-	private void FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
+	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
+		QBulkMessage ret = new QBulkMessage();
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
@@ -6269,6 +6274,7 @@ public class QRules {
 				msg.setItems(allowedItems.toArray(new BaseEntity[allowedItems.size()]));
 			}
 		}
+		return newItems;
 	}
 
 	public void sendBucketLayouts() {
