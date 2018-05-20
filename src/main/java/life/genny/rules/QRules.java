@@ -765,7 +765,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
 
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", msg);
 
 	}
 
@@ -1521,7 +1521,7 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
-	public void publish(String channel, final Object payload) {
+	public void publish(String channel, Object payload) {
 		// Actually Send ....
 		switch (channel) {
 		case "event":
@@ -1530,10 +1530,12 @@ public class QRules {
 			;
 			break;
 		case "data":
+			payload = privacyFilter(payload);
 			Producer.getToWebData().write(payload).end();
 			;
 			break;
 		case "cmds":
+			payload = privacyFilter(payload);
 			Producer.getToWebCmds().write(payload);
 			break;
 		case "services":
@@ -1545,6 +1547,77 @@ public class QRules {
 		default:
 			println("Channel does not exist: " + channel);
 		}
+	}
+
+	public Object privacyFilter(Object payload)
+	{
+		if (payload instanceof QDataBaseEntityMessage) {
+			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage)payload));
+		} else if (payload instanceof QBulkMessage) {
+			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage)payload));
+		}else
+			return payload;
+	}
+	
+	public QBulkMessage privacyFilter(QBulkMessage msg)
+	{
+		Map<String,BaseEntity> uniqueBes = new HashMap<String,BaseEntity>();
+		for (QDataBaseEntityMessage beMsg : msg.getMessages()) {
+			beMsg = privacyFilter(beMsg,uniqueBes);
+		}
+		return msg;
+	}
+
+	
+	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg)
+	{
+		return privacyFilter(msg,new HashMap<String,BaseEntity>());
+	}
+	
+	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg,Map<String,BaseEntity> uniquePeople) {
+		ArrayList<BaseEntity> bes = new ArrayList<BaseEntity>();
+		for (BaseEntity be : msg.getItems()) {
+			if (!uniquePeople.containsKey(be.getCode())) {
+				be = privacyFilter(be);
+				uniquePeople.put(be.getCode(), be);
+				bes.add(be);
+			}
+		}
+		msg.setItems(bes.toArray(new BaseEntity[bes.size()]));
+		return msg;
+ 	}
+	
+	public BaseEntity privacyFilter(BaseEntity be) {
+		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
+			if ((be.getCode().startsWith("PER_")) && (!be.getCode().equals(getUser().getCode()))) {
+				String attributeCode = entityAttribute.getAttributeCode();
+				switch (attributeCode) {
+				case "PRI_FIRSTNAME":
+				case "PRI_LASTNAME":
+				case "PRI_EMAIL":
+				case "PRI_MOBILE":
+				case "PRI_DRIVER":
+				case "PRI_OWNER":
+				case "PRI_IMAGE_URL":
+				case "PRI_CODE":
+				case "PRI_NAME":
+				case "PRI_USERNAME":
+					allowedAttributes.add(entityAttribute);
+				default:
+					if (attributeCode.startsWith("PRI_IS_")) {
+						allowedAttributes.add(entityAttribute);// allow all roles
+					}
+				}
+			} else {
+				if (!entityAttribute.getPrivacyFlag()) { // don't allow privacy flag attributes to get through
+					allowedAttributes.add(entityAttribute);
+				}
+			}
+		}
+		be.setBaseEntityAttributes(allowedAttributes);
+
+		return be;
 	}
 
 	public void loadUserRole() {
@@ -5962,7 +6035,7 @@ public class QRules {
 					search.setStakeholder(stakeholder.getCode());
 				}
 				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
-								
+
 				bulkmsg.addAll(bucketMsgs);
 
 				if (subscriptions.contains(bucket.getCode())) {
@@ -6022,31 +6095,31 @@ public class QRules {
 						} else {
 							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
-							// strip privates
-							String attributeCode = entityAttribute.getAttributeCode();
-							switch(attributeCode) {
-							case "PRI_FIRSTNAME":
-							case "PRI_LASTNAME":
-							case "PRI_EMAIL":
-							case "PRI_MOBILE":
-							case "PRI_ADMIN":
-							case "PRI_DRIVER":
-							case "PRI_OWNER":
-							case "PRI_IMAGE_URL":
-							case "PRI_CODE":
-							case "PRI_NAME":
-							case "PRI_USERNAME":
-								allowedAttributes.add(entityAttribute);
-							default:
-								
-							}
-							
+								// strip privates
+								String attributeCode = entityAttribute.getAttributeCode();
+								switch (attributeCode) {
+								case "PRI_FIRSTNAME":
+								case "PRI_LASTNAME":
+								case "PRI_EMAIL":
+								case "PRI_MOBILE":
+								case "PRI_ADMIN":
+								case "PRI_DRIVER":
+								case "PRI_OWNER":
+								case "PRI_IMAGE_URL":
+								case "PRI_CODE":
+								case "PRI_NAME":
+								case "PRI_USERNAME":
+									allowedAttributes.add(entityAttribute);
+								default:
+
+								}
+
 							}
 							linkedBE.setBaseEntityAttributes(allowedAttributes);
 						}
 					}
 					begKids.add(linkedBE);
-		
+
 				}
 
 				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
@@ -6112,7 +6185,7 @@ public class QRules {
 
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 				allItems.add(items.getMessages());
-				
+
 				// send because bulk not working
 				for (QDataBaseEntityMessage msg : items.getMessages()) {
 					try {
@@ -6124,19 +6197,18 @@ public class QRules {
 						println("Error sending it");
 					}
 				}
-				
-				
+
 			}
 		}
 
-//		try {
-//			String msg = JsonUtils.toJson(allItems);
-//			JsonObject obj = new JsonObject(msg);
-//			println("SENT MESSAGES");
-//			publishData(obj);
-//		} catch (Exception e) {
-//
-//		}
+		// try {
+		// String msg = JsonUtils.toJson(allItems);
+		// JsonObject obj = new JsonObject(msg);
+		// println("SENT MESSAGES");
+		// publishData(obj);
+		// } catch (Exception e) {
+		//
+		// }
 
 	}
 
@@ -6166,31 +6238,30 @@ public class QRules {
 							} else {
 								Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 								for (EntityAttribute entityAttribute : beg.getBaseEntityAttributes()) {
-								// strip privates
-								String attributeCode = entityAttribute.getAttributeCode();
-								switch(attributeCode) {
-								case "PRI_FIRSTNAME":
-								case "PRI_LASTNAME":
-								case "PRI_EMAIL":
-								case "PRI_MOBILE":
-								case "PRI_ADMIN":
-								case "PRI_DRIVER":
-								case "PRI_OWNER":
-								case "PRI_IMAGE_URL":
-								case "PRI_CODE":
-								case "PRI_NAME":
-								case "PRI_USERNAME":
-									allowedAttributes.add(entityAttribute);
-								default:
-									
-								}
-								
+									// strip privates
+									String attributeCode = entityAttribute.getAttributeCode();
+									switch (attributeCode) {
+									case "PRI_FIRSTNAME":
+									case "PRI_LASTNAME":
+									case "PRI_EMAIL":
+									case "PRI_MOBILE":
+									case "PRI_ADMIN":
+									case "PRI_DRIVER":
+									case "PRI_OWNER":
+									case "PRI_IMAGE_URL":
+									case "PRI_CODE":
+									case "PRI_NAME":
+									case "PRI_USERNAME":
+										allowedAttributes.add(entityAttribute);
+									default:
+
+									}
+
 								}
 								beg.setBaseEntityAttributes(allowedAttributes);
 							}
 						}
 					}
-					
 
 					allowedItems.add(beg);
 				}
