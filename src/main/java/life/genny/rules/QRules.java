@@ -6344,7 +6344,7 @@ public class QRules {
 			
 		}
 		for (String parent : bucketMap.keySet()) {
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]),parent,"LNK_CORE");
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]),parent,"LNK_CORE");
 			messages.add(msg);
 		}
 
