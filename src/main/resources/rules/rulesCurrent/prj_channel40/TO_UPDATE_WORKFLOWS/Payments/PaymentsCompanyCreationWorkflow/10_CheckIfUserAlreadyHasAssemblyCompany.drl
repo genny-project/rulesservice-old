@@ -1,0 +1,29 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule "Payments Company Creation Step 1 : Does user already have assembly company attribute"
+	agenda-group "payments"
+	no-loop true
+	when 
+		rules: QRules(isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_COMPANY_CREATED") && !isState("LOOP_CHECK_ASSEMBLY_USER_COMPANY_CREATED")) 
+	then
+		rules.header();
+		rules.setState("LOOP_CHECK_ASSEMBLY_USER_COMPANY_CREATED");
+
+    		String assemblyCompanyId = rules.getUser().getValue("PRI_ASSEMBLY_COMPANY_ID", null);
+    	     
+    	    /* Check if user has company or not - workflow */	
+     	if(assemblyCompanyId == null) {
+   	
+     		rules.setState("CHECK_USER_BELONGS_TO_COMPANY");
+     	}
+     	
+     	if(assemblyCompanyId != null) {
+     	
+     		rules.setState("IS_ASSEMBLY_COMPANY_CREATED");
+     	}
+     			
+		rules.footer();
+end

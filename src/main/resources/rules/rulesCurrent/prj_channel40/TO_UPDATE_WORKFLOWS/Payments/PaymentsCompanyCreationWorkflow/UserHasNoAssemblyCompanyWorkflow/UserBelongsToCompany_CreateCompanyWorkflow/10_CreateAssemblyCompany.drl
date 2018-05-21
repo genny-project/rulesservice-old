@@ -1,0 +1,46 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.Answer;
+import life.genny.utils.PaymentUtils;
+
+
+rule "Payments Company Creation Step 3 : Create Payments Assembly Company"
+	agenda-group "payments"
+	no-loop true
+	when
+		rules: QRules(!isState("IS_ASSEMBLY_COMPANY_CREATED") && isState("COMPANY_EXISTS_TRIGGER_PAYMENTS_CREATE_COMPANY") && !isState("LOOP_PAYMENTS_COMPANY_CREATION") )
+	then
+		rules.header();
+		rules.setState("LOOP_PAYMENTS_COMPANY_CREATION");
+
+
+		/* get assembly authKey   */
+    		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+
+    		/*  Gets assembly userId */
+    		String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
+    	
+   	 	/* Getting company baseentity of the user */
+    		BaseEntity companyBe = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+
+     	rules.println("Company not found for user..So creating a Company now..");
+
+     	if(assemblyId != null && companyBe != null) {
+
+			/* Create Assembly Company for user */
+			String companyId = rules.createCompany(companyBe, assemblyId, assemblyAuthToken);
+
+			/* Save companyId as an attribute for the user */
+			rules.println("create payment company response -"+companyId);
+			if(companyId != null) {
+
+    	 		Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
+    	 		rules.saveAnswer(assemblyCompanyIdAnswer);
+     			rules.println("Assembly Company created");
+     			rules.setState("IS_ASSEMBLY_COMPANY_CREATED");
+			}
+		}
+
+		rules.footer();
+end
