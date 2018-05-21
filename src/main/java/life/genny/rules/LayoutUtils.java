@@ -81,7 +81,7 @@ public class LayoutUtils {
 							String file_path = download_url.replace(realmCode + "/", "");
 
 							/* if we have found a file we serialize it */
-							if(file_path.contains(".json")) {
+							if(file_path.endsWith(".json")) {
 								layouts.add(LayoutUtils.serializeLayout(realmCode, sublayoutData));
 							}
 							else {
