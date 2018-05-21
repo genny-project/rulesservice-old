@@ -1,6 +1,6 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
+import life.genny.rules.LayoutUtils;
 import life.genny.rules.QRules;
 
 rule "Send Bucket Layout To Frontend"
@@ -11,7 +11,7 @@ rule "Send Bucket Layout To Frontend"
 
       rules.setState("SENT_BUCKET_LAYOUT");
 
-     	String layout = RulesUtils.getLayout("card.json");
+     	String layout = LayoutUtils.getLayout(rules.realm(), "/card.json");
      	String viewCode = "BUCKET_DASHBOARD";
      	String grpBE = "GRP_DASHBOARD";
 

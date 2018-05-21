@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.QRules;
+import life.genny.rules.LayoutUtils;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,7 +42,7 @@ rule "Edit Jobs"
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
      JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
-     String createJobLayout = RulesUtils.getLayout(rules.realm() + "/create_job.json");
+     String createJobLayout = LayoutUtils.getLayout(rules.realm(), "/create_job.json");
        cmdJobSublayoutJson.put("items",createJobLayout);
        cmdJobSublayoutJson.put("token", rules.getToken());
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);

@@ -3,7 +3,8 @@ package life.genny;
 import org.junit.Test;
 import java.io.IOException;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.rules.RulesUtils;;
+import life.genny.rules.RulesUtils;
+import life.genny.rules.LayoutUtils;
 
 public class GitTest {
 
@@ -12,7 +13,7 @@ public class GitTest {
 
     try {
       final String layout = QwandaUtils
-          .apiGet(RulesUtils.getLayoutCacheURL("README.md"), null);
+          .apiGet(LayoutUtils.getLayoutCacheURL("README.md"), null);
       System.out.println(layout);
     } catch (final IOException e) {
       // TODO Auto-generated catch block

@@ -12,6 +12,8 @@ rule "Add Product - Step 2"
 	 	rules.header();
         rules.setState("LOOP_CREATE_PRODUCT_BASEENTITY");
 
+		rules.clearState("CREATED_BASE_ENTITY");	
+
 		BaseEntity beg = rules.getAsBaseEntity("baseEntity");	
 		if(beg != null){
 			rules.set("begBe", beg);

@@ -14,6 +14,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.RulesUtils;
+import life.genny.rules.LayoutUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -80,16 +81,7 @@ rule "Show Offer Details"
 		        cmdBe.put("items", array);
 		        bus.publish("cmds", cmdBe);
 
-				/* we grab the layout and send it to FE */
-				JsonObject sublayout = new JsonObject(QwandaUtils.apiGet(RulesUtils.getLayoutCacheURL(rules.realm() + "/accept_offer.json"), null));
-			    	QCmdMessage messageSublayout = new QCmdMessage("CMD_SUBLAYOUT","accept-offer");
-			    JsonObject cmdSubLayout = new JsonObject().mapFrom(messageSublayout);
-			    cmdSubLayout.put("items", sublayout);
-			    cmdSubLayout.put("root", baseEntityCode);
-			    cmdSubLayout.put("token", $value);
-
-                /* Publish it to the EventBus */
-			    bus.publish("cmds", cmdSubLayout);
+				rules.sendSublayout("accept_offer", "accept_offer.json", baseEntityCode, false);
 			}
 		}
         System.out.println(QwandaUtils.terminateRuleLogger("Show Offer Details"));
