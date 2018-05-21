@@ -1,0 +1,26 @@
+
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdRedirectMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwandautils.JsonUtils;
+
+rule "TV_SELECT Event - dashboard"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT"  && data.value.equals("GRP_DASHBOARD") )
+       rules: QRules( !isState("SELECTED_DASHBOARD_TREE") )
+     then
+
+     rules.header();
+     rules.setState("SELECTED_DASHBOARD_TREE");
+
+     rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+     rules.setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
+
+     rules.footer();
+end
