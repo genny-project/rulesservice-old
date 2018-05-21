@@ -6085,25 +6085,23 @@ public class QRules {
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
 
-					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
+					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER", "").equals("TRUE")) {
 
-						if (linkedBE.getCode().startsWith("OFR_")) {
-							// Get the only link and skip any outage if the offer does not belong to the
-							// driver
-							EntityEntity[] links = linkedBE.getLinks().toArray(new EntityEntity[0]);
-							String OffererCode = links[0].getLink().getTargetCode();
-							if (!OffererCode.equals(stakeholder.getCode())) {
-								continue;
-							}
+						if (linkedBE.getCode().startsWith("OFR_") && !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
+							continue;
 						}
 					}
 					if (linkedBE.getCode().startsWith("PER_")) {
-						if (linkedBE.getCode().equals(getUser().getCode())) {
+
+            if (linkedBE.getCode().equals(getUser().getCode())) {
 							continue; // assume no need to send the user details again
-						} else {
-							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+						}
+            else {
+
+              Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
-								// strip privates
+
+                // strip privates
 								String attributeCode = entityAttribute.getAttributeCode();
 								switch (attributeCode) {
 								case "PRI_FIRSTNAME":
@@ -6127,15 +6125,14 @@ public class QRules {
 							linkedBE.setBaseEntityAttributes(allowedAttributes);
 						}
 					}
-					begKids.add(linkedBE);
 
+					begKids.add(linkedBE);
 				}
 
 				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
-						beg.getCode(), "LNK_BEG");
-				begMsg.setToken(getToken());
-				bulkmsg.add(begMsg);
-
+					beg.getCode(), "LNK_BEG");
+				  begMsg.setToken(getToken());
+			   	bulkmsg.add(begMsg);
 			}
 
 		} catch (IOException e) {
@@ -6151,14 +6148,15 @@ public class QRules {
 		if (!(isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT"))) {
 			return;
 		}
+
 		System.out.println("Entering sendLayoutsAndAdata");
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
 		long startTime = System.nanoTime();
 
 		if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
-			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
 
+      showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
 
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
@@ -6167,7 +6165,9 @@ public class QRules {
 				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
 
 				if (newItems.getMessages() != null) {
-					showLoading("processing driver jobs...");
+
+          showLoading("processing driver jobs...");
+
 					// filter out non associated filter BEG Kids
 					startTime = System.nanoTime();
 					if (!this.hasRole("admin")) {
@@ -6176,6 +6176,7 @@ public class QRules {
 
 					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
+
 				allItems.add(newItems.getMessages());
 				try {
 					publishCmd(allItems);
