@@ -6344,7 +6344,8 @@ public class QRules {
 			
 		}
 		for (String parent : bucketMap.keySet()) {
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]),parent,"LNK_CORE");
+			BaseEntity[] beArray = bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]);
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray,parent,"LNK_CORE");
 			messages.add(msg);
 		}
 
@@ -6359,14 +6360,16 @@ public class QRules {
 	public boolean processBeg(final BaseEntity beg,final BaseEntity stakeholder) {
 		boolean skip = false;
 			// check if this beg should be seen by this user
-		
-			Optional<EntityAttribute> personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
+		Optional<EntityAttribute> personCode  = null;
+		if (!((stakeholder.is("PRI_IS_BUYER")  || stakeholder.getValue("PRI_IS_BUYER","").equals("TRUE")))) {
+				 personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
 
 			if (personCode.isPresent()) {
-				if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+				if (!personCode.get().getAsString().equals(stakeholder.getCode()) ) { // not a stakeholdeer!
 					return true; // skip
 				} 
 			}
+		}
 				for (EntityEntity ee : beg.getLinks()) {
 					// if linkValue is ACCEPTED_OFFER
 					if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
@@ -6374,7 +6377,7 @@ public class QRules {
 						BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
 						personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
-							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+							if (!personCode.get().getAsString().equals(stakeholder.getCode())  ) { // not a
 								return true; // skip
 							} 
 						} else {
