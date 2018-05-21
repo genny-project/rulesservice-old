@@ -14,7 +14,7 @@ rule "Add Internship - Step 7"
 		rules.set("subLayoutCode", "ADD_PRODUCT_LAYOUT");
 		rules.set("subLayoutPath", "/product/add_beg.json");
 		rules.set("subLayoutRootCode", null);
-		rules.set("subLayoutIsPopup", false);
+		rules.set("subLayoutIsPopup", true);
 		
 		rules.setState("SEND_SUBLAYOUT");
  		rules.footer();

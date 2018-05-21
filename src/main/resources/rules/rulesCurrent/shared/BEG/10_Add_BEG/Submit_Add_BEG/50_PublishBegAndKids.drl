@@ -1,0 +1,47 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish BEG AND KIDS */
+rule "Submit Add BEG - Step 5"
+	when
+		rules: QRules( 	isState("PUBLISH_BEG_AND_KIDS") && 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP5") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP5");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		BaseEntity product = rules.getAsBaseEntity("productBe");
+		BaseEntity company = rules.getAsBaseEntity("companyBe");
+
+		if(beg == null){
+			rules.println("beg is null");			
+		}else if(product == null){
+			rules.println("product is null");
+		}else if(company == null){
+			rules.println("company is null");
+		}else{
+
+			String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
+			rules.println("BEG Recipients   ::   " + Arrays.toString(recipients));
+			
+			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+			if(begKids != null){
+				rules.printList("begKids", begKids);
+				
+				/* Send BEG BE */
+				rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipients);
+				
+				/* Send BEG KIDS */
+				rules.publishCmd(begKids, beg.getCode(), "LNK_BEG", recipients);
+
+				/* Go To Homepage */
+				rules.setState("TRIGGER_HOMEPAGE");
+			}else{
+				rules.println("begKids is null");
+				return;
+			}
+		}
+	 	rules.footer();      
+end

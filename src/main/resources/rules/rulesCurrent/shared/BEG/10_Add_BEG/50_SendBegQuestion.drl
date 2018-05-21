@@ -5,6 +5,7 @@ rule "Add Internship - Step 5"
 	when
         rules: QRules(  isState("SEND_BEG_QUESTION") && 
                         isState("CREATED_LINK") &&
+                        isState("PRODUCT") &&
                         !isState("LOOP_SEND_BEG_QUESTION")  )
      then 
  		rules.header();
