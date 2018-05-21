@@ -2,15 +2,15 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Move BEG from GRP_DRAFTS >>> GRP_NEW_ITEMS  */
-rule "Submit Add BEG - Step 4"
+rule "Submit Add BEG - Step 3"
 	when
 		rules: QRules( 	isState("MOVE_BEG_TO_GRP_NEW_ITEMS") && 
 						isState("CREATED_LINK") && 
 						isState("COMPANY") &&
-						!isState("LOOP_SUBMIT_ADD_BEG_STEP4")) 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP3")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP4");
+        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP3");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
         if(beg != null){
