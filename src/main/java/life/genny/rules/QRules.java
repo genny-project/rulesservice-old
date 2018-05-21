@@ -1270,7 +1270,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		System.out.println("Publishing Cmd "+be.getCode()+" with alias "+aliasCode);
+		System.out.println("Publishing Cmd " + be.getCode() + " with alias " + aliasCode);
 		publish("cmds", msg);
 	}
 
@@ -1591,7 +1591,7 @@ public class QRules {
 	public BaseEntity privacyFilter(BaseEntity be) {
 		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
-		//	System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
+			// System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
 			if ((be.getCode().startsWith("PER_")) && (!be.getCode().equals(getUser().getCode()))) {
 				String attributeCode = entityAttribute.getAttributeCode();
 				switch (attributeCode) {
@@ -1857,8 +1857,8 @@ public class QRules {
 
 			}
 
-      /* layouts V2 */
-      this.navigateTo("/questions/" +  qstMsg.getRootQST().getQuestionCode());
+			/* layouts V2 */
+			this.navigateTo("/questions/" + qstMsg.getRootQST().getQuestionCode());
 
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
 
@@ -1999,8 +1999,8 @@ public class QRules {
 				publish("cmds", json);
 			}
 
-      /* layouts V2 */
-      this.navigateTo("/questions/" +  questionCode);
+			/* layouts V2 */
+			this.navigateTo("/questions/" + questionCode);
 
 			RulesUtils.println(questionCode + " SENT TO FRONTEND");
 
@@ -2933,8 +2933,7 @@ public class QRules {
 			if (beModifiedTime == null || layout.getModifiedDate() == null
 					|| !beModifiedTime.equals(layout.getModifiedDate())) {
 
-          println("Reloading layout: " + layoutCode);
-
+				println("Reloading layout: " + layoutCode);
 
 				/* if the modified time is not the same, we update the layout BE */
 
@@ -6028,7 +6027,7 @@ public class QRules {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
 				if (stakeholder.is("PRI_IS_SELLER")) {
-					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
+					if (bucket.getCode().equals("GRP_NEW_ITEMS")) { // No need to fetch the new items group again
 						continue;
 					}
 				}
@@ -6157,7 +6156,6 @@ public class QRules {
 		if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
 			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
 
-
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
 			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
@@ -6171,7 +6169,7 @@ public class QRules {
 					if (!this.hasRole("admin")) {
 						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
 					}
-					
+
 					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
 				allItems.add(newItems.getMessages());
@@ -6240,41 +6238,53 @@ public class QRules {
 
 				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
 				for (BaseEntity beg : msg.getItems()) {
-					if (msg.getParentCode().equalsIgnoreCase("GRP_APPROVED")) {
-						System.out.println("PARENT  is GRP_APPROVED "+beg.getCode());
-					}
-
 					if (beg.getCode().startsWith("BEG_")) {
 						// check if this beg should be seen by this user
-						boolean skip = false;
-						for (EntityEntity ee : beg.getLinks()) {
-							// if linkValue is ACCEPTED_OFFER
-							if (beg.getId()==2348) {
-								System.out.println("This is not Kelvins ! "+beg.getCode());
+						Optional<EntityAttribute> personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
+						boolean dontSkip = false;
+						if (personCode.isPresent()) {
+							System.out.println("PersonCode found = " + personCode.get().getAsString());
+							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+								System.out.println("Job " + beg.getId() + " is to be skipped");
+								dontSkip = true;
+								continue;
+							} else {
+								
 							}
-							if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue()) && (stakeholder.is("PRI_IS_SELLER"))) {
-								System.out.println("Recognised accepted offer :"+beg.getCode());
-								BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
-								Optional<EntityAttribute> personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
-								if (personCode.isPresent()) {
-									System.out.println("PersonCode found = "+personCode.get().getAsString());
-									if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
-										System.out.println("Job "+beg.getId()+" is to be skipped");
-										skip = true;
-										continue;
+						}
+						if (!dontSkip) {
+							boolean skip = false;
+							for (EntityEntity ee : beg.getLinks()) {
+								// if linkValue is ACCEPTED_OFFER
+								if (beg.getId() == 2348) {
+									System.out.println("This is not Kelvins ! " + beg.getCode());
+								}
+								if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
+										&& (stakeholder.is("PRI_IS_SELLER")  || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) {
+									System.out.println("Recognised accepted offer :" + beg.getCode());
+									BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
+									personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
+									if (personCode.isPresent()) {
+										System.out.println("PersonCode found = " + personCode.get().getAsString());
+										if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+																												// stakeholdeer!
+											System.out.println("Job " + beg.getId() + " is to be skipped");
+											skip = true;
+											continue;
+										} else {
+											System.out.println("Beg is to be allowed!");
+										}
 									} else {
-										System.out.println("Beg is to be allowed!");
+										System.out.println("Person not found :" + acceptedBegChild.getCode());
 									}
-								} else {
-									System.out.println("Person not found :"+acceptedBegChild.getCode());
 								}
 							}
-						}
-						if (skip) {
+							if (skip) {
 								continue; // skip adding beg
+							}
 						}
 					}
-					if (beg.getCode().startsWith(filterPrefix)) {
+					if ((beg.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
 						Optional<EntityAttribute> personCode = beg.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
