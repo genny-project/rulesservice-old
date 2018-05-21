@@ -108,39 +108,11 @@ public class RulesUtils {
 		println(obj, ANSI_RESET);
 	}
 
-	public static String getLayoutCacheURL(final String path) {
-
-		String host = System.getenv("LAYOUT_CACHE_HOST");
-		if (host == null) {
-			if (System.getenv("HOSTIP") == null) {
-				host = "http://localhost:2223";
-			} else {
-				host = "http://" + System.getenv("HOSTIP") + ":2223";
-			}
-		}
-
-		return String.format("%s/%s", host, path);
-	}
-
 	public static String getTodaysDate(final String dateFormat) {
 
 		DateFormat dateFormatter = new SimpleDateFormat(dateFormat);
 		Date date = new Date();
 		return dateFormatter.format(date);
-	}
-
-	public static String getLayout(final String path) {
-		String jsonStr = "";
-		try {
-			String url = getLayoutCacheURL(path);
-			println("Trying to load url.....");
-			println(url);
-			jsonStr = QwandaUtils.apiGet(url, null);
-		} catch (Exception e) {
-//			e.printStackTrace();
-			println(path + " not found.");
-		}
-		return jsonStr;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {

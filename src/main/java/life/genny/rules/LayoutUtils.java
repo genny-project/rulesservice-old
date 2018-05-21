@@ -49,10 +49,10 @@ public class LayoutUtils {
 
 		if(subpath == null) subpath = "";
 
-		String pathToLayout = realmCode + subpath; //channel40 + /sublayouts
+		String pathToLayout = subpath; //channel40 + /sublayouts
 
-		String subLayoutMap = RulesUtils.getLayout(pathToLayout);
-    System.out.println("Downloading layouts: " + pathToLayout);
+		String subLayoutMap = LayoutUtils.getLayout(realmCode, pathToLayout);
+        System.out.println("Downloading layouts: " + pathToLayout);
 
 		if (subLayoutMap != null) {
 
@@ -100,6 +100,53 @@ public class LayoutUtils {
 		}
 
 		return layouts;
+	}
+
+	public static String getLayoutCacheURL(final String path) {
+
+		String host = System.getenv("LAYOUT_CACHE_HOST");
+		if (host == null) {
+			if (System.getenv("HOSTIP") == null) {
+				host = "http://localhost:2223";
+			} else {
+				host = "http://" + System.getenv("HOSTIP") + ":2223";
+			}
+		}
+
+		return String.format("%s/%s", host, path);
+	}
+
+	public static String getLayout(final String realmCode, final String path) {
+	
+		String jsonStr = "";
+		try {
+
+			/* we make a GET request to the layout */
+			String url = LayoutUtils.getLayoutCacheURL(realmCode + path);
+			System.out.println("Trying to load url.....");
+			System.out.println(url);
+			jsonStr = QwandaUtils.apiGet(url, null);
+
+			/* we try to serialize the layout */
+			if(jsonStr != null) {
+
+				JsonObject serialisedLayout = new JsonObject(jsonStr);
+				if(serialisedLayout != null) {
+
+					/* we check if an error occured */
+					if(serialisedLayout.containsKey("error")) {
+
+						/* An error happened */
+						return null;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// e.printStackTrace();
+			System.out.println(path + " not found.");
+		}
+
+		return jsonStr;
 	}
 
 	public static String downloadLayoutContent(Layout layout) {

@@ -4,12 +4,9 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 
 rule "Create BaseEntity"
 	when
-	    rules: QRules( isState("CREATE_BASE_ENTITY") &&
-                        !isState("LOOP_CREATE_BASE_ENTITY") )
+	    rules: QRules( isState("CREATE_BASE_ENTITY") )
 	 then
 	    rules.header();
-
-			rules.setState("LOOP_CREATE_BASE_ENTITY");
 
         String beCode = rules.getAsString("beCode");
         String bePrefix = rules.getAsString("bePrefix");

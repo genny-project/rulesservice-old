@@ -17,7 +17,7 @@ rule "Add Internship - Step 5"
 			rules.set("questionGroupCode", "QUE_ADD_BEG_GRP");
 			rules.set("questionIsPopup", true);
 			
-			rules.setState("ASK_QUESTION");
+			rules.setState("SEND_QUESTION");
 			rules.setState("SEND_PRODUCT_QUESTION");
 		}else{
 			rules.println("beg is null");
