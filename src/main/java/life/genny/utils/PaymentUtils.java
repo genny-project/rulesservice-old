@@ -41,6 +41,8 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentsCompany;
+import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
@@ -317,34 +319,44 @@ public class PaymentUtils {
 
 	}
 	
-	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe) throws IllegalArgumentException {
+	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity be) throws IllegalArgumentException {
 		
 		QPaymentsLocationInfo userLocationInfo = null;
 		String city = null;
 		String country = null;
 		
-		if(userBe != null) {
+		if(be != null) {
 			
-			String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+			String addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
 			
-			city = userBe.getValue("PRI_ADDRESS_CITY", null);
+			city = be.getValue("PRI_ADDRESS_CITY", null);
 			if(city == null) {
-				city = userBe.getValue("PRI_ADDRESS_SUBURB", null);	
+				city = be.getValue("PRI_ADDRESS_SUBURB", null);	
 			}
 			
-			country = userBe.getValue("PRI_ADDRESS_COUNTRY", null);
+			country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			if(country == null) {
 				city = "AU";
 			}
 			
-			String state = userBe.getValue("PRI_ADDRESS_STATE", null);
-			String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
+			String state = be.getValue("PRI_ADDRESS_STATE", null);
+			String postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
 			
 			userLocationInfo = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
 		}
 		
 		return userLocationInfo;
 		
+	}
+	
+	public static QPaymentsCompanyContactInfo getPaymentsCompanyContactInfo(BaseEntity companyBe) throws IllegalArgumentException {
+		
+		QPaymentsCompanyContactInfo companyObj = null;
+		
+		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
+		companyObj = new QPaymentsCompanyContactInfo(companyPhoneNumber);
+		
+		return companyObj;
 	}
 	
 
@@ -560,27 +572,30 @@ public class PaymentUtils {
 	}
 
 	/* Creates a new company in Assembly */
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	public static String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
 
 		String createCompanyResponse = null;
 		String companyCode = null;
 
-		/* Create objects to store the data we'll send to Assembly */
-		JSONObject companyObj = new JSONObject();
-		JSONObject userObj = new JSONObject();
-		JSONObject contactObj = new JSONObject();
-		JSONObject locationObj = new JSONObject();
+		 Create objects to store the data we'll send to Assembly 
+		QPaymentsCompany companyObj = null;
+		QPaymentsUser user = null;
+		QPaymentsCompanyContactInfo contactObj = null;
+		QPaymentsLocationInfo locationObj = null;
 
-		/* Get the provided company information from the base entity */
+		 Get the provided company information from the base entity 
 		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
 		String taxNumber = companyBe.getValue("PRI_ABN", null);
 		Boolean chargeTax = companyBe.getValue("PRI_GST", false);
 		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
-		String countryName = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
+		
+		user = new QPaymentsUser(assemblyUserId);
+		
+		companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, chargeTax, location, user, contactInfo)
 		
 
-		/* Check if each field is provided and add to request object if so */
+		 Check if each field is provided and add to request object if so 
 		if (companyName != null) {
 			companyObj.put("name", companyName);
 		}
@@ -601,21 +616,21 @@ public class PaymentUtils {
 			userObj.put("id", assemblyUserId);
 		}
 
-		/* If a country name was provided use that, otherwise use Australia */
+		 If a country name was provided use that, otherwise use Australia 
 		if (countryName != null) {
 			locationObj.put("country", countryName.toString());
 		} else {
 			locationObj.put("country", "AU");
 		}
 
-		/* Combine all of the objects into one */
+		 Combine all of the objects into one 
 		companyObj.put("contactInfo", contactObj);
 		companyObj.put("user", userObj);
 		companyObj.put("location", locationObj);
 
 		log.info("Company object ::" + companyObj);
 
-		/* Make the request to Assembly */
+		 Make the request to Assembly 
 		if (companyObj != null && userObj != null) {
 			System.out.println("company obj is not null, company object ::"+companyObj);
 			try {
@@ -632,9 +647,9 @@ public class PaymentUtils {
 			}
 		}
 
-		/* Return the ID of the created company */
+		 Return the ID of the created company 
 		return companyCode;
-	}
+	}*/
 
 	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
