@@ -6171,7 +6171,7 @@ public class QRules {
 					if (!this.hasRole("admin")) {
 						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
 					}
-					
+
 					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
 				allItems.add(newItems.getMessages());
@@ -7305,22 +7305,26 @@ public class QRules {
 				grpCode = "GRP_REPORTS_OWNER";
 			}
 
-		}
-
-		QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth
-															// this report branch
-		if (msg != null) {
-
-			try {
-
-				String str = JsonUtils.toJson(msg);
-				JsonObject obj = new JsonObject(str);
-				publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
-			} catch (Exception e) {
 			}
-		}
 
-		sendCmdReportsSplitView(grpCode, null);
+			QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated
+																// wirth
+																// this report branch
+			if (msg != null) {
+
+				try {
+
+					String str = JsonUtils.toJson(msg);
+					JsonObject obj = new JsonObject(str);
+					publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
+				} catch (Exception e) {
+				}
+			}
+
+			sendCmdReportsSplitView(grpCode, null);
+		} else {
+            System.out.println("Error!!The reports group code is null");
+		}
 	}
 
 	/* Payments user updation */
