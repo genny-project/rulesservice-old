@@ -102,6 +102,8 @@ import life.genny.qwanda.message.QMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentsErrorResponse;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
+import life.genny.qwanda.payments.QPaymentsCompany;
+import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
@@ -7507,5 +7509,41 @@ public class QRules {
 			}
 		}
 		return errorMessage.toString();
+	}
+	
+	public void createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
+		
+		if(companyBe != null) {
+			
+			String createCompanyResponse = null;
+			
+			// Get the provided company information from the base entity 
+			String companyName = companyBe.getValue("PRI_CPY_NAME", null);
+			
+			String taxNumber = companyBe.getValue("PRI_ABN", null);
+			if(taxNumber == null) {
+				taxNumber = companyBe.getValue("PRI_ACN", null);
+			}
+			
+			Boolean isChargeTax = companyBe.getValue("PRI_GST", false);
+			
+			QPaymentsCompanyContactInfo companyContactObj = PaymentUtils.getPaymentsCompanyContactInfo(companyBe);
+			QPaymentsLocationInfo companyLocationObj = PaymentUtils.getPaymentsLocationInfo(companyBe);
+			QPaymentsUser user = new QPaymentsUser(assemblyUserId);
+			
+			try {
+				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax, companyLocationObj, user, companyContactObj);
+				try {
+					createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
+				
+				} catch (PaymentException e) {
+				}	
+				
+			} catch (IllegalArgumentException e) {
+				
+			}
+			
+		}	 
+		
 	}
 }
