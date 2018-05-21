@@ -1562,7 +1562,7 @@ public class QRules {
 		}else
 			return payload;
 	}
-	
+
 	public QBulkMessage privacyFilter(QBulkMessage msg)
 	{
 		Map<String,BaseEntity> uniqueBes = new HashMap<String,BaseEntity>();
@@ -1572,12 +1572,12 @@ public class QRules {
 		return msg;
 	}
 
-	
+
 	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg)
 	{
 		return privacyFilter(msg,new HashMap<String,BaseEntity>());
 	}
-	
+
 	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg,Map<String,BaseEntity> uniquePeople) {
 		ArrayList<BaseEntity> bes = new ArrayList<BaseEntity>();
 		for (BaseEntity be : msg.getItems()) {
@@ -1590,7 +1590,7 @@ public class QRules {
 		msg.setItems(bes.toArray(new BaseEntity[bes.size()]));
 		return msg;
  	}
-	
+
 	public BaseEntity privacyFilter(BaseEntity be) {
 		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
@@ -1840,6 +1840,7 @@ public class QRules {
 
 				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, qstMsg.getRootQST().getQuestionCode());
 				publishCmd(cmdFormView);
+
 			} else {
 				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
 						JsonUtils.toJson(qstMsg), getToken()));
@@ -1854,7 +1855,11 @@ public class QRules {
 				json.put("root", qstMsg.getRootQST().getQuestionCode());
 				json.put("token", getToken());
 				publish("cmds", json);
+
 			}
+
+      /* layouts V2 */
+      this.navigateTo("/questions/" +  qstMsg.getRootQST().getQuestionCode());
 
 			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
 
@@ -1994,6 +1999,9 @@ public class QRules {
 				json.put("token", getToken());
 				publish("cmds", json);
 			}
+
+      /* layouts V2 */
+      this.navigateTo("/questions/" +  questionCode);
 
 			RulesUtils.println(questionCode + " SENT TO FRONTEND");
 
@@ -2871,27 +2879,18 @@ public class QRules {
 
 		String realmCode = this.realm();
 		if (realmCode == null) {
-			System.out.println("No realm code was provided. Not getting layouts. ");
+			this.println("No realm code was provided. Not getting layouts. ");
 			return null;
 		}
 
 		if (token == null) {
-			System.out.println("No token was provided. Not getting layouts.");
+			this.println("No token was provided. Not getting layouts.");
 			return null;
 		}
 
 		List<Layout> layouts = new ArrayList<Layout>();
 
 		/* we grab all the layouts */
-
-		/* V1 layouts */
-		// TODO: to remove once web is switched over to V2 */
-		/*
-		 * layouts.addAll(LayoutUtils.processLayouts("shared"));
-		 * layouts.addAll(LayoutUtils.processLayouts(realmCode));
-		 */
-
-		/* Layouts V2 */
 		layouts.addAll(LayoutUtils.processNewLayouts("shared"));
 		layouts.addAll(LayoutUtils.processNewLayouts(realmCode));
 
@@ -2931,11 +2930,12 @@ public class QRules {
 			 * we get the modified time stored in the BE and we compare it to the layout one
 			 */
 			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
-			println(beModifiedTime);
-			println(layout.getModifiedDate());
 
 			if (beModifiedTime == null || layout.getModifiedDate() == null
 					|| !beModifiedTime.equals(layout.getModifiedDate())) {
+
+          println("Reloading layout: " + layoutCode);
+
 
 				/* if the modified time is not the same, we update the layout BE */
 
@@ -6187,7 +6187,7 @@ public class QRules {
 		 try {
 		 publishCmd(allItems);
 		 } catch (Exception e) {
-		
+
 		 }
 
 	}
@@ -6200,7 +6200,7 @@ public class QRules {
 	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
 		QBulkMessage ret = new QBulkMessage();
 		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
-		
+
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
