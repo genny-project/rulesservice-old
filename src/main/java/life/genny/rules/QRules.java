@@ -1270,8 +1270,8 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-
-		publish("cmds",msg);
+		System.out.println("Publishing Cmd "+be.getCode()+" with alias "+aliasCode);
+		publish("cmds", msg);
 	}
 
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
@@ -1336,6 +1336,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("cmds", msg);
 	}
+
 	public QMessage publishCmd(final QDataSubLayoutMessage msg) {
 		msg.setToken(getToken());
 		String json = JsonUtils.toJson(msg);
@@ -1553,32 +1554,28 @@ public class QRules {
 		}
 	}
 
-	public Object privacyFilter(Object payload)
-	{
+	public Object privacyFilter(Object payload) {
 		if (payload instanceof QDataBaseEntityMessage) {
-			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage)payload));
+			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage) payload));
 		} else if (payload instanceof QBulkMessage) {
-			return JsonUtils.toJson(privacyFilter((QBulkMessage)payload));
-		}else
+			return JsonUtils.toJson(privacyFilter((QBulkMessage) payload));
+		} else
 			return payload;
 	}
 
-	public QBulkMessage privacyFilter(QBulkMessage msg)
-	{
-		Map<String,BaseEntity> uniqueBes = new HashMap<String,BaseEntity>();
+	public QBulkMessage privacyFilter(QBulkMessage msg) {
+		Map<String, BaseEntity> uniqueBes = new HashMap<String, BaseEntity>();
 		for (QDataBaseEntityMessage beMsg : msg.getMessages()) {
-			beMsg = privacyFilter(beMsg,uniqueBes);
+			beMsg = privacyFilter(beMsg, uniqueBes);
 		}
 		return msg;
 	}
 
-
-	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg)
-	{
-		return privacyFilter(msg,new HashMap<String,BaseEntity>());
+	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg) {
+		return privacyFilter(msg, new HashMap<String, BaseEntity>());
 	}
 
-	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg,Map<String,BaseEntity> uniquePeople) {
+	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg, Map<String, BaseEntity> uniquePeople) {
 		ArrayList<BaseEntity> bes = new ArrayList<BaseEntity>();
 		for (BaseEntity be : msg.getItems()) {
 			if (!uniquePeople.containsKey(be.getCode())) {
@@ -1589,11 +1586,15 @@ public class QRules {
 		}
 		msg.setItems(bes.toArray(new BaseEntity[bes.size()]));
 		return msg;
- 	}
+	}
 
 	public BaseEntity privacyFilter(BaseEntity be) {
+		if ("PRJ_CHANNEL40".equalsIgnoreCase(be.getCode())) {
+			System.out.println("prj_channel40 privacy filter");
+		}
 		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
+		//	System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
 			if ((be.getCode().startsWith("PER_")) && (!be.getCode().equals(getUser().getCode()))) {
 				String attributeCode = entityAttribute.getAttributeCode();
 				switch (attributeCode) {
@@ -1607,6 +1608,7 @@ public class QRules {
 				case "PRI_CODE":
 				case "PRI_NAME":
 				case "PRI_USERNAME":
+				case "PRI_DRIVER_RATING":
 					allowedAttributes.add(entityAttribute);
 				default:
 					if (attributeCode.startsWith("PRI_IS_")) {
@@ -1614,6 +1616,9 @@ public class QRules {
 					}
 				}
 			} else {
+//				if ("PRI_PAYMENT_TOKEN".equalsIgnoreCase(entityAttribute.getAttributeCode())) {
+//					System.out.println("PRI_PAYMENT_TOKEN:"+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
+//				}
 				if (!entityAttribute.getPrivacyFlag()) { // don't allow privacy flag attributes to get through
 					allowedAttributes.add(entityAttribute);
 				}
@@ -6027,8 +6032,12 @@ public class QRules {
 		Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
-				bucketListMap.put(bucket.getCode(), new ArrayList<BaseEntity>());
 
+				if (stakeholder.is("PRI_IS_SELLER")) {
+					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
+						continue;
+					}
+				}
 				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
 				if (searchStakeholderBucketItems == null) {
 
@@ -6149,10 +6158,14 @@ public class QRules {
 		System.out.println("Entering sendLayoutsAndAdata");
 		QDataBaseEntityMessage init = new QDataBaseEntityMessage(new BaseEntity[0]);
 		QBulkMessage allItems = new QBulkMessage(init);
+		long startTime = System.nanoTime();
 
 		if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
 			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
+
+
 			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
 			if (newItems != null) {
 				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
@@ -6160,11 +6173,16 @@ public class QRules {
 				if (newItems.getMessages() != null) {
 					showLoading("processing driver jobs...");
 					// filter out non associated filter BEG Kids
+					startTime = System.nanoTime();
 					newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
-
 				allItems.add(newItems.getMessages());
+				try {
+					publishCmd(allItems);
+				} catch (Exception e) {
 
+				}
 			}
 		} else {
 			showLoading("fetching " + itemName + "'s...");
@@ -6172,23 +6190,38 @@ public class QRules {
 
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		subscriptionCodes.add("GRP_NEW_ITEMS");
+		startTime = System.nanoTime();
 
 		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
-		System.out.println("Number of item messages found in searched Items = " + items.getMessages());
+		if (items != null) {
+			System.out.println("Number of items found in fetch Items = " + items.getMessages().length);
+
+			if (items.getMessages() != null) {
+				// filter out non associated filter BEG Kids
+				startTime = System.nanoTime();
+				items = FilterOnlyUserBegs(filterPrefix, stakeholder, items);
+				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+			}
+			allItems.add(items.getMessages());
+		}
+		println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+
 		showLoading("loading " + itemName + "'s...");
 
 		if ((items != null) && (items.getMessages().length > 0)) {
-
 			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
 				allItems.add(items.getMessages());
 			}
 		}
 
-		 try {
-		 publishCmd(allItems);
-		 } catch (Exception e) {
+		startTime = System.nanoTime();
 
-		 }
+		try {
+			publishCmd(items);
+		} catch (Exception e) {
+
+		}
+		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
 	}
 
@@ -6197,7 +6230,8 @@ public class QRules {
 	 * @param stakeholder
 	 * @param newItems
 	 */
-	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
+	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder,
+			QBulkMessage newItems) {
 		QBulkMessage ret = new QBulkMessage();
 		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
 
@@ -6206,6 +6240,36 @@ public class QRules {
 			if (msg instanceof QDataBaseEntityMessage) {
 				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
 				for (BaseEntity beg : msg.getItems()) {
+					if (beg.getCode().startsWith("BEG_")) {
+						// check if this beg should be seen by this user
+						boolean skip = false;
+						for (EntityEntity ee : beg.getLinks()) {
+							// if linkValue is ACCEPTED_OFFER
+							if (beg.getId()==4369) {
+								System.out.println("LINK for 4369:"+ee.getLink()+"  LINKVALUE=["+ee.getLink().getLinkValue()+"]");
+							}
+							if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue()) && (stakeholder.is("PRI_IS_SELLER"))) {
+								System.out.println("Recognised accepted offer :"+beg.getCode());
+								BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
+								Optional<EntityAttribute> personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
+								if (personCode.isPresent()) {
+									System.out.println("PersonCode found = "+personCode.get().getAsString());
+									if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+										System.out.println("Job "+beg.getId()+" is to be skipped");
+										skip = true;
+										continue;
+									} else {
+										System.out.println("Beg is to be allowed!");
+									}
+								} else {
+									System.out.println("Person not found :"+acceptedBegChild.getCode());
+								}
+							}
+						}
+						if (skip) {
+							continue; // skip adding beg
+						}
+					}
 					if (beg.getCode().startsWith(filterPrefix)) {
 						Optional<EntityAttribute> personCode = beg.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
