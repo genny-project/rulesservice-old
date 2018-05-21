@@ -6239,66 +6239,35 @@ public class QRules {
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
-
+				BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
 				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
 				for (BaseEntity beg : msg.getItems()) {
+					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+beg.getId()+":"+beg.getCode());
+
 					if (beg.getCode().startsWith("BEG_")) {
-						// check if this beg should be seen by this user
-						Optional<EntityAttribute> personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
-						boolean dontSkip = false;
-						if (personCode.isPresent()) {
-							System.out.println("PersonCode found = " + personCode.get().getAsString());
-							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
-								System.out.println("Job " + beg.getId() + " is to be skipped");
-								dontSkip = true;
-								continue;
-							} else {
-								
-							}
-						}
-						if (!dontSkip) {
-							boolean skip = false;
-							for (EntityEntity ee : beg.getLinks()) {
-								// if linkValue is ACCEPTED_OFFER
-								if (beg.getId() == 2348) {
-									System.out.println("This is not Kelvins ! " + beg.getCode());
-								}
-								if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
-										&& (stakeholder.is("PRI_IS_SELLER")  || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) {
-									System.out.println("Recognised accepted offer :" + beg.getCode());
-									BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
-									personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
-									if (personCode.isPresent()) {
-										System.out.println("PersonCode found = " + personCode.get().getAsString());
-										if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
-																												// stakeholdeer!
-											System.out.println("Job " + beg.getId() + " is to be skipped");
-											skip = true;
-											continue;
-										} else {
-											System.out.println("Beg is to be allowed!");
-										}
-									} else {
-										System.out.println("Person not found :" + acceptedBegChild.getCode());
-									}
-								}
-							}
-							if (skip) {
-								continue; // skip adding beg
-							}
+						if (processBeg(beg,stakeholder)) {
+							System.out.println(" X");
+							continue;
+						} else {
+							System.out.println("");
 						}
 					}
+					// Quotes/Offers
 					if ((beg.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
 						Optional<EntityAttribute> personCode = beg.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+								System.out.println(" X");
 								continue;
+							} else {
+								System.out.println("");
 							}
 						}
 					} else {
 						// filter attributes
 						if (beg.getCode().startsWith("PER_")) {
 							if (beg.getCode().equals(getUser().getCode())) {
+								System.out.println(" (duplicate)");
 								continue;
 							} else {
 								Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
@@ -6324,7 +6293,10 @@ public class QRules {
 
 								}
 								beg.setBaseEntityAttributes(allowedAttributes);
+								System.out.println(" (filtered)");
 							}
+						} else {
+							System.out.println("");  // loads
 						}
 					}
 
@@ -6332,13 +6304,45 @@ public class QRules {
 				}
 
 				msg.setItems(allowedItems.toArray(new BaseEntity[allowedItems.size()]));
+				messages.add(msg);
 			}
-			messages.add(msg);
+			
 		}
 		ret.setMessages(messages.toArray(new QDataBaseEntityMessage[messages.size()]));
 		return ret;
 	}
 
+	public boolean processBeg(final BaseEntity beg,final BaseEntity stakeholder) {
+		boolean skip = false;
+			// check if this beg should be seen by this user
+		
+			Optional<EntityAttribute> personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
+
+			if (personCode.isPresent()) {
+				if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
+					return true; // skip
+				} 
+			}
+				for (EntityEntity ee : beg.getLinks()) {
+					// if linkValue is ACCEPTED_OFFER
+					if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
+							&& (stakeholder.is("PRI_IS_SELLER")  || stakeholder.getValue("PRI_IS_SELLER","").equals("TRUE"))) {
+						BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
+						personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
+						if (personCode.isPresent()) {
+							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+								return true; // skip
+							} 
+						} else {
+							System.out.println("Person not found :" + acceptedBegChild.getCode());
+						}
+					}
+				}
+
+			return skip;
+	}
+	
+	
 	public void sendBucketLayouts() {
 		String viewCode = "BUCKET_DASHBOARD";
 		String grpBE = "GRP_DASHBOARD";
