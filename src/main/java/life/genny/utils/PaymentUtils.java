@@ -329,6 +329,7 @@ public class PaymentUtils {
 			
 			String addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
 			String addressLine2 = be.getValue("PRI_ADDRESS_ADDRESS2", null);
+
 			
 			city = be.getValue("PRI_ADDRESS_CITY", null);
 			if(city == null) {
