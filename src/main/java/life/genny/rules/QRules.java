@@ -1589,9 +1589,6 @@ public class QRules {
 	}
 
 	public BaseEntity privacyFilter(BaseEntity be) {
-		if ("PRJ_CHANNEL40".equalsIgnoreCase(be.getCode())) {
-			System.out.println("prj_channel40 privacy filter");
-		}
 		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
 		//	System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
@@ -1616,9 +1613,6 @@ public class QRules {
 					}
 				}
 			} else {
-//				if ("PRI_PAYMENT_TOKEN".equalsIgnoreCase(entityAttribute.getAttributeCode())) {
-//					System.out.println("PRI_PAYMENT_TOKEN:"+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
-//				}
 				if (!entityAttribute.getPrivacyFlag()) { // don't allow privacy flag attributes to get through
 					allowedAttributes.add(entityAttribute);
 				}
@@ -6174,7 +6168,10 @@ public class QRules {
 					showLoading("processing driver jobs...");
 					// filter out non associated filter BEG Kids
 					startTime = System.nanoTime();
-					newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+					if (!this.hasRole("admin")) {
+						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+					}
+					
 					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
 				allItems.add(newItems.getMessages());
@@ -6199,7 +6196,9 @@ public class QRules {
 			if (items.getMessages() != null) {
 				// filter out non associated filter BEG Kids
 				startTime = System.nanoTime();
-				items = FilterOnlyUserBegs(filterPrefix, stakeholder, items);
+				if (!this.hasRole("admin")) {
+					items = FilterOnlyUserBegs(filterPrefix, stakeholder, items);
+				}
 				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 			}
 			allItems.add(items.getMessages());
@@ -6238,15 +6237,20 @@ public class QRules {
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
+
 				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
 				for (BaseEntity beg : msg.getItems()) {
+					if (msg.getParentCode().equalsIgnoreCase("GRP_APPROVED")) {
+						System.out.println("PARENT  is GRP_APPROVED "+beg.getCode());
+					}
+
 					if (beg.getCode().startsWith("BEG_")) {
 						// check if this beg should be seen by this user
 						boolean skip = false;
 						for (EntityEntity ee : beg.getLinks()) {
 							// if linkValue is ACCEPTED_OFFER
-							if (beg.getId()==4369) {
-								System.out.println("LINK for 4369:"+ee.getLink()+"  LINKVALUE=["+ee.getLink().getLinkValue()+"]");
+							if (beg.getId()==2348) {
+								System.out.println("This is not Kelvins ! "+beg.getCode());
 							}
 							if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue()) && (stakeholder.is("PRI_IS_SELLER"))) {
 								System.out.println("Recognised accepted offer :"+beg.getCode());
@@ -6267,7 +6271,7 @@ public class QRules {
 							}
 						}
 						if (skip) {
-							continue; // skip adding beg
+								continue; // skip adding beg
 						}
 					}
 					if (beg.getCode().startsWith(filterPrefix)) {
