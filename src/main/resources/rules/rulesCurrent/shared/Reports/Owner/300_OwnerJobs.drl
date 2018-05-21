@@ -36,7 +36,7 @@ rule "SBE_OWNERJOBS"
 
   	   /*  .setStakeholder(rules.getUser().getCode());  */
 
-  		 rules.add("GRP","GRP_REPORTS_OWNER",report);
+  		 rules.add("GRP","GRP_REPORTS_BUYER",report);
 
 
 
