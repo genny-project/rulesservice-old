@@ -4,7 +4,8 @@ import life.genny.rules.QRules;
 rule "Add Internship - Step 6"
 	when
         rules: QRules(  isState("SEND_PRODUCT_QUESTION") && 
-                        isState("ASKED_QUESTION")  &&
+                        isState("SENT_QUESTION")  &&
+                        isState("QUE_ADD_BEG_GRP")  &&
                         !isState("LOOP_SEND_PRODUCT_QUESTION")  )
      then 
  		rules.header();
@@ -17,9 +18,9 @@ rule "Add Internship - Step 6"
 			rules.set("questionGroupCode", "QUE_ADD_PRODUCT_GRP");
 			rules.set("questionIsPopup", true);
 			
-			rules.clearState("ASKED_QUESTION");
+			rules.clearState("SENT_QUESTION");
 
-			rules.setState("ASK_QUESTION");
+			rules.setState("SEND_QUESTION");
 
 			rules.setState("SEND_ADD_PRODUCT_QUESTION_LAYOUT");
 		}else{
