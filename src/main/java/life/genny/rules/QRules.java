@@ -6028,7 +6028,7 @@ public class QRules {
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
-				if (stakeholder.is("PRI_IS_SELLER")) {
+				if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
 					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
 						continue;
 					}
