@@ -5988,8 +5988,6 @@ public class QRules {
 					results.setLinkCode("LNK_CORE");
 					bulkmsg.add(results);
 
-					QBulkMessage bulk = new QBulkMessage(bulkmsg);
-
 					for (BaseEntity beg : results.getItems()) {
 
 						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
@@ -6236,42 +6234,67 @@ public class QRules {
 		QBulkMessage ret = new QBulkMessage();
 		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
 
+		Map<String,List<BaseEntity>> bucketMap = new HashMap<String,List<BaseEntity>>();
+		Map<String,List<BaseEntity>> begMap = new HashMap<String,List<BaseEntity>>();
+		
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
 				BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
-				List<BaseEntity> allowedItems = new ArrayList<BaseEntity>();
-				for (BaseEntity beg : msg.getItems()) {
-					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+beg.getId()+":"+beg.getCode());
+				
+					if (parent.getCode().startsWith("GRP_")) {
+						if (!bucketMap.containsKey(parent.getCode())) {
+							bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+						}					
+						} else {
+						if (!begMap.containsKey(parent.getCode())) {
+							begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+						}
+					
+					}
+				
 
-					if (beg.getCode().startsWith("BEG_")) {
-						if (processBeg(beg,stakeholder)) {
+				for (BaseEntity be : msg.getItems()) {
+					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+be.getId()+":"+be.getCode());
+
+					if (be.getCode().startsWith("BEG_")) {
+						if (processBeg(be,stakeholder)) {
 							System.out.println(" X");
 							continue;
 						} else {
 							System.out.println("");
+							if (!bucketMap.containsKey(parent.getCode())) {
+								bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+								System.out.println("Parent of load = "+parent.getCode());
+							}
+							bucketMap.get(parent.getCode()).add(be);
 						}
 					}
 					// Quotes/Offers
-					if ((beg.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
-						Optional<EntityAttribute> personCode = beg.findEntityAttribute("PRI_QUOTER_CODE");
+					if ((be.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
+						Optional<EntityAttribute> personCode = be.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
 								System.out.println(" X");
 								continue;
 							} else {
 								System.out.println("");
+								if (!begMap.containsKey(parent.getCode())) {
+									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+									System.out.println("Parent of load = "+parent.getCode());
+								}
+								begMap.get(parent.getCode()).add(be);
 							}
 						}
 					} else {
 						// filter attributes
-						if (beg.getCode().startsWith("PER_")) {
-							if (beg.getCode().equals(getUser().getCode())) {
+						if (be.getCode().startsWith("PER_")) {
+							if (be.getCode().equals(getUser().getCode())) {
 								System.out.println(" (duplicate)");
 								continue;
 							} else {
 								Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
-								for (EntityAttribute entityAttribute : beg.getBaseEntityAttributes()) {
+								for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
 									// strip privates
 									String attributeCode = entityAttribute.getAttributeCode();
 									switch (attributeCode) {
@@ -6292,21 +6315,42 @@ public class QRules {
 									}
 
 								}
-								beg.setBaseEntityAttributes(allowedAttributes);
+								be.setBaseEntityAttributes(allowedAttributes);
 								System.out.println(" (filtered)");
+								if (!begMap.containsKey(parent.getCode())) {
+									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+									System.out.println("Parent of load = "+parent.getCode());
+								}
+								begMap.get(parent.getCode()).add(be);
 							}
 						} else {
 							System.out.println("");  // loads
+							if (!begMap.containsKey(parent.getCode())) {
+								begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+								System.out.println("Parent of load = "+parent.getCode());
+							}
+							begMap.get(parent.getCode()).add(be);
+							
 						}
 					}
 
-					allowedItems.add(beg);
+
+				}
+				if (parent.getCode().startsWith("BEG_")) {
+					msg.setLinkCode("LNK_BEG");
 				}
 
-				msg.setItems(allowedItems.toArray(new BaseEntity[allowedItems.size()]));
-				messages.add(msg);
 			}
 			
+		}
+		for (String parent : bucketMap.keySet()) {
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]),parent,"LNK_CORE");
+			messages.add(msg);
+		}
+
+		for (String parent : begMap.keySet()) {
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]),parent,"LNK_BEG");
+			messages.add(msg);
 		}
 		ret.setMessages(messages.toArray(new QDataBaseEntityMessage[messages.size()]));
 		return ret;
