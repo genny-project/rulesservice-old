@@ -1270,7 +1270,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-
+		System.out.println("Publishing Cmd "+be.getCode()+" with alias "+aliasCode);
 		publish("cmds", msg);
 	}
 
@@ -1589,8 +1589,12 @@ public class QRules {
 	}
 
 	public BaseEntity privacyFilter(BaseEntity be) {
+		if ("PRJ_CHANNEL40".equalsIgnoreCase(be.getCode())) {
+			System.out.println("prj_channel40 privacy filter");
+		}
 		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
+		//	System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
 			if ((be.getCode().startsWith("PER_")) && (!be.getCode().equals(getUser().getCode()))) {
 				String attributeCode = entityAttribute.getAttributeCode();
 				switch (attributeCode) {
@@ -1604,6 +1608,7 @@ public class QRules {
 				case "PRI_CODE":
 				case "PRI_NAME":
 				case "PRI_USERNAME":
+				case "PRI_DRIVER_RATING":
 					allowedAttributes.add(entityAttribute);
 				default:
 					if (attributeCode.startsWith("PRI_IS_")) {
@@ -1611,9 +1616,9 @@ public class QRules {
 					}
 				}
 			} else {
-				if ("PRI_PAYMENT_TOKEN".equalsIgnoreCase(entityAttribute.getAttributeCode())) {
-					System.out.println("PRI_PAYMENT_TOKEN:"+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
-				}
+//				if ("PRI_PAYMENT_TOKEN".equalsIgnoreCase(entityAttribute.getAttributeCode())) {
+//					System.out.println("PRI_PAYMENT_TOKEN:"+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
+//				}
 				if (!entityAttribute.getPrivacyFlag()) { // don't allow privacy flag attributes to get through
 					allowedAttributes.add(entityAttribute);
 				}
