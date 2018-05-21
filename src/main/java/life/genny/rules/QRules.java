@@ -3787,7 +3787,8 @@ public class QRules {
 					 */
 
 					/* Update BEG to have DRIVER_CODE as an attribute */
-					answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+          answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
 					saveAnswers(answers);
 
 					BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
@@ -6171,7 +6172,7 @@ public class QRules {
 					if (!this.hasRole("admin")) {
 						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
 					}
-					
+
 					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 				}
 				allItems.add(newItems.getMessages());
