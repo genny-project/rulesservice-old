@@ -7320,7 +7320,6 @@ public class QRules {
 	public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value,
 			String paymentsAuthToken) {
 
-		String userUpdateResponseString = null;
 		try {
 
 			if (attributeCode != null && value != null) {
@@ -7332,7 +7331,7 @@ public class QRules {
 				if (paymentsUser != null && paymentsUserId != null) {
 					try {
 						/* Hitting payments-service API for updating */
-						userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId,
+						String userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId,
 								JsonUtils.toJson(paymentsUser), paymentsAuthToken);
 						QPaymentsAssemblyUserResponse userResponsePOJO = JsonUtils.fromJson(userUpdateResponseString,
 								QPaymentsAssemblyUserResponse.class);
@@ -7346,7 +7345,7 @@ public class QRules {
 						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 						throw new IllegalArgumentException(
 								"User payments profile updation has not succeeded for the field : "
-										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage);
+										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage + ". Kindly give valid information for payments to get through.");
 					}
 				}
 			} else {
@@ -7408,12 +7407,13 @@ public class QRules {
 		return errorMessage.toString();
 	}
 	
-	public void createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
+	/* Create payments company */
+	public String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
 		
+		String companyId = null;
+		BaseEntity userBe = getUser();
 		if(companyBe != null) {
-			
-			String createCompanyResponse = null;
-			
+						
 			// Get the provided company information from the base entity 
 			String companyName = companyBe.getValue("PRI_CPY_NAME", null);
 			
@@ -7424,23 +7424,137 @@ public class QRules {
 			
 			Boolean isChargeTax = companyBe.getValue("PRI_GST", false);
 			
+			/* Gets basic company contact info object */
 			QPaymentsCompanyContactInfo companyContactObj = PaymentUtils.getPaymentsCompanyContactInfo(companyBe);
+			
+			/* Get company location object */
 			QPaymentsLocationInfo companyLocationObj = PaymentUtils.getPaymentsLocationInfo(companyBe);
+			
+			/* Get assembly user ID */
 			QPaymentsUser user = new QPaymentsUser(assemblyUserId);
 			
 			try {
+				
+				/* Create complete packed company object */
 				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax, companyLocationObj, user, companyContactObj);
 				try {
-					createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
+					String createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
+					
+					QPaymentsCompany createCompanyResponseObj = JsonUtils.fromJson(createCompanyResponse, QPaymentsCompany.class);
+					println("payments company creation response ::"+createCompanyResponse);
+					println("payments company obj : "+createCompanyResponseObj);
+					companyId = createCompanyResponseObj.getId();
 				
 				} catch (PaymentException e) {
+					throw new IllegalArgumentException(e);
 				}	
 				
 			} catch (IllegalArgumentException e) {
 				
+				/* Send toast message if company creation misses arguments or if API call returns error response */
+				if(userBe != null) {
+					/* send toast to user */
+					String[] recipientArr = { userBe.getCode() };
+					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
+							+ ". Please complete it for payments to get through.";
+					sendDirectToast(recipientArr, toastMessage, "warning");
+				}	
 			}
 			
-		}	 
+		}
+		return companyId;	 
+	}
+	
+	/* Payments company updation */
+	/* Independent attribute value update. Not bulk */
+	public void updatePaymentsCompany(String paymentsUserId, String companyId, String attributeCode, String value,
+			String paymentsAuthToken) {
+
+		try {
+
+			if (attributeCode != null && value != null) {
+
+				/* Get payments company after setting to-be-updated fields in the object */
+				QPaymentsCompany paymentsCompany = PaymentUtils.updateCompanyInfo(paymentsUserId, companyId, attributeCode, value);
+
+				/* Make the request to Assembly and update */
+				if (paymentsCompany != null && paymentsUserId != null) {
+					try {
+						/* Hitting payments-service API for updating */
+						String companyUpdateResponseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(paymentsCompany), paymentsAuthToken);
+						QPaymentsCompany userResponsePOJO = JsonUtils.fromJson(companyUpdateResponseString,
+								QPaymentsCompany.class);
+						println("Company updation response :: " + userResponsePOJO);
+
+					} catch (PaymentException e) {
+						log.error("Exception occured user updation : " + e.getMessage());
+						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+						throw new IllegalArgumentException(
+								"User payments profile updation has not succeeded for the field : "
+										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage + ". Kindly give valid information for payments to get through.");
+					}
+				}
+			} else {
+				if (value == null || value.trim().isEmpty()) {
+					throw new IllegalArgumentException(
+							"Updated value for the field " + attributeCode.replace("PRI_", "") + " is empty/invalid");
+				}
+			}
+
+		} catch (IllegalArgumentException e) {
+			/*
+			 * Send toast message the payments-user updation failed when the field updated
+			 * is invalid
+			 */
+			String toastMessage = e.getMessage();
+			String[] recipientArr = { getUser().getCode() };
+			sendDirectToast(recipientArr, toastMessage, "warning");
+		}
+	}
+	
+	/* Bulk update of payments user info */
+	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
+	public void bulkPaymentsUserUpdate(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+		
+		try {
+			QPaymentsUser user = PaymentUtils.getCompleteUserObj(userBe, assemblyUserId);
+			/* Attempt to update the user in Assembly */
+			if(user != null && assemblyUserId != null) {
+				try {
+					PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user), assemblyAuthKey);
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);							}
+			}
+			
+		} catch (IllegalArgumentException e) {
+			log.error("Exception occured user updation"+e.getMessage());
+		}
+	}
+	
+	/* Bulk update for payments company info */
+	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
+	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
+		
+		try {
+			
+			/* Get the companies assembly ID */
+			String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
+			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, assemblyUserId);
+			
+			/* Attempt to update the company in Assembly */
+			if(companyId != null && company != null) {
+				try {
+					PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(company), assemblyAuthKey);
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);	
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("Exception occured user updation"+e.getMessage());
+		}
 		
 	}
+	
 }
