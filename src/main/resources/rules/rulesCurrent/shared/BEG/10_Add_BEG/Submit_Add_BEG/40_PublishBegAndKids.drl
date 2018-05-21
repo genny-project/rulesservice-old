@@ -3,13 +3,13 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
 /* Publish BEG AND KIDS */
-rule "Submit Add BEG - Step 5"
+rule "Submit Add BEG - Step 4"
 	when
 		rules: QRules( 	isState("PUBLISH_BEG_AND_KIDS") && 
-						!isState("LOOP_SUBMIT_ADD_BEG_STEP5") ) 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP4") ) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP5");
+        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP4");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		BaseEntity product = rules.getAsBaseEntity("productBe");
@@ -26,7 +26,7 @@ rule "Submit Add BEG - Step 5"
 			String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
 			rules.println("BEG Recipients   ::   " + Arrays.toString(recipients));
 			
-			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+			List<BaseEntity> begKids = rules.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 400, false);
 			if(begKids != null){
 				rules.printList("begKids", begKids);
 				
