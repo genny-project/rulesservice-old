@@ -1,0 +1,32 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* LINK BEG + USER || CREATOR */
+rule "Submit Add BEG - Step 2"
+	when
+		rules: QRules( 	isState("LINK_BEG_AND_CREATOR") && 
+						isState("CREATED_LINK") && 
+						isState("BEG") && 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP2")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP2");
+
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+
+		if(beg != null){
+			/* link BEG to USER */
+			rules.set("linkSourceCode",  beg.getCode());
+			rules.set("linkTargetCode", rules.getUser().getCode());
+			rules.set("linkCode", "LNK_BEG");
+			rules.set("linkValue", "CREATOR");
+			rules.set("linkWeight", 1.0);
+			rules.setState("CREATE_LINK");
+
+			rules.setState("LINK_BEG_AND_COMPANY");
+		}else{
+			rules.println("beg is null");			
+		}
+
+	 	rules.footer();      
+end

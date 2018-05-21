@@ -1,0 +1,50 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Submit Add BEG"
+	when
+		rules: QRules(  isState("EVENT_FORM_SUBMIT") &&
+						isState("QUE_ADD_BEG_GRP") &&
+						isState("SUBMIT") &&
+						!isState("LOOP_TRIGGER_SUBMIT_ADD_BEG") )
+	 then
+	 	rules.header();
+        rules.setState("LOOP_TRIGGER_SUBMIT_ADD_BEG");
+		
+		String begCode = rules.getAsString("quesTargetCode");
+		if(begCode != null){
+
+			BaseEntity beg = rules.getBaseEntityByCode(begCode);			
+			if(beg != null){
+				rules.set("begBe", beg);
+
+                BaseEntity product = rules.getChildren(beg.getCode(), "LNK_BEG", "PRODUCT"); 
+                if(product != null){
+				    rules.set("productBe", product);
+                }else{
+                    rules.println("product is null");
+                    return;
+                }
+
+			}else{
+				rules.println("beg is null");
+				return;
+			}
+			
+			BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+			if(company != null){
+				rules.set("companyBe", company);
+			}else{
+				rules.println("company is null");
+				return;
+			}
+            rules.setState("LINK_GRP_BEGS_AND_BEG");
+
+		}else{
+			rules.println("begCode is null");
+			return;
+		}
+		rules.footer();      
+end
+		
+		
