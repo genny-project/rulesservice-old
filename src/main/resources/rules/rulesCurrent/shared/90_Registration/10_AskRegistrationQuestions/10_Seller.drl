@@ -12,7 +12,6 @@ rule "Ask Registration Questions - SELLER"
 
 		    rules.setState("LOOP_ASK_REGISTRATION_SELLER");
         rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_SELLER_GRP", false);
-        rules.navigateTo('/registration/seller');
 
         rules.footer();
 end
