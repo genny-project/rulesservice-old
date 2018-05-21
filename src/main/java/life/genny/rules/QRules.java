@@ -6117,6 +6117,7 @@ public class QRules {
 								case "PRI_CODE":
 								case "PRI_NAME":
 								case "PRI_USERNAME":
+                case "PRI_DRIVER_RATING":
 									allowedAttributes.add(entityAttribute);
 								default:
 
