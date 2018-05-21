@@ -1,0 +1,31 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* LINK GRP_BEGS + BEG || BEG */
+rule "Submit Add BEG - Step 1"
+     when
+        rules: QRules( 	isState("LINK_GRP_BEGS_AND_BEG") && 
+                     	isState("QUE_ADD_BEG_GRP") && 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP1")) 
+     then
+        rules.header();
+		rules.setState("LOOP_SUBMIT_ADD_BEG_STEP1");
+     	
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+        
+        if(beg != null){
+            /* link GRP_INTERNSHIPS to BEG  */
+            rules.set("linkSourceCode",  "GRP_BEGS");
+            rules.set("linkTargetCode", beg.getCode());
+            rules.set("linkCode", "LNK_CORE");
+            rules.set("linkValue", "BEG");
+            rules.set("linkWeight", 1.0);
+            rules.setState("CREATE_LINK");
+
+            rules.setState("LINK_BEG_AND_CREATOR");
+        }else{
+            rules.println("beg is null");            
+        }
+	    rules.footer();     		      
+end
+     	

@@ -20,11 +20,11 @@ rule "Add Product - Step 4"
 			rules.println("product s null");
 		}else{
 
-			/* link GRP_DRAFTS to BEG */
+			/* link BEG to PRODUCT */
 			rules.set("linkSourceCode", beg.getCode());
 			rules.set("linkTargetCode", product.getCode());
-			rules.set("linkCode", "LNK_CORE");
-			rules.set("linkValue", "LINK");
+			rules.set("linkCode", "LNK_BEG");
+			rules.set("linkValue", "PRODUCT");
 			rules.set("linkWeight", 1.0);
 
 			rules.clearState("CREATED_LINK");
