@@ -1,0 +1,46 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+
+rule "TV_SELECT Event"
+     when
+       $m : QEventMessage( event_type == "TV_SELECT"  && data.value != "GRP_MESSAGES" && (!data.value.startsWith("GRP_REPORTS")) )
+       rules: QRules()
+     then
+     
+       rules.header();
+
+         /* TODO: refactor this. */
+       	 String grpCode = $m.getData().getValue();
+       	 rules.println("The group code is :: "+grpCode);
+       	 if(grpCode != null){
+           if( grpCode.contains("GRP_") && !grpCode.equals("GRP_ADMIN") ) {
+
+	         if( grpCode.equals("GRP_DASHBOARD") ) {
+	             rules.redirectToHomePage();
+	          }
+	          else {
+		        	/* sending cmd LIST_VIEW */
+		    	     QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW", "LIST_VIEW");
+		    	     JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);
+		    	     bucketViewJson.put("root", grpCode);		    	     
+		    	     rules.publishCmd(bucketViewJson);	    	     
+		    	     rules.setLastLayout( "LIST_VIEW", grpCode );
+		    	     rules.println( rules.getLastLayout() );
+	         }
+          }
+          /* Handling individual Chat message click from treeView */
+	      else if( grpCode.startsWith("CHT_") ){
+	          rules.sendChatMessages(grpCode, 0, 10000);
+  		    	  rules.sendCmdSplitView("GRP_MESSAGES", grpCode); 
+	        }
+        }
+        else{
+          rules.println("Error!! The group code is null");
+        }
+
+     rules.footer();
+end
