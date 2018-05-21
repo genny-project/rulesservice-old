@@ -29,8 +29,8 @@ rule "Generate ch40 Tree Roles"
 		/* Roles related to TreeView item Reports */
 	    List<Answer> attributesAns = new ArrayList<>();
 		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_USER", "PRI_IS_NOTHING")); //Hiding User report from Ch40	
-		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_DRIVER", "PRI_IS_SELLER"));		
-		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_OWNER", "PRI_IS_BUYER"));	
+		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_SELLER", "PRI_IS_SELLER"));		
+		 attributesAns.add(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_BUYER", "PRI_IS_BUYER"));	
 		rules.saveAnswers(attributesAns);
 	
      rules.footer();

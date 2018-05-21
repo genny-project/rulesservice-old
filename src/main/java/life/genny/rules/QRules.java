@@ -5890,7 +5890,7 @@ public class QRules {
 				if (msg instanceof QDataBaseEntityMessage) {
 
 					String grpCode = msg.getParentCode();
-					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+					if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
 						System.out.println("Dubug");
 					}
 
@@ -7295,33 +7295,62 @@ public class QRules {
 	public void generateReport(QEventMessage m) {
 		String grpCode = m.getData().getValue();
 		println("The Group Id is :: " + grpCode);
-		/* TODO: refactor this. */
-		BaseEntity user = getUser();
-		if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
-			if (hasRole("admin")) {
-				grpCode = "GRP_REPORTS_ADMIN";
-			} else if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
-				grpCode = "GRP_REPORTS_DRIVER";
-			} else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
-				grpCode = "GRP_REPORTS_OWNER";
+		if (grpCode != null) {
+			BaseEntity user = getUser();
+			if (user != null) {
+				QDataBaseEntityMessage msg;
+				// List<String> grpCodes = new ArrayList<String>();
+				List<BaseEntity> searchEntityList = new ArrayList<BaseEntity>();
+				if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
+					for (EntityAttribute ea : user.getBaseEntityAttributes()) {
+						// loop through all the "PRI_IS_" attributes
+						if (ea.getAttributeCode().startsWith("PRI_IS")) {
+							try { // handling exception when the value is not saved as valueBoolean
+								if (ea.getValueBoolean()) {
+									// get the role
+									String role = ea.getAttributeCode().substring("PRI_IS_".length());
+									// create GRP_REPORTS_ with role
+									String reportGrp = "GRP_REPORTS_" + role;
+									// Get stored QDataBaseEntityMessage for that report group
+									QDataBaseEntityMessage storedMsg = getMappedBEs(reportGrp);
+									if (storedMsg != null) {
+										// Add all the searchEntity's available
+										for (BaseEntity be : storedMsg.getItems()) {
+											searchEntityList.add(be);
+										}
+									}
+								}
+							} catch (Exception e) {
+								System.out.println("Error!! The attribute value is not in boolean format");
+							}
+						}
+					}
+					// Create virtual reports grp adding all the available search BEs for this user
+					// based on the user role
+					msg = new QDataBaseEntityMessage(searchEntityList.toArray(new BaseEntity[searchEntityList.size()]),
+							"GRP_REPORTS_VIRTUAL", "LNK_CORE");
+					grpCode = "GRP_REPORTS_VIRTUAL";
+				} else {
+					msg = getMappedBEs(grpCode); // send back the list of cached children associated with
+													// this report branch
+				}
+
+				if (msg != null) {
+
+					try {
+						String str = JsonUtils.toJson(msg);
+						JsonObject obj = new JsonObject(str);
+						publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
+					} catch (Exception e) {
+					}
+				}
+				sendCmdReportsSplitView(grpCode, null);
+			} else {
+				System.out.println("Error!!The user BE is null");
 			}
-
+		} else {
+			System.out.println("Error!!The reports group code is null");
 		}
-
-		QDataBaseEntityMessage msg = getMappedBEs(grpCode); // send back the list of cached children associated wirth
-															// this report branch
-		if (msg != null) {
-
-			try {
-
-				String str = JsonUtils.toJson(msg);
-				JsonObject obj = new JsonObject(str);
-				publishData(obj); /* send the reports to the frontend that are linked to this tree branch */
-			} catch (Exception e) {
-			}
-		}
-
-		sendCmdReportsSplitView(grpCode, null);
 	}
 
 	/* Payments user updation */
