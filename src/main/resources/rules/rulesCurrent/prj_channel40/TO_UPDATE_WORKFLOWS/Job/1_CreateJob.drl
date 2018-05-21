@@ -8,6 +8,7 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.Answer;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.RulesUtils;
+import life.genny.rules.LayoutUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
@@ -72,7 +73,7 @@ rule "Create Job"
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
      JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
-     String createJobLayout = RulesUtils.getLayout(rules.realm() + "/create_job.json");
+     String createJobLayout = LayoutUtils.getLayout(rules.realm(), "/create_job.json");
        cmdJobSublayoutJson.put("items",createJobLayout);
        cmdJobSublayoutJson.put("token", rules.getToken());
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);

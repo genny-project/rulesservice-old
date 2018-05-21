@@ -14,6 +14,7 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.rules.RulesUtils;
+import life.genny.rules.LayoutUtils;
 import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
@@ -81,7 +82,7 @@ rule "Submit LOAD"
      		}
      	}
 
-       String layout = RulesUtils.getLayout("card.json");
+       String layout = LayoutUtils.getLayout(rules.realm(), "/card.json");
      	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);

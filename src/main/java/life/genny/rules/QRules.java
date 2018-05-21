@@ -1097,13 +1097,11 @@ public class QRules {
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
-		this.sendLayout(layoutCode, layoutPath, realm());
-	}
 
-	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
-
-		println("Loading layout: " + folderName + "/" + layoutPath);
-		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
+		String layout = LayoutUtils.getLayout(realm(), "/" + layoutPath);
+		if(layout == null) {
+			layout = LayoutUtils.getLayout("shared", "/" + layoutPath);
+		}
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		println(layoutCode + " SENT TO FRONTEND");
@@ -1137,7 +1135,7 @@ public class QRules {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		String sublayoutString = LayoutUtils.getLayout(realm(), sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
@@ -1166,8 +1164,16 @@ public class QRules {
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		println("Loading url: " + realm() + "/" + sublayoutPath);
-		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
-		cmdJobSublayoutJson.put("items", sublayoutString);
+
+		/* we try to load the current realm layout */
+		String sublayoutString = LayoutUtils.getLayout(realm(), "/" + sublayoutPath);
+		
+		if(sublayoutString == null) {
+
+			/* we try to load the shared layout */
+			sublayoutString = LayoutUtils.getLayout("shared", "/" + sublayoutPath);
+		}
+ 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
 
@@ -2837,7 +2843,7 @@ public class QRules {
 
 		try {
 
-			String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
+			String subLayoutMap = LayoutUtils.getLayout(realm(), "/sublayouts");
 			if (subLayoutMap != null) {
 
 				JsonArray subLayouts = new JsonArray(subLayoutMap);
