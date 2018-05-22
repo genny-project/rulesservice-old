@@ -20,7 +20,7 @@ rule "TV_SELECT Event - Generate Report"
         rules.setState("REPORTS_LAYOUT_SENT");
         /* TODO: refactor this. */
    	rules.generateReport($m);
-        	
+
       /* 	  rules.sendReport(searchBE);
   		  rules.sendCmdReportsSplitView(grpCode, searchBE); */
 
@@ -33,15 +33,15 @@ rule "TV_SELECT Event - Generate Report"
 		rules.println("the Layout array string is :: "+ layoutArray[0].getData());
 		cmdJobSublayoutJson.put("items", layoutArray[0].getData());
 		rules.println("The CMD_SUBLAYOUT cmd is :: "+cmdJobSublayoutJson);
-		rules.publishCmd(cmdJobSublayoutJson);   
+		rules.publishCmd(cmdJobSublayoutJson);
 
 		rules.publishSearchBE(grpCode);
 		BaseEntity user = rules.getUser();
 		String viewGrpCode = "";
-	    if ( user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE") ) {
+	    if ( rules.isUserSeller(user) ) {
 	        viewGrpCode = "GRP_REPORTS_DRIVER";
 	    }
-	    else if ( user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE") ) {
+	    else if ( rules.isUserBuyer(user) ) {
 	        viewGrpCode = "GRP_REPORTS_OWNER";
 	    }
 	    	if ( rules.hasRole("admin") ) {
