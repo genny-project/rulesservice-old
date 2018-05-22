@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
-rule "Seed New Items Cache"
-
+rule "Seed New Items Cache - Channel 40"
     ruleflow-group 'GenerateSearches'
  
      when
-       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
+       rules: QRules( isState("SBE_NEW_ITEMS1") && 
+                      !isState("GENERATE_NEW_ITEMS_CACHE") )
      then
 
      rules.header();
