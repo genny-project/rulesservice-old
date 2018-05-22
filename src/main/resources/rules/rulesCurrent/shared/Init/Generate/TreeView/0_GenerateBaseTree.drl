@@ -17,39 +17,52 @@ rule "Generate Base Tree"
     salience 700
     
      when
-       rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
+       	rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
      then
 
-     rules.header();
+     	rules.header();
         rules.setState("GENERATE_TREE");
-		rules.println("Generating Base Tree for "+rules.realm());
-		
-	/*	rules.generateTree(); */
-
+		rules.println("Generating Base Tree for   ::   "+rules.realm());
 		
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		
 		List<BaseEntity> root = rules.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
-		// println(root);
+		if(root != null){
+	    	bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
+		}
+		
+	    /* get GRP_BEGS kids */
+		List<BaseEntity> begs = rules.getBaseEntitysByParentAndLinkCode("GRP_BEGS", "LNK_CORE", 0, 30, false);
+		if(begs != null){
+			bulkmsg.add(new QDataBaseEntityMessage(begs.toArray(new BaseEntity[0]),"GRP_BEGS", "LNK_CORE"));
+		}
+	    
+	    /* get GRP_APPLICATIONS kids */
+		List<BaseEntity> applications = rules.getBaseEntitysByParentAndLinkCode("GRP_APPLICATIONS", "LNK_CORE", 0, 30, false);
+		if(applications != null){
+			bulkmsg.add(new QDataBaseEntityMessage(applications.toArray(new BaseEntity[0]),"GRP_APPLICATIONS", "LNK_CORE"));
+		}
 
 		List<BaseEntity> reportsHeader = rules.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
-
+		if(reportsHeader != null){
+	    	bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
+		}
 
 		List<BaseEntity> admin = rules.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
-	    bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
+		if(admin != null){
+	    	bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
+		}
 	    
-	    	    // Now get the buckets
-		List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
-		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
-
-		// Save the buckets for future use
-		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
-		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), bucketMsg);
-
 		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-
 		VertxUtils.putObject(rules.realm(), "BASE_TREE", rules.realm(), bulk);  
-     rules.footer();
+
+		/* Save the GRP_BEGS kids for future use */
+		QDataBaseEntityMessage begsMsg = new QDataBaseEntityMessage(begs.toArray(new BaseEntity[0]), "GRP_BEGS", "LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "BEGS", rules.realm(), begsMsg);
+
+		/* Save the GRP_APPLICATIONS kids for future use */
+		QDataBaseEntityMessage applicationsMsg = new QDataBaseEntityMessage(applications.toArray(new BaseEntity[0]), "GRP_APPLICATIONS","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "APPLICATIONS", rules.realm(), applicationsMsg);
+
+     	rules.footer();
 end

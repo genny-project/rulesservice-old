@@ -1,0 +1,14 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Add Product"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("BTN_ADD_PRODUCT") && 
+						!isState("LOOP_TRIGGER_ADD_PRODUCT")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_ADD_PRODUCT");
+		rules.setState("CREATE_BEG_BASEENTITY");
+	 	rules.footer();      
+end
