@@ -9,17 +9,9 @@ rule "Send Bucket Data"
      	rules.header();
 
      	rules.setState("LOOP_SENT_BUCKET_DATA_CH40");
-<<<<<<< HEAD
-<<<<<<< HEAD
 		rules.sendLayoutsAndData("job","OFR_",rules.getUser());  // only allow user matching offers if a seller
 		  
 		rules.setState("APPLICATION_READY");
 		rules.setState("TRIGGER_APPLICATION");
-=======
-		rules.sendLayoutsAndData();
->>>>>>> 14aefce5... add new product done.
-=======
-		rules.sendLayoutsAndData();
->>>>>>> 8eca195a34ba7ad46c4b6cb353857874d774432f
 	    rules.footer();
 end

@@ -1,0 +1,18 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Bucket Data"
+    when
+        rules: QRules( 	isState("SEND_BUCKET_DATA") && 
+						!isState("LOOP_SENT_BUCKET_DATA_INTERNMATCH") )
+     then
+     	rules.header();
+
+     	rules.setState("LOOP_SENT_BUCKET_DATA_INTERNMATCH");
+		rules.sendLayoutsAndData2("internship","APP_",rules.getUser());  // only allow user matching offers if a seller
+		  
+		rules.setState("APPLICATION_READY");
+		rules.setState("TRIGGER_APPLICATION");
+	    rules.footer();
+end
+
