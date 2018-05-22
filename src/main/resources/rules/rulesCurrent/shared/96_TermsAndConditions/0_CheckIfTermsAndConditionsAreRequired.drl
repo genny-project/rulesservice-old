@@ -11,7 +11,7 @@ rule "Check if terms and conditions are required"
         rules.header();
 
 		rules.setState("LOOP_CHECK_T_C");
-
+	
 		if(rules.doesQuestionGroupExist("QUE_TERMS_AND_CONDITIONS_GRP")) {
 			rules.setState("TERMS_AND_CONDITIONS_NOT_ACCEPTED");
 		}
