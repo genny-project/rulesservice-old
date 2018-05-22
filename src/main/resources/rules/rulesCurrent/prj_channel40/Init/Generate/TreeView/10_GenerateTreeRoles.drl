@@ -19,6 +19,7 @@ rule "Generate Tree Roles"
      when
        rules: QRules( isState("GENERATE_TREE") && !isState("LOOP_GENERATE_TREE") )
      then
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/shared/Init/Generate/TreeView/30_GenerateTreeRoles.drl
 		rules.header();
 		rules.setState("LOOP_GENERATE_TREE");
 		
@@ -26,4 +27,13 @@ rule "Generate Tree Roles"
 		rules.saveAnswer( new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_ADMIN", "PRI_IS_ADMIN") );		
 		rules.setState("GENERATE_TREE_RULES");	
      	rules.footer();
+=======
+        rules.header();
+        rules.setState("GENERATE_TREE_RULES");
+
+        rules.println("Generating Base Tree Rules for "+rules.realm());
+        rules.generateTreeRules();	
+        
+        rules.footer();
+>>>>>>> 14aefce5... add new product done.:src/main/resources/rules/rulesCurrent/prj_channel40/Init/Generate/TreeView/10_GenerateTreeRoles.drl
 end

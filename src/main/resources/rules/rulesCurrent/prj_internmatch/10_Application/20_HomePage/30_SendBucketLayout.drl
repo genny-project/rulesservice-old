@@ -1,5 +1,4 @@
 package life.genny.rules;
-
 import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 
@@ -9,15 +8,20 @@ rule "Send Bucket Layout To Frontend"
      then
      	rules.header();
 
-      rules.setState("SENT_BUCKET_LAYOUT");
+      	rules.setState("SENT_BUCKET_LAYOUT");
 
      	String viewCode = "BUCKET_DASHBOARD";
-     	String grpBE = null;
+     	String grpBE = "GRP_APPLICATIONS";
 
      	/* sending cmd BUCKET_VIEW */
+<<<<<<< HEAD
      	rules.sendSublayout(viewCode, "overview.json", grpBE);
       rules.setLastLayout( viewCode, grpBE );
 
+=======
+     	rules.sendSublayout(viewCode, "homepage/overview.json", grpBE);
+      	rules.setLastLayout( viewCode, grpBE );
+>>>>>>> 14aefce5... add new product done.
 
 	    rules.footer();
 end
