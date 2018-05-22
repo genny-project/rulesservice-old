@@ -7562,94 +7562,8 @@ public class QRules {
 							+ ". Please complete it for payments to get through.";
 					sendDirectToast(recipientArr, toastMessage, "warning");
 				}	
-<<<<<<< HEAD
 			}
 			
-		}
-		return companyId;	 
-	}
-	
-	/* Payments company updation */
-	/* Independent attribute value update. Not bulk */
-	public void updatePaymentsCompany(String paymentsUserId, String companyId, String attributeCode, String value,
-			String paymentsAuthToken) {
-
-		try {
-
-			if (attributeCode != null && value != null) {
-
-				/* Get payments company after setting to-be-updated fields in the object */
-				QPaymentsCompany paymentsCompany = PaymentUtils.updateCompanyInfo(paymentsUserId, companyId, attributeCode, value);
-
-				/* Make the request to Assembly and update */
-				if (paymentsCompany != null && paymentsUserId != null) {
-					try {
-						/* Hitting payments-service API for updating */
-						String companyUpdateResponseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(paymentsCompany), paymentsAuthToken);
-						QPaymentsCompany userResponsePOJO = JsonUtils.fromJson(companyUpdateResponseString,
-								QPaymentsCompany.class);
-						println("Company updation response :: " + userResponsePOJO);
-
-					} catch (PaymentException e) {
-						log.error("Exception occured user updation : " + e.getMessage());
-						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-						throw new IllegalArgumentException(
-								"User payments profile updation has not succeeded for the field : "
-										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage + ". Kindly give valid information for payments to get through.");
-					}
-				}
-			} else {
-				if (value == null || value.trim().isEmpty()) {
-					throw new IllegalArgumentException(
-							"Updated value for the field " + attributeCode.replace("PRI_", "") + " is empty/invalid");
-				}
-=======
->>>>>>> 0837f4ff... create, update company refactor, bulk update refactor
-			}
-
-		} catch (IllegalArgumentException e) {
-			/*
-			 * Send toast message the payments-user updation failed when the field updated
-			 * is invalid
-			 */
-			String toastMessage = e.getMessage();
-			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
-		}
-	}
-	
-	/* Bulk update of payments user info */
-	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
-	public void bulkPaymentsUserUpdate(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
-		
-		try {
-			QPaymentsUser user = PaymentUtils.getCompleteUserObj(userBe, assemblyUserId);
-			/* Attempt to update the user in Assembly */
-			if(user != null && assemblyUserId != null) {
-				try {
-					PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user), assemblyAuthKey);
-				} catch (PaymentException e) {
-					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);							}
-			}
-			
-		} catch (IllegalArgumentException e) {
-			log.error("Exception occured user updation"+e.getMessage());
-		}
-	}
-	
-	/* Bulk update for payments company info */
-	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
-	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
-		
-		try {
-			
-			/* Get the companies assembly ID */
-			String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
-			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, assemblyUserId);
-			
-<<<<<<< HEAD
-=======
 		}
 		return companyId;	 
 	}
@@ -7731,7 +7645,6 @@ public class QRules {
 			String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
 			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, assemblyUserId);
 			
->>>>>>> 0837f4ff... create, update company refactor, bulk update refactor
 			/* Attempt to update the company in Assembly */
 			if(companyId != null && company != null) {
 				try {
