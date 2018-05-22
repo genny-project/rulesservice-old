@@ -6011,7 +6011,7 @@ public class QRules {
 
 					for (BaseEntity beg : results.getItems()) {
 
-						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 100,
+						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 1000,
 								false);
 
 						if (begKids != null) {
