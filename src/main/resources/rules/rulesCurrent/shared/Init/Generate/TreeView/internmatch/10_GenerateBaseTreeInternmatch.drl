@@ -14,10 +14,11 @@ import life.genny.utils.VertxUtils;
 rule "Generate Base Tree"
 
     ruleflow-group 'GenerateTree'
-    salience 700
-    
+ 
      when
-       	rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
+       	rules: QRules(	realm() == "internmatch" &&
+		   				isState("GENERATE_STARTUP") && 
+						!isState("GENERATE_TREE") )
      then
 
      	rules.header();

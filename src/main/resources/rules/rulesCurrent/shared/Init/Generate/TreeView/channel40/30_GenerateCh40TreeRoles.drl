@@ -8,13 +8,14 @@ import life.genny.rules.QRules;
  * there is issue with startup rules being fired only from shared folder.
  * It will be moved once this issue is solved.
  */
-rule "Generate ch40 Tree Roles"
-
+rule "Generate Tree Roles - Channel 40"
     ruleflow-group 'GenerateTree'
     salience 680
     
      when
-       rules: QRules( realm() == "channel40" && isState("GENERATE_TREE_RULES") && !isState("LOOP_GENERATE_TREE_RULES") )
+       rules: QRules( 	realm() == "channel40" && 
+	   					isState("GENERATE_TREE_RULES") && 
+						!isState("LOOP_GENERATE_TREE_RULES") )
      then
 
      rules.header();
