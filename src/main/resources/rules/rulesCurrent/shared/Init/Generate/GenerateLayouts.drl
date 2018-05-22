@@ -11,12 +11,11 @@ rule "Generate Layouts"
      when
        rules: QRules( isState("GENERATE_STARTUP") && !isState("GENERATE_LAYOUTS_CACHE"))
      then
-
         rules.header();
         rules.setState("GENERATE_LAYOUTS_CACHE");
-		rules.println("Generating Layouts Cache for " + rules.realm());
-		rules.getAllLayouts(); 
 
-		
-     rules.footer();
+        rules.println("Generating Layouts Cache for " + rules.realm());
+
+        rules.getAllLayouts(); 
+        rules.footer();
 end

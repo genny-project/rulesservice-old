@@ -62,9 +62,15 @@ rule "Submit Job"
     			/* Add new attribute to save that a job is existing */
     	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
     	      	rules.saveAnswer(newJobSubmitAnswer);
+    	      	
+    	      	String jobCreatorEmail = rules.getUser().getValue("PRI_EMAIL", null);
+    	      	String jobTitle = job.getValue("PRI_TITLE", null);
+    	      	String jobId = job.getValue("PRI_JOB_ID", null);
+    	      	String pickupAddress = job.getValue("PRI_PICKUP_ADDRESS_FULL", null);
+    	      	String dropOffAddress = job.getValue("PRI_DROPOFF_ADDRESS_FULL", null);
 
     	      	/* Send slack message that new job is created */
-    	      	rules.sendSlackNotification("New job has been created by user : "+rules.getUser().getCode() + ". Job code is : "+ jobCode);
+    	      	rules.sendSlackNotification("New job has been created by user => code : "+rules.getUser().getCode() + ", user email : " +jobCreatorEmail +". Job details are => Job code : "+ jobCode + ", Job title : "+ jobTitle+ ", job ID : "+jobId+ ", Pick-up address : "+pickupAddress+ ", Drop-off address : "+dropOffAddress);
 
        		}
 

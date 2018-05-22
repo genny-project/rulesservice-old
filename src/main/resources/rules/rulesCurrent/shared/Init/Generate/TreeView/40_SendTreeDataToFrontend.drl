@@ -18,19 +18,8 @@ rule "Send Tree Data To Frontend"
         rules: QRules(  !isState("SEND_TREE_DATA")  && isState("SUBLAYOUT_CHANGE_READY") ) 
      then
      	rules.header();
-     	
      	rules.setState("SEND_TREE_DATA");
      	
      	rules.sendTreeData();
-	/*	QBulkMessage bulk =  VertxUtils.getObject(rules.realm(), "BASE_TREE", rules.realm(), QBulkMessage.class);
-       	   		
-       	for (QDataBaseEntityMessage msg : bulk.getMessages()) {
-			if (msg instanceof QDataBaseEntityMessage) {
-				msg.setToken(rules.getToken());
-				rules.publishCmd(JsonUtils.toJson(msg));
-			}
-
-		} */
-       	   		
 	    rules.footer();       		      
 end

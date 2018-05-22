@@ -4,7 +4,8 @@ import life.genny.rules.QRules;
 
 rule "Send Bucket Layout To Frontend"
     when
-        rules: QRules( isState("SEND_BUCKET_LAYOUT") && !isState("SENT_BUCKET_LAYOUT") )
+        rules: QRules(	isState("SEND_BUCKET_LAYOUT") && 
+						!isState("SENT_BUCKET_LAYOUT") )
      then
      	rules.header();
 
