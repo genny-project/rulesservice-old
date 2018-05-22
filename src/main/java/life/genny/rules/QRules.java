@@ -5907,6 +5907,55 @@ public class QRules {
 		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
 	}
 
+	public void generateTree2() {
+
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+		List<BaseEntity> root = this.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
+		if (root != null) {
+			bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
+		}
+
+		/* get GRP_BEGS kids */
+		List<BaseEntity> begs = this.getBaseEntitysByParentAndLinkCode("GRP_BEGS", "LNK_CORE", 0, 30, false);
+		if (begs != null) {
+			bulkmsg.add(new QDataBaseEntityMessage(begs.toArray(new BaseEntity[0]), "GRP_BEGS", "LNK_CORE"));
+		}
+
+		/* get GRP_APPLICATIONS kids */
+		List<BaseEntity> applications = this.getBaseEntitysByParentAndLinkCode("GRP_APPLICATIONS", "LNK_CORE", 0, 30,
+				false);
+		if (applications != null) {
+			bulkmsg.add(new QDataBaseEntityMessage(applications.toArray(new BaseEntity[0]), "GRP_APPLICATIONS",
+					"LNK_CORE"));
+		}
+
+		List<BaseEntity> reportsHeader = this.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50,
+				false);
+		if (reportsHeader != null) {
+			bulkmsg.add(
+					new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]), "GRP_REPORTS", "LNK_CORE"));
+		}
+
+		List<BaseEntity> admin = this.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
+		if (admin != null) {
+			bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]), "GRP_ADMIN", "LNK_CORE"));
+		}
+
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		VertxUtils.putObject(this.realm(), "BASE_TREE", this.realm(), bulk);
+
+		/* Save the GRP_BEGS kids for future use */
+		QDataBaseEntityMessage begsMsg = new QDataBaseEntityMessage(begs.toArray(new BaseEntity[0]), "GRP_BEGS",
+				"LNK_CORE");
+		VertxUtils.putObject(this.realm(), "BUCKETS", this.realm(), begsMsg);
+
+		/* Save the GRP_APPLICATIONS kids for future use */
+		QDataBaseEntityMessage applicationsMsg = new QDataBaseEntityMessage(applications.toArray(new BaseEntity[0]),
+				"GRP_APPLICATIONS", "LNK_CORE");
+		VertxUtils.putObject(this.realm(), "APPLICATIONS", this.realm(), applicationsMsg);
+	}
+
 	public void generateTreeRules() {
 		List<Answer> attributesAns = new ArrayList<>();
 		attributesAns.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
@@ -6006,7 +6055,11 @@ public class QRules {
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
-			this.generateTree();
+			if(this.realm().equals("internmatch")){
+				this.generateTree2();
+			}else{
+				this.generateTree();
+			}
 			generateNewItemsCache();
 		}
 	}
@@ -6060,6 +6113,7 @@ public class QRules {
 		}
 
 	}
+	
 
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
@@ -6088,6 +6142,46 @@ public class QRules {
 					search.setStakeholder(stakeholder.getCode());
 				}
 				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
+
+				bulkmsg.addAll(bucketMsgs);
+
+				if (subscriptions.contains(bucket.getCode())) {
+					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
+				}
+			}
+		}
+
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		return bulk;
+	}
+
+	public QBulkMessage fetchStakeholderBucketItems2(final BaseEntity stakeholder, final Set<String> subscriptions) {
+
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
+				QDataBaseEntityMessage.class);
+
+		// Create bucket Buckets!
+		Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
+		if (bucketsMsg != null) {
+			for (BaseEntity bucket : bucketsMsg.getItems()) {
+
+				if (stakeholder.is("PRI_IS_BUYER") || stakeholder.getValue("PRI_IS_BUYER").equals("TRUE")) {
+					if (bucket.getCode().equals("GRP_NEW_ITEMS")) { // No need to fetch the new items group again
+						continue;
+					}
+				}
+				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+				if (searchStakeholderBucketItems == null) {
+
+				}
+				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
+				search.setCode(bucket.getCode());// set the parent
+				if (!stakeholder.is("PRI_IS_ADMIN")) {
+					search.setStakeholder(stakeholder.getCode());
+				}
+				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems2(bucket.getCode(), stakeholder, search);
 
 				bulkmsg.addAll(bucketMsgs);
 
@@ -6178,6 +6272,93 @@ public class QRules {
 					beg.getCode(), "LNK_BEG");
 				  begMsg.setToken(getToken());
 			   	bulkmsg.add(begMsg);
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return bulkmsg;
+	}
+
+	/**
+	 * @param stakeholder
+	 * @param bulkmsg
+	 * @param bucketsMsg
+	 * @param bucketListMap
+	 * @param search
+	 */
+	private List<QDataBaseEntityMessage> fetchBucketItems2(final String sourceCode, final BaseEntity stakeholder,
+			SearchEntity search) {
+
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		try {
+			// force parent
+			search.setSourceCode(sourceCode);
+			QDataBaseEntityMessage results = QwandaUtils.fetchResults(search, getToken());
+			results.setParentCode(sourceCode);
+			results.setLinkCode("LNK_CORE");
+			bulkmsg.add(results);
+
+			// Now place each beg into the proper buckets
+			for (BaseEntity beg : results.getItems()) {
+
+				// Now search through the BEG links and match to bucket, and their laods, main
+				// offer, owner
+				List<BaseEntity> begKids = new ArrayList<BaseEntity>();
+
+				for (EntityEntity link : beg.getLinks()) {
+					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
+
+					if (stakeholder.is("PRI_IS_BUYER") || stakeholder.getValue("PRI_IS_BUYER", "").equals("TRUE")) {
+
+						if (linkedBE.getCode().startsWith("APP_")
+								&& !linkedBE.getValue("PRI_APPLICANT_CODE", "").equals(stakeholder.getCode())) {
+							continue;
+						}
+					}
+					if (linkedBE.getCode().startsWith("PER_")) {
+
+						if (linkedBE.getCode().equals(getUser().getCode())) {
+							continue; // assume no need to send the user details again
+						} else {
+
+							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
+
+								// strip privates
+								String attributeCode = entityAttribute.getAttributeCode();
+								switch (attributeCode) {
+								case "PRI_FIRSTNAME":
+								case "PRI_LASTNAME":
+								case "PRI_EMAIL":
+								case "PRI_MOBILE":
+								case "PRI_ADMIN":
+								case "PRI_DRIVER":
+								case "PRI_OWNER":
+								case "PRI_IMAGE_URL":
+								case "PRI_CODE":
+								case "PRI_NAME":
+								case "PRI_USERNAME":
+								case "PRI_DRIVER_RATING":
+									allowedAttributes.add(entityAttribute);
+								default:
+
+								}
+
+							}
+							linkedBE.setBaseEntityAttributes(allowedAttributes);
+						}
+					}
+
+					begKids.add(linkedBE);
+				}
+
+				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
+						beg.getCode(), "LNK_BEG");
+				begMsg.setToken(getToken());
+				bulkmsg.add(begMsg);
 			}
 
 		} catch (IOException e) {
@@ -6321,7 +6502,7 @@ public class QRules {
 		subscriptionCodes.add("GRP_NEW_ITEMS");
 		startTime = System.nanoTime();
 
-		QBulkMessage items = fetchStakeholderBucketItems(getUser(), subscriptionCodes);
+		QBulkMessage items = fetchStakeholderBucketItems2(getUser(), subscriptionCodes);
 		if (items != null) {
 			System.out.println("Number of items found in fetch Items = " + items.getMessages().length);
 
@@ -6329,7 +6510,7 @@ public class QRules {
 				// filter out non associated filter BEG Kids
 				startTime = System.nanoTime();
 				if (!this.hasRole("admin")) {
-					items = FilterOnlyUserBegs(filterPrefix, stakeholder, items);
+					items = FilterOnlyUserBegs2(filterPrefix, stakeholder, items);
 				}
 				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 			}
