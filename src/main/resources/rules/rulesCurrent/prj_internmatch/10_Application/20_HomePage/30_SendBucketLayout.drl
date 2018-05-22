@@ -15,6 +15,7 @@ rule "Send Bucket Layout To Frontend"
 
      	/* sending cmd BUCKET_VIEW */
 <<<<<<< HEAD
+<<<<<<< HEAD
      	rules.sendSublayout(viewCode, "overview.json", grpBE);
       rules.setLastLayout( viewCode, grpBE );
 
@@ -22,6 +23,10 @@ rule "Send Bucket Layout To Frontend"
      	rules.sendSublayout(viewCode, "homepage/overview.json", grpBE);
       	rules.setLastLayout( viewCode, grpBE );
 >>>>>>> 14aefce5... add new product done.
+=======
+     	rules.sendSublayout(viewCode, "homepage/overview.json", grpBE);
+      	rules.setLastLayout( viewCode, grpBE );
+>>>>>>> 8eca195a34ba7ad46c4b6cb353857874d774432f
 
 	    rules.footer();
 end

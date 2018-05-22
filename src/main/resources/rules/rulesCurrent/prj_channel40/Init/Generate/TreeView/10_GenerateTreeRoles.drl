@@ -14,20 +14,10 @@ import life.genny.utils.VertxUtils;
 rule "Generate Tree Roles"
 
     ruleflow-group 'GenerateTree'
-    salience 690
-     
+ 
      when
-       rules: QRules( isState("GENERATE_TREE") && !isState("LOOP_GENERATE_TREE") )
+       rules: QRules(isState("GENERATE_TREE") && !isState("GENERATE_TREE_RULES"))
      then
-<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/shared/Init/Generate/TreeView/30_GenerateTreeRoles.drl
-		rules.header();
-		rules.setState("LOOP_GENERATE_TREE");
-		
-		rules.println("Generating Base Tree Rules for "+rules.realm());
-		rules.saveAnswer( new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_ADMIN", "PRI_IS_ADMIN") );		
-		rules.setState("GENERATE_TREE_RULES");	
-     	rules.footer();
-=======
         rules.header();
         rules.setState("GENERATE_TREE_RULES");
 
@@ -35,5 +25,4 @@ rule "Generate Tree Roles"
         rules.generateTreeRules();	
         
         rules.footer();
->>>>>>> 14aefce5... add new product done.:src/main/resources/rules/rulesCurrent/prj_channel40/Init/Generate/TreeView/10_GenerateTreeRoles.drl
 end
