@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 rule "Trigger Add BEG"
 	when
 		rules: QRules(  isState("EVENT_BTN_CLICK") &&
-						isState("BTN_ADD_PRODUCT") && 
+						isState("BTN_ADD_BEG") && 
 						!isState("LOOP_TRIGGER_ADD_BEG")) 
 	 then
 	 	rules.header();
