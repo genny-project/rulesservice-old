@@ -439,12 +439,14 @@ public class QRules {
 
     Boolean isBuyer = false;
 
-    String isBuyerString = user.getValue("PRI_IS_BUYER", null);
-    if(isBuyerString == null) {
+    Object uglyBuyer = user.getValue("PRI_IS_BUYER", null);
+    if(uglyBuyer instanceof Boolean) {
       isBuyer = user.is("PRI_IS_BUYER");
     }
     else {
-      isBuyer = user.getValue("PRI_IS_BUYER","").equals("TRUE");
+    	String uglyBuyerString = (String)uglyBuyer;
+
+      isBuyer = "TRUE".equalsIgnoreCase(uglyBuyerString);
     }
 
     return isBuyer;
