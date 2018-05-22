@@ -457,6 +457,10 @@ public class QRules {
     return !this.isUserBuyer();
   }
 
+  public Boolean isUserSeller(BaseEntity user) {
+    return !this.isUserBuyer(user);
+  }
+
 	public String getFullName(final BaseEntity be) {
 		String fullName = be.getLoopValue("PRI_FIRSTNAME", "") + " " + be.getLoopValue("PRI_LASTNAME", "");
 		fullName = fullName.trim();
