@@ -438,11 +438,13 @@ public class QRules {
   public Boolean isUserBuyer(BaseEntity user) {
 
     Boolean isBuyer = false;
-    if(user.is("PRI_IS_BUYER") == null) {
-      isBuyer = user.getValue("PRI_IS_BUYER","").equals("TRUE");
+
+    String isBuyerString = user.getValue("PRI_IS_BUYER", null);
+    if(isBuyerString == null) {
+      isBuyer = user.is("PRI_IS_BUYER");
     }
     else {
-      isBuyer = user.is("PRI_IS_BUYER");
+      isBuyer = user.getValue("PRI_IS_BUYER","").equals("TRUE");
     }
 
     return isBuyer;
