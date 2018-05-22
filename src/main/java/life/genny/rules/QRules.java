@@ -433,6 +433,30 @@ public class QRules {
 		return be;
 	}
 
+  /* TODO: to remove */
+
+  public Boolean isUserBuyer(BaseEntity user) {
+
+    Boolean isBuyer = false;
+    if(user.is("PRI_IS_BUYER") == null) {
+      isBuyer = user.getValue("PRI_IS_BUYER","").equals("TRUE");
+    }
+    else {
+      isBuyer = user.is("PRI_IS_BUYER");
+    }
+
+    return isBuyer;
+
+  }
+
+  public Boolean isUserBuyer() {
+    return this.isUserBuyer(this.getUser());
+  }
+
+  public Boolean isUserSeller() {
+    return !this.isUserBuyer();
+  }
+
 	public String getFullName(final BaseEntity be) {
 		String fullName = be.getLoopValue("PRI_FIRSTNAME", "") + " " + be.getLoopValue("PRI_LASTNAME", "");
 		fullName = fullName.trim();
@@ -3471,7 +3495,7 @@ public class QRules {
 		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
 		/* Removing GRP_DRAFTS be if user is a Driver */
 
-		if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+		if (this.isUserSeller()) {
 
 			for (BaseEntity be : root) {
 				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
@@ -3499,7 +3523,7 @@ public class QRules {
 			}
 			// Checking for driver role
 
-			if (user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE")) {
+			if (this.isUserSeller()) {
 
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
@@ -3509,7 +3533,7 @@ public class QRules {
 			}
 			// Checking for owner role
 
-			else if (user.is("PRI_IS_BUYER") || user.getValue("PRI_IS_BUYER").equals("TRUE")) {
+			else if (this.isUserBuyer()) {
 
 				for (BaseEntity be : reportsHeader) {
 					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
@@ -3542,7 +3566,7 @@ public class QRules {
 		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
 		 */
 
-		if (!user.is("PRI_IS_SELLER") && user.getValue("PRI_IS_SELLER").equals("FALSE")) {
+		if (this.isUserBuyer()) {
 
 			List<BaseEntity> bin = getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
 					20, false);
@@ -4428,18 +4452,7 @@ public class QRules {
 
 				try {
 
-					Boolean isSeller = stakeholderBe.getValue("PRI_IS_SELLER", false);
-					if (isSeller) {
-						sellersBe.add(stakeholderBe);
-					}
-
-					String isSellerStr = stakeholderBe.getValue("PRI_IS_SELLER", null);
-					if ("TRUE".equalsIgnoreCase(isSellerStr)) {
-						sellersBe.add(stakeholderBe);
-					}
-
-					String isSellerString = stakeholderBe.getValue("PRI_IS_SELLER", null);
-					if (isSellerString != null) {
+					if (this.isUserSeller()) {
 						sellersBe.add(stakeholderBe);
 					}
 
@@ -6025,7 +6038,7 @@ public class QRules {
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
-				if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
+				if (this.isUserSeller()) {
 					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
 						continue;
 					}
@@ -6082,7 +6095,7 @@ public class QRules {
 				for (EntityEntity link : beg.getLinks()) {
 					BaseEntity linkedBE = getBaseEntityByCode(link.getLink().getTargetCode());
 
-					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER", "").equals("TRUE")) {
+					if (this.isUserSeller()) {
 
 						if (linkedBE.getCode().startsWith("OFR_") && !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
 							continue;
@@ -6151,7 +6164,7 @@ public class QRules {
 		QBulkMessage allItems = new QBulkMessage(init);
 		long startTime = System.nanoTime();
 
-		if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
+		if (this.isUserSeller()) {
 
 			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
 
@@ -6236,23 +6249,23 @@ public class QRules {
 
 		Map<String,List<BaseEntity>> bucketMap = new HashMap<String,List<BaseEntity>>();
 		Map<String,List<BaseEntity>> begMap = new HashMap<String,List<BaseEntity>>();
-		
+
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
 				BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
-				
+
 					if (parent.getCode().startsWith("GRP_")) {
 						if (!bucketMap.containsKey(parent.getCode())) {
 							bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-						}					
+						}
 						} else {
 						if (!begMap.containsKey(parent.getCode())) {
 							begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
 						}
-					
+
 					}
-				
+
 
 				for (BaseEntity be : msg.getItems()) {
 					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+be.getId()+":"+be.getCode());
@@ -6271,7 +6284,7 @@ public class QRules {
 						}
 					}
 					// Quotes/Offers
-					if ((be.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
+					if ((be.getCode().startsWith(filterPrefix)) && (this.isUserSeller())) { // don't show other offers if you are a seller
 						Optional<EntityAttribute> personCode = be.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
@@ -6330,7 +6343,7 @@ public class QRules {
 								System.out.println("Parent of load = "+parent.getCode());
 							}
 							begMap.get(parent.getCode()).add(be);
-							
+
 						}
 					}
 
@@ -6341,7 +6354,7 @@ public class QRules {
 				}
 
 			}
-			
+
 		}
 		for (String parent : bucketMap.keySet()) {
 			BaseEntity[] beArray = bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]);
@@ -6361,25 +6374,26 @@ public class QRules {
 		boolean skip = false;
 			// check if this beg should be seen by this user
 		Optional<EntityAttribute> personCode  = null;
-		if (!((stakeholder.is("PRI_IS_BUYER")  || stakeholder.getValue("PRI_IS_BUYER","").equals("TRUE")))) {
+
+  	if (this.isUserSeller()) {
 				 personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
 
 			if (personCode.isPresent()) {
 				if (!personCode.get().getAsString().equals(stakeholder.getCode()) ) { // not a stakeholdeer!
 					return true; // skip
-				} 
+				}
 			}
 		}
 				for (EntityEntity ee : beg.getLinks()) {
 					// if linkValue is ACCEPTED_OFFER
 					if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
-							&& (stakeholder.is("PRI_IS_SELLER")  || stakeholder.getValue("PRI_IS_SELLER","").equals("TRUE"))) {
+							&& (this.isUserSeller())) {
 						BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
 						personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())  ) { // not a
 								return true; // skip
-							} 
+							}
 						} else {
 							System.out.println("Person not found :" + acceptedBegChild.getCode());
 						}
@@ -6388,8 +6402,8 @@ public class QRules {
 
 			return skip;
 	}
-	
-	
+
+
 	public void sendBucketLayouts() {
 		String viewCode = "BUCKET_DASHBOARD";
 		String grpBE = "GRP_DASHBOARD";
