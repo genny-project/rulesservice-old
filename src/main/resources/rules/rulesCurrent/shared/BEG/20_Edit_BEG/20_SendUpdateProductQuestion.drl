@@ -1,0 +1,33 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Update BEG - Step 2"
+    when
+	    rules: QRules(  isState("SEND_UPDATE_PRODUCT_QUESTION") &&
+                        isState("SENT_QUESTION")  &&
+                        isState("QUE_ADD_BEG_GRP")  &&
+                        !isState("LOOP_SEND_PRODUCT_QUESTION") ) 	
+     then
+        rules.header();    
+        rules.setState("LOOP_EDIT_BEG_STEP1");
+
+        String begCode = rules.getAsString("itemCode");
+        if(begCode != null){
+            BaseEntity beg = rules.getChildren(begCode, "LNK_BEG", "PRODUCT");
+            if(beg != null){
+                rules.set("questionSourceCode", rules.getUser().getCode());
+                rules.set("questionTargetCode", beg.getCode());
+                rules.set("questionGroupCode", "QUE_EDIT_BEG_GRP");
+                rules.set("questionIsPopup", false);
+                
+                rules.clearState("SENT_QUESTION");
+                rules.setState("SEND_QUESTION");
+            }else{
+                rules.println("beg is null");
+            }
+        }else{
+            rules.println("begCode is null");
+        }
+		rules.setState("SENT_BEG_QUESTION");
+        rules.footer();     		      
+end
