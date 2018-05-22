@@ -4,7 +4,8 @@ import life.genny.rules.QRules;
 
 rule "Send Bucket Layout To Frontend"
     when
-        rules: QRules( isState("SEND_BUCKET_LAYOUT") && !isState("SENT_BUCKET_LAYOUT") )
+        rules: QRules(	isState("SEND_BUCKET_LAYOUT") && 
+						!isState("SENT_BUCKET_LAYOUT") )
      then
      	rules.header();
 
@@ -14,19 +15,8 @@ rule "Send Bucket Layout To Frontend"
      	String grpBE = "GRP_APPLICATIONS";
 
      	/* sending cmd BUCKET_VIEW */
-<<<<<<< HEAD
-<<<<<<< HEAD
-     	rules.sendSublayout(viewCode, "overview.json", grpBE);
-      rules.setLastLayout( viewCode, grpBE );
-
-=======
      	rules.sendSublayout(viewCode, "homepage/overview.json", grpBE);
       	rules.setLastLayout( viewCode, grpBE );
->>>>>>> 14aefce5... add new product done.
-=======
-     	rules.sendSublayout(viewCode, "homepage/overview.json", grpBE);
-      	rules.setLastLayout( viewCode, grpBE );
->>>>>>> 8eca195a34ba7ad46c4b6cb353857874d774432f
 
 	    rules.footer();
 end
