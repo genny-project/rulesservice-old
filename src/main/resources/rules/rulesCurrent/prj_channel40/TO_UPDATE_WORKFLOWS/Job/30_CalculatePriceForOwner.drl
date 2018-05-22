@@ -27,7 +27,7 @@ then
          Answer newAnswer = $m.getAnswer();
           BaseEntity source = rules.getBaseEntityByCode(newAnswer.getSourceCode());
 
-  if(source.is("PRI_IS_BUYER") || source.getValue("PRI_IS_BUYER").equals("TRUE")) {
+  if(rules.isUserBuyer(source)) {
 
       String tokenString = rules.getToken();
 
