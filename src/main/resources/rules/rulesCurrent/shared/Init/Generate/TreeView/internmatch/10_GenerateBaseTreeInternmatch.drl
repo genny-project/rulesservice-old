@@ -16,7 +16,9 @@ rule "Generate Base Tree"
     ruleflow-group 'GenerateTree'
  
      when
-       	rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
+       	rules: QRules(	realm() == "internmatch" &&
+		   				isState("GENERATE_STARTUP") && 
+						!isState("GENERATE_TREE") )
      then
 
      	rules.header();
@@ -57,7 +59,7 @@ rule "Generate Base Tree"
 
 		/* Save the GRP_BEGS kids for future use */
 		QDataBaseEntityMessage begsMsg = new QDataBaseEntityMessage(begs.toArray(new BaseEntity[0]), "GRP_BEGS", "LNK_CORE");
-		VertxUtils.putObject(rules.realm(), "BEGS", rules.realm(), begsMsg);
+		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), begsMsg);
 
 		/* Save the GRP_APPLICATIONS kids for future use */
 		QDataBaseEntityMessage applicationsMsg = new QDataBaseEntityMessage(applications.toArray(new BaseEntity[0]), "GRP_APPLICATIONS","LNK_CORE");
