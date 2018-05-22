@@ -35,7 +35,7 @@ rule "User-Profile"
         /*  Send Bank Details asks   */
           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
 
-        if( user.is("PRI_IS_SELLER") || user.getValue("PRI_IS_SELLER").equals("TRUE") ){
+        if( rules.isUserSeller(user) ){
           /*  Send User Documents asks   */
            rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
 
