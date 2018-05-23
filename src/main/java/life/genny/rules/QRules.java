@@ -5325,6 +5325,20 @@ public void archivePaidProducts() {
 	}
 
 	/*
+	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
+		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		msg.setParentCode(parentCode);
+		System.out.println("The result   ::  " + msg);
+		publishData(new JsonObject(resultJson));
+	}
+
+	/*
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
@@ -7736,6 +7750,18 @@ public void archivePaidProducts() {
 			log.error("Exception occured user updation"+e.getMessage());
 		}
 
+	}
+	
+	/*
+	 * Generic method to publish CMD_VIEW Message
+	 *
+	 */
+	public void publishViewCmdMessage(final String viewType, final String rootCode) {
+  	     QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+	     JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
+	     cmdViewMessageJson.put("root", rootCode);		    	     
+	     publishCmd(cmdViewMessageJson);	    	     
+	     setLastLayout( "LIST_VIEW", rootCode );
 	}
 
 }
