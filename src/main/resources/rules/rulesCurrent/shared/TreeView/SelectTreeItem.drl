@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject;
 
 rule "TV_SELECT Event"
      when
-       $m : QEventMessage( event_type == "TV_SELECT"  && data.value != "GRP_MESSAGES" && (!data.value.startsWith("GRP_REPORTS")) )
+       $m : QEventMessage( event_type == "TV_SELECT"  && data.value != "GRP_HISTORY" && data.value != "GRP_MESSAGES" && (!data.value.startsWith("GRP_REPORTS")) )
        rules: QRules()
      then
      
