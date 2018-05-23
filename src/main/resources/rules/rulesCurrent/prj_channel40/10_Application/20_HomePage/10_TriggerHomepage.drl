@@ -9,7 +9,7 @@ import life.genny.utils.VertxUtils;
 
 rule "Trigger channel40 homepage"
     when
-        rules: QRules( isState("TRIGGER_HOMEPAGE") && !isState("LOOP_HOMEPAGE") )
+        rules: QRules( isState("TRIGGER_HOMEPAGE") && isState("DATA_SENT_FINISHED") && !isState("LOOP_HOMEPAGE") )
      then
      	rules.header();
 

@@ -1,0 +1,17 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventCronMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Archive Paid Products"
+    when
+  		rules: QRules( isState("CRON_EVENT") && isState("CRON_ARCHIVE_PAID_EVT") && !isState("ARCHIVED_PRODUCTS") )
+     then
+
+        rules.header();
+
+        rules.setState("ARCHIVED_PRODUCTS");
+        rules.archivePaidProducts();
+        rules.footer();
+end
