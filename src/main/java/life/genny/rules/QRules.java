@@ -112,6 +112,7 @@ import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
@@ -7689,65 +7690,73 @@ public class QRules {
 	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe,
 			BaseEntity driverBe, String paymentsToken) {
 		String itemId = null;
-		try {
-			/* Owner => Buyer */
-			QPaymentsUser buyer = PaymentUtils.getPaymentsUser(ownerBe);
-
-			/* Driver => Seller */
-			QPaymentsUser seller = PaymentUtils.getPaymentsUser(driverBe);
-
-			/* Not mandatory */
-			String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
-
-			/* get item name */
-			String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
 		
-			 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
-			Money ownerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-			BigDecimal itemPrice = new BigDecimal(ownerAmountWithoutFee.getNumber().doubleValue());
-			
-			/* Convert dollars into cents */
-			BigDecimal finalFee = itemPrice.multiply(new BigDecimal(100));
-			Money moneyInCents = Money.of(finalFee, ownerAmountWithoutFee.getCurrency());
-	
-			try {			
-				/* get fee */
-				String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
-				String[] feeArr = { paymentFeeId };
-				
-				/* bundling all the info into Item object */
-				QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
-						moneyInCents.getNumber(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
-				
-				/* Hitting payments item creation API */
-				String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
-				println("item creation response ::"+itemCreationResponse);
-				
-				QPaymentsItem itemResponsePojo = JsonUtils.fromJson(itemCreationResponse, QPaymentsItem.class);
-				println("item creation response pojo ::"+itemResponsePojo);
-				itemId = itemResponsePojo.getId();
-				
-			} catch (PaymentException e) {
-				String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-				throw new IllegalArgumentException(getFormattedErrorMessage);					
-			}
+		if(offerBe != null && begBe != null) {
+			try {
+				/* Owner => Buyer */
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(ownerBe);
 
-		} catch (IllegalArgumentException e) {
+				/* Driver => Seller */
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(driverBe);
+
+				/* Not mandatory */
+				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+
+				/* get item name */
+				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				println("payments item name ::"+paymentsItemName);
 			
-			String jobId = begBe.getValue("PRI_JOB_ID", null);
-			BaseEntity userBe = getUser();
-			
-			/* Send toast */
-			String toastMessage = "Payments item creation failed for the job with ID : #"+jobId +", "+e.getMessage();
-			
-			if(userBe != null) {
-				String[] recipientArr = { userBe.getCode() };
-				sendDirectToast(recipientArr, toastMessage, "warning");
-			}	
-			
-			/* Send slack notification */
-			sendSlackNotification(toastMessage);
+				 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
+				Money ownerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+				BigDecimal itemPrice = new BigDecimal(ownerAmountWithoutFee.getNumber().doubleValue());
+				
+				/* Convert dollars into cents */
+				BigDecimal finalFee = itemPrice.multiply(new BigDecimal(100));
+				Money moneyInCents = Money.of(finalFee, ownerAmountWithoutFee.getCurrency());
+				System.out.println("money in cents ::"+moneyInCents);
+		
+				try {			
+					/* get fee */
+					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
+					System.out.println("payment fee Id ::"+paymentFeeId);
+					String[] feeArr = { paymentFeeId };
+					
+					/* bundling all the info into Item object */
+					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
+							moneyInCents.getNumber().doubleValue(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
+					
+					/* Hitting payments item creation API */
+					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
+					
+					QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse, QPaymentsAssemblyItemResponse.class);
+					itemId = itemResponsePojo.getId();
+					
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);					
+				}
+
+			} catch (IllegalArgumentException e) {
+				
+				String jobId = begBe.getValue("PRI_JOB_ID", null);
+				BaseEntity userBe = getUser();
+				
+				/* Send toast */
+				String toastMessage = "Payments item creation failed for the job with ID : #"+jobId +", "+e.getMessage();
+				
+				if(userBe != null) {
+					String[] recipientArr = { userBe.getCode() };
+					sendDirectToast(recipientArr, toastMessage, "warning");
+				}	
+				
+				/* Send slack notification */
+				sendSlackNotification(toastMessage);
+			}
+		} else {
+			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "+ begBe.getCode() + ", OFFER CODE :"+offerBe.getCode();
+			sendSlackNotification(slackMessage);
 		}
+		
 		return itemId;
 	}
 	
@@ -7763,8 +7772,7 @@ public class QRules {
 				try {
 					/* Hit the fee creation API */
 					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
-					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
-					println("fee pojo :: " + feePojo);
+										QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
 
 					/* Get the fee ID */
 					paymentFeeId = feePojo.getId();
