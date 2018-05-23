@@ -88,7 +88,7 @@ public class PaymentEndpoint {
 
 	}
 
-	public static String createItem(String itemEntity, String authToken) throws PaymentException {
+	public static String createPaymentItem(String itemEntity, String authToken) throws PaymentException {
 	
 		String createItemResponse = null;
 		
@@ -163,13 +163,13 @@ public class PaymentEndpoint {
 	}
 	
 	
-	public static String disburseAccount(String assemblyUserId, String disburseEntity, String authToken) throws PaymentException {
+	public static String disburseAccount(String paymentsUserId, String disburseEntity, String authToken) throws PaymentException {
 		
 		String disbursementResponse = null;
 		try {
 			System.out.println("Request Entity ::"+disburseEntity);
 			disbursementResponse = PaymentUtils.apiPutPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + assemblyUserId + "/disbursement-account", disburseEntity, authToken);
+					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId + "/disbursement-account", disburseEntity, authToken);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -236,7 +236,7 @@ public class PaymentEndpoint {
 		
 	}
 	
-	public static String getAssemblyPaymentItem(final String itemId, final String authToken) throws PaymentException {
+	public static String getPaymentItem(final String itemId, final String authToken) throws PaymentException {
 
 		String itemResponse = null;
 		try {
