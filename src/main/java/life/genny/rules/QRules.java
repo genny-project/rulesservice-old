@@ -6738,7 +6738,7 @@ public class QRules {
 					} else {
 						// filter attributes
 						if (be.getCode().startsWith("PER_")) {
-							if (be.getCode().equals(getUser().getCode())) {
+							if (be.getCode().equals(getUser().getName())) {
 								System.out.println(" (duplicate)");
 								continue;
 							} else {
