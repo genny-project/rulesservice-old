@@ -386,10 +386,19 @@ public class QRules {
 			return true;
 		}
 	}
+	
+	/* TODO: to remove */
+	public void setKey(final String key, Object value) {
+		VertxUtils.putObject(this.realm(), "", key, value);
+	}
+	
+	public Object getKey(final String key) {
+		Object value = VertxUtils.getObject(this.realm(), "", key, Object.class);
+		return value;
+	}
 
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
-
 	}
 
 	public String encodeToBase64(String str) {
@@ -947,7 +956,7 @@ public void archivePaidProducts() {
         if(created.isBefore(lastWeek)) {
 
       	  	/* BEG was paid >1 week - we archive it */
-      	  	this.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE");
+      	  	this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
         }
       }
     }
@@ -5325,6 +5334,20 @@ public void archivePaidProducts() {
 	}
 
 	/*
+	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
+		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		msg.setParentCode(parentCode);
+		System.out.println("The result   ::  " + msg);
+		publishData(new JsonObject(resultJson));
+	}
+
+	/*
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
@@ -7859,6 +7882,18 @@ return false;
 			log.error("Exception occured user updation"+e.getMessage());
 		}
 
+	}
+
+	/*
+	 * Generic method to publish CMD_VIEW Message
+	 *
+	 */
+	public void publishViewCmdMessage(final String viewType, final String rootCode) {
+  	     QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+	     JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
+	     cmdViewMessageJson.put("root", rootCode);
+	     publishCmd(cmdViewMessageJson);
+	     setLastLayout( "LIST_VIEW", rootCode );
 	}
 
 }
