@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Create Application BaseEntity */
+rule "Trigger Apply BEG"
+	when
+	    rules: QRules(  isState("BTN_APPLY_BEG") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_TRIGGER_APPLY_BEG")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_TRIGGER_APPLY_BEG");
+
+		/* GET begCode from itemCode */		
+		String begCode = rules.getAsString("itemCode");
+		if(begCode != null){
+			BaseEntity beg = rules.getBaseEntityByCode(begCode);
+			if(beg!= null){
+				rules.set("begBe", beg);
+				rules.setState("CREATE_APPLICATION_BE");	
+			}
+		}
+	 	rules.footer();      
+end
+
+
+        
+        
