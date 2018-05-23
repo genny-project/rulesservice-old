@@ -947,7 +947,7 @@ public void archivePaidProducts() {
         if(created.isBefore(lastWeek)) {
 
       	  	/* BEG was paid >1 week - we archive it */
-      	  	this.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE");
+      	  	this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
         }
       }
     }
@@ -7751,7 +7751,7 @@ public void archivePaidProducts() {
 		}
 
 	}
-	
+
 	/*
 	 * Generic method to publish CMD_VIEW Message
 	 *
@@ -7759,8 +7759,8 @@ public void archivePaidProducts() {
 	public void publishViewCmdMessage(final String viewType, final String rootCode) {
   	     QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
 	     JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
-	     cmdViewMessageJson.put("root", rootCode);		    	     
-	     publishCmd(cmdViewMessageJson);	    	     
+	     cmdViewMessageJson.put("root", rootCode);
+	     publishCmd(cmdViewMessageJson);
 	     setLastLayout( "LIST_VIEW", rootCode );
 	}
 
