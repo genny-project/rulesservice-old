@@ -386,12 +386,12 @@ public class QRules {
 			return true;
 		}
 	}
-	
+
 	/* TODO: to remove */
 	public void setKey(final String key, Object value) {
 		VertxUtils.putObject(this.realm(), "", key, value);
 	}
-	
+
 	public Object getKey(final String key) {
 		Object value = VertxUtils.getObject(this.realm(), "", key, Object.class);
 		return value;
@@ -444,37 +444,36 @@ public class QRules {
 		return be;
 	}
 
-  /* TODO: to remove */
+	/* TODO: to remove */
 
-  public Boolean isUserBuyer(BaseEntity user) {
+	public Boolean isUserBuyer(BaseEntity user) {
 
-    Boolean isBuyer = false;
+		Boolean isBuyer = false;
 
-    Object uglyBuyer = user.getValue("PRI_IS_BUYER", null);
-    if(uglyBuyer instanceof Boolean) {
-      isBuyer = user.is("PRI_IS_BUYER");
-    }
-    else {
-    	String uglyBuyerString = (String)uglyBuyer;
+		Object uglyBuyer = user.getValue("PRI_IS_BUYER", null);
+		if (uglyBuyer instanceof Boolean) {
+			isBuyer = user.is("PRI_IS_BUYER");
+		} else {
+			String uglyBuyerString = (String) uglyBuyer;
 
-      isBuyer = "TRUE".equalsIgnoreCase(uglyBuyerString);
-    }
+			isBuyer = "TRUE".equalsIgnoreCase(uglyBuyerString);
+		}
 
-    return isBuyer;
+		return isBuyer;
 
-  }
+	}
 
-  public Boolean isUserBuyer() {
-    return this.isUserBuyer(this.getUser());
-  }
+	public Boolean isUserBuyer() {
+		return this.isUserBuyer(this.getUser());
+	}
 
-  public Boolean isUserSeller() {
-    return !this.isUserBuyer();
-  }
+	public Boolean isUserSeller() {
+		return !this.isUserBuyer();
+	}
 
-  public Boolean isUserSeller(BaseEntity user) {
-    return !this.isUserBuyer(user);
-  }
+	public Boolean isUserSeller(BaseEntity user) {
+		return !this.isUserBuyer(user);
+	}
 
 	public String getFullName(final BaseEntity be) {
 		String fullName = be.getLoopValue("PRI_FIRSTNAME", "") + " " + be.getLoopValue("PRI_LASTNAME", "");
@@ -928,45 +927,44 @@ public class QRules {
 		}
 	}
 
-public void archivePaidProducts() {
+	public void archivePaidProducts() {
 
-  /* we get the list of products marked as "PAID" */
+		/* we get the list of products marked as "PAID" */
 
-  /* we generate a service token */
-	  String proj_realm = System.getenv("PROJECT_REALM");
-  String token = this.generateServiceToken(proj_realm);
-  if(token != null) {
+		/* we generate a service token */
+		String proj_realm = System.getenv("PROJECT_REALM");
+		String token = this.generateServiceToken(proj_realm);
+		if (token != null) {
 
-      List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
-						token, "GRP_PAID", "LNK_CORE", 0, 1000);
+			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+					getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
 
-    if(paidProducts != null) {
+			if (paidProducts != null) {
 
-      this.println("Archiving " + paidProducts.size() + " products.");
+				this.println("Archiving " + paidProducts.size() + " products.");
 
-      /* we loop through each BE and get their created date */
-      for(BaseEntity be: paidProducts) {
+				/* we loop through each BE and get their created date */
+				for (BaseEntity be : paidProducts) {
 
-      	LocalDateTime now = LocalDateTime.now();
-        LocalDateTime lastWeek = now.minusWeeks(1);
-        LocalDateTime created = be.getCreated();
-        this.println(created.isBefore(lastWeek));
-        this.println(created.isAfter(lastWeek));
+					LocalDateTime now = LocalDateTime.now();
+					LocalDateTime lastWeek = now.minusWeeks(1);
+					LocalDateTime created = be.getCreated();
+					this.println(created.isBefore(lastWeek));
+					this.println(created.isAfter(lastWeek));
 
-        if(created.isBefore(lastWeek)) {
+					if (created.isBefore(lastWeek)) {
 
-      	  	/* BEG was paid >1 week - we archive it */
-      	  	this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
-        }
-      }
-    }
+						/* BEG was paid >1 week - we archive it */
+						this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
+					}
+				}
+			}
 
-    this.println("Archiving done.");
-  }
-  else {
-    this.println("Could not get token.");
-  }
-}
+			this.println("Archiving done.");
+		} else {
+			this.println("Could not get token.");
+		}
+	}
 
 	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
@@ -1762,7 +1760,7 @@ public void archivePaidProducts() {
 		List<BaseEntity> parents = null;
 		long sTime = System.nanoTime();
 		try {
-		
+
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", getToken());
 			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
@@ -1785,7 +1783,7 @@ public void archivePaidProducts() {
 			e.printStackTrace();
 		}
 		double difference = (System.nanoTime() - sTime) / 1e6; // get ms
-		println("getParents = "+difference+" ms");
+		println("getParents = " + difference + " ms");
 		return parents;
 	}
 
@@ -3871,7 +3869,7 @@ public void archivePaidProducts() {
 					 */
 
 					/* Update BEG to have DRIVER_CODE as an attribute */
-          answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
 					answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
 					saveAnswers(answers);
 
@@ -5844,71 +5842,61 @@ public void archivePaidProducts() {
 
 	}
 
-  private String generateServiceToken(final String realm) {
+	private String generateServiceToken(final String realm) {
 
-    String jsonFile  = realm+".json";
+		String jsonFile = realm + ".json";
 
-      String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
-      if (keycloakJson == null) {
-        System.out.println("No keycloakMap for " + realm());
-        return null;
-      }
-      JsonObject realmJson = new JsonObject(keycloakJson);
-      JsonObject secretJson = realmJson.getJsonObject("credentials");
-      String secret = secretJson.getString("secret");
- 
- 
-        // fetch token from keycloak
-        String key = null;
-        String initVector = "PRJ_" + realm().toUpperCase();
-        initVector = StringUtils.rightPad(initVector, 16, '*');
-        String encryptedPassword = null;
-        if (System.getenv("GENNYDEV")!=null) {
-        	initVector = "PRJ_GENNY*******";
-        }
+		String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
+		if (keycloakJson == null) {
+			System.out.println("No keycloakMap for " + realm());
+			return null;
+		}
+		JsonObject realmJson = new JsonObject(keycloakJson);
+		JsonObject secretJson = realmJson.getJsonObject("credentials");
+		String secret = secretJson.getString("secret");
 
-        try {
-          key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
-        } catch (Exception e) {
-          println("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
-        }
+		// fetch token from keycloak
+		String key = null;
+		String initVector = "PRJ_" + realm().toUpperCase();
+		initVector = StringUtils.rightPad(initVector, 16, '*');
+		String encryptedPassword = null;
+		if (System.getenv("GENNYDEV") != null) {
+			initVector = "PRJ_GENNY*******";
+		}
 
-        try {
-          encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
-        } catch (Exception e) {
-          println("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
-        }
+		try {
+			key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
+		} catch (Exception e) {
+			println("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
+		}
 
-        String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+		try {
+			encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
+		} catch (Exception e) {
+			println("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
+		}
 
-        // Now ask the bridge for the keycloak to use
-        String keycloakurl = realmJson.getString("auth-server-url").substring(0,
-            realmJson.getString("auth-server-url").length() - ("/auth".length()));
+		String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
 
-        println(keycloakurl);
+		// Now ask the bridge for the keycloak to use
+		String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+				realmJson.getString("auth-server-url").length() - ("/auth".length()));
 
-        try {
-          System.out.println("realm() : "+realm() +"\n"+
-          "realm : "+realm +"\n"+
-          "secret : "+secret + "\n"+
-          "keycloakurl: "+keycloakurl +"\n"
-          +"key : "+key +"\n"
-          +"initVector : "+initVector +"\n"
-          +"enc pw : "+encryptedPassword +"\n"
-          +"password : "+password +"\n"
-          );
-          String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
-          println("token = " + token);
-          return token;
-        }
-        catch(Exception e) {
-          println(e);
-        }
+		println(keycloakurl);
 
+		try {
+			System.out.println("realm() : " + realm() + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
+					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+			String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
+			println("token = " + token);
+			return token;
+		} catch (Exception e) {
+			println(e);
+		}
 
-
-    return null;
-  }
+		return null;
+	}
 
 	public boolean loadRealmData() {
 
@@ -5988,7 +5976,7 @@ public void archivePaidProducts() {
 			}
 		}
 
-return false;
+		return false;
 	}
 
 	public void generateTree() {
@@ -6117,11 +6105,10 @@ return false;
 		}
 	}
 
-	public void generateNewItemsCache()
-	{
+	public void generateNewItemsCache() {
 		generateBucketCaches();
 	}
-	
+
 	public void generateBucketCaches() {
 		/* Searches */
 		Integer itemCount = 0;
@@ -6133,66 +6120,65 @@ return false;
 			println("NO SEARCH ");
 			drools.setFocus("GenerateSearches");
 		}
-	//	 SearchEntity searchBE = new SearchEntity(searchNewItems);
-		 
-		 //set up service token and realm
-		  String proj_realm = System.getenv("PROJECT_REALM");
-		  if (System.getenv("GENNYDEV")!=null) {
-			  proj_realm = "genny";
-		  }
-	//	  decodedTokenMap.put("realm",proj_realm);
-	//	  String token = generateServiceToken(proj_realm);
-	//	  setToken(token);
+		// SearchEntity searchBE = new SearchEntity(searchNewItems);
+
+		// set up service token and realm
+		String proj_realm = System.getenv("PROJECT_REALM");
+		if (System.getenv("GENNYDEV") != null) {
+			proj_realm = "genny";
+		}
+		// decodedTokenMap.put("realm",proj_realm);
+		// String token = generateServiceToken(proj_realm);
+		// setToken(token);
 
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
 				QDataBaseEntityMessage.class);
 
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
-	
-					try {
-						  SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
-							  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-							  	     .setSourceCode(bucket.getCode())
-							  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
-							  	     .setPageStart(0)
-							  	     .setPageSize(10000);
 
-						results = QwandaUtils.fetchResults(searchBE, getToken());
+				try {
+					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "All New Items")
+							.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC).setSourceCode(bucket.getCode())
+							.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%").setPageStart(0)
+							.setPageSize(10000);
 
-						if (results != null) {
-							println("Caching Bucket "+bucket.getCode()+" with "+results.getReturnCount()+" items");
-							itemCount = results.getItems().length;
-							results.setParentCode(bucket.getCode());
-							results.setLinkCode("LNK_CORE");
-							bulkmsg.add(results);
+					results = QwandaUtils.fetchResults(searchBE, getToken());
 
-							for (BaseEntity beg : results.getItems()) {
+					if (results != null) {
+						println("Caching Bucket " + bucket.getCode() + " with " + results.getReturnCount() + " items");
+						itemCount = results.getItems().length;
+						results.setParentCode(bucket.getCode());
+						results.setLinkCode("LNK_CORE");
+						bulkmsg.add(results);
 
-								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 1000,
-										false);
+						for (BaseEntity beg : results.getItems()) {
 
-								if (begKids != null) {
+							List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0,
+									1000, false);
 
-									itemCount += begKids.size();
-									bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(),
-											"LNK_BEG"));
-								}
+							if (begKids != null) {
+
+								itemCount += begKids.size();
+								QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
+										begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
+								beMsg.setAliasCode(bucket.getCode());
+								bulkmsg.add(beMsg);
 							}
 						}
-
-						QBulkMessage bulk = new QBulkMessage(bulkmsg);
-						VertxUtils.putObject(realm(), "CACHE", bucket.getCode(), bulk);
-						println("Loading New cache laoded " + itemCount + " BEs");
-
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
+
+					QBulkMessage bulk = new QBulkMessage(bulkmsg);
+					VertxUtils.putObject(realm(), "CACHE", bucket.getCode(), bulk);
+					println("Loading New cache laoded " + itemCount + " BEs");
+
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+			}
 		}
 	}
-	
-	
+
 	public void generateNewItemsCache2() {
 
 		println("GENERATING NEW ITEMS  Cache realm is " + realm());
@@ -6202,91 +6188,91 @@ return false;
 		QDataBaseEntityMessage results = null;
 
 		/* Searches */
-		  SearchEntity searchNewItems = new SearchEntity(drools.getRule().getName(),"All New Items")
-			  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-			  	     .setSourceCode("GRP_NEW_ITEMS")
-			  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
-			  	     .setPageStart(0)
-			  	     .setPageSize(10000);
-		  
+		SearchEntity searchNewItems = new SearchEntity(drools.getRule().getName(), "All New Items")
+				.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC).setSourceCode("GRP_NEW_ITEMS")
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%").setPageStart(0).setPageSize(10000);
 
-			try {
-				results = QwandaUtils.fetchResults(searchNewItems, getToken());
+		try {
+			results = QwandaUtils.fetchResults(searchNewItems, getToken());
 
-				if (results != null) {
+			if (results != null) {
 
-					itemCount = results.getItems().length;
-					results.setParentCode("GRP_NEW_ITEMS");
-					results.setLinkCode("LNK_CORE");
-					bulkmsg.add(results);
+				itemCount = results.getItems().length;
+				results.setParentCode("GRP_NEW_ITEMS");
+				results.setLinkCode("LNK_CORE");
+				bulkmsg.add(results);
 
-					for (BaseEntity beg : results.getItems()) {
+				for (BaseEntity beg : results.getItems()) {
 
-						List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 1000,
-								false);
+					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 1000,
+							false);
 
-						if (begKids != null) {
+					if (begKids != null) {
 
-							itemCount += begKids.size();
-							bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(),
-									"LNK_BEG"));
-						}
+						itemCount += begKids.size();
+						bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(),
+								"LNK_BEG"));
 					}
 				}
-
-				QBulkMessage bulk = new QBulkMessage(bulkmsg);
-				VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
-				println("Loading New cache laoded " + itemCount + " BEs");
-
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-		
+
+			QBulkMessage bulk = new QBulkMessage(bulkmsg);
+			VertxUtils.putObject(realm(), "SEARCH", "SBE_NEW_ITEMS", bulk);
+			println("Loading New cache laoded " + itemCount + " BEs");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
-		//List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		// List<QDataBaseEntityMessage> bulkmsg = new
+		// ArrayList<QDataBaseEntityMessage>();
 		QBulkMessage bulk = new QBulkMessage();
-		
+
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
 				QDataBaseEntityMessage.class);
 
 		// Create bucket Buckets!
-	//	Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
+		// Map<String, List<BaseEntity>> bucketListMap = new HashMap<String,
+		// List<BaseEntity>>();
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
-//				if (this.isUserSeller()) {
-//					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
-//						continue;
-//					}
-//				}
-//				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
-//				if (searchStakeholderBucketItems == null) {
-//
-//				}
-//				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-//				search.setCode(bucket.getCode());// set the parent
-//				if (!stakeholder.is("PRI_IS_ADMIN")) {
-//					search.setStakeholder(stakeholder.getCode());
-//				}
-//				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
-				
+				// if (this.isUserSeller()) {
+				// if (bucket.getCode().equals("GRP_NEW_ITEMS")) { // No need to fetch the new
+				// items group again
+				// continue;
+				// }
+				// }
+				// BaseEntity searchStakeholderBucketItems =
+				// getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+				// if (searchStakeholderBucketItems == null) {
+				//
+				// }
+				// SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
+				// search.setCode(bucket.getCode());// set the parent
+				// if (!stakeholder.is("PRI_IS_ADMIN")) {
+				// search.setStakeholder(stakeholder.getCode());
+				// }
+				// List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(),
+				// stakeholder, search);
+
 				QBulkMessage bucketMsgs = VertxUtils.getObject(realm(), "CACHE", bucket.getCode(), QBulkMessage.class);
+				if (bucketMsgs != null) {
+					bulk.add(bucketMsgs.getMessages());
 
-
-				bulk.add(bucketMsgs.getMessages());
-
-				if (subscriptions.contains(bucket.getCode())) {
-					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
+					if (subscriptions.contains(bucket.getCode())) {
+						VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
+					}
 				}
 			}
 		}
 
-//
-//		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+		//
+		// QBulkMessage bulk = new QBulkMessage(bulkmsg);
 		return bulk;
 	}
 
@@ -6321,21 +6307,21 @@ return false;
 
 					if (this.isUserSeller()) {
 
-						if (linkedBE.getCode().startsWith("OFR_") && !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
+						if (linkedBE.getCode().startsWith("OFR_")
+								&& !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
 							continue;
 						}
 					}
 					if (linkedBE.getCode().startsWith("PER_")) {
 
-            if (linkedBE.getCode().equals(getUser().getCode())) {
+						if (linkedBE.getCode().equals(getUser().getCode())) {
 							continue; // assume no need to send the user details again
-						}
-            else {
+						} else {
 
-              Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
 
-                // strip privates
+								// strip privates
 								String attributeCode = entityAttribute.getAttributeCode();
 								switch (attributeCode) {
 								case "PRI_FIRSTNAME":
@@ -6364,9 +6350,9 @@ return false;
 				}
 
 				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
-					beg.getCode(), "LNK_BEG");
-				  begMsg.setToken(getToken());
-			   	bulkmsg.add(begMsg);
+						beg.getCode(), "LNK_BEG");
+				begMsg.setToken(getToken());
+				bulkmsg.add(begMsg);
 			}
 
 		} catch (IOException e) {
@@ -6388,39 +6374,43 @@ return false;
 		QBulkMessage allItems = new QBulkMessage(init);
 		long startTime = System.nanoTime();
 
-//		if (this.isUserSeller()) {
-//
-//			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
-//
-//			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
-//			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-//
-//			if (newItems != null) {
-//				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
-//
-//				if (newItems.getMessages() != null) {
-//
-//          showLoading("processing driver jobs...");
-//
-//					// filter out non associated filter BEG Kids
-//					startTime = System.nanoTime();
-//					if (!this.hasRole("admin")) {
-//						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
-//					}
-//
-//					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-//				}
-//
-//				allItems.add(newItems.getMessages());
-//				try {
-//					publishCmd(allItems);
-//				} catch (Exception e) {
-//
-//				}
-//			}
-//		} else {
-//			showLoading("fetching " + itemName + "'s...");
-//		}
+		// if (this.isUserSeller()) {
+		//
+		// showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
+		//
+		// QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH",
+		// "SBE_NEW_ITEMS", QBulkMessage.class);
+		// println("fetching new items from cache " + ((System.nanoTime() - startTime) /
+		// 1e6) + "ms");
+		//
+		// if (newItems != null) {
+		// System.out.println("Number of items found in cached new Items = " +
+		// newItems.getMessages().length);
+		//
+		// if (newItems.getMessages() != null) {
+		//
+		// showLoading("processing driver jobs...");
+		//
+		// // filter out non associated filter BEG Kids
+		// startTime = System.nanoTime();
+		// if (!this.hasRole("admin")) {
+		// newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+		// }
+		//
+		// println("filtering only User Begs takes " + ((System.nanoTime() - startTime)
+		// / 1e6) + "ms");
+		// }
+		//
+		// allItems.add(newItems.getMessages());
+		// try {
+		// publishCmd(allItems);
+		// } catch (Exception e) {
+		//
+		// }
+		// }
+		// } else {
+		// showLoading("fetching " + itemName + "'s...");
+		// }
 		showLoading("fetching " + itemName + "'s...");
 
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -6439,27 +6429,32 @@ return false;
 				}
 				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 			}
-			allItems.add(items.getMessages());
+			try {
+				publishCmd(items);
+			} catch (Exception e) {
+
+			}
+			// allItems.add(items.getMessages());
 		}
 		println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
 		showLoading("loading " + itemName + "'s...");
 
-		if ((items != null) && (items.getMessages().length > 0)) {
-			if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
-				allItems.add(items.getMessages());
-			}
-		}
+		// if ((items != null) && (items.getMessages().length > 0)) {
+		// if ((items.getMessages() != null) && (items.getMessages().length > 0)) {
+		// allItems.add(items.getMessages());
+		// }
+		// }
 
 		startTime = System.nanoTime();
 
-		try {
-			publishCmd(items);
-		} catch (Exception e) {
-
-		}
+		// try {
+		// publishCmd(items);
+		// } catch (Exception e) {
+		//
+		// }
 		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-    this.setState("DATA_SENT_FINISHED");
+		this.setState("DATA_SENT_FINISHED");
 	}
 
 	/**
@@ -6469,165 +6464,237 @@ return false;
 	 */
 	private QBulkMessage FilterOnlyUserBegs(final String filterPrefix, final BaseEntity stakeholder,
 			QBulkMessage newItems) {
+
 		QBulkMessage ret = new QBulkMessage();
-		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
-
-		Map<String,List<BaseEntity>> bucketMap = new HashMap<String,List<BaseEntity>>();
-		Map<String,List<BaseEntity>> begMap = new HashMap<String,List<BaseEntity>>();
-
+		//
+		// Map<String,List<BaseEntity>> bucketMap = new
+		// HashMap<String,List<BaseEntity>>();
+		Map<String, List<QDataBaseEntityMessage>> begMap = new HashMap<String, List<QDataBaseEntityMessage>>();
+		Map<String, Set<BaseEntity>> bucketMap = new HashMap<String, Set<BaseEntity>>();
+		
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
-			// remove any unwanted kids not associated with the stakeholder
-			if (msg instanceof QDataBaseEntityMessage) {
-				BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
+			if (!msg.getParentCode().startsWith("GRP_")) {
 
-					if (parent.getCode().startsWith("GRP_")) {
-						if (!bucketMap.containsKey(parent.getCode())) {
-							bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-						}
-						} else {
-						if (!begMap.containsKey(parent.getCode())) {
-							begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-						}
+				// List<BaseEntity> filteredList = msg.getItems().stream().filter(i ->
+				// i.getCode().startsWith("PER_")).collect(Collectors.toList());
 
-					}
+				// // remove any unwanted kids not associated with the stakeholder
+				// if (msg instanceof QDataBaseEntityMessage) {
+				// BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
+				//
+				// if (parent.getCode().startsWith("GRP_")) {
+				// if (!bucketMap.containsKey(parent.getCode())) {
+				// bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// }
+				// } else {
+				// if (!begMap.containsKey(parent.getCode())) {
+				// begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// }
+				//
+				// }
+				//
+				//
 
-
-				for (BaseEntity be : msg.getItems()) {
-					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+be.getId()+":"+be.getCode());
-
-					if (be.getCode().startsWith("BEG_")) {
-						if (processBeg(be,stakeholder)) {
-							System.out.println(" X");
-							continue;
-						} else {
-							System.out.println("");
-							if (!bucketMap.containsKey(parent.getCode())) {
-								bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-								System.out.println("Parent of load = "+parent.getCode());
-							}
-							bucketMap.get(parent.getCode()).add(be);
-						}
-					}
-					// Quotes/Offers
-					if ((be.getCode().startsWith(filterPrefix)) && (this.isUserSeller())) { // don't show other offers if you are a seller
-						Optional<EntityAttribute> personCode = be.findEntityAttribute("PRI_QUOTER_CODE");
-						if (personCode.isPresent()) {
-							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
-								System.out.println(" X");
-								continue;
-							} else {
-								System.out.println("");
-								if (!begMap.containsKey(parent.getCode())) {
-									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-									System.out.println("Parent of load = "+parent.getCode());
-								}
-								begMap.get(parent.getCode()).add(be);
-							}
-						}
-					} else {
-						// filter attributes
-						if (be.getCode().startsWith("PER_")) {
-							if (be.getCode().equals(getUser().getCode())) {
-								System.out.println(" (duplicate)");
-								continue;
-							} else {
-								Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
-								for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
-									// strip privates
-									String attributeCode = entityAttribute.getAttributeCode();
-									switch (attributeCode) {
-									case "PRI_FIRSTNAME":
-									case "PRI_LASTNAME":
-									case "PRI_EMAIL":
-									case "PRI_MOBILE":
-									case "PRI_ADMIN":
-									case "PRI_DRIVER":
-									case "PRI_OWNER":
-									case "PRI_IMAGE_URL":
-									case "PRI_CODE":
-									case "PRI_NAME":
-									case "PRI_USERNAME":
-										allowedAttributes.add(entityAttribute);
-									default:
-
+				boolean userAssociated = false;
+				System.out.print("***" + msg.getParentCode() + ":" + msg.getItems().length + ": ");
+				for (int i = 0; i < msg.getItems().length; i++) { // fast
+					if (msg.getItems()[i].getCode().equals(stakeholder.getCode())) {
+						userAssociated = true;
+						for (int j = 0; j < msg.getItems().length; j++) { // fast
+							if (msg.getItems()[j].getCode().startsWith("PER_")) {
+								if (!msg.getItems()[j].getCode().equals(stakeholder.getCode())) {
+									Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+									for (EntityAttribute entityAttribute : msg.getItems()[j]
+											.getBaseEntityAttributes()) {
+										// strip privates
+										String attributeCode = entityAttribute.getAttributeCode();
+										switch (attributeCode) {
+										case "PRI_FIRSTNAME":
+										case "PRI_LASTNAME":
+										case "PRI_EMAIL":
+										case "PRI_MOBILE":
+										case "PRI_ADMIN":
+										case "PRI_DRIVER":
+										case "PRI_OWNER":
+										case "PRI_IMAGE_URL":
+										case "PRI_CODE":
+										case "PRI_NAME":
+										case "PRI_USERNAME":
+										case "PRI_DRIVER_RATING":
+											allowedAttributes.add(entityAttribute);
+										default:
+										}
 									}
-
+									msg.getItems()[j].setBaseEntityAttributes(allowedAttributes);
 								}
-								be.setBaseEntityAttributes(allowedAttributes);
-								System.out.println(" (filtered)");
-								if (!begMap.containsKey(parent.getCode())) {
-									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-									System.out.println("Parent of load = "+parent.getCode());
-								}
-								begMap.get(parent.getCode()).add(be);
 							}
-						} else {
-							System.out.println("");  // loads
-							if (!begMap.containsKey(parent.getCode())) {
-								begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-								System.out.println("Parent of load = "+parent.getCode());
-							}
-							begMap.get(parent.getCode()).add(be);
-
 						}
+						QDataBaseEntityMessage bucket = new QDataBaseEntityMessage(msg.getItems(), msg.getParentCode(),
+								"LNK_BEG");
+						if (!begMap.containsKey(msg.getAliasCode())) {
+							List<QDataBaseEntityMessage> bucketList = new ArrayList<QDataBaseEntityMessage>();
+							bucketList.add(bucket);
+							begMap.put(msg.getAliasCode(), bucketList);
+						} else {
+							begMap.get(msg.getAliasCode()).add(bucket);
+						}
+						System.out.println("Adding " + msg.getParentCode() + " attached to " + msg.getAliasCode());
+						if (!bucketMap.containsKey(msg.getAliasCode())) {
+							Set<BaseEntity> bucketList = new HashSet<BaseEntity>();
+								bucketList.add(getBaseEntityByCode(msg.getParentCode()));
+
+							bucketMap.put(msg.getAliasCode(), bucketList);
+						} else {
+								bucketMap.get(msg.getAliasCode()).add(getBaseEntityByCode(msg.getParentCode()));
+						}
+						msg.setAliasCode(null);
+						System.out.println(" ");
+						
+						
+						break;
 					}
-
-
 				}
-				if (parent.getCode().startsWith("BEG_")) {
-					msg.setLinkCode("LNK_BEG");
+
+				if (!userAssociated) {
+					System.out.println(" X");
+					continue; // don't save
 				}
+
+				// System.out.print(msg.getParentCode()+":"+parent.getId()+":"+be.getId()+":"+be.getCode());
+				//
+				// if (be.getCode().startsWith("BEG_")) {
+				// if (processBeg(be,stakeholder)) {
+				// System.out.println(" X");
+				// continue;
+				// } else {
+				// System.out.println("");
+				// if (!bucketMap.containsKey(parent.getCode())) {
+				// bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// System.out.println("Parent of load = "+parent.getCode());
+				// }
+				// bucketMap.get(parent.getCode()).add(be);
+				// }
+				// }
+				// // Quotes/Offers
+				// if ((be.getCode().startsWith(filterPrefix)) && (this.isUserSeller())) { //
+				// don't show other offers if you are a seller
+				// Optional<EntityAttribute> personCode =
+				// be.findEntityAttribute("PRI_QUOTER_CODE");
+				// if (personCode.isPresent()) {
+				// if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+				// stakeholdeer!
+				// System.out.println(" X");
+				// continue;
+				// } else {
+				// System.out.println("");
+				// if (!begMap.containsKey(parent.getCode())) {
+				// begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// System.out.println("Parent of load = "+parent.getCode());
+				// }
+				// begMap.get(parent.getCode()).add(be);
+				// }
+				// }
+				// } else {
+				// // filter attributes
+
+				// System.out.println(" (filtered)");
+				// if (!begMap.containsKey(parent.getCode())) {
+				// begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// System.out.println("Parent of load = "+parent.getCode());
+				// }
+				// begMap.get(parent.getCode()).add(be);
+				// }
+				// } else {
+				// System.out.println(""); // loads
+				// if (!begMap.containsKey(parent.getCode())) {
+				// begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+				// System.out.println("Parent of load = "+parent.getCode());
+				// }
+				// begMap.get(parent.getCode()).add(be);
+				//
+				// }
+				// }
+				//
+				//
+				// }
+				// if (parent.getCode().startsWith("BEG_")) {
+				// msg.setLinkCode("LNK_BEG");
+				// }
+				//
+				// }
+				//
+				// messages.add(msg);
+			} else {
+
 
 			}
-
-		}
-		for (String parent : bucketMap.keySet()) {
-			BaseEntity[] beArray = bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]);
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray,parent,"LNK_CORE");
-			messages.add(msg);
 		}
 
-		for (String parent : begMap.keySet()) {
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]),parent,"LNK_BEG");
-			messages.add(msg);
+		// for (String parent : bucketMap.keySet()) {
+		// BaseEntity[] beArray = bucketMap.get(parent).toArray(new
+		// BaseEntity[bucketMap.get(parent).size()]);
+		// QDataBaseEntityMessage msg = new
+		// QDataBaseEntityMessage(beArray,parent,"LNK_CORE");
+		// messages.add(msg);
+		// }
+		//
+		// for (String parent : begMap.keySet()) {
+		// QDataBaseEntityMessage msg = new
+		// QDataBaseEntityMessage(begMap.get(parent).toArray(new
+		// BaseEntity[begMap.get(parent).size()]),parent,"LNK_BEG");
+		// messages.add(msg);
+		// }
+
+		for (String group : bucketMap.keySet()) {
+			Set<BaseEntity> listBegs = bucketMap.get(group);
+			System.out.println(group + "->" + listBegs.size());
+			QDataBaseEntityMessage bucketBegs = new QDataBaseEntityMessage(listBegs.toArray(new BaseEntity[listBegs.size()]),group,"LNK_CORE");
+			ret.add(bucketBegs);
 		}
-		ret.setMessages(messages.toArray(new QDataBaseEntityMessage[messages.size()]));
+		
+		for (String group : begMap.keySet()) {
+			List<QDataBaseEntityMessage> listBegs = begMap.get(group);
+			System.out.println(group + "->" + listBegs.size());
+			for (QDataBaseEntityMessage besg : begMap.get(group)) {
+				ret.add(besg);
+			}
+			
+		}
+
 		return ret;
 	}
 
-	public boolean processBeg(final BaseEntity beg,final BaseEntity stakeholder) {
+	public boolean processBeg(final BaseEntity beg, final BaseEntity stakeholder) {
 		boolean skip = false;
-			// check if this beg should be seen by this user
-		Optional<EntityAttribute> personCode  = null;
+		// check if this beg should be seen by this user
+		Optional<EntityAttribute> personCode = null;
 
-  	if (this.isUserSeller()) {
-				 personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
+		if (this.isUserSeller()) {
+			personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
 
 			if (personCode.isPresent()) {
-				if (!personCode.get().getAsString().equals(stakeholder.getCode()) ) { // not a stakeholdeer!
+				if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
 					return true; // skip
 				}
 			}
 		}
-				for (EntityEntity ee : beg.getLinks()) {
-					// if linkValue is ACCEPTED_OFFER
-					if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
-							&& (this.isUserSeller())) {
-						BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
-						personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
-						if (personCode.isPresent()) {
-							if (!personCode.get().getAsString().equals(stakeholder.getCode())  ) { // not a
-								return true; // skip
-							}
-						} else {
-							System.out.println("Person not found :" + acceptedBegChild.getCode());
-						}
+		for (EntityEntity ee : beg.getLinks()) {
+			// if linkValue is ACCEPTED_OFFER
+			if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue()) && (this.isUserSeller())) {
+				BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
+				personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
+				if (personCode.isPresent()) {
+					if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+						return true; // skip
 					}
+				} else {
+					System.out.println("Person not found :" + acceptedBegChild.getCode());
 				}
+			}
+		}
 
-			return skip;
+		return skip;
 	}
-
 
 	public void sendBucketLayouts() {
 		String viewCode = "BUCKET_DASHBOARD";
@@ -7685,7 +7752,8 @@ return false;
 						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 						throw new IllegalArgumentException(
 								"User payments profile updation has not succeeded for the field : "
-										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage + ". Kindly give valid information for payments to get through.");
+										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage
+										+ ". Kindly give valid information for payments to get through.");
 					}
 				}
 			} else {
@@ -7752,13 +7820,13 @@ return false;
 
 		String companyId = null;
 		BaseEntity userBe = getUser();
-		if(companyBe != null) {
+		if (companyBe != null) {
 
 			// Get the provided company information from the base entity
 			String companyName = companyBe.getValue("PRI_CPY_NAME", null);
 
 			String taxNumber = companyBe.getValue("PRI_ABN", null);
-			if(taxNumber == null) {
+			if (taxNumber == null) {
 				taxNumber = companyBe.getValue("PRI_ACN", null);
 			}
 
@@ -7776,13 +7844,16 @@ return false;
 			try {
 
 				/* Create complete packed company object */
-				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax, companyLocationObj, user, companyContactObj);
+				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax,
+						companyLocationObj, user, companyContactObj);
 				try {
-					String createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
+					String createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj),
+							authtoken);
 
-					QPaymentsCompany createCompanyResponseObj = JsonUtils.fromJson(createCompanyResponse, QPaymentsCompany.class);
-					println("payments company creation response ::"+createCompanyResponse);
-					println("payments company obj : "+createCompanyResponseObj);
+					QPaymentsCompany createCompanyResponseObj = JsonUtils.fromJson(createCompanyResponse,
+							QPaymentsCompany.class);
+					println("payments company creation response ::" + createCompanyResponse);
+					println("payments company obj : " + createCompanyResponseObj);
 					companyId = createCompanyResponseObj.getId();
 
 				} catch (PaymentException e) {
@@ -7791,8 +7862,11 @@ return false;
 
 			} catch (IllegalArgumentException e) {
 
-				/* Send toast message if company creation misses arguments or if API call returns error response */
-				if(userBe != null) {
+				/*
+				 * Send toast message if company creation misses arguments or if API call
+				 * returns error response
+				 */
+				if (userBe != null) {
 					/* send toast to user */
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
@@ -7815,13 +7889,15 @@ return false;
 			if (attributeCode != null && value != null) {
 
 				/* Get payments company after setting to-be-updated fields in the object */
-				QPaymentsCompany paymentsCompany = PaymentUtils.updateCompanyInfo(paymentsUserId, companyId, attributeCode, value);
+				QPaymentsCompany paymentsCompany = PaymentUtils.updateCompanyInfo(paymentsUserId, companyId,
+						attributeCode, value);
 
 				/* Make the request to Assembly and update */
 				if (paymentsCompany != null && paymentsUserId != null) {
 					try {
 						/* Hitting payments-service API for updating */
-						String companyUpdateResponseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(paymentsCompany), paymentsAuthToken);
+						String companyUpdateResponseString = PaymentEndpoint.updateCompany(companyId,
+								JsonUtils.toJson(paymentsCompany), paymentsAuthToken);
 						QPaymentsCompany userResponsePOJO = JsonUtils.fromJson(companyUpdateResponseString,
 								QPaymentsCompany.class);
 						println("Company updation response :: " + userResponsePOJO);
@@ -7831,7 +7907,8 @@ return false;
 						String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 						throw new IllegalArgumentException(
 								"User payments profile updation has not succeeded for the field : "
-										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage + ". Kindly give valid information for payments to get through.");
+										+ attributeCode.replace("PRI_", "") + ". " + getFormattedErrorMessage
+										+ ". Kindly give valid information for payments to get through.");
 					}
 				}
 			} else {
@@ -7853,28 +7930,36 @@ return false;
 	}
 
 	/* Bulk update of payments user info */
-	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
+	/*
+	 * If some information update is lost due to Payments-service-downtime, they
+	 * will updated with this
+	 */
 	public void bulkPaymentsUserUpdate(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
 
 		try {
 			QPaymentsUser user = PaymentUtils.getCompleteUserObj(userBe, assemblyUserId);
 			/* Attempt to update the user in Assembly */
-			if(user != null && assemblyUserId != null) {
+			if (user != null && assemblyUserId != null) {
 				try {
 					PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user), assemblyAuthKey);
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);							}
+					throw new IllegalArgumentException(getFormattedErrorMessage);
+				}
 			}
 
 		} catch (IllegalArgumentException e) {
-			log.error("Exception occured user updation"+e.getMessage());
+			log.error("Exception occured user updation" + e.getMessage());
 		}
 	}
 
 	/* Bulk update for payments company info */
-	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
-	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
+	/*
+	 * If some information update is lost due to Payments-service-downtime, they
+	 * will updated with this
+	 */
+	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId,
+			String assemblyAuthKey) {
 
 		try {
 
@@ -7883,7 +7968,7 @@ return false;
 			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, assemblyUserId);
 
 			/* Attempt to update the company in Assembly */
-			if(companyId != null && company != null) {
+			if (companyId != null && company != null) {
 				try {
 					PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(company), assemblyAuthKey);
 				} catch (PaymentException e) {
@@ -7892,7 +7977,7 @@ return false;
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			log.error("Exception occured user updation"+e.getMessage());
+			log.error("Exception occured user updation" + e.getMessage());
 		}
 
 	}
@@ -7902,11 +7987,11 @@ return false;
 	 *
 	 */
 	public void publishViewCmdMessage(final String viewType, final String rootCode) {
-  	     QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
-	     JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
-	     cmdViewMessageJson.put("root", rootCode);
-	     publishCmd(cmdViewMessageJson);
-	     setLastLayout( "LIST_VIEW", rootCode );
+		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
+		cmdViewMessageJson.put("root", rootCode);
+		publishCmd(cmdViewMessageJson);
+		setLastLayout("LIST_VIEW", rootCode);
 	}
 
 }
