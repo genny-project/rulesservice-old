@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Send Apply BEG layout */
+rule "Apply for BEG - Step 4"	
+	when
+		rules: QRules( 	isState("SEND_APPLY_BEG_LAYOUT") && 
+						isState("SENT_QUESTION") && 
+						!isState("LOOP_APPLY_BEG_STEP4") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_APPLY_BEG_STEP4");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");		
+		
+        if(beg != null){
+			rules.set("subLayoutCode", "APPLY_BEG");
+			rules.set("subLayoutPath", "beg/apply_beg.json");
+			rules.set("subLayoutRootCode", beg.getCode());
+			rules.set("subLayoutIsPopup", true);
+
+			rules.setState("SEND_SUBLAYOUT");
+		}else{
+            rules.println("beg is null");
+        }
+	 	rules.footer();      
+end
