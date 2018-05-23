@@ -9,7 +9,7 @@ import life.genny.utils.PaymentUtils;
 rule "Assembly user updation for attribute change - Address Line 1"
 	ruleflow-group 'AttributeChange'
     when
-    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ADDRESS_FULL")  && getAnswer().getTargetCode().startsWith("PER_") )
+    	m: QEventAttributeValueChangeMessage( getData().getCode().equals("PRI_ADDRESS_ADDRESS1")  && getAnswer().getTargetCode().startsWith("PER_") )
     	rules: QRules(!isState("USER_UPDATE_ADDRESSLINE_LOOP"))
     then
 		rules.header();

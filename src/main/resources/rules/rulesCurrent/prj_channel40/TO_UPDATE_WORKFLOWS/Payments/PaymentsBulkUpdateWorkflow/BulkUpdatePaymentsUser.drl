@@ -1,0 +1,45 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.utils.PaymentUtils;
+import io.vertx.core.json.JsonArray;
+
+rule "Bulk Update assembly user info"
+	agenda-group "payments"
+	no-loop true
+    when
+    	rules: QRules( isState("IS_ASSEMBLY_USER_CREATED") && !isState("LOOP_IS_ASSEMBLY_USER_INFO_UPDATED") ) 
+    then
+     
+     rules.header();
+     rules.setState("LOOP_IS_ASSEMBLY_USER_INFO_UPDATED");
+     
+     BaseEntity userBe = rules.getUser();
+     String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);	
+     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+     
+     if(assemblyId != null && userBe != null) {
+         
+         /* Updating existing user details in Assembly */
+         rules.println("updating the complete user profile in Assembly");
+     	 rules.bulkPaymentsUserUpdate(userBe, assemblyId, assemblyAuthToken);   
+     	 PaymentUtils.updateUserPhoneNumber(userBe, assemblyId, assemblyAuthToken);
+     	 String userCurrentPaymentMethods = userBe.getValue("PRI_USER_PAYMENT_METHODS", null);
+     	 
+     	 /* Updating the existing payment accounts in Assembly */
+     	 if(userCurrentPaymentMethods != null) {
+     	 	
+     	 	JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
+     	 	for(int i = 0; i < currentPaymentMethods.size(); i++) {
+     	 		JsonObject paymentMethod = currentPaymentMethods.getJsonObject(i);
+     	 		
+     	 		if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
+     	 			PaymentUtils.disburseAccount(assemblyId, paymentMethod.toString(), assemblyAuthToken);
+     	 		}	
+     	 	}
+     	 } 	 
+          	
+     }
+          
+     rules.footer();
+end
