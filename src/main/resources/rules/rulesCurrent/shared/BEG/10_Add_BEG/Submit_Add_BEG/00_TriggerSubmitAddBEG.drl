@@ -38,7 +38,7 @@ rule "Trigger Submit Add BEG"
 				rules.println("company is null");
 				return;
 			}
-            rules.setState("LINK_BEG_AND_CREATOR");
+            rules.setState("COPY_PRODUCT_ATTRIBUTES_TO_BEG");
 
 		}else{
 			rules.println("begCode is null");

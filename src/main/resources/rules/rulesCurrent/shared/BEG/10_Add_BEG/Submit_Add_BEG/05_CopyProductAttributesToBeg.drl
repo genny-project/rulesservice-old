@@ -1,0 +1,27 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* COPY attributes from PRODUCT TO BEG */
+rule "Submit Add BEG - Step 0"
+	when
+		rules: QRules( 	isState("COPY_PRODUCT_ATTRIBUTES_TO_BEG") && 
+						!isState("LOOP_SUBMIT_ADD_BEG_STEP0")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_ADD_BEG_STEP0");
+
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+        BaseEntity product = rules.getAsBaseEntity("productBe");
+
+		if(beg == null){
+			rules.println("beg is null");
+		}else if(product == null){
+			rules.println("product is null");
+		}else{
+			rules.println("begCode   ::   " + beg.getCode());		
+			rules.println("productCode   ::   " + product.getCode());
+			rules.copyAttributes(product, beg);
+			rules.setState("LINK_BEG_AND_CREATOR");
+		}
+	 	rules.footer();      
+end

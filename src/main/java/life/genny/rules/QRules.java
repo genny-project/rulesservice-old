@@ -7400,6 +7400,29 @@ public class QRules {
 	}
 
 	/*
+	 * copy all the attributes from one BE to another BE 
+	 * sourceBe : FROM 
+	 * targetBe : TO
+	 */
+	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
+		
+		Map<String, String> map = new HashMap<>();
+		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
+		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
+
+		List<Answer> answers = new ArrayList<Answer>();
+		try{
+			for (Map.Entry<String, String> entry : map.entrySet()){	
+				Answer answerObj = new Answer(getUser().getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
+				answers.add(answerObj);
+			}   
+			saveAnswers(answers);              
+		} catch (Exception e) {}
+		println("Target BE with attributes   ::   " + targetBe.getCode().toString());
+		return getBaseEntityByCode(targetBe.getCode());
+	}
+
+	/*
 	 * clones all links of oldBe to newBe except the linkValues supplied in
 	 * arraylist linkValues
 	 */
