@@ -7,31 +7,45 @@ import life.genny.rules.QRules;
 
 rule "TV_SELECT_HISTORY"
      when
-       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_HISTORY") && !isState("LOOP_TV_ITEM_HISTORY_DATA_SENT")) 
+       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
+                       isState("GRP_HISTORY") && !isState("LOOP_TV_ITEM_HISTORY_DATA_SENT")) 
      then
-
-     rules.header();
+     
+      rules.header();
+     
        rules.setState("LOOP_TV_ITEM_HISTORY_DATA_SENT");
        String parentCode = rules.get("tvSelectValue").toString();
+      
        if(parentCode != null){
-	       rules.println("The tvSelectValue value is:: "+rules.get("tvSelectValue").toString());
-		   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"Archieved Jobs")
-	  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-	  	     .setSourceCode(parentCode)
-	  	     .setStakeholder(rules.getUser().getCode())
-	  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
-	  	     .setPageStart(0)
-	  	     .setPageSize(10000);
-	  	     
-	  	   /* Send search result */
-	       rules.sendSearchResults(searchBE, parentCode);
-	       
+       
+          if( rules.getKey("PRODUCT_HISTORY_WAS_SENT") == null){
+
+			   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Archived Products")
+		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+		  	     .setSourceCode(parentCode)
+		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+		  	     .setPageStart(0)
+		  	     .setPageSize(10000);
+		  	     
+		  	    /* Adding stakeholder if the user is not Admin  */
+		  	    if( !rules.hasRole("admin") ){
+		  	       searchBE.setStakeholder(rules.getUser().getCode());
+		  	    }
+		  	    		  	    
+		  	    rules.showLoading("Loading..."); 
+		  	    		  	    
+		  	   /* Send search result */
+		       rules.sendSearchResults(searchBE, parentCode);
+		       rules.setKey("PRODUCT_HISTORY_WAS_SENT", "TRUE"); /* we store as a string */
+		       
+	       }
+	         
 	       /* Send ListView */
 	       rules.publishViewCmdMessage("LIST_VIEW", parentCode);
-           rules.setState("TV_ITEM_DATA_SENT");
         }
         else{
-            rules.println("Error!! The data.value/GRP code is null");
+            rules.println("Error!! Either the data.value/GRP code or the user BE is null");
         }
+        
      rules.footer();
 end

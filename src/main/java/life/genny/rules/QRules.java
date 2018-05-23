@@ -386,10 +386,19 @@ public class QRules {
 			return true;
 		}
 	}
+	
+	/* TODO: to remove */
+	public void setKey(final String key, Object value) {
+		VertxUtils.putObject(this.realm(), "", key, value);
+	}
+	
+	public Object getKey(final String key) {
+		Object value = VertxUtils.getObject(this.realm(), "", key, Object.class);
+		return value;
+	}
 
 	public void set(final String key, Object value) {
 		decodedTokenMap.put(key, value);
-
 	}
 
 	public String encodeToBase64(String str) {
