@@ -1,0 +1,21 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventCronMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Cron Event"
+    when
+      m : QEventMessage( event_type == "CRON_EVENT")
+  		rules: QRules(!isState("STARTED"))
+     then
+        rules.setDrools(drools);
+        rules.println("RULE INIT CRON_EVT: "+m);
+        rules.setState("CRON_EVENT");
+        rules.setState("STARTED");
+
+        String dataCode = m.getData().getCode();
+    		if(dataCode != null) {
+     	 		rules.setState(dataCode);
+    		}
+end
