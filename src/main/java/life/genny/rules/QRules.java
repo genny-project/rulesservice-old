@@ -6498,9 +6498,18 @@ public class QRules {
 				boolean userAssociated = false;
 				System.out.print("***" + msg.getParentCode() + ":" + msg.getItems().length + ": ");
 				for (int i = 0; i < msg.getItems().length; i++) { // fast
-					if (msg.getItems()[i].getCode().equals(stakeholder.getCode())) {
+					if ((msg.getItems()[i].getCode().equals(stakeholder.getCode()))||(isUserSeller() && "GRP_NEW_ITEMS".equals(msg.getAliasCode()))) {
 						userAssociated = true;
 						for (int j = 0; j < msg.getItems().length; j++) { // fast
+							
+							if ((msg.getItems()[j].getCode().startsWith(filterPrefix))&&(isUserSeller())) {
+								Optional<EntityAttribute> personCode = msg.getItems()[j].findEntityAttribute("PRI_QUOTER_CODE");
+								 if (personCode.isPresent()) {
+										if (!personCode.get().getAsString().equals(stakeholder.getCode())) {
+											msg.getItems()[j] = stakeholder; // ignore by letting fe filter
+										}
+								 }
+							} else 
 							if (msg.getItems()[j].getCode().startsWith("PER_")) {
 								if (!msg.getItems()[j].getCode().equals(stakeholder.getCode())) {
 									Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
