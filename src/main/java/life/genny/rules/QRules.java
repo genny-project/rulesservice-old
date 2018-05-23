@@ -919,6 +919,46 @@ public class QRules {
 		}
 	}
 
+public void archivePaidProducts() {
+
+  /* we get the list of products marked as "PAID" */
+
+  /* we generate a service token */
+
+  String token = this.generateServiceToken();
+  if(token != null) {
+
+      List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
+						token, "GRP_PAID", "LNK_CORE", 0, 1000);
+
+    if(paidProducts != null) {
+
+      this.println("Archiving " + paidProducts.size() + " products.");
+
+      /* we loop through each BE and get their created date */
+      for(BaseEntity be: paidProducts) {
+
+      	LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastWeek = now.minusWeeks(1);
+        LocalDateTime created = be.getCreated();
+        this.println(created.isBefore(lastWeek));
+        this.println(created.isAfter(lastWeek));
+
+        if(created.isBefore(lastWeek)) {
+
+      	  	/* BEG was paid >1 week - we archive it */
+      	  	this.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE");
+        }
+      }
+    }
+
+    this.println("Archiving done.");
+  }
+  else {
+    this.println("Could not get token.");
+  }
+}
+
 	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
 		try {
@@ -5779,83 +5819,99 @@ public class QRules {
 
 	}
 
+  private String generateServiceToken() {
+
+    for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
+
+      String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
+      if (keycloakJson == null) {
+        System.out.println("No keycloakMap for " + realm());
+        return null;
+      }
+      JsonObject realmJson = new JsonObject(keycloakJson);
+      JsonObject secretJson = realmJson.getJsonObject("credentials");
+      String secret = secretJson.getString("secret");
+      String realm = realmJson.getString("realm");
+
+      if (realm().equals(realm)) {
+
+        // fetch token from keycloak
+        String key = null;
+        String initVector = "PRJ_" + realm().toUpperCase();
+        initVector = StringUtils.rightPad(initVector, 16, '*');
+        String encryptedPassword = null;
+
+        try {
+          key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
+        } catch (Exception e) {
+          println("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
+        }
+
+        try {
+          encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
+        } catch (Exception e) {
+          println("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
+        }
+
+        String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+
+        // Now ask the bridge for the keycloak to use
+        String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+            realmJson.getString("auth-server-url").length() - ("/auth".length()));
+
+        println(keycloakurl);
+
+        try {
+          System.out.println("realm() : "+realm() +"\n"+
+          "realm : "+realm +"\n"+
+          "secret : "+secret + "\n"+
+          "keycloakurl: "+keycloakurl +"\n"
+          +"key : "+key +"\n"
+          +"initVector : "+initVector +"\n"
+          +"enc pw : "+encryptedPassword +"\n"
+          +"password : "+password +"\n"
+          );
+          String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
+          println("token = " + token);
+          return token;
+        }
+        catch(Exception e) {
+          println(e);
+        }
+      }
+      else {
+        println("realm not equal");
+        println(realm());
+        println(realm);
+      }
+    }
+
+    return null;
+  }
+
 	public boolean loadRealmData() {
 
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
 
-		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
+		String token = this.generateServiceToken();
+    if(token != null) {
 
-			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
-			if (keycloakJson == null) {
-				System.out.println("No keycloakMap for " + realm());
-				return false;
-			}
-			JsonObject realmJson = new JsonObject(keycloakJson);
-			JsonObject secretJson = realmJson.getJsonObject("credentials");
-			String secret = secretJson.getString("secret");
-			String realm = realmJson.getString("realm");
+      String realm = realm();
 
-			if (realm().equals(realm)) {
+      Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
+      this.setDecodedTokenMap(serviceDecodedTokenMap);
+      this.setToken(token);
 
-				// fetch token from keycloak
-				String key = null;
-				String initVector = "PRJ_" + realm().toUpperCase();
-				initVector = StringUtils.rightPad(initVector, 16, '*');
-				String encryptedPassword = null;
+      String dev = System.getenv("GENNYDEV");
+      String proj_realm = System.getenv("PROJECT_REALM");
+      if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+        this.set("realm", proj_realm);
+      } else {
+        this.set("realm", realm);
+      }
 
-				try {
-					key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
-				} catch (Exception e) {
-					log.error("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
-				}
-
-				try {
-					encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
-				} catch (Exception e) {
-					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
-				}
-
-				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-
-				// Now ask the bridge for the keycloak to use
-				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
-						realmJson.getString("auth-server-url").length() - ("/auth".length()));
-
-				try {
-					// System.out.println("realm() : "+realm() +"\n"+
-					// "realm : "+realm +"\n"+
-					// "secret : "+secret + "\n"+
-					// "keycloakurl: "+keycloakurl +"\n"
-					// +"key : "+key +"\n"
-					// +"initVector : "+initVector +"\n"
-					// +"enc pw : "+encryptedPassword +"\n"
-					// +"password : "+password +"\n"
-					// );
-					String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
-					log.info("token = " + token);
-					// String token = accessToken.getToken();
-					// String token =
-					// QwandaUtils.apiGet(qwandaServiceUrl+"/utils/token/"+keycloakurl+"/{realm}/"+secret+"/"+key+"/"+initVector+"/service/"+encryptedPassword,"DUMMY");
-
-					Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
-
-					this.setDecodedTokenMap(serviceDecodedTokenMap);
-					this.setToken(token);
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
-					} else {
-						this.set("realm", realm);
-					}
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return true;
-			}
-		}
+      return true;
+    }
 
 		return false;
 	}
@@ -6244,7 +6300,7 @@ public class QRules {
 
 		}
 		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-
+    this.setState("DATA_SENT_FINISHED");
 	}
 
 	/**
@@ -7531,51 +7587,51 @@ public class QRules {
 		}
 		return errorMessage.toString();
 	}
-	
+
 	/* Create payments company */
 	public String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
-		
+
 		String companyId = null;
 		BaseEntity userBe = getUser();
 		if(companyBe != null) {
-						
-			// Get the provided company information from the base entity 
+
+			// Get the provided company information from the base entity
 			String companyName = companyBe.getValue("PRI_CPY_NAME", null);
-			
+
 			String taxNumber = companyBe.getValue("PRI_ABN", null);
 			if(taxNumber == null) {
 				taxNumber = companyBe.getValue("PRI_ACN", null);
 			}
-			
+
 			Boolean isChargeTax = companyBe.getValue("PRI_GST", false);
-			
+
 			/* Gets basic company contact info object */
 			QPaymentsCompanyContactInfo companyContactObj = PaymentUtils.getPaymentsCompanyContactInfo(companyBe);
-			
+
 			/* Get company location object */
 			QPaymentsLocationInfo companyLocationObj = PaymentUtils.getPaymentsLocationInfo(companyBe);
-			
+
 			/* Get assembly user ID */
 			QPaymentsUser user = new QPaymentsUser(assemblyUserId);
-			
+
 			try {
-				
+
 				/* Create complete packed company object */
 				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax, companyLocationObj, user, companyContactObj);
 				try {
 					String createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
-					
+
 					QPaymentsCompany createCompanyResponseObj = JsonUtils.fromJson(createCompanyResponse, QPaymentsCompany.class);
 					println("payments company creation response ::"+createCompanyResponse);
 					println("payments company obj : "+createCompanyResponseObj);
 					companyId = createCompanyResponseObj.getId();
-				
+
 				} catch (PaymentException e) {
 					throw new IllegalArgumentException(e);
-				}	
-				
+				}
+
 			} catch (IllegalArgumentException e) {
-				
+
 				/* Send toast message if company creation misses arguments or if API call returns error response */
 				if(userBe != null) {
 					/* send toast to user */
@@ -7583,13 +7639,13 @@ public class QRules {
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
 					sendDirectToast(recipientArr, toastMessage, "warning");
-				}	
+				}
 			}
-			
+
 		}
-		return companyId;	 
+		return companyId;
 	}
-	
+
 	/* Payments company updation */
 	/* Independent attribute value update. Not bulk */
 	public void updatePaymentsCompany(String paymentsUserId, String companyId, String attributeCode, String value,
@@ -7636,11 +7692,11 @@ public class QRules {
 			sendDirectToast(recipientArr, toastMessage, "warning");
 		}
 	}
-	
+
 	/* Bulk update of payments user info */
 	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
 	public void bulkPaymentsUserUpdate(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
-		
+
 		try {
 			QPaymentsUser user = PaymentUtils.getCompleteUserObj(userBe, assemblyUserId);
 			/* Attempt to update the user in Assembly */
@@ -7651,35 +7707,35 @@ public class QRules {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 					throw new IllegalArgumentException(getFormattedErrorMessage);							}
 			}
-			
+
 		} catch (IllegalArgumentException e) {
 			log.error("Exception occured user updation"+e.getMessage());
 		}
 	}
-	
+
 	/* Bulk update for payments company info */
 	/* If some information update is lost due to Payments-service-downtime, they will updated with this */
 	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
-		
+
 		try {
-			
+
 			/* Get the companies assembly ID */
 			String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
 			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, assemblyUserId);
-			
+
 			/* Attempt to update the company in Assembly */
 			if(companyId != null && company != null) {
 				try {
 					PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(company), assemblyAuthKey);
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);	
+					throw new IllegalArgumentException(getFormattedErrorMessage);
 				}
 			}
 		} catch (IllegalArgumentException e) {
 			log.error("Exception occured user updation"+e.getMessage());
 		}
-		
+
 	}
-	
+
 }

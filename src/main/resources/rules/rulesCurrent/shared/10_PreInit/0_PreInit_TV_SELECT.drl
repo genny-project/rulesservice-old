@@ -6,12 +6,12 @@ rule "Pre Init EVT_TV_SELECT"
   no-loop true
   ruleflow-group 'Init'
     when
-        m : QEventMessage( event_type == "TV_SELECT") 
-        rules: QRules(!isState("STARTED")) 
-     then    
+        m : QEventMessage( event_type == "TV_SELECT")
+        rules: QRules(!isState("STARTED"))
+     then
         rules.setDrools(drools);
         rules.println("RULE INIT TV_SELECT: "+m);
-        
+
         rules.setState("EVENT_TV_SELECT");
 
         String tvSelectCode = m.getData().getCode();
@@ -21,10 +21,11 @@ rule "Pre Init EVT_TV_SELECT"
           rules.set("tvSelectCode", tvSelectCode);
           rules.setState(tvSelectCode);
         }
-        
+
         if(tvSelectValue != null){
           rules.set("tvSelectValue", tvSelectValue);
           rules.setState(tvSelectValue);
         }
+
         rules.setState("STARTED");
 end
