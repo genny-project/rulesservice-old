@@ -7751,5 +7751,17 @@ public void archivePaidProducts() {
 		}
 
 	}
+	
+	/*
+	 * Generic method to publish CMD_VIEW Message
+	 *
+	 */
+	public void publishViewCmdMessage(final String viewType, final String rootCode) {
+  	     QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+	     JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
+	     cmdViewMessageJson.put("root", rootCode);		    	     
+	     publishCmd(cmdViewMessageJson);	    	     
+	     setLastLayout( "LIST_VIEW", rootCode );
+	}
 
 }
