@@ -6115,6 +6115,11 @@ return false;
 		}
 	}
 
+	public void generateNewItemsCache()
+	{
+		generateBucketCaches();
+	}
+	
 	public void generateBucketCaches() {
 		/* Searches */
 		Integer itemCount = 0;
@@ -6186,7 +6191,7 @@ return false;
 	}
 	
 	
-	public void generateNewItemsCache() {
+	public void generateNewItemsCache2() {
 
 		println("GENERATING NEW ITEMS  Cache realm is " + realm());
 
