@@ -1,0 +1,38 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish BEG, APPLICATION, APPLICANT BaseEntity */
+rule "Submit Apply BEG - Step 5"
+	when
+		rules: QRules( 	isState("PUBLISH_APPLICATION_AND_KIDS") && 
+						!isState("LOOP_SUBMIT_APPLY_BEG_STEP5") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SUBMIT_APPLY_BEG_STEP5");
+		
+		/* get application, beg from state map */
+        BaseEntity beg = rules.getAsBaseEntity("begBe");
+        BaseEntity application = rules.getAsBaseEntity("applicationBe");
+
+		if(beg == null){
+            rules.println("beg is null");
+            return;    
+        }else if(application == null){
+            rules.println("application is null");
+            return;
+        }else{
+            String[] recipient = rules.getSubscribers(application.getCode());
+
+            if(recipient != null){
+	            rules.println("RECIPIENTS   ::   " + Arrays.toString(recipient) );
+                
+                rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipient);
+                rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", recipient);
+                rules.publishBaseEntityByCode(application.getCode(), "GRP_APPLIED", "LNK_CORE", recipient);
+                rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", recipient);
+                rules.setState("TRIGGER_HOMEPAGE");
+            }
+		}
+	 	rules.footer();      
+end
