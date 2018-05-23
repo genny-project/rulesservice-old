@@ -96,7 +96,7 @@ rule "Create Payment Item"
        	if(isNewItem) {
        		
        		String itemId = null;
-			itemId = PaymentUtils.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
+			itemId = rules.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
        	 	rules.println("Payment item Id="+itemId);
        	 	
        	 	if(itemId != null) {
