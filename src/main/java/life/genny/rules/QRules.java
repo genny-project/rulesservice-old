@@ -5984,6 +5984,60 @@ public class QRules {
 		}
 	}
 
+	public void generateBucketCaches() {
+		/* Searches */
+		Integer itemCount = 0;
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		QDataBaseEntityMessage results = null;
+
+		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
+		 SearchEntity searchBE = new SearchEntity(searchNewItems);
+
+		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
+				QDataBaseEntityMessage.class);
+
+		if (bucketsMsg != null) {
+			for (BaseEntity bucket : bucketsMsg.getItems()) {
+				if (searchNewItems != null) {
+
+					try {
+						searchBE.setSourceCode(bucket.getCode());
+						results = QwandaUtils.fetchResults(searchBE, getToken());
+
+						if (results != null) {
+
+							itemCount = results.getItems().length;
+							results.setParentCode(bucket.getCode());
+							results.setLinkCode("LNK_CORE");
+							bulkmsg.add(results);
+
+							for (BaseEntity beg : results.getItems()) {
+
+								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 1000,
+										false);
+
+								if (begKids != null) {
+
+									itemCount += begKids.size();
+									bulkmsg.add(new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), beg.getCode(),
+											"LNK_BEG"));
+								}
+							}
+						}
+
+						QBulkMessage bulk = new QBulkMessage(bulkmsg);
+						VertxUtils.putObject(realm(), "CACHE", bucket.getCode(), bulk);
+						println("Loading New cache laoded " + itemCount + " BEs");
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
+	
 	public void generateNewItemsCache() {
 
 		println("GENERATING NEW ITEMS  Cache realm is " + realm());
