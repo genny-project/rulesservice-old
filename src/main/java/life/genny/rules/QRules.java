@@ -1759,16 +1759,18 @@ public void archivePaidProducts() {
 	 * Get user's company code
 	 */
 	public List<BaseEntity> getParents(final String targetCode, final String linkCode) {
-
+		List<BaseEntity> parents = null;
+		long sTime = System.nanoTime();
 		try {
+		
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", getToken());
-			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				println("arrayList  :: " + arrayList);
-				ArrayList<BaseEntity> parents = new ArrayList<BaseEntity>();
+				parents = new ArrayList<BaseEntity>();
 				for (Link lnk : arrayList) {
 
 					BaseEntity linkedBe = getBaseEntityByCode(lnk.getSourceCode());
@@ -1777,14 +1779,14 @@ public void archivePaidProducts() {
 					}
 				}
 
-				return parents;
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		return null;
+		double difference = (System.nanoTime() - sTime) / 1e6; // get ms
+		println("getParents = "+difference+" ms");
+		return parents;
 	}
 
 	/*
@@ -1808,7 +1810,7 @@ public void archivePaidProducts() {
 		try {
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
 					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
-			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
@@ -1839,7 +1841,7 @@ public void archivePaidProducts() {
 		try {
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
 					+ "/linkcodes/" + linkCode + "/children/" + linkValue, getToken());
-			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				for (Link link : arrayList) {
@@ -1865,7 +1867,7 @@ public void archivePaidProducts() {
 
 			String beJson = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/entityentitys/" + sourceCode
 					+ "/linkcodes/" + linkCode + "/children/", getToken());
-			Link[] linkArray = RulesUtils.fromJson(beJson, Link[].class);
+			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
 			if (linkArray.length > 0) {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				for (Link link : arrayList) {
@@ -1894,7 +1896,7 @@ public void archivePaidProducts() {
 		try {
 			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
 					JsonUtils.toJson(qstMsg), getToken());
-			msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			msg = JsonUtils.fromJson(json, QDataAskMessage.class);
 			return msg;
 		} catch (IOException e) {
 			return msg;
@@ -1916,7 +1918,7 @@ public void archivePaidProducts() {
 				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
 						JsonUtils.toJson(qstMsg), getToken());
 
-				msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+				msg = JsonUtils.fromJson(json, QDataAskMessage.class);
 
 				publishData(msg);
 
@@ -1957,7 +1959,7 @@ public void archivePaidProducts() {
 		try {
 			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 					+ questionCode + "/" + targetCode, getToken());
-			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			QDataAskMessage msg = JsonUtils.fromJson(json, QDataAskMessage.class);
 			;
 			return msg;
 
@@ -2292,7 +2294,7 @@ public void archivePaidProducts() {
 							answer.setAttributeCode(newAttributeCode);
 							answer.setValue(addressDataJson.getString(key));
 							String jsonAnswer = JsonUtils.toJson(answer);
-							Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
+							Answer answerObj = JsonUtils.fromJson(jsonAnswer, Answer.class);
 							newAnswerList.add(answerObj);
 
 						}
@@ -2308,7 +2310,7 @@ public void archivePaidProducts() {
 					if (latitude != null) {
 						answer.setValue(Double.toString(latitude));
 						String jsonAnswer = JsonUtils.toJson(answer);
-						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
+						Answer answerObj = JsonUtils.fromJson(jsonAnswer, Answer.class);
 						println("The answer object for latitude attribute is  :: " + answerObj.toString());
 						newAnswerList.add(answerObj);
 
@@ -2324,7 +2326,7 @@ public void archivePaidProducts() {
 					if (longitude != null) {
 						answer.setValue(Double.toString(longitude));
 						String jsonAnswer = JsonUtils.toJson(answer);
-						Answer answerObj = RulesUtils.fromJson(jsonAnswer, Answer.class);
+						Answer answerObj = JsonUtils.fromJson(jsonAnswer, Answer.class);
 						newAnswerList.add(answerObj);
 						i++;
 					}
@@ -2731,12 +2733,12 @@ public void archivePaidProducts() {
 			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 					+ questionCode + "/" + targetCode, getToken());
 
-			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			QDataAskMessage msg = JsonUtils.fromJson(json, QDataAskMessage.class);
 
 			println("QDataAskMessage for payments question group ::" + msg);
 
 			msg.setToken(getToken());
-			publish("cmds", RulesUtils.toJsonObject(msg));
+			publish("cmds", JsonUtils.toJson(msg));
 
 			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionCode);
 			publishCmd(cmdFormView);
