@@ -5,17 +5,17 @@ import life.genny.qwanda.message.QCmdMessage;
 import life.genny.rules.QRules;
 
 
-rule "TV_SELECT_HISTORY"
+rule "TV_SELECT_DRAFT_JOBS"
      when
-       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_HISTORY") && !isState("LOOP_TV_ITEM_HISTORY_DATA_SENT")) 
+       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_DRAFTS") && !isState("LOOP_TV_DRAFTS_ITEM_DATA_SENT")) 
      then
 
      rules.header();
-       rules.setState("LOOP_TV_ITEM_HISTORY_DATA_SENT");
+       rules.setState("LOOP_TV_DRAFTS_ITEM_DATA_SENT");
        String parentCode = rules.get("tvSelectValue").toString();
        if(parentCode != null){
 	       rules.println("The tvSelectValue value is:: "+rules.get("tvSelectValue").toString());
-		   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"Archieved Jobs")
+		   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"Draft Jobs")
 	  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
 	  	     .setSourceCode(parentCode)
 	  	     .setStakeholder(rules.getUser().getCode())
@@ -28,10 +28,11 @@ rule "TV_SELECT_HISTORY"
 	       
 	       /* Send ListView */
 	       rules.publishViewCmdMessage("LIST_VIEW", parentCode);
-           rules.setState("TV_ITEM_DATA_SENT");
+	       rules.setState("TV_ITEM_DATA_SENT");
         }
         else{
             rules.println("Error!! The data.value/GRP code is null");
         }
+       
      rules.footer();
 end
