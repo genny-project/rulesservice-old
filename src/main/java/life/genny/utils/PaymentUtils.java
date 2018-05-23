@@ -41,6 +41,8 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentsCompany;
+import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
@@ -317,34 +319,50 @@ public class PaymentUtils {
 
 	}
 	
-	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity userBe) throws IllegalArgumentException {
+	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity be) throws IllegalArgumentException {
 		
 		QPaymentsLocationInfo userLocationInfo = null;
 		String city = null;
 		String country = null;
 		
-		if(userBe != null) {
+		if(be != null) {
 			
-			String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
+			String addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
+			String addressLine2 = be.getValue("PRI_ADDRESS_ADDRESS2", null);
 			
-			city = userBe.getValue("PRI_ADDRESS_CITY", null);
+			city = be.getValue("PRI_ADDRESS_CITY", null);
 			if(city == null) {
-				city = userBe.getValue("PRI_ADDRESS_SUBURB", null);	
+				city = be.getValue("PRI_ADDRESS_SUBURB", null);	
 			}
 			
-			country = userBe.getValue("PRI_ADDRESS_COUNTRY", null);
+			country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			if(country == null) {
 				city = "AU";
 			}
 			
-			String state = userBe.getValue("PRI_ADDRESS_STATE", null);
-			String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
+			String state = be.getValue("PRI_ADDRESS_STATE", null);
+			String postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
 			
 			userLocationInfo = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
+			
+			/* address line2 is not mandatory. If available, assembly will be updated */
+			if(addressLine2 != null) {
+				userLocationInfo.setAddressLine2(addressLine2);
+			}
 		}
 		
 		return userLocationInfo;
 		
+	}
+	
+	public static QPaymentsCompanyContactInfo getPaymentsCompanyContactInfo(BaseEntity companyBe) throws IllegalArgumentException {
+		
+		QPaymentsCompanyContactInfo companyObj = null;
+		
+		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
+		companyObj = new QPaymentsCompanyContactInfo(companyPhoneNumber);
+		
+		return companyObj;
 	}
 	
 
@@ -406,9 +424,15 @@ public class PaymentUtils {
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setAddressLine1(value);
 				break;
+				
+			case "PRI_ADDRESS_ADDRESS2":
+				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setAddressLine2(value);
+				break;
 
 			case "PRI_ADDRESS_SUBURB":
 				locationInfo = new QPaymentsLocationInfo();
+				locationInfo.setAddressLine2(value);
 				locationInfo.setCity(value);
 				break;
 
@@ -457,184 +481,92 @@ public class PaymentUtils {
 	}
 
 	/* Called when a particular attribute is updated for a company */
-	@SuppressWarnings({ "unchecked" })
-	public static String updateCompanyInfo(String userId, String companyId, String attributeCode, String value, String authToken) {
-		System.out.println("attributeCode ::" + attributeCode + ", value ::" + value);
+	public static QPaymentsCompany updateCompanyInfo(String userId, String companyId, String attributeCode, String value) {
 
 		/* Company Info Update Objects */
-		String responseString = null;
-		JSONObject companyObj = new JSONObject();
-		companyObj.put("id", companyId);
-
-		JSONObject userobj = null;
-		JSONObject companyContactInfoObj = null;
-		JSONObject locationObj = null;
+		QPaymentsCompany company = new QPaymentsCompany();
+		company.setId(companyId);
+		
+		QPaymentsCompanyContactInfo companyContactObj = null;
+		QPaymentsLocationInfo locationObj = null;
 
 		/* Check what attribute was updated and update accordingly */
 		switch (attributeCode) {
 			case "PRI_CPY_NAME":
-			companyObj.put("name", value);
-			companyObj.put("legalName", value);
-			break;
+				company.setLegalName(value);
+				company.setName(value);
+				break;
 
 			case "PRI_ABN":
-			companyObj.put("taxNumber", value);
-			break;
+				company.setTaxNumber(value);
+				break;
 
 			case "PRI_ACN":
-			companyObj.put("taxNumber", value);
-			break;
+				company.setTaxNumber(value);
+				break;
 
 			case "PRI_GST":
-			companyObj.put("chargesTax", Boolean.valueOf(value));
-			break;
+				company.setChargesTax(Boolean.valueOf(value));
+				break;
 
 			case "PRI_LANDLINE":
-			companyContactInfoObj = new JSONObject();
-			companyContactInfoObj.put("phone", value);
-			break;
+				companyContactObj = new QPaymentsCompanyContactInfo();
+				companyContactObj.setPhone(value);
+				break;
 
 			case "PRI_ADDRESS_ADDRESS1":
-			locationObj = new JSONObject();
-			locationObj.put("addressLine1", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setAddressLine1(value);
+				break;
+				
+			case "PRI_ADDRESS_ADDRESS2":
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setAddressLine2(value);
+				break;
 
 			case "PRI_ADDRESS_SUBURB":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setCity(value);
+				break;
 
 			case "PRI_ADDRESS_CITY":
-			locationObj = new JSONObject();
-			locationObj.put("city", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setCity(value);
+				break;
 
 			case "PRI_ADDRESS_STATE":
-			locationObj = new JSONObject();
-			locationObj.put("state", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setState(value);
+				break;
+			
 			case "PRI_ADDRESS_COUNTRY":
-			locationObj = new JSONObject();
-			locationObj.put("country", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setCountry(value);
+				break;
+				
 			case "PRI_ADDRESS_POSTCODE":
-			locationObj = new JSONObject();
-			locationObj.put("postcode", value);
-			break;
+				locationObj = new QPaymentsLocationInfo();
+				locationObj.setPostcode(value);
+				break;
 		}
 
 		/* For Assembly User Company Information Update */
-		if(companyContactInfoObj != null && companyId != null) {
-			companyObj.put("contactInfo", companyContactInfoObj);
-
-			if(userId != null) {
-				userobj = new JSONObject();
-				userobj.put("id", userId);
-				companyObj.put("user", userobj);
-			}
+		if (companyContactObj != null && companyId != null) {
+			company.setContactInfo(companyContactObj);
+			QPaymentsUser user = new QPaymentsUser(userId);
+			company.setUser(user);
 
 		}
 
 		if (locationObj != null) {
-			companyObj.put("location", locationObj);
+			company.setLocation(locationObj);
+			QPaymentsUser user = new QPaymentsUser(userId);
+			company.setUser(user);
 
-			if(userId != null) {
-				userobj = new JSONObject();
-				userobj.put("id", userId);
-				companyObj.put("user", userobj);
-			}
-		}
-
-		/* Send updated details to Assembly */
-		if(companyId != null && companyObj != null) {
-			try {
-				responseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(companyObj), authToken);
-			} catch (PaymentException e) {
-				log.error("Exception occured company updation");
-				e.printStackTrace();
-			}
-		}
-
-		/* Return response */
-		return responseString;
+		}	
+		return company;
 	}
 
-	/* Creates a new company in Assembly */
-	@SuppressWarnings("unchecked")
-	public static String createCompany(BaseEntity companyBe, String assemblyUserId, String authtoken) {
-
-		String createCompanyResponse = null;
-		String companyCode = null;
-
-		/* Create objects to store the data we'll send to Assembly */
-		JSONObject companyObj = new JSONObject();
-		JSONObject userObj = new JSONObject();
-		JSONObject contactObj = new JSONObject();
-		JSONObject locationObj = new JSONObject();
-
-		/* Get the provided company information from the base entity */
-		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
-		String taxNumber = companyBe.getValue("PRI_ABN", null);
-		Boolean chargeTax = companyBe.getValue("PRI_GST", false);
-		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
-		String countryName = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
-		
-
-		/* Check if each field is provided and add to request object if so */
-		if (companyName != null) {
-			companyObj.put("name", companyName);
-		}
-
-		if (taxNumber != null) {
-			companyObj.put("taxNumber", taxNumber);
-		}
-
-		if (chargeTax != null) {
-			companyObj.put("chargesTax",chargeTax);
-		}
-
-		if (companyPhoneNumber != null) {
-			contactObj.put("phone", companyPhoneNumber);
-		}
-
-		if (assemblyUserId != null) {
-			userObj.put("id", assemblyUserId);
-		}
-
-		/* If a country name was provided use that, otherwise use Australia */
-		if (countryName != null) {
-			locationObj.put("country", countryName.toString());
-		} else {
-			locationObj.put("country", "AU");
-		}
-
-		/* Combine all of the objects into one */
-		companyObj.put("contactInfo", contactObj);
-		companyObj.put("user", userObj);
-		companyObj.put("location", locationObj);
-
-		log.info("Company object ::" + companyObj);
-
-		/* Make the request to Assembly */
-		if (companyObj != null && userObj != null) {
-			System.out.println("company obj is not null, company object ::"+companyObj);
-			try {
-				createCompanyResponse = PaymentEndpoint.createCompany(JsonUtils.toJson(companyObj), authtoken);
-				if(!createCompanyResponse.contains("error")) {
-					JSONObject companyResponseObj = JsonUtils.fromJson(createCompanyResponse, JSONObject.class);
-
-					if(companyResponseObj.get("id") != null) {
-						companyCode = companyResponseObj.get("id").toString();
-					}
-				}
-			} catch (PaymentException e) {
-				companyCode = null;
-			}
-		}
-
-		/* Return the ID of the created company */
-		return companyCode;
-	}
 
 	/* Creates a new item in Assembly from the provided information */
 	@SuppressWarnings("unchecked")
@@ -1106,14 +1038,14 @@ public class PaymentUtils {
 		return disburseAccountResponse;
 	}
 
-	/* Fully updates a user in Assembly */
-	public static String updateCompleteUserProfile(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
-		String responseString = null;
-
+	/* Bulk updates a user in Assembly */
+	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String assemblyUserId) throws IllegalArgumentException {
+		
 		/* Get all of the users information */
 		String firstName = userBe.getValue("PRI_FIRSTNAME", null);
 		String lastName = userBe.getValue("PRI_LASTNAME", null);
-		Object dob = userBe.getValue("PRI_DOB", null);
+		LocalDate dob = userBe.getValue("PRI_DOB", null);
+		String email = userBe.getValue("PRI_EMAIL", null);
 		String addressLine1 = userBe.getValue("PRI_ADDRESS_ADDRESS1", null);
 		String city = userBe.getValue("PRI_ADDRESS_SUBURB", null);
 		String state = userBe.getValue("PRI_ADDRESS_STATE", null);
@@ -1121,162 +1053,40 @@ public class PaymentUtils {
 		String postCode = userBe.getValue("PRI_ADDRESS_POSTCODE", null);
 
 		/* Create objects to store the request */
-		JSONObject userObj = new JSONObject();
-		JSONObject personalInfoObj = new JSONObject();
-		JSONObject contactInfoObj = null;
-		JSONObject locationObj = null;
+		QPaymentsUserInfo personalInfoObj = new QPaymentsUserInfo(firstName, lastName, dob);
+		QPaymentsLocationInfo locationObj = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
+		QPaymentsUserContactInfo contactInfoObj = new QPaymentsUserContactInfo(email);
+		QPaymentsUser userObj = new QPaymentsUser(assemblyUserId, personalInfoObj, contactInfoObj, locationObj);
 
-		/* Set the ID and other fields if they are provided and not null */
-		userObj.put("id", assemblyUserId);
+		return userObj;
 
-		if(firstName != null) {
-			personalInfoObj.put("firstName", firstName);
-		}
-
-		if(lastName != null) {
-			personalInfoObj.put("lastName", lastName);
-		}
-
-		/* If the date of birth is provided format it correctly */
-		if(dob != null) {
-			DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate date = LocalDate.parse(dob.toString(), formatter);
-			String formattedDOBString = assemblyDateFormatter.format(date);
-			System.out.println("formatted dob for updation ::" + formattedDOBString);
-			personalInfoObj.put("dob", formattedDOBString);
-		}
-
-		/* If the address is provided set it */
-		if(addressLine1 != null) {
-			locationObj = new JSONObject();
-			locationObj.put("addressLine1", addressLine1);
-
-			if(city != null) {
-				locationObj.put("city", city);
-			}
-
-			if(state != null) {
-				locationObj.put("state", state);
-			}
-
-			if(country != null) {
-				locationObj.put("country", country);
-			}
-
-			if(postCode != null) {
-				locationObj.put("postcode", postCode);
-			}
-
-			userObj.put("location", locationObj);
-		}
-
-		userObj.put("personalInfo", personalInfoObj);
-
-		/* Attempt to update the user in Assembly */
-		if(userObj != null && assemblyUserId != null) {
-			try {
-				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
-				System.out.println("response string from payments user updation ::"+responseString);
-			} catch (PaymentException e) {
-				log.error("Exception occured user updation");
-				e.printStackTrace();
-			}
-		}
-
-		return responseString;
 	}
 
-	/* Update a complete company profile */
-	public static String updateCompleteCompanyProfile(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId, String assemblyAuthKey) {
-		/* Create objects to store the request */
-		String responseString = null;
-		JSONObject companyObj = new JSONObject();
-		JSONObject userObj = new JSONObject();
-		JSONObject contactInfoObj = null;
-		JSONObject locationObj = null;
-
-		/* Get the companies assembly ID */
-		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
+	/* Bulk Update a complete company profile */
+	public static QPaymentsCompany getCompleteCompanyObj(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId) throws IllegalArgumentException {
 
 		/* Get the companies information */
 		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
 		String abn = companyBe.getValue("PRI_ABN", null);
-		Object acn = companyBe.getValue("PRI_ACN", null);
-		Object gst = companyBe.getValue("PRI_GST", null);
+		if(abn == null) {
+			abn = companyBe.getValue("PRI_ACN", null);
+		}
+		Boolean gst = companyBe.getValue("PRI_GST", false);
 		String companyPhone = companyBe.getValue("PRI_LANDLINE", null);
 		String addressLine1 = companyBe.getValue("PRI_ADDRESS_ADDRESS1", null);
 		String city = companyBe.getValue("PRI_ADDRESS_SUBURB", null);
 		String state = companyBe.getValue("PRI_ADDRESS_STATE", null);
 		String country = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
 		String postCode = companyBe.getValue("PRI_ADDRESS_POSTCODE", null);
+		
+		/* Create objects to store the request */
+		QPaymentsLocationInfo locationObj = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
+		QPaymentsCompanyContactInfo contactInfoObj = new QPaymentsCompanyContactInfo(companyPhone);
+		QPaymentsUser userObj = new QPaymentsUser(assemblyUserId);
+		QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, abn, gst, locationObj, userObj, contactInfoObj);
+		
+		return companyObj;
 
-		/* Check that the Assembly ID was provided */
-		if(assemblyUserId != null) {
-			System.out.println("assembly user id is not null, user ::"+companyObj);
-			userObj.put("id", assemblyUserId);
-			companyObj.put("user", userObj);
-		}
-
-		/* Updated all the other provided fields */
-		if(companyName != null) {
-			companyObj.put("name", companyName);
-			companyObj.put("legalName", companyName);
-		}
-
-		if(abn != null) {
-			companyObj.put("taxNumber", abn);
-		} else if(acn != null){
-			companyObj.put("taxNumber", acn);
-		}
-
-		if(gst != null) {
-			companyObj.put("chargesTax", gst);
-		}
-
-
-		if(companyPhone != null) {
-			contactInfoObj = new JSONObject();
-			contactInfoObj.put("phone", companyPhone);
-			companyObj.put("contactInfo", contactInfoObj);
-		}
-
-		/* If an address was provided set all the address fields */
-		if(addressLine1 != null) {
-			locationObj = new JSONObject();
-			locationObj.put("addressLine1", addressLine1);
-
-			if(city != null) {
-				locationObj.put("city", city);
-			}
-
-			if(state != null) {
-				locationObj.put("state", state);
-			}
-
-			if(country != null) {
-				locationObj.put("country", country);
-			}
-
-			if(postCode != null) {
-				locationObj.put("postcode", postCode);
-			}
-
-			companyObj.put("location", locationObj);
-		}
-
-		/* Attempt to update the company in Assembly */
-		if(companyId != null && companyObj != null) {
-			System.out.println("updating company object in assembly ::"+companyObj);
-			try {
-				responseString = PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(companyObj), assemblyAuthKey);
-			} catch (PaymentException e) {
-				log.error("Exception occured company updation");
-				e.printStackTrace();
-			}
-		}
-
-		return responseString;
 	}
 
 	/* Returns true of false depending on whether the payment method provided is a bank account */
