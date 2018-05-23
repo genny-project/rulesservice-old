@@ -6240,33 +6240,37 @@ return false;
 
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-
+		//List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		QBulkMessage bulk = new QBulkMessage();
+		
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
 				QDataBaseEntityMessage.class);
 
 		// Create bucket Buckets!
-		Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
+	//	Map<String, List<BaseEntity>> bucketListMap = new HashMap<String, List<BaseEntity>>();
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
-				if (this.isUserSeller()) {
-					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
-						continue;
-					}
-				}
-				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
-				if (searchStakeholderBucketItems == null) {
+//				if (this.isUserSeller()) {
+//					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
+//						continue;
+//					}
+//				}
+//				BaseEntity searchStakeholderBucketItems = getBaseEntityByCode("SBE_STAKEHOLDER_ITEMS");
+//				if (searchStakeholderBucketItems == null) {
+//
+//				}
+//				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
+//				search.setCode(bucket.getCode());// set the parent
+//				if (!stakeholder.is("PRI_IS_ADMIN")) {
+//					search.setStakeholder(stakeholder.getCode());
+//				}
+//				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
+				
+				QBulkMessage bucketMsgs = VertxUtils.getObject(realm(), "CACHE", bucket.getCode(), QBulkMessage.class);
 
-				}
-				SearchEntity search = new SearchEntity(searchStakeholderBucketItems);
-				search.setCode(bucket.getCode());// set the parent
-				if (!stakeholder.is("PRI_IS_ADMIN")) {
-					search.setStakeholder(stakeholder.getCode());
-				}
-				List<QDataBaseEntityMessage> bucketMsgs = fetchBucketItems(bucket.getCode(), stakeholder, search);
 
-				bulkmsg.addAll(bucketMsgs);
+				bulk.add(bucketMsgs.getMessages());
 
 				if (subscriptions.contains(bucket.getCode())) {
 					VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
@@ -6274,7 +6278,8 @@ return false;
 			}
 		}
 
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+//
+//		QBulkMessage bulk = new QBulkMessage(bulkmsg);
 		return bulk;
 	}
 
@@ -6376,39 +6381,40 @@ return false;
 		QBulkMessage allItems = new QBulkMessage(init);
 		long startTime = System.nanoTime();
 
-		if (this.isUserSeller()) {
-
-			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
-
-			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
-			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-
-			if (newItems != null) {
-				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
-
-				if (newItems.getMessages() != null) {
-
-          showLoading("processing driver jobs...");
-
-					// filter out non associated filter BEG Kids
-					startTime = System.nanoTime();
-					if (!this.hasRole("admin")) {
-						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
-					}
-
-					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-				}
-
-				allItems.add(newItems.getMessages());
-				try {
-					publishCmd(allItems);
-				} catch (Exception e) {
-
-				}
-			}
-		} else {
-			showLoading("fetching " + itemName + "'s...");
-		}
+//		if (this.isUserSeller()) {
+//
+//			showLoading("Loading new " + itemName + "'s for " + stakeholder.getName());
+//
+//			QBulkMessage newItems = VertxUtils.getObject(realm(), "SEARCH", "SBE_NEW_ITEMS", QBulkMessage.class);
+//			println("fetching new items from cache " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+//
+//			if (newItems != null) {
+//				System.out.println("Number of items found in cached new Items = " + newItems.getMessages().length);
+//
+//				if (newItems.getMessages() != null) {
+//
+//          showLoading("processing driver jobs...");
+//
+//					// filter out non associated filter BEG Kids
+//					startTime = System.nanoTime();
+//					if (!this.hasRole("admin")) {
+//						newItems = FilterOnlyUserBegs(filterPrefix, stakeholder, newItems);
+//					}
+//
+//					println("filtering only User Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+//				}
+//
+//				allItems.add(newItems.getMessages());
+//				try {
+//					publishCmd(allItems);
+//				} catch (Exception e) {
+//
+//				}
+//			}
+//		} else {
+//			showLoading("fetching " + itemName + "'s...");
+//		}
+		showLoading("fetching " + itemName + "'s...");
 
 		Set<String> subscriptionCodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		subscriptionCodes.add("GRP_NEW_ITEMS");
@@ -6421,7 +6427,7 @@ return false;
 			if (items.getMessages() != null) {
 				// filter out non associated filter BEG Kids
 				startTime = System.nanoTime();
-				if (!this.hasRole("admin")) {
+				if (!getUser().is("PRI_IS_ADMIN")) {
 					items = FilterOnlyUserBegs(filterPrefix, stakeholder, items);
 				}
 				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
