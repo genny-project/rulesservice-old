@@ -33,6 +33,8 @@ rule "TV_SELECT_HISTORY"
 		  	    }
 		  	    		  	    
 		  	    rules.showLoading("Loading..."); 
+		  	    
+		  	    rules.publishBaseEntityByCode(parentCode, "GRP_ROOT", "LNK_CORE", null);
 		  	    		  	    
 		  	   /* Send search result */
 		       rules.sendSearchResults(searchBE, parentCode);
