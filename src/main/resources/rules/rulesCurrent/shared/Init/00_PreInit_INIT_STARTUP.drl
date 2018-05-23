@@ -27,6 +27,7 @@ rule "Pre Init Startup"
 	        drools.setFocus("GenerateTree");
 	        drools.setFocus("GenerateCaches");
 	        drools.setFocus("GenerateLayouts");
+	        drools.setFocus("GenerateBucketCaches");
 	     }
 
 end

@@ -924,8 +924,8 @@ public void archivePaidProducts() {
   /* we get the list of products marked as "PAID" */
 
   /* we generate a service token */
-
-  String token = this.generateServiceToken();
+	  String proj_realm = System.getenv("PROJECT_REALM");
+  String token = this.generateServiceToken(proj_realm);
   if(token != null) {
 
       List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, getDecodedTokenMap(),
@@ -5819,9 +5819,9 @@ public void archivePaidProducts() {
 
 	}
 
-  private String generateServiceToken() {
+  private String generateServiceToken(final String realm) {
 
-    for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
+    String jsonFile  = realm+".json";
 
       String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
       if (keycloakJson == null) {
@@ -5831,15 +5831,16 @@ public void archivePaidProducts() {
       JsonObject realmJson = new JsonObject(keycloakJson);
       JsonObject secretJson = realmJson.getJsonObject("credentials");
       String secret = secretJson.getString("secret");
-      String realm = realmJson.getString("realm");
-
-      if (realm().equals(realm)) {
-
+ 
+ 
         // fetch token from keycloak
         String key = null;
         String initVector = "PRJ_" + realm().toUpperCase();
         initVector = StringUtils.rightPad(initVector, 16, '*');
         String encryptedPassword = null;
+        if (System.getenv("GENNYDEV")!=null) {
+        	initVector = "PRJ_GENNY*******";
+        }
 
         try {
           key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
@@ -5878,13 +5879,8 @@ public void archivePaidProducts() {
         catch(Exception e) {
           println(e);
         }
-      }
-      else {
-        println("realm not equal");
-        println(realm());
-        println(realm);
-      }
-    }
+
+
 
     return null;
   }
@@ -5893,27 +5889,81 @@ public void archivePaidProducts() {
 
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
 
-		String token = this.generateServiceToken();
-    if(token != null) {
+		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
 
-      String realm = realm();
+			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
+			if (keycloakJson == null) {
+				System.out.println("No keycloakMap for " + realm());
+				return false;
+			}
+			JsonObject realmJson = new JsonObject(keycloakJson);
+			JsonObject secretJson = realmJson.getJsonObject("credentials");
+			String secret = secretJson.getString("secret");
+			String realm = realmJson.getString("realm");
 
-      Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
-      this.setDecodedTokenMap(serviceDecodedTokenMap);
-      this.setToken(token);
+			if (realm().equals(realm)) {
 
-      String dev = System.getenv("GENNYDEV");
-      String proj_realm = System.getenv("PROJECT_REALM");
-      if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-        this.set("realm", proj_realm);
-      } else {
-        this.set("realm", realm);
-      }
+				// fetch token from keycloak
+				String key = null;
+				String initVector = "PRJ_" + realm().toUpperCase();
+				initVector = StringUtils.rightPad(initVector, 16, '*');
+				String encryptedPassword = null;
 
-      return true;
-    }
+				try {
+					key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
+				} catch (Exception e) {
+					log.error("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
+				}
 
-		return false;
+				try {
+					encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
+				} catch (Exception e) {
+					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
+				}
+
+				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+
+				// Now ask the bridge for the keycloak to use
+				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+						realmJson.getString("auth-server-url").length() - ("/auth".length()));
+
+				try {
+					// System.out.println("realm() : "+realm() +"\n"+
+					// "realm : "+realm +"\n"+
+					// "secret : "+secret + "\n"+
+					// "keycloakurl: "+keycloakurl +"\n"
+					// +"key : "+key +"\n"
+					// +"initVector : "+initVector +"\n"
+					// +"enc pw : "+encryptedPassword +"\n"
+					// +"password : "+password +"\n"
+					// );
+					String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
+					log.info("token = " + token);
+					// String token = accessToken.getToken();
+					// String token =
+					// QwandaUtils.apiGet(qwandaServiceUrl+"/utils/token/"+keycloakurl+"/{realm}/"+secret+"/"+key+"/"+initVector+"/service/"+encryptedPassword,"DUMMY");
+
+					Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
+
+					this.setDecodedTokenMap(serviceDecodedTokenMap);
+					this.setToken(token);
+					String dev = System.getenv("GENNYDEV");
+					String proj_realm = System.getenv("PROJECT_REALM");
+					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+						this.set("realm", proj_realm);
+					} else {
+						this.set("realm", realm);
+					}
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return true;
+			}
+		}
+
+return false;
 	}
 
 	public void generateTree() {
@@ -6049,21 +6099,39 @@ public void archivePaidProducts() {
 		QDataBaseEntityMessage results = null;
 
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
-		 SearchEntity searchBE = new SearchEntity(searchNewItems);
+		if (searchNewItems == null) {
+			println("NO SEARCH ");
+			drools.setFocus("GenerateSearches");
+		}
+	//	 SearchEntity searchBE = new SearchEntity(searchNewItems);
+		 
+		 //set up service token and realm
+		  String proj_realm = System.getenv("PROJECT_REALM");
+		  if (System.getenv("GENNYDEV")!=null) {
+			  proj_realm = "genny";
+		  }
+	//	  decodedTokenMap.put("realm",proj_realm);
+	//	  String token = generateServiceToken(proj_realm);
+	//	  setToken(token);
 
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
 				QDataBaseEntityMessage.class);
 
 		if (bucketsMsg != null) {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
-				if (searchNewItems != null) {
-
+	
 					try {
-						searchBE.setSourceCode(bucket.getCode());
+						  SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"All New Items")
+							  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+							  	     .setSourceCode(bucket.getCode())
+							  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+							  	     .setPageStart(0)
+							  	     .setPageSize(10000);
+
 						results = QwandaUtils.fetchResults(searchBE, getToken());
 
 						if (results != null) {
-
+							println("Caching Bucket "+bucket.getCode()+" with "+results.getReturnCount()+" items");
 							itemCount = results.getItems().length;
 							results.setParentCode(bucket.getCode());
 							results.setLinkCode("LNK_CORE");
@@ -6091,7 +6159,6 @@ public void archivePaidProducts() {
 						e.printStackTrace();
 					}
 				}
-			}
 		}
 	}
 	
@@ -6105,11 +6172,13 @@ public void archivePaidProducts() {
 		QDataBaseEntityMessage results = null;
 
 		/* Searches */
-		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
-		// BaseEntity searchNewItems = VertxUtils.readFromDDT("SBE_NEW_ITEMS",
-		// getToken());
-
-		if (searchNewItems != null) {
+		  SearchEntity searchNewItems = new SearchEntity(drools.getRule().getName(),"All New Items")
+			  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+			  	     .setSourceCode("GRP_NEW_ITEMS")
+			  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
+			  	     .setPageStart(0)
+			  	     .setPageSize(10000);
+		  
 
 			try {
 				results = QwandaUtils.fetchResults(searchNewItems, getToken());
@@ -6142,7 +6211,7 @@ public void archivePaidProducts() {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+		
 
 	}
 
