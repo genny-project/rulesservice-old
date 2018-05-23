@@ -59,7 +59,7 @@ then
 		rules.sendMessage("", recipientArr, contextMap, "MSG_CH40_LOAD_PICKUP", "EMAIL");
 		
 		
-		
+		rules.generateNewItemsCache();
 
 		rules.footer();
 

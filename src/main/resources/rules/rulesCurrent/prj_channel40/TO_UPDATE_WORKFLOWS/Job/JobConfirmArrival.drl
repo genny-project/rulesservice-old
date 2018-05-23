@@ -65,6 +65,7 @@ then
 		    	    }
 		     }
 		
+		/* rules.generateNewItemsCache(); */
 		RulesUtils.footer(drools.getRule().getName());
 
 end

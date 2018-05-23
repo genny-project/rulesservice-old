@@ -72,7 +72,7 @@ then
 	            rules.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
 		     }
 		}
-
+		rules.generateNewItemsCache();
 		RulesUtils.footer(drools.getRule().getName());
 
 end
