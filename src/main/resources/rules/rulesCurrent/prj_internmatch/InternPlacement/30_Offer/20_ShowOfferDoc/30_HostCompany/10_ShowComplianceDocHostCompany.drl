@@ -1,0 +1,32 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Show Compliance Document - HOST COMPANY"
+    when
+        rules: QRules( 	isState("SHOW_COMPLIANCE_DOCUMENT") && 
+                        isState("PRI_IS_HOST_COMPANY") && 
+                        !isState("LOOP_SHOW_COMPLIANCE_DOCUMENT_INTERN") ) 
+    then            
+        rules.header();
+        rules.setState("LOOP_SHOW_COMPLIANCE_DOCUMENT_INTERN");
+
+        String begCode = rules.getAsString("begCode");
+        if(begCode != null){
+            String questionSourceCode = rules.getUser().getCode();
+            String questionTargetCode = begCode;
+            String questionGroupCode = "QUE_HOST_COMPANY_AGREEMENT_GRP";
+            Boolean questionIsPopup = false;
+
+            rules.set("questionSourceCode", questionSourceCode);
+            rules.set("questionTargetCode", questionTargetCode);
+            rules.set("questionGroupCode", questionGroupCode);
+            rules.set("questionIsPopup", questionIsPopup);
+            rules.setState("ASK_QUESTION");
+
+            rules.setState("SHOWN_COMPLIANCE_DOCUMENT");
+
+        }else{
+            rules.println("begCode is null");
+        }
+        rules.footer();
+end
