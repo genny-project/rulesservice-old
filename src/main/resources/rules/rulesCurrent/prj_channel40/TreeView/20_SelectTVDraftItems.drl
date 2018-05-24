@@ -9,8 +9,13 @@ rule "TV_SELECT Individual Draft Jobs"
        ruleflow-group 'TV_SELECT'
        salience 8
      when
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("PARENT_GRP_DRAFTS") &&
    										  !isState("LOOP_TV_DRAFT_ITEM_DATA_SENT") )
+=======
+      rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
+                       get("tvSelectValue").toString().startsWith("BEG_") && !isState("LOOP_TV_DRAFT_ITEM_DATA_SENT") ) 
+>>>>>>> 37cb33c0... Refactoring Rules handling TreeView select:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
      then
 
      rules.header();
@@ -21,7 +26,11 @@ rule "TV_SELECT Individual Draft Jobs"
          												 executes based on this state */
      //String jobCode = $m.getData().getValue();
        String jobCode = rules.get("tvSelectValue").toString();
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
        String parentCode = rules.get("tvSelectCode").toString();
+=======
+       String code = rules.get("tvSelectCode").toString();
+>>>>>>> 37cb33c0... Refactoring Rules handling TreeView select:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
 
      rules.publishCmd(rules.getBaseEntityByCode(jobCode),"job");
 
@@ -32,7 +41,11 @@ rule "TV_SELECT Individual Draft Jobs"
     /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
      qPostLoad.put("aliasCode", parentCode);
+=======
+     qPostLoad.put("aliasCode", code);
+>>>>>>> 37cb33c0... Refactoring Rules handling TreeView select:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SelectTVDraftItems.drl
      qPostLoad.put("token", rules.getToken());
      rules.println("QName Json: "+qPostLoad.toString());
      rules.publish("cmds",qPostLoad);

@@ -10,12 +10,21 @@ rule "TV_SELECT_DRAFT_JOBS"
        ruleflow-group 'TV_SELECT'
        salience 7
      when
+<<<<<<< HEAD:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SendTVDrafts.drl
        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_DRAFTS") &&
        							!isState("TV_DRAFTS_JOB_LIST_SENT"))
      then
 
      rules.header();
 
+=======
+       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_DRAFTS") && 
+       							!isState("TV_DRAFTS_JOB_LIST_SENT")) 
+     then
+
+     rules.header();
+     
+>>>>>>> 37cb33c0... Refactoring Rules handling TreeView select:src/main/resources/rules/rulesCurrent/prj_channel40/TreeView/20_SendTVDrafts.drl
        rules.setState("TV_DRAFTS_JOBS_LIST_SENT");
        rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
          												 executes based on this state */
