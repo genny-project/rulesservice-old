@@ -6365,7 +6365,10 @@ public class QRules {
 
 	public void sendLayoutsAndData(final String itemName, final String filterPrefix, final BaseEntity stakeholder) {
 
-		if (!(isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT"))) {
+    Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
+    Boolean isRegistration = isState("IS_REGISTRATION");
+
+		if (!isLogin && !isRegistration) {
 			return;
 		}
 
@@ -6471,7 +6474,7 @@ public class QRules {
 		// HashMap<String,List<BaseEntity>>();
 		Map<String, List<QDataBaseEntityMessage>> begMap = new HashMap<String, List<QDataBaseEntityMessage>>();
 		Map<String, Set<BaseEntity>> bucketMap = new HashMap<String, Set<BaseEntity>>();
-		
+
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			if (!msg.getParentCode().startsWith("GRP_")) {
 
@@ -6501,7 +6504,7 @@ public class QRules {
 					if ((msg.getItems()[i].getCode().equals(stakeholder.getCode()))||(isUserSeller() && "GRP_NEW_ITEMS".equals(msg.getAliasCode()))) {
 						userAssociated = true;
 						for (int j = 0; j < msg.getItems().length; j++) { // fast
-							
+
 							if ((msg.getItems()[j].getCode().startsWith(filterPrefix))&&(isUserSeller())) {
 								Optional<EntityAttribute> personCode = msg.getItems()[j].findEntityAttribute("PRI_QUOTER_CODE");
 								 if (personCode.isPresent()) {
@@ -6509,7 +6512,7 @@ public class QRules {
 											msg.getItems()[j] = stakeholder; // ignore by letting fe filter
 										}
 								 }
-							} else 
+							} else
 							if (msg.getItems()[j].getCode().startsWith("PER_")) {
 								if (!msg.getItems()[j].getCode().equals(stakeholder.getCode())) {
 									Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
@@ -6558,8 +6561,8 @@ public class QRules {
 						}
 						msg.setAliasCode(null);
 						System.out.println(" ");
-						
-						
+
+
 						break;
 					}
 				}
@@ -6660,14 +6663,14 @@ public class QRules {
 			QDataBaseEntityMessage bucketBegs = new QDataBaseEntityMessage(listBegs.toArray(new BaseEntity[listBegs.size()]),group,"LNK_CORE");
 			ret.add(bucketBegs);
 		}
-		
+
 		for (String group : begMap.keySet()) {
 			List<QDataBaseEntityMessage> listBegs = begMap.get(group);
 			System.out.println(group + "->" + listBegs.size());
 			for (QDataBaseEntityMessage besg : begMap.get(group)) {
 				ret.add(besg);
 			}
-			
+
 		}
 
 		return ret;

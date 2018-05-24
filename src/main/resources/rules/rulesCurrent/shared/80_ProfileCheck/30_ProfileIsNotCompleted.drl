@@ -17,6 +17,7 @@ rule "Profile is NOT completed - step 3 - channel40"
 
 		rules.setState("LOOP_PROFILE_NOT_COMPLETED");
 		rules.setState("TRIGGER_REGISTRATION");
+    rules.setState("IS_REGISTRATION");
 
-	    rules.footer();
+	  rules.footer();
 end
