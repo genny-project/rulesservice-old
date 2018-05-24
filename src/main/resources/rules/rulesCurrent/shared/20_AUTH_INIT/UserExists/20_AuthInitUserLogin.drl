@@ -21,10 +21,10 @@ rule "User logged in"
 
 
 	      /*  saving user logged in date time  */
-	      /* rules.saveAnswer( new Answer(user.getCode(),
+	      rules.saveAnswer( new Answer(user.getCode(),
 	   							      user.getCode(),
 	   							      "PRI_LAST_LOGIN_DATETIME", DateUtils.getCurrentUTCDateTime())
-	   					  ); */
+	   					  );
 	   	 }
 	   	else{
 	   	   System.out.println("Error!! Unable to set users login data and time because the User BaseEntity is null");
