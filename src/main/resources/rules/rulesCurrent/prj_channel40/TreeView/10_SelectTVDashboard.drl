@@ -1,0 +1,33 @@
+
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdRedirectMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwandautils.JsonUtils;
+
+rule "TV_SELECT Event - dashboard"
+     no-loop true
+     ruleflow-group 'TV_SELECT'
+     salience 2
+     
+     when
+        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
+                       isState("GRP_DASHBOARD") && !isState("SELECTED_DASHBOARD_TREE")) 
+     then
+
+     rules.header();
+     
+	     rules.setState("SELECTED_DASHBOARD_TREE");
+	     rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
+	         												 executes based on this state */
+	
+	     rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+	     rules.setLastLayout( "BUCKET_DASHBOARD", "GRP_DASHBOARD" );
+
+     rules.footer();
+end
