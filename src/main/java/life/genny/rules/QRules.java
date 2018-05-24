@@ -8035,18 +8035,18 @@ public class QRules {
 				/* Convert dollars into cents */
 				BigDecimal finalFee = itemPrice.multiply(new BigDecimal(100));
 				Money moneyInCents = Money.of(finalFee, ownerAmountWithoutFee.getCurrency());
-				println("money in cents ::"+moneyInCents);
+				System.out.println("money in cents ::"+moneyInCents);
 		
 				try {			
 					/* get fee */
 					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
 					System.out.println("payment fee Id ::"+paymentFeeId);
 					String[] feeArr = { paymentFeeId };
-										
+					
 					/* bundling all the info into Item object */
 					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
 							moneyInCents.getNumber().doubleValue(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
-										
+					
 					/* Hitting payments item creation API */
 					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
 					
@@ -8062,7 +8062,7 @@ public class QRules {
 
 			} catch (IllegalArgumentException e) {
 				
-				/* Send back to home page */
+				/* Redirect to home if item creation fails */
 				redirectToHomePage();
 				
 				String jobId = begBe.getValue("PRI_JOB_ID", null);
