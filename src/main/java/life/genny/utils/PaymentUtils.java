@@ -662,13 +662,13 @@ public class PaymentUtils {
 		}
 	}
 
-	/* Fetch the one time use Assembly card and bank tokens for a user */
+	/* Fetch the one time use Assembly card and bank tokens for a user 
 	public static String fetchOneTimeAssemblyToken(String qwandaServiceUrl, String userId, String tokenString, String assemblyId, String assemblyAuthToken, String type) {
 		String transactionToken = null;
 		JSONParser parser = new JSONParser();
 		JSONObject authenticationEntityObj = new JSONObject();
 
-		/* Check that an Assembly ID was provided before we continue */
+		 Check that an Assembly ID was provided before we continue 
 		if (assemblyId != null) {
 			String tokenResponse = null;
 
@@ -701,9 +701,9 @@ public class PaymentUtils {
 		}
 
 		return transactionToken;
-	}
+	}*/
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	private static String authenticatePaymentProvider(String assemblyId, String assemblyAuthToken) throws PaymentException {
 		JSONObject paymentProviderObj = new JSONObject();
 		JSONObject userObj = new JSONObject();
@@ -713,7 +713,7 @@ public class PaymentUtils {
 		String tokenResponse = null;
 		tokenResponse = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(paymentProviderObj), assemblyAuthToken);
 		return tokenResponse;
-	}
+	}*/
 
 
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
