@@ -16,6 +16,7 @@ rule "Ask terms and conditions if needed"
         		rules.setState("TERMS_AND_CONDITIONS_ACCEPTED");
         }
         else {
+            rules.setState("IS_REGISTRATION");
             rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_TERMS_AND_CONDITIONS_GRP", false);
         }
 

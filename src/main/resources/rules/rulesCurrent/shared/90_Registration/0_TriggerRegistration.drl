@@ -11,6 +11,7 @@ rule "Trigger Registration"
 
 		  rules.setState("LOOP_TRIGGER_REGISTRATION");
 	    rules.setState("ASK_REGISTRATION_QUESTIONS");
+      rules.setState("IS_REGISTRATION");
 
 	    rules.footer();
 end
