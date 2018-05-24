@@ -6366,9 +6366,9 @@ public class QRules {
 	public void sendLayoutsAndData(final String itemName, final String filterPrefix, final BaseEntity stakeholder) {
 
     Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
-    Boolean isRegistration = isState("IS_REGISTRATION");
+    Boolean isRegistration = isState("DID_REGISTER");
 
-		if (!isLogin) {
+		if (!isLogin && !isRegistration) {
       this.setState("DATA_SENT_FINISHED");
 			return;
 		}
