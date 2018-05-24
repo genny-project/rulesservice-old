@@ -636,10 +636,14 @@ public class PaymentUtils {
 		
 		if(begFee != null) {
 			
-			Money moneyInCents = getRoundedMoneyInCents(begFee);
-			System.out.println("money in in cents ::"+moneyInCents);
+			Money feeInCents = getRoundedMoneyInCents(begFee);
+			System.out.println("money in in cents ::"+feeInCents);
 			
-			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, moneyInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
+			if(feeInCents == null) {
+				throw new IllegalArgumentException("Something went wrong during pricing calculations. Fee for item cannot be empty");
+			}
+			
+			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
 		}
 		return feeObj;
 		

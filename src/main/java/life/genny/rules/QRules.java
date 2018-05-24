@@ -8015,28 +8015,30 @@ public class QRules {
 		
 		if(offerBe != null && begBe != null) {
 			try {
+				 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
+				Money ownerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+				
+				/* If pricing calculation fails */
+				if(ownerAmountWithoutFee == null) {
+					throw new IllegalArgumentException("Something went wrong during pricing calculations. Price for item cannot be empty");
+				}
+			
+				/* Convert dollars into cents */
+				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(ownerAmountWithoutFee);
+				
 				/* Owner => Buyer */
 				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(ownerBe);
 
 				/* Driver => Seller */
 				QPaymentsUser seller = PaymentUtils.getPaymentsUser(driverBe);
 
-				/* Not mandatory */
-				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
-
 				/* get item name */
 				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
 				println("payments item name ::"+paymentsItemName);
-			
-				 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
-				Money ownerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-				BigDecimal itemPrice = new BigDecimal(ownerAmountWithoutFee.getNumber().doubleValue());
 				
-				/* Convert dollars into cents */
-				BigDecimal finalFee = itemPrice.multiply(new BigDecimal(100));
-				Money moneyInCents = Money.of(finalFee, ownerAmountWithoutFee.getCurrency());
-				System.out.println("money in cents ::"+moneyInCents);
-		
+				/* Not mandatory */
+				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+			
 				try {			
 					/* get fee */
 					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
@@ -8045,7 +8047,7 @@ public class QRules {
 					
 					/* bundling all the info into Item object */
 					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
-							moneyInCents.getNumber().doubleValue(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
+							roundedItemPriceInCents.getNumber().doubleValue(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
 					
 					/* Hitting payments item creation API */
 					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
