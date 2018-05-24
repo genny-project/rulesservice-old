@@ -6476,7 +6476,7 @@ public class QRules {
 
 				if (newItems.getMessages() != null) {
 
-					showLoading("processing driver jobs...");
+					showLoading("processing Internships...");
 
 					// filter out non associated filter BEG Kids
 					startTime = System.nanoTime();
@@ -6701,7 +6701,7 @@ public class QRules {
 				for (BaseEntity be : msg.getItems()) {
 					System.out.print(msg.getParentCode() + ":" + parent.getId() + ":" + be.getId() + ":" + be.getCode());
 
-					if (be.getCode().startsWith("BEG_")) {
+					if (be.getCode().startsWith("APP_")) {
 						if (processBeg(be, stakeholder)) {
 							System.out.println(" X");
 							continue;
