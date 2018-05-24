@@ -107,6 +107,8 @@ import life.genny.qwanda.payments.QPaymentsFee;
 import life.genny.qwanda.payments.QPaymentsItem;
 import life.genny.qwanda.payments.QPaymentsItem.PaymentTransactionType;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
+import life.genny.qwanda.payments.QPaymentsAuthorizationToken;
+import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 import life.genny.qwanda.payments.QPaymentsCompany;
 import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
@@ -7842,6 +7844,35 @@ public class QRules {
 			throw new IllegalArgumentException(e.getMessage());
 		}
 		return paymentFeeId;
+	}
+
+
+	/* Fetch the one time use Payments card and bank tokens for a user */
+	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
+		String token = null;
+		
+		try {
+			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
+			QPaymentsAuthorizationToken tokenObj = new QPaymentsAuthorizationToken(type, user);
+			
+			try {
+				String tokenResponse =  PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(tokenObj), paymentToken);
+				
+				if(tokenResponse != null) {
+					QPaymentsAuthorizationToken tokenCreationResponseObj = JsonUtils.fromJson(tokenResponse, QPaymentsAuthorizationToken.class);
+					token = tokenCreationResponseObj.getToken();
+				}
+				
+				
+			} catch (PaymentException e) {
+				String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+				throw new IllegalArgumentException(getFormattedErrorMessage);
+			}
+			
+		} catch (IllegalArgumentException e) {
+			log.error("Exception occured during one-time payments token creation for user : "+getUser().getCode() + ", Error message : "+e.getMessage());
+		}		
+		return token;
 	}
 
 }
