@@ -6368,7 +6368,8 @@ public class QRules {
     Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
     Boolean isRegistration = isState("IS_REGISTRATION");
 
-		if (!isLogin && !isRegistration) {
+		if (!isLogin) {
+      this.setState("DATA_SENT_FINISHED");
 			return;
 		}
 
