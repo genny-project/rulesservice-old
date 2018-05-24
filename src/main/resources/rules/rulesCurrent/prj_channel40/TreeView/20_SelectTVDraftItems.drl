@@ -4,17 +4,24 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.rules.QRules;
 
 
-rule "TV_SELECT Draft Jobs"
+rule "TV_SELECT Individual Draft Jobs"
+	   no-loop true
+       ruleflow-group 'TV_SELECT'
+       salience 8
      when
-       $m : QEventMessage( event_type == "TV_SELECT" && data.getValue().startsWith("BEG_") )
-      rules: QRules( isState("EVENT_TV_SELECT"))
+      rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
+                       get("tvSelectValue").toString().startsWith("BEG_") && !isState("LOOP_TV_DRAFT_ITEM_DATA_SENT") ) 
      then
 
      rules.header();
 
      drools.setFocus("CreateLoad");
-
-     String jobCode = $m.getData().getValue();
+     rules.setState("LOOP_TV_DRAFT_ITEM_DATA_SENT");
+     rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
+         												 executes based on this state */
+     //String jobCode = $m.getData().getValue();
+       String jobCode = rules.get("tvSelectValue").toString();
+       String code = rules.get("tvSelectCode").toString();
 
      rules.publishCmd(rules.getBaseEntityByCode(jobCode),"job");
 
@@ -25,7 +32,7 @@ rule "TV_SELECT Draft Jobs"
     /*    Getting Post Load Question GRP        */
      JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
      qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
-     qPostLoad.put("aliasCode", $m.data.getCode());
+     qPostLoad.put("aliasCode", code);
      qPostLoad.put("token", rules.getToken());
      rules.println("QName Json: "+qPostLoad.toString());
      rules.publish("cmds",qPostLoad);

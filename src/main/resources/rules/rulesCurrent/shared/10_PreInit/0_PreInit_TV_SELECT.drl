@@ -28,4 +28,5 @@ rule "Pre Init EVT_TV_SELECT"
         }
 
         rules.setState("STARTED");
+        drools.setFocus("TV_SELECT"); /* Set focus to group of rules handling TreeView item selections */
 end

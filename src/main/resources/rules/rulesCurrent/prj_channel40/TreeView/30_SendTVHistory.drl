@@ -6,6 +6,9 @@ import life.genny.rules.QRules;
 
 
 rule "TV_SELECT_HISTORY"
+       no-loop true
+       ruleflow-group 'TV_SELECT'
+       salience 3
      when
        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") &&
                        isState("GRP_HISTORY") && !isState("LOOP_TV_ITEM_HISTORY_DATA_SENT"))
@@ -14,6 +17,8 @@ rule "TV_SELECT_HISTORY"
       rules.header();
 
        rules.setState("LOOP_TV_ITEM_HISTORY_DATA_SENT");
+       rules.setState("TV_SELECT_RULE_EXECUTED");   /* Need to set this state compulsarily as the default rule
+         												 executes based on this state */
        String parentCode = rules.get("tvSelectValue").toString();
 
        if(parentCode != null){
