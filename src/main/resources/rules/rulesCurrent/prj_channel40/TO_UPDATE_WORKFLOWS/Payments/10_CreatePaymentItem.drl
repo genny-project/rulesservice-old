@@ -1,6 +1,5 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 
 import life.genny.qwanda.Answer;
@@ -9,6 +8,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.utils.PaymentUtils;
 import life.genny.qwandautils.MergeUtil;
 import java.util.HashMap;
+import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 
 
 rule "Create Payment Item"
@@ -27,7 +27,7 @@ rule "Create Payment Item"
 
 		/*Getting BEG code from offerCode that has been confirmed */
 		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
-		RulesUtils.println("BEG CODE ::"+BEGCode);
+		rules.println("BEG CODE ::"+BEGCode);
 		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
 		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
 		BaseEntity loadBe = rules.getChildren(BEGCode, "LNK_BEG", "LOAD");
@@ -36,18 +36,15 @@ rule "Create Payment Item"
 
       	if(assemblyId != null) {
 
-       		RulesUtils.println("Refreshing tokens");
+       		rules.println("Refreshing tokens");
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
-       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
 			
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-			/* rules.publishData(cardTokenAnswer); */
-
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			/* rules.publishData(bankTokenAnswer); */
 			
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
@@ -119,7 +116,7 @@ rule "Create Payment Item"
        	
 		/* Ugly way of checking */
 		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
-		RulesUtils.println("payment ID attribute value ::"+paymentIdAttributeValue);
+		rules.println("payment ID attribute value ::"+paymentIdAttributeValue);
 
 		if(paymentIdAttributeValue != null && assemblyId != null) {
 		
@@ -127,8 +124,8 @@ rule "Create Payment Item"
 			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
 			rules.saveAnswer(itemCreationDateTime);
 		
-			RulesUtils.println("BEG CODE ::"+BEGCode);
-			RulesUtils.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
+			rules.println("BEG CODE ::"+BEGCode);
+			rules.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
 	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
 		}
 		rules.setState("CREATED_PAYMENT_ITEM");
