@@ -7391,8 +7391,9 @@ public class QRules {
 		}
 	}
 
-	public void generateReport(QEventMessage m) {
-		String grpCode = m.getData().getValue();
+	public void generateReport(final String parentCode) {
+		//String grpCode = m.getData().getValue();
+		String grpCode = parentCode;
 		println("The Group Id is :: " + grpCode);
 		if (grpCode != null) {
 			BaseEntity user = getUser();
