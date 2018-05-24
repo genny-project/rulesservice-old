@@ -51,7 +51,6 @@ import org.javamoney.moneta.Money;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-import com.hazelcast.util.collection.ArrayUtils;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -120,6 +119,7 @@ import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
 import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class QRules {
 
@@ -6873,8 +6873,7 @@ public class QRules {
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
 		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = new String[resultArray.length + resultAdmins.length];
-		ArrayUtils.concat(resultArray, resultAdmins, result);
+		String[] result = ArrayUtils.addAll(resultArray, resultAdmins);
 		return result;
 	}
 
