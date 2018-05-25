@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Move BEG from GRP_SHORTLISTED >>> GRP_INTERVIEWS  */
+rule "Interview Intern - Step 1"
+	when
+		rules: QRules( 	isState("MOVE_BEG_TO_INTERVIEW") && 
+						isState("INTERVIEW_INTERN_READY") && 
+						isState("BTN_INTERVIEW_INTERN") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_INTERVIEW_INTERN_STEP1")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_INTERVIEW_INTERN_STEP1");
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+        if(beg != null){
+        	rules.moveBaseEntity(beg.getCode(), "GRP_SHORTLISTED", "GRP_INTERVIEWS", "LNK_CORE");
+        	rules.setState("MOVED_BEG_TO_INTERVIEW");
+
+		}else{
+			rules.println("beg is null");
+		}
+	 	rules.footer();      
+end
