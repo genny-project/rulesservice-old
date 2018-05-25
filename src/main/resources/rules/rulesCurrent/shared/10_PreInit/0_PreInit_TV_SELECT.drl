@@ -19,7 +19,7 @@ rule "Pre Init EVT_TV_SELECT"
         
         if(tvSelectCode != null){
           rules.set("tvSelectCode", tvSelectCode);
-          rules.setState(tvSelectCode);
+          rules.setState("PARENT_" +tvSelectCode);
         }
 
         if(tvSelectValue != null){
