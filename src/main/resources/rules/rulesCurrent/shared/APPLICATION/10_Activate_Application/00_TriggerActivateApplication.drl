@@ -13,7 +13,7 @@ rule "Trigger Activate Application"
 	   	String applicationCode = rules.getAsString("itemCode");
 		if(applicationCode != null){
 			rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_DEACTIVATED", "FALSE" ) );
-            rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "green");            
+            rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "orange");            
 
 			rules.setState("APPLICATION_IS_ACTIVATED");
 		}else{
