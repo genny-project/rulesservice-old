@@ -19,7 +19,7 @@ rule "TV_SELECT_DRAFT_JOBS"
 
 =======
        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("GRP_DRAFTS") && 
-       							!isState("TV_DRAFTS_JOB_LIST_SENT")) 
+       						               !isState("TV_DRAFTS_JOB_LIST_SENT") ) 
      then
 
      rules.header();
