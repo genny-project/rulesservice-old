@@ -19,8 +19,13 @@ rule "Trigger Shortlist Application"
 		}else if(bucketCode == null){
 			rules.println("bucketCode is null");
 		}else{
+			rules.println("current bucketCode  :: " + bucketCode);
+			rules.println("applicationCode     :: " + applicationCode);
             rules.moveBaseEntity(applicationCode, bucketCode, "GRP_SHORTLISTED", "LNK_CORE");
-
+			// BaseEntity nextBucket =rules.nextBucket(bucketCode);
+			// if(nextBucket != null){
+			// 	rules.println("nextBucket  ::  " + nextBucket.getCode());
+			// }
         }
 	 	rules.footer();      
 end
