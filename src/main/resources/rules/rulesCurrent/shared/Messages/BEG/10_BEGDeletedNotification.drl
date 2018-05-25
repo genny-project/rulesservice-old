@@ -20,9 +20,9 @@ rule "Send BEG deleted message"
             contextMap.put("BEG", beg.getCode());
 
             String[] recipients = {rules.getUser().getCode()};
-            rules.println("No. of deleted begs   ::   " + recipients.size() );
+            //rules.println("No. of deleted begs   ::   " + recipients.size() );
 
-            rules.sendMessage(null, recipients, contextMap, "TST_MSG_BEG_DELETED", "TOAST");
+            rules.sendMessage(null, recipients, contextMap, "GNY_MSG_BEG_DELETED", "TOAST");
 
             rules.setState("SENT_BEG_DELETED_MESSAGE");
         }
