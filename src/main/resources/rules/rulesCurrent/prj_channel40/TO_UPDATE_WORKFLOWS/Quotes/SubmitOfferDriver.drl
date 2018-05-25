@@ -238,13 +238,16 @@ rule "Submit Offer Driver"
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
-
-
-
+            
 
         /* Send BUCKETVIEW Cmd */
         rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+        
+        /* we refresh the cache */
+        rules.generateNewItemsCache();
+        
         drools.setFocus("ispayments");  /* NOW Set up Payments */
+
 
         rules.footer();
 end

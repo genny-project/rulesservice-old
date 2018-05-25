@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
@@ -259,7 +260,13 @@ public class QRules {
 	 * @return current realm
 	 */
 	public String realm() {
-		return getAsString("realm").toLowerCase();
+		
+		String str = getAsString("realm");
+		//if(str == null) {
+		//	str = "genny";
+		//}
+		
+		return str.toLowerCase();
 	}
 
 	/**
@@ -4006,7 +4013,7 @@ public class QRules {
 					saveAnswer(begNextAction);
 
 					/* sending cmd BUCKETVIEW */
-					this.setState("TRIGGER_HOMEPAGE");
+					this.redirectToHomePage();
 				}
 				setState("PAYMENT_DONE");
 
@@ -5034,9 +5041,7 @@ public class QRules {
 
 	public String[] getLastLayout() {
 		String sessionId = getAsString("session_state");
-		println("Get Layout:- The Session Id is ::" + sessionId);
 		String[] previousLayout = VertxUtils.getStringArray(realm(), "PreviousLayout", sessionId);
-		println("The layout is :: " + previousLayout[0] + " and " + previousLayout[1]);
 		return previousLayout;
 	}
 
@@ -5901,16 +5906,27 @@ public class QRules {
 			System.out.println("realm() : " + realm() + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
 					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
 					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+			
 			String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
 			println("token = " + token);
 			return token;
+			
 		} catch (Exception e) {
 			println(e);
 		}
 
 		return null;
 	}
-
+	
+	private void setNewTokenAndDecodedTokenMap(String token) {
+		
+		Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
+		this.setDecodedTokenMap(serviceDecodedTokenMap);
+		this.println(serviceDecodedTokenMap);
+		this.setToken(token);
+		this.set("realm", serviceDecodedTokenMap.get("azp"));
+	}
+	
 	public boolean loadRealmData() {
 
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
@@ -5927,53 +5943,15 @@ public class QRules {
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
-
-			if (realm().equals(realm)) {
-
-				// fetch token from keycloak
-				String key = null;
-				String initVector = "PRJ_" + realm().toUpperCase();
-				initVector = StringUtils.rightPad(initVector, 16, '*');
-				String encryptedPassword = null;
-
-				try {
-					key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
-				} catch (Exception e) {
-					log.error("PRJ_" + realm().toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
-				}
-
-				try {
-					encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
-				} catch (Exception e) {
-					log.error("PRJ_" + realm().toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
-				}
-
-				String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
-
-				// Now ask the bridge for the keycloak to use
-				String keycloakurl = realmJson.getString("auth-server-url").substring(0,
-						realmJson.getString("auth-server-url").length() - ("/auth".length()));
-
-				try {
-					// System.out.println("realm() : "+realm() +"\n"+
-					// "realm : "+realm +"\n"+
-					// "secret : "+secret + "\n"+
-					// "keycloakurl: "+keycloakurl +"\n"
-					// +"key : "+key +"\n"
-					// +"initVector : "+initVector +"\n"
-					// +"enc pw : "+encryptedPassword +"\n"
-					// +"password : "+password +"\n"
-					// );
-					String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
-					log.info("token = " + token);
-					// String token = accessToken.getToken();
-					// String token =
-					// QwandaUtils.apiGet(qwandaServiceUrl+"/utils/token/"+keycloakurl+"/{realm}/"+secret+"/"+key+"/"+initVector+"/service/"+encryptedPassword,"DUMMY");
-
-					Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
-
-					this.setDecodedTokenMap(serviceDecodedTokenMap);
-					this.setToken(token);
+			
+			if(realm != null) {
+				
+				String token = this.generateServiceToken(realm);
+				this.println(token);
+				if(token != null) {
+					
+					this.setNewTokenAndDecodedTokenMap(token);
+					
 					String dev = System.getenv("GENNYDEV");
 					String proj_realm = System.getenv("PROJECT_REALM");
 					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
@@ -5981,13 +5959,11 @@ public class QRules {
 					} else {
 						this.set("realm", realm);
 					}
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					
+					return true;
 				}
-				return true;
 			}
+			
 		}
 
 		return false;
@@ -5995,6 +5971,11 @@ public class QRules {
 
 	public void generateTree() {
 
+		String token = this.generateServiceToken(realm());
+		if(token != null) {
+			this.setNewTokenAndDecodedTokenMap(token);
+		}
+		
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
 		BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
@@ -6125,6 +6106,16 @@ public class QRules {
 
 	public void generateBucketCaches() {
 		
+		this.println("Generating new buckets");
+		
+		/* we generate a service token */
+		String token = this.generateServiceToken(this.realm());
+//		if(token != null) {
+//			this.setNewTokenAndDecodedTokenMap(token);
+//		}
+		
+		this.println("Search new items");
+
 		/* we check if the search BEs have been created */
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
 		if (searchNewItems == null) {
@@ -6132,9 +6123,10 @@ public class QRules {
 		}
 		
 		/* we grab the buckets */
-		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(),
-				QDataBaseEntityMessage.class);
-
+		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
+		
+		this.println(bucketsMsg);
+		
 		if (bucketsMsg != null) {
 				
 			/* we loop through each bucket to cache the messages */
@@ -6155,7 +6147,7 @@ public class QRules {
 							.setPageSize(10000);
 					
 					/* fetching results */
-					QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, getToken());
+					QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
 
 					if (results != null) {
 						
@@ -6325,6 +6317,7 @@ public class QRules {
 		/* variables */
 		QBulkMessage ret = new QBulkMessage();
 		HashMap<String, List<BaseEntity>> baseEntityMap = new HashMap<String, List<BaseEntity>>();
+		HashMap<String, Boolean> excludedBes = new HashMap<String, Boolean>();
 		
 		/* we loop through every single messages in the bulk message */
 		for (QDataBaseEntityMessage message : newItems.getMessages()) {
@@ -6335,80 +6328,93 @@ public class QRules {
 				String parentCode = message.getParentCode();
 				List<BaseEntity> baseEntityKids = new ArrayList<BaseEntity>();
 				
-				/* we loop through the items of the given message */
-				for (int i = 0; i < message.getItems().length; i++) {
-
-					BaseEntity item = message.getItems()[i];
-					String itemCode = item.getCode();
-										
-					/* if the BE is a user */
-					if(itemCode.startsWith("PER_")) {
-						
-						/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
-						baseEntityKids.add(item);
-					}
+				if(excludedBes.containsKey(parentCode) == false) {
 					
-					/* if it is a BEG */
-					else if(itemCode.startsWith("BEG_")) {
-						
-						if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
+					/* we loop through the items of the given message */
+					for (int i = 0; i < message.getItems().length; i++) {
+
+						BaseEntity item = message.getItems()[i];
+						String itemCode = item.getCode();
+											
+						/* if the BE is a user */
+						if(itemCode.startsWith("PER_")) {
+							
+							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 							baseEntityKids.add(item);
 						}
+						
+						/* if it is a BEG */
+						else if(itemCode.startsWith("BEG_")) {
+							
+							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
+								baseEntityKids.add(item);
+							}
+							else {
+								
+								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
+									baseEntityKids.add(item);
+								}
+								else {
+									excludedBes.put(itemCode, true);
+								}
+							}
+						}
+						/* if the BE is an offer, we only show the ones that the seller created */
+						else if(itemCode.startsWith("OFR_")) {
+								
+								if(this.isUserBuyer(stakeholder)) {
+									
+									/* we add the offer to the list */
+									baseEntityKids.add(item);
+								}
+								else {
+									
+									/* if user is a seller, we only send offers they created */
+									String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
+									if(quoterCode.equals(stakeholder.getCode())) {
+										
+										/* we add the offer to the list */
+										baseEntityKids.add(item);
+									}
+								}
+					    }
 						else {
 							
-							if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
-								baseEntityKids.add(item);
+							/* role specific rules */
+							/* user is a buyer */
+							if(this.isUserBuyer()) {
+								
+								/* we send only BEGs the buyer created */ 
+								if(!itemCode.startsWith("BEG_")) {
+									
+									/* we add the rest */
+									baseEntityKids.add(item);
+								}
 							}
+							/* user is a seller */
+							else if(this.isUserSeller()) {
+								
+								/* if it is not a BEG */
+								if(!itemCode.startsWith("BEG_")) {
+
+									/* we send the rest */
+									baseEntityKids.add(item);
+								}
+							}	
 						}
 					}
-					/* if the BE is an offer, we only show the ones that the seller created */
-					else if(itemCode.startsWith("OFR_")) {
-							
-							String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
-							if(quoterCode.equals(stakeholder.getCode())) {
-								
-								/* we add the offer to the list */
-								baseEntityKids.add(item);
-							}
-				    }
-					else {
-						
-						/* role specific rules */
-						/* user is a buyer */
-						if(this.isUserBuyer()) {
-							
-							/* we send only BEGs the buyer created */ 
-							if(!itemCode.startsWith("BEG_")) {
-								
-								/* we add the rest */
-								baseEntityKids.add(item);
-							}
-						}
-						/* user is a seller */
-						else if(this.isUserSeller()) {
-							
-							/* if it is not a BEG */
-							if(!itemCode.startsWith("BEG_")) {
+					 
+					/* we put in the baseEntityMap the list of kids for the given parentCode */
+					List<BaseEntity> existingKids = baseEntityMap.get(parentCode);
 
-								/* we send the rest */
-								baseEntityKids.add(item);
-							}
-							
-							
-						}	
+					/* (if the list of kids for the parentCode does not exist, we create it) */
+					if(existingKids == null) {
+						existingKids = new ArrayList<BaseEntity>();
 					}
+					
+					existingKids.addAll(baseEntityKids);
+					baseEntityMap.put(parentCode, existingKids);
 				}
-				
-				/* we put in the baseEntityMap the list of kids for the given parentCode */
-				List<BaseEntity> existingKids = baseEntityMap.get(parentCode);
-
-				/* (if the list of kids for the parentCode does not exist, we create it) */
-				if(existingKids == null) {
-					existingKids = new ArrayList<BaseEntity>();
-				}
-				
-				existingKids.addAll(baseEntityKids);
-				baseEntityMap.put(parentCode, existingKids);
 			}
 			else {
 				this.println("Parent Code is null: " + message.toString());

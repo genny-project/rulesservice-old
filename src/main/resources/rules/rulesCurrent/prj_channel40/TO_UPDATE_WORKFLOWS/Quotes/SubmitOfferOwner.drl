@@ -146,6 +146,9 @@ rule "Submit Offer Owner"
                 counterContextMapForDriver.put("QUOTER", quoterCode);
                 counterContextMapForDriver.put("OWNER", ownerCode);
                 rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
+                
+                /* we refresh the cache */
+                rules.generateNewItemsCache();
 
         /* Send BUCKETVIEW Cmd */
         rules.setState("TRIGGER_HOMEPAGE");
