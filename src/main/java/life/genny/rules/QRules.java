@@ -6296,32 +6296,28 @@ public class QRules {
 		return bulk;
 	}
 	
-	private BaseEntity filterUserBaseEntity(BaseEntity user) {
+	/*
+	 * @param user
+	 * @param baseEntity
+	 */
+	private Boolean isUserAssociatedToBaseEntity(BaseEntity stakeholder, BaseEntity baseEntity) {
 		
-		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
-		for (EntityAttribute entityAttribute : user.getBaseEntityAttributes()) {
-
-			String attributeCode = entityAttribute.getAttributeCode();
-			switch (attributeCode) {
-			case "PRI_FIRSTNAME":
-			case "PRI_LASTNAME":
-			case "PRI_EMAIL":
-			case "PRI_MOBILE":
-			case "PRI_ADMIN":
-			case "PRI_DRIVER":
-			case "PRI_OWNER":
-			case "PRI_IMAGE_URL":
-			case "PRI_CODE":
-			case "PRI_NAME":
-			case "PRI_USERNAME":
-			case "PRI_DRIVER_RATING":
-				allowedAttributes.add(entityAttribute);
-			default:
-			}
+		Boolean isUserAssociatedToBaseEntity = false;
+		
+		if(this.isUserSeller(stakeholder)) {
+			
+			/* we send BEGs only where the seller is a stakeholder */
+			String sellerCode = baseEntity.getValue("PRI_SELLER_CODE", "");
+			isUserAssociatedToBaseEntity = sellerCode.equals(stakeholder.getCode());
+		}
+		else if(this.isUserBuyer(stakeholder)) {
+			
+			/* we send BEGs only the buyer created */
+			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
+			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode());
 		}
 		
-		user.setBaseEntityAttributes(allowedAttributes);
-		return user;
+		return isUserAssociatedToBaseEntity;
 	}
 
 	private QBulkMessage filterBucketItemsForStakeholder(QBulkMessage newItems, final BaseEntity stakeholder) {
@@ -6344,15 +6340,37 @@ public class QRules {
 
 					BaseEntity item = message.getItems()[i];
 					String itemCode = item.getCode();
-					
-					/* common rules */
-					
+										
 					/* if the BE is a user */
 					if(itemCode.startsWith("PER_")) {
 						
 						/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 						baseEntityKids.add(item);
 					}
+					
+					/* if it is a BEG */
+					else if(itemCode.startsWith("BEG_")) {
+						
+						if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
+							baseEntityKids.add(item);
+						}
+						else {
+							
+							if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
+								baseEntityKids.add(item);
+							}
+						}
+					}
+					/* if the BE is an offer, we only show the ones that the seller created */
+					else if(itemCode.startsWith("OFR_")) {
+							
+							String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
+							if(quoterCode.equals(stakeholder.getCode())) {
+								
+								/* we add the offer to the list */
+								baseEntityKids.add(item);
+							}
+				    }
 					else {
 						
 						/* role specific rules */
@@ -6360,59 +6378,23 @@ public class QRules {
 						if(this.isUserBuyer()) {
 							
 							/* we send only BEGs the buyer created */ 
-							if(itemCode.startsWith("BEG_")) {
+							if(!itemCode.startsWith("BEG_")) {
 								
-								String authorCode = item.getValue("PRI_AUTHOR", "");
-								if(authorCode.equals(stakeholder.getCode())) {
-									
-									baseEntityKids.add(item);
-								}
-							}
-							else {
-							
 								/* we add the rest */
 								baseEntityKids.add(item);
 							}
 						}
 						/* user is a seller */
 						else if(this.isUserSeller()) {
-						
-							/* if the parentCode is GRP_NEW_ITEMS */
-							if(message.getParentCode().equals("GRP_NEW_ITEMS")) {
 							
-								/* we send every BEG sitting in GRP_NEW_ITEMS */
-								if(itemCode.startsWith("BEG_")) {
-									
-									baseEntityKids.add(item);
-								}
-							}
-							else {
-								
-								if(itemCode.startsWith("BEG_")) {
-									
-									/* we send BEGs only where the seller is a stakeholder */
-									String sellerCode = item.getValue("PRI_SELLER_CODE", "");
-									if(sellerCode.equals(stakeholder.getCode())) {
-										baseEntityKids.add(item);
-									}
-								}
-								else {
-									
-									/* we send the rest */
-									baseEntityKids.add(item);
-								}
+							/* if it is not a BEG */
+							if(!itemCode.startsWith("BEG_")) {
+
+								/* we send the rest */
+								baseEntityKids.add(item);
 							}
 							
-							/* if the BE is an offer, we only show the ones that the seller created */
-							if(itemCode.startsWith("OFR_")) {
-								
-								String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
-								if(quoterCode.equals(stakeholder.getCode())) {
-									
-									/* we add the offer to the list */
-									baseEntityKids.add(item);
-								}
-							}
+							
 						}	
 					}
 				}
@@ -6428,8 +6410,10 @@ public class QRules {
 				existingKids.addAll(baseEntityKids);
 				baseEntityMap.put(parentCode, existingKids);
 			}
+			else {
+				this.println("Parent Code is null: " + message.toString());
+			}
 		}
-		
 		
 		/* once we have looped through all the items of this message, we create a QDataBaseEntityMessage per set of baseEntities */
 		baseEntityMap.forEach((parentCode, kids) -> {
