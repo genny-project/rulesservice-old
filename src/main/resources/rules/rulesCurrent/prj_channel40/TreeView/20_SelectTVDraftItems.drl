@@ -10,7 +10,7 @@ rule "TV_SELECT Individual Draft Jobs"
        salience 8
      when
       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && isState("PARENT_GRP_DRAFTS") &&
-   										  !isState("LOOP_TV_DRAFT_ITEM_DATA_SENT") ) 
+   										  !isState("LOOP_TV_DRAFT_ITEM_DATA_SENT") )
      then
 
      rules.header();
