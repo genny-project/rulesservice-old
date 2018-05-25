@@ -12,7 +12,7 @@ rule "Trigger Deactivate Application"
 		
 		String applicationCode = rules.getAsString("itemCode");
 		if(applicationCode != null){
-			rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_DEACTIVATE", "TRUE" ) );
+			rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_DEACTIVATED", "TRUE" ) );
             rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "grey");
 			
 			rules.setState("APPLICATION_IS_DEACTIVATED");

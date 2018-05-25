@@ -2139,7 +2139,7 @@ public class QRules {
 			RulesUtils.println(text + "   ::   ");
 			RulesUtils.println("__________________________________");
 			for (BaseEntity be : beList) {
-				RulesUtils.println(i + "   ::   " + be.getCode());
+				RulesUtils.println(i + "   ::   " + be.getCode() + "INDEX :: " + be.getIndex());
 				i++;
 			}
 			RulesUtils.println("__________________________________");
@@ -7979,4 +7979,47 @@ public class QRules {
 		}
 		return errorMessage.toString();
 	}
+	
+	public BaseEntity nextBucket(String currentBucketCode) {
+		
+		if(currentBucketCode != null) {
+
+			BaseEntity currentBucket = this.getBaseEntityByCode(currentBucketCode);
+			if(currentBucket != null) {
+				
+				BaseEntity parent = this.getParent(currentBucket.getCode(), "LNK_CORE");
+				if(parent != null){
+	
+					this.println("Current Bucket Code       ::  " + currentBucket.getCode());
+					this.println("Parent of Current Bucket  ::  " + parent.getCode());
+		
+					List<BaseEntity> buckets = this.getBaseEntitysByParentAndLinkCode(parent.getCode(), "LNK_CORE", 0, 500, false); 
+		
+					if(buckets != null){
+						this.printList("buckets", buckets);
+		
+						Integer currentBucketIndex = currentBucket.getIndex();
+						if(currentBucketIndex >= 0) {						
+							for(BaseEntity bucket : buckets){
+								Integer nextBucketIndex = bucket.getIndex();
+								if(	nextBucketIndex >= 0 && 
+									nextBucketIndex == currentBucketIndex+1 ) {
+									return bucket;
+								}				
+							}
+						}
+					}else{
+						this.println("buckets is null");	
+					}
+				}else{
+					this.println("currentBucket's parent is null");
+				}
+			}
+		}else {
+			this.println("currentBucketCode is null");
+		}
+		return null;
+	}
+	
+
 }
