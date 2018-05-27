@@ -368,7 +368,11 @@ public class RulesLoader {
 
 			// Load globals
 			for (final Tuple2<String, Object> t : globals) {
-				kieSession.setGlobal(t._1, t._2);
+				try {
+					kieSession.setGlobal(t._1, t._2);
+				} catch (java.lang.RuntimeException e) {
+					System.out.println(e.getMessage());
+				}
 			}
 			for (final Object fact : facts) {
 				kieSession.insert(fact);

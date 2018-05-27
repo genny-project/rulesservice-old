@@ -9,7 +9,7 @@ rule "Send Layout Change To Frontend - Memberhub"
     no-loop true
     ruleflow-group "SendLayoutsAndData"
     when
-        rules: QRules( !isState("LAYOUT_CHANGE_READY") && isRealm("memberhub"))
+        rules: QRules( !isState("LOOP_HOMEPAGE") && isRealm("memberhub"))
      then
      	rules.header();
 
