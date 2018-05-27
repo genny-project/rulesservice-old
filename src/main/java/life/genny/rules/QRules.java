@@ -260,12 +260,12 @@ public class QRules {
 	 * @return current realm
 	 */
 	public String realm() {
-		
+
 		String str = getAsString("realm");
 		//if(str == null) {
 		//	str = "genny";
 		//}
-		
+
 		return str.toLowerCase();
 	}
 
@@ -453,7 +453,7 @@ public class QRules {
 
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
-		
+
 		Boolean isRole = false;
 
 		Object uglyRole = user.getValue(role, null);
@@ -566,11 +566,11 @@ public class QRules {
 	}
 
 	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
-		
+
 		BaseEntity be = null;
-		
+
 		try {
-			
+
 			be = VertxUtils.readFromDDT(code, withAttributes, getToken());
 			if (be == null) {
 				println("ERROR - be (" + code + ") fetched is NULL ");
@@ -581,7 +581,7 @@ public class QRules {
 		catch(Exception e) {
 			this.println("Failed to read cache for " + code);
 		}
-		
+
 		return be;
 	}
 
@@ -4213,7 +4213,6 @@ public class QRules {
 
 		String linkCode = "LNK_BEG";
 		String linkOffer = "OFFER";
-		String linkQuoter = "QUOTER";
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
 
@@ -4290,8 +4289,7 @@ public class QRules {
 
 		/* link BEG and OFFER BE || OFFER */
 		createLink(beg.getCode(), offer.getCode(), linkCode, linkOffer, 1.0);
-		/* link BEG and QUOTER BE || QUOTER */
-		createLink(beg.getCode(), getUser().getCode(), linkCode, linkQuoter, 1.0);
+
 		/* link OFFER and QUOTER BE || CREATOR */
 		createLink(offer.getCode(), getUser().getCode(), "LNK_OFR", linkCreator, 1.0);
 
@@ -4607,29 +4605,33 @@ public class QRules {
 
 		List linkList = getLinkList(groupCode, linkCode, linkValue, token);
 		String quoterCodeForOffer = null;
-		BaseEntity offer = null;
 
 		if (linkList != null) {
 
-			for (Object linkObj : linkList) {
-				Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
+      try {
 
-				BaseEntity offerBe = getBaseEntityByCode(link.getTargetCode());
+        for (Object linkObj : linkList) {
 
-				if (offerBe != null) {
-					quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
+          Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
 
-					if (quoterCode.equals(quoterCodeForOffer)) {
-						offer = offerBe;
-						return offerBe;
-					}
-				}
+          BaseEntity offerBe = getBaseEntityByCode(link.getTargetCode());
 
-			}
+          if (offerBe != null) {
 
+            quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
+
+            if (quoterCode.equals(quoterCodeForOffer)) {
+              return offerBe;
+            }
+          }
+        }
+      }
+      catch(Exception e) {
+
+      }
 		}
 
-		return offer;
+		return null;
 	}
 
 	public boolean hasRole(final String role) {
@@ -5906,27 +5908,27 @@ public class QRules {
 			System.out.println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
 					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
 					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
-			
+
 			String token = KeycloakUtils.getToken(keycloakurl, realm, realm, secret, "service", password);
 			println("token = " + token);
 			return token;
-			
+
 		} catch (Exception e) {
 			println(e);
 		}
 
 		return null;
 	}
-	
+
 	private void setNewTokenAndDecodedTokenMap(String token) {
-		
+
 		Map<String, Object> serviceDecodedTokenMap = KeycloakUtils.getJsonMap(token);
 		this.setDecodedTokenMap(serviceDecodedTokenMap);
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
 	}
-	
+
 	public boolean loadRealmData() {
 
 		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
@@ -5938,20 +5940,20 @@ public class QRules {
 				System.out.println("No keycloakMap for " + realm());
 				return false;
 			}
-			
+
 			JsonObject realmJson = new JsonObject(keycloakJson);
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
 			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
-			
+
 			if(realm != null) {
-				
+
 				String token = this.generateServiceToken(realm);
 				this.println(token);
 				if(token != null) {
-					
+
 					this.setNewTokenAndDecodedTokenMap(token);
-					
+
 					String dev = System.getenv("GENNYDEV");
 					String proj_realm = System.getenv("PROJECT_REALM");
 					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
@@ -5959,11 +5961,11 @@ public class QRules {
 					} else {
 						this.set("realm", realm);
 					}
-					
+
 					return true;
 				}
 			}
-			
+
 		}
 
 		return false;
@@ -5975,7 +5977,7 @@ public class QRules {
 		if(token != null) {
 			this.setNewTokenAndDecodedTokenMap(token);
 		}
-		
+
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
 		BaseEntity root = this.getBaseEntityByCode("GRP_ROOT");
@@ -6105,15 +6107,15 @@ public class QRules {
 	}
 
 	public void generateBucketCaches() {
-		
+
 		this.println("Generating new buckets");
-		
+
 		/* we generate a service token */
 		String token = this.generateServiceToken(this.realm());
 //		if(token != null) {
 //			this.setNewTokenAndDecodedTokenMap(token);
 //		}
-		
+
 		this.println("Search new items");
 
 		/* we check if the search BEs have been created */
@@ -6121,23 +6123,23 @@ public class QRules {
 		if (searchNewItems == null) {
 			drools.setFocus("GenerateSearches");
 		}
-		
+
 		/* we grab the buckets */
 		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
-		
+
 		this.println(bucketsMsg);
-		
+
 		if (bucketsMsg != null) {
-				
+
 			/* we loop through each bucket to cache the messages */
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
 				Integer itemCount = 0;
-				
+
 				List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
 				try {
-					
+
 					/* we create the searchBE */
 					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "All New Items")
 							.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
@@ -6145,27 +6147,27 @@ public class QRules {
 							.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
 							.setPageStart(0)
 							.setPageSize(10000);
-					
+
 					/* fetching results */
 					QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
 
 					if (results != null) {
-						
+
 						println("Caching Bucket " + bucket.getCode() + " with " + results.getReturnCount() + " items");
 						itemCount = results.getItems().length;
 						results.setParentCode(bucket.getCode());
 						results.setLinkCode("LNK_CORE");
 						bulkmsg.add(results);
-						
+
 						/* we loop through each BEG of the current bucket */
 						for (BaseEntity beg : results.getItems()) {
-							
+
 							/* we grab all the kids */
 							List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0,
 									1000, false);
 
 							if (begKids != null) {
-								
+
 								/* we create the message from BEG to kids */
 								itemCount += begKids.size();
 								QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
@@ -6176,7 +6178,7 @@ public class QRules {
 							}
 						}
 					}
-					
+
 					/* we create the bucket bulk message */
 					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
 					QBulkMessage bulk = new QBulkMessage(messages.clone());
@@ -6262,17 +6264,17 @@ public class QRules {
 				QBulkMessage currentBucketMessages = new QBulkMessage();
 				currentBucketMessages = VertxUtils.getObject(realm(), "CACHE", bucket.getCode(), QBulkMessage.class);
 				if (currentBucketMessages != null) {
-					
+
 					QDataBaseEntityMessage[] messages = currentBucketMessages.getMessages();
-					
+
 					/* we add it to the list of items to send */
 					bulk.add(messages);
 
 					/* we check if we need to subscribe the user to the bucket */
 					subscriptions.forEach((role, bucketToSubscribe) -> {
-						
+
 						if(this.isUserRole(stakeholder, role)) {
-							
+
 							if (bucketToSubscribe.equals(bucket.getCode()) ) {
 
 								/* we subscribe the user */
@@ -6287,28 +6289,28 @@ public class QRules {
 		/* return the bulk message */
 		return bulk;
 	}
-	
+
 	/*
 	 * @param user
 	 * @param baseEntity
 	 */
 	private Boolean isUserAssociatedToBaseEntity(BaseEntity stakeholder, BaseEntity baseEntity) {
-		
+
 		Boolean isUserAssociatedToBaseEntity = false;
-		
+
 		if(this.isUserSeller(stakeholder)) {
-			
+
 			/* we send BEGs only where the seller is a stakeholder */
 			String sellerCode = baseEntity.getValue("PRI_SELLER_CODE", "");
 			isUserAssociatedToBaseEntity = sellerCode.equals(stakeholder.getCode());
 		}
 		else if(this.isUserBuyer(stakeholder)) {
-			
+
 			/* we send BEGs only the buyer created */
 			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
 			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode());
 		}
-		
+
 		return isUserAssociatedToBaseEntity;
 	}
 
@@ -6318,39 +6320,39 @@ public class QRules {
 		QBulkMessage ret = new QBulkMessage();
 		HashMap<String, List<BaseEntity>> baseEntityMap = new HashMap<String, List<BaseEntity>>();
 		HashMap<String, Boolean> excludedBes = new HashMap<String, Boolean>();
-		
+
 		/* we loop through every single messages in the bulk message */
 		for (QDataBaseEntityMessage message : newItems.getMessages()) {
 
 			/* if the message has a parentCode and if the parentCode is not a GRP_ */
 			if (message.getParentCode() != null) {
-				
+
 				String parentCode = message.getParentCode();
 				List<BaseEntity> baseEntityKids = new ArrayList<BaseEntity>();
-				
+
 				if(excludedBes.containsKey(parentCode) == false) {
-					
+
 					/* we loop through the items of the given message */
 					for (int i = 0; i < message.getItems().length; i++) {
 
 						BaseEntity item = message.getItems()[i];
 						String itemCode = item.getCode();
-											
+
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
-							
+
 							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 							baseEntityKids.add(item);
 						}
-						
+
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
-							
+
 							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
 								baseEntityKids.add(item);
 							}
 							else {
-								
+
 								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
 									baseEntityKids.add(item);
 								}
@@ -6361,49 +6363,49 @@ public class QRules {
 						}
 						/* if the BE is an offer, we only show the ones that the seller created */
 						else if(itemCode.startsWith("OFR_")) {
-								
+
 								if(this.isUserBuyer(stakeholder)) {
-									
+
 									/* we add the offer to the list */
 									baseEntityKids.add(item);
 								}
 								else {
-									
+
 									/* if user is a seller, we only send offers they created */
 									String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
 									if(quoterCode.equals(stakeholder.getCode())) {
-										
+
 										/* we add the offer to the list */
 										baseEntityKids.add(item);
 									}
 								}
 					    }
 						else {
-							
+
 							/* role specific rules */
 							/* user is a buyer */
 							if(this.isUserBuyer()) {
-								
-								/* we send only BEGs the buyer created */ 
+
+								/* we send only BEGs the buyer created */
 								if(!itemCode.startsWith("BEG_")) {
-									
+
 									/* we add the rest */
 									baseEntityKids.add(item);
 								}
 							}
 							/* user is a seller */
 							else if(this.isUserSeller()) {
-								
+
 								/* if it is not a BEG */
 								if(!itemCode.startsWith("BEG_")) {
 
 									/* we send the rest */
 									baseEntityKids.add(item);
 								}
-							}	
+							}
 						}
 					}
-					 
+
 					/* we put in the baseEntityMap the list of kids for the given parentCode */
 					List<BaseEntity> existingKids = baseEntityMap.get(parentCode);
 
@@ -6411,7 +6413,7 @@ public class QRules {
 					if(existingKids == null) {
 						existingKids = new ArrayList<BaseEntity>();
 					}
-					
+
 					existingKids.addAll(baseEntityKids);
 					baseEntityMap.put(parentCode, existingKids);
 				}
@@ -6420,10 +6422,10 @@ public class QRules {
 				this.println("Parent Code is null: " + message.toString());
 			}
 		}
-		
+
 		/* once we have looped through all the items of this message, we create a QDataBaseEntityMessage per set of baseEntities */
 		baseEntityMap.forEach((parentCode, kids) -> {
-			
+
 			QDataBaseEntityMessage baseEntityMessage = new QDataBaseEntityMessage(kids.toArray(new BaseEntity[0]));
 			baseEntityMessage.setParentCode(parentCode);
 			ret.add(baseEntityMessage);

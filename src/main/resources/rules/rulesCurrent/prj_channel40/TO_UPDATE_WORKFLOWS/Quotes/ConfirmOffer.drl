@@ -65,7 +65,6 @@ rule "Confirm Offer"
 
 		String linkCode= "LNK_BEG";
 		String linkOffer= "OFFER";
-		String linkQuoter= "QUOTER";
 		String linkOwner = "OWNER";
 		String linkCreator = "CREATOR";
 
@@ -95,8 +94,6 @@ rule "Confirm Offer"
 
 						/* we calculate the payment price for the BEG */
 						String ownerOfferPrice = rules.getBaseEntityValueAsString(offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST");
-            rules.println("=====");
-            rules.println(ownerOfferPrice);
 
 						if(ownerOfferPrice != null) {
 
