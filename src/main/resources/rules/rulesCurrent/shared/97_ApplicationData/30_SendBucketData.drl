@@ -4,11 +4,11 @@ import life.genny.rules.QRules;
 
 rule "Send Bucket Data"
     when
-        rules: QRules( isState("SEND_BUCKET_DATA") && !isState("LOOP_SENT_BUCKET_DATA_CH40") )
+        rules: QRules( isState("SEND_BUCKET_DATA") && !isState("LOOP_SENT_BUCKET_DATA") )
      then
      	rules.header();
 
-     	rules.setState("LOOP_SENT_BUCKET_DATA_CH40");
+     	rules.setState("LOOP_SENT_BUCKET_DATA");
 		  rules.sendApplicationData();
 
 		  rules.setState("APPLICATION_READY");
