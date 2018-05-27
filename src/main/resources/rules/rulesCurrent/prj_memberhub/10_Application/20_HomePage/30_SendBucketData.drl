@@ -11,7 +11,6 @@ rule "Send Bucket Data"
      	rules.setState("LOOP_SENT_BUCKET_DATA");
 		/*  rules.sendApplicationData(); */
 
-		  rules.setState("APPLICATION_READY");
-		  rules.setState("TRIGGER_APPLICATION");
+
 	    rules.footer();
 end
