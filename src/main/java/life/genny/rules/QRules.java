@@ -1627,102 +1627,12 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
+	
+	
 	public void publish(String channel, Object payload) {
-		// Actually Send ....
-		switch (channel) {
-		case "event":
-		case "events":
-			Producer.getToEvents().send(payload).end();
-			;
-			break;
-		case "data":
-			payload = privacyFilter(payload);
-			Producer.getToWebData().write(payload).end();
-			;
-			break;
-		case "cmds":
-			payload = privacyFilter(payload);
-			Producer.getToWebCmds().write(payload);
-			break;
-		case "services":
-			Producer.getToServices().write(payload);
-			break;
-		case "messages":
-			Producer.getToMessages().write(payload);
-			break;
-		default:
-			println("Channel does not exist: " + channel);
-		}
+		VertxUtils.publish(getUser(),channel,payload);
 	}
 
-	public Object privacyFilter(Object payload) {
-		if (payload instanceof QDataBaseEntityMessage) {
-			return JsonUtils.toJson(privacyFilter((QDataBaseEntityMessage) payload));
-		} else if (payload instanceof QBulkMessage) {
-			return JsonUtils.toJson(privacyFilter((QBulkMessage) payload));
-		} else
-			return payload;
-	}
-
-	public QBulkMessage privacyFilter(QBulkMessage msg) {
-		Map<String, BaseEntity> uniqueBes = new HashMap<String, BaseEntity>();
-		for (QDataBaseEntityMessage beMsg : msg.getMessages()) {
-			beMsg = privacyFilter(beMsg, uniqueBes);
-		}
-		return msg;
-	}
-
-	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg) {
-		return privacyFilter(msg, new HashMap<String, BaseEntity>());
-	}
-
-	public QDataBaseEntityMessage privacyFilter(QDataBaseEntityMessage msg, Map<String, BaseEntity> uniquePeople) {
-		ArrayList<BaseEntity> bes = new ArrayList<BaseEntity>();
-		for (BaseEntity be : msg.getItems()) {
-			if (!uniquePeople.containsKey(be.getCode())) {
-				be = privacyFilter(be);
-				uniquePeople.put(be.getCode(), be);
-				bes.add(be);
-			}
-		}
-		msg.setItems(bes.toArray(new BaseEntity[bes.size()]));
-		return msg;
-	}
-
-	public BaseEntity privacyFilter(BaseEntity be) {
-		Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
-		for (EntityAttribute entityAttribute : be.getBaseEntityAttributes()) {
-			// System.out.println("ATTRIBUTE:"+entityAttribute.getAttributeCode()+(entityAttribute.getPrivacyFlag()?"PRIVACYFLAG=TRUE":"PRIVACYFLAG=FALSE"));
-			if ((be.getCode().startsWith("PER_")) && (!be.getCode().equals(getUser().getCode()))) {
-				String attributeCode = entityAttribute.getAttributeCode();
-				switch (attributeCode) {
-				case "PRI_FIRSTNAME":
-				case "PRI_LASTNAME":
-				case "PRI_EMAIL":
-				case "PRI_MOBILE":
-				case "PRI_DRIVER":
-				case "PRI_OWNER":
-				case "PRI_IMAGE_URL":
-				case "PRI_CODE":
-				case "PRI_NAME":
-				case "PRI_USERNAME":
-				case "PRI_DRIVER_RATING":
-					allowedAttributes.add(entityAttribute);
-				default:
-					if (attributeCode.startsWith("PRI_IS_")) {
-						allowedAttributes.add(entityAttribute);// allow all roles
-					}
-				}
-			} else {
-				if (!entityAttribute.getPrivacyFlag()) { // don't allow privacy flag attributes to get through
-					allowedAttributes.add(entityAttribute);
-				}
-			}
-		}
-		be.setBaseEntityAttributes(allowedAttributes);
-
-		return be;
-	}
 
 	public void loadUserRole() {
 
@@ -5903,7 +5813,7 @@ public class QRules {
 		println(keycloakurl);
 
 		try {
-			System.out.println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
 					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
 					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
 			
