@@ -4181,6 +4181,16 @@ public class QRules {
 		publishData(beMsg, recipients);
 
 	}
+	
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(String baseEntityCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		publishData(beMsg);
+
+	}
+	
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
@@ -4421,6 +4431,10 @@ public class QRules {
 
 	public void saveJob(BaseEntity job) {
 		String jobCode = job.getCode();
+		BaseEntity load = getChildren(jobCode, "LNK_BEG", "LOAD");
+		String loadCode = load.getCode();
+		BaseEntity user = getUser();
+		String userCode = user.getCode();
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
 		 * triggered in another rule
@@ -4432,8 +4446,8 @@ public class QRules {
 
 		/* Add author to the load */
 		List<Answer> answers = new ArrayList<Answer>();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
 
 		Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
 				deliveryLongitude);
@@ -4441,14 +4455,19 @@ public class QRules {
 			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance + "");
 			answers.add(totalDistanceAnswer);
 		}
+		
+		String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null);
+		if(loadType != null) {
+			answers.add(new Answer(userCode, jobCode, "LNK_PRODUCT_CATEGORY_TAG", loadType));
+		}
 
 		/* Adding Offer Count to 0 */
-		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
+		Answer offerCountAns = new Answer(userCode, jobCode, "PRI_OFFER_COUNT", "0");
 		/* Publish Answer */
 		answers.add(offerCountAns);
 
 		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
+		answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 		// Setting color to green for new jobs for both driver and owner
 		/*
 		 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
@@ -4457,7 +4476,7 @@ public class QRules {
 
 		BaseEntity updatedJob = this.getBaseEntityByCode(job.getCode());
 		Long jobId = updatedJob.getId();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_JOB_ID", jobId + ""));
 		saveAnswers(answers);
 
 		/* Determine the recipient code */
@@ -4482,11 +4501,10 @@ public class QRules {
 		moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 
 		/* Get the sourceCode(Company code) for this User */
-		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
+		BaseEntity company = getParent(userCode, "LNK_STAFF");
 
 		/* link newly created Job to GRP_LOADS */
-		BaseEntity load = getChildren(jobCode, "LNK_BEG", "LOAD");
-		String loadCode = load.getCode();
+
 		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
@@ -6127,6 +6145,7 @@ public class QRules {
 		
 		/* we check if the search BEs have been created */
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
+		
 		if (searchNewItems == null) {
 			drools.setFocus("GenerateSearches");
 		}
@@ -6202,9 +6221,10 @@ public class QRules {
 
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
+		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
 
 		/* no need to send data again if the user is not logging in or registering */
-		if (!isLogin && !isRegistration) {
+		if (!isLogin && !isRegistration && !isProductTypeTagUpdated ) {
 			this.setState("DATA_SENT_FINISHED");
 			return;
 		}
@@ -6352,7 +6372,16 @@ public class QRules {
 					else if(itemCode.startsWith("BEG_")) {
 						
 						if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
-							baseEntityKids.add(item);
+							//Filtering BEG in the GRP_NEW_ITEMS based on the load types/category tags
+						   List<String> productTypeTag = getBaseEntityAttrValueList(getUser(), "LNK_PRODUCT_CATEGORY_LIST_TAG");
+						   if(productTypeTag != null) {
+							  String begTag = item.getValue("LNK_PRODUCT_CATEGORY_TAG", null);
+							  if( begTag != null && productTypeTag.contains(begTag) ) {
+								  baseEntityKids.add(item);
+							  }
+						   }else {
+							  baseEntityKids.add(item);
+						   }
 						}
 						else {
 							
@@ -7722,6 +7751,39 @@ public class QRules {
 		cmdViewMessageJson.put("root", rootCode);
 		publishCmd(cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
+	}
+	
+	/*
+	 * Checks if load is in the user's load type preference
+	 */
+	public boolean ifUserContainsLoadTypes(BaseEntity user, BaseEntity load) {	
+		List<String> prefLoadType = getBaseEntityAttrValueList(user, "LNK_LOAD_MUTLI_CATEGORY_LISTS");
+		String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null); //getBaseEntityValueAsString(load.getCode(), "LNK_LOAD_CATEGORY_LISTS");
+		
+		if(!prefLoadType.isEmpty() && !loadType.equals("null"))
+		{
+			if(prefLoadType.contains(loadType)) {
+				return true;
+			}else
+				return false;
+			
+		}else
+		return false;
+	}
+	
+	/* Get array String value from an attribute of the BE  */
+	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+		
+		String myLoadTypes = be.getValue(attributeCode, null);
+															
+		if (myLoadTypes != null) {
+			List<String> loadTypesList = new ArrayList<String>();
+			/* Removing brackets "[]" and double quotes from the strings */
+			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
+			loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			return loadTypesList;
+		} else
+			return null;
 	}
 
 }
