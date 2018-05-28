@@ -715,6 +715,7 @@ public class PaymentUtils {
 
 	}
 
+
 	/* Bulk updates a user in Assembly */
 	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String paymentsUserId) throws IllegalArgumentException {
 		
@@ -974,5 +975,6 @@ public class PaymentUtils {
 			
 		return paymentMethod;	
 	}
+
 
 }
