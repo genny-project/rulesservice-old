@@ -32,6 +32,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
       String ownerCode = user.getCode();
       String driverCode = null;
       BaseEntity begBe = null;
+      BaseEntity driverBe = null;
 
       /* list of users for status-change */
       List<String> userCodesForStatusColourChange = new ArrayList<>();
@@ -54,6 +55,7 @@ rule "Job Confirm Delivery - Owner and Release Payment"
           for(Link link : linkList) {
             if(link.getLinkValue().equals("DRIVER")) {
               driverCode = link.getTargetCode();
+              driverBe = rules.getBaseEntityByCode(driverCode);
             }
           }
         }
@@ -91,29 +93,10 @@ rule "Job Confirm Delivery - Owner and Release Payment"
           if(ownerCode != null && driverCode != null) {
 
             /* hitting release payment API */
-            PaymentsResponse releasePaymentResponse = PaymentUtils.releasePaymentWithResponse(begBe, assemblyAuthKey);
-
-            /* getting release-payment status */
-            Boolean isPaymentReleaseSuccess = releasePaymentResponse.getIsSuccess();
+            Boolean isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
 
             /* when release-payment is success */
-            if(isPaymentReleaseSuccess) {
-
-              Map<String, String> releasePaymentResponseMap = releasePaymentResponse.getResponseMap();
-              List<Answer> answers = new ArrayList<Answer>();
-
-              /*    Adding Release Payment Done status  */
-              Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE");
-              answers.add(paymentDoneAns);
-
-              /* save single-disbursement-id as an anwer for the beg once the payment is release */
-              String disbursementId = releasePaymentResponseMap.get("disbursementId");
-              if(releasePaymentResponseMap != null && disbursementId != null) {
-                Answer releasePaymentDisbursementAns = new Answer(rules.getUser().getCode(), begCode, "PRI_PAYMENTS_DISBURSEMENT_ID", disbursementId );
-                answers.add(releasePaymentDisbursementAns);
-              }
-
-              rules.saveAnswers(answers);
+            if(isPaymentReleased) {       
 
               /* we move the job to GRP_PAID */
               rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
@@ -143,47 +126,6 @@ rule "Job Confirm Delivery - Owner and Release Payment"
                 rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
                 rules.setState("CONFIRMED_DELIVERY_OWNER");
-              }
-              else {
-
-                RulesUtils.println("Release payment failed::"+begCode);
-
-                /*  Adding Release Payment Done status  */
-                Answer paymentNotDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "FALSE" );
-                rules.saveAnswer(paymentNotDoneAns);
-
-                HashMap<String, String> contextMap1 = new HashMap<String, String>();
-                contextMap1.put("JOB", begCode);
-                contextMap1.put("OWNER", ownerCode);
-                contextMap1.put("DRIVER", driverCode);
-
-                String[] messageToOwnerRecipients1 = new String[1];
-                messageToOwnerRecipients1[0] = ownerCode;
-
-                rules.sendMessage(null, messageToOwnerRecipients1, contextMap1, "MSG_CH40_PAYMENT_RELEASED_FAILED", "TOAST");
-
-                /* change status color to red - release payment failure */
-                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
-
-                BaseEntity project = rules.getProject();
-
-				/* send slack message when release payment fails */
-				if (project != null) {
-
-					String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
-					if (webhookURL != null) {
-
-					String message = "Release payment has failed for , BEG :" + begCode + ", CallBack from assembly - ITEM_PAYMENT_COMPLETED has not come through yet. All the callbacks for this Job-Item is : "+paymentStatus ;
-					JsonObject payload = new JsonObject();
-					payload.put("text", message);
-
-					try {
-							rules.postSlackNotification(webhookURL, payload);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
               }
             }
           }
