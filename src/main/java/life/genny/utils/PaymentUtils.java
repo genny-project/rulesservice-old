@@ -715,52 +715,6 @@ public class PaymentUtils {
 
 	}
 
-
-	/* Sets the disbursement account for a user */
-	@SuppressWarnings("unchecked")
-	public static String disburseAccount(String paymentsUserId, String paymentMethodString, String authToken) {
-
-		String disburseAccountResponse = null;
-
-		/* Check that both an Assembly user ID and payment method details are provided */
-		if(paymentsUserId != null && paymentMethodString != null) {
-
-			System.out.println( "Payment account method string is not null");
-
-			/* Convert the JSON string into a JSON Object */
-			JSONObject paymentMethodObj = JsonUtils.fromJson(paymentMethodString, JSONObject.class);
-
-			/* Get the ID of the payment method (that's all we'll need) */
-			String paymentAccountId = paymentMethodObj.get("id").toString();
-
-			/* Create the request body */
-			JSONObject disburseAccObj = new JSONObject();
-			JSONObject accObj = new JSONObject();
-			accObj.put("id", paymentAccountId);
-			disburseAccObj.put("account", accObj);
-
-			/* Attempt to set the disbursement account for this user */
-			try {
-				disburseAccountResponse = PaymentEndpoint.disburseAccount(paymentsUserId, JsonUtils.toJson(disburseAccObj), authToken);
-				System.out.println("disburse payment response ::"+disburseAccountResponse);
-
-			} catch (PaymentException e) {
-				log.error("disburse payment response ::"+disburseAccountResponse);
-				e.printStackTrace();
-			}
-		} else {
-			/* No Assembly user ID was provided, throw an error */
-			try {
-				throw new PaymentException("Payment Disimbursement failed because of null values, assemblyUserId ::"+paymentsUserId+", payment method string ::"+paymentMethodString);
-			} catch (PaymentException e) {
-				log.error("Payment exception caught during payment disimbursement");
-				e.printStackTrace();
-			}
-		}
-
-		return disburseAccountResponse;
-	}
-
 	/* Bulk updates a user in Assembly */
 	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String paymentsUserId) throws IllegalArgumentException {
 		
@@ -813,34 +767,14 @@ public class PaymentUtils {
 	}
 
 	/* Returns true of false depending on whether the payment method provided is a bank account */
-	public static Boolean isBankAccount(String bankPaymentString) {
+	public static Boolean isBankAccount(QPaymentMethod paymentMethod) {
 		Boolean isBankAccount = false;
-		JSONObject paymentMethodObj = JsonUtils.fromJson(bankPaymentString, JSONObject.class);
-
-		String paymentType = paymentMethodObj.get("type").toString();
-		if(paymentType.equals("BANK_ACCOUNT")) {
+		
+		if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT)) {
 			isBankAccount = true;
 		}
 
 		return isBankAccount;
-	}
-
-	/* Deletes a bank account */
-	public static void deleteBankAccount(String bankAccountId, String authKey) {
-		try {
-			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
-		} catch (PaymentException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/* Deletes a credit card */
-	public static void deleteCard(String cardAccountId, String authKey) {
-		try {
-			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
-		} catch (PaymentException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
@@ -856,7 +790,6 @@ public class PaymentUtils {
 
 		if(phoneNumber != null) {
 			contactInfoObj = new JSONObject();
-				;
 			userObj.put("contactInfo", contactInfoObj);
 		}
 
@@ -1015,6 +948,31 @@ public class PaymentUtils {
 		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
 		
 		return makePaymentObj;	
+	}
+	
+	public static QPaymentMethod getMaskedPaymentMethod(QPaymentMethod paymentMethod) {
+		
+		Character[] toBeIgnoreCharacterArr = { '-' };
+		
+		if(paymentMethod.getType().equals(PaymentType.CARD) && paymentMethod.getNumber() != null ) {
+			String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(paymentMethod.getNumber().replaceAll("\\s+", "-") , 0, 15,
+					"x", toBeIgnoreCharacterArr);
+			paymentMethod.setNumber(maskedCreditCardNumber);
+		}
+		
+		if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT) && paymentMethod.getBsb() != null && paymentMethod.getAccountNumber() != null) {
+			String bsb = paymentMethod.getBsb().replaceAll("\\s+", "-");
+			String accountNumber = paymentMethod.getAccountNumber().replaceAll("\\s+", "-");
+			
+			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
+			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x",
+					toBeIgnoreCharacterArr);
+			
+			paymentMethod.setAccountNumber(maskedAccountNumber);
+			paymentMethod.setBsb(maskedBsb);
+		}
+			
+		return paymentMethod;	
 	}
 
 }
