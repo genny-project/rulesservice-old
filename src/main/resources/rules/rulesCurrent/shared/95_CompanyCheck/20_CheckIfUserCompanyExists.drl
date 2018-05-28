@@ -6,11 +6,11 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Check user company - step 1"
 	/* no-loop true */
 	when
-		 rules: QRules( 	isState("CHECK_USER_COMPANY") && !isState("CHECKED_COMPANY") )   
+		 rules: QRules( 	isState("BTN_CLICK") && isState("BTN_SELECT_COMPANY_YES") && !isState("LOOP_CHECKED_COMPANY_EXIST") )   
 	 then
 	    rules.header();
 		
-		rules.setState("CHECKED_COMPANY");
+		rules.setState("LOOP_CHECKED_COMPANY_EXIST");
 		
 		BaseEntity userCompany = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
 		rules.set("baseEntity", userCompany);
