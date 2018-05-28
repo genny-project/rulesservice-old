@@ -71,7 +71,6 @@ rule "Submit Offer Driver"
 
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
             String linkCreator = "CREATOR";
 
@@ -216,16 +215,6 @@ rule "Submit Offer Driver"
         /* Sort Begs based on the offers Owner Price and set the linkweight as per the order of cheapest as highest */
            rules.sortOffersInBeg(begCode);
 
-        /* Check if a link exists between USER & OFFER */
-            Boolean linkUserOffer = QwandaUtils.checkIfLinkExistsForTarget(userCode,  linkCode, offerCode, tokenString );
-            rules.println("LINK EXISTS FOR USER & OFFER?  ::    "+ linkUserOffer);
-
-        /* link BEG and QUOTER BE || QUOTER */
-            if(!linkUserOffer){
-                rules.println("\nCREATING LINK BETWEEN          ::   " + begCode + "  &  " + quoterCode);
-                rules.createLink(begCode, quoterCode, linkCode, linkQuoter, 1.0);
-            }
-
         /* Update the Job status   */
 		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
 		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
@@ -238,14 +227,14 @@ rule "Submit Offer Driver"
             rules.publishBaseEntityByCode(userCode, begCode ,"LNK_BEG", offerRecipients);
             rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
-            
+
 
         /* Send BUCKETVIEW Cmd */
         rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
-        
+
         /* we refresh the cache */
         rules.generateNewItemsCache();
-        
+
         drools.setFocus("ispayments");  /* NOW Set up Payments */
 
 

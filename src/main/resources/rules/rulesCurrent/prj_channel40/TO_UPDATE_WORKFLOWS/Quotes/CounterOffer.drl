@@ -66,17 +66,16 @@ rule "Counter Offer"
             String tokenString = rules.getToken();
         /* Get begCode, username, userCode, userFullName */
             String offerCode = $m.getItemCode();
-            System.out.println("offerCode  ::   "+ offerCode);                    
+            System.out.println("offerCode  ::   "+ offerCode);
             String userName = rules.getAsString("preferred_username");
-            System.out.println("username   ::   "+ userName);                 
-            String userCode = rules.getUser().getCode();           
+            System.out.println("username   ::   "+ userName);
+            String userCode = rules.getUser().getCode();
             System.out.println("usercode   ::   "+ userCode);
             String userFullName= MergeUtil.getFullName(userCode, tokenString);
             System.out.println("user fullName   ::   "+ userFullName);
-        
+
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";
 
             /* Get userRole */
 			String userRole = null;
@@ -87,6 +86,6 @@ rule "Counter Offer"
             }
             if(userRole == null || userRole.equals("QUOTER")){
                 rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
-            } 
+            }
         rules.footer();
 end
