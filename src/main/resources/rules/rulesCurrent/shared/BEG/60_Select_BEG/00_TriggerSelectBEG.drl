@@ -1,0 +1,28 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Select BEG"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("SELECT_EVENT") && 
+						!isState("LOOP_TRIGGER_SELECT_BEG")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_SELECT_BEG");
+		
+		rules.setState("TRIGGER_SELECT_BEG");
+ 		String begCode = rules.getAsString("itemCode");
+		if(begCode != null){
+			BaseEntity beg = rules.getBaseEntityByCode(begCode);
+			if(beg != null){
+				rules.println("beg  ::  " + beg.getCode());
+				List<BaseEntity> applications = rules.getChildrens(beg.getCode(), "LNK_BEG", "APPLICATION");
+				if(applications != null){
+					/* subscribe to all the applications of the beg */
+					rules.subscribeUserToBaseEntities(rules.getUser().getCode(), applications);
+					rules.publishCmd(applications, beg.getCode(), "LNK_BEG");
+				}
+			}
+		}
+	 	rules.footer();      
+end
