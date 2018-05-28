@@ -1,0 +1,35 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Update Faculty Selection Data"
+     when
+        m: QEventAttributeValueChangeMessage( data.code == "LNK_UNI" ) 
+        rules: QRules( 	isState("STARTED") && 
+						!isState("LOOP_UPDATE_FACULTY_SELECTION_DATA") )
+     then      
+        rules.header();     
+		rules.setState("LOOP_UPDATE_FACULTY_SELECTION_DATA");
+    	
+        String uniName = m.getAnswer().getValue();
+        String previousUniName = m.getOldValue();
+        rules.println("New University :: " + uniName);
+        rules.println("Old University :: " + previousUniName);
+
+        if(uniName != null){
+
+            String[] recipient = {rules.getUser().getCode()};
+            rules.clearBaseEntity("GRP_FACULTY_SELECTION", recipient);
+            
+            List<BaseEntity> facultiesToSend = rules.getChildrens(uniName, "LNK_CORE", "FACULTY");
+            if(facultiesToSend != null){
+                rules.printList("Faculties of Selected UNI", facultiesToSend);
+                rules.publishCmd(facultiesToSend, "GRP_FACULTY_SELECTION", "LNK_CORE");
+		        rules.setState("UPDATED_FACULTY_SELECTION_DATA");
+            }else{
+                rules.println("facultiesToSend is null");
+            }
+        }else{
+            rules.println("uniName is null");
+        }
+		rules.footer();     		      
+end

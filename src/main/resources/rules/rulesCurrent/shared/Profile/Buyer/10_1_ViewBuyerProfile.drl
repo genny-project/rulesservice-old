@@ -13,12 +13,7 @@ rule "View Buyer Profile"
      then
         rules.header();    
         rules.setState("LOOP_VIEW_BUYER_PROFILE");
-
-        rules.sendSelections("GRP_UNI_SELECTION", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_DEGREE_SELECTION", "LNK_CORE", 10);
-        rules.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_GENDERS", "LNK_CORE", 10);
-     	rules.sendSelections("GRP_RESIDENTIAL_STATUS", "LNK_CORE", 10);
+        rules.setState("SEND_BUYER_DROPDOWN_SELECTIONS");
 
         rules.set("questionSourceCode", rules.getUser().getCode());
 		rules.set("questionTargetCode", rules.getUser().getCode());

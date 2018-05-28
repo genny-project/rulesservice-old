@@ -1,0 +1,27 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Send Faculty Selection Data"
+     when
+        rules: QRules( 	isState("SEND_FACULTY_DROPDOWN") &&
+												isState("PRI_IS_BUYER") && 
+												!isState("LOOP_SEND_FACULTY_SELECTION_DATA")	)
+     then
+        rules.header();
+        rules.setState("LOOP_SEND_FACULTY_SELECTION_DATA");
+
+        String uniName = rules.getUser().getLoopValue("LNK_UNI", null);
+				if(uniName != null){
+					List<BaseEntity> faculties = rules.getChildrens(uniName, "LNK_CORE", "FACULTY");
+					if(faculties != null){
+						rules.printList("Faculties of University", faculties);
+						rules.publishCmd(faculties, "GRP_FACULTY_SELECTION", "LNK_CORE");
+						rules.setState("SENT_REGISTRATION_DATA");
+					}else{
+						rules.println("faculties is null");
+					}
+				}else{
+					rules.println("uniName is null");
+				}
+end

@@ -3,14 +3,14 @@ import life.genny.rules.QRules;
 
 rule "Update Buyer Profile"
 	when
-	    rules: QRules( 	isState("QUE_BUYER_GRP") && 
+	    rules: QRules( 	isState("QUE_BUYER_PROFILE_GRP") && 
 						isState("EVENT_FORM_SUBMIT") && 		
-						isState("PRI_IS_PROFILE_COMPLETED") && 
 						!isState("LOOP_UPDATE_BUYER_PROFILE")) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_UPDATE_BUYER_PROFILE");
 
 		rules.setState("TRIGGER_PROFILE_CHECK");
+		rules.setState("TRIGGER_HOMEPAGE");
 	 	rules.footer();      
 end
