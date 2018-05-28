@@ -975,14 +975,21 @@ public class QRules {
 
 					LocalDateTime now = LocalDateTime.now();
 					LocalDateTime lastWeek = now.minusWeeks(1);
-					LocalDateTime created = be.getCreated();
-					this.println(created.isBefore(lastWeek));
-					this.println(created.isAfter(lastWeek));
 
-					if (created.isBefore(lastWeek)) {
+			          /* we grab the paid date */
+					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_IS_RELEASE_PAYMENT_DONE");
+					if(paidDate.isPresent()) {
+						
+						LocalDateTime created = paidDate.get().getCreated();
 
-						/* BEG was paid >1 week - we archive it */
-						this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
+						this.println(created.isBefore(lastWeek));
+						this.println(created.isAfter(lastWeek));
+
+						if (created.isBefore(lastWeek)) {
+
+							/* BEG was paid >1 week - we archive it */
+							this.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
+						}
 					}
 				}
 			}
@@ -6110,20 +6117,15 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-		generateBucketCaches();
+		this.generateItemCaches("BUCKETS");
 	}
 
-	public void generateBucketCaches() {
-
-		this.println("Generating new buckets");
+	public void generateItemCaches(String cachedItemKey) {
 
 		/* we generate a service token */
 		String token = this.generateServiceToken(this.realm());
-//		if(token != null) {
-//			this.setNewTokenAndDecodedTokenMap(token);
-//		}
 
-		this.println("Search new items");
+		this.println("Generating message for cached item: " + cachedItemKey);
 
 		/* we check if the search BEs have been created */
 		BaseEntity searchNewItems = getBaseEntityByCode("SBE_NEW_ITEMS");
@@ -6131,15 +6133,15 @@ public class QRules {
 			drools.setFocus("GenerateSearches");
 		}
 
-		/* we grab the buckets */
-		QDataBaseEntityMessage bucketsMsg = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
+    List<QBulkMessage> bulkMessages = new ArrayList<QBulkMessage>();
 
-		this.println(bucketsMsg);
+		/* we grab the cached Item */
+		QDataBaseEntityMessage cachedItemMessages = VertxUtils.getObject(realm(), cachedItemKey, realm(), QDataBaseEntityMessage.class);
 
-		if (bucketsMsg != null) {
+		if (cachedItemMessages != null) {
 
 			/* we loop through each bucket to cache the messages */
-			for (BaseEntity bucket : bucketsMsg.getItems()) {
+			for (BaseEntity cachedItem : cachedItemMessages.getItems()) {
 
 				Integer itemCount = 0;
 
@@ -6148,9 +6150,9 @@ public class QRules {
 				try {
 
 					/* we create the searchBE */
-					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "All New Items")
+					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), cachedItemKey)
 							.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-							.setSourceCode(bucket.getCode())
+							.setSourceCode(cachedItem.getCode())
 							.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
 							.setPageStart(0)
 							.setPageSize(10000);
@@ -6160,13 +6162,13 @@ public class QRules {
 
 					if (results != null) {
 
-						println("Caching Bucket " + bucket.getCode() + " with " + results.getReturnCount() + " items");
+						println("Caching Item " + cachedItem.getCode() + " with " + results.getReturnCount() + " items");
 						itemCount = results.getItems().length;
-						results.setParentCode(bucket.getCode());
+						results.setParentCode(cachedItem.getCode());
 						results.setLinkCode("LNK_CORE");
 						bulkmsg.add(results);
 
-						/* we loop through each BEG of the current bucket */
+						/* we loop through each BEG of the current cachedItem */
 						for (BaseEntity beg : results.getItems()) {
 
 							/* we grab all the kids */
@@ -6186,10 +6188,11 @@ public class QRules {
 						}
 					}
 
-					/* we create the bucket bulk message */
+					/* we create the cachedItem bulk message */
 					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
 					QBulkMessage bulk = new QBulkMessage(messages.clone());
-					VertxUtils.putObject(realm(), "CACHE", bucket.getCode(), bulk);
+					VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
+          bulkMessages.add(bulk);
 					println("Loading New cache laoded " + itemCount + " BEs");
 
 				} catch (Exception e) {
@@ -6212,9 +6215,6 @@ public class QRules {
 
 		System.out.println("Entering new send application data ");
 
-		/* create variables */
-		long startTime = System.nanoTime();
-		BaseEntity user = this.getUser();
 
 		showLoading("Loading data...");
 
@@ -6222,73 +6222,82 @@ public class QRules {
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
 		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
 
-		/* we fetch all the bucket items and subscribe the user to the relevant ones */
-		QBulkMessage items = fetchAndSubscribeBucketItemsForStakeholder(getUser(), subscriptions);
-		if (items != null) {
-
-			System.out.println("Number of items found in fetch Items = " + items.getMessages().length);
-
-			if (items.getMessages() != null) {
-
-				startTime = System.nanoTime();
-
-				/* if the user is not an admin we not need to filter out data */
-				if (!user.is("PRI_IS_ADMIN")) {
-					items = filterBucketItemsForStakeholder(items, user);
-				}
-
-				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-			}
-
-			/* we publish the data */
-			try {
-				publishCmd(items);
-			} catch (Exception e) {
-
-			}
-		}
-
-		println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-		startTime = System.nanoTime();
-		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+    this.sendCachedItem("BUCKETS");
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
 	}
 
-	public QBulkMessage fetchAndSubscribeBucketItemsForStakeholder(final BaseEntity stakeholder, final Map<String, String> subscriptions) {
+  public void sendCachedItem(final String cachedItemKey) {
+
+	long startTime = System.nanoTime();
+	BaseEntity user = this.getUser();
+    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, null);
+    if (items != null) {
+
+      System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
+
+      if (items.getMessages() != null) {
+
+        startTime = System.nanoTime();
+
+        /* if the user is not an admin we not need to filter out data */
+        if (!user.is("PRI_IS_ADMIN")) {
+          items = filterBucketItemsForStakeholder(items, user);
+        }
+
+        println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+      }
+
+      /* we publish the data */
+      try {
+        publishCmd(items);
+      } catch (Exception e) {
+
+      }
+
+		println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+
+    }
+  }
+
+	public QBulkMessage fetchAndSubscribeCachedItemsForStakeholder(final String cachedItemKey, final BaseEntity stakeholder, final Map<String, String> subscriptions) {
 
 		QBulkMessage bulk = new QBulkMessage();
 
-		QDataBaseEntityMessage bucketsMessage = VertxUtils.getObject(realm(), "BUCKETS", realm(), QDataBaseEntityMessage.class);
+		QDataBaseEntityMessage cachedItemMessages = VertxUtils.getObject(realm(), cachedItemKey, realm(), QDataBaseEntityMessage.class);
 
-		if (bucketsMessage != null) {
+		if (cachedItemMessages != null) {
 
-			/* we loop through the buckets */
-			for (BaseEntity bucket : bucketsMessage.getItems()) {
+			/* we loop through the messages */
+			for (BaseEntity message : cachedItemMessages.getItems()) {
 
-				/* we grab cache items for the given bucket */
-				QBulkMessage currentBucketMessages = new QBulkMessage();
-				currentBucketMessages = VertxUtils.getObject(realm(), "CACHE", bucket.getCode(), QBulkMessage.class);
-				if (currentBucketMessages != null) {
+				/* we grab cache items for the given message */
+				QBulkMessage currentItemMessages = new QBulkMessage();
+				currentItemMessages = VertxUtils.getObject(realm(), "CACHE", message.getCode(), QBulkMessage.class);
+				if (currentItemMessages != null) {
 
-					QDataBaseEntityMessage[] messages = currentBucketMessages.getMessages();
+					QDataBaseEntityMessage[] messages = currentItemMessages.getMessages();
 
 					/* we add it to the list of items to send */
 					bulk.add(messages);
 
-					/* we check if we need to subscribe the user to the bucket */
-					subscriptions.forEach((role, bucketToSubscribe) -> {
+          if(subscriptions != null) {
 
-						if(this.isUserRole(stakeholder, role)) {
+            /* we check if we need to subscribe the user to the message */
+            subscriptions.forEach((role, bucketToSubscribe) -> {
 
-							if (bucketToSubscribe.equals(bucket.getCode()) ) {
+              if(this.isUserRole(stakeholder, role)) {
 
-								/* we subscribe the user */
-								VertxUtils.subscribe(realm(), bucket, stakeholder.getCode());
-							}
-						}
-					});
+                if (bucketToSubscribe.equals(message.getCode()) ) {
+
+                  /* we subscribe the user */
+                  VertxUtils.subscribe(realm(), message, stakeholder.getCode());
+                }
+              }
+            });
+          }
 				}
 			}
 		}
