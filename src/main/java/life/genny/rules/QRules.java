@@ -7858,12 +7858,11 @@ public class QRules {
 			try {
 				String stringifiedTokenObj = JsonUtils.toJson(tokenObj);
 				String tokenResponse =  PaymentEndpoint.authenticatePaymentProvider(stringifiedTokenObj, paymentToken);
-				
+			
 				if(tokenResponse != null) {
 					QPaymentsAuthorizationToken tokenCreationResponseObj = JsonUtils.fromJson(tokenResponse, QPaymentsAuthorizationToken.class);
 					token = tokenCreationResponseObj.getToken();
-				}
-				
+				}		
 				
 			} catch (PaymentException e) {
 				String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());

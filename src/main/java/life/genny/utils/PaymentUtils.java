@@ -662,7 +662,6 @@ public class PaymentUtils {
 		}
 	}
 
-
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
 		Boolean isAnswerContainsPaymentAttribute = false;
 
