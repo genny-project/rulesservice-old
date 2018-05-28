@@ -113,6 +113,7 @@ import life.genny.qwanda.payments.QPaymentsAuthorizationToken;
 import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 import life.genny.qwanda.payments.QPaymentsCompany;
 import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
+import life.genny.qwanda.payments.QPaymentsDisbursement;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
@@ -7875,4 +7876,59 @@ public class QRules {
 		}
 		return isReleasePayment;
 	}
-}
+	
+	/* disbursement of bank account for a user */
+	public Boolean disburseAccount(String paymentsUserId, QPaymentMethod paymentMethodObj, String authToken) {
+		
+		Boolean isDisbursementSuccess = false;
+		if(paymentsUserId != null && paymentMethodObj != null) {
+			try {
+				/* Get the ID of the payment method (that's all we'll need) */
+				String paymentMethodId = paymentMethodObj.getId();
+				
+				/* set the payment ID in the object */
+				QPaymentMethod requestBodyObj = new QPaymentMethod(paymentMethodId);
+				
+				/* create disbursement object */
+				QPaymentsDisbursement disbursementObj = new QPaymentsDisbursement(requestBodyObj);
+				
+				try {
+					/* Hit the API. This API has no response string */
+					PaymentEndpoint.disburseAccount(paymentsUserId, JsonUtils.toJson(disbursementObj), authToken);
+					isDisbursementSuccess = true;
+						
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);
+				}			
+			} catch(IllegalArgumentException e) {
+				log.error("Exception occured during disbursement. "+e.getMessage());
+			}
+		} else {
+			log.error("Payment disbursment will not happen. payments user ID/Payment method is null.");
+		}
+		return isDisbursementSuccess;
+	}
+	
+	/* Deletes a bank account */
+	public static Boolean deleteBankAccount(String bankAccountId, String authKey) {
+		Boolean isDeleted = false;
+		try {
+			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
+			isDeleted = true;
+		} catch (PaymentException e) {
+		}
+		return isDeleted;
+	}
+
+	/* Deletes a credit card */
+	public static Boolean deleteCard(String cardAccountId, String authKey) {
+		Boolean isDeleted = false;
+		try {
+			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
+			isDeleted = true;
+		} catch (PaymentException e) {
+		}
+		return isDeleted;
+	}
+ }
