@@ -107,7 +107,7 @@ rule "Confirm Offer"
 							drools.setFocus("payments");
 						}
 						else {
-
+							rules.sendSlackNotification("Something went wrong with pricing calculations. PRI_OFFER_OWNER_PRICE_INC_GST is null for Job code : "+begCode + ", Offer code "+offerCode);
 						}
 					}
 					else if(userRole.equals("QUOTER")) {
