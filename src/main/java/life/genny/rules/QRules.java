@@ -5786,7 +5786,10 @@ public class QRules {
 
 	}
 
-	private String generateServiceToken(final String realm) {
+	private String generateServiceToken(String realm) {
+		if (System.getenv("GENNYDEV") != null) {
+			realm = "genny";
+		}
 
 		String jsonFile = realm + ".json";
 
