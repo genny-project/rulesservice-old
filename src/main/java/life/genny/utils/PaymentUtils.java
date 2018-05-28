@@ -662,60 +662,6 @@ public class PaymentUtils {
 		}
 	}
 
-	/* Fetch the one time use Assembly card and bank tokens for a user */
-	public static String fetchOneTimeAssemblyToken(String qwandaServiceUrl, String userId, String tokenString, String assemblyId, String assemblyAuthToken, String type) {
-		String transactionToken = null;
-		JSONParser parser = new JSONParser();
-		JSONObject authenticationEntityObj = new JSONObject();
-
-		/* Check that an Assembly ID was provided before we continue */
-		if (assemblyId != null) {
-			String tokenResponse = null;
-
-			try {
-				authenticationEntityObj.put("type", type);
-				JSONObject userObj = new JSONObject();
-				userObj.put("id", assemblyId);
-				authenticationEntityObj.put("user", userObj);
-
-				tokenResponse  = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(authenticationEntityObj), assemblyAuthToken);
-
-				if (!tokenResponse.contains("error")) {
-
-					try {
-						JSONObject tokenObj = (JSONObject) parser.parse(tokenResponse);
-						System.out.println("token object ::" + tokenObj);
-
-						String providerToken = tokenObj.get("token").toString();
-
-						return providerToken;
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (Exception e) {
-				log.error("PaymentUtils Exception occured during Payment authentication Token provision");
-			}
-		} else {
-			log.error("ASSEMBLY USER ID IS NULL");
-		}
-
-		return transactionToken;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static String authenticatePaymentProvider(String assemblyId, String assemblyAuthToken) throws PaymentException {
-		JSONObject paymentProviderObj = new JSONObject();
-		JSONObject userObj = new JSONObject();
-		userObj.put("id", assemblyId);
-		paymentProviderObj.put("type", PROVIDER_TYPE_BANK);
-		paymentProviderObj.put("user", userObj);
-		String tokenResponse = null;
-		tokenResponse = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(paymentProviderObj), assemblyAuthToken);
-		return tokenResponse;
-	}
-
-
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
 		Boolean isAnswerContainsPaymentAttribute = false;
 

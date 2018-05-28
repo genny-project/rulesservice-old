@@ -1,15 +1,12 @@
 package life.genny.rules;
 
-import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
-
 import life.genny.qwanda.Answer;
-
-/* Sorry Adam if you read this */
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import life.genny.utils.PaymentUtils;
 import java.util.List;
+import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 
 rule "Delete new payment method - user"
 	agenda-group "payment-method"
@@ -31,13 +28,11 @@ rule "Delete new payment method - user"
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
-       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
 
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-			/* rules.saveAnswer(cardTokenAnswer); */
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			/* rules.saveAnswer(bankTokenAnswer); */
 			
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
