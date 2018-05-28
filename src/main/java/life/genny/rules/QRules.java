@@ -7856,7 +7856,8 @@ public class QRules {
 			QPaymentsAuthorizationToken tokenObj = new QPaymentsAuthorizationToken(type, user);
 			
 			try {
-				String tokenResponse =  PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(tokenObj), paymentToken);
+				String stringifiedTokenObj = JsonUtils.toJson(tokenObj);
+				String tokenResponse =  PaymentEndpoint.authenticatePaymentProvider(stringifiedTokenObj, paymentToken);
 				
 				if(tokenResponse != null) {
 					QPaymentsAuthorizationToken tokenCreationResponseObj = JsonUtils.fromJson(tokenResponse, QPaymentsAuthorizationToken.class);
