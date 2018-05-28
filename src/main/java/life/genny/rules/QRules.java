@@ -7904,6 +7904,7 @@ public class QRules {
 	
 	/* Deletes a bank account */
 	public Boolean deleteBankAccount(String bankAccountId, String authKey) {
+
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
@@ -7915,6 +7916,7 @@ public class QRules {
 
 	/* Deletes a credit card */
 	public Boolean deleteCard(String cardAccountId, String authKey) {
+
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
@@ -7924,4 +7926,3 @@ public class QRules {
 		return isDeleted;
 	}
  }
-
