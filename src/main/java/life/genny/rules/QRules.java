@@ -52,6 +52,7 @@ import org.javamoney.moneta.Money;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+import com.hazelcast.util.JsonUtil;
 import com.hazelcast.util.collection.ArrayUtils;
 
 import io.vertx.core.json.JsonArray;
@@ -102,6 +103,9 @@ import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentsErrorResponse;
+import life.genny.qwanda.payments.QPaymentsFee;
+import life.genny.qwanda.payments.QPaymentsItem;
+import life.genny.qwanda.payments.QPaymentsItem.PaymentTransactionType;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
 import life.genny.qwanda.payments.QPaymentsCompany;
 import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
@@ -109,6 +113,7 @@ import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
@@ -7714,7 +7719,7 @@ public class QRules {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			log.error("Exception occured user updation" + e.getMessage());
+			log.error("Exception occured company updation" + e.getMessage());
 		}
 
 	}
@@ -7729,6 +7734,114 @@ public class QRules {
 		cmdViewMessageJson.put("root", rootCode);
 		publishCmd(cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
+	}
+	
+	/* Creation of payment item */
+	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe,
+			BaseEntity driverBe, String paymentsToken) {
+		String itemId = null;
+		
+		if(offerBe != null && begBe != null) {
+			try {
+				 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
+				Money ownerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+				
+				/* If pricing calculation fails */
+				if(ownerAmountWithoutFee == null) {
+					throw new IllegalArgumentException("Something went wrong during pricing calculations. Price for item cannot be empty");
+				}
+			
+				/* Convert dollars into cents */
+				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(ownerAmountWithoutFee);
+				
+				/* Owner => Buyer */
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(ownerBe);
+
+				/* Driver => Seller */
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(driverBe);
+
+				/* get item name */
+				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				println("payments item name ::"+paymentsItemName);
+				
+				/* Not mandatory */
+				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+			
+				try {			
+					/* get fee */
+					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
+					System.out.println("payment fee Id ::"+paymentFeeId);
+					String[] feeArr = { paymentFeeId };
+					
+					/* bundling all the info into Item object */
+					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
+							roundedItemPriceInCents.getNumber().doubleValue(), ownerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
+					
+					/* Hitting payments item creation API */
+					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
+					
+					if(itemCreationResponse != null) {
+						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse, QPaymentsAssemblyItemResponse.class);
+						itemId = itemResponsePojo.getId();
+					}
+					
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);					
+				}
+
+			} catch (IllegalArgumentException e) {
+				
+				/* Redirect to home if item creation fails */
+				redirectToHomePage();
+				
+				String jobId = begBe.getValue("PRI_JOB_ID", null);
+				BaseEntity userBe = getUser();
+				
+				/* Send toast */
+				String toastMessage = "Payments item creation failed for the job with ID : #"+jobId +", "+e.getMessage();
+				
+				if(userBe != null) {
+					String[] recipientArr = { userBe.getCode() };
+					sendDirectToast(recipientArr, toastMessage, "warning");
+				}	
+				
+				/* Send slack notification */
+				sendSlackNotification(toastMessage);
+			}
+		} else {
+			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "+ begBe.getCode() + ", OFFER CODE :"+offerBe.getCode();
+			sendSlackNotification(slackMessage);
+		}
+		
+		return itemId;
+	}
+	
+	/* Creates a new fee in external payments-service from a offer baseEntity */
+	private String createPaymentFee(BaseEntity offerBe, String paymentsToken)
+			throws IllegalArgumentException {
+
+		String paymentFeeId = null;
+		try {
+			/* get fee object with all fee-info */
+			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
+			if (feeObj != null) {			
+				try {
+					/* Hit the fee creation API */
+					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
+										QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+
+					/* Get the fee ID */
+					paymentFeeId = feePojo.getId();
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);	
+				}	
+			}
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+		return paymentFeeId;
 	}
 
 }
