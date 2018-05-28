@@ -8156,7 +8156,7 @@ public class QRules {
 									publishCmd(begs, begGroup.getCode(), "LNK_CORE");
 									
 									for (BaseEntity beg : begs) {
-										List<BaseEntity> applications = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, getUser().getCode());
+										List<BaseEntity> applications = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
 										if(applications.size() > 0){
 											println("application size :: "+applications.size());
 											
@@ -8168,17 +8168,16 @@ public class QRules {
 											println("application that is found :: "+begApplication.getCode());
 											begKids.add(begApplication);
 
-											List<BaseEntity> otherBegKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
-											for (BaseEntity begKid : otherBegKids) {
-
-												if (!begKid.getName().equals("APPLICATION")) {
-													println("Baseentity kid :: "+begKid.getCode());
-													begKids.add(begKid);
-												}
-											}
 											
 										}
-	
+										List<BaseEntity> otherBegKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+										for (BaseEntity begKid : otherBegKids) {
+
+											if (!begKid.getName().equals("APPLICATION")) {
+												println("Baseentity kid :: "+begKid.getCode());
+												begKids.add(begKid);
+											}
+										}
 										/* subscribe to all the applications of the company */
 										subscribeUserToBaseEntities(getUser().getCode(), begKids);
 										publishCmd(begKids, beg.getCode(), "LNK_BEG");

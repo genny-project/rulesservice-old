@@ -10,7 +10,7 @@ rule "Send Internship Data"
 		rules.setState("LOOP_SEND_INTERNSHIP_DATA");
 
 		rules.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 10);
-		rules.sendSelections("GRP_DURATION", "LNK_CORE", 10);
+		rules.sendSelections("GRP_INTERNSHIP_DURATION", "LNK_CORE", 10);
 
 		rules.setState("SENT_INTERNSHIP_DATA");
 		rules.footer();
