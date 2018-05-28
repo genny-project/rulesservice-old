@@ -8189,6 +8189,16 @@ public class QRules {
 						}
 					}
 				}
+				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
+					List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (buckets != null) {
+						printList("buckets", buckets);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), buckets);
+						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
+					}
+				}
 			}
 
 			
