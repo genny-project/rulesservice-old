@@ -169,5 +169,30 @@ public class FeeCalculationTest {
 		System.out.println("masked account 1 ::"+maskedAccount1);
 		System.out.println("masked account 1 ::"+maskedAccount3);
 	}
+	
+	@Test
+	public void testBitMasking() {
+		
+		final int SEL_GEN = 1;  // Binary 00001
+		final int SEL_GENL = 2;  // Binary 00010
+		final int SEL_SCT = 4;  // Binary 00100
+		final int SEL_BTR = 8;
+		//Setting Flag
+		long categoryTag = 0;
+		categoryTag = categoryTag | SEL_GENL;
+		
+		long categoryTag2 = 0;
+	     categoryTag2 = categoryTag2 | SEL_GENL | SEL_GEN;
+		
+		boolean lFlagCSet = ((categoryTag & SEL_GENL) == SEL_GENL);
+		System.out.println("The flag set is :: "+lFlagCSet);
+		System.out.println("The tag value is :: "+categoryTag);
+		long check = 8 & categoryTag2;
+		if(check != 0) {
+			System.out.println("Contains11");
+		}
+		System.out.println("The 2 tag value is  :: "+categoryTag2);
+		
+	}
 
 }

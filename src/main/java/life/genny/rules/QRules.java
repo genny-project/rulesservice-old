@@ -7780,10 +7780,57 @@ public class QRules {
 			List<String> loadTypesList = new ArrayList<String>();
 			/* Removing brackets "[]" and double quotes from the strings */
 			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
-			loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
-			return loadTypesList;
+			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+			    loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			    return loadTypesList;
+			}else {
+				return null;
+			}
 		} else
 			return null;
 	}
+	
+	/*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitValueOfTheTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+		Long categoryTypeInBits = 0L;
+        /* get the list of category types user has  */
+        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        if(productCategoryList != null){
+           for(String loadTypeCode : productCategoryList ){
+                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BIT_VALUE", null);
+                println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
+                if(bitValueStr != null){  
+                   /* Combine all the bit values to the users category type attribute using or operator */               
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }
+        
+        println("The final bit value is :: "+categoryTypeInBits);
+        saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+	}
+	
+	/*
+	 * Get all Base Entities based on search Prefix and the product type code
+	 */
+	public void getAllRelevantBaseEntities(final String searchPrefix, final String productTypeCode) {
+		BaseEntity selBE = getBaseEntityByCode(productTypeCode);
+		String bitValue = selBE.getValue("PRI_BIT_VALUE", null);
+		if(bitValue != null) {
+		   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
+		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE, searchPrefix+"_%")
+		  	     .addFilter("PRI_PRODUCT_CATEGORY_TAG_IN_BIT", SearchEntity.StringFilter.EQUAL,  bitValue)
+		  	     .setPageStart(0)
+		  	     .setPageSize(10000);
+		}
+		
+	}
+	
 
 }
