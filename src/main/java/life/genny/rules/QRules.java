@@ -6135,13 +6135,17 @@ public class QRules {
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
 		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
 
-    this.sendCachedItem("BUCKETS");
+        this.sendCachedItem("BUCKETS", subscriptions);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
 	}
+	
+	 public void sendCachedItem(final String cachedItemKey) {
+		  this.sendCachedItem(cachedItemKey, null);
+	 }
 
-  public void sendCachedItem(final String cachedItemKey) {
+  public void sendCachedItem(final String cachedItemKey, HashMap<String, String> subscriptions) {
 
 	long startTime = System.nanoTime();
 	BaseEntity user = this.getUser();
