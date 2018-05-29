@@ -113,6 +113,7 @@ public class RulesLoader {
 			}
 			 System.out.println("Startup Rules Triggered");
 			 try {
+				 
 				//FileUtils.touch(new File("/tmp/ready"));
 				Files.touch(new File("/tmp/ready"));
 			} catch (IOException e) {
