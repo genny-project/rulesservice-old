@@ -98,9 +98,6 @@ package life.genny.rules;
 					/* hitting the method to change status-colour to green (success) - escrow status */
 			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
-            /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
-            rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
-
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();
 
@@ -180,6 +177,8 @@ package life.genny.rules;
 
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 						rules.saveAnswer(paymentStatus);
+						
+						rules.sendSlackNotification("Payment processing failed for the job : "+begBe.getCode() + ". Failure callback status recieved : "+m.getObject_status().toString());
 
 		            	}
 
