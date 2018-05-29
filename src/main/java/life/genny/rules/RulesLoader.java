@@ -23,6 +23,8 @@ import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
+import com.google.common.io.Files;
+
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
@@ -111,7 +113,8 @@ public class RulesLoader {
 			}
 			 System.out.println("Startup Rules Triggered");
 			 try {
-				FileUtils.touch(new File("/tmp/ready"));
+				//FileUtils.touch(new File("/tmp/ready"));
+				Files.touch(new File("/tmp/ready"));
 			} catch (IOException e) {
 				System.out.println("Could not save readiness file");
 			}
