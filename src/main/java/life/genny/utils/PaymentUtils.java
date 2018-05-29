@@ -956,7 +956,7 @@ public class PaymentUtils {
 		
 		if(paymentMethod.getType().equals(PaymentType.CARD) && paymentMethod.getNumber() != null ) {
 			String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(paymentMethod.getNumber().replaceAll("\\s+", "-") , 0, 15,
-					"x", toBeIgnoreCharacterArr);
+					"X", toBeIgnoreCharacterArr);
 			paymentMethod.setNumber(maskedCreditCardNumber);
 		}
 		
@@ -964,8 +964,8 @@ public class PaymentUtils {
 			String bsb = paymentMethod.getBsb().replaceAll("\\s+", "-");
 			String accountNumber = paymentMethod.getAccountNumber().replaceAll("\\s+", "-");
 			
-			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "x", toBeIgnoreCharacterArr);
-			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "x",
+			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "X", toBeIgnoreCharacterArr);
+			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "X",
 					toBeIgnoreCharacterArr);
 			
 			paymentMethod.setAccountNumber(maskedAccountNumber);

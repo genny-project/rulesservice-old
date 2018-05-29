@@ -3768,10 +3768,6 @@ public class QRules {
 				answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
 				answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
 
-				/*
-				 * answers.add(new Answer(begCode, begCode, "PRI_DEPOSIT_REFERENCE_ID",
-				 * makePaymentResponseObj.getResponseMap().get("depositReferenceId")));
-				 */
 
 				/* Update BEG to have DRIVER_CODE as an attribute */
 				answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
@@ -3780,37 +3776,8 @@ public class QRules {
 
 				BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
 
-				/* TOAST :: SUCCESS */
-				println("Sending success toast since make payment succeeded");
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("DRIVER", quoterCode);
-				contextMap.put("JOB", begCode);
-				contextMap.put("QUOTER", quoterCode);
-				contextMap.put("OFFER", offer.getCode());
-				contextMap.put("LOAD", loadBe.getCode());
-
-				String[] recipientArr = { userCode };
-
-				/* TOAST :: PAYMENT SUCCESS */
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
-
-				/* QUOTER config */
-				HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-				contextMapForDriver.put("JOB", begCode);
-				contextMapForDriver.put("OWNER", userCode);
-				contextMapForDriver.put("OFFER", offer.getCode());
-				contextMapForDriver.put("LOAD", loadBe.getCode());
-
-				String[] recipientArrForDriver = { quoterCode };
-
-				/* Sending messages to DRIVER - Email and sms enabled */
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-
 				/* Allocate QUOTER as Driver */
-				updateLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+				createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
 
 				/* Update link between BEG and Accepted OFFER to weight = 100 */
 				updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
@@ -3893,6 +3860,35 @@ public class QRules {
 				/* sending cmd BUCKETVIEW */
 				// this.setState("TRIGGER_HOMEPAGE");
 				this.redirectToHomePage();
+				
+				/* TOAST :: SUCCESS */
+				println("Sending success toast since make payment succeeded");
+				HashMap<String, String> contextMap = new HashMap<String, String>();
+				contextMap.put("DRIVER", quoterCode);
+				contextMap.put("JOB", begCode);
+				contextMap.put("QUOTER", quoterCode);
+				contextMap.put("OFFER", offer.getCode());
+				contextMap.put("LOAD", loadBe.getCode());
+
+				String[] recipientArr = { userCode };
+
+				/* TOAST :: PAYMENT SUCCESS */
+				sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+				sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+
+				/* QUOTER config */
+				HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+				contextMapForDriver.put("JOB", begCode);
+				contextMapForDriver.put("OWNER", userCode);
+				contextMapForDriver.put("OFFER", offer.getCode());
+				contextMapForDriver.put("LOAD", loadBe.getCode());
+
+				String[] recipientArrForDriver = { quoterCode };
+
+				/* Sending messages to DRIVER - Email and sms enabled */
+				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
 				setState("PAYMENT_DONE");
 
