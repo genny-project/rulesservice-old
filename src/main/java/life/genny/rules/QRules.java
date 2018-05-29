@@ -995,6 +995,8 @@ public class QRules {
 			}
 
 			this.println("Archiving done.");
+			this.generateNewItemsCache();
+			
 		} else {
 			this.println("Could not get token.");
 		}
