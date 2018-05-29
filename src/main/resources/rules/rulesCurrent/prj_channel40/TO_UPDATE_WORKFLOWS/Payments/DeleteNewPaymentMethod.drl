@@ -7,6 +7,8 @@ import io.vertx.core.json.JsonObject;
 import life.genny.utils.PaymentUtils;
 import java.util.List;
 import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
+import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwandautils.JsonUtils;
 
 rule "Delete new payment method - user"
 	agenda-group "payment-method"
@@ -56,10 +58,11 @@ rule "Delete new payment method - user"
 					if(paymentMethodObj instanceof JsonObject) {
 
 						JsonObject paymentMethod = (JsonObject)paymentMethodObj;
+						QPaymentMethod paymentMethodObject = JsonUtils.fromJson(paymentMethod.toString(), QPaymentMethod.class);
 						if(paymentMethod.getString("id").equals(deletedPaymentMethodId) == false) {
 							newPaymentMethodsArray.add(paymentMethod);
 						} else {
-							if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
+							if(PaymentUtils.isBankAccount(paymentMethodObject)) {
 								isDeleted = rules.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
 							} else {
 								isDeleted = rules.deleteCard(deletedPaymentMethodId, assemblyAuthKey);

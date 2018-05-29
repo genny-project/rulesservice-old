@@ -7911,7 +7911,7 @@ public class QRules {
 	}
 	
 	/* Deletes a bank account */
-	public static Boolean deleteBankAccount(String bankAccountId, String authKey) {
+	public Boolean deleteBankAccount(String bankAccountId, String authKey) {
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
@@ -7922,7 +7922,7 @@ public class QRules {
 	}
 
 	/* Deletes a credit card */
-	public static Boolean deleteCard(String cardAccountId, String authKey) {
+	public Boolean deleteCard(String cardAccountId, String authKey) {
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
