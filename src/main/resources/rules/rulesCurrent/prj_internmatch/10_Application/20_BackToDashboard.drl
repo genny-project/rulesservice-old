@@ -1,0 +1,31 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.message.QCmdMessage;
+
+
+
+rule "Application Details - Back action"
+	when
+		rules: QRules( 	
+						isState("EVENT_BTN_CLICK") &&
+						isState("BTN_BACK_BUTTON") &&
+						!isState("LOOP_BACK_FROM_BEG_DETAILS") )
+	then
+
+		rules.header();
+        rules.setState("LOOP_BACK_FROM_BEG_DETAILS");
+        
+		/* Getting the last layout and grp */
+		String[] lastLayout = rules.getLastLayout();
+		
+		/* Redirecting to the previous layout */
+		if( lastLayout[0].equalsIgnoreCase("LIST_VIEW") ){
+        	rules.sendViewCmd(lastLayout[0], lastLayout[1]);
+		}else if ( lastLayout[0].equalsIgnoreCase("BUCKET_DASHBOARD") ){
+        	rules.sendSublayout( lastLayout[0], "homepage/overview.json", lastLayout[1]);
+    	}
+        
+		rules.footer();
+end
