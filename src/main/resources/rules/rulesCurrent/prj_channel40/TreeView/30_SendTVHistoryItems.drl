@@ -19,10 +19,10 @@ rule "TV_SELECT Individual History Jobs"
        rules.setState("LOOP_TV_HISTORY_ITEM_DATA_SENT");
        rules.setState("TV_SELECT_RULE_EXECUTED");   /* Need to set this state compulsarily as the default rule
          												 executes based on this state */
-       String parentCode = rules.get("tvSelectValue").toString();
+       String grpCode = rules.get("tvSelectValue").toString();
       
-       if(parentCode != null){
-             rules.sendSublayout("LOAD_DETAILS", "loadLayout.json", parentCode); 	 
+       if(grpCode != null){
+             rules.sendSublayout("LOAD_DETAILS", "loadLayout.json", grpCode); 	 
         }
         else{
             rules.println("Error!! Either the data.value/GRP code or the user BE is null");
