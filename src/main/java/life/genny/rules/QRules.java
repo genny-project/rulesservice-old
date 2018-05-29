@@ -6140,6 +6140,10 @@ public class QRules {
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
 	}
+	
+	 public void sendCachedItem(final String cachedItemKey) {
+		  this.sendCachedItem(cachedItemKey, null);
+	 }
 
   public void sendCachedItem(final String cachedItemKey, HashMap<String, String> subscriptions) {
 
