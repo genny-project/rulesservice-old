@@ -11,18 +11,20 @@ rule "TV_SELECT Individual Chat Message"
        salience 6
      when
        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
-                       get("tvSelectValue").toString().startsWith("CHT_") && !isState("TV_CHAT_ITEM_DATA_SENT") ) 
+                       isState("PARENT_GRP_MESSAGES") && !isState("TV_CHAT_ITEM_DATA_SENT") ) 
      then
 
-     rules.header();
+      rules.header();
      
 	     rules.setState("TV_CHAT_ITEM_DATA_SENT");
          rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
          												 executes based on this state */
          String grpCode = rules.get("tvSelectValue").toString();
          rules.println("The chat code is :: "+grpCode);
-         rules.sendChatMessages(grpCode, 0, 10000);
-  		 rules.sendCmdSplitView("GRP_MESSAGES", grpCode);
-
+         if(grpCode != null){
+	         rules.sendChatMessages(grpCode, 0, 10000);
+	  		 rules.sendCmdSplitView("GRP_MESSAGES", grpCode);
+		}
+		
      rules.footer();
 end
