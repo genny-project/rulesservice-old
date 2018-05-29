@@ -19,7 +19,7 @@ rule "TV_SELECT_HISTORY"
        if(parentCode != null){
 
           /* we send the archived paid products */
-
+    	   	  rules.showLoading("Loading...");
           rules.sendCachedItem("ARCHIVED_PRODUCTS");
 
 	       /* Send ListView */
