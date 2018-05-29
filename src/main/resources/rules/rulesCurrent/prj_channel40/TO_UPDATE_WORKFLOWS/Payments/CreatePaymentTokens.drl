@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.utils.PaymentUtils;
+import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 
 
 rule "Create Assembly Tokens"
@@ -23,14 +24,11 @@ rule "Create Assembly Tokens"
   			
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "card");
-       		oneTimeTransactionBankToken = PaymentUtils.fetchOneTimeAssemblyToken(rules.getQwandaServiceUrl(), rules.getUser().getCode(), rules.getToken(), assemblyId, assemblyAuthKey, "bank");
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
 	
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
-			/* rules.publishData(cardTokenAnswer); */
-
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			/* rules.publishData(bankTokenAnswer); */
 			
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);

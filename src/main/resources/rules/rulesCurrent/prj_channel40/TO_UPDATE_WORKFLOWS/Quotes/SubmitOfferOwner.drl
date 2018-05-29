@@ -72,7 +72,6 @@ rule "Submit Offer Owner"
 
             String linkCode= "LNK_BEG";
             String linkOffer= "OFFER";
-            String linkQuoter= "QUOTER";
             String linkOwner = "OWNER";
             String linkCreator = "CREATOR";
 
@@ -110,7 +109,7 @@ rule "Submit Offer Owner"
             }
 
         /* Update PRI_NEXT_ACTION = OWNER */
-            Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkQuoter);
+            Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "QUOTER");
             rules.saveAnswer(offerActionAnswer);
 
         /* Save OFFER_DATE as answer */
@@ -146,7 +145,7 @@ rule "Submit Offer Owner"
                 counterContextMapForDriver.put("QUOTER", quoterCode);
                 counterContextMapForDriver.put("OWNER", ownerCode);
                 rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
-                
+
                 /* we refresh the cache */
                 rules.generateNewItemsCache();
 
