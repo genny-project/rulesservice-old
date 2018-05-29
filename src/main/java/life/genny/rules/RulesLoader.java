@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
@@ -108,6 +110,11 @@ public class RulesLoader {
 		        EBCHandlers.initMsg("Event:INIT_STARTUP", realm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
 			}
 			 System.out.println("Startup Rules Triggered");
+			 try {
+				FileUtils.touch(new File("/tmp/ready"));
+			} catch (IOException e) {
+				System.out.println("Could not save readiness file");
+			}
 			fut.complete();
 		}, failed -> {
 		});
