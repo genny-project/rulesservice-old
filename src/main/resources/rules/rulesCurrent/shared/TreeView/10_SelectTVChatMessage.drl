@@ -19,8 +19,11 @@ rule "TV_SELECT Chat Messages"
 	     rules.setState("TV_ITEM_MESSAGES_DATA_SENT");
          rules.setState("TV_SELECT_RULE_EXECUTED");  /* Need to set this state compulsarily as the default rule
          												 executes based on this state */
-	     rules.sendAllChats(0,1000);
-	     rules.sendCmdSplitView(rules.get("tvSelectValue").toString(), null);
-
+	     String grpCode = rules.get("tvSelectValue").toString();
+	     if(grpCode != null){
+		     rules.sendAllChats(0,1000);
+		     rules.sendCmdSplitView(grpCode, null);
+		 }
+		 
      rules.footer();
 end
