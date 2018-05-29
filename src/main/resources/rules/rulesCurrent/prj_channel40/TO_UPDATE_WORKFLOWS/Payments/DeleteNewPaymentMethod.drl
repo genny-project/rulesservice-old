@@ -63,6 +63,7 @@ rule "Delete new payment method - user"
 							newPaymentMethodsArray.add(paymentMethod);
 						} else {
 							if(PaymentUtils.isBankAccount(paymentMethodObject)) {
+
 								isDeleted = rules.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
 							} else {
 								isDeleted = rules.deleteCard(deletedPaymentMethodId, assemblyAuthKey);

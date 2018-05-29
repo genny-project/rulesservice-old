@@ -37,6 +37,7 @@ rule "Bulk Update assembly user info"
      			QPaymentMethod paymentMethodObj = JsonUtils.fromJson(paymentMethod.toString(), QPaymentMethod.class);
      	 		
      	 		if(PaymentUtils.isBankAccount(paymentMethodObj)) {
+
      	 			rules.disburseAccount(assemblyId, paymentMethodObj, assemblyAuthToken);
      	 		}	
      	 	}
