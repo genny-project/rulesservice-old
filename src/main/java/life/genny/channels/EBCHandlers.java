@@ -238,14 +238,14 @@ public class EBCHandlers {
 			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
 			qRules.set("realm", ruleGroup);
 
-			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String,Object>>(); //RulesLoader.getStandardGlobals();
+			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
 
 			List<Object> facts = new ArrayList<Object>();
 			facts.add(qRules);
 			facts.add(msg);
 			facts.add(adecodedTokenMap);
 			facts.add(auserRoles);
-	            User currentUser = new User("user1", "User1", ruleGroup, "admin");
+	            User currentUser = new User("service", "Service", ruleGroup, "admin");
 				usersSession.put("user", currentUser);
 				facts.add(currentUser);
 

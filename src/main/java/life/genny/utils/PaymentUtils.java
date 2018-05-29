@@ -43,6 +43,9 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentsCompany;
 import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
+import life.genny.qwanda.payments.QPaymentsFee;
+import life.genny.qwanda.payments.QPaymentsFee.FEETYPE;
+import life.genny.qwanda.payments.QPaymentsFee.PAYMENT_TO;
 import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
@@ -566,173 +569,84 @@ public class PaymentUtils {
 		}	
 		return company;
 	}
+	
+	/* To get payments user with the paymentsId field */
+	public static QPaymentsUser getPaymentsUser(BaseEntity userBe) throws IllegalArgumentException{
+		
+		String paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+		QPaymentsUser user = new QPaymentsUser(paymentsUserId);
+		return user;
+	}
+	
+	/* Get the name of the job with job id AS payments items name */
+	public static String getPaymentsItemName(BaseEntity loadBe, BaseEntity begBe) {
+		
+		String paymentsItemName = null;
+		if (loadBe != null) {
 
-
-	/* Creates a new item in Assembly from the provided information */
-	@SuppressWarnings("unchecked")
-	public static String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyauthToken) {
-		/* Get the base entity information */
-		String itemId = null;
-
-		/* Create objects to store the request */
-		JSONObject itemObj = new JSONObject();
-		JSONObject buyerObj = null;
-		JSONObject sellerObj = null;
-
-		itemObj.put("paymentType", DEFAULT_PAYMENT_TYPE);
-
-		if (begBe != null) {
-			/* Get the fees for this item */
-			String feeId = getPaymentFeeId(offerBe, assemblyauthToken);
-			System.out.println("fee Id ::" + feeId);
-
-			/* Get the title, description and job ID for this item from the base entity group */
-			String begTitle = loadBe.getValue("PRI_TITLE", null);
+			/* Get the title, description and job ID for this item from the base entity group */ 
+			paymentsItemName = loadBe.getValue("PRI_TITLE", null);
 			// Hack to stop undefined name
-			if (StringUtils.isBlank(begTitle)) {
-				begTitle = loadBe.getValue("PRI_NAME", null);
-				if (StringUtils.isBlank(begTitle)) {
-					begTitle = loadBe.getName();
-					if (StringUtils.isBlank(begTitle)) {
-						begTitle = "Job #"+loadBe.getId();
+			if (StringUtils.isBlank(paymentsItemName)) {
+				paymentsItemName = loadBe.getValue("PRI_NAME", null);
+				if (StringUtils.isBlank(paymentsItemName)) {
+					paymentsItemName = loadBe.getName();
+					if (StringUtils.isBlank(paymentsItemName)) {
+						paymentsItemName = "Job #"+loadBe.getId();
 						log.error("Job Name and Title are emoty , using job id");
 					}
 				}
 			}
-			String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
-			String begJobId = begBe.getValue("PRI_JOB_ID", null);
-
-			/* Check that values are provided and if they are include them in the request */
-			if (begTitle != null) {
-				if(begJobId != null) {
-					itemObj.put("name", begTitle + ", Job #"+begJobId);
-				} else {
-					itemObj.put("name", begTitle);
-				}
-			}
-
-			if (begDescription != null) {
-				if(begJobId != null) {
-					itemObj.put("description", begDescription + ", Job #" + begJobId);
-				} else {
-					itemObj.put("description", begDescription);
-				}
-			}
-
-			if (feeId != null) {
-				String[] feeArr = { feeId };
-				itemObj.put("fees", feeArr);
-			}
-
-			/* Add the amount to the item */
-
-			/*
-			* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST),
-			* Creating Payments Fee with feePriceIncGST
-			*/
-			String offerOwnerPriceString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
-
-			System.out.println("begpriceString ::" + offerOwnerPriceString);
-
-			String amount = null;
-			String currency = null;
-			if(offerOwnerPriceString != null) {
-				System.out.println("begPriceString is not null");
-				JSONObject moneyobj = JsonUtils.fromJson(offerOwnerPriceString, JSONObject.class);
-				amount = moneyobj.get("amount").toString();
-				currency = moneyobj.get("currency").toString();
-
-				if(amount != null) {
-					System.out.println("amount is not null");
-					BigDecimal begPrice = new BigDecimal(amount);
-
-					// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
-					BigDecimal finalPrice = begPrice.multiply(new BigDecimal(100));
-					itemObj.put("amount", finalPrice.toString());
-				} else {
-					log.error("AMOUNT IS NULL");
-				}
-
-				if(currency != null) {
-					System.out.println("currency is not null");
-					itemObj.put("currency", currency);
-				} else {
-					log.error("CURRENCY IS NULL");
-				}
-
-			} else {
-				log.error("PRI_DRIVER_PRICE_INC_GST IS NULL");
-			}
-
-		} else {
-			log.error("BEG BASEENTITY IS NULL");
-			try {
-				throw new PaymentException("Payment Item creation will not succeed since Beg baseentity is null");
-			} catch (PaymentException e) {
+			
+			/* If job ID is present for beg, concat it to the itemName */
+			String begJobId = null;
+			if(begBe != null) {
+				begJobId = begBe.getValue("PRI_JOB_ID", null);
+				paymentsItemName = paymentsItemName.concat(", Job #" + begJobId);
 			}
 		}
-
-		/* Set the buyer for the item */
-		/* OWNER -> Buyer */
-		if(ownerBe != null) {
-			System.out.println("Context map contains OWNER");
-
-			/* Check that an owner is actually set and if so use their Assembly user ID */
-			if(ownerBe != null) {
-				buyerObj = new JSONObject();
-				buyerObj.put("id", ownerBe.getValue("PRI_ASSEMBLY_USER_ID", null));
-			}
-		} else {
-			/* No owner was specified, throw an error */
-			log.error("BEG CONTEXT MAP HAS NO OWNER LINK, SO BUYER OBJECT IS NULL");
-			try {
-				throw new PaymentException("Payment Item creation will not succeed since owner BE returned null");
-			} catch (PaymentException e) {
-			}
+		
+		return paymentsItemName;
+	}
+	
+	public static Money getRoundedMoneyInCents(Money money) {
+		
+		Money roundedMoneyInCents = null;
+		if(money != null) {
+			BigDecimal begPrice = new BigDecimal(money.getNumber().doubleValue());
+			
+			// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
+			/* Convert dollars into cents */
+			BigDecimal finalFee = begPrice.multiply(new BigDecimal(100));
+			
+			/* Round off to 2 decimal places */
+			String roundedMoneyString = String.format("%.2f", finalFee);
+			
+			/* Converting string back to money */
+			roundedMoneyInCents = Money.of(Double.valueOf(roundedMoneyString), money.getCurrency());
 		}
-
-		/* DRIVER -> Seller */
-		if(driverBe != null ) {
-
-			sellerObj = new JSONObject();
-			sellerObj.put("id", driverBe.getValue("PRI_ASSEMBLY_USER_ID",null));
-		} else {
-			/* No driver was specified, throw an error */
-			log.error("SELLER OBJECT IS NULL");
-			try {
-				throw new PaymentException("Payment Item creation will not succeed since driver BE returned null");
-			} catch (PaymentException e) {
+		return roundedMoneyInCents;
+	}
+	
+	/* Set all the known information in the fee object */
+	public static QPaymentsFee getFeeObject(BaseEntity offerBe) throws IllegalArgumentException {
+		
+		Money begFee = offerBe.getValue("PRI_OFFER_FEE_INC_GST", null);
+		QPaymentsFee feeObj = null;
+		
+		if(begFee != null) {
+			
+			Money feeInCents = getRoundedMoneyInCents(begFee);
+			System.out.println("money in in cents ::"+feeInCents);
+			
+			if(feeInCents == null) {
+				throw new IllegalArgumentException("Something went wrong during pricing calculations. Fee for item cannot be empty");
 			}
+			
+			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
 		}
-
-		/* If both buyer and seller is available for a particular BEG, Create Payment Item */
-		if(itemObj != null && buyerObj != null && sellerObj != null) {
-			/* Create the request object */
-			itemObj.put("buyer", buyerObj);
-			itemObj.put("seller", sellerObj);
-			itemObj.put("id", UUID.randomUUID().toString());
-
-			System.out.println("Item object ::"+itemObj);
-
-			/* Make the request to Assembly to create the item */
-			String itemCreationResponse;
-			try {
-				itemCreationResponse = PaymentEndpoint.createItem(JsonUtils.toJson(itemObj), assemblyauthToken);
-				if(!itemCreationResponse.contains("error")) {
-
-					log.info("Item object ::" + itemObj);
-					log.info( itemObj.get("id") );
-					itemId = itemObj.get("id").toString();
-					log.info("Item ID found ::" + itemId);
-					return itemId;
-				}
-			} catch (PaymentException e) {
-				log.error("PAYMENT ITEM CREATION FAILED, ITEM/BUYER/SELLER OBJECT IS NULL, exception is handled");
-				itemId = null;
-			}
-		}
-
-		return itemId;
+		return feeObj;
+		
 	}
 
 	public static String getBegCode(String offerCode, String tokenString) {
@@ -746,117 +660,6 @@ public class PaymentUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/* Fetch the one time use Assembly card and bank tokens for a user */
-	public static String fetchOneTimeAssemblyToken(String qwandaServiceUrl, String userId, String tokenString, String assemblyId, String assemblyAuthToken, String type) {
-		String transactionToken = null;
-		JSONParser parser = new JSONParser();
-		JSONObject authenticationEntityObj = new JSONObject();
-
-		/* Check that an Assembly ID was provided before we continue */
-		if (assemblyId != null) {
-			String tokenResponse = null;
-
-			try {
-				authenticationEntityObj.put("type", type);
-				JSONObject userObj = new JSONObject();
-				userObj.put("id", assemblyId);
-				authenticationEntityObj.put("user", userObj);
-
-				tokenResponse  = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(authenticationEntityObj), assemblyAuthToken);
-
-				if (!tokenResponse.contains("error")) {
-
-					try {
-						JSONObject tokenObj = (JSONObject) parser.parse(tokenResponse);
-						System.out.println("token object ::" + tokenObj);
-
-						String providerToken = tokenObj.get("token").toString();
-
-						return providerToken;
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (Exception e) {
-				log.error("PaymentUtils Exception occured during Payment authentication Token provision");
-			}
-		} else {
-			log.error("ASSEMBLY USER ID IS NULL");
-		}
-
-		return transactionToken;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static String authenticatePaymentProvider(String assemblyId, String assemblyAuthToken) throws PaymentException {
-		JSONObject paymentProviderObj = new JSONObject();
-		JSONObject userObj = new JSONObject();
-		userObj.put("id", assemblyId);
-		paymentProviderObj.put("type", PROVIDER_TYPE_BANK);
-		paymentProviderObj.put("user", userObj);
-		String tokenResponse = null;
-		tokenResponse = PaymentEndpoint.authenticatePaymentProvider(JsonUtils.toJson(paymentProviderObj), assemblyAuthToken);
-		return tokenResponse;
-	}
-
-	/* Creates a new fee in Assembly from a offer base entity */
-	@SuppressWarnings("unchecked")
-	public static String getPaymentFeeId(BaseEntity offerBe, String assemblyAuthToken) {
-		/* Create a new JSON parser */
-		JSONParser parser = new JSONParser();
-		String feeId = null;
-
-		/* Get the fee amount from the base entity */
-		String begFeeString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_FEE_INC_GST");
-
-		/* If the fee amount is empty don't do anything */
-		if (begFeeString != null) {
-			System.out.println("begpriceString ::" + begFeeString);
-
-			/* Convert the amount to a string and then to a BigDecimal */
-			String amount = QwandaUtils.getAmountAsString(begFeeString);
-			BigDecimal begPrice = new BigDecimal(amount);
-
-			// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
-			BigDecimal finalFee = begPrice.multiply(new BigDecimal(100));
-			System.out.println("fees for feeId creation in Assembly::" + finalFee);
-
-			/* Create the request object */
-			JSONObject feeObj = new JSONObject();
-			feeObj.put("name", "Channel40 fee");
-			feeObj.put("type", 1);
-			feeObj.put("amount", finalFee);
-			feeObj.put("cap", null);
-			feeObj.put("min", null);
-			feeObj.put("max", null);
-			feeObj.put("to", "buyer");
-
-			/* Attempt to create the fee in Assembly */
-			String feeResponse;
-			try {
-				feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), assemblyAuthToken);
-				if (feeResponse != null) {
-					JSONObject feeResponseObj;
-
-					feeResponseObj = (JSONObject) parser.parse(feeResponse);
-
-					if (feeResponseObj.get("id") != null) {
-						feeId = feeResponseObj.get("id").toString();
-						return feeId;
-					}
-				}
-			} catch (PaymentException e1) {
-				log.error("Exception occured during Payment Fee creation");
-				e1.printStackTrace();
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/* Return the fee ID */
-		return feeId;
 	}
 
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
@@ -1492,7 +1295,7 @@ public class PaymentUtils {
 		String itemResponse = null;
 
 		try {
-			itemResponse = PaymentEndpoint.getAssemblyPaymentItem(itemId, assemblyAuthKey);
+			itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
 
 			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
 
