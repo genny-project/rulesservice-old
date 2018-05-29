@@ -201,6 +201,8 @@ package life.genny.rules;
 						rules.sendSlackNotification("Payment processing failed for the job : "+begBe.getCode() + ". Failure callback status recieved : "+m.getObject_status().toString());
 
 		            	}
+		            	
+		            /*	rules.generateNewItemsCache(); */
 
 			}
 
