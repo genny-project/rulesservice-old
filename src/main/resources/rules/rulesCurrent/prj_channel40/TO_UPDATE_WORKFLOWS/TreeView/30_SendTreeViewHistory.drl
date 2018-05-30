@@ -20,10 +20,10 @@ rule "TV_SELECT_HISTORY"
 
           /* we send the archived paid products */
 
+          rules.showLoading("Loading history...");
           rules.sendCachedItem("ARCHIVED_PRODUCTS");
+ 	        rules.publishViewCmdMessage("LIST_VIEW", parentCode);
 
-	       /* Send ListView */
-	       rules.publishViewCmdMessage("LIST_VIEW", parentCode);
         }
         else{
             rules.println("Error!! Either the data.value/GRP code or the user BE is null");
