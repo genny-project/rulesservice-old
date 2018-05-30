@@ -54,9 +54,12 @@ rule "Create new payment method - user"
 
 		if(paymentMethodDataString != null) {
 			
+			rules.println("paymentMethodDataString ::"+paymentMethodDataString);
 			QPaymentMethod paymentMethod = JsonUtils.fromJson(paymentMethodDataString, QPaymentMethod.class);
 			paymentMethod = PaymentUtils.getMaskedPaymentMethod(paymentMethod);
 			
+			rules.println("json utils conversion to string :: "+JsonUtils.toJson(paymentMethod));
+			rules.println("direct conversion to string with toString() ::"+paymentMethod.toString());
 			
 			Boolean isBankAccount = PaymentUtils.isBankAccount(paymentMethod);
 			Boolean isDisbursementSuccess = false;
@@ -72,9 +75,9 @@ rule "Create new payment method - user"
 			/* checking if user payment method exists */
 			if(userCurrentPaymentMethods != null) {
 
-				JsonObject newPaymentMethod = new JsonObject(paymentMethodDataString);
+				JsonObject newPaymentMethod = new JsonObject(JsonUtils.toJson(paymentMethod));
 				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
-				currentPaymentMethods.add(JsonUtils.toJson(paymentMethod));
+				currentPaymentMethods.add(newPaymentMethod);
 				String finalPaymentMethods = currentPaymentMethods.toString();
 				
 				/* if the payment method is bank account, check if its disbursed to the payments service */

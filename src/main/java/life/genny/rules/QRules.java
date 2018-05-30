@@ -118,6 +118,7 @@ import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
@@ -7900,7 +7901,6 @@ public class QRules {
 	
 	/* Deletes a bank account */
 	public Boolean deleteBankAccount(String bankAccountId, String authKey) {
-
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
@@ -7912,7 +7912,6 @@ public class QRules {
 
 	/* Deletes a credit card */
 	public Boolean deleteCard(String cardAccountId, String authKey) {
-
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);

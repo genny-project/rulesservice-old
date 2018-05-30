@@ -70,67 +70,59 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
         Boolean isRealeasePaymentDone = begBe.getLoopValue("PRI_IS_RELEASE_PAYMENT_DONE", false);
         String paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
+        
+        if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
 
-        /* if payment is already released and is successful, set success states */
+        		/*    Adding Release Payment Done status  */
+            Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
+            rules.saveAnswer(paymentDoneAns);
 
-        rules.println(isRealeasePaymentDone);
+            /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+            rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
-        if(isRealeasePaymentDone) {
+            /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
+            rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
-          /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
-          rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+            rules.setState("CONFIRMED_DELIVERY_OWNER");
+         } else {
+         	/* if payment is already released and is successful, set success states */
+        		rules.println(isRealeasePaymentDone);
 
-          /* we move the job to PAID */
-          rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+        		if(isRealeasePaymentDone) {
 
-          rules.setState("CONFIRMED_DELIVERY_OWNER");
+         		 /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
+          		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-        }
-        else {
+          		/* we move the job to PAID */
+          		rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
-          /* when payment release process is flowing first time for an item */
+          		rules.setState("CONFIRMED_DELIVERY_OWNER");
 
-          if(ownerCode != null && driverCode != null) {
+        		} else {
 
-            /* hitting release payment API */
-            Boolean isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
+          		/* when payment release process is flowing first time for an item */
 
-            /* when release-payment is success */
-            if(isPaymentReleased) {       
+          		if(ownerCode != null && driverCode != null) {
+        		 
+        			/* hitting release payment API */
+            		Boolean isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
 
-              /* we move the job to GRP_PAID */
-              rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+            		/* when release-payment is success */
+            		if(isPaymentReleased) {       
 
-              /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-              rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+              		/* we move the job to GRP_PAID */
+              		rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
-              rules.setState("CONFIRMED_DELIVERY_OWNER");
+              		/* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+              		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-            }
-            else {
+              		rules.setState("CONFIRMED_DELIVERY_OWNER");
 
-              /* release-payment has failed */
-
-              /* Sometimes release-payment fails coz of KYC, but gets marked as Completed in Assembly dashboard..so handling this situation with checking for callback status */
-              paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
-              if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
-
-                /*    Adding Release Payment Done status  */
-                Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
-                rules.saveAnswer(paymentDoneAns);
-
-                /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-                rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
-
-                /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
-                rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
-
-                rules.setState("CONFIRMED_DELIVERY_OWNER");
-              }
-            }
-          }
-        }
+           		}
+           	  }
+       	 	}
+      	 }
       }
-
+   
       rules.footer();
 end
