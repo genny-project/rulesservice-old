@@ -6033,7 +6033,8 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-		this.generateItemCaches("BUCKETS");
+    this.generateItemCaches("BUCKETS");
+		this.generateItemCaches("ARCHIVED_PRODUCTS");
 	}
 
 	public void generateItemCaches(String cachedItemKey) {
@@ -6131,7 +6132,6 @@ public class QRules {
 
 		System.out.println("Entering new send application data ");
 
-
 		showLoading("Loading data...");
 
 		/* we set all the buckets we would like user to subscribe to */
@@ -6148,12 +6148,13 @@ public class QRules {
 		this.sendCachedItem(cachedItemKey, null);
 	}
 
-	public void sendCachedItem(final String cachedItemKey, HashMap<String, String> subscriptions) {
 
-		long startTime = System.nanoTime();
-		BaseEntity user = this.getUser();
-		QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, null);
-		if (items != null) {
+	public void sendCachedItem(final String cachedItemKey, final HashMap<String, String> subscriptions) {
+
+    long startTime = System.nanoTime();
+	  BaseEntity user = this.getUser();
+    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
+    if (items != null) {
 
 			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
@@ -6180,7 +6181,7 @@ public class QRules {
 			println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
 		}
-	}
+  }
 
 	public QBulkMessage fetchAndSubscribeCachedItemsForStakeholder(final String cachedItemKey, final BaseEntity stakeholder, final Map<String, String> subscriptions) {
 
@@ -6192,6 +6193,8 @@ public class QRules {
 
 			/* we loop through the messages */
 			for (BaseEntity message : cachedItemMessages.getItems()) {
+
+        this.println(message.toString());
 
 				/* we grab cache items for the given message */
 				QBulkMessage currentItemMessages = new QBulkMessage();
@@ -6274,6 +6277,7 @@ public class QRules {
 						BaseEntity item = message.getItems()[i];
 						String itemCode = item.getCode();
 
+
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
 
@@ -6284,12 +6288,16 @@ public class QRules {
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
 
+              this.println("Got: " + itemCode);
+
 							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
+                this.println("Adding BEG because: GRP_NEW_ITEMS and PRI_IS_SELLER");
 								baseEntityKids.add(item);
 							}
 							else {
 
 								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
+                  this.println("Adding BEG because stakeholder");
 									baseEntityKids.add(item);
 								}
 								else {

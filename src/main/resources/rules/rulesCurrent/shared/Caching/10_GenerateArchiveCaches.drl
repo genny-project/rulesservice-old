@@ -23,7 +23,7 @@ rule "Generate Archive caches"
         rules.setState("GENERATE_ARCHIVE_CACHES");
 		rules.println("Generating Archive Caches for "+rules.realm());
 
-		rules.generateItemCaches("ARCHIVED_PRODUCTS"); 
+		rules.generateItemCaches("ARCHIVED_PRODUCTS");
 
 
      rules.footer();

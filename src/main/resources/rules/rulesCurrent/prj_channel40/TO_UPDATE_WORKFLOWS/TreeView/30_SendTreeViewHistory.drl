@@ -19,11 +19,11 @@ rule "TV_SELECT_HISTORY"
        if(parentCode != null){
 
           /* we send the archived paid products */
-    	   	  rules.showLoading("Loading...");
-          rules.sendCachedItem("ARCHIVED_PRODUCTS");
 
-	       /* Send ListView */
-	       rules.publishViewCmdMessage("LIST_VIEW", parentCode);
+          rules.showLoading("Loading history...");
+          rules.sendCachedItem("ARCHIVED_PRODUCTS");
+ 	        rules.publishViewCmdMessage("LIST_VIEW", parentCode);
+
         }
         else{
             rules.println("Error!! Either the data.value/GRP code or the user BE is null");
