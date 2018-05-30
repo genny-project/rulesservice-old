@@ -594,7 +594,7 @@ public class PaymentUtils {
 					paymentsItemName = loadBe.getName();
 					if (StringUtils.isBlank(paymentsItemName)) {
 						paymentsItemName = "Job #"+loadBe.getId();
-						log.error("Job Name and Title are emoty , using job id");
+						log.error("Job Name and Title are empty , using job id");
 					}
 				}
 			}
@@ -777,32 +777,23 @@ public class PaymentUtils {
 		return isBankAccount;
 	}
 
-	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+	public static void updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
 
 		String responseString = null;
 
 		String phoneNumber = userBe.getValue("PRI_MOBILE", null);
 
-		JSONObject userObj = new JSONObject();
-		JSONObject contactInfoObj = null;
-
-		userObj.put("id", assemblyUserId);
-
-		if(phoneNumber != null) {
-			contactInfoObj = new JSONObject();
-			userObj.put("contactInfo", contactInfoObj);
+		QPaymentsUser user = new QPaymentsUser(assemblyUserId);
+		QPaymentsUserContactInfo contactObj = new QPaymentsUserContactInfo();
+		contactObj.setMobile(phoneNumber);
+		user.setContactInfo(contactObj);
+		try {
+			responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user),
+					assemblyAuthKey);
+			System.out.println("response string from payments user mobile-number updation ::" + responseString);
+		} catch (PaymentException e) {
+			log.error("Exception occured during phone updation");
 		}
-
-		if(userObj != null && assemblyUserId != null) {
-			try {
-				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
-				System.out.println("response string from payments user mobile-number updation ::"+responseString);
-			} catch (PaymentException e) {
-				log.error("Exception occured during phone updation");
-			}
-		}
-
-		return responseString;
 
 	}
 
@@ -957,6 +948,7 @@ public class PaymentUtils {
 		if(paymentMethod.getType().equals(PaymentType.CARD) && paymentMethod.getNumber() != null ) {
 			String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(paymentMethod.getNumber().replaceAll("\\s+", "-") , 0, 15,
 					"X", toBeIgnoreCharacterArr);
+
 			paymentMethod.setNumber(maskedCreditCardNumber);
 		}
 		
@@ -966,6 +958,7 @@ public class PaymentUtils {
 			
 			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "X", toBeIgnoreCharacterArr);
 			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "X",
+
 					toBeIgnoreCharacterArr);
 			
 			paymentMethod.setAccountNumber(maskedAccountNumber);
