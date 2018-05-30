@@ -48,15 +48,9 @@ rule "Generate Base Tree"
 		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), bucketMsg);
 
-<<<<<<< HEAD
-    List<BaseEntity> archivedProducts = rules.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 30, false);
-    QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
-		VertxUtils.putObject(rules.realm(), "ARCHIVED_PRODUCTS", rules.realm(), bucketMsg);
-=======
       List<BaseEntity> archivedProducts = rules.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
       QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "ARCHIVED_PRODUCTS", rules.realm(), archivedProductsMessage);
->>>>>>> archive
 
 		QBulkMessage bulk = new QBulkMessage(bulkmsg);
 
