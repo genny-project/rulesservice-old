@@ -9,21 +9,22 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
 
-rule "Seed New Items Cache"
+rule "Generate Archive caches"
 
-    ruleflow-group 'GenerateSearches'
- 
+    ruleflow-group 'GenerateArchiveCaches'
      when
-       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
+       rules: QRules( !isState("GENERATE_ARCHIVE_CACHES"))
      then
-
+	 rules.setDrools(drools);
      rules.header();
-        rules.setState("GENERATE_NEW_ITEMS_CACHE");
-		rules.println("Generating  New Items Cache for "+rules.realm());
-		rules.generateNewItemsCache(); 
+        rules.setState("GENERATE_ARCHIVE_CACHES");
+		rules.println("Generating Archive Caches for "+rules.realm());
 
- 
+		rules.generateItemCaches("ARCHIVED_PRODUCTS");
+
+
      rules.footer();
 end

@@ -19,7 +19,7 @@ rule "User Logout"
  		rules: QRules( isState("STARTED") ) 
     then
         rules.header();
-        rules.logout();
+     /*    rules.logout(); */
         
 		rules.footer();      
 end 
