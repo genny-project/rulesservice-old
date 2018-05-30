@@ -6151,10 +6151,10 @@ public class QRules {
 
 	public void sendCachedItem(final String cachedItemKey, final HashMap<String, String> subscriptions) {
 
-    long startTime = System.nanoTime();
-	  BaseEntity user = this.getUser();
-    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
-    if (items != null) {
+      long startTime = System.nanoTime();
+	   BaseEntity user = this.getUser();
+      QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
+      if (items != null) {
 
 			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
@@ -6190,11 +6190,11 @@ public class QRules {
 		QDataBaseEntityMessage cachedItemMessages = VertxUtils.getObject(realm(), cachedItemKey, realm(), QDataBaseEntityMessage.class);
 
 		if (cachedItemMessages != null) {
+			
+			this.println(cachedItemMessages.getItems().toString());
 
 			/* we loop through the messages */
 			for (BaseEntity message : cachedItemMessages.getItems()) {
-
-        this.println(message.toString());
 
 				/* we grab cache items for the given message */
 				QBulkMessage currentItemMessages = new QBulkMessage();
