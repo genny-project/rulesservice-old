@@ -1,0 +1,34 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Sub Layout */
+rule "View Application Details - Send Uni and Faculty data"
+	when
+		rules: QRules(  isState("BTN_VIEW_APPLICATION") && 
+                    isState("EVENT_BTN_CLICK") && 
+                    !isState("LOOP_SEND_UNI_AND_FAC_DATA") ) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_SEND_UNI_AND_FAC_DATA");
+
+		List<BaseEntity> universities = rules.getBaseEntitysByParentAndLinkCode("GRP_UNI_SELECTION", "LNK_CORE", 0, 500, false);
+		if(universities != null){
+			rules.printList("universities", universities);
+			rules.publishCmd(universities, "GRP_UNI_SELECTION", "LNK_CORE");
+		}else {
+			rules.println("Uni is null");
+		}
+
+		List<BaseEntity> faculties = rules.getBaseEntitysByParentAndLinkCode("GRP_FACULTIES", "LNK_CORE", 0, 500, false);
+		if(faculties != null){
+			rules.printList("faculties", faculties);
+			rules.publishCmd(faculties, "GRP_FACULTIES", "LNK_CORE");
+		}else {
+			rules.println("Faculties is null");
+		}
+		
+		rules.setState("VIEW_APPLICATION_DETAILS");
+	 	rules.footer();      
+end
+
+        
