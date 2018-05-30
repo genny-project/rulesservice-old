@@ -997,7 +997,6 @@ public class QRules {
 			this.println("Archiving done.");
 			this.generateNewItemsCache();
 			this.generateItemCaches("ARCHIVED_PRODUCTS");
-
 		} else {
 			this.println("Could not get token.");
 		}
