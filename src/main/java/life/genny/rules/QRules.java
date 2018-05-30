@@ -6063,57 +6063,77 @@ public class QRules {
 				Integer itemCount = 0;
 
 				List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+				
+				if(cachedItem.getCode().startsWith("GRP_")) {
+					
+					try {
 
-				try {
+						/* we create the searchBE */
+						SearchEntity searchBE = new SearchEntity(cachedItemKey, cachedItemKey)
+								.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+								.setSourceCode(cachedItem.getCode())
+								.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
+								.setPageStart(0)
+								.setPageSize(10000);
 
-					/* we create the searchBE */
-					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), cachedItemKey)
-							.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-							.setSourceCode(cachedItem.getCode())
-							.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-							.setPageStart(0)
-							.setPageSize(10000);
+						/* fetching results */
+						QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
 
-					/* fetching results */
-					QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
+						if (results != null) {
 
-					if (results != null) {
+							println("Caching Item " + cachedItem.getCode() + " with " + results.getReturnCount() + " items");
+							itemCount = results.getItems().length;
+							results.setParentCode(cachedItem.getCode());
+							results.setLinkCode("LNK_CORE");
+							bulkmsg.add(results);
 
-						println("Caching Item " + cachedItem.getCode() + " with " + results.getReturnCount() + " items");
-						itemCount = results.getItems().length;
-						results.setParentCode(cachedItem.getCode());
-						results.setLinkCode("LNK_CORE");
-						bulkmsg.add(results);
+							/* we loop through each BEG of the current cachedItem */
+							for (BaseEntity beg : results.getItems()) {
 
-						/* we loop through each BEG of the current cachedItem */
-						for (BaseEntity beg : results.getItems()) {
+								/* we grab all the kids */
+								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0,
+										1000, false);
 
-							/* we grab all the kids */
-							List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0,
-									1000, false);
+								if (begKids != null) {
 
-							if (begKids != null) {
-
-								/* we create the message from BEG to kids */
-								itemCount += begKids.size();
-								QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
-										begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
-								beMsg.setAliasCode(beg.getCode());
-								beMsg.setParentCode(beg.getCode());
-								bulkmsg.add(beMsg);
+									/* we create the message from BEG to kids */
+									itemCount += begKids.size();
+									QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
+											begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
+									beMsg.setAliasCode(beg.getCode());
+									beMsg.setParentCode(beg.getCode());
+									bulkmsg.add(beMsg);
+								}
 							}
 						}
+
+						/* we create the cachedItem bulk message */
+						QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+						QBulkMessage bulk = new QBulkMessage(messages.clone());
+						VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
+						bulkMessages.add(bulk);
+						println("Loading New cache laoded " + itemCount + " BEs");
+
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
+				}
+				else {
+					
+					/* we grab all the kids */
+					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0,
+							1000, false);
 
-					/* we create the cachedItem bulk message */
-					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-					QBulkMessage bulk = new QBulkMessage(messages.clone());
-					VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
-					bulkMessages.add(bulk);
-					println("Loading New cache laoded " + itemCount + " BEs");
+					if (begKids != null) {
 
-				} catch (Exception e) {
-					e.printStackTrace();
+						/* we create the message from BEG to kids */
+						itemCount += begKids.size();
+						QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
+								begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
+						beMsg.setAliasCode(cachedItem.getCode());
+						beMsg.setParentCode(cachedItem.getCode());
+						bulkmsg.add(beMsg);
+					}
 				}
 			}
 		}
