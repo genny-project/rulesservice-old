@@ -770,8 +770,11 @@ public class PaymentUtils {
 	public static Boolean isBankAccount(QPaymentMethod paymentMethod) {
 		Boolean isBankAccount = false;
 		
-		if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT)) {
-			isBankAccount = true;
+		if(paymentMethod != null) {
+
+			if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT)) {
+				isBankAccount = true;
+			}
 		}
 
 		return isBankAccount;

@@ -34,11 +34,11 @@ rule "Bulk Update assembly user info"
      	 	JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
      	 	for(int i = 0; i < currentPaymentMethods.size(); i++) {
      	 		JsonObject paymentMethod = currentPaymentMethods.getJsonObject(i);
-     			QPaymentMethod paymentMethodObj = JsonUtils.fromJson(JsonUtils.toJson(paymentMethod), QPaymentMethod.class);
+     			QPaymentMethod paymentMethodObject = JsonUtils.fromJson(paymentMethod.toString(), QPaymentMethod.class);
      	 		
-     	 		if(PaymentUtils.isBankAccount(paymentMethodObj)) {
+     	 		if(PaymentUtils.isBankAccount(paymentMethodObject)) {
 
-     	 			rules.disburseAccount(assemblyId, paymentMethodObj, assemblyAuthToken);
+     	 			rules.disburseAccount(assemblyId, paymentMethodObject, assemblyAuthToken);
      	 		}	
      	 	}
      	 } 	 
