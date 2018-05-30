@@ -17,8 +17,9 @@ rule "Send Bucket Layout To Frontend"
 
      	/* sending cmd BUCKET_VIEW */
      	rules.sendSublayout(viewCode, "dashboard_channel40.json", grpBE);
-      rules.setLastLayout( viewCode, grpBE );
+        rules.setLastLayout( viewCode, grpBE );
 
+        rules.navigateTo('/home');
 
 	    rules.footer();
 end
