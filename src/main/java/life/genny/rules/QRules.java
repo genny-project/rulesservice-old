@@ -6030,7 +6030,7 @@ public class QRules {
 
 	public void generateNewItemsCache() {
 		this.generateItemCaches("BUCKETS");
-		this.generateItemCaches("ARCHIVED_PRODUCTS");
+		this.generateItemCaches("ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
 	public void generateItemCaches(String cachedItemKey) {
