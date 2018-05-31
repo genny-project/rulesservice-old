@@ -1891,6 +1891,56 @@ public class QRules {
 		}
 	}
 
+  public Boolean doesQuestionGroupExist(final String questionCode) {
+
+		/* we grab the question group using the questionCode */
+		QDataAskMessage questions = this.getQuestions(this.getUser().getCode(), this.getUser().getCode(), questionCode);
+
+		/* we check if the question payload is not empty */
+		if(questions != null) {
+
+			/* we check if the question group contains at least one question */
+			if(questions.getItems() != null && questions.getItems().length > 0) {
+
+				Ask firstQuestion = questions.getItems()[0];
+
+				/* we check if the question is a question group */
+				if(firstQuestion.getAttributeCode().contains("QQQ_QUESTION_GROUP_BUTTON_SUBMIT")) {
+
+					/* we see if this group contains at least one question */
+					return firstQuestion.getChildAsks().length > 0;
+				}
+				else {
+
+					/* if it is an ask we return true */
+					return true;
+				}
+			}
+		}
+
+		/* we return false otherwise */
+		return false;
+	}
+
+	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
+
+		String json;
+		try {
+			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+					+ questionCode + "/" + targetCode, getToken());
+			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
+			;
+			return msg;
+
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 
 		String json;
@@ -3674,7 +3724,7 @@ public class QRules {
 	}
 
 public void makePayment(QDataAnswerMessage m) {
-        
+
         String userCode = getUser().getCode();
         String begCode = null;
         Answer[] dataAnswers = m.getItems();
@@ -3725,7 +3775,7 @@ public void makePayment(QDataAnswerMessage m) {
                 BaseEntity offer = getBaseEntityByCode(offerCode);
                 String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
                 BaseEntity driverBe = getBaseEntityByCode(quoterCode);
-                
+
                 /* make payment API */
                 makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
                 /* GET attributes of OFFER BE */
@@ -3817,7 +3867,7 @@ public void makePayment(QDataAnswerMessage m) {
                 /* sending cmd BUCKETVIEW */
                 // this.setState("TRIGGER_HOMEPAGE");
                 this.redirectToHomePage();
-                
+
                 /* TOAST :: SUCCESS */
                 println("Sending success toast since make payment succeeded");
                 HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -4250,6 +4300,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void saveJob(BaseEntity job) {
+
 		String jobCode = job.getCode();
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
@@ -4354,7 +4405,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				try {
 
-					if (this.isUserSeller()) {
+					if (this.isUserSeller(stakeholderBe)) {
 						sellersBe.add(stakeholderBe);
 					}
 
@@ -4379,6 +4430,8 @@ public void makePayment(QDataAnswerMessage m) {
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
+
+	     this.generateItemCaches("BUCKETS");
 
 	}
 
@@ -5967,13 +6020,12 @@ public void makePayment(QDataAnswerMessage m) {
 			beMsg.setAliasCode(cachedItem.getCode());
 			beMsg.setParentCode(cachedItem.getCode());
 			bulkmsg.add(beMsg);
-			
+
 			/* we then get the kids of these kids (OFR_ have kids as well for instance) */
 			for(BaseEntity kid: begKids) {
-				
+
 				/* we grab all the kids */
 				List<BaseEntity> kidKids = this.getLinkedBaseEntities(kid.getCode());
-				this.println("Got kidkids: " + kidKids.size());
 
 				if (kidKids != null) {
 
@@ -6226,7 +6278,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
-							
+
 							this.println("Found user: " + itemCode);
 
 							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
@@ -7713,40 +7765,40 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return paymentFeeId;
 	}
-	
+
 	public void makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe, String authToken) {
-		
+
 		if(begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
-			
-			try {		
+
+			try {
 				String itemId = begBe.getValue("PRI_ITEM_ID", null);
 				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
-				
+
 				/* To get the type of payment (Bank account / card) */
 				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe, makePaymentObj.getAccount().getId());
-				
+
 				/* if the payment type is bank account, there is another step of debit authorization */
 				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
 				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
-					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);								
-				} 
-				
+					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);
+				}
+
 				/* Step 2 for bankaccount : Make payment API call */
 				/* Step 1 for card : Make payment API call */
 				try {
-					
-					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj), authToken);					
+
+					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj), authToken);
 					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse, QPaymentsAssemblyItemResponse.class);
-					
+
 					/* save deposit reference as an attribute to beg */
 					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
 					saveAnswer(depositReferenceAnswer);
-				
+
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);	
+					throw new IllegalArgumentException(getFormattedErrorMessage);
 				}
-								
+
 			} catch(IllegalArgumentException e) {
 				redirectToHomePage();
 				String begTitle = begBe.getValue("PRI_TITLE", null);
@@ -7761,12 +7813,12 @@ public void makePayment(QDataAnswerMessage m) {
 			sendSlackNotification(slackMessage);
 		}
 	}
-	
+
 	/* bank account payments needs to go through one more API call - Debit authority */
 	private void debitAuthorityForBankAccount( BaseEntity offerBe, QMakePayment makePaymentObj, String authToken ) throws IllegalArgumentException {
-		
+
 		Money offerBuyerPriceString = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-		
+
 		/* if price calculation fails, we handle it */
 		if(offerBuyerPriceString == null) {
 			throw new IllegalArgumentException("Something went wrong during pricing calculation. Item price cannot be empty");
@@ -7775,19 +7827,19 @@ public void makePayment(QDataAnswerMessage m) {
 		try {
 			/* Get the rounded money in cents */
 			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
-			
+
 			/* bundling the debit-authority object */
 			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
-			
+
 			/* API call for debit authorization for bank-account */
 			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
-			
-		} catch (PaymentException e) {					
+
+		} catch (PaymentException e) {
 			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-			throw new IllegalArgumentException(getFormattedErrorMessage);	
+			throw new IllegalArgumentException(getFormattedErrorMessage);
 		}
 	}
-	
+
 	/* Fetch the one time use Payments card and bank tokens for a user */
 	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
 		String token = null;
@@ -7818,7 +7870,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* release payment */
 	public Boolean releasePayment(BaseEntity begBe, BaseEntity buyerBe, BaseEntity sellerBe, String authToken) {
-		
+
 		Boolean isReleasePayment = false;
 		try {
 			String paymentItemId = begBe.getValue("PRI_ITEM_ID", null);
@@ -7827,64 +7879,64 @@ public void makePayment(QDataAnswerMessage m) {
 				String paymentResponse = PaymentEndpoint.releasePayment(paymentItemId, JsonUtils.toJson(releasePaymentObj), authToken);
 				QReleasePayment paymentResponseObj = JsonUtils.fromJson(paymentResponse, QReleasePayment.class);
 				String depositReferenceId = paymentResponseObj.getId();
-				
+
 				 List<Answer> answers = new ArrayList<Answer>();
 
 	              /*  Adding Release Payment Done status  */
 	              Answer paymentDoneAns = new Answer(buyerBe.getCode(), begBe.getCode(), "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE");
 	              answers.add(paymentDoneAns);
-				
+
 				/* save disbursement id as a beg attribute */
 				 Answer releasePaymentDisbursementAns = new Answer(getUser().getCode(), begBe.getCode(), "PRI_PAYMENTS_DISBURSEMENT_ID", depositReferenceId );
 				 answers.add(releasePaymentDisbursementAns);
-	             
+
 				 saveAnswers(answers);
 	             isReleasePayment = true;
-				
+
 			} catch (PaymentException e) {
 				String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-				throw new IllegalArgumentException(getFormattedErrorMessage);	
+				throw new IllegalArgumentException(getFormattedErrorMessage);
 			}
-			
+
 		} catch(IllegalArgumentException e) {
 			String begTitle = begBe.getValue("PRI_TITLE", null);
 			String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
 			String[] recipientArr = { buyerBe.getCode() };
 			String toastMessage = "Unfortunately, payment release to " + sellerFirstName + " for the job - "+ begTitle + " has failed." + e.getMessage();
-			
+
 			/* send error toast message */
 			sendDirectToast(recipientArr, toastMessage, "warning");
-			
+
 			/* send slack notification */
 			sendSlackNotification(toastMessage + ". Job code : "+begBe.getCode());
 		}
 		return isReleasePayment;
 	}
-	
+
 	/* disbursement of bank account for a user */
 	public Boolean disburseAccount(String paymentsUserId, QPaymentMethod paymentMethodObj, String authToken) {
-		
+
 		Boolean isDisbursementSuccess = false;
 		if(paymentsUserId != null && paymentMethodObj != null) {
 			try {
 				/* Get the ID of the payment method (that's all we'll need) */
 				String paymentMethodId = paymentMethodObj.getId();
-				
+
 				/* set the payment ID in the object */
 				QPaymentMethod requestBodyObj = new QPaymentMethod(paymentMethodId);
-				
+
 				/* create disbursement object */
 				QPaymentsDisbursement disbursementObj = new QPaymentsDisbursement(requestBodyObj);
-				
+
 				try {
 					/* Hit the API. This API has no response string */
 					PaymentEndpoint.disburseAccount(paymentsUserId, JsonUtils.toJson(disbursementObj), authToken);
 					isDisbursementSuccess = true;
-						
+
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 					throw new IllegalArgumentException(getFormattedErrorMessage);
-				}			
+				}
 			} catch(IllegalArgumentException e) {
 				log.error("Exception occured during disbursement. "+e.getMessage());
 			}
@@ -7893,7 +7945,7 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return isDisbursementSuccess;
 	}
-	
+
 	/* Deletes a bank account */
 	public Boolean deleteBankAccount(String bankAccountId, String authKey) {
 		Boolean isDeleted = false;
