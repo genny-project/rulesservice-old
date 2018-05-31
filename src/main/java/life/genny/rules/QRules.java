@@ -1921,26 +1921,7 @@ public class QRules {
 		/* we return false otherwise */
 		return false;
 	}
-
-	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
-
-		String json;
-		try {
-			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-					+ questionCode + "/" + targetCode, getToken());
-			QDataAskMessage msg = RulesUtils.fromJson(json, QDataAskMessage.class);
-			;
-			return msg;
-
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
+  
 	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 
 		String json;
