@@ -199,11 +199,7 @@ package life.genny.rules;
 
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 						rules.saveAnswer(paymentStatus);
-
-		            	}
-		            	
 			}
-
 
 	     	rules.setState("ITEM_CALLBACK");
 

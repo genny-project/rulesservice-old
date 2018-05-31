@@ -979,10 +979,6 @@ public class QRules {
 					if(paidDate.isPresent()) {
 
 						LocalDateTime created = paidDate.get().getCreated();
-
-						this.println(created.isBefore(lastWeek));
-						this.println(created.isAfter(lastWeek));
-
 						if (created.isBefore(lastWeek)) {
 
 							/* BEG was paid >1 week - we archive it */
@@ -3791,11 +3787,68 @@ public class QRules {
 
 				if (offers != null) {
 
-					for (BaseEntity be : offers) {
-						if (!(be.getCode().equals(offerCode))) {
-							println("The BE is : " + be.getCode());
-							/* Update PRI_NEXT_ACTION to Disabled */
-							updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+					/* Update BEG to have DRIVER_CODE as an attribute */
+					answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
+					saveAnswers(answers);
+
+					BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
+
+					/* TOAST :: SUCCESS */
+					println("Sending success toast since make payment succeeded");
+					HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("DRIVER", quoterCode);
+					contextMap.put("JOB", begCode);
+					contextMap.put("QUOTER", quoterCode);
+					contextMap.put("OFFER", offer.getCode());
+					contextMap.put("LOAD", loadBe.getCode());
+
+					String[] recipientArr = { userCode };
+
+					/* TOAST :: PAYMENT SUCCESS */
+					sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+					// sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER",
+					// "TOAST");
+					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+
+					/* QUOTER config */
+					HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+					contextMapForDriver.put("JOB", begCode);
+					contextMapForDriver.put("OWNER", userCode);
+					contextMapForDriver.put("OFFER", offer.getCode());
+					contextMapForDriver.put("LOAD", loadBe.getCode());
+
+					String[] recipientArrForDriver = { quoterCode };
+
+					/* Sending messages to DRIVER - Email and sms enabled */
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
+							"TOAST");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
+							"EMAIL");
+
+					/* Update link between BEG and OFFER to weight= 0 */
+					// updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 1.0);
+
+					/* Allocate QUOTER as Driver */
+					createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+
+					/* Update link between BEG and Accepted OFFER to weight = 100 */
+					updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
+
+					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+					// get all offers
+					List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
+
+					if (offers != null) {
+
+						for (BaseEntity be : offers) {
+							if (!(be.getCode().equals(offerCode))) {
+								println("The BE is : " + be.getCode());
+								/* Update PRI_NEXT_ACTION to Disabled */
+								updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION",
+										"DISABLED");
+							}
 						}
 					}
 				}
@@ -5984,8 +6037,62 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-    this.generateItemCaches("BUCKETS");
-		this.generateItemCaches("ARCHIVED_PRODUCTS");
+		this.generateItemCaches("BUCKETS");
+		this.generateItemCaches("ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+	}
+
+	private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
+
+		/* 1. we add the cached item to the message "items" */
+		BaseEntity[] cachedItemItems = new BaseEntity[1];
+		cachedItemItems[0] = cachedItem;
+
+		/* 2. we create the data baseentity message containing the array above */
+		QDataBaseEntityMessage cachedItemMessage = new QDataBaseEntityMessage(cachedItemItems, parentCode, "LNK_CORE");
+		cachedItemMessage.setAliasCode(parentCode);
+		cachedItemMessage.setParentCode(parentCode);
+
+		/* 3. we add it to the bulk message */
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		bulkmsg.add(cachedItemMessage);
+
+		/* 4. we cache the message */
+		QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+		QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
+		VertxUtils.putObject(realm(), "CACHE", parentCode, bulkItem);
+
+		/* 5. we cache all the kids of the baseEntity */
+
+		/* we grab all the kids */
+		List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
+
+		if (begKids != null) {
+
+			/* we create the base entity message for the kids */
+			QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
+			beMsg.setAliasCode(cachedItem.getCode());
+			beMsg.setParentCode(cachedItem.getCode());
+			bulkmsg.add(beMsg);
+			
+			/* we then get the kids of these kids (OFR_ have kids as well for instance) */
+			for(BaseEntity kid: begKids) {
+				
+				/* we grab all the kids */
+				List<BaseEntity> kidKids = this.getLinkedBaseEntities(kid.getCode());
+				this.println("Got kidkids: " + kidKids.size());
+
+				if (kidKids != null) {
+
+					/* we create the base entity message for the kids */
+					QDataBaseEntityMessage kidMessage = new QDataBaseEntityMessage(kidKids.toArray(new BaseEntity[0]));
+					kidMessage.setAliasCode(kid.getCode());
+					kidMessage.setParentCode(kid.getCode());
+					bulkmsg.add(kidMessage);
+				}
+			}
+		}
+
+		return bulkmsg;
 	}
 
 	public void generateItemCaches(String cachedItemKey) {
@@ -6001,8 +6108,6 @@ public class QRules {
 			drools.setFocus("GenerateSearches");
 		}
 
-		List<QBulkMessage> bulkMessages = new ArrayList<QBulkMessage>();
-
 		/* we grab the cached Item */
 		QDataBaseEntityMessage cachedItemMessages = VertxUtils.getObject(realm(), cachedItemKey, realm(), QDataBaseEntityMessage.class);
 
@@ -6011,60 +6116,59 @@ public class QRules {
 			/* we loop through each bucket to cache the messages */
 			for (BaseEntity cachedItem : cachedItemMessages.getItems()) {
 
-				Integer itemCount = 0;
-
 				List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-				try {
+				if(cachedItem.getCode().startsWith("GRP_")) {
 
-					/* we create the searchBE */
-					SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), cachedItemKey)
-							.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-							.setSourceCode(cachedItem.getCode())
-							.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-							.setPageStart(0)
-							.setPageSize(10000);
+					try {
 
-					/* fetching results */
-					QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
+						/* we create the searchBE */
+						SearchEntity searchBE = new SearchEntity(cachedItemKey, cachedItemKey)
+								.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+								.setSourceCode(cachedItem.getCode())
+								.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
+								.setPageStart(0)
+								.setPageSize(10000);
 
-					if (results != null) {
+						/* fetching results */
+						QDataBaseEntityMessage results = QwandaUtils.fetchResults(searchBE, token);
 
-						println("Caching Item " + cachedItem.getCode() + " with " + results.getReturnCount() + " items");
-						itemCount = results.getItems().length;
-						results.setParentCode(cachedItem.getCode());
-						results.setLinkCode("LNK_CORE");
-						bulkmsg.add(results);
+						if (results != null) {
 
-						/* we loop through each BEG of the current cachedItem */
-						for (BaseEntity beg : results.getItems()) {
+							results.setParentCode(cachedItem.getCode());
+							results.setLinkCode("LNK_CORE");
+							bulkmsg.add(results);
 
-							/* we grab all the kids */
-							List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0,
-									1000, false);
-
-							if (begKids != null) {
-
-								/* we create the message from BEG to kids */
-								itemCount += begKids.size();
-								QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
-										begKids.toArray(new BaseEntity[0]), beg.getCode(), "LNK_BEG");
-								beMsg.setAliasCode(beg.getCode());
-								beMsg.setParentCode(beg.getCode());
-								bulkmsg.add(beMsg);
+							/* 2. we loop through each BEG of the current cachedItem */
+							for (BaseEntity baseEntity : results.getItems()) {
+								List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItem.getCode(), baseEntity);
+								if(baseEntityMessages != null) {
+									bulkmsg.addAll(baseEntityMessages);
+								}
 							}
 						}
+
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 
-					/* we create the cachedItem bulk message */
+					/* we save the message in cache */
 					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
 					QBulkMessage bulk = new QBulkMessage(messages.clone());
 					VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
-					bulkMessages.add(bulk);
-					println("Loading New cache laoded " + itemCount + " BEs");
+				}
+				/* if it is a BEG */
+				else {
 
-				} catch (Exception e) {
-					e.printStackTrace();
+					List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItemMessages.getParentCode(), cachedItem);
+					if(baseEntityMessages != null) {
+						bulkmsg.addAll(baseEntityMessages);
+					}
+
+					/* we save the message in cache */
+					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+					QBulkMessage bulk = new QBulkMessage(messages.clone());
+					VertxUtils.putObject(realm(), "CACHE", cachedItemMessages.getParentCode(), bulk);
 				}
 			}
 		}
@@ -6099,13 +6203,12 @@ public class QRules {
 		this.sendCachedItem(cachedItemKey, null);
 	}
 
-
 	public void sendCachedItem(final String cachedItemKey, final HashMap<String, String> subscriptions) {
 
-    long startTime = System.nanoTime();
-	  BaseEntity user = this.getUser();
-    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
-    if (items != null) {
+		long startTime = System.nanoTime();
+		BaseEntity user = this.getUser();
+		QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
+		if (items != null) {
 
 			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
@@ -6132,7 +6235,7 @@ public class QRules {
 			println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
 		}
-  }
+	}
 
 	public QBulkMessage fetchAndSubscribeCachedItemsForStakeholder(final String cachedItemKey, final BaseEntity stakeholder, final Map<String, String> subscriptions) {
 
@@ -6145,11 +6248,10 @@ public class QRules {
 			/* we loop through the messages */
 			for (BaseEntity message : cachedItemMessages.getItems()) {
 
-        this.println(message.toString());
-
 				/* we grab cache items for the given message */
 				QBulkMessage currentItemMessages = new QBulkMessage();
 				currentItemMessages = VertxUtils.getObject(realm(), "CACHE", message.getCode(), QBulkMessage.class);
+
 				if (currentItemMessages != null) {
 
 					QDataBaseEntityMessage[] messages = currentItemMessages.getMessages();
@@ -6228,9 +6330,10 @@ public class QRules {
 						BaseEntity item = message.getItems()[i];
 						String itemCode = item.getCode();
 
-
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
+							
+							this.println("Found user: " + itemCode);
 
 							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 							baseEntityKids.add(item);
@@ -6239,16 +6342,12 @@ public class QRules {
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
 
-              this.println("Got: " + itemCode);
-
 							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
-                this.println("Adding BEG because: GRP_NEW_ITEMS and PRI_IS_SELLER");
 								baseEntityKids.add(item);
 							}
 							else {
 
 								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
-                  this.println("Adding BEG because stakeholder");
 									baseEntityKids.add(item);
 								}
 								else {
@@ -6324,10 +6423,12 @@ public class QRules {
 			QDataBaseEntityMessage baseEntityMessage = new QDataBaseEntityMessage(kids.toArray(new BaseEntity[0]));
 			baseEntityMessage.setParentCode(parentCode);
 			ret.add(baseEntityMessage);
+			this.println("Adding for parent: " + parentCode + " " + kids.size() + " kids");
 		});
 
 		return ret;
 	}
+
 	public void sendBucketLayouts() {
 		String viewCode = "BUCKET_DASHBOARD";
 		String grpBE = "GRP_DASHBOARD";
@@ -6366,18 +6467,6 @@ public class QRules {
 		ArrayUtils.concat(resultArray, resultAdmins, result);
 		return result;
 	}
-
-	/*
-	 * static public String[] getSubscribers(final String realm, final String
-	 * subscriptionCode) { final String SUB = "SUB"; // Subscribe to a code String[]
-	 * resultArray = getObject(realm, SUB, subscriptionCode, String[].class);
-	 *
-	 * String[] resultAdmins = getObject(realm, "SUBADMIN", "ADMINS",
-	 * String[].class); String[] result = ArrayUtils.addAll(resultArray,
-	 * resultAdmins); return result;
-	 *
-	 * }
-	 */
 
 	public void sendInternApplicationData() {
 		String[] recipient = { getUser().getCode() };
