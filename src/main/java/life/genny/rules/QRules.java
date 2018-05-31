@@ -3673,284 +3673,178 @@ public class QRules {
 
 	}
 
-	public void makePayment(QDataAnswerMessage m) {
-		
-		String userCode = getUser().getCode();
-		String begCode = null;
-		Answer[] dataAnswers = m.getItems();
-		for (Answer answer : dataAnswers) {
-
-			String targetCode = answer.getTargetCode();
-			String sourceCode = answer.getSourceCode();
-			String attributeCode = answer.getAttributeCode();
-			String value = answer.getValue();
-
-			begCode = targetCode;
-
-			println("Payments value ::" + value + "attribute code ::" + attributeCode);
-
-			/* if this answer is actually an Payment_method, this rule will be triggered */
-			if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
-
-				JsonObject paymentValues = new JsonObject(value);
-
-				/* { ipAddress, deviceID, accountID } */
-				String ipAddress = paymentValues.getString("ipAddress");
-				String accountId = paymentValues.getString("accountID");
-				String deviceId = paymentValues.getString("deviceID");
-
-				List<Answer> userSpecificAnswers = new ArrayList<>();
-
-				if (ipAddress != null) {
-					Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
-					userSpecificAnswers.add(ipAnswer);
-					saveAnswer(ipAnswer);
-				}
-
-				if (accountId != null) {
-					Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
-					userSpecificAnswers.add(accountIdAnswer);
-					saveAnswer(accountIdAnswer);
-				}
-
-				if (deviceId != null) {
-					Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
-					userSpecificAnswers.add(deviceIdAnswer);
-					saveAnswer(deviceIdAnswer);
-				}
-
-				/* bulk answer not working currently, so using individual answers */
-				// saveAnswers(userSpecificAnswers);
-			}
-		}
-
-		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-		BaseEntity userBe = getUser();
-		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
-
-		if (begCode != null && assemblyId != null) {
-			/* GET beg Base Entity */
-			BaseEntity beg = getBaseEntityByCode(begCode);
-			String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
-
-			if (offerCode != null) {
-
-				/* Make payment */
-				showLoading("Processing payment...");
-
-				BaseEntity offer = getBaseEntityByCode(offerCode);
-				String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
-				BaseEntity driverBe = getBaseEntityByCode(quoterCode);
-				
-				/* make payment API */
-				makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
-
-				/* GET attributes of OFFER BE */
-				Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
-				Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
-				Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-				Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
-				Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-				Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
-				Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
-
-				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
-				answers.add(
-						new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
-				answers.add(
-						new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
-				answers.add(
-						new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
-				answers.add(
-						new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
-				answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
-				answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
-
-
-				/* Update BEG to have DRIVER_CODE as an attribute */
-				answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
-				answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
-				saveAnswers(answers);
-
-				BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
-
-				/* Allocate QUOTER as Driver */
-				createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-				/* Update link between BEG and Accepted OFFER to weight = 100 */
-				updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
-
-				/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
-				// get all offers
-				List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
-
-				if (offers != null) {
-
-					/* Update BEG to have DRIVER_CODE as an attribute */
-					answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
-					answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
-					saveAnswers(answers);
-
-					BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
-
-					/* TOAST :: SUCCESS */
-					println("Sending success toast since make payment succeeded");
-					HashMap<String, String> contextMap = new HashMap<String, String>();
-					contextMap.put("DRIVER", quoterCode);
-					contextMap.put("JOB", begCode);
-					contextMap.put("QUOTER", quoterCode);
-					contextMap.put("OFFER", offer.getCode());
-					contextMap.put("LOAD", loadBe.getCode());
-
-					String[] recipientArr = { userCode };
-
-					/* TOAST :: PAYMENT SUCCESS */
-					sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-					// sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER",
-					// "TOAST");
-					sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
-
-					/* QUOTER config */
-					HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-					contextMapForDriver.put("JOB", begCode);
-					contextMapForDriver.put("OWNER", userCode);
-					contextMapForDriver.put("OFFER", offer.getCode());
-					contextMapForDriver.put("LOAD", loadBe.getCode());
-
-					String[] recipientArrForDriver = { quoterCode };
-
-					/* Sending messages to DRIVER - Email and sms enabled */
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
-							"TOAST");
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-					sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER",
-							"EMAIL");
-
-					/* Update link between BEG and OFFER to weight= 0 */
-					// updateLink(begCode, offerCode, "LNK_BEG", "OFFER", 1.0);
-
-					/* Allocate QUOTER as Driver */
-					createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-					/* Update link between BEG and Accepted OFFER to weight = 100 */
-					updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
-
-					/* Set PRI_NEXT_ACTION to Disabled for all other Offers */
-					// get all offers
-					List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
-
-					if (offers != null) {
-
-						for (BaseEntity be : offers) {
-							if (!(be.getCode().equals(offerCode))) {
-								println("The BE is : " + be.getCode());
-								/* Update PRI_NEXT_ACTION to Disabled */
-								updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION",
-										"DISABLED");
-							}
-						}
-					}
-				}
-
-				answers = new ArrayList<Answer>();
-				answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
-				answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-						Status.NEEDS_NO_ACTION.value()));
-
-				/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
-				String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
-				println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
-				publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
-				publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
-				publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-
-				/* Set progression of LOAD delivery to 0 */
-				Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-				answers.add(updateProgressAnswer);
-				this.saveAnswers(answers);
-
-				/* We ask FE to monitor GPS */
-				geofenceJob(begCode, getUser().getCode(), 10.0);
-
-				/* GET all the driver subsribers */
-				String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-
-				if (begRecipients != null) {
-					println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
-					println("quoter code ::" + quoterCode);
-
-					Set<String> unsubscribeSet = new HashSet<>();
-
-					for (String begRecipient : begRecipients) {
-						if (!begRecipient.equals(quoterCode)) {
-							unsubscribeSet.add(begRecipient);
-						}
-					}
-
-					println("unsubscribe set ::" + unsubscribeSet);
-
-					String[] unsubscribeArr = new String[unsubscribeSet.size()];
-
-					int i = 0;
-					for (String code : unsubscribeSet) {
-						unsubscribeArr[i++] = code;
-					}
-
-					/* sending cmd BUCKETVIEW */
-					this.redirectToHomePage();
-					println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
-					VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
-				}
-
-				// moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-				moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
-				publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
-
-				this.generateNewItemsCache();
-
-				/* Update PRI_NEXT_ACTION = OWNER */
-				Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
-				saveAnswer(begNextAction);
-
-				/* sending cmd BUCKETVIEW */
-				// this.setState("TRIGGER_HOMEPAGE");
-				this.redirectToHomePage();
-				
-				/* TOAST :: SUCCESS */
-				println("Sending success toast since make payment succeeded");
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("DRIVER", quoterCode);
-				contextMap.put("JOB", begCode);
-				contextMap.put("QUOTER", quoterCode);
-				contextMap.put("OFFER", offer.getCode());
-				contextMap.put("LOAD", loadBe.getCode());
-
-				String[] recipientArr = { userCode };
-
-				/* TOAST :: PAYMENT SUCCESS */
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-				sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
-
-				/* QUOTER config */
-				HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-				contextMapForDriver.put("JOB", begCode);
-				contextMapForDriver.put("OWNER", userCode);
-				contextMapForDriver.put("OFFER", offer.getCode());
-				contextMapForDriver.put("LOAD", loadBe.getCode());
-
-				String[] recipientArrForDriver = { quoterCode };
-
-				/* Sending messages to DRIVER - Email and sms enabled */
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-				sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-
-				setState("PAYMENT_DONE");
-
-			}
-		}
-	}
+public void makePayment(QDataAnswerMessage m) {
+        
+        String userCode = getUser().getCode();
+        String begCode = null;
+        Answer[] dataAnswers = m.getItems();
+        for (Answer answer : dataAnswers) {
+            String targetCode = answer.getTargetCode();
+            String sourceCode = answer.getSourceCode();
+            String attributeCode = answer.getAttributeCode();
+            String value = answer.getValue();
+            begCode = targetCode;
+            println("Payments value ::" + value + "attribute code ::" + attributeCode);
+            /* if this answer is actually an Payment_method, this rule will be triggered */
+            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
+                JsonObject paymentValues = new JsonObject(value);
+                /* { ipAddress, deviceID, accountID } */
+                String ipAddress = paymentValues.getString("ipAddress");
+                String accountId = paymentValues.getString("accountID");
+                String deviceId = paymentValues.getString("deviceID");
+                List<Answer> userSpecificAnswers = new ArrayList<>();
+                if (ipAddress != null) {
+                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
+                    userSpecificAnswers.add(ipAnswer);
+                    saveAnswer(ipAnswer);
+                }
+                if (accountId != null) {
+                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
+                    userSpecificAnswers.add(accountIdAnswer);
+                    saveAnswer(accountIdAnswer);
+                }
+                if (deviceId != null) {
+                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
+                    userSpecificAnswers.add(deviceIdAnswer);
+                    saveAnswer(deviceIdAnswer);
+                }
+                /* bulk answer not working currently, so using individual answers */
+                // saveAnswers(userSpecificAnswers);
+            }
+        }
+        String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+        BaseEntity userBe = getUser();
+        String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+        if (begCode != null && assemblyId != null) {
+            /* GET beg Base Entity */
+            BaseEntity beg = getBaseEntityByCode(begCode);
+            String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
+            if (offerCode != null) {
+                /* Make payment */
+                showLoading("Processing payment...");
+                BaseEntity offer = getBaseEntityByCode(offerCode);
+                String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
+                BaseEntity driverBe = getBaseEntityByCode(quoterCode);
+                
+                /* make payment API */
+                makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
+                /* GET attributes of OFFER BE */
+                Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
+                Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
+                Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+                Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
+                Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+                Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
+                Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
+                List<Answer> answers = new ArrayList<Answer>();
+                answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
+                answers.add(
+                        new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+                answers.add(
+                        new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
+                answers.add(
+                        new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
+                answers.add(
+                        new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
+                answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
+                answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
+                /* Update BEG to have DRIVER_CODE as an attribute */
+                answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+                answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
+                saveAnswers(answers);
+                BaseEntity loadBe = getChildren(begCode, "LNK_BEG", "LOAD");
+                /* Allocate QUOTER as Driver */
+                createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+                /* Update link between BEG and Accepted OFFER to weight = 100 */
+                updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
+                /* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+                // get all offers
+                List<BaseEntity> offers = getChildrens(begCode, "LNK_BEG", "OFFER");
+                if (offers != null) {
+                    for (BaseEntity be : offers) {
+                        if (!(be.getCode().equals(offerCode))) {
+                            println("The BE is : " + be.getCode());
+                            /* Update PRI_NEXT_ACTION to Disabled */
+                            updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+                        }
+                    }
+                }
+                answers = new ArrayList<Answer>();
+                answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
+                answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+                        Status.NEEDS_NO_ACTION.value()));
+                /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
+                String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
+                println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
+                publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
+                publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
+                publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
+                /* Set progression of LOAD delivery to 0 */
+                Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+                answers.add(updateProgressAnswer);
+                this.saveAnswers(answers);
+                /* We ask FE to monitor GPS */
+                geofenceJob(begCode, getUser().getCode(), 10.0);
+                /* GET all the driver subsribers */
+                String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+                if (begRecipients != null) {
+                    println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
+                    println("quoter code ::" + quoterCode);
+                    Set<String> unsubscribeSet = new HashSet<>();
+                    for (String begRecipient : begRecipients) {
+                        if (!begRecipient.equals(quoterCode)) {
+                            unsubscribeSet.add(begRecipient);
+                        }
+                    }
+                    println("unsubscribe set ::" + unsubscribeSet);
+                    String[] unsubscribeArr = new String[unsubscribeSet.size()];
+                    int i = 0;
+                    for (String code : unsubscribeSet) {
+                        unsubscribeArr[i++] = code;
+                    }
+                    /* sending cmd BUCKETVIEW */
+                    this.redirectToHomePage();
+                    println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
+                    VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
+                }
+                // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+                moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
+                publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
+                this.generateNewItemsCache();
+                /* Update PRI_NEXT_ACTION = OWNER */
+                Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
+                saveAnswer(begNextAction);
+                /* sending cmd BUCKETVIEW */
+                // this.setState("TRIGGER_HOMEPAGE");
+                this.redirectToHomePage();
+                
+                /* TOAST :: SUCCESS */
+                println("Sending success toast since make payment succeeded");
+                HashMap<String, String> contextMap = new HashMap<String, String>();
+                contextMap.put("DRIVER", quoterCode);
+                contextMap.put("JOB", begCode);
+                contextMap.put("QUOTER", quoterCode);
+                contextMap.put("OFFER", offer.getCode());
+                contextMap.put("LOAD", loadBe.getCode());
+                String[] recipientArr = { userCode };
+                /* TOAST :: PAYMENT SUCCESS */
+                sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+                sendMessage("", recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+                /* QUOTER config */
+                HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+                contextMapForDriver.put("JOB", begCode);
+                contextMapForDriver.put("OWNER", userCode);
+                contextMapForDriver.put("OFFER", offer.getCode());
+                contextMapForDriver.put("LOAD", loadBe.getCode());
+                String[] recipientArrForDriver = { quoterCode };
+                /* Sending messages to DRIVER - Email and sms enabled */
+                sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+                sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+                sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+                setState("PAYMENT_DONE");
+            }
+        }
+    }
 
 	public void updateGPS(QDataGPSMessage m) {
 
