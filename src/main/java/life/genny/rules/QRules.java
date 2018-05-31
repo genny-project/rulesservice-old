@@ -6032,6 +6032,43 @@ public class QRules {
 		this.generateItemCaches("ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
+  private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
+
+    /* 1. we add the cached item to the message "items" */
+    BaseEntity[] cachedItemItems = new BaseEntity[1];
+    cachedItemItems[0] = cachedItem;
+
+    /* 2. we create the data baseentity message containing the array above */
+    QDataBaseEntityMessage cachedItemMessage = new QDataBaseEntityMessage(cachedItemItems, parentCode, "LNK_CORE");
+    cachedItemMessage.setAliasCode(parentCode);
+    cachedItemMessage.setParentCode(parentCode);
+
+    /* 3. we add it to the bulk message */
+    List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+    bulkmsg.add(cachedItemMessage);
+
+    /* 4. we cache the message */
+    QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+    QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
+    VertxUtils.putObject(realm(), "CACHE", parentCode, bulkItem);
+
+    /* 5. we cache all the kids of the baseEntity */
+
+    /* we grab all the kids */
+    List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
+
+    if (begKids != null) {
+
+      /* we create the base entity message for the kids */
+      QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
+      beMsg.setAliasCode(cachedItem.getCode());
+      beMsg.setParentCode(cachedItem.getCode());
+      bulkmsg.add(beMsg);
+    }
+
+    return bulkmsg;
+  }
+
 	public void generateItemCaches(String cachedItemKey) {
 
 		/* we generate a service token */
@@ -6053,8 +6090,6 @@ public class QRules {
 			/* we loop through each bucket to cache the messages */
 			for (BaseEntity cachedItem : cachedItemMessages.getItems()) {
 
-				Integer itemCount = 0;
-
 				List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
 				if(cachedItem.getCode().startsWith("GRP_")) {
@@ -6074,70 +6109,40 @@ public class QRules {
 
 						if (results != null) {
 
-							itemCount = results.getItems().length;
 							results.setParentCode(cachedItem.getCode());
 							results.setLinkCode("LNK_CORE");
 							bulkmsg.add(results);
 
 							/* 2. we loop through each BEG of the current cachedItem */
 							for (BaseEntity baseEntity : results.getItems()) {
-
-								/* we grab all the kids */
-								List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(baseEntity.getCode(), "LNK_BEG", 0, 1000, false);
-
-								if (begKids != null) {
-
-									/* we create the message from BEG to kids */
-									itemCount += begKids.size();
-									QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(
-											begKids.toArray(new BaseEntity[0]), baseEntity.getCode(), "LNK_BEG");
-									beMsg.setAliasCode(baseEntity.getCode());
-									beMsg.setParentCode(baseEntity.getCode());
-									bulkmsg.add(beMsg);
-								}
+								List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItem.getCode(), baseEntity);
+                if(baseEntityMessages != null) {
+                  bulkmsg.addAll(baseEntityMessages);
+                }
 							}
 						}
 
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				}
 
+          /* we save the message in cache */
+          QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+          QBulkMessage bulk = new QBulkMessage(messages.clone());
+          VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
+				}
 				/* if it is a BEG */
 				else {
 
-					/* 1. we add the cached item to the message */
-					BaseEntity[] cachedItemItems = new BaseEntity[1];
-					cachedItemItems[0] = cachedItem;
-					QDataBaseEntityMessage cachedItemMessage = new QDataBaseEntityMessage(cachedItemItems, cachedItemMessages.getParentCode(), "LNK_CORE");
-					cachedItemMessage.setAliasCode(cachedItemMessages.getParentCode());
-					cachedItemMessage.setParentCode(cachedItemMessages.getParentCode());
-					bulkmsg.add(cachedItemMessage);
-					QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-					QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
-					VertxUtils.putObject(realm(), "CACHE", cachedItemMessages.getParentCode(), bulkItem);
-					this.println("Caching cached item: " + cachedItem.getCode());
-					this.println(bulkItem.toString());
+					List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItemMessages.getParentCode(), cachedItem);
+					if(baseEntityMessages != null) {
+            bulkmsg.addAll(baseEntityMessages);
+          }
 
-					/* we grab all the kids */
-					List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
-
-					if (begKids != null) {
-
-						/* we create the message from BEG to kids */
-						itemCount += begKids.size();
-						QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
-						beMsg.setAliasCode(cachedItem.getCode());
-						beMsg.setParentCode(cachedItem.getCode());
-						bulkmsg.add(beMsg);
-
-						/* we create the cachedItem bulk message */
-						QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-						QBulkMessage bulk = new QBulkMessage(messages.clone());
-						VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
-						this.println("Setting Key: " + realm() + ":" + "CACHE" + cachedItem.getCode());
-						println("Loading New cache laoded " + itemCount + " BEs");
-					}
+          /* we save the message in cache */
+          QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+          QBulkMessage bulk = new QBulkMessage(messages.clone());
+          VertxUtils.putObject(realm(), "CACHE", cachedItemMessages.getParentCode(), bulk);
 				}
 			}
 		}
