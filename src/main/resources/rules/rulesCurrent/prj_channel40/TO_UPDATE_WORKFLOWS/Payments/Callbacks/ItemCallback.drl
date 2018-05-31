@@ -42,10 +42,30 @@ package life.genny.rules;
 				owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
 				driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
 				load = rules.getChildren(begBe.getCode(), "LNK_BEG", "LOAD");
-
-				/* Adding users who needs to get status-colour change */
-			    userCodesForStatusColourChange.add(driver.getCode());
-			    userCodesForStatusColourChange.add(owner.getCode());
+				
+				if(owner != null) {
+					rules.println("owner :: "+owner.getCode());
+					
+					/* Adding users who needs to get status-colour change */
+				 	userCodesForStatusColourChange.add(owner.getCode());
+				} else {
+					rules.println("OWNER link returned null for job : "+begBe.getCode());
+				}
+				
+				if(driver != null) {
+					rules.println("driver :: "+driver.getCode());
+					
+					/* Adding users who needs to get status-colour change */
+			    		userCodesForStatusColourChange.add(driver.getCode());
+				}else {
+					rules.println("DRIVER link returned null for job : "+begBe.getCode());
+				}
+				
+				if(load != null) {
+					rules.println("load ::"+load.getCode());
+				}else {
+					rules.println("LOAD link returned null for job : "+begBe.getCode());
+				}
 
 				JsonObject paymentStatusObj = new JsonObject();
 				paymentStatusObj.put("status", m.getObject_status().toString());
@@ -179,7 +199,6 @@ package life.genny.rules;
 
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
 						rules.saveAnswer(paymentStatus);
-		            	}
 			}
 
 	     	rules.setState("ITEM_CALLBACK");
