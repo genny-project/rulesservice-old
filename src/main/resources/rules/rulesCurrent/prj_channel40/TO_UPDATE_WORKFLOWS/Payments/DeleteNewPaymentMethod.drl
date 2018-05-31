@@ -7,6 +7,8 @@ import io.vertx.core.json.JsonObject;
 import life.genny.utils.PaymentUtils;
 import java.util.List;
 import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
+import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwandautils.JsonUtils;
 
 rule "Delete new payment method - user"
 	agenda-group "payment-method"
@@ -45,6 +47,8 @@ rule "Delete new payment method - user"
 
 			String userCode = rules.getUser().getCode();
 			String userCurrentPaymentMethods = rules.getUser().getValue("PRI_USER_PAYMENT_METHODS", null);
+			
+			Boolean isDeleted = false;
 			if(userCurrentPaymentMethods != null) {
 
 				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
@@ -54,21 +58,28 @@ rule "Delete new payment method - user"
 					if(paymentMethodObj instanceof JsonObject) {
 
 						JsonObject paymentMethod = (JsonObject)paymentMethodObj;
+						QPaymentMethod paymentMethodObject = JsonUtils.fromJson(paymentMethod.toString(), QPaymentMethod.class);
 						if(paymentMethod.getString("id").equals(deletedPaymentMethodId) == false) {
 							newPaymentMethodsArray.add(paymentMethod);
 						} else {
-							if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
-								PaymentUtils.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+							if(PaymentUtils.isBankAccount(paymentMethodObject)) {
+
+								isDeleted = rules.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
 							} else {
-								PaymentUtils.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+								isDeleted = rules.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
 							}
 						}
 					}
 				}
 
-				String finalPaymentMethods = newPaymentMethodsArray.toString();
-				Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
-	            rules.saveAnswer(paymentAnswer);
+				/* Delete only if payments API returns success response for delete API */
+				rules.println("is card/bank-account deleted :: "+isDeleted);
+				if(isDeleted) {
+					String finalPaymentMethods = newPaymentMethodsArray.toString();
+					Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
+	            		rules.saveAnswer(paymentAnswer);
+				}
+				
 			}
 		}
 

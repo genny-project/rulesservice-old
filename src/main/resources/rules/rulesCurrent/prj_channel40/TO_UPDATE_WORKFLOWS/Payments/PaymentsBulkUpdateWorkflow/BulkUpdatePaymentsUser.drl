@@ -3,6 +3,8 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.utils.PaymentUtils;
 import io.vertx.core.json.JsonArray;
+import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwandautils.JsonUtils;
 
 rule "Bulk Update assembly user info"
 	agenda-group "payments"
@@ -32,9 +34,11 @@ rule "Bulk Update assembly user info"
      	 	JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
      	 	for(int i = 0; i < currentPaymentMethods.size(); i++) {
      	 		JsonObject paymentMethod = currentPaymentMethods.getJsonObject(i);
+     			QPaymentMethod paymentMethodObject = JsonUtils.fromJson(paymentMethod.toString(), QPaymentMethod.class);
      	 		
-     	 		if(PaymentUtils.isBankAccount(paymentMethod.toString())) {
-     	 			PaymentUtils.disburseAccount(assemblyId, paymentMethod.toString(), assemblyAuthToken);
+     	 		if(PaymentUtils.isBankAccount(paymentMethodObject)) {
+
+     	 			rules.disburseAccount(assemblyId, paymentMethodObject, assemblyAuthToken);
      	 		}	
      	 	}
      	 } 	 
