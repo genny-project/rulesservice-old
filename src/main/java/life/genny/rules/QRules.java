@@ -8224,7 +8224,7 @@ public class QRules {
 		}
 	}
 
-	public void sendSplitView(final String parentCode, final String bucketCode) {
+	public void sendSplitView(final String parentCode, final String bucketCode, List<String> sortedColumns) {
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
@@ -8240,10 +8240,10 @@ public class QRules {
 		} else {
 			JsonObject columns = new JsonObject();
 			
-			List<String> sortedColumns = new ArrayList<String>();
-			sortedColumns.add("PRI_APPLICANT_FULLNAME");
-			sortedColumns.add("PRI_APPLICANT_USERNAME");
-			sortedColumns.add("PRI_BEG_CODE");
+			//List<String> sortedColumns = new ArrayList<String>();
+			// sortedColumns.add("PRI_APPLICANT_FULLNAME");
+			// sortedColumns.add("PRI_APPLICANT_USERNAME");
+			// sortedColumns.add("PRI_BEG_CODE");
 			
 			String[] beArr = new String[sortedColumns.size()];
 			beArr = sortedColumns.toArray(beArr);
