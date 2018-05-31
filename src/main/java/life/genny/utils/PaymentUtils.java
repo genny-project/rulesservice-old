@@ -34,13 +34,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
-import io.vertx.core.json.JsonObject;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.payments.QMakePayment;
 import life.genny.qwanda.payments.QPaymentMethod;
+import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
 import life.genny.qwanda.payments.QPaymentsCompany;
 import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
 import life.genny.qwanda.payments.QPaymentsFee;
@@ -593,7 +594,7 @@ public class PaymentUtils {
 					paymentsItemName = loadBe.getName();
 					if (StringUtils.isBlank(paymentsItemName)) {
 						paymentsItemName = "Job #"+loadBe.getId();
-						log.error("Job Name and Title are emoty , using job id");
+						log.error("Job Name and Title are empty , using job id");
 					}
 				}
 			}
@@ -679,170 +680,43 @@ public class PaymentUtils {
 		return isAnswerContainsPaymentAttribute;
 	}
 
-	public static String processPaymentAnswers(String qwandaServiceUrl, QDataAnswerMessage m, String tokenString) {
-		String begCode = null;
-
-		try {
-			System.out.println("----> Payments attributes Answers <------");
-
-			String userCode = QwandaUtils.getUserCode(tokenString);
-
-			Answer[] answers = m.getItems();
-			for (Answer answer : answers) {
-
-				String targetCode = answer.getTargetCode();
-				String sourceCode = answer.getSourceCode();
-				String attributeCode = answer.getAttributeCode();
-				String value = answer.getValue();
-
-				begCode = targetCode;
-
-				log.debug("Payments value ::" + value + "attribute code ::" + attributeCode);
-				System.out.println("Payments value ::" + value + "attribute code ::" + attributeCode);
-				System.out.println("Beg code ::"+begCode);
-
-				/* if this answer is actually an Payment_method, this rule will be triggered */
-				if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
-
-					JsonObject paymentValues = new JsonObject(value);
-
-					/*{ ipAddress, deviceID, accountID }*/
-					String ipAddress = paymentValues.getString("ipAddress");
-					String accountId = paymentValues.getString("accountID");
-					String deviceId = paymentValues.getString("deviceID");
-
-					if(ipAddress != null){
-						Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
-						saveAnswer(qwandaServiceUrl, ipAnswer, tokenString);
-					}
-
-					if(accountId != null) {
-						Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
-						saveAnswer(qwandaServiceUrl, accountIdAnswer, tokenString);
-					}
-
-					if(deviceId != null) {
-						Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
-						saveAnswer(qwandaServiceUrl, deviceIdAnswer, tokenString);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return begCode;
-	}
-
 	/* Returns the payment method for a user and account ID */
-	private static String getPaymentMethodType(BaseEntity userBe, Object accountId) {
+	public static PaymentType getPaymentMethodType(BaseEntity userBe, String accountId) {
 
 		System.out.println("in getPaymentMethodType method");
 
-		/*Object paymentMethods = MergeUtil.getBaseEntityAttrObjectValue(userBe, "PRI_USER_PAYMENT_METHODS");*/
-		Object paymentMethods = userBe.getValue("PRI_USER_PAYMENT_METHODS", null);
-		JSONArray array = JsonUtils.fromJson(paymentMethods.toString(), JSONArray.class);
-		String paymentType = null;
+		PaymentType paymentType = null;
+		String paymentMethods = userBe.getValue("PRI_USER_PAYMENT_METHODS", null);
+			System.out.println("all payment methods of owners ::"+paymentMethods);
 
 		if (paymentMethods != null) {
-			for (int i = 0; i < array.size(); i++) {
-				Map<String, String> methodObj = (Map<String, String>) array.get(i);
-				if (accountId.equals(methodObj.get("id"))) {
-					paymentType = methodObj.get("type");
-				}
 
+			JSONArray paymentMethodArr = JsonUtils.fromJson(paymentMethods, JSONArray.class);
+			/* iterating through all owner payment methods */
+			for (Object paymentMethodObj : paymentMethodArr) {
+
+				/* converting the individual payment method types to POJO */
+				LinkedTreeMap<String, String> paymentMethod = (LinkedTreeMap<String, String>) paymentMethodObj;
+				Gson gson = new Gson();
+				JsonElement jsonElement = gson.toJsonTree(paymentMethod);
+				QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
+
+				String paymentMethodId = paymentMethodPojo.getId();
+				System.out.println("type ::" + paymentMethodPojo.getType());
+				System.out.println("id ::" + paymentMethodId );
+				
+				/* Return the payment type when the account id matches with the user payment method */
+				if(accountId.equals(paymentMethodId)) {
+					paymentType = paymentMethodPojo.getType();
+				}
 			}
 		}
-		System.out.println("payment method type is ::"+paymentType);
 		return paymentType;
 
 	}
 
-	/* Releases a payment from escrow */
-	public static Boolean releasePayment(String begCode, String authToken, String tokenString) {
-		Boolean isReleasePaymentSuccess = false;
-		System.out.println("BEG Code for release payment ::"+begCode);
-		BaseEntity begBe = MergeUtil.getBaseEntityForAttr(begCode, tokenString);
-		String paymentResponse = null;
-
-		/* Get the Assembly item ID */
-		Object itemId = MergeUtil.getBaseEntityAttrObjectValue(begBe, "PRI_ITEM_ID");
-
-		JSONObject releasePaymentObj = new JSONObject();
-		releasePaymentObj.put("singleItemDisbursement", true);
-
-		if(itemId != null) {
-			try {
-				paymentResponse = PaymentEndpoint.releasePayment(itemId.toString(), JsonUtils.toJson(releasePaymentObj), authToken);
-				if(!paymentResponse.contains("error")) {
-					log.debug("release payment response ::"+paymentResponse);
-					isReleasePaymentSuccess = true;
-				}
-			} catch (PaymentException e) {
-				log.error("Exception occured during release payment");
-				isReleasePaymentSuccess = false;
-				e.printStackTrace();
-			}
-
-		} else {
-			try {
-				log.error("Exception occured during release payment");
-				throw new PaymentException("Item ID is null or invalid, hence payment cannot be released");
-			} catch (PaymentException e) {
-				isReleasePaymentSuccess = false;
-			}
-		}
-
-		return isReleasePaymentSuccess;
-	}
-
-	/* Sets the disbursement account for a user */
-	@SuppressWarnings("unchecked")
-	public static String disburseAccount(String assembyUserId, String paymentMethodString, String authToken) {
-
-		String disburseAccountResponse = null;
-
-		/* Check that both an Assembly user ID and payment method details are provided */
-		if(assembyUserId != null && paymentMethodString != null) {
-
-			System.out.println( "Payment account method string is not null");
-
-			/* Convert the JSON string into a JSON Object */
-			JSONObject paymentMethodObj = JsonUtils.fromJson(paymentMethodString, JSONObject.class);
-
-			/* Get the ID of the payment method (that's all we'll need) */
-			String paymentAccountId = paymentMethodObj.get("id").toString();
-
-			/* Create the request body */
-			JSONObject disburseAccObj = new JSONObject();
-			JSONObject accObj = new JSONObject();
-			accObj.put("id", paymentAccountId);
-			disburseAccObj.put("account", accObj);
-
-			/* Attempt to set the disbursement account for this user */
-			try {
-				disburseAccountResponse = PaymentEndpoint.disburseAccount(assembyUserId, JsonUtils.toJson(disburseAccObj), authToken);
-				System.out.println("disburse payment response ::"+disburseAccountResponse);
-
-			} catch (PaymentException e) {
-				log.error("disburse payment response ::"+disburseAccountResponse);
-				e.printStackTrace();
-			}
-		} else {
-			/* No Assembly user ID was provided, throw an error */
-			try {
-				throw new PaymentException("Payment Disimbursement failed because of null values, assemblyUserId ::"+assembyUserId+", payment method string ::"+paymentMethodString);
-			} catch (PaymentException e) {
-				log.error("Payment exception caught during payment disimbursement");
-				e.printStackTrace();
-			}
-		}
-
-		return disburseAccountResponse;
-	}
-
 	/* Bulk updates a user in Assembly */
-	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String assemblyUserId) throws IllegalArgumentException {
+	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String paymentsUserId) throws IllegalArgumentException {
 		
 		/* Get all of the users information */
 		String firstName = userBe.getValue("PRI_FIRSTNAME", null);
@@ -859,14 +733,14 @@ public class PaymentUtils {
 		QPaymentsUserInfo personalInfoObj = new QPaymentsUserInfo(firstName, lastName, dob);
 		QPaymentsLocationInfo locationObj = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
 		QPaymentsUserContactInfo contactInfoObj = new QPaymentsUserContactInfo(email);
-		QPaymentsUser userObj = new QPaymentsUser(assemblyUserId, personalInfoObj, contactInfoObj, locationObj);
+		QPaymentsUser userObj = new QPaymentsUser(paymentsUserId, personalInfoObj, contactInfoObj, locationObj);
 
 		return userObj;
 
 	}
 
 	/* Bulk Update a complete company profile */
-	public static QPaymentsCompany getCompleteCompanyObj(BaseEntity userBe, BaseEntity companyBe, String assemblyUserId) throws IllegalArgumentException {
+	public static QPaymentsCompany getCompleteCompanyObj(BaseEntity userBe, BaseEntity companyBe, String paymentsUserId) throws IllegalArgumentException {
 
 		/* Get the companies information */
 		String companyName = companyBe.getValue("PRI_CPY_NAME", null);
@@ -885,7 +759,7 @@ public class PaymentUtils {
 		/* Create objects to store the request */
 		QPaymentsLocationInfo locationObj = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
 		QPaymentsCompanyContactInfo contactInfoObj = new QPaymentsCompanyContactInfo(companyPhone);
-		QPaymentsUser userObj = new QPaymentsUser(assemblyUserId);
+		QPaymentsUser userObj = new QPaymentsUser(paymentsUserId);
 		QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, abn, gst, locationObj, userObj, contactInfoObj);
 		
 		return companyObj;
@@ -893,399 +767,36 @@ public class PaymentUtils {
 	}
 
 	/* Returns true of false depending on whether the payment method provided is a bank account */
-	public static Boolean isBankAccount(String bankPaymentString) {
+	public static Boolean isBankAccount(QPaymentMethod paymentMethod) {
 		Boolean isBankAccount = false;
-		JSONObject paymentMethodObj = JsonUtils.fromJson(bankPaymentString, JSONObject.class);
+		
+		if(paymentMethod != null) {
 
-		String paymentType = paymentMethodObj.get("type").toString();
-		if(paymentType.equals("BANK_ACCOUNT")) {
-			isBankAccount = true;
+			if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT)) {
+				isBankAccount = true;
+			}
 		}
 
 		return isBankAccount;
 	}
 
-	/* Deletes a bank account */
-	public static void deleteBankAccount(String bankAccountId, String authKey) {
-		try {
-			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
-		} catch (PaymentException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/* Deletes a credit card */
-	public static void deleteCard(String cardAccountId, String authKey) {
-		try {
-			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
-		} catch (PaymentException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/* Makes a payment */
-	@SuppressWarnings("unchecked")
-	public static PaymentsResponse makePaymentWithResponse(BaseEntity userBe, BaseEntity offerBe, BaseEntity begBe, String authToken) {
-		System.out.println("inside make payment");
-
-		/* Get the required fields */
-		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
-		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
-
-		PaymentsResponse makepaymentResponse = new PaymentsResponse();
-		Map<String, String> responseMap = new HashMap<>();
-
-		JSONObject paymentObj = new JSONObject();
-		JSONObject accountObj = null;
-		String paymentType = null;
-
-		/* Check that an item ID was provided */
-		if (itemId != null) {
-			/* Set the fields in the request if they were provided */
-			paymentObj.put("id", itemId);
-
-			if(deviceId != null) {
-				paymentObj.put("deviceID", deviceId);
-			} else {
-				System.out.println("device ID is null");
-			}
-
-			if(ipAddress != null) {
-				paymentObj.put("ipAddress", ipAddress);
-			} else {
-				System.out.println("IP address is null");
-			}
-
-			if(accountId != null) {
-				accountObj = new JSONObject();
-				accountObj.put("id", accountId);
-				paymentObj.put("account", accountObj);
-
-				/* To get the type of payment (Bank account / card) */
-				paymentType = getPaymentMethodType(userBe, accountId);
-				System.out.println("payment type ::" +paymentType);
-
-			} else {
-				System.out.println("account Id is null");
-			}
-
-			/* Check the type of the account that has been selected and pay with that */
-			if (paymentType != null && paymentType.equals("BANK_ACCOUNT")) {
-				makepaymentResponse = makePaymentWithBankAccount(paymentType, userBe, offerBe, begBe, paymentObj, authToken);
-			} else if (paymentType != null && paymentType.equals("CARD")) {
-				makepaymentResponse = makePaymentWithCardResponse(paymentType, userBe, offerBe, begBe, paymentObj, authToken);
-			} else {
-				makepaymentResponse.setIsSuccess(false);
-				makepaymentResponse.setMessage("Unknown payment method type");
-				responseMap.put("depositReferenceId", null);
-				makepaymentResponse.setResponseMap(responseMap);
-			}
-
-			return makepaymentResponse;
-		} else {
-			/* An item ID wasn't provided throw an error */
-			makepaymentResponse.setIsSuccess(false);
-			makepaymentResponse.setMessage("Item creation for transaction has failed. "+CONTACT_ADMIN_TEXT);
-			responseMap.put("depositReferenceId", null);
-			makepaymentResponse.setResponseMap(responseMap);
-		}
-
-		return makepaymentResponse;
-	}
-
-	/* Attempts to make a payment with a card */
-	private static PaymentsResponse makePaymentWithCardResponse(String paymentType, BaseEntity userBe,
-	BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
-
-		System.out.println("Credit card payment");
-		PaymentsResponse makepaymentResponse = new PaymentsResponse();
-		Map<String, String> responseMap = new HashMap<>();
-		String paymentResponse = null;
-		Boolean isMakePaymentSuccess = false;
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-
-		try {
-			paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(paymentObj),
-			authToken);
-			log.debug("Make payment response ::" + paymentResponse);
-			if (!paymentResponse.contains("error")) {
-				isMakePaymentSuccess = true;
-
-				/* Save deposit reference as an answer to beg */
-				String referenceId = getDepositReference(paymentResponse, userBe.getCode(), begBe.getCode());
-
-				makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-				makepaymentResponse.setMessage("Making payment has succeeded");
-				responseMap.put("depositReferenceId", referenceId);
-				responseMap.put("makePaymentResponse", paymentResponse);
-				makepaymentResponse.setResponseMap(responseMap);
-
-			}
-
-		} catch (PaymentException e) {
-
-			log.error("Exception occured during making payment with " + paymentType);
-			String errorMessage = e.getMessage();
-			log.error("error message ::"+errorMessage);
-
-			/* When make payment API is getting accessed more than once for an item */
-			if(errorMessage.contains("payment is already made")) {
-				isMakePaymentSuccess = true;
-
-				makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-				makepaymentResponse.setMessage(e.getMessage());
-				responseMap.put("depositReferenceId", begBe.getValue("PRI_DEPOSIT_REFERENCE_ID", null));
-				responseMap.put("makePaymentResponse", paymentResponse);
-				makepaymentResponse.setResponseMap(responseMap);
-
-			} else {
-				isMakePaymentSuccess = false;
-
-
-				makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-				makepaymentResponse.setMessage(e.getMessage());
-				responseMap.put("depositReferenceId", null);
-				makepaymentResponse.setResponseMap(responseMap);
-			}
-
-		}
-		return makepaymentResponse;
-	}
-
-	/* Attempts to make a payment with a bank account */
-	private static PaymentsResponse makePaymentWithBankAccount(String paymentType, BaseEntity userBe,
-	BaseEntity offerBe, BaseEntity begBe, JSONObject paymentObj, String authToken) {
-
-		System.out.println("Bank account..Need to be authorized to make payment");
-
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
-		PaymentsResponse makepaymentResponse = new PaymentsResponse();
-		String paymentResponse = null;
-		Boolean isMakePaymentSuccess = false;
-
-		/* Payment with bank account will proceed only if debit authority succeeds */
-		PaymentsResponse debitAuthorityResponse = getDebitAuthorityWithResponse(offerBe, begBe, accountId, authToken);
-
-		if (debitAuthorityResponse.getIsSuccess()) {
-			log.debug("Make payment object ::" + paymentObj.toJSONString());
-			try {
-				paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(paymentObj),
-				authToken);
-				log.debug("Make payment response ::" + paymentResponse);
-				if (!paymentResponse.contains("error")) {
-					isMakePaymentSuccess = true;
-
-					/* getting deposit reference to add as an attribute of beg */
-					String referenceId = getDepositReference(paymentResponse, userBe.getCode(), begBe.getCode());
-
-					makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-					makepaymentResponse.setMessage("Making payment has succeeded");
-
-					Map<String, String> responseMap = debitAuthorityResponse.getResponseMap();
-					responseMap.put("depositReferenceId", referenceId);
-
-					makepaymentResponse.setResponseMap(responseMap);
-
-				}
-
-			} catch (PaymentException e) {
-
-				log.error("Exception occured during making payment with " + paymentType);
-				String errorMessage = e.getMessage();
-				log.error("error message ::" + errorMessage);
-
-				/* When make payment API is getting accessed more than once for an item */
-				if (errorMessage.contains("payment is already made")) {
-
-					isMakePaymentSuccess = true;
-
-					makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-					makepaymentResponse.setMessage(e.getMessage());
-
-					Map<String, String> responseMap = debitAuthorityResponse.getResponseMap();
-					responseMap.put("depositReferenceId", begBe.getValue("PRI_DEPOSIT_REFERENCE_ID", null));
-
-					makepaymentResponse.setResponseMap(responseMap);
-
-				} else {
-					isMakePaymentSuccess = false;
-
-					makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-					makepaymentResponse.setMessage(e.getMessage());
-
-					Map<String, String> responseMap = debitAuthorityResponse.getResponseMap();
-					responseMap.put("depositReferenceId", null);
-
-					makepaymentResponse.setResponseMap(responseMap);
-
-				}
-
-			}
-		} else {
-			isMakePaymentSuccess = false;
-
-			makepaymentResponse.setIsSuccess(isMakePaymentSuccess);
-			makepaymentResponse.setMessage(debitAuthorityResponse.getMessage());
-
-			Map<String, String> responseMap = debitAuthorityResponse.getResponseMap();
-			responseMap.put("depositReferenceId", null);
-
-			makepaymentResponse.setResponseMap(responseMap);
-
-		}
-
-		return makepaymentResponse;
-	}
-
-	/* Returns the despoit reference from a payment response */
-	private static String getDepositReference(String paymentResponse, String userCode, String begCode) {
-		JSONObject depositReference = JsonUtils.fromJson(paymentResponse, JSONObject.class);
-		return depositReference.get("depositReference").toString();
-	}
-
-	/* Creates a direct debit authority */
-	private static PaymentsResponse getDebitAuthorityWithResponse(BaseEntity offerBe, BaseEntity begBe, Object accountId, String authToken) {
-		Boolean isDebitAuthority = false;
-		String getDebitAuthorityResponse = null;
-		String offerOwnerPriceString = MergeUtil.getBaseEntityAttrValueAsString(offerBe, "PRI_OFFER_DRIVER_PRICE_INC_GST");
-
-		PaymentsResponse debitAuthorityResponse = new PaymentsResponse();
-		Map<String, String> responseMap = new HashMap<>();
-
-		System.out.println("begpriceString ::" + offerOwnerPriceString);
-
-		String amount = null;
-		if(offerOwnerPriceString != null) {
-			JSONObject moneyobj = JsonUtils.fromJson(offerOwnerPriceString, JSONObject.class);
-			amount = moneyobj.get("amount").toString();
-
-			if(amount != null) {
-				BigDecimal begPrice = new BigDecimal(amount);
-
-				// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
-				BigDecimal finalPrice = begPrice.multiply(new BigDecimal(100));
-
-				JSONObject debitAuthorityObj = new JSONObject();
-				JSONObject accountObj = new JSONObject();
-
-				accountObj.put("id", accountId);
-				debitAuthorityObj.put("amount", finalPrice);
-				debitAuthorityObj.put("account", accountObj);
-
-				try {
-					getDebitAuthorityResponse = PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(debitAuthorityObj), authToken);
-					if(!getDebitAuthorityResponse.contains("error")) {
-						isDebitAuthority = true;
-
-						debitAuthorityResponse.setIsSuccess(isDebitAuthority);
-						debitAuthorityResponse.setMessage("debit authority for bank account has succeeded");
-						responseMap.put("debitAuthorizationResponse", getDebitAuthorityResponse);
-						debitAuthorityResponse.setResponseMap(responseMap);
-
-					}
-				} catch (PaymentException e) {
-					isDebitAuthority = false;
-					log.error("Exception occured during debit authorization, Make Payment will not succeed");
-
-					debitAuthorityResponse.setIsSuccess(isDebitAuthority);
-					debitAuthorityResponse.setMessage(e.getMessage());
-					responseMap.put("debitAuthorizationResponse", e.getMessage());
-					debitAuthorityResponse.setResponseMap(responseMap);
-
-				}
-			}
-		} else {
-			isDebitAuthority = false;
-			log.error("PRI_DRIVER_PRICE_INC_GST IS NULL");
-
-			debitAuthorityResponse.setIsSuccess(isDebitAuthority);
-			debitAuthorityResponse.setMessage("Amount for transaction not specified");
-			responseMap.put("debitAuthorizationResponse", "Amount for transaction not specified");
-			debitAuthorityResponse.setResponseMap(responseMap);
-
-		}
-
-		return debitAuthorityResponse;
-	}
-
-	/* Releases a payment */
-	public static PaymentsResponse releasePaymentWithResponse(BaseEntity begBe, String authToken) {
-
-		Map<String, String> releasePaymentResponseMap = null;
-
-		System.out.println("BEG Code for release payment ::"+begBe.getCode());
-		PaymentsResponse releasePaymentResponse = new PaymentsResponse();
-
-		String paymentResponse = null;
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-
-		JSONObject releasePaymentObj = new JSONObject();
-		releasePaymentObj.put("singleItemDisbursement", true);
-
-		if(itemId != null) {
-			try {
-				paymentResponse = PaymentEndpoint.releasePayment(itemId, JsonUtils.toJson(releasePaymentObj), authToken);
-				if(!paymentResponse.contains("error")) {
-					log.debug("release payment response ::"+paymentResponse);
-
-					JSONObject releasePaymentResponseObj = JsonUtils.fromJson(paymentResponse, JSONObject.class);
-					Map<String, Object> disbursementMap = (Map<String, Object>) releasePaymentResponseObj.get("disbursement");
-					String disbursementId = (String) disbursementMap.get("id");
-					System.out.println("disbursement id ::"+disbursementId);
-
-					releasePaymentResponseMap = new HashMap<String, String>();
-					releasePaymentResponseMap.put("disbursementId", disbursementId);
-
-					releasePaymentResponse.setIsSuccess(true);
-					releasePaymentResponse.setMessage("Release payment has succeeded");
-					releasePaymentResponse.setResponseMap(releasePaymentResponseMap);
-				}
-			} catch (PaymentException e) {
-				log.error("Exception occured during release payment");
-
-				releasePaymentResponse.setIsSuccess(false);
-				releasePaymentResponse.setMessage(e.getMessage());
-				releasePaymentResponse.setResponseMap(releasePaymentResponseMap);
-			}
-
-		} else {
-			releasePaymentResponse.setIsSuccess(false);
-			releasePaymentResponse.setMessage("Item creation has failed, hence payment cannot be released. "+CONTACT_ADMIN_TEXT);
-		}
-
-		return releasePaymentResponse;
-	}
-
-	public static String updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
+	public static void updateUserPhoneNumber(BaseEntity userBe, String assemblyUserId, String assemblyAuthKey) {
 
 		String responseString = null;
 
 		String phoneNumber = userBe.getValue("PRI_MOBILE", null);
 
-		JSONObject userObj = new JSONObject();
-		JSONObject contactInfoObj = null;
-
-		userObj.put("id", assemblyUserId);
-
-		if(phoneNumber != null) {
-			contactInfoObj = new JSONObject();
-				;
-			userObj.put("contactInfo", contactInfoObj);
+		QPaymentsUser user = new QPaymentsUser(assemblyUserId);
+		QPaymentsUserContactInfo contactObj = new QPaymentsUserContactInfo();
+		contactObj.setMobile(phoneNumber);
+		user.setContactInfo(contactObj);
+		try {
+			responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(user),
+					assemblyAuthKey);
+			System.out.println("response string from payments user mobile-number updation ::" + responseString);
+		} catch (PaymentException e) {
+			log.error("Exception occured during phone updation");
 		}
-
-		if(userObj != null && assemblyUserId != null) {
-			try {
-				responseString = PaymentEndpoint.updatePaymentsUser(assemblyUserId, JsonUtils.toJson(userObj), assemblyAuthKey);
-				System.out.println("response string from payments user mobile-number updation ::"+responseString);
-			} catch (PaymentException e) {
-				log.error("Exception occured during phone updation");
-			}
-		}
-
-		return responseString;
 
 	}
 
@@ -1344,8 +855,7 @@ public class PaymentUtils {
 		} catch (PaymentException e) {
 			isAssemblyItemValid = false;
 		}
-
-
+		
 		return isAssemblyItemValid;
 	}
 
@@ -1421,5 +931,45 @@ public class PaymentUtils {
 		}
 		return paymentsUserId;				
 	}
+	
+	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
+		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
+		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
+		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
+		
+		QPaymentMethod account = new QPaymentMethod(accountId);
+		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
+		
+		return makePaymentObj;	
+	}
+	
+	public static QPaymentMethod getMaskedPaymentMethod(QPaymentMethod paymentMethod) {
+		
+		Character[] toBeIgnoreCharacterArr = { '-' };
+		
+		if(paymentMethod.getType().equals(PaymentType.CARD) && paymentMethod.getNumber() != null ) {
+			String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(paymentMethod.getNumber().replaceAll("\\s+", "-") , 0, 15,
+					"X", toBeIgnoreCharacterArr);
+
+			paymentMethod.setNumber(maskedCreditCardNumber);
+		}
+		
+		if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT) && paymentMethod.getBsb() != null && paymentMethod.getAccountNumber() != null) {
+			String bsb = paymentMethod.getBsb().replaceAll("\\s+", "-");
+			String accountNumber = paymentMethod.getAccountNumber().replaceAll("\\s+", "-");
+			
+			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "X", toBeIgnoreCharacterArr);
+			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "X",
+
+					toBeIgnoreCharacterArr);
+			
+			paymentMethod.setAccountNumber(maskedAccountNumber);
+			paymentMethod.setBsb(maskedBsb);
+		}
+			
+		return paymentMethod;	
+	}
+
 
 }
