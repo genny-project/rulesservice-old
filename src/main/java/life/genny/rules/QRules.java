@@ -974,10 +974,10 @@ public class QRules {
 					LocalDateTime now = LocalDateTime.now();
 					LocalDateTime lastWeek = now.minusWeeks(1);
 
-			          /* we grab the paid date */
+					/* we grab the paid date */
 					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_IS_RELEASE_PAYMENT_DONE");
 					if(paidDate.isPresent()) {
-						
+
 						LocalDateTime created = paidDate.get().getCreated();
 
 						this.println(created.isBefore(lastWeek));
@@ -993,6 +993,8 @@ public class QRules {
 			}
 
 			this.println("Archiving done.");
+			this.generateNewItemsCache();
+			this.generateItemCaches("ARCHIVED_PRODUCTS");
 		} else {
 			this.println("Could not get token.");
 		}
@@ -1475,7 +1477,7 @@ public class QRules {
 		jsonObj.put("recipientCodes", jsonArr);
 
 		publishCmd(jsonObj);
-		
+
 	}
 
 	public void logoutCleanup() {
@@ -1639,8 +1641,8 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
-	
-	
+
+
 	public void publish(String channel, Object payload) {
 		VertxUtils.publish(getUser(),channel,payload);
 	}
@@ -4484,27 +4486,27 @@ public class QRules {
 
 		if (linkList != null) {
 
-      try {
+			try {
 
-        for (Object linkObj : linkList) {
+				for (Object linkObj : linkList) {
 
-          Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
+					Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
 
-          BaseEntity offerBe = getBaseEntityByCode(link.getTargetCode());
+					BaseEntity offerBe = getBaseEntityByCode(link.getTargetCode());
 
-          if (offerBe != null) {
+					if (offerBe != null) {
 
-            quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
+						quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
 
-            if (quoterCode.equals(quoterCodeForOffer)) {
-              return offerBe;
-            }
-          }
-        }
-      }
-      catch(Exception e) {
+						if (quoterCode.equals(quoterCodeForOffer)) {
+							return offerBe;
+						}
+					}
+				}
+			}
+			catch(Exception e) {
 
-      }
+			}
 		}
 
 		return null;
@@ -5982,7 +5984,8 @@ public class QRules {
 	}
 
 	public void generateNewItemsCache() {
-		this.generateItemCaches("BUCKETS");
+    this.generateItemCaches("BUCKETS");
+		this.generateItemCaches("ARCHIVED_PRODUCTS");
 	}
 
 	public void generateItemCaches(String cachedItemKey) {
@@ -5998,7 +6001,7 @@ public class QRules {
 			drools.setFocus("GenerateSearches");
 		}
 
-    List<QBulkMessage> bulkMessages = new ArrayList<QBulkMessage>();
+		List<QBulkMessage> bulkMessages = new ArrayList<QBulkMessage>();
 
 		/* we grab the cached Item */
 		QDataBaseEntityMessage cachedItemMessages = VertxUtils.getObject(realm(), cachedItemKey, realm(), QDataBaseEntityMessage.class);
@@ -6057,7 +6060,7 @@ public class QRules {
 					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
 					QBulkMessage bulk = new QBulkMessage(messages.clone());
 					VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
-          bulkMessages.add(bulk);
+					bulkMessages.add(bulk);
 					println("Loading New cache laoded " + itemCount + " BEs");
 
 				} catch (Exception e) {
@@ -6080,51 +6083,55 @@ public class QRules {
 
 		System.out.println("Entering new send application data ");
 
-
 		showLoading("Loading data...");
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
 		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
 
-    this.sendCachedItem("BUCKETS");
+		this.sendCachedItem("BUCKETS", subscriptions);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
 	}
 
-  public void sendCachedItem(final String cachedItemKey) {
+	public void sendCachedItem(final String cachedItemKey) {
+		this.sendCachedItem(cachedItemKey, null);
+	}
 
-	long startTime = System.nanoTime();
-	BaseEntity user = this.getUser();
-    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, null);
+
+	public void sendCachedItem(final String cachedItemKey, final HashMap<String, String> subscriptions) {
+
+    long startTime = System.nanoTime();
+	  BaseEntity user = this.getUser();
+    QBulkMessage items = fetchAndSubscribeCachedItemsForStakeholder(cachedItemKey, user, subscriptions);
     if (items != null) {
 
-      System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
+			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
-      if (items.getMessages() != null) {
+			if (items.getMessages() != null) {
 
-        startTime = System.nanoTime();
+				startTime = System.nanoTime();
 
-        /* if the user is not an admin we not need to filter out data */
-        if (!user.is("PRI_IS_ADMIN")) {
-          items = filterBucketItemsForStakeholder(items, user);
-        }
+				/* if the user is not an admin we not need to filter out data */
+				if (!user.is("PRI_IS_ADMIN")) {
+					items = filterBucketItemsForStakeholder(items, user);
+				}
 
-        println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-      }
+				println("filtering fetched db Begs takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+			}
 
-      /* we publish the data */
-      try {
-        publishCmd(items);
-      } catch (Exception e) {
+			/* we publish the data */
+			try {
+				publishCmd(items);
+			} catch (Exception e) {
 
-      }
+			}
 
-		println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
-		println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+			println("fetch all from api " + ((System.nanoTime() - startTime) / 1e6) + "ms");
+			println("publishing takes " + ((System.nanoTime() - startTime) / 1e6) + "ms");
 
-    }
+		}
   }
 
 	public QBulkMessage fetchAndSubscribeCachedItemsForStakeholder(final String cachedItemKey, final BaseEntity stakeholder, final Map<String, String> subscriptions) {
@@ -6138,6 +6145,8 @@ public class QRules {
 			/* we loop through the messages */
 			for (BaseEntity message : cachedItemMessages.getItems()) {
 
+        this.println(message.toString());
+
 				/* we grab cache items for the given message */
 				QBulkMessage currentItemMessages = new QBulkMessage();
 				currentItemMessages = VertxUtils.getObject(realm(), "CACHE", message.getCode(), QBulkMessage.class);
@@ -6148,21 +6157,21 @@ public class QRules {
 					/* we add it to the list of items to send */
 					bulk.add(messages);
 
-          if(subscriptions != null) {
+					if(subscriptions != null) {
 
-            /* we check if we need to subscribe the user to the message */
-            subscriptions.forEach((role, bucketToSubscribe) -> {
+						/* we check if we need to subscribe the user to the message */
+						subscriptions.forEach((role, bucketToSubscribe) -> {
 
-              if(this.isUserRole(stakeholder, role)) {
+							if(this.isUserRole(stakeholder, role)) {
 
-                if (bucketToSubscribe.equals(message.getCode()) ) {
+								if (bucketToSubscribe.equals(message.getCode()) ) {
 
-                  /* we subscribe the user */
-                  VertxUtils.subscribe(realm(), message, stakeholder.getCode());
-                }
-              }
-            });
-          }
+									/* we subscribe the user */
+									VertxUtils.subscribe(realm(), message, stakeholder.getCode());
+								}
+							}
+						});
+					}
 				}
 			}
 		}
@@ -6219,6 +6228,7 @@ public class QRules {
 						BaseEntity item = message.getItems()[i];
 						String itemCode = item.getCode();
 
+
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
 
@@ -6229,12 +6239,16 @@ public class QRules {
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
 
+              this.println("Got: " + itemCode);
+
 							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
+                this.println("Adding BEG because: GRP_NEW_ITEMS and PRI_IS_SELLER");
 								baseEntityKids.add(item);
 							}
 							else {
 
 								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
+                  this.println("Adding BEG because stakeholder");
 									baseEntityKids.add(item);
 								}
 								else {
@@ -6245,22 +6259,22 @@ public class QRules {
 						/* if the BE is an offer, we only show the ones that the seller created */
 						else if(itemCode.startsWith("OFR_")) {
 
-								if(this.isUserBuyer(stakeholder)) {
+							if(this.isUserBuyer(stakeholder)) {
+
+								/* we add the offer to the list */
+								baseEntityKids.add(item);
+							}
+							else {
+
+								/* if user is a seller, we only send offers they created */
+								String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
+								if(quoterCode.equals(stakeholder.getCode())) {
 
 									/* we add the offer to the list */
 									baseEntityKids.add(item);
 								}
-								else {
-
-									/* if user is a seller, we only send offers they created */
-									String quoterCode = item.getValue("PRI_QUOTER_CODE", "");
-									if(quoterCode.equals(stakeholder.getCode())) {
-
-										/* we add the offer to the list */
-										baseEntityKids.add(item);
-									}
-								}
-					    }
+							}
+						}
 						else {
 
 							/* role specific rules */
@@ -7610,25 +7624,24 @@ public class QRules {
 		publishCmd(cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
 	}
-	
+
 	/* Creation of payment item */
 	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity buyerBe,
 			BaseEntity sellerBe, String paymentsToken) {
 		String itemId = null;
-		
+
 		if(offerBe != null && begBe != null) {
 			try {
+
 				 /* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
 				Money buyerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-				
 				/* If pricing calculation fails */
 				if(buyerAmountWithoutFee == null) {
 					throw new IllegalArgumentException("Something went wrong during pricing calculations. Price for item cannot be empty");
 				}
-			
+
 				/* Convert dollars into cents */
 				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
-				
 				/* Owner => Buyer */
 				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe);
 
@@ -7638,49 +7651,48 @@ public class QRules {
 				/* get item name */
 				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
 				println("payments item name ::"+paymentsItemName);
-				
+
 				/* Not mandatory */
 				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
-			
-				try {			
+
+				try {
 					/* get fee */
 					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
 					System.out.println("payment fee Id ::"+paymentFeeId);
 					String[] feeArr = { paymentFeeId };
-					
+
 					/* bundling all the info into Item object */
 					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription, PaymentTransactionType.escrow,
 							roundedItemPriceInCents.getNumber().doubleValue(), buyerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
-					
 					/* Hitting payments item creation API */
 					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item), paymentsToken);
-					
+
 					if(itemCreationResponse != null) {
 						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse, QPaymentsAssemblyItemResponse.class);
 						itemId = itemResponsePojo.getId();
 					}
-					
+
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);					
+					throw new IllegalArgumentException(getFormattedErrorMessage);
 				}
 
 			} catch (IllegalArgumentException e) {
-				
+
 				/* Redirect to home if item creation fails */
 				redirectToHomePage();
-				
+
 				String jobId = begBe.getValue("PRI_JOB_ID", null);
 				BaseEntity userBe = getUser();
-				
+
 				/* Send toast */
 				String toastMessage = "Payments item creation failed for the job with ID : #"+jobId +", "+e.getMessage();
-				
+
 				if(userBe != null) {
 					String[] recipientArr = { userBe.getCode() };
 					sendDirectToast(recipientArr, toastMessage, "warning");
-				}	
-				
+				}
+
 				/* Send slack notification */
 				sendSlackNotification(toastMessage);
 			}
@@ -7688,10 +7700,10 @@ public class QRules {
 			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "+ begBe.getCode() + ", OFFER CODE :"+offerBe.getCode();
 			sendSlackNotification(slackMessage);
 		}
-		
+
 		return itemId;
 	}
-	
+
 	/* Creates a new fee in external payments-service from a offer baseEntity */
 	private String createPaymentFee(BaseEntity offerBe, String paymentsToken)
 			throws IllegalArgumentException {
@@ -7700,18 +7712,18 @@ public class QRules {
 		try {
 			/* get fee object with all fee-info */
 			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
-			if (feeObj != null) {			
+			if (feeObj != null) {
 				try {
 					/* Hit the fee creation API */
 					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
-										QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
 
 					/* Get the fee ID */
 					paymentFeeId = feePojo.getId();
 				} catch (PaymentException e) {
 					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);	
-				}	
+					throw new IllegalArgumentException(getFormattedErrorMessage);
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e.getMessage());
@@ -7796,28 +7808,28 @@ public class QRules {
 	/* Fetch the one time use Payments card and bank tokens for a user */
 	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
 		String token = null;
-		
+
 		try {
 			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
 			QPaymentsAuthorizationToken tokenObj = new QPaymentsAuthorizationToken(type, user);
-			
+
 			try {
 				String stringifiedTokenObj = JsonUtils.toJson(tokenObj);
 				String tokenResponse =  PaymentEndpoint.authenticatePaymentProvider(stringifiedTokenObj, paymentToken);
-			
+
 				if(tokenResponse != null) {
 					QPaymentsAuthorizationToken tokenCreationResponseObj = JsonUtils.fromJson(tokenResponse, QPaymentsAuthorizationToken.class);
 					token = tokenCreationResponseObj.getToken();
-				}		
-				
+				}
+
 			} catch (PaymentException e) {
 				String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 				throw new IllegalArgumentException(getFormattedErrorMessage);
 			}
-			
+
 		} catch (IllegalArgumentException e) {
 			log.error("Exception occured during one-time payments token creation for user : "+getUser().getCode() + ", Error message : "+e.getMessage());
-		}		
+		}
 		return token;
 	}
 
