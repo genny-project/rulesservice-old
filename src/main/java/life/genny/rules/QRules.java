@@ -4250,6 +4250,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void saveJob(BaseEntity job) {
+		
 		String jobCode = job.getCode();
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
@@ -4354,7 +4355,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				try {
 
-					if (this.isUserSeller()) {
+					if (this.isUserSeller(stakeholderBe)) {
 						sellersBe.add(stakeholderBe);
 					}
 
@@ -4379,6 +4380,8 @@ public void makePayment(QDataAnswerMessage m) {
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
+		
+	     this.generateItemCaches("BUCKETS");
 
 	}
 
@@ -5973,7 +5976,6 @@ public void makePayment(QDataAnswerMessage m) {
 				
 				/* we grab all the kids */
 				List<BaseEntity> kidKids = this.getLinkedBaseEntities(kid.getCode());
-				this.println("Got kidkids: " + kidKids.size());
 
 				if (kidKids != null) {
 

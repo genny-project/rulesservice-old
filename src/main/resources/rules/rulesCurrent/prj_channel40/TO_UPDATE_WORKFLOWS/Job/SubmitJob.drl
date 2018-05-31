@@ -83,7 +83,6 @@ rule "Submit Job"
 
       /*  Calling the rule group : BucketView     */
      rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
-     rules.generateNewItemsCache();
      drools.setFocus("ispayments");  /* NOW Set up Payments */
 
      rules.footer();
