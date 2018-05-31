@@ -6032,42 +6032,59 @@ public class QRules {
 		this.generateItemCaches("ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
-  private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
+	private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
 
-    /* 1. we add the cached item to the message "items" */
-    BaseEntity[] cachedItemItems = new BaseEntity[1];
-    cachedItemItems[0] = cachedItem;
+		/* 1. we add the cached item to the message "items" */
+		BaseEntity[] cachedItemItems = new BaseEntity[1];
+		cachedItemItems[0] = cachedItem;
 
-    /* 2. we create the data baseentity message containing the array above */
-    QDataBaseEntityMessage cachedItemMessage = new QDataBaseEntityMessage(cachedItemItems, parentCode, "LNK_CORE");
-    cachedItemMessage.setAliasCode(parentCode);
-    cachedItemMessage.setParentCode(parentCode);
+		/* 2. we create the data baseentity message containing the array above */
+		QDataBaseEntityMessage cachedItemMessage = new QDataBaseEntityMessage(cachedItemItems, parentCode, "LNK_CORE");
+		cachedItemMessage.setAliasCode(parentCode);
+		cachedItemMessage.setParentCode(parentCode);
 
-    /* 3. we add it to the bulk message */
-    List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-    bulkmsg.add(cachedItemMessage);
+		/* 3. we add it to the bulk message */
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		bulkmsg.add(cachedItemMessage);
 
-    /* 4. we cache the message */
-    QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-    QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
-    VertxUtils.putObject(realm(), "CACHE", parentCode, bulkItem);
+		/* 4. we cache the message */
+		QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+		QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
+		VertxUtils.putObject(realm(), "CACHE", parentCode, bulkItem);
 
-    /* 5. we cache all the kids of the baseEntity */
+		/* 5. we cache all the kids of the baseEntity */
 
-    /* we grab all the kids */
-    List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
+		/* we grab all the kids */
+		List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
 
-    if (begKids != null) {
+		if (begKids != null) {
 
-      /* we create the base entity message for the kids */
-      QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
-      beMsg.setAliasCode(cachedItem.getCode());
-      beMsg.setParentCode(cachedItem.getCode());
-      bulkmsg.add(beMsg);
-    }
+			/* we create the base entity message for the kids */
+			QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]), cachedItem.getCode(), "LNK_BEG");
+			beMsg.setAliasCode(cachedItem.getCode());
+			beMsg.setParentCode(cachedItem.getCode());
+			bulkmsg.add(beMsg);
+			
+			/* we then get the kids of these kids (OFR_ have kids as well for instance) */
+			for(BaseEntity kid: begKids) {
+				
+				/* we grab all the kids */
+				List<BaseEntity> kidKids = this.getLinkedBaseEntities(kid.getCode());
+				this.println("Got kidkids: " + kidKids.size());
 
-    return bulkmsg;
-  }
+				if (kidKids != null) {
+
+					/* we create the base entity message for the kids */
+					QDataBaseEntityMessage kidMessage = new QDataBaseEntityMessage(kidKids.toArray(new BaseEntity[0]));
+					kidMessage.setAliasCode(kid.getCode());
+					kidMessage.setParentCode(kid.getCode());
+					bulkmsg.add(kidMessage);
+				}
+			}
+		}
+
+		return bulkmsg;
+	}
 
 	public void generateItemCaches(String cachedItemKey) {
 
@@ -6116,9 +6133,9 @@ public class QRules {
 							/* 2. we loop through each BEG of the current cachedItem */
 							for (BaseEntity baseEntity : results.getItems()) {
 								List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItem.getCode(), baseEntity);
-                if(baseEntityMessages != null) {
-                  bulkmsg.addAll(baseEntityMessages);
-                }
+								if(baseEntityMessages != null) {
+									bulkmsg.addAll(baseEntityMessages);
+								}
 							}
 						}
 
@@ -6126,23 +6143,23 @@ public class QRules {
 						e.printStackTrace();
 					}
 
-          /* we save the message in cache */
-          QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-          QBulkMessage bulk = new QBulkMessage(messages.clone());
-          VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
+					/* we save the message in cache */
+					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+					QBulkMessage bulk = new QBulkMessage(messages.clone());
+					VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulk);
 				}
 				/* if it is a BEG */
 				else {
 
 					List<QDataBaseEntityMessage> baseEntityMessages = this.generateItemCacheHandleBaseEntity(cachedItemMessages.getParentCode(), cachedItem);
 					if(baseEntityMessages != null) {
-            bulkmsg.addAll(baseEntityMessages);
-          }
+						bulkmsg.addAll(baseEntityMessages);
+					}
 
-          /* we save the message in cache */
-          QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-          QBulkMessage bulk = new QBulkMessage(messages.clone());
-          VertxUtils.putObject(realm(), "CACHE", cachedItemMessages.getParentCode(), bulk);
+					/* we save the message in cache */
+					QDataBaseEntityMessage[] messages = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+					QBulkMessage bulk = new QBulkMessage(messages.clone());
+					VertxUtils.putObject(realm(), "CACHE", cachedItemMessages.getParentCode(), bulk);
 				}
 			}
 		}
@@ -6306,6 +6323,8 @@ public class QRules {
 
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
+							
+							this.println("Found user: " + itemCode);
 
 							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 							baseEntityKids.add(item);
@@ -6395,7 +6414,7 @@ public class QRules {
 			QDataBaseEntityMessage baseEntityMessage = new QDataBaseEntityMessage(kids.toArray(new BaseEntity[0]));
 			baseEntityMessage.setParentCode(parentCode);
 			ret.add(baseEntityMessage);
-      this.println("Adding for parent: " + parentCode + " " + kids.size() + " kids");
+			this.println("Adding for parent: " + parentCode + " " + kids.size() + " kids");
 		});
 
 		return ret;
