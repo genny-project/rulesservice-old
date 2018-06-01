@@ -8131,6 +8131,34 @@ public class QRules {
 						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
 					}
 				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0,
+									500, false, company.getCode());
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+								
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
+					}
+				}
 			}
 		}
 	}

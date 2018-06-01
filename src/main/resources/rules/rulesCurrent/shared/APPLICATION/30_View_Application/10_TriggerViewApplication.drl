@@ -5,12 +5,24 @@ import life.genny.rules.QRules;
 rule "View Application Details - Send Uni and Faculty data"
 	when
 		rules: QRules(  isState("BTN_VIEW_APPLICATION") && 
-                    isState("EVENT_BTN_CLICK") && 
-                    !isState("LOOP_SEND_UNI_AND_FAC_DATA") ) 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_SEND_UNI_AND_FAC_DATA") ) 
 	 then
 	 	rules.header();
 		rules.setState("LOOP_SEND_UNI_AND_FAC_DATA");
-
+		
+		/* get applicationCode (itemCode) from state */
+		String applicationCode = rules.getAsString("itemCode");
+		if(applicationCode != null){
+			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
+			if(application != null){
+				rules.set("applicationBe" , application);
+			}else{
+				rules.println("application is null");
+			}
+		}else{
+			rules.println("applicationCode is null");
+		}
 		List<BaseEntity> universities = rules.getBaseEntitysByParentAndLinkCode("GRP_UNI_SELECTION", "LNK_CORE", 0, 500, false);
 		if(universities != null){
 			rules.printList("universities", universities);
