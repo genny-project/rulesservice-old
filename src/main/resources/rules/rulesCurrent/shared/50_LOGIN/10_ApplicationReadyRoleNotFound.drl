@@ -12,7 +12,14 @@ rule "Application is ready role is not found"
      	rules.header();
 
         rules.setState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND");
-        rules.setState("TRIGGER_ROLE_CHECK");
+        
+        BaseEntity project = rules.getProject();
+        if (project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE",false)) {
+        	rules.setState("TRIGGER_ROLE_CHECK");
+        } else {
+        	rules.setState("PRI_IS_BUYER");
+        	rules.setState("TRIGGER_PROFILE_CHECK");
+        }
 
 	    rules.footer();      		      
 end
