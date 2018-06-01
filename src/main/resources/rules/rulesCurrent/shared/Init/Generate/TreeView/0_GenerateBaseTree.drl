@@ -20,12 +20,10 @@ rule "Generate Base Tree"
        rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
      then
 
-     rules.header();
-        rules.setState("GENERATE_TREE");
+    rules.header();
+
+    rules.setState("GENERATE_TREE");
 		rules.println("Generating Base Tree for "+rules.realm());
-
-	/*	rules.generateTree(); */
-
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
@@ -38,15 +36,14 @@ rule "Generate Base Tree"
 		List<BaseEntity> admin = rules.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
 
-		/* we cache the buckets */
-    List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
+		List<BaseEntity> buckets = rules.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
 		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
-    QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+
+		// Save the buckets for future use
+		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), bucketMsg);
 
-    /* we cache archived jobs */
-
-    List<BaseEntity> archivedProducts = rules.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 30, false);
+    List<BaseEntity> archivedProducts = rules.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
     QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "ARCHIVED_PRODUCTS", rules.realm(), archivedProductsMessage);
 
@@ -55,4 +52,5 @@ rule "Generate Base Tree"
 		VertxUtils.putObject(rules.realm(), "BASE_TREE", rules.realm(), bulk);
 
     rules.footer();
+
 end
