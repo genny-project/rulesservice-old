@@ -14,8 +14,8 @@ rule "Submit Add BEG - Step 3"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
         if(beg != null){
-        	rules.moveBaseEntity(beg.getCode(), "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE");
-
+        	rules.moveBaseEntitySetLinkValue(beg.getCode(), "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
+			
         	rules.setState("PUBLISH_BEG_AND_KIDS");
 		}else{
 			rules.println("beg is null");
