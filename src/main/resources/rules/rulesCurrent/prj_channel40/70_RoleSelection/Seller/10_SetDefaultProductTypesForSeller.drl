@@ -13,9 +13,10 @@ rule "Select Seller Default Values"
 		rules.setState("DEFAULT_VALUES_SET");
 		String defaultTag = rules.getAllChildCodes("GRP_LOAD_CATEGORY", "LNK_CORE");
 		Long defaultBitMaskedTag = rules.getDefaultBitMaskedTag("GRP_LOAD_CATEGORY", "LNK_CORE");
-		
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "LNK_PRODUCT_CATEGORY_LIST_TAG", defaultTag);
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_PRODUCT_CATEGORY_TAG_BITMASKED", String.valueOf(defaultBitMaskedTag));
+		if(defaultTag != null && defaultBitMaskedTag != null ) {
+			rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "LNK_PRODUCT_CATEGORY_LIST_TAG", defaultTag);
+			rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_PRODUCT_CATEGORY_TAG_BITMASKED", String.valueOf(defaultBitMaskedTag));
+	    }
 	    
 	    rules.footer();	         		      
 end

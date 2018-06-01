@@ -18,11 +18,12 @@ import io.vertx.core.json.JsonObject;
 rule "Create Job"
    when
      $m : QEventMessage( event_type == "BTN_CLICK" && data.value == "ADD_NEW_LOAD" )
-     rules: QRules(!isState("CREATE_LOAD_CLICKED"))
+     rules: QRules( !isState("CREATE_LOAD_CLICKED") )
    then
      rules.header();
      
       drools.setFocus("CreateLoad");
+      rules.setState("CREATE_LOAD_CLICKED");
 
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "New Load");
