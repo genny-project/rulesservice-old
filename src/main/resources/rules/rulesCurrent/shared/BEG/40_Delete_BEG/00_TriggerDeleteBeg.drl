@@ -27,7 +27,8 @@ rule "Trigger Delete BEG"
 					rules.println("beg Code   ::   " + beg.getCode());
 					rules.println("beg's current parent is   ::   " + parentBe.getCode());
 					
-					rules.moveBaseEntity(beg.getCode(), parentBe.getCode(), "GRP_BIN", "LNK_CORE");
+					rules.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_BIN", "LNK_CORE", "BEG");
+					
 					
 					rules.setState("TRIGGER_HOMEPAGE");
 					rules.setState("TRIGGER_DELETE_BEG_MESSAGE");
