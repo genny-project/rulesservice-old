@@ -26,6 +26,7 @@ rule "Make Payment"
 		rules.println("Make Payment started");
 
 		rules.makePayment(m);
+		rules.setState("PAYMENT_DONE");
 		
 		rules.footer();
 end
