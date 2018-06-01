@@ -5986,12 +5986,7 @@ public void makePayment(QDataAnswerMessage m) {
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		bulkmsg.add(cachedItemMessage);
 
-		/* 4. we cache the message */
-		QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
-		QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
-		VertxUtils.putObject(realm(), "CACHE", parentCode, bulkItem);
-
-		/* 5. we cache all the kids of the baseEntity */
+		/* 4. we cache all the kids of the baseEntity */
 
 		/* we grab all the kids */
 		List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
@@ -6020,6 +6015,11 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 			}
 		}
+		
+		/* 6. we cache the message */
+		QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
+		QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
+		VertxUtils.putObject(realm(), "CACHE", cachedItem.getCode(), bulkItem);
 
 		return bulkmsg;
 	}
@@ -6322,7 +6322,6 @@ public void makePayment(QDataAnswerMessage m) {
 
 					existingKids.addAll(baseEntityKids);
 					baseEntityMap.put(parentCode, existingKids);
-          this.println("Updating the map:" + parentCode);
 				}
 			}
 			else {
@@ -6336,7 +6335,6 @@ public void makePayment(QDataAnswerMessage m) {
 			QDataBaseEntityMessage baseEntityMessage = new QDataBaseEntityMessage(kids.toArray(new BaseEntity[0]));
 			baseEntityMessage.setParentCode(parentCode);
 			ret.add(baseEntityMessage);
-			this.println("Adding for parent: " + parentCode + " " + kids.size() + " kids");
 		});
 
 		return ret;
