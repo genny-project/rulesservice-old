@@ -12,7 +12,7 @@ rule "Send shortlist message to Intern"
 
         BaseEntity intern = rules.getAsBaseEntity("internBe");
         BaseEntity internship = rules.getAsBaseEntity("internshipBe");
-        BaseEntity hostCompany = rules.getAsBaseEntity("companyBe");
+        BaseEntity hostCompany = rules.getAsBaseEntity("hostBeg");
 
         rules.println("Intern Code  :: " + intern);
 		rules.println("Internship    :: " + internship);
