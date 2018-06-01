@@ -4294,6 +4294,11 @@ public void makePayment(QDataAnswerMessage m) {
 	public void saveJob(BaseEntity job) {
 
 		String jobCode = job.getCode();
+		BaseEntity load = getChildren(jobCode, "LNK_BEG", "LOAD");
+		String loadCode = load.getCode();
+		BaseEntity user = getUser();
+		String userCode = user.getCode();
+		if(load != null && user != null ) {
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
 		 * triggered in another rule
@@ -4305,8 +4310,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* Add author to the load */
 		List<Answer> answers = new ArrayList<Answer>();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
 
 		Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
 				deliveryLongitude);
@@ -4314,14 +4319,20 @@ public void makePayment(QDataAnswerMessage m) {
 			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance + "");
 			answers.add(totalDistanceAnswer);
 		}
+		
+		/* Add product category tag to BEG from load  */
+		String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null);
+		if(loadType != null) {
+			answers.add(new Answer(userCode, jobCode, "LNK_PRODUCT_CATEGORY_TAG", loadType));
+		}
 
 		/* Adding Offer Count to 0 */
-		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
+		Answer offerCountAns = new Answer(userCode, jobCode, "PRI_OFFER_COUNT", "0");
 		/* Publish Answer */
 		answers.add(offerCountAns);
 
 		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
+		answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 		// Setting color to green for new jobs for both driver and owner
 		/*
 		 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
@@ -4330,13 +4341,24 @@ public void makePayment(QDataAnswerMessage m) {
 
 		BaseEntity updatedJob = this.getBaseEntityByCode(job.getCode());
 		Long jobId = updatedJob.getId();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
+		answers.add(new Answer(userCode, jobCode, "PRI_JOB_ID", jobId + ""));
 		saveAnswers(answers);
 
-		/* Determine the recipient code */
-		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-		println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
-
+		/* Get all the sellers who have opted for this product category tag */
+		List<BaseEntity> sellersBEList = getAllBaseEntitiesBasedOnTag( "PER", load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+		int i = 0;
+		String[] recipientCodes = null;
+		if (sellersBEList != null) {
+			recipientCodes = new String[sellersBEList.size()];
+			for (BaseEntity taggedSellerBe : sellersBEList) {
+				recipientCodes[i] = taggedSellerBe.getCode();
+				i++;
+			}
+			println("recipient array - drivers ::" + Arrays.toString(recipientCodes));		
+		}else {
+			println("Error!! The recipient array - drivers is null");	
+		}
+		
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
 		 * before link change
@@ -4355,11 +4377,9 @@ public void makePayment(QDataAnswerMessage m) {
 		moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 
 		/* Get the sourceCode(Company code) for this User */
-		BaseEntity company = getParent(getUser().getCode(), "LNK_STAFF");
+		BaseEntity company = getParent(userCode, "LNK_STAFF");
 
 		/* link newly created Job to GRP_LOADS */
-		BaseEntity load = getChildren(jobCode, "LNK_BEG", "LOAD");
-		String loadCode = load.getCode();
 		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
@@ -4371,6 +4391,8 @@ public void makePayment(QDataAnswerMessage m) {
 		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 		/* SEND LOAD BE */
 		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+		/* Send Owner BE */
+		publishData(user, recipientCodes);
 		/* publishing to Owner */
 		publishBE(getBaseEntityByCode(jobCode));
 		publishBE(getBaseEntityByCode(loadCode));
@@ -4383,47 +4405,23 @@ public void makePayment(QDataAnswerMessage m) {
 
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
-			contextMap.put("OWNER", getUser().getCode());
-
+			contextMap.put("OWNER", userCode);
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
-			/* Getting all people */
-			List<BaseEntity> people = getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
-			System.out.println("size ::" + people.size());
-			List<BaseEntity> sellersBe = new ArrayList<>();
 
-			/* Getting all driver BEs */
-			for (BaseEntity stakeholderBe : people) {
+			/* Sending toast message to all drivers who have opted for this new BEG's product type */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
-				try {
-
-					if (this.isUserSeller(stakeholderBe)) {
-						sellersBe.add(stakeholderBe);
-					}
-
-				} catch (Exception e) {
-
-				}
-			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			/* Sending email message to all drivers who have opted for this new BEG's product type */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
 
 	     this.generateItemCaches("BUCKETS");
+	     
+		}else {
+			System.out.println("Error! Unable to get User or Load BE for this BEG");
+		}
 
 	}
 
@@ -6116,9 +6114,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
+		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
 
 		/* no need to send data again if the user is not logging in or registering */
-		if (!isLogin && !isRegistration) {
+		if (!isLogin && !isRegistration && !isProductTypeTagUpdated) {
 			this.setState("DATA_SENT_FINISHED");
 			return;
 		}
@@ -6281,13 +6280,16 @@ public void makePayment(QDataAnswerMessage m) {
 						else if(itemCode.startsWith("BEG_")) {
 
 							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {	
-									//Filtering BEG in the GRP_NEW_ITEMS based on the load types/category tags
-									 List<String> productTypeTag = getBaseEntityAttrValueList(getUser(), "LNK_PRODUCT_CATEGORY_LIST_TAG");
+									//Filtering BEG in the GRP_NEW_ITEMS based on the product types/category tags
+									 List<String> productTypeTag = getBaseEntityAttrValueList(stakeholder, "LNK_PRODUCT_CATEGORY_LIST_TAG");
 									 if(productTypeTag != null) {
 										 String begTag = item.getValue("LNK_PRODUCT_CATEGORY_TAG", null);
 										  if( begTag != null && productTypeTag.contains(begTag) ) {
 										 	  baseEntityKids.add(item);
 										   }
+										  else {
+											  excludedBes.put(itemCode, true);
+										  }
 									   }
 							          else {  //Send all the products without product category filter if not available
 								            baseEntityKids.add(item);
@@ -8005,7 +8007,7 @@ public void makePayment(QDataAnswerMessage m) {
                 BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
                 /* get the bit value for the SEL BE  */
                 Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
-                println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
+                //println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
                 if(bitValueStr != null){  
                    /* Combine all the bit values to the users category type attribute using or operator */               
                    categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
@@ -8013,7 +8015,7 @@ public void makePayment(QDataAnswerMessage m) {
            }
         }
         
-        println("The final bit value is :: "+categoryTypeInBits);
+        //println("The final bit value is :: "+categoryTypeInBits);
         saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
 	}
 	
@@ -8021,18 +8023,18 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
 	 */
 	public String getAllChildCodes(final String parentCode, final String linkCode) {
-		String childs = null;
+		String childStr = null;
 		List<String> childBECodeList = new ArrayList<String>();
 		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  childBECodeList.add(be.getCode());
 		  }
-		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
-		  childs = "["+childs+"]";
+		  childStr = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childStr = "["+childStr+"]";
 		}
 		
-		return childs;
+		return childStr;
 	}
 	
 	
@@ -8041,22 +8043,65 @@ public void makePayment(QDataAnswerMessage m) {
 	 */
 	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
 		Long defaultBitMappedTag = 0L;
-		
 		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
-              println("The bit value for "+be.getCode()+" is "+bitValue);
+              //println("The bit value for "+be.getCode()+" is "+bitValue);
               if(bitValue != null){  
                  /* Combine all the bit values to the default BitMap Tag using or operator */               
             	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
               }
-		  }
-		  
+		  }		  
 		}else{
 			System.out.println("Error! The Tag list is empty");
 		}
-		return defaultBitMappedTag;
+		return defaultBitMappedTag;	
+	}
+	
+	/*
+	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
+	 */
+	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
+		BaseEntity selBE = getBaseEntityByCode(tagCode);
+		if (selBE != null) {
+			Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
+			String serviceToken = generateServiceToken(realm());
+			QDataBaseEntityMessage msg = null;
+			List<BaseEntity> beList = new ArrayList<BaseEntity>();
+			if (bitMaskValue != null) {
+				SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+						.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
+						.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE,
+								bitMaskValue)
+						.setPageStart(0).setPageSize(10000);
+				try {
+					// System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+					// msg = getSearchResults(searchBE);
+					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
+					// System.out.println("the msg is :: " + msg);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (msg != null && msg.getItems().length != 0) {
+					BaseEntity[] beArray = msg.getItems();
+					for (BaseEntity be : beArray) {
+						beList.add(be);
+					}
+					return beList; // Return the final List
+				} else
+					System.out.println("Error! The search result is null.");
+				    return null;
+			} else {
+				System.out.println("Error! The bitmask value of the tagCode is null.");
+				return null;
+			}
+		} else {
+			System.out.println("Error! The tag BE is not found (null).");
+			return null;
+		}
 		
 	}
 	
