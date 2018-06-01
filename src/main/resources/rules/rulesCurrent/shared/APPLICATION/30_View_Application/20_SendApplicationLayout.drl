@@ -5,24 +5,24 @@ import life.genny.rules.QRules;
 rule "View Application Details - Send Application Details Layout"
 	when
 		rules: QRules(  isState("VIEW_APPLICATION_DETAILS") && 
-                    !isState("LOOP_VIEW_APPLICATION_DETAILS") ) 
+                    	!isState("LOOP_VIEW_APPLICATION_DETAILS") ) 
 	 then
 	 	rules.header();
     	rules.setState("LOOP_VIEW_APPLICATION_DETAILS");
 
-		/* get begCode (itemCode) from state */
-		String begCode = rules.getAsString("itemCode");
-		if(begCode != null){
+		/* get applicationBe from state */
+		BaseEntity application = rules.getAsBaseEntity("applicationBe");
+		if(application != null){
 			rules.set("subLayoutCode", "APP_DETAILS");
 			rules.set("subLayoutPath", "application/view-application.json");
-			rules.set("subLayoutRootCode", begCode);
+			rules.set("subLayoutRootCode", application.getCode());
 			rules.set("subLayoutIsPopup", false);
 
 			rules.setState("SEND_SUBLAYOUT"); 
-      rules.setState("VIEWED_APPLICATION_DETAILS");	
+      		rules.setState("VIEWED_APPLICATION_DETAILS");	
 				
 		}else{
-			rules.println("begCode is null");
+			rules.println("applicationCode is null");
 		}
 	 	rules.footer();      
 end

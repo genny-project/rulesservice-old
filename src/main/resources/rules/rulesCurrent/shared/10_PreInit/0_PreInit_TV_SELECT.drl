@@ -17,11 +17,6 @@ rule "Pre Init EVT_TV_SELECT"
         String tvSelectCode = m.getData().getCode();
         String tvSelectValue = m.getData().getValue();
         
-        if(tvSelectCode != null){
-          rules.set("tvSelectCode", tvSelectCode);
-          rules.setState(tvSelectCode);
-        }
-        
         if(tvSelectValue != null){
           rules.set("tvSelectValue", tvSelectValue);
           rules.setState(tvSelectValue);

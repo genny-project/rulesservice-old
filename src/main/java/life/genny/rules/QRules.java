@@ -1268,17 +1268,21 @@ public class QRules {
 	public void send(final String channel, final Object payload) {
 		send(channel, payload);
 	}
-
+	
+	public void publishCmd(final BaseEntity be, final String aliasCode) {
+		this.publishCmd(be, aliasCode, null);
+	}
+	
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
-
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		System.out.println("Publishing Cmd " + be.getCode() + " with alias " + aliasCode);
-		publish("cmds", msg);
+		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
+	
+
 
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
 
@@ -1290,9 +1294,7 @@ public class QRules {
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
 
-	public void publishCmd(final BaseEntity be, final String aliasCode) {
-		this.publishCmd(be, aliasCode, null);
-	}
+	
 
 	public QDataBaseEntityMessage publishData(final BaseEntity be, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
@@ -4121,6 +4123,23 @@ public class QRules {
 		beMsg.setDelete(true);
 		publishData(beMsg, recipients);
 
+	}
+
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(List<BaseEntity> beList, String[] recipients) {
+		
+		BaseEntity[] beArr = new BaseEntity[beList.size()];
+		beArr = beList.toArray(beArr);
+
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(beArr);
+		beMsg.setToken(getToken());
+		beMsg.setDelete(true);
+		beMsg.setReplace(true);
+		
+		if (recipients != null) {
+			beMsg.setRecipientCodeArray(recipients);
+		}
+		publish("cmds", beMsg);
 	}
 
 	/* sets delete field to true so that FE removes the BE from their store */
@@ -8112,6 +8131,34 @@ public class QRules {
 						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
 					}
 				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0,
+									500, false, company.getCode());
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+								
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
+					}
+				}
 			}
 		}
 	}
@@ -8203,6 +8250,81 @@ public class QRules {
 
 			
 		}
+	}
+
+	public void sendSplitView(final String parentCode, final String bucketCode, List<String> sortedColumns) {
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+
+		JsonObject codeListView = new JsonObject();
+		codeListView.put("code", "LIST_VIEW");
+		codeListView.put("root", parentCode);
+
+		JsonObject reportListView = new JsonObject();
+		reportListView.put("code", "TABLE_VIEW");
+		if (bucketCode == null || bucketCode.isEmpty()) {
+			reportListView.put("root", "null");
+		} else {
+			JsonObject columns = new JsonObject();
+			
+			//List<String> sortedColumns = new ArrayList<String>();
+			// sortedColumns.add("PRI_APPLICANT_FULLNAME");
+			// sortedColumns.add("PRI_APPLICANT_USERNAME");
+			// sortedColumns.add("PRI_BEG_CODE");
+			
+			String[] beArr = new String[sortedColumns.size()];
+			beArr = sortedColumns.toArray(beArr);
+
+			JsonArray tColumns = new JsonArray();
+			JsonArray colHeaderArr = new JsonArray();
+			for (int i = 0; i < beArr.length; i++) {
+				String colS = beArr[i];
+				colHeaderArr.add(colS);
+				JsonObject obj = new JsonObject();
+				obj.put("code", colS);
+				tColumns.add(obj);
+			}
+
+			columns.put("columns", colHeaderArr);
+			reportListView.put("data", columns);
+			
+			reportListView.put("root", bucketCode);
+		}
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(reportListView);
+		System.out.println("The JsonArray is :: " + msgCodes);
+		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+
+		publishCmd(cmdViewJson);
+	}
+
+	public void sendSplitView2(final String parentCode, final String bucketCode) {
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+
+		JsonObject codeListView = new JsonObject();
+		codeListView.put("code", "LIST_VIEW");
+		codeListView.put("root", parentCode);
+
+		JsonObject bucketListView = new JsonObject();
+		bucketListView.put("code", "BUCKET_VIEW");
+		bucketListView.put("root", bucketCode);
+
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(bucketListView);
+		System.out.println("The JsonArray is :: " + msgCodes);
+		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		publishCmd(cmdViewJson);
 	}
 
 }
