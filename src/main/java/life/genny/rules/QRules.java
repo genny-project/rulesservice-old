@@ -1920,7 +1920,7 @@ public class QRules {
 		/* we return false otherwise */
 		return false;
 	}
-  
+
 	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
 
 		String json;
@@ -3758,7 +3758,7 @@ public void makePayment(QDataAnswerMessage m) {
 
                 /* make payment API */
                 Boolean isMakePaymentSuccess = makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
-                
+
                 /* if make payment succeeds, move bucket and send notifications */
                 if(isMakePaymentSuccess) {
                 		/* GET attributes of OFFER BE */
@@ -3850,7 +3850,7 @@ public void makePayment(QDataAnswerMessage m) {
                     /* sending cmd BUCKETVIEW */
                     // this.setState("TRIGGER_HOMEPAGE");
                     this.redirectToHomePage();
-                    
+
                     /* TOAST :: SUCCESS */
                     println("Sending success toast since make payment succeeded");
                     HashMap<String, String> contextMap = new HashMap<String, String>();
@@ -6262,8 +6262,6 @@ public void makePayment(QDataAnswerMessage m) {
 						/* if the BE is a user */
 						if(itemCode.startsWith("PER_")) {
 
-							this.println("Found user: " + itemCode);
-
 							/* we simply add it to the list (note: sensitive attributes will be stripped out on publish */
 							baseEntityKids.add(item);
 						}
@@ -6305,27 +6303,12 @@ public void makePayment(QDataAnswerMessage m) {
 						}
 						else {
 
-							/* role specific rules */
-							/* user is a buyer */
-							if(this.isUserBuyer()) {
+              /* if it is not a BEG */
+              if(itemCode.startsWith("BEG_") == false) {
 
-								/* we send only BEGs the buyer created */
-								if(!itemCode.startsWith("BEG_")) {
-
-									/* we add the rest */
-									baseEntityKids.add(item);
-								}
-							}
-							/* user is a seller */
-							else if(this.isUserSeller()) {
-
-								/* if it is not a BEG */
-								if(!itemCode.startsWith("BEG_")) {
-
-									/* we send the rest */
-									baseEntityKids.add(item);
-								}
-							}
+                /* we send the rest */
+                baseEntityKids.add(item);
+              }
 						}
 					}
 
@@ -6339,6 +6322,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 					existingKids.addAll(baseEntityKids);
 					baseEntityMap.put(parentCode, existingKids);
+          this.println("Updating the map:" + parentCode);
 				}
 			}
 			else {
@@ -7748,9 +7732,9 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return paymentFeeId;
 	}
-	
+
 	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe, String authToken) {
-		
+
 		Boolean isMakePaymentSuccess = false;
 		if(begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
 
@@ -7770,8 +7754,8 @@ public void makePayment(QDataAnswerMessage m) {
 				/* Step 2 for bankaccount : Make payment API call */
 				/* Step 1 for card : Make payment API call */
 				try {
-	
-					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj), authToken);									
+
+					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj), authToken);
 					isMakePaymentSuccess = true;
 					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse, QPaymentsAssemblyItemResponse.class);
 
