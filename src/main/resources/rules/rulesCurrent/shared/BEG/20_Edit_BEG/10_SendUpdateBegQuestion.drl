@@ -12,13 +12,14 @@ rule "Update BEG - Step 1"
 
         String begCode = rules.getAsString("itemCode");
         if(begCode != null){
-            BaseEntity beg = rules.getChildren(begCode, "LNK_BEG", "PRODUCT");
+            rules.println(begCode);
+            BaseEntity beg = rules.getBaseEntityByCode(begCode);
             if(beg != null){
                 rules.println("THIS IS THE BEG AWWAWA :: "+beg);
                 rules.set("questionSourceCode", rules.getUser().getCode());
                 rules.set("questionTargetCode", beg.getCode());
                 rules.set("questionGroupCode", "QUE_EDIT_BEG_GRP");
-                rules.set("questionIsPopup", false);
+                rules.set("questionIsPopup", true);
                 rules.setState("SEND_QUESTION");
                 rules.setState("SEND_UPDATE_PRODUCT_QUESTION");
 
