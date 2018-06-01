@@ -15,7 +15,7 @@ rule "Application is ready role is not found"
 
         BaseEntity project = rules.getProject();
         Boolean doesProjectRequireRole = project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE", null);
-        if (doesProjectRequireRole != null && doesProjectRequireRole == false) {
+        if (doesProjectRequireRole == null || doesProjectRequireRole == true) {
         	 rules.setState("TRIGGER_ROLE_CHECK");
         }
         else {
