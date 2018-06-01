@@ -5,21 +5,23 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Application is ready role is not found"
     when
-         rules: QRules( isState("APPLICATION_READY") && 
+         rules: QRules( isState("APPLICATION_READY") &&
                         isState("ROLE_NOT_FOUND") &&
-                        !isState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND") ) 
+                        !isState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND") )
      then
      	rules.header();
 
         rules.setState("LOOP_APPLICATION_READY_ROLE_NOT_FOUND");
-        
+
         BaseEntity project = rules.getProject();
-        if (project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE",false)) {
-        	rules.setState("TRIGGER_ROLE_CHECK");
-        } else {
+        Boolean doesProjectRequireRole = project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE", null);
+        if (doesProjectRequireRole != null || doesProjectRequireRole == false) {
+        	 rules.setState("TRIGGER_ROLE_CHECK");
+        }
+        else {
         	rules.setState("PRI_IS_BUYER");
         	rules.setState("TRIGGER_PROFILE_CHECK");
         }
 
-	    rules.footer();      		      
+	    rules.footer();
 end
