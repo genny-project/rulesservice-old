@@ -4479,9 +4479,19 @@ public class QRules {
 		answers.add(new Answer(userCode, jobCode, "PRI_JOB_ID", jobId + ""));
 		saveAnswers(answers);
 
-		/* Determine the recipient code */
-		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-		println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
+		/* Get all the sellers who have opted for this product category tag */
+		List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag( "PER", load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+		int i = 0;
+		String[] recipientCodes = new String[sellersBe.size()];
+		for (BaseEntity taggedSellerBe : sellersBe) {
+			recipientCodes[i] = taggedSellerBe.getCode();
+			i++;
+		}
+		
+		println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
+		
+		//String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+		//println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
 
 		/*
 		 * Send newly created job with its attributes to all drivers so that it exists
@@ -4532,39 +4542,42 @@ public class QRules {
 
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
-			/* Getting all people */
-			List<BaseEntity> people = getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
-			System.out.println("size ::" + people.size());
-			List<BaseEntity> sellersBe = new ArrayList<>();
+			/* Getting all Drivers */
+			//List<BaseEntity> allDriversWithTag = getAllBaseEntitiesBasedOnTag( "PER", load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+			
+			//List<BaseEntity> people = getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
+			//System.out.println("size ::" + people.size());
+			//List<BaseEntity> sellersBe = new ArrayList<>();
 
 			/* Getting all driver BEs */
-			for (BaseEntity stakeholderBe : people) {
+			//List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag( "PER", load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+//			for (BaseEntity stakeholderBe : people) {
+//
+//				try {
+//
+//					if (this.isUserSeller()) {
+//						sellersBe.add(stakeholderBe);
+//					}
+//
+//				} catch (Exception e) {
+//
+//				}
+//			}
+//
+//			int i = 0;
+//			String[] stakeholderArr = new String[sellersBe.size()];
+//			for (BaseEntity stakeholderBe : sellersBe) {
+//				stakeholderArr[i] = stakeholderBe.getCode();
+//				i++;
+//			}
+//
+//			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
 
-				try {
+			/* Sending email message to all drivers who have opted for this product type */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
-					if (this.isUserSeller()) {
-						sellersBe.add(stakeholderBe);
-					}
-
-				} catch (Exception e) {
-
-				}
-			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+			/* Sending email message to all drivers who have opted for this product type */
+			sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
 
@@ -5888,11 +5901,15 @@ public class QRules {
 
 		// fetch token from keycloak
 		String key = null;
+		String prjRealm = null;
 		String initVector = "PRJ_" + realm().toUpperCase();
 		initVector = StringUtils.rightPad(initVector, 16, '*');
 		String encryptedPassword = null;
 		if (System.getenv("GENNYDEV") != null) {
 			initVector = "PRJ_GENNY*******";
+			prjRealm="genny";
+		}else {
+			prjRealm = realm();
 		}
 
 		try {
@@ -5916,10 +5933,10 @@ public class QRules {
 		println(keycloakurl);
 
 		try {
-			System.out.println("realm() : " + realm() + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+			System.out.println("realm() : " + prjRealm + "\n" + "realm : " + prjRealm + "\n" + "secret : " + secret + "\n"
 					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
 					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
-			String token = KeycloakUtils.getToken(keycloakurl, realm(), realm(), secret, "service", password);
+			String token = KeycloakUtils.getToken(keycloakurl, prjRealm, prjRealm, secret, "service", password);
 			println("token = " + token);
 			return token;
 		} catch (Exception e) {
@@ -7794,7 +7811,7 @@ public class QRules {
 	 * Gets all the tags from the source attribute and sets the bit value of all the tags
 	 *  in the new targetAttributeCode for the same userCode passed
 	 */
-	public void setBitValueOfTheTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
 		Long categoryTypeInBits = 0L;
         /* get the list of category types user has  */
         List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
@@ -7802,7 +7819,7 @@ public class QRules {
            for(String loadTypeCode : productCategoryList ){
                 BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
                 /* get the bit value for the SEL BE  */
-                Long bitValueStr = loadCat.getValue("PRI_BIT_VALUE", null);
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
                 println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
                 if(bitValueStr != null){  
                    /* Combine all the bit values to the users category type attribute using or operator */               
@@ -7816,21 +7833,85 @@ public class QRules {
 	}
 	
 	/*
-	 * Get all Base Entities based on search Prefix and the product type code
+	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
 	 */
-	public void getAllRelevantBaseEntities(final String searchPrefix, final String productTypeCode) {
-		BaseEntity selBE = getBaseEntityByCode(productTypeCode);
-		String bitValue = selBE.getValue("PRI_BIT_VALUE", null);
-		if(bitValue != null) {
-		   SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
-		  	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-		  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE, searchPrefix+"_%")
-		  	     .addFilter("PRI_PRODUCT_CATEGORY_TAG_IN_BIT", SearchEntity.StringFilter.EQUAL,  bitValue)
-		  	     .setPageStart(0)
-		  	     .setPageSize(10000);
+	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
+		BaseEntity selBE = getBaseEntityByCode(tagCode);
+		Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
+		String realm = realm();
+		String serviceToken = generateServiceToken(realm());
+		QDataBaseEntityMessage msg = null;
+		List<BaseEntity> beList = new ArrayList<BaseEntity>();
+		if (bitMaskValue != null) {
+			SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+					.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
+					.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE, bitMaskValue)
+					.setPageStart(0).setPageSize(10000);
+			try {
+				System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+				// msg = getSearchResults(searchBE);
+				msg = QwandaUtils.fetchResults(searchBE, serviceToken);
+				System.out.println("the msg is :: " + msg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (msg != null && msg.getItems().length != 0) {
+				BaseEntity[] beArray = msg.getItems();
+				for (BaseEntity be : beArray) {
+					beList.add(be);
+				}
+			} else
+				System.out.println("Error! The search result is null.");
+		} else {
+			System.out.println("Error! The bitmask value of the tagCode is null.");
+
 		}
-		
+		return beList;
 	}
 	
+	/*
+	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
+	 */
+	public String getAllChildCodes(final String parentCode, final String linkCode) {
+		String childs = null;
+		List<String> childBECodeList = new ArrayList<String>();
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  childBECodeList.add(be.getCode());
+		  }
+		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childs = "["+childs+"]";
+		}
+		
+		return childs;
+	}
+	
+	/*
+	 * Returns the default Bit Mapped tag
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+		
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+              println("The bit value for "+be.getCode()+" is "+bitValue);
+              if(bitValue != null){  
+                 /* Combine all the bit values to the default BitMap Tag using or operator */               
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+		  
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+		
+	}
 
 }
