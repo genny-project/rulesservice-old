@@ -4046,7 +4046,16 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
+    
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(String baseEntityCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		publishData(beMsg);
 
+	}
+	
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode, "FastBE");
@@ -6271,11 +6280,20 @@ public void makePayment(QDataAnswerMessage m) {
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
 
-							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
-								baseEntityKids.add(item);
-							}
+							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {	
+									//Filtering BEG in the GRP_NEW_ITEMS based on the load types/category tags
+									 List<String> productTypeTag = getBaseEntityAttrValueList(getUser(), "LNK_PRODUCT_CATEGORY_LIST_TAG");
+									 if(productTypeTag != null) {
+										 String begTag = item.getValue("LNK_PRODUCT_CATEGORY_TAG", null);
+										  if( begTag != null && productTypeTag.contains(begTag) ) {
+										 	  baseEntityKids.add(item);
+										   }
+									   }
+							          else {  //Send all the products without product category filter if not available
+								            baseEntityKids.add(item);
+							               }
+						    }
 							else {
-
 								if(this.isUserAssociatedToBaseEntity(stakeholder, item)) {
 									baseEntityKids.add(item);
 								}
@@ -7954,4 +7972,93 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return isDeleted;
 	}
+	
+	/* Get array String value from an attribute of the BE  */
+	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+		
+		String myLoadTypes = be.getValue(attributeCode, null);
+															
+		if (myLoadTypes != null) {
+			List<String> loadTypesList = new ArrayList<String>();
+			/* Removing brackets "[]" and double quotes from the strings */
+			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
+			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+			    loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			    return loadTypesList;
+			}else {
+				return null;
+			}
+		} else
+			return null;
+	}
+	
+	/*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+		Long categoryTypeInBits = 0L;
+        /* get the list of category types user has  */
+        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        if(productCategoryList != null){
+           for(String loadTypeCode : productCategoryList ){
+                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
+                println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
+                if(bitValueStr != null){  
+                   /* Combine all the bit values to the users category type attribute using or operator */               
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }
+        
+        println("The final bit value is :: "+categoryTypeInBits);
+        saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+	}
+	
+	/*
+	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
+	 */
+	public String getAllChildCodes(final String parentCode, final String linkCode) {
+		String childs = null;
+		List<String> childBECodeList = new ArrayList<String>();
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  childBECodeList.add(be.getCode());
+		  }
+		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childs = "["+childs+"]";
+		}
+		
+		return childs;
+	}
+	
+	
+	/*
+	 * Returns the default Bit Mapped tag of all the category tags
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+		
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+              println("The bit value for "+be.getCode()+" is "+bitValue);
+              if(bitValue != null){  
+                 /* Combine all the bit values to the default BitMap Tag using or operator */               
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+		  
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+		
+	}
+	
+	
  }

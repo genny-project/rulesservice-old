@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "User-Load Type Submit"
+
+    when
+        $m : QEventMessage( event_type == "FORM_SUBMIT" && data.code == "QUE_DRIVER_LOAD_TYPES_GRP" )
+        rules: QRules( !isState("LOAD_TYPES_UPDATED") ) 
+    then
+       rules.header();
+       
+    	    /*  Get data.value and decode   */
+         String dataString = $m.data.getValue();
+         JsonObject dataJson = new JsonObject(dataString);
+         String userCode = dataJson.getString("targetCode");
+         String actionCode = dataJson.getString("action"); 
+         rules.setState("LOAD_TYPES_UPDATED");
+         if(userCode != null && !userCode.isEmpty()){
+           /*  Set the bit mask value for all the tags available  */
+           rules.setBitMaskValueForTag(userCode, "LNK_PRODUCT_CATEGORY_LIST_TAG", "PRI_PRODUCT_CATEGORY_TAG_BITMASKED");
+         }
+         /* Call sendLayoutsAndData */
+        rules.clearBaseEntity("GRP_NEW_ITEMS");
+        rules.setState("APPLICATION_READY_SEND_DATA");
+         
+       rules.footer();
+  end
