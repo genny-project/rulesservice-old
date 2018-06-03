@@ -84,7 +84,12 @@ rule "Job Confirm Delivery - Owner and Release Payment"
             rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
             rules.setState("CONFIRMED_DELIVERY_OWNER");
+            
+            /* reload cache */
+      		rules.generateNewItemsCache();
+      		
          } else {
+        	 
          	/* if payment is already released and is successful, set success states */
         		rules.println(isRealeasePaymentDone);
 
@@ -97,6 +102,9 @@ rule "Job Confirm Delivery - Owner and Release Payment"
           		rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
           		rules.setState("CONFIRMED_DELIVERY_OWNER");
+          		
+          		/* reload cache */
+          		rules.generateNewItemsCache();
 
         		} else {
 
@@ -117,7 +125,9 @@ rule "Job Confirm Delivery - Owner and Release Payment"
               		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
               		rules.setState("CONFIRMED_DELIVERY_OWNER");
-
+              		
+              		/* reload cache */
+              		rules.generateNewItemsCache();
            		}
            	  }
        	 	}
