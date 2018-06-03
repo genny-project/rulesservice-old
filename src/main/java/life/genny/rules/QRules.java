@@ -2907,7 +2907,7 @@ public class QRules {
 
 	private void sendAllSublayouts() {
 
-		this.sendSublayouts("shared");
+		this.sendSublayouts("genny");
 		this.sendSublayouts(realm());
 	}
 
@@ -2943,7 +2943,7 @@ public class QRules {
 		List<Layout> layouts = new ArrayList<Layout>();
 
 		/* we grab all the layouts */
-		layouts.addAll(LayoutUtils.processNewLayouts("shared"));
+		layouts.addAll(LayoutUtils.processNewLayouts("genny"));
 		layouts.addAll(LayoutUtils.processNewLayouts(realmCode));
 
 		return layouts.stream().map(x -> this.baseEntityForLayout(x)).collect(Collectors.toList());
@@ -6015,7 +6015,7 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 			}
 		}
-		
+
 		/* 6. we cache the message */
 		QDataBaseEntityMessage[] cachedItemMessagesArray = bulkmsg.toArray(new QDataBaseEntityMessage[0]);
 		QBulkMessage bulkItem = new QBulkMessage(cachedItemMessagesArray.clone());
