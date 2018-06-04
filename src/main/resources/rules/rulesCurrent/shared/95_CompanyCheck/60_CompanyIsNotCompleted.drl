@@ -6,7 +6,7 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 rule "Check user company - Step 5"
 
 	when
-		 rules: QRules( 	isState("CHECK_USER_COMPANY") && isState("COMPANY_IS_NOT_READY") &&
+		 rules: QRules( 	isState("LOOP_CHECKED_COMPANY_EXIST") && isState("COMPANY_IS_NOT_READY") &&
 						!isState("ASKED_COMPANY_QUESTIONS") )
 	 then
 	    rules.header();
@@ -23,7 +23,7 @@ rule "Check user company - Step 5"
 			rules.set("questionIsPopup", false);
 
 			rules.setState("ASK_QUESTION");
-      rules.setState("IS_REGISTRATION");
+			rules.setState("IS_REGISTRATION");
 		}
 
 	    rules.footer();

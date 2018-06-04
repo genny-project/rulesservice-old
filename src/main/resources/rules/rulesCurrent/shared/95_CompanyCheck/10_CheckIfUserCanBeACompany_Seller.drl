@@ -13,7 +13,7 @@ rule "Check user company - step 0 - SELLER"
 		
 		/* a project attribute exists that tells us if a user can be a company or not */
 		Boolean canUserBeACompany = rules.getProject().getValue("CAN_SELLER_HAVE_COMPANY", false);
-		if(canUserBeACompany) {
+		if(canUserBeACompany && rules.getUser().getValue("PRI_IS_COMPANY", null) == null) {
 			
 			/* if the user is not a company yet */
 			if(rules.isState("PRI_IS_COMPANY") == false) {
@@ -22,11 +22,11 @@ rule "Check user company - step 0 - SELLER"
 			else {
 				
 				/* if the user is a company we check if it has been set up correctly */
-				rules.setState("CHECK_USER_COMPANY");
+				rules.setState("CHECK_COMPANY_EXISTS");
 			}
 		}
 		else {
-			rules.setState("COMPANY_EXISTS"); /* we skip the workflow */
+			rules.setState("COMPANY_IS_READY"); /* we skip the workflow */
 		}
 				
 	    rules.footer();     		      
