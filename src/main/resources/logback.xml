@@ -10,7 +10,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
     
-    <logger category="com.hazelcast.nio.serialization.HazelcastSerializationException">
+ <!--    <logger category="com.hazelcast.nio.serialization.HazelcastSerializationException">
     		<level name="ERROR"/>
     </logger>
 	
@@ -26,7 +26,7 @@
         <logger name="com.hazelcast.internal.diagnostics.Diagnostics" level="ERROR"/>
         <logger name="com.hazelcast.nio.tcp.TcpIpConnectionManager" level="ERROR"/>
         <logger name="io.vertx.core.impl.BlockedThreadChecker" level="OFF" />
-        
+    -->    
     
 </configuration>
 
