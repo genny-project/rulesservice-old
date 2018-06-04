@@ -8052,13 +8052,23 @@ public class QRules {
 		/* SEND ROOT BaseEntity */
 		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
 
 		if (rootKids != null) {
 			printList("rootKids", rootKids);
 
+			for (BaseEntity rootKid : rootKids) {
+
+				/* FOR GRP_APPLICATIONS BEGS */
+				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					rootKidsToSend.add(rootKid);
+				}
+			}
+			printList("rootKidsToSend", rootKidsToSend);
+
 			/* subscribe to all the rootKids */
-			subscribeUserToBaseEntities(getUser().getCode(), rootKids);
-			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
+			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
 
 			for (BaseEntity rootKid : rootKids) {
 
@@ -8133,8 +8143,7 @@ public class QRules {
 				}
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
-							false);
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
 					if (contactGroups != null) {
 						printList("contactGroups", contactGroups);
 
@@ -8144,8 +8153,7 @@ public class QRules {
 
 						for (BaseEntity contactGroup : contactGroups) {
 
-							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0,
-									500, false, company.getCode());
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false, company.getCode());
 							if (contacts != null) {
 								printList("contacts", contacts);
 
@@ -8170,24 +8178,44 @@ public class QRules {
 		/* SEND ROOT BaseEntity */
 		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
 
 		if (rootKids != null) {
 			printList("rootKids", rootKids);
 
+			for (BaseEntity rootKid : rootKids) {
+
+				/* FOR GRP_APPLICATIONS BEGS */
+				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					rootKidsToSend.add(rootKid);
+				}
+			}
+			printList("rootKidsToSend", rootKidsToSend);
+			
 			/* subscribe to all the rootKids */
-			subscribeUserToBaseEntities(getUser().getCode(), rootKids);
-			publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
+			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
 
 			for (BaseEntity rootKid : rootKids) {
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
 					List<BaseEntity> begGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();					
+					
 					if (begGroups != null) {
 						printList("begGroups", begGroups);
+						
+						for (BaseEntity begGroup : begGroups) {
+
+							/* FOR GRP_APPLICATIONS BEGS */
+							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") || !begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
+								begGroupsToSend.add(begGroup);
+							}
+						}
 
 						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), begGroups);
-						publishCmd(begGroups, rootKid.getCode(), "LNK_CORE");
+						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
+						publishCmd(begGroupsToSend, rootKid.getCode(), "LNK_CORE");
 
 						BaseEntity begApplication = null;
 						List<BaseEntity> begKids = new ArrayList<BaseEntity>();
@@ -8234,8 +8262,10 @@ public class QRules {
 								}
 							}
 						}
+						
 					}
 				}
+
 				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
 					List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
 					if (buckets != null) {
@@ -8244,6 +8274,32 @@ public class QRules {
 						/* subscribe to all the begs of the company */
 						subscribeUserToBaseEntities(getUser().getCode(), buckets);
 						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+				
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false);
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
 					}
 				}
 			}
@@ -8324,6 +8380,45 @@ public class QRules {
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		publishCmd(cmdViewJson);
+	}
+
+	public void sendListTabView(final String listCode, final String bucketCode, final String begCode) {
+
+		JsonObject listView = new JsonObject();
+		listView.put("code", "LIST_VIEW");
+		listView.put("root", listCode);
+
+		
+		JsonObject bucketView = new JsonObject();
+		bucketView.put("code", "BUCKET_VIEW");
+		bucketView.put("root", bucketCode);
+			
+		JsonObject detailView = new JsonObject();	
+		detailView.put("code", "DETAIL_VIEW");
+		detailView.put("root", begCode);
+		detailView.put("layoutCode", "detail-view");
+		
+		JsonArray dataArray = new JsonArray();	
+		dataArray.add(bucketView);
+		dataArray.add(detailView);
+		
+		
+		JsonObject tabView = new JsonObject();
+		tabView.put("code", "TAB_VIEW");
+		tabView.put("data", dataArray);		
+
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(listView);
+		msgCodes.add(tabView);
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("data", msgCodes);
+
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+
 		publishCmd(cmdViewJson);
 	}
 

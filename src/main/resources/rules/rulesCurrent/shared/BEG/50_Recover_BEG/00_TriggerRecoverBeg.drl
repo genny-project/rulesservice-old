@@ -3,7 +3,6 @@ import life.genny.rules.QRules;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-
 /* MOVE BEG from current Bucket to GRP_NEW_ITEMS */
 rule "Trigger Recover BEG"
     when 
@@ -27,7 +26,7 @@ rule "Trigger Recover BEG"
 					rules.println("beg Code   ::   " + beg.getCode());
 					rules.println("beg's current parent is   ::   " + parentBe.getCode());
 					
-					rules.moveBaseEntity(beg.getCode(), parentBe.getCode(), "GRP_NEW_ITEMS", "LNK_CORE");
+					rules.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 					
 					rules.setState("TRIGGER_HOMEPAGE");
 					rules.setState("TRIGGER_RECOVER_BEG_MESSAGE");

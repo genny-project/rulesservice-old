@@ -3,7 +3,6 @@ import life.genny.rules.QRules;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-
 /* MOVE BEG from current Bucket to GRP_BIN */
 rule "Trigger Delete BEG"
     when 
