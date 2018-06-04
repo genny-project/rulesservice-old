@@ -65,7 +65,7 @@ rule "Facebook Redirect"
       obj.put("data_type", "SOCIAL_REDIRECT");
       obj.put("items", ask);  
       obj.put("token", rules.getToken());       
-      bus.publish("cmds", obj); 
+      rules.publish("cmds", obj); 
 end
 
 

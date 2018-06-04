@@ -3993,33 +3993,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 			switch (attribute.getAttributeCode()) {
 
-			case ("PRI_UUID"):
-				removeAttributes.add(attribute);
+			case "PRI_UUID":
+			case "PRI_USERNAME":
+			case "FBK_ID":
 			break;
-
-			case ("PRI_FIRSTNAME"):
+			default:
 				removeAttributes.add(attribute);
-			break;
-
-			case ("PRI_LASTNAME"):
-				removeAttributes.add(attribute);
-			break;
-
-			case ("PRI_EMAIL"):
-				removeAttributes.add(attribute);
-			break;
-
-			case ("PRI_USERNAME"):
-				removeAttributes.add(attribute);
-			break;
-
-			case ("PRI_KEYCLOAK_UUID"):
-				removeAttributes.add(attribute);
-			break;
-
-			case ("PRI_FB_BASIC"):
-				removeAttributes.add(attribute);
-			break;
 			}
 
 		}
@@ -4034,7 +4013,21 @@ public void makePayment(QDataAnswerMessage m) {
 
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
-		publishData(beMsg);
+		publishCmd(beMsg);
+		
+		be.setBaseEntityAttributes(attributes);
+
+		String jsonBE = JsonUtils.toJson(be);
+		String result = null;
+		System.out.println("Forcing BE update to "+qwandaServiceUrl + "/qwanda/baseentitys/force");
+		try {
+			result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE,
+					getToken());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("The result   ::  " + result);
 
 	}
 
