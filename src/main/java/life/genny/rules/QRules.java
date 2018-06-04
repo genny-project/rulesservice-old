@@ -1213,7 +1213,7 @@ public class QRules {
 	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
 
 		println("Loading layout: " + folderName + "/" + layoutPath);
-		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
+		String layout = RulesUtils.getLayout(folderName, layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		println(layoutCode + " SENT TO FRONTEND");
@@ -1247,7 +1247,7 @@ public class QRules {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm(), sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
@@ -1273,14 +1273,14 @@ public class QRules {
 			final boolean isPopup) {
 
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
+		
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		println("Loading url: " + realm() + "/" + sublayoutPath);
-		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
+		
+		String sublayoutString = RulesUtils.getLayout(realm(), sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
-
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
@@ -2854,12 +2854,14 @@ public class QRules {
 		data.setRecipientCodeArray(recipientCodes);
 		publishCmd(data);
 	}
+	
+	/* TODO: use layoutUtils */
 
 	private void sendSublayouts(final String realm) {
 
 		try {
 
-			String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
+			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
 			if (subLayoutMap != null) {
 
 				JsonArray subLayouts = new JsonArray(subLayoutMap);
@@ -5893,14 +5895,11 @@ public void makePayment(QDataAnswerMessage m) {
 				if (msg instanceof QDataBaseEntityMessage) {
 
 					String grpCode = msg.getParentCode();
-					if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
-						System.out.println("Dubug");
-					}
-
 					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+					
 
 					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
-
+					
 					for (BaseEntity child : msg.getItems()) {
 
 						String childCode = child.getCode();
