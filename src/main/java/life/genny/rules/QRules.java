@@ -8136,7 +8136,8 @@ public class QRules {
 					if (applicationGroups != null) {
 						printList("applicationGroups", applicationGroups);
 
-						publishBaseEntityByCode("GRP_APPLICATIONS", null, null, recipient);
+						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
+						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
 						
 						/* subscribe to all the applicationGroups */
 						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
@@ -8273,7 +8274,8 @@ public class QRules {
 					if (buckets != null) {
 						printList("buckets", buckets);
 						
-						publishBaseEntityByCode("GRP_APPLICATIONS", null, null, recipient);
+						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
+						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
 						
 						/* subscribe to all the begs of the company */
 						subscribeUserToBaseEntities(getUser().getCode(), buckets);
