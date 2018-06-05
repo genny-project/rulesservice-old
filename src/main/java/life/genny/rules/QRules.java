@@ -2951,7 +2951,7 @@ public class QRules {
 			return null;
 		}
 		
-		String serviceToken = this.generateServiceToken("genny");
+		String serviceToken = this.generateServiceToken(realm());
 		if(serviceToken != null) {
 			
 			BaseEntity beLayout = null;
