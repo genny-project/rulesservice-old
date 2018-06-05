@@ -5911,14 +5911,20 @@ public void makePayment(QDataAnswerMessage m) {
 				if (msg instanceof QDataBaseEntityMessage) {
 
 					String grpCode = msg.getParentCode();
-					if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
-						System.out.println("Dubug");
-					}
-
 					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
 
 					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
-
+					
+					/* GRP_ROOT does not have any parent, so we create its own message */
+					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+						
+						BaseEntity[] roots = new BaseEntity[1];
+						roots[0] = parent;
+						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT", "LNK_CORE");
+						rootMessage.setToken(getToken());
+						baseEntityMsgs.add(rootMessage);
+					}
+					
 					for (BaseEntity child : msg.getItems()) {
 
 						String childCode = child.getCode();
