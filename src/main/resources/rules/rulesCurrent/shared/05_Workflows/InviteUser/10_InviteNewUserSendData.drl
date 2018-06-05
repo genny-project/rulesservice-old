@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+import java.util.stream.Collectors;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.EntityAttribute;
+
+rule "Invite New User - Step 0 - Send Data"
+     when
+        rules: QRules(  isState("EVENT_BTN_CLICK") && isState("BTN_CPY_ADD_STAFF") && !isState("LOOP_INVITE_USER") )
+     then
+        rules.header();
+
+		rules.setState("LOOP_INVITE_USER");
+
+    	  	/* we send the selections */
+		rules.sendSelections("GRP_CPY_ROLES", "LNK_CORE" , 20);
+      
+		/* we send the questions */
+		rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_INVITE_USER_GRP", true);
+		
+		rules.setState("INVITE_USER_SEND_LAYOUT");
+      	rules.footer();
+end
