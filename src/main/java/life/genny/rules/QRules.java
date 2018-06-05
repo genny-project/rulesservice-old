@@ -2913,19 +2913,15 @@ public class QRules {
 	}
 
 	public void sendAllLayouts() {
-
-		/*
-		 * List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS",
-		 * "LNK_CORE", 0, 500, false); this.publishCmd(beLayouts, "GRP_LAYOUTS",
-		 * "LNK_CORE");
-		 */
-
+		
 		/* Layouts v1 */
 		this.sendAllSublayouts();
-
+		
 		/* Layouts V2 */
-		List<BaseEntity> beLayouts = this.getAllLayouts();
+		List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false); this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
+		
+		/*List<BaseEntity> beLayouts = this.getAllLayouts(); */
 	}
 
 	public List<BaseEntity> getAllLayouts() {
@@ -2955,82 +2951,86 @@ public class QRules {
 		if (layout.getPath() == null) {
 			return null;
 		}
+		
+		String serviceToken = this.generateServiceToken(realm());
+		if(serviceToken != null) {
+			
+			BaseEntity beLayout = null;
 
-		BaseEntity beLayout = null;
+			/* we check if the baseentity for this layout already exists */
+			// beLayout =
+			// RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl,
+			// this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
+			String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+			String layoutCode = ("LAY_" + realm() + "_" + precode).toUpperCase();
 
-		/* we check if the baseentity for this layout already exists */
-		// beLayout =
-		// RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl,
-		// this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
-		String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
-		String layoutCode = ("LAY_" + realm() + "_" + precode).toUpperCase();
+			beLayout = getBaseEntityByCode(layoutCode);
 
-		beLayout = getBaseEntityByCode(layoutCode);
+			/* if the base entity does not exist, we create it */
+			if (beLayout == null) {
 
-		/* if the base entity does not exist, we create it */
-		if (beLayout == null) {
-
-			/* otherwise we create it */
-			beLayout = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, getToken());
-			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
-		}
-
-		if (beLayout != null) {
-
-			addAttributes(beLayout);
-
-			/*
-			 * we get the modified time stored in the BE and we compare it to the layout one
-			 */
-			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
-
-			if (beModifiedTime == null || layout.getModifiedDate() == null
-					|| !beModifiedTime.equals(layout.getModifiedDate())) {
-
-				println("Reloading layout: " + layoutCode);
-
-				/* if the modified time is not the same, we update the layout BE */
-
-				/* setting layout attributes */
-				List<Answer> answers = new ArrayList<Answer>();
-
-				/* download the content of the layout */
-				String content = LayoutUtils.downloadLayoutContent(layout);
-
-				Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
-						content);
-				newAnswerContent.setChangeEvent(true);
-				answers.add(newAnswerContent);
-
-				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
-						layout.getPath());
-				newAnswer.setChangeEvent(false);
-				answers.add(newAnswer);
-
-				Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
-						layout.getDownloadUrl());
-				newAnswer2.setChangeEvent(false);
-				answers.add(newAnswer2);
-
-				Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
-						layout.getName());
-				newAnswer3.setChangeEvent(false);
-				answers.add(newAnswer3);
-
-				Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
-						layout.getModifiedDate());
-				newAnswer4.setChangeEvent(false);
-				answers.add(newAnswer4);
-
-				this.saveAnswers(answers);
-
-				/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
-				this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
+				/* otherwise we create it */
+				beLayout = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, serviceToken);
+				VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 			}
 
-		}
+			if (beLayout != null) {
 
-		return this.getBaseEntityByCode(beLayout.getCode());
+				addAttributes(beLayout);
+
+				/*
+				 * we get the modified time stored in the BE and we compare it to the layout one
+				 */
+				String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
+
+				if (beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
+
+					println("Reloading layout: " + layoutCode);
+
+					/* if the modified time is not the same, we update the layout BE */
+
+					/* setting layout attributes */
+					List<Answer> answers = new ArrayList<Answer>();
+
+					/* download the content of the layout */
+					String content = LayoutUtils.downloadLayoutContent(layout);
+
+					Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
+							content);
+					newAnswerContent.setChangeEvent(true);
+					answers.add(newAnswerContent);
+
+					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
+							layout.getPath());
+					newAnswer.setChangeEvent(false);
+					answers.add(newAnswer);
+
+					Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
+							layout.getDownloadUrl());
+					newAnswer2.setChangeEvent(false);
+					answers.add(newAnswer2);
+
+					Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
+							layout.getName());
+					newAnswer3.setChangeEvent(false);
+					answers.add(newAnswer3);
+
+					Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
+							layout.getModifiedDate());
+					newAnswer4.setChangeEvent(false);
+					answers.add(newAnswer4);
+
+					this.saveAnswers(answers);
+
+					/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
+					this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
+				}
+			}
+			
+			return this.getBaseEntityByCode(beLayout.getCode());
+		}
+		
+		return null;
 	}
 
 	/*
