@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.attribute.EntityAttribute;
 
-rule "Invite New User - Step 0 - Send Data"
+rule "Invite New User - Step 0 - Create New User"
      when
         rules: QRules(  isState("EVENT_BTN_CLICK") && isState("BTN_CPY_ADD_STAFF") && !isState("LOOP_INVITE_USER") )
      then
@@ -14,12 +14,8 @@ rule "Invite New User - Step 0 - Send Data"
 
 		rules.setState("LOOP_INVITE_USER");
 
-    	  	/* we send the selections */
-		rules.sendSelections("GRP_CPY_ROLES", "LNK_CORE" , 20);
-      
-		/* we send the questions */
-		rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_INVITE_USER_GRP", true);
+    	  
 		
-		rules.setState("INVITE_USER_SEND_LAYOUT");
+		/*rules.setState("INVITE_USER_SEND_DATA"); */
       	rules.footer();
 end
