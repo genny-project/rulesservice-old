@@ -65,6 +65,7 @@ import life.genny.qwanda.attribute.AttributeInteger;
 import life.genny.qwanda.attribute.AttributeMoney;
 import life.genny.qwanda.attribute.AttributeText;
 import life.genny.qwanda.attribute.EntityAttribute;
+import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
@@ -5167,11 +5168,36 @@ public void makePayment(QDataAnswerMessage m) {
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		try {
-
-			JsonObject dt = new JsonObject(resultJson);
-			if (dt != null) {
-				publishData(dt);
+			if (msg.getItems()!=null) {
+				
+				// Now work out sums
+				boolean first = true;
+				Map<String,Object> sums = new HashMap<String,Object>(); // store the column sums
+				for (BaseEntity row : msg.getItems()) {
+					if (first) {
+						this.addAttributes(row);
+						for (EntityAttribute col1 : row.getBaseEntityAttributes()) {
+							if (DataType.summable(col1.getAttribute().getDataType())) {
+								Object sum = DataType.add(col1.getValue());
+								sums.put(col1.getAttribute().getCode(), DataType.Zero(col1.getAttribute().getDataType()));
+							}
+						}
+						first = false;
+					}
+					// for every column determine the data type
+					for (EntityAttribute col :   row.getBaseEntityAttributes()) {
+						if (sums.containsKey(col.getAttributeCode())) {
+							Object currentSum = sums.get(col.getAttributeCode());
+							Object sum = DataType.add(currentSum,col.getValue());
+							sums.put(col.getAttribute().getCode(), sum);
+						}
+					}
+				}
+				
+				
+				publishData(msg);
 			}
+
 		} catch (Exception e) {
 
 		}
