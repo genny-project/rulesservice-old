@@ -28,6 +28,8 @@ rule "Submit Add Note - STEP 2"
 		}else{
 			rules.publishBaseEntityByCode(note.getCode(), application.getCode(), "LNK_APP", recipient);
 			rules.setState("VIEW_APPLICATION_DETAILS");
+			rules.saveAnswer(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
+			
 
 		}
 		rules.footer();

@@ -8108,7 +8108,8 @@ public class QRules {
 										for (BaseEntity begKid : begKids) {
 
 											if (begKid.getName().equals("APPLICATION")) {
-
+												subscribeUserToBaseEntity(getUser().getCode(), begKid);
+												
 												List<BaseEntity> applicationKids = getBaseEntitysByParentAndLinkCode(
 														begKid.getCode(), "LNK_APP", 0, 500, false);
 
@@ -8235,6 +8236,8 @@ public class QRules {
 									
 									for (BaseEntity beg : begs) {
 										List<BaseEntity> applications = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
+										subscribeUserToBaseEntities(getUser().getCode(), applications);
+										
 										if(applications.size() > 0){
 											println("application size :: "+applications.size());
 											
