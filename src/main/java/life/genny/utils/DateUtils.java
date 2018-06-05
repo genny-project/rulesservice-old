@@ -1,5 +1,6 @@
 package life.genny.utils;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -31,6 +32,16 @@ public class DateUtils {
 
 		return iso8601DateString;
 
+	}
+	
+	/*
+	 *  Return current UTC date
+	 */
+	public static String getCurrentUtcDate() {
+		ZonedDateTime now = ZonedDateTime.now( ZoneOffset.UTC );
+		String currentDate =	now.toLocalDate().toString();
+	    System.out.println("UTC Date is: " +currentDate);
+		return currentDate;
 	}
 
 }
