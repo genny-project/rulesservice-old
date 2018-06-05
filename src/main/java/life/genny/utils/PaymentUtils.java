@@ -9,8 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +33,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
@@ -51,11 +48,12 @@ import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemSearchResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUser;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.QwandaUtils;
 
 public class PaymentUtils {
 
@@ -65,7 +63,6 @@ public class PaymentUtils {
 	/* Define constants */
 	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
 	public static final String PROVIDER_TYPE_BANK = "bank";
-	public static final String CONTACT_ADMIN_TEXT = "Please contact support for assistance"; /* TODO Use an environment variable to include support contact info */
 
 	/**
 	* Returns the authentication key for the payments service - key is generated as per documentation here
@@ -650,18 +647,6 @@ public class PaymentUtils {
 		
 	}
 
-	public static String getBegCode(String offerCode, String tokenString) {
-		return MergeUtil.getAttrValue(offerCode, "PRI_BEG_CODE", tokenString);
-	}
-
-	/* Saves an answer */
-	public static void saveAnswer(String qwandaServiceUrl, Answer answer, String token) {
-		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
 		Boolean isAnswerContainsPaymentAttribute = false;
@@ -803,17 +788,17 @@ public class PaymentUtils {
 	//offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
 	public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
 		Boolean isAssemblyItemValid = false;
-		String itemResponse = null;
-
+		
 		try {
-			itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
-
-			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
-
-			//Get all values for "items" key
-			Map<String, Object> itemDescObj = (Map<String, Object>) itemResponseObj.get("items");
-
-			Double itemPrice = (Double) itemDescObj.get("amount");
+			String itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
+			
+			/* convert string into item-search object */
+			QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);
+			System.out.println("item object ::"+itemObj);
+			
+			QPaymentsAssemblyItemResponse items = itemObj.getItems();
+			
+			Double itemPrice = items.getAmount();
 			System.out.println("item price ::"+itemPrice);
 
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
@@ -829,23 +814,26 @@ public class PaymentUtils {
 			/* convert into cents */
 			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
 
-			Map<String, Object> buyerOwnerInfo = (Map<String, Object>) itemDescObj.get("buyer");
-			Map<String, Object> ownerContactInfo = (Map<String, Object>) buyerOwnerInfo.get("contactInfo");
+			QPaymentsAssemblyUser buyerOwnerInfo = items.getBuyer();
+			QPaymentsUserContactInfo ownerContactInfo = buyerOwnerInfo.getContactInfo();
 
-			Map<String, Object> sellerDriverInfo = (Map<String, Object>) itemDescObj.get("seller");
-			Map<String, Object> driverContactInfo = (Map<String, Object>) sellerDriverInfo.get("contactInfo");
+			QPaymentsAssemblyUser sellerDriverInfo = items.getSeller();
+			QPaymentsUserContactInfo driverContactInfo = sellerDriverInfo.getContactInfo();
 
-			Boolean isOwnerEmail = ownerContactInfo.get("email").equals(ownerEmail);
+			/* compare if item-owner is same as offer-owner */
+			Boolean isOwnerEmail = ownerContactInfo.getEmail().equals(ownerEmail);
 			System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
 
-			Boolean isDriverEmail = driverContactInfo.get("email").equals(driverEmail);
+			/* compare if item-driver is same as offer-driver */
+			Boolean isDriverEmail = driverContactInfo.getEmail().equals(driverEmail);
 			System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
 
+			/* compare if item-price is same as offer-price */
 			Boolean isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
 			System.out.println("Is price attribute for item equal ?"+isPriceEqual);
 
-			if(ownerContactInfo.get("email").equals(ownerEmail) && driverContactInfo.get("email").equals(driverEmail) && Double.compare(calculatedItemPriceInCents, itemPrice) == 0) {
-
+			/* if comparison succeeds, no need to create new item */
+			if(isOwnerEmail && isDriverEmail && isPriceEqual) {
 				isAssemblyItemValid = true;
 			} else {
 				isAssemblyItemValid = false;
