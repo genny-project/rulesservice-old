@@ -26,10 +26,10 @@ rule "Create Payment Item"
 
 
 		/*Getting BEG code from offerCode that has been confirmed */
-		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
+		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+		String BEGCode = offerBe.getValue("PRI_BEG_CODE", null);
 		rules.println("BEG CODE ::"+BEGCode);
 		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
-		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
 		BaseEntity loadBe = rules.getChildren(BEGCode, "LNK_BEG", "LOAD");
 		BaseEntity ownerBe = rules.getUser();
 		BaseEntity driverBe = null;
