@@ -4,19 +4,18 @@ import life.genny.rules.QRules;
 /* Send Sub Layout */
 rule "View BEG Details"
 	when
-		rules: QRules(  isState("BTN_VIEW_BEG") && 
-                    isState("EVENT_BTN_CLICK") && 
+		rules: QRules(  isState("TRIGGER_VIEW_BEG") && 
                     !isState("LOOP_VIEW_BEG_DETAILS") ) 
 	 then
 	 	rules.header();
     	rules.setState("LOOP_VIEW_BEG_DETAILS");
 
 		/* get begCode (itemCode) from state */
-		String begCode = rules.getAsString("itemCode");
-		if(begCode != null){
+		BaseEntity beg = rules.getAsBaseEntity("begBe");
+		if(beg != null){
 			rules.set("subLayoutCode", "BEG_DETAILS");
 			rules.set("subLayoutPath", "beg/beg_details.json");
-			rules.set("subLayoutRootCode", begCode);
+			rules.set("subLayoutRootCode", beg.getCode());
 			rules.set("subLayoutIsPopup", false);
 
 			rules.setState("SEND_SUBLAYOUT"); 

@@ -5,14 +5,12 @@ import life.genny.rules.QRules;
 rule "Update BEG - Step 3"
 	when
 	    rules: QRules(	isState("SENT_PRODUCT_QUESTION") &&
-						isState("SENT_QUESTION") && 
-						isState("QUE_EDIT_BEG_GRP") && 
-						isState("EVENT_FORM_SUBMIT") && 
-						isState("SUBMIT") && 
-						!isState("LOOP_EDIT_BEG_STEP2")) 
+											isState("SENT_QUESTION") && 
+											isState("QUE_EDIT_PRODUCT_GRP") && 
+											!isState("LOOP_EDIT_BEG_STEP3")) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_EDIT_BEG_STEP2");
+        rules.setState("LOOP_EDIT_BEG_STEP3");
         rules.clearState("SENT_BEG_QUESTION");
 
 		// rules.set("subLayoutCode", "DASHBOARD");
@@ -21,7 +19,15 @@ rule "Update BEG - Step 3"
 		// rules.set("subLayoutIsPopup", false);
 
 		// rules.setState("SEND_SUBLAYOUT");
-		rules.setState("TRIGGER_HOMEPAGE");
+
+		rules.set("subLayoutCode", "UPDATE_PRODUCT_LAYOUT");
+		rules.set("subLayoutPath", "/beg/edit_beg.json");
+		rules.set("subLayoutRootCode", null);
+		rules.set("subLayoutIsPopup", true);
+		
+		rules.setState("SEND_SUBLAYOUT");
+
+		// rules.setState("TRIGGER_HOMEPAGE");
 
 
 	 	rules.footer();      
