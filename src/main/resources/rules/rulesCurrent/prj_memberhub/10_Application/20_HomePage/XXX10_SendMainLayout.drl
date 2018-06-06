@@ -9,8 +9,7 @@ rule "Send Main Layout"
      	rules.header();
         rules.setState("LOOP_SEND_MAIN_LAYOUTS");
 	    rules.println("Memberhub Send Layout");
-      /*  rules.sendLayout("LAY_DEFAULT", "layout.json", rules.realm()); */
-        rules.sendLayout("LAY_DEFAULT", "layout.json");
+        rules.sendLayout("LAY_DEFAULT", "dashboard.json");
         
         rules.setState("MAIN_LAYOUTS_SENT");
 
