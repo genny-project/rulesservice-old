@@ -17,6 +17,8 @@ rule "SBE_USERS"
          
  	     SearchEntity report = new SearchEntity(drools.getRule().getName(),"List of Users")
   	     .addColumn("PRI_IMAGE_URL","Image")
+  	     .addColumn("PRI_IS_BUYER", "Is Freight Owner")
+	     .addColumn("PRI_IS_SELLER", "Is Transport Operator")
   	     .addColumn("PRI_USERNAME","Username")
   	     .addColumn("PRI_FIRSTNAME","Firstname")
   	     .addColumn("PRI_LASTNAME","Surname")

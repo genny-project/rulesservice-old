@@ -78,7 +78,7 @@ rule "Create Job"
       QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
 
       /* Navigate to add load route  */
-      rules.navigateTo('/load/add');
+      /* rules.navigateTo('/load/add'); */
 
     /*  Publish it to the EventBus   */
       rules.publish("cmds", cmdJobSublayoutJson);
