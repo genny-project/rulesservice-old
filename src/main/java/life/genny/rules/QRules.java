@@ -1781,11 +1781,11 @@ public class QRules {
 
 		return null;
 	}
-	
+
 	private Attribute getAttribute(String attributeCode) {
-		
+
 		try {
-			
+
 			String response = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/attributes/", getToken());
 			QDataAttributeMessage attributeMessage = JsonUtils.fromJson(response, QDataAttributeMessage.class);
 			for(Attribute attribute: attributeMessage.getItems()) {
@@ -1797,11 +1797,15 @@ public class QRules {
 		catch(Exception e) {
 			this.println("Could not find attribute: " + attributeCode);
 		}
-		
+
 		return null;
 	}
 
 	private void sendAsksRequiredData(Ask[] asks) {
+		this.sendAsksRequiredData(asks, null);
+	}
+
+	private void sendAsksRequiredData(Ask[] asks, String stakeholderFilter) {
 
 		/* we loop through the asks and send the required data if necessary */
 		for (Ask ask : asks) {
@@ -1810,30 +1814,40 @@ public class QRules {
 			 * we get the attribute code. if it starts with "LNK_" it means it is a dropdown
 			 * selection.
 			 */
-			
+
 			String attributeCode = ask.getAttributeCode();
 			if (attributeCode != null && attributeCode.startsWith("LNK_")) {
 
 				/* we get the attribute validation to get the group code */
 				Attribute attribute = this.getAttribute(attributeCode);
 				if(attribute != null) {
-					
+
 					/* grab the group in the validation */
 					DataType attributeDataType = attribute.getDataType();
 					if(attributeDataType != null) {
-						
+
 						List<Validation> validations = attributeDataType.getValidationList();
-						
+
 						/* we loop through the validations */
 						for(Validation validation: validations) {
-							
+
 							List<String> validationStrings = validation.getSelectionBaseEntityGroupList();
 							for(String validationString: validationStrings) {
-								
+
 								if(validationString.startsWith("GRP_")) {
-									
+
 									/* we have a GRP. we push it to FE */
 									List<BaseEntity> bes = this.getBaseEntityWithChildren(validationString, 2);
+									
+									/* we only grab base entities linked to this stakeholder */
+									if(stakeholderFilter != null) {
+										
+										BaseEntity stakeholder = this.getBaseEntityByCode(stakeholderFilter);
+										if(stakeholder != null) {
+											bes = bes.stream().filter(be -> this.checkIfLinkExists(stakeholderFilter, "LNK_CORE", be.getCode())).collect(Collectors.toList());
+										}
+									}
+									
 									if(bes != null) {
 										this.publishData(bes, validationString, "LNK_CORE");
 									}
@@ -1843,28 +1857,36 @@ public class QRules {
 					}
 				}
 			}
-			
+
 			/* recursive call */
 			Ask[] childAsks = ask.getChildAsks();
 			if (childAsks != null && childAsks.length > 0) {
-				this.sendAsksRequiredData(childAsks);
+				this.sendAsksRequiredData(childAsks, stakeholderFilter);
 			}
 		}
 	}
 
 	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode) {
-	  this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, false);
+	  this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, null, false);
 	}
 
-	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, Boolean isPopup) {
-		
+  public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, final Boolean isPopup) {
+	  this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, null, isPopup);
+	}
+
+	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, final String stakeholderFilter) {
+		this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, stakeholderFilter, false);
+	}
+
+	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, final String stakeholderFilter, Boolean isPopup) {
+
 		try {
-			
+
 			/* we send the required questions + data first */
-			if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
-				
+			if(this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderFilter)) {
+
 				/* if sending the questions worked, we ask user */
-				
+
 				/* Layout V1 */
 				QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
 				cmdFormView.setIsPopup(isPopup);
@@ -1874,13 +1896,17 @@ public class QRules {
 				QCmdFormMessage formCmd = new QCmdFormMessage(questionGroupCode);
 				this.publishCmd(formCmd);
 			}
-			
+
 		} catch (Exception e) {
-			
+
 		}
 	}
 
-	public Boolean sendQuestions(final String sourceCode, final String targetCode, final String questionCode) throws ClientProtocolException, IOException {
+	public Boolean sendQuestions(final String sourceCode, final String targetCode, final String questionCode) throws Exception {
+		return this.sendQuestions(sourceCode, targetCode, questionCode, null);
+	}
+
+	public Boolean sendQuestions(final String sourceCode, final String targetCode, final String questionCode, final String stakeholderFilter) throws ClientProtocolException, IOException {
 
 		QDataAskMessage questions = this.getQuestions(sourceCode, targetCode, questionCode);
 		if (questions != null) {
@@ -1889,20 +1915,20 @@ public class QRules {
 			 * if we have the questions, we loop through the asks and send the required data
 			 * to front end
 			 */
-			
+
 			Ask[] asks = questions.getItems();
 			if (asks != null) {
-				this.sendAsksRequiredData(asks);
+				this.sendAsksRequiredData(asks, stakeholderFilter);
 			}
 
 			/* we send the asks to the user */
 			this.publishData(questions);
 			return true;
-			
+
 		} else {
 			log.error("Questions Msg is null " + sourceCode + "/asks2/" + questionCode + "/" + targetCode);
 		}
-		
+
 		return false;
 	}
 
@@ -4009,7 +4035,11 @@ public void makePayment(QDataAnswerMessage m) {
 				updateBaseEntityAttribute(userCode, userCode, "STT_JOB_IS_RATING", begCode);
 
 				/* we send the questions */
-				sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
+				try {
+					sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
+				} catch (Exception e) {
+//					e.printStackTrace();
+				}
 
 				/* we send the layout */
 				sendSublayout("driver-rating", "rate-driver.json", driverCode, true);
@@ -4109,6 +4139,9 @@ public void makePayment(QDataAnswerMessage m) {
 		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
 				(double) 1, getToken());
 		println("The load has been added to the GRP_LOADS ");
+		
+		/* we link the load to the user */
+		/lkjflkewjrthis.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
 		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
@@ -6548,7 +6581,7 @@ public void makePayment(QDataAnswerMessage m) {
 					// we get the target BE
 					String targetCode = link.getTargetCode();
 					if (targetCode != null) {
-						
+
 						/* we grab the base entity */
 						BaseEntity targetBe = this.getBaseEntityByCode(targetCode);
 						beList.add(targetBe);
