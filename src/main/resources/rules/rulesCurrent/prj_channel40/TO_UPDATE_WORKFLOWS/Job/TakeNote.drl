@@ -55,10 +55,12 @@ rule "Take Note"
 
         /* Get begCode, username, userCode, userFullName */
             String begCode = $m.getItemCode();
-            System.out.println("begCode  ::   "+ begCode);                    
-            String userCode =  rules.getUser().getCode();            
+            System.out.println("begCode  ::   "+ begCode);
+            String userCode =  rules.getUser().getCode();
             System.out.println("usercode   ::   "+ userCode);
         /* Send Take Note Questions */
-            rules.askQuestions(userCode, begCode, "QUE_ADMIN_NOTES_GRP", false, true); /* false for form_view*/
+          rules.askQuestionsToUser(userCode, begCode, "QUE_ADMIN_NOTES_GRP", true);
+
+
         rules.footer();
 end

@@ -27,28 +27,27 @@ rule "User Payments Methods"
   			String oneTimeTransactionBankToken = null;
        		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
        		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
-			
+
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-						
+
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
 			rules.saveAnswers(answers);
-						
-						
+
+
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
 
        	}
-       	
+
         String userCode = rules.getUser().getCode();
-        rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
+        rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
  		rules.sendSublayout("PAYMENT_METHODS", "user-profile-payment-methods.json");
 
  		rules.setState("USER_PAYMENT_METHOD_CREATED");
 
 		rules.footer();
 end
-

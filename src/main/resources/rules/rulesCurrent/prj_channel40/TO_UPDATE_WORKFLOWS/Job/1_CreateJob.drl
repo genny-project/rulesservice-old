@@ -12,6 +12,10 @@ import life.genny.qwanda.entity.User;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.entity.BaseEntity;
 
+import java.io.IOException;
+
+import org.apache.http.client.ClientProtocolException;
+
 import io.vertx.core.json.JsonObject;
 
 /*   Rule for Add Load button click   */
@@ -56,32 +60,11 @@ rule "Create Job"
         rules.println(" Added Load Owner to BEG/JOB ");
 
     /*    Getting Post Load Question GRP        */
-     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
-     qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
-     qPostLoad.put("aliasCode", $m.data.getCode());
-     qPostLoad.put("token", rules.getToken());
-     rules.println("QName Json: "+qPostLoad.toString());
-     rules.publish("cmds",qPostLoad);
-
-     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+beg.getCode(), rules.getToken()));
-     qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
-     qPostJob.put("token", rules.getToken());
-     rules.println("QName Json: "+qPostJob.toString());
-     rules.publish("cmds",qPostJob);
+ 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP");
+ 	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP");
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
-     QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
-     JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
-     String createJobLayout = RulesUtils.getLayout(rules.realm() + "/create_job.json");
-       cmdJobSublayoutJson.put("items",createJobLayout);
-       cmdJobSublayoutJson.put("token", rules.getToken());
-      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
-
-      /* Navigate to add load route  */
-      /* rules.navigateTo('/load/add'); */
-
-    /*  Publish it to the EventBus   */
-      rules.publish("cmds", cmdJobSublayoutJson);
+     rules.sendSublayout("create-job", "create_job.json");
 
       /* Add new attribute to save job creation date-time */
       Answer newJobCreationDateTimeAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime() );

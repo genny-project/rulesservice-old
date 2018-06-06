@@ -10,8 +10,8 @@ rule "Send Initial Questions"
 
      	rules.setState("SENT_INITIAL_QUESTIONS");
 
-		rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MEMBERHUB_GRP", false); /* false for form_view*/
-        rules.setState("MEMBERHUB_QUESTIONS_READY");
-		  
+		  rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MEMBERHUB_GRP");
+      rules.setState("MEMBERHUB_QUESTIONS_READY");
+
 	    rules.footer();
 end

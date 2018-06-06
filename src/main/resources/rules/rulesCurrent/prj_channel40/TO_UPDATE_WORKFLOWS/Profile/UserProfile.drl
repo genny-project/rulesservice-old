@@ -27,22 +27,22 @@ rule "User-Profile"
               String companyCode = company.getCode();
               rules.println("The Company Code is :: "+companyCode);
               /*  Send Company asks   */
-              rules.sendQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP", false);
+              rules.sendQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
             }
 
            /*  Send Bank Details asks   */
-           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
 
            if( rules.isUserSeller(user) ){
-             rules.sendQuestions(userCode,userCode,"QUE_SELLER_GRP", false);
+             rules.sendQuestions(userCode,userCode,"QUE_SELLER_GRP");
              /*  Send User Documents asks   */
-             rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
+             rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP");
 
 	         /* Send Driver SubLayout  */
 		     rules.sendSublayout("SUB_USER_PROFILE", "user-profile-driver.json");
 	    }
 	   else{
-	        rules.sendQuestions(userCode,userCode,"QUE_BUYER_GRP", false);
+	        rules.sendQuestions(userCode,userCode,"QUE_BUYER_GRP");
 	        /* Send Owner SubLayout  */
 		    rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json");
 	    }

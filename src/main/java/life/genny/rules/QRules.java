@@ -116,6 +116,7 @@ import life.genny.qwanda.payments.QReleasePayment;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
+import life.genny.qwanda.validation.Validation;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
@@ -1066,102 +1067,6 @@ public class QRules {
 		this.publishCmd(cmdReload);
 	}
 
-	public void sendMentorMatchLayoutsAndData() {
-		this.sendMentorMatchLayoutsAndData(false);
-	}
-
-	public void sendMentorMatchLayoutsAndData(Boolean forceQuestions) {
-
-		BaseEntity user = getUser();
-
-		if (user != null) {
-
-			String mentorValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTOR");
-			String menteeValue = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTEE");
-
-			Boolean isMentor = mentorValue != null && (mentorValue.equals("TRUE") || mentorValue.equals("true"));
-			Boolean isMentee = menteeValue != null && (menteeValue.equals("TRUE") || menteeValue.equals("true"));
-
-			String profile_completed = QRules.getBaseEntityAttrValueAsString(user, "PRI_MENTORMATCH_PROFILE_COMPLETED");
-
-			if (profile_completed == null && !isMentor && !isMentee) {
-
-				this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-				this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
-
-			} else {
-
-				if (isMentor || isMentee) {
-
-					/* Show loading indicator */
-					showLoading("Loading your interface...");
-
-					String mentor_profile_status = QRules.getBaseEntityAttrValueAsString(user,
-							"PRI_MENTORMATCH_PROFILE_COMPLETED");
-					Boolean hasCompletedProfile = mentor_profile_status != null
-							&& (mentor_profile_status.equals("TRUE") || user.is("PRI_MENTORMATCH_PROFILE_COMPLETED"));
-
-					if (!hasCompletedProfile || (forceQuestions != null && forceQuestions == true)) {
-
-						// we send questions for mentors
-						if (isMentor && !isMentee) {
-
-							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
-							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
-							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
-							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
-							this.sendSelections("GRP_MENTEES_ATTRIBUTES", "LNK_CORE", 20);
-							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
-							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
-							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
-							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTOR_GRP");
-						}
-						// we send questions for mentees
-						else if (isMentee && !isMentor) {
-
-							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
-							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
-							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
-							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
-							this.sendSelections("GRP_MENTORS_ATTRIBUTES", "LNK_CORE", 20);
-							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
-							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
-							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
-							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTEE_GRP");
-						}
-						// we send the super form
-						else if (isMentee && isMentor) {
-
-							this.sendSelections("GRP_MENTEES_ATTRIBUTES", "LNK_CORE", 20);
-							this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 20);
-							this.sendSelections("GRP_YEARS_RANGE", "LNK_CORE", 20);
-							this.sendSelections("GRP_MEANS_CONTACT", "LNK_CORE", 20);
-							this.sendSelections("GRP_GUIDANCE_GRP", "LNK_CORE", 20);
-							this.sendSelections("GRP_MENTORS_ATTRIBUTES", "LNK_CORE", 20);
-							this.sendSelections("GRP_INDUSTRY_SELECTION", "LNK_CORE", 20);
-							this.sendSelections("GRP_FIELD_OF_WORK", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORK_LOCATION_MELBOURNE", "LNK_CORE", 20);
-							this.sendSelections("GRP_WORKING_STATUS", "LNK_CORE", 20);
-							this.sendSelections("GRP_GENDERS", "LNK_CORE", 20);
-							this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_MENTOR_MENTEE_GRP");
-						}
-
-					} else {
-						this.sendSublayout("finish", "dashboard_mentormatch.json");
-					}
-				} else {
-
-					this.sendSelections("GRP_USER_ROLE", "LNK_CORE", 10);
-					this.askQuestions(getUser().getCode(), getUser().getCode(), "QUE_NEW_USER_PROFILE_GRP_MENTORMATCH");
-				}
-			}
-		}
-	}
-
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
 
@@ -1827,70 +1732,6 @@ public class QRules {
 		return links;
 	}
 
-	public QDataAskMessage getAskQuestions(final QDataQSTMessage qstMsg) {
-
-		JsonObject questionJson = null;
-		QDataAskMessage msg = null;
-		try {
-			String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-					JsonUtils.toJson(qstMsg), getToken());
-			msg = JsonUtils.fromJson(json, QDataAskMessage.class);
-			return msg;
-		} catch (IOException e) {
-			return msg;
-		}
-	}
-
-	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean isPopup) {
-		return askQuestions(qstMsg, false);
-	}
-
-	public QDataAskMessage askQuestions(final QDataQSTMessage qstMsg, final boolean autoPushSelections,
-			final boolean isPopup) {
-
-		JsonObject questionJson = null;
-		QDataAskMessage msg = null;
-		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
-		try {
-			if (autoPushSelections) {
-				String json = QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						JsonUtils.toJson(qstMsg), getToken());
-
-				msg = JsonUtils.fromJson(json, QDataAskMessage.class);
-
-				publishData(msg);
-
-				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, qstMsg.getRootQST().getQuestionCode());
-				publishCmd(cmdFormView);
-
-			} else {
-				questionJson = new JsonObject(QwandaUtils.apiPostEntity(getQwandaServiceUrl() + "/qwanda/asks/qst",
-						JsonUtils.toJson(qstMsg), getToken()));
-				/* QDataAskMessage */
-				questionJson.put("token", getToken());
-				publish("data", questionJson);
-
-				// Now auto push any selection data
-
-				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
-				JsonObject json = JsonObject.mapFrom(cmdFormView);
-				json.put("root", qstMsg.getRootQST().getQuestionCode());
-				json.put("token", getToken());
-				publish("cmds", json);
-
-			}
-
-			/* layouts V2 */
-			this.navigateTo("/questions/" + qstMsg.getRootQST().getQuestionCode());
-
-			RulesUtils.println(qstMsg.getRootQST().getQuestionCode() + " SENT TO FRONTEND");
-
-			return msg;
-		} catch (IOException e) {
-			return msg;
-		}
-	}
-
   public Boolean doesQuestionGroupExist(final String questionCode) {
 
 		/* we grab the question group using the questionCode */
@@ -1940,6 +1781,25 @@ public class QRules {
 
 		return null;
 	}
+	
+	private Attribute getAttribute(String attributeCode) {
+		
+		try {
+			
+			String response = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/attributes/", getToken());
+			QDataAttributeMessage attributeMessage = JsonUtils.fromJson(response, QDataAttributeMessage.class);
+			for(Attribute attribute: attributeMessage.getItems()) {
+				if(attribute.getCode().equals(attributeCode)) {
+					return attribute;
+				}
+			}
+		}
+		catch(Exception e) {
+			this.println("Could not find attribute: " + attributeCode);
+		}
+		
+		return null;
+	}
 
 	private void sendAsksRequiredData(Ask[] asks) {
 
@@ -1950,37 +1810,86 @@ public class QRules {
 			 * we get the attribute code. if it starts with "LNK_" it means it is a dropdown
 			 * selection.
 			 */
+			
 			String attributeCode = ask.getAttributeCode();
 			if (attributeCode != null && attributeCode.startsWith("LNK_")) {
 
 				/* we get the attribute validation to get the group code */
-				// TODO: call attributes API
-
-				/* grab the group */
-				// TODO: get the group of BEs
-
-				/* send group of BEs to frontend */
-				// TODO: send command
-
-				/* recursive call */
-				Ask[] childAsks = ask.getChildAsks();
-				if (childAsks.length > 0) {
-					this.sendAsksRequiredData(childAsks);
+				Attribute attribute = this.getAttribute(attributeCode);
+				if(attribute != null) {
+					
+					/* grab the group in the validation */
+					DataType attributeDataType = attribute.getDataType();
+					if(attributeDataType != null) {
+						
+						List<Validation> validations = attributeDataType.getValidationList();
+						
+						/* we loop through the validations */
+						for(Validation validation: validations) {
+							
+							List<String> validationStrings = validation.getSelectionBaseEntityGroupList();
+							for(String validationString: validationStrings) {
+								
+								if(validationString.startsWith("GRP_")) {
+									
+									/* we have a GRP. we push it to FE */
+									List<BaseEntity> bes = this.getBaseEntityWithChildren(validationString, 2);
+									if(bes != null) {
+										this.publishData(bes, validationString, "LNK_CORE");
+									}
+								}
+							}
+						}
+					}
 				}
+			}
+			
+			/* recursive call */
+			Ask[] childAsks = ask.getChildAsks();
+			if (childAsks != null && childAsks.length > 0) {
+				this.sendAsksRequiredData(childAsks);
 			}
 		}
 	}
 
 	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode) {
+	  this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, false);
+	}
 
-		/* first we get the asks */
-		QDataAskMessage questions = this.getQuestions(sourceCode, targetCode, questionGroupCode);
+	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, Boolean isPopup) {
+		
+		try {
+			
+			/* we send the required questions + data first */
+			if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
+				
+				/* if sending the questions worked, we ask user */
+				
+				/* Layout V1 */
+				QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
+				cmdFormView.setIsPopup(isPopup);
+				publishCmd(cmdFormView);
+
+				/* Layout V2 */
+				QCmdFormMessage formCmd = new QCmdFormMessage(questionGroupCode);
+				this.publishCmd(formCmd);
+			}
+			
+		} catch (Exception e) {
+			
+		}
+	}
+
+	public Boolean sendQuestions(final String sourceCode, final String targetCode, final String questionCode) throws ClientProtocolException, IOException {
+
+		QDataAskMessage questions = this.getQuestions(sourceCode, targetCode, questionCode);
 		if (questions != null) {
 
 			/*
 			 * if we have the questions, we loop through the asks and send the required data
 			 * to front end
 			 */
+			
 			Ask[] asks = questions.getItems();
 			if (asks != null) {
 				this.sendAsksRequiredData(asks);
@@ -1988,138 +1897,13 @@ public class QRules {
 
 			/* we send the asks to the user */
 			this.publishData(questions);
-
-			/* we send the form CMD to front end */
-
-			/* Layout V1 */
-			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
-			publishCmd(cmdFormView);
-
-			/* Layout V2 */
-			QCmdFormMessage formCmd = new QCmdFormMessage(questionGroupCode);
-			this.publishCmd(formCmd);
-		}
-	}
-
-	public void sendQuestions(final String sourceCode, final String targetCode, final String questionCode,
-			final boolean autoPushSelections) throws ClientProtocolException, IOException {
-
-		QDataAskMessage msg = this.getQuestions(sourceCode, targetCode, questionCode);
-		if (msg != null) {
-			publishData(msg);
+			return true;
+			
 		} else {
 			log.error("Questions Msg is null " + sourceCode + "/asks2/" + questionCode + "/" + targetCode);
 		}
-	}
-
-	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode) {
-		return askQuestions(sourceCode, targetCode, questionCode, false);
-	}
-
-	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
-			final boolean autoPushSelections) {
-		return askQuestions(sourceCode, targetCode, questionCode, autoPushSelections, false);
-	}
-
-	public QDataAskMessage askQuestions(final String sourceCode, final String targetCode, final String questionCode,
-			final boolean autoPushSelections, final boolean isPopup) {
-
-		QDataAskMessage msg = null;
-		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_VIEW";
-
-		try {
-
-			this.sendQuestions(sourceCode, targetCode, questionCode, autoPushSelections);
-
-			if (autoPushSelections) {
-
-				// Now auto push any selection data
-				// for (Ask ask : msg.getItems()) {
-				// if (ask.getAttributeCode().startsWith("LNK_")) {
-				//
-				// // sendSelections(ask.getQuestion().getDataType(), "LNK_CORE", 10);
-				// }
-				// }
-
-				QCmdViewMessage cmdFormView = new QCmdViewMessage(cmd_view, questionCode);
-				publishCmd(cmdFormView);
-
-			} else {
-
-				QCmdMessage cmdFormView = new QCmdMessage(cmd_view, "FORM_VIEW");
-				JsonObject json = JsonObject.mapFrom(cmdFormView);
-				json.put("root", questionCode);
-				json.put("token", getToken());
-				publish("cmds", json);
-			}
-
-			/* layouts V2 */
-			this.navigateTo("/questions/" + questionCode);
-
-			RulesUtils.println(questionCode + " SENT TO FRONTEND");
-
-			return msg;
-		} catch (IOException e) {
-			return msg;
-		}
-	}
-
-	public boolean sendSelections(final String selectionRootCode, final String linkCode, final Integer maxItems) {
-
-		JsonObject selectionLists;
-		try {
-			selectionLists = new JsonObject(QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/"
-					+ selectionRootCode + "/linkcodes/" + linkCode + "?pageStart=0&pageSize=" + maxItems, getToken()));
-			selectionLists.put("token", getToken());
-			publish("cmds", selectionLists);
-			return true;
-		} catch (IOException e) {
-			log.error("Unable to fetch selections");
-			return false;
-		}
-
-	}
-
-	public boolean sendSelections(final String selectionRootCode, final String linkCode, final String stakeholderCode,
-			final Integer maxItems) {
-
-		JsonObject selectionLists;
-		try {
-			selectionLists = new JsonObject(
-					QwandaUtils.apiGet(
-							getQwandaServiceUrl() + "/qwanda/baseentitys/" + selectionRootCode + "/linkcodes/"
-									+ linkCode + "/attributes/" + stakeholderCode + "?pageStart=0&pageSize=" + maxItems,
-									getToken()));
-			selectionLists.put("token", getToken());
-			publish("cmds", selectionLists);
-			return true;
-		} catch (IOException e) {
-			log.error("Unable to fetch selections");
-			return false;
-		}
-
-	}
-
-	public boolean sendSelectionsWithLinkValue(final String selectionRootCode, final String linkCode,
-			final String linkValue, final Integer maxItems) {
-
-		JsonObject selectionList;
-		try {
-
-			selectionList = new JsonObject(
-					QwandaUtils.apiGet(
-							getQwandaServiceUrl() + "/qwanda/baseentitys2/" + selectionRootCode + "/linkcodes/"
-									+ linkCode + "/linkValue/" + linkValue + "?pageStart=0&pageSize=" + maxItems,
-									getToken()));
-
-			selectionList.put("token", getToken());
-			publish("cmds", selectionList);
-			return true;
-		} catch (IOException e) {
-			log.error("Unable to fetch selections");
-			return false;
-		}
-
+		
+		return false;
 	}
 
 	public void header() {
@@ -2695,29 +2479,6 @@ public class QRules {
 		}
 	}
 
-	public void askQuestionFormViewPublish(String sourceCode, String targetCode, String questionCode) {
-
-		String json;
-		try {
-			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-					+ questionCode + "/" + targetCode, getToken());
-
-			QDataAskMessage msg = JsonUtils.fromJson(json, QDataAskMessage.class);
-
-			println("QDataAskMessage for payments question group ::" + msg);
-
-			msg.setToken(getToken());
-			publish("cmds", JsonUtils.toJson(msg));
-
-			QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionCode);
-			publishCmd(cmdFormView);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
 	/**
 	 * @return the started
 	 */
@@ -2913,14 +2674,14 @@ public class QRules {
 	}
 
 	public void sendAllLayouts() {
-		
+
 		/* Layouts v1 */
 		this.sendAllSublayouts();
-		
+
 		/* Layouts V2 */
 		List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false); this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
-		
+
 		/*List<BaseEntity> beLayouts = this.getAllLayouts(); */
 	}
 
@@ -2951,10 +2712,10 @@ public class QRules {
 		if (layout.getPath() == null) {
 			return null;
 		}
-		
+
 		String serviceToken = this.generateServiceToken(realm());
 		if(serviceToken != null) {
-			
+
 			BaseEntity beLayout = null;
 
 			/* we check if the baseentity for this layout already exists */
@@ -3026,10 +2787,10 @@ public class QRules {
 					this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 				}
 			}
-			
+
 			return this.getBaseEntityByCode(beLayout.getCode());
 		}
-		
+
 		return null;
 	}
 
@@ -4015,7 +3776,7 @@ public void makePayment(QDataAnswerMessage m) {
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
 		publishCmd(beMsg);
-		
+
 		be.setBaseEntityAttributes(attributes);
 
 		String jsonBE = JsonUtils.toJson(be);
@@ -4248,7 +4009,7 @@ public void makePayment(QDataAnswerMessage m) {
 				updateBaseEntityAttribute(userCode, userCode, "STT_JOB_IS_RATING", begCode);
 
 				/* we send the questions */
-				sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", true);
+				sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
 
 				/* we send the layout */
 				sendSublayout("driver-rating", "rate-driver.json", driverCode, true);
@@ -5170,14 +4931,14 @@ public void makePayment(QDataAnswerMessage m) {
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		try {
 			if (msg.getItems()!=null) {
-				
+
 				// Now work out sums
 				boolean first = true;
 				Map<String,Object> sums = new HashMap<String,Object>(); // store the column sums
 				Map<String,DataType> dtypes = new HashMap<String,DataType>();
 				Map<String,Attribute> attributes = new HashMap<String,Attribute>();
-				
-				
+
+
 				for (BaseEntity row : msg.getItems()) {
 					if (first) {
 						this.addAttributes(row);
@@ -5199,14 +4960,14 @@ public void makePayment(QDataAnswerMessage m) {
 						}
 					}
 				}
-				
+
 				// Now append a sum baseentity
 				BaseEntity sumBe = new BaseEntity("SUM_"+reportCode.substring("SBE_".length()),"Summary "+srchBE.getName());
 				for (String sumKey : sums.keySet()) {
 					Attribute sumAttribute = attributes.get(sumKey);
 					Object sum = sums.get(sumKey);
 					sumBe.addAttribute(sumAttribute, 0.0, sum.toString());
-				
+
 				}
 				msg.setSum(sumBe);
 				publishCmd(msg);
@@ -5214,7 +4975,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		} catch (Exception e) {
 
-		} 
+		}
 
 		// JsonArray columnHeaders = new JsonArray();
 		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
@@ -5928,17 +5689,17 @@ public void makePayment(QDataAnswerMessage m) {
 					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
 
 					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
-					
+
 					/* GRP_ROOT does not have any parent, so we create its own message */
 					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
-						
+
 						BaseEntity[] roots = new BaseEntity[1];
 						roots[0] = parent;
 						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT", "LNK_CORE");
 						rootMessage.setToken(getToken());
 						baseEntityMsgs.add(rootMessage);
 					}
-					
+
 					for (BaseEntity child : msg.getItems()) {
 
 						String childCode = child.getCode();
@@ -6787,9 +6548,16 @@ public void makePayment(QDataAnswerMessage m) {
 					// we get the target BE
 					String targetCode = link.getTargetCode();
 					if (targetCode != null) {
+						
+						/* we grab the base entity */
+						BaseEntity targetBe = this.getBaseEntityByCode(targetCode);
+						beList.add(targetBe);
 
 						// recursion
-						beList.addAll(this.getBaseEntityWithChildren(targetCode, level));
+						List<BaseEntity> list = this.getBaseEntityWithChildren(targetCode, level);
+						if(list != null) {
+							beList.addAll(list);
+						}
 					}
 				}
 			}
