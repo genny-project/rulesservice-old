@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.Logger;
@@ -28,22 +29,55 @@ import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.utils.VertxUtils;
 
 public class LayoutUtils {
 
-	public static List<Layout> processNewLayouts(final String realmCode) {
-		return LayoutUtils.processLayouts(realmCode + "-new", null); //TODO: remove "-new" once migrating from layouts v1 to v2
+	private Map<String, Object> decodedMapToken;
+	private String token;
+	private String realm;
+	private String qwandaServiceUrl;
+	public BaseEntityUtils baseEntityUtils;
+
+	public LayoutUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
+
+		this.decodedMapToken = decodedMapToken;
+		this.qwandaServiceUrl = qwandaServiceUrl;
+		this.token = token;
+		this.realm = realm;
+		this.baseEntityUtils = new BaseEntityUtils(this.qwandaServiceUrl, this.token, decodedMapToken, realm);
+
 	}
 
-	public static List<Layout> processNewLayouts(final String realmCode, final String subpath) {
-		return LayoutUtils.processLayouts(realmCode + "-new", subpath); //TODO: remove "-new" once migrating from layouts v1 to v2
+	public List<BaseEntity> getAllLayouts() {
+
+    String realmCode = this.realm;
+    String token = this.token;
+
+		if (realmCode == null) {
+			System.out.println("No realm code was provided. Not getting layouts. ");
+			return null;
+		}
+
+		if (token == null) {
+			System.out.println("No token was provided. Not getting layouts.");
+			return null;
+		}
+
+		List<Layout> layouts = new ArrayList<Layout>();
+
+		/* we grab all the layouts */
+		layouts.addAll(this.processLayouts("genny-new"));
+		layouts.addAll(this.processLayouts(realmCode + "-new"));
+
+		return layouts.stream().map(layout -> this.baseEntityUtils.baseEntityForLayout(realmCode, token, layout)).collect(Collectors.toList());
 	}
 
-	public static List<Layout> processLayouts(final String realmCode) {
+	public List<Layout> processLayouts(final String realmCode) {
 		return processLayouts(realmCode, null);
 	}
 
-	public static List<Layout> processLayouts(final String realmCode, String subpath) {
+	public List<Layout> processLayouts(final String realmCode, String subpath) {
 
 		List<Layout> layouts = new ArrayList<Layout>();
 
@@ -52,7 +86,7 @@ public class LayoutUtils {
 		String pathToLayout = realmCode + subpath; //channel40 + /sublayouts
 
 		String subLayoutMap = RulesUtils.getLayout(pathToLayout);
-    System.out.println("Downloading layouts: " + pathToLayout);
+		System.out.println("Downloading layouts: " + pathToLayout);
 
 		if (subLayoutMap != null) {
 
@@ -82,13 +116,13 @@ public class LayoutUtils {
 
 							/* if we have found a file we serialize it */
 							if(file_path.endsWith(".json")) {
-								layouts.add(LayoutUtils.serializeLayout(realmCode, sublayoutData));
+								layouts.add(this.serializeLayout(realmCode, sublayoutData));
 							}
 							else {
 
 								/* if we have found a folder we recursively download the data inside of it */
                 System.out.println("Found subfolder: " + file_path);
-								layouts.addAll(LayoutUtils.processLayouts(realmCode, file_path));
+								layouts.addAll(this.processLayouts(realmCode, file_path));
 							}
 						}
 					}
@@ -118,7 +152,7 @@ public class LayoutUtils {
 		return content;
 	}
 
-	private static Layout serializeLayout(final String realmCode, JsonObject layoutData) {
+	private Layout serializeLayout(final String realmCode, JsonObject layoutData) {
 
 		/* serialize layout */
 		Gson gson = new Gson();

@@ -17,7 +17,7 @@ rule "User Payments Methods"
 
     	/* Save token answers */
         String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+       	String assemblyId = rules.baseEntityUtils.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
 
        	if(assemblyId != null) {
 
@@ -25,24 +25,24 @@ rule "User Payments Methods"
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
-       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
-			
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
+
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-						
+
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.saveAnswers(answers);
-						
-						
+			rules.baseEntityUtils.saveAnswers(answers);
+
+
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
 
        	}
-       	
+
         String userCode = rules.getUser().getCode();
         rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
  		rules.sendSublayout("PAYMENT_METHODS", "user-profile-payment-methods.json");
@@ -51,4 +51,3 @@ rule "User Payments Methods"
 
 		rules.footer();
 end
-

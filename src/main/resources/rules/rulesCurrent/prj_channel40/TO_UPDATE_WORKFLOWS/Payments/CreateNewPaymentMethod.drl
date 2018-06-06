@@ -23,7 +23,7 @@ rule "Create new payment method - user"
 		rules.header();
 
 		String paymentMethodDataString = $m.getData().getValue();
-		
+
 		BaseEntity userBe = rules.getUser();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
@@ -36,42 +36,42 @@ rule "Create new payment method - user"
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
-       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
-			
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
+
 			Answer cardTokenAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-						
+
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.saveAnswers(answers);		
-					
+			rules.baseEntityUtils.saveAnswers(answers);
+
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
        	}
 
 		if(paymentMethodDataString != null) {
-			
+
 			rules.println("paymentMethodDataString ::"+paymentMethodDataString);
 			QPaymentMethod paymentMethod = JsonUtils.fromJson(paymentMethodDataString, QPaymentMethod.class);
 			paymentMethod = PaymentUtils.getMaskedPaymentMethod(paymentMethod);
-			
+
 			rules.println("json utils conversion to string :: "+JsonUtils.toJson(paymentMethod));
 			rules.println("direct conversion to string with toString() ::"+paymentMethod.toString());
-			
+
 			Boolean isBankAccount = PaymentUtils.isBankAccount(paymentMethod);
 			Boolean isDisbursementSuccess = false;
-			 
+
 			 /* check if the payment method is a bank account */
 			 if(isBankAccount) {
 			 	rules.println("The payment method is BANK ACCOUNT, and hence disbursing it to Assembly");
-			 	isDisbursementSuccess = rules.disburseAccount(assemblyId, paymentMethod, assemblyAuthKey);		 	
+			 	isDisbursementSuccess = rules.fetchOneTimePaymentsToken.disburseAccount(assemblyId, paymentMethod, assemblyAuthKey);
 			 }
-			
+
 			String userCurrentPaymentMethods = userBe.getValue("PRI_USER_PAYMENT_METHODS", null);
-			
+
 			/* checking if user payment method exists */
 			if(userCurrentPaymentMethods != null) {
 
@@ -79,19 +79,19 @@ rule "Create new payment method - user"
 				JsonArray currentPaymentMethods = new JsonArray(userCurrentPaymentMethods);
 				currentPaymentMethods.add(newPaymentMethod);
 				String finalPaymentMethods = currentPaymentMethods.toString();
-				
+
 				/* if the payment method is bank account, check if its disbursed to the payments service */
 				if(isBankAccount) {
 					rules.println("isDisbursementSuccess : "+isDisbursementSuccess);
 					if(isDisbursementSuccess) {
 						Answer paymentAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
-	           		 	rules.saveAnswer(paymentAnswer);
+	           		 	rules.baseEntityUtils.saveAnswer(paymentAnswer);
 					}
 				} else {
 					Answer paymentAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
-	           		rules.saveAnswer(paymentAnswer);
+	           		rules.baseEntityUtils.saveAnswer(paymentAnswer);
 				}
-				
+
 
 			}
 			/* if payment method already exists for user, we append it to the existing one */
@@ -100,11 +100,11 @@ rule "Create new payment method - user"
 					rules.println("isDisbursementSuccess : "+isDisbursementSuccess);
 					if(isDisbursementSuccess) {
 						Answer paymentAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_USER_PAYMENT_METHODS", "[" + JsonUtils.toJson(paymentMethod) + "]");
-	            			rules.saveAnswer(paymentAnswer);
+	            			rules.baseEntityUtils.saveAnswer(paymentAnswer);
 					}
 				} else {
 					Answer paymentAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_USER_PAYMENT_METHODS", "[" + JsonUtils.toJson(paymentMethod) + "]");
-	            		rules.saveAnswer(paymentAnswer);
+	            		rules.baseEntityUtils.saveAnswer(paymentAnswer);
 				}
 			}
 		}

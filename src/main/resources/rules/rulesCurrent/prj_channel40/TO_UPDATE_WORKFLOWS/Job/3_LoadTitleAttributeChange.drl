@@ -14,40 +14,39 @@ rule "Load Title Attribute Change"
     when
     $m: QEventAttributeValueChangeMessage(  data.code == "PRI_NAME"  && getAnswer().getTargetCode().startsWith("LOD_") )
     	rules : QRules( isState("STARTED") &&  !isState("LD_TITLE_CHG"))
-    then    
+    then
     	    rules.header();
 	    rules.setState("LD_TITLE_CHG");
          Answer newAnswer = $m.getAnswer();
          BaseEntity load = $m.getBe();
-        // BaseEntity load = rules.getBaseEntityByCode(newAnswer.getTargetCode());
-         
+        // BaseEntity load = rules.baseEntityUtils.getBaseEntityByCode(newAnswer.getTargetCode());
+
          rules.println("The load value is "+load);
          load.setName(newAnswer.getValue());
          rules.println("The updated laod name before PUT "+load.getName());
          /* Update Load BaseEntity   */
-         rules.updateBaseEntity(load);
+         rules.baseEntityUtils.updateBaseEntity(load);
          rules.println(" Load Baseentity Updated  " );
          rules.println("The updated laod name after PUT is "+load.getName());
          rules.println(" Inside the Load Title Attribute Change  rule  "   );
          rules.println("The created value  ::  "+newAnswer.getCreatedDate());
          rules.println("Answer from QEventAttributeValueChangeMessage in Load Title Attribute Change ::  "+newAnswer.toString());
-  
+
          String loadTitle = newAnswer.getValue();
          rules.println("The new load title is     ::"  +loadTitle );
-           
+
        /* Get the sourceCode(Job code) for this LOAD */
-         BaseEntity job = rules.getParent(newAnswer.getTargetCode(), "LNK_BEG");
-       
-         Answer jobTitleAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_TITLE" ,loadTitle);             
+         BaseEntity job = rules.baseEntityUtils.getParent(newAnswer.getTargetCode(), "LNK_BEG");
+
+         Answer jobTitleAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_TITLE" ,loadTitle);
          //rules.publishData(jobTitleAnswer);
-         rules.saveAnswer(jobTitleAnswer);
-         
-           Answer jobNameAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_NAME" ,loadTitle);             
+         rules.baseEntityUtils.saveAnswer(jobTitleAnswer);
+
+           Answer jobNameAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), "PRI_NAME" ,loadTitle);
          //rules.publishData(jobTitleAnswer);
-         rules.saveAnswer(jobNameAnswer);
-        
+         rules.baseEntityUtils.saveAnswer(jobNameAnswer);
+
         rules.footer();
-       
+
 
 end
-

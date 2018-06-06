@@ -25,27 +25,27 @@ rule "Create Job"
       drools.setFocus("CreateLoad");
 
     /*     Creating new base-entity BEG for Posting new Job      */
-     BaseEntity beg = rules.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "New Load");
+     BaseEntity beg = rules.baseEntityUtils.createBaseEntityByCode(rules.getUser().getCode(), "BEG", "New Load");
        /*  Add author to the job    */
       Answer jobAuthorAns = new Answer(rules.getUser().getCode(),beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );
-      rules.saveAnswer(jobAuthorAns);
+      rules.baseEntityUtils.saveAnswer(jobAuthorAns);
 
      rules.println("BaseEntity BEG created is   ::  "+beg.toString());
      rules.println("The BEG code is   ::  "+beg.getCode());
 
     /*       link newly created Job to DRAFT - GRP_DRAFT_JOBS    */
-      Link newJobLink =  QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", "BEG", (double) 1, rules.getToken());
+      Link newJobLink = QwandaUtils.createLink("GRP_DRAFTS", beg.getCode(), "LNK_CORE", "BEG", (double) 1, rules.getToken());
 
     /*  Add PRI_DROPOFF_DATETIME and set to null   */
       Answer loadDropOffDateTimeAns = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_DROPOFF_DATETIME", "null");
-      rules.saveAnswer(loadDropOffDateTimeAns);
+      rules.baseEntityUtils.saveAnswer(loadDropOffDateTimeAns);
 
     /*  Creating new base-entity LOAD    */
-      BaseEntity load = rules.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
+      BaseEntity load = rules.baseEntityUtils.createBaseEntityByCode(rules.getUser().getCode(),  "LOD", "LOAD");
 
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );
-      rules.saveAnswer(loadAuthorAns);
+      rules.baseEntityUtils.saveAnswer(loadAuthorAns);
 
 
     /*  link newly created LOAD to JOB/BEG    */
@@ -85,11 +85,11 @@ rule "Create Job"
 
       /* Add new attribute to save job creation date-time */
       Answer newJobCreationDateTimeAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime() );
-      rules.saveAnswer(newJobCreationDateTimeAnswer);
+      rules.baseEntityUtils.saveAnswer(newJobCreationDateTimeAnswer);
 
       /* Add new attribute to check if a job is new or existing */
       Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_IS_SUBMITTED", "false");
-      rules.saveAnswer(newJobSubmitAnswer);
+      rules.baseEntityUtils.saveAnswer(newJobSubmitAnswer);
 
      rules.footer();
 

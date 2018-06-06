@@ -29,7 +29,7 @@ rule "Handle Load Selection"
      then
          rules.header();
           rules.setState("LNK_LOAD_LISTS");
-        /*     Collect load code from answer    */
+
          Answer newAnswer = $m.getAnswer();
          rules.println("Answer from QEventAttributeValueChangeMessage  ::  "+newAnswer.toString());
          String newLoadCode = newAnswer.getTargetCode();
@@ -40,25 +40,25 @@ rule "Handle Load Selection"
 
         /*  Grab attributes from load and save it to newly load    */
          Map<String, String> map = new HashMap<>();
-         map = rules.getMapOfAllAttributesValuesForBaseEntity(loadTemplateCode);
+         map = rules.baseEntityUtils.getMapOfAllAttributesValuesForBaseEntity(loadTemplateCode);
          map.remove("LNK_LOAD_LISTS");
           RulesUtils.ruleLogger(" MAP DATA ",map );
           List<Answer> answers = new ArrayList<Answer>();
             try{
 		      	for (Map.Entry<String, String> entry : map.entrySet())
-		      	{	
+		      	{
                        Answer answerObj = new Answer(rules.getUser().getCode(), newLoadCode, entry.getKey(), entry.getValue() );
                        answers.add(answerObj);
-                  }   
-                    rules.saveAnswers(answers);              
+                  }
+                    rules.baseEntityUtils.saveAnswers(answers);
                }catch (Exception e) {
-               }              
+               }
            rules.println("The new laod with attribute is ::   "+newLoadCode.toString());
-           BaseEntity newLoad = rules.getBaseEntityByCode(newLoadCode);
+           BaseEntity newLoad = rules.baseEntityUtils.getBaseEntityByCode(newLoadCode);
            String[] recipientArray = { rules.getUser().getCode() };
         	rules.publishBE(newLoad,recipientArray);
 
-            
+
          rules.footer();
 
 end
