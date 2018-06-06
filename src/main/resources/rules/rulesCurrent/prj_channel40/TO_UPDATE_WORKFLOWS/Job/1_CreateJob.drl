@@ -60,7 +60,14 @@ rule "Create Job"
         rules.println(" Added Load Owner to BEG/JOB ");
 
     /*    Getting Post Load Question GRP        */
- 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP");
+    
+      String stakeHolderFilter = null;
+      BaseEntity company =  rules.getParent(rules.getUser().getCode(),"LNK_STAFF");
+      if(company != null) {
+    	  stakeHolderFilter = company.getCode();
+     }
+      
+ 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", stakeHolderFilter);
  	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP");
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
