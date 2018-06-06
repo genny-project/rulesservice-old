@@ -20,19 +20,19 @@ rule "TV_SELECT Individual Draft Jobs"
          												 executes based on this state */
      Object jobCodeObj = rules.get("tvSelectValue");
      Object parentCodeObj = rules.get("tvSelectCode");
-     
+
      if(jobCodeObj != null && parentCodeObj != null){
-     
+
 	     String jobCode = jobCodeObj.toString();
 	     String parentCode = parentCodeObj.toString();
 	     if (jobCode != null && !jobCode.isEmpty() && parentCode != null && !parentCode.isEmpty()){
-		     
-		     rules.publishCmd(rules.getBaseEntityByCode(jobCode),"job");
-		
+
+		     rules.publishCmd(rules.baseEntityUtils.getBaseEntityByCode(jobCode),"job");
+
 		    /*  Get load for the given job/BEG   */
-		      BaseEntity load = rules.getChildren(jobCode, "LNK_BEG", "LOAD");
+		      BaseEntity load = rules.baseEntityUtils.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
 		     rules.publishCmd(load, "load");
-		
+
 		    /*    Getting Post Load Question GRP        */
 		     JsonObject qPostLoad = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_LOAD_DETAILS_GRP/"+load.getCode(), rules.getToken()));
 		     qPostLoad.put("root", "QUE_LOAD_DETAILS_GRP");
@@ -40,13 +40,13 @@ rule "TV_SELECT Individual Draft Jobs"
 		     qPostLoad.put("token", rules.getToken());
 		     rules.println("QName Json: "+qPostLoad.toString());
 		     rules.publish("cmds",qPostLoad);
-		
+
 		     JsonObject qPostJob = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+rules.getUser().getCode()+"/asks3/QUE_JOB_DETAILS_GRP/"+jobCode, rules.getToken()));
 		     qPostJob.put("root", "QUE_JOB_DETAILS_GRP");
 		     qPostJob.put("token", rules.getToken());
 		     rules.println("QName Json: "+qPostJob.toString());
 		     rules.publish("cmds",qPostJob);
-		
+
 		    /*    Sending cmd SUBLAYOUT_CHANGE      */
 		     QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
 		     JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
@@ -54,7 +54,7 @@ rule "TV_SELECT Individual Draft Jobs"
 		       cmdJobSublayoutJson.put("items",createJobLayout);
 		       cmdJobSublayoutJson.put("token", rules.getToken());
 		      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);
-		
+
 		    /*  Publish it to the EventBus   */
 		      rules.publish("cmds", cmdJobSublayoutJson);
 	     }

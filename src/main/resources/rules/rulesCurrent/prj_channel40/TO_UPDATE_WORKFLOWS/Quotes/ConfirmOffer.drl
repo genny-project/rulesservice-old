@@ -90,15 +90,15 @@ rule "Confirm Offer"
 					if(!userRole.equals("QUOTER")) {
 
 						rules.showLoading("Loading secure payment gateway...");
-						rules.updateBaseEntityAttribute(begCode, begCode, "STT_HOT_OFFER", offerCode);
+						rules.baseEntityUtils.updateBaseEntityAttribute(begCode, begCode, "STT_HOT_OFFER", offerCode);
 
 						/* we calculate the payment price for the BEG */
-						String ownerOfferPrice = rules.getBaseEntityValueAsString(offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST");
+						String ownerOfferPrice = rules.baseEntityUtils.getBaseEntityValueAsString(offerCode, "PRI_OFFER_OWNER_PRICE_INC_GST");
 
 						if(ownerOfferPrice != null) {
 
 							/* copy OFR price as temporary price for the BEG */
-							rules.updateBaseEntityAttribute(begCode, begCode, "PRI_JOB_PAYMENT_PRICE", ownerOfferPrice);
+							rules.baseEntityUtils.updateBaseEntityAttribute(begCode, begCode, "PRI_JOB_PAYMENT_PRICE", ownerOfferPrice);
 
 							/* SEND (BEG) BaseEntitys to recipients */
 							rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
@@ -114,7 +114,7 @@ rule "Confirm Offer"
 					   rules.sortOffersInBeg(begCode);
 
         				/* Update PRI_NEXT_ACTION AS OWNER */
-						rules.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
+						rules.baseEntityUtils.updateBaseEntityAttribute(userCode, offerCode, "PRI_NEXT_ACTION", "OWNER");
 
 						/* SEND (OFFER) BaseEntitys to recipients */
 						rules.publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);

@@ -75,7 +75,7 @@ rule "Submit Offer Driver"
             String linkCreator = "CREATOR";
 
         /* GET OFFER BE */
-            BaseEntity offer = rules.getBaseEntityByCodeWithAttributes(offerCode);
+            BaseEntity offer = rules.baseEntityUtils.getBaseEntityByCode(offerCode, true);
 
         /* GET  attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
@@ -93,7 +93,7 @@ rule "Submit Offer Driver"
             rules.println("------------------------------------------------------------------------");
 
         /* GET BEG BE */
-            BaseEntity beg = rules.getBaseEntityByCode(begCode);
+            BaseEntity beg = rules.baseEntityUtils.getBaseEntityByCode(begCode);
 
         /* GET ownerCode */
             Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
@@ -117,9 +117,9 @@ rule "Submit Offer Driver"
 
             /* COUNTER OFFER HAPPENING */
                 if(linkBegOffer) {
-                    rules.println("The value of PRI_NEXT_ACTION for this offer :"+offerCode+": is ::"+ rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION"));
-                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("QUOTER") ){
-                      rules.println("Driver is giving counter offer");
+
+                   if( rules.baseEntityUtils.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("QUOTER") ){
+
                       /* Send Messages*/
                         HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
                         counterContextMapForOwner.put("JOB", begCode);
@@ -137,10 +137,10 @@ rule "Submit Offer Driver"
 
                       /* Update PRI_NEXT_ACTION = OWNER */
                       Answer offerActionAnswer1 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                      rules.saveAnswer(offerActionAnswer1);
+                      rules.baseEntityUtils.saveAnswer(offerActionAnswer1);
                     }
 
-                   if( rules.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){
+                   if( rules.baseEntityUtils.getBaseEntityAttrValueAsString(offer, "PRI_NEXT_ACTION").equals("OWNER") ){
                        rules.println("Driver is updating the offer price");
                       /* Send Messages*/
                         HashMap<String,String> counterContextMapForOwner = new HashMap<String, String>();
@@ -171,23 +171,23 @@ rule "Submit Offer Driver"
 				        VertxUtils.subscribe(rules.realm(), offer, ownerCode);
 
                     /* link BEG and OFFER BE || OFFER */
-                        rules.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
+                        rules.baseEntityUtils.createLink(begCode, offerCode, linkCode, linkOffer, 1.0);
 
                     /* link OFFER and QUOTER BE || CREATOR */
-                        rules.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);
+                        rules.baseEntityUtils.createLink(offerCode, userCode, "LNK_OFR", linkCreator, 1.0);
 
                     /* Update the number of offers for BEG */
                         Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
                         offerCount = offerCount + 1;
                         rules.println("Offer Count is   ::   " + offerCount);
-                        rules.saveAnswer(new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString()));
+                        rules.baseEntityUtils.saveAnswer(new Answer(begCode, begCode, "PRI_OFFER_COUNT", offerCount.toString()));
 
                     /* Update PRI_NEXT_ACTION = OWNER */
                         Answer offerActionAnswer3 = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", linkOwner);
-                        rules.saveAnswer(offerActionAnswer3);
+                        rules.baseEntityUtils.saveAnswer(offerActionAnswer3);
 
                     /* Send Messages*/
-                    	   BaseEntity loadBe = rules.getChildren(begCode, "LNK_BEG", "LOAD");
+                    	   BaseEntity loadBe = rules.baseEntityUtils.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
 
                         HashMap<String,String> submitContextMapForOwner = new HashMap<String, String>();
                         submitContextMapForOwner.put("JOB", begCode);
@@ -210,14 +210,14 @@ rule "Submit Offer Driver"
 
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
-            rules.saveAnswer(offerDateTime);
+            rules.baseEntityUtils.saveAnswer(offerDateTime);
 
         /* Sort Begs based on the offers Owner Price and set the linkweight as per the order of cheapest as highest */
            rules.sortOffersInBeg(begCode);
 
         /* Update the Job status   */
-		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
-		   rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
+		   rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
+		   rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_ACTION.value());
 
         /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
@@ -233,7 +233,7 @@ rule "Submit Offer Driver"
         rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 
         /* we refresh the cache */
-        rules.generateNewItemsCache();
+        rules.reloadCache();
 
         drools.setFocus("ispayments");  /* NOW Set up Payments */
 

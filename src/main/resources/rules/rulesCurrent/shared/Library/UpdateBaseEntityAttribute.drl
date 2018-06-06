@@ -25,7 +25,7 @@ rule "Update BaseEntity Attribute"
             rules.println("Update BaseEntity attribute :: missing beValue ");
         }
         else {
-            rules.updateBaseEntityAttribute(beSourceCode, beTargetCode, beAttributeCode, beValue);
+            rules.baseEntityUtils.updateBaseEntityAttribute(beSourceCode, beTargetCode, beAttributeCode, beValue);
             rules.setState("UPDATED_BASEENTITY_ATTRIBUTE");
         }
 

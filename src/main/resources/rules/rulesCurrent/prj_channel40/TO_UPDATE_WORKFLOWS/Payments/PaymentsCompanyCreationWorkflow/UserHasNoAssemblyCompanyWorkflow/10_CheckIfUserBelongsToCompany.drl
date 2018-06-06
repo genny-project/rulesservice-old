@@ -11,17 +11,17 @@ rule "Payments Company Creation Step 2 : Check if user has a company or not"
     then
     		rules.header();
     		rules.setState("LOOP_CHECK_USER_COMPANY");
-    		
+
     		BaseEntity userBe = rules.getUser();
-    		
+
     		/* Get the company if exists */
-    		BaseEntity companyBe = rules.getParent(userBe.getCode(), "LNK_STAFF");
-    		
+    		BaseEntity companyBe = rules.baseEntityUtils.getParent(userBe.getCode(), "LNK_STAFF");
+
     		if(companyBe != null) {
     			rules.setState("COMPANY_EXISTS_TRIGGER_PAYMENTS_CREATE_COMPANY");
     		} else {
     			rules.println("User has no company");
     		}
-    		
+
     		rules.footer();
  end

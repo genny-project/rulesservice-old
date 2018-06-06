@@ -22,7 +22,7 @@ rule "Seed New Items Cache"
      rules.header();
         rules.setState("GENERATE_NEW_ITEMS_CACHE");
 		rules.println("Generating  New Items Cache for "+rules.realm());
-		rules.generateNewItemsCache(); 
+		rules.reloadCache(); 
 		rules.generateItemCaches("ARCHIVED_PRODUCTS");
  
      rules.footer();

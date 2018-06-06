@@ -8,36 +8,35 @@ import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPayme
 rule "Create Assembly Tokens"
 	agenda-group "payments"
 	no-loop true
-	when 
-		rules: QRules( isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_TOKEN_CREATED") ) 
+	when
+		rules: QRules( isState("IS_ASSEMBLY_USER_CREATED") && !isState("IS_ASSEMBLY_TOKEN_CREATED") )
 	then
-	
+
 		RulesUtils.header(drools.getRule().getName());
-		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");		
-		
+		rules.setState("IS_ASSEMBLY_TOKEN_CREATED");
+
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
 
 		if(assemblyId != null) {
-			
+
 			RulesUtils.println("Refreshing tokens");
-  			
+
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
-       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
-	
+       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
+
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
-			
+
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.saveAnswers(answers);
+			rules.baseEntityUtils.saveAnswers(answers);
 		}
-		
+
 		RulesUtils.footer(drools.getRule().getName());
-    	
+
 end
- 

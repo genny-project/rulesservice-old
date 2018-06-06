@@ -76,7 +76,7 @@ rule "Submit Offer Owner"
             String linkCreator = "CREATOR";
 
         /* GET OFFER BE */
-            BaseEntity offer = rules.getBaseEntityByCode(offerCode);
+            BaseEntity offer = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
 
         /* GET attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
@@ -94,7 +94,7 @@ rule "Submit Offer Owner"
             rules.println("------------------------------------------------------------------------");
 
          /* GET BEG BE */
-            BaseEntity beg = rules.getBaseEntityByCode(begCode);
+            BaseEntity beg = rules.baseEntityUtils.getBaseEntityByCode(begCode);
 
         /* GET ownerCode */
             Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
@@ -110,11 +110,11 @@ rule "Submit Offer Owner"
 
         /* Update PRI_NEXT_ACTION = OWNER */
             Answer offerActionAnswer = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "QUOTER");
-            rules.saveAnswer(offerActionAnswer);
+            rules.baseEntityUtils.saveAnswer(offerActionAnswer);
 
         /* Save OFFER_DATE as answer */
             Answer offerDateTime = new Answer(userCode, offerCode, "PRI_OFFER_DATE", rules.getCurrentLocalDateTime());
-            rules.saveAnswer(offerDateTime);
+            rules.baseEntityUtils.saveAnswer(offerDateTime);
 
 		 /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());
@@ -147,7 +147,7 @@ rule "Submit Offer Owner"
                 rules.sendMessage("", recipientArrForDriver, counterContextMapForDriver, "MSG_CH40_COUNTER_OFFER_OTD", "TOAST");
 
                 /* we refresh the cache */
-                rules.generateNewItemsCache();
+                rules.reloadCache();
 
         /* Send BUCKETVIEW Cmd */
         rules.setState("TRIGGER_HOMEPAGE");

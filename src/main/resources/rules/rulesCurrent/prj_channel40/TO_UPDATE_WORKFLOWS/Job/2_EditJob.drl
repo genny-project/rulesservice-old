@@ -18,10 +18,10 @@ rule "Edit Jobs"
 
      String jobCode = $m.getData().getCode();
 
-     rules.publishCmd(rules.getBaseEntityByCode(jobCode),"job");
+     rules.publishCmd(rules.baseEntityUtils.getBaseEntityByCode(jobCode),"job");
 
     /*  Get load for the given job/BEG   */
-      BaseEntity load = rules.getChildren(jobCode, "LNK_BEG", "LOAD");
+      BaseEntity load = rules.baseEntityUtils.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
      rules.publishCmd(load, "load");
 
     /*    Getting Post Load Question GRP        */
