@@ -15,6 +15,8 @@ rule "TV_SELECT_HISTORY"
       rules.header();
 
           rules.setState("LOOP_TV_ITEM_HISTORY_DATA_SENT");
+          rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
+         												 executes based on this state */
            Object parentCodeObj = rules.get("tvSelectValue");
 
            if(parentCodeObj != null){
