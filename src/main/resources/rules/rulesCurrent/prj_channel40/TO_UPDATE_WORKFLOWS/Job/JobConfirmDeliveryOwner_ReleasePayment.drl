@@ -113,23 +113,9 @@ rule "Job Confirm Delivery - Owner and Release Payment"
           		if(ownerCode != null && driverCode != null) {
 
         			/* hitting release payment API */
-              /* TODO: to change. If you read this gayatri come to me so i can explain how to make this better - Loris */
-            		Object isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
+            		Boolean isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
 
-                if(isPaymentReleased instanceof String) {
-
-                  String begTitle = begBe.getValue("PRI_TITLE", null);
-                  String sellerFirstName = driverBe.getValue("PRI_FIRSTNAME", null);
-                  String[] recipientArr = { user.getCode() };
-                  String toastMessage = "Unfortunately, payment release to " + sellerFirstName + " for the job - "+ begTitle + " has failed." + isPaymentReleased.toString();
-
-                  /* send error toast message */
-                  sendDirectToast(recipientArr, toastMessage, "warning");
-
-                  /* send slack notification */
-                  sendSlackNotification(toastMessage + ". Job code : "+begBe.getCode());
-                }
-                else {
+                if(isPaymentReleased) {
 
                   /* we move the job to GRP_PAID */
                   rules.baseEntityUtils.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");

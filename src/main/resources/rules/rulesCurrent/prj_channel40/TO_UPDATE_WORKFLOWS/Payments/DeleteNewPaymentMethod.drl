@@ -64,9 +64,9 @@ rule "Delete new payment method - user"
 						} else {
 							if(PaymentUtils.isBankAccount(paymentMethodObject)) {
 
-								isDeleted = rules.fetchOneTimePaymentsToken.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+								isDeleted = rules.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
 							} else {
-								isDeleted = rules.fetchOneTimePaymentsToken.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+								isDeleted = rules.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
 							}
 						}
 					}
