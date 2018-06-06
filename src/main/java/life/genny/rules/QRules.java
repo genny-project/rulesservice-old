@@ -8415,7 +8415,7 @@ public class QRules {
 		
 		JsonObject tabView = new JsonObject();
 		tabView.put("code", "TAB_VIEW");
-		tabView.put("data", dataArray);		
+		tabView.put("root", dataArray);		
 
 
 		JsonArray msgCodes = new JsonArray();
@@ -8424,7 +8424,7 @@ public class QRules {
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-		cmdViewJson.put("data", msgCodes);
+		cmdViewJson.put("root", msgCodes);
 
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
 
