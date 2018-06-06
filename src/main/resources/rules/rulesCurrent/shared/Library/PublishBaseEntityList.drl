@@ -39,10 +39,10 @@ rule "Publish BaseEntity List"
 
             List<BaseEntity> beList = null;
             if( beStakeholderCode != null ) {
-                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
+                beList = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache, beStakeholderCode);
             }
             else{
-                beList = rules.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache);
+                beList = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode(beParentCode, beLinkCode, bePageStart, bePageSize, beCache);
             }
             rules.publishCmd(beList, beParentCode, beLinkCode);
             rules.set("beList", beList);
