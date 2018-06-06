@@ -1,7 +1,5 @@
 package life.genny.rules;
 
-import life.genny.qwanda.message.QEventMessage;
-import life.genny.qwanda.message.QCmdMessage;
 import life.genny.rules.QRules;
 
 
@@ -17,14 +15,17 @@ rule "TV_SELECT_HISTORY"
       rules.header();
 
           rules.setState("LOOP_TV_ITEM_HISTORY_DATA_SENT");
-           String parentCode = rules.get("tvSelectValue").toString();
+           Object parentCodeObj = rules.get("tvSelectValue");
 
-           if(parentCode != null){
-
-              /* we send the archived paid products */
-              rules.showLoading("Loading history...");
-              rules.sendCachedItem("ARCHIVED_PRODUCTS");
-     	        rules.publishViewCmdMessage("LIST_VIEW", parentCode);
+           if(parentCodeObj != null){
+			  String parentCode = parentCodeObj.toString();
+			  if(parentCode != null && !parentCode.isEmpty() ){
+	              /* we send the archived paid products */
+	              rules.showLoading("Loading history...");
+	              rules.sendCachedItem("ARCHIVED_PRODUCTS");
+	     	      rules.publishViewCmdMessage("LIST_VIEW", parentCode);
+            
+               }
             }
             else{
                 rules.println("Error!! Either the data.value/GRP code or the user BE is null");
