@@ -65,6 +65,7 @@ import life.genny.qwanda.attribute.AttributeInteger;
 import life.genny.qwanda.attribute.AttributeMoney;
 import life.genny.qwanda.attribute.AttributeText;
 import life.genny.qwanda.attribute.EntityAttribute;
+import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
@@ -2912,19 +2913,15 @@ public class QRules {
 	}
 
 	public void sendAllLayouts() {
-
-		/*
-		 * List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS",
-		 * "LNK_CORE", 0, 500, false); this.publishCmd(beLayouts, "GRP_LAYOUTS",
-		 * "LNK_CORE");
-		 */
-
+		
 		/* Layouts v1 */
 		this.sendAllSublayouts();
-
+		
 		/* Layouts V2 */
-		List<BaseEntity> beLayouts = this.getAllLayouts();
+		List<BaseEntity> beLayouts = getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false); this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
+		
+		/*List<BaseEntity> beLayouts = this.getAllLayouts(); */
 	}
 
 	public List<BaseEntity> getAllLayouts() {
@@ -2954,82 +2951,86 @@ public class QRules {
 		if (layout.getPath() == null) {
 			return null;
 		}
+		
+		String serviceToken = this.generateServiceToken(realm());
+		if(serviceToken != null) {
+			
+			BaseEntity beLayout = null;
 
-		BaseEntity beLayout = null;
+			/* we check if the baseentity for this layout already exists */
+			// beLayout =
+			// RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl,
+			// this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
+			String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+			String layoutCode = ("LAY_" + realm() + "_" + precode).toUpperCase();
 
-		/* we check if the baseentity for this layout already exists */
-		// beLayout =
-		// RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl,
-		// this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
-		String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
-		String layoutCode = ("LAY_" + realm() + "_" + precode).toUpperCase();
+			beLayout = getBaseEntityByCode(layoutCode);
 
-		beLayout = getBaseEntityByCode(layoutCode);
+			/* if the base entity does not exist, we create it */
+			if (beLayout == null) {
 
-		/* if the base entity does not exist, we create it */
-		if (beLayout == null) {
-
-			/* otherwise we create it */
-			beLayout = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, getToken());
-			VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
-		}
-
-		if (beLayout != null) {
-
-			addAttributes(beLayout);
-
-			/*
-			 * we get the modified time stored in the BE and we compare it to the layout one
-			 */
-			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
-
-			if (beModifiedTime == null || layout.getModifiedDate() == null
-					|| !beModifiedTime.equals(layout.getModifiedDate())) {
-
-				println("Reloading layout: " + layoutCode);
-
-				/* if the modified time is not the same, we update the layout BE */
-
-				/* setting layout attributes */
-				List<Answer> answers = new ArrayList<Answer>();
-
-				/* download the content of the layout */
-				String content = LayoutUtils.downloadLayoutContent(layout);
-
-				Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
-						content);
-				newAnswerContent.setChangeEvent(true);
-				answers.add(newAnswerContent);
-
-				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
-						layout.getPath());
-				newAnswer.setChangeEvent(false);
-				answers.add(newAnswer);
-
-				Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
-						layout.getDownloadUrl());
-				newAnswer2.setChangeEvent(false);
-				answers.add(newAnswer2);
-
-				Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
-						layout.getName());
-				newAnswer3.setChangeEvent(false);
-				answers.add(newAnswer3);
-
-				Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
-						layout.getModifiedDate());
-				newAnswer4.setChangeEvent(false);
-				answers.add(newAnswer4);
-
-				this.saveAnswers(answers);
-
-				/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
-				this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
+				/* otherwise we create it */
+				beLayout = QwandaUtils.createBaseEntityByCode(layoutCode, layout.getName(), qwandaServiceUrl, serviceToken);
+				VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 			}
 
-		}
+			if (beLayout != null) {
 
-		return this.getBaseEntityByCode(beLayout.getCode());
+				addAttributes(beLayout);
+
+				/*
+				 * we get the modified time stored in the BE and we compare it to the layout one
+				 */
+				String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
+
+				if (beModifiedTime == null || layout.getModifiedDate() == null || !beModifiedTime.equals(layout.getModifiedDate())) {
+
+					println("Reloading layout: " + layoutCode);
+
+					/* if the modified time is not the same, we update the layout BE */
+
+					/* setting layout attributes */
+					List<Answer> answers = new ArrayList<Answer>();
+
+					/* download the content of the layout */
+					String content = LayoutUtils.downloadLayoutContent(layout);
+
+					Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
+							content);
+					newAnswerContent.setChangeEvent(true);
+					answers.add(newAnswerContent);
+
+					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
+							layout.getPath());
+					newAnswer.setChangeEvent(false);
+					answers.add(newAnswer);
+
+					Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
+							layout.getDownloadUrl());
+					newAnswer2.setChangeEvent(false);
+					answers.add(newAnswer2);
+
+					Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
+							layout.getName());
+					newAnswer3.setChangeEvent(false);
+					answers.add(newAnswer3);
+
+					Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
+							layout.getModifiedDate());
+					newAnswer4.setChangeEvent(false);
+					answers.add(newAnswer4);
+
+					this.saveAnswers(answers);
+
+					/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
+					this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
+				}
+			}
+			
+			return this.getBaseEntityByCode(beLayout.getCode());
+		}
+		
+		return null;
 	}
 
 	/*
@@ -5136,10 +5137,11 @@ public void makePayment(QDataAnswerMessage m) {
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 
 		String jsonSearchBE = null;
+		SearchEntity srchBE = null;
 
 		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
 			// srchBE.setStakeholder(getUser().getCode());
-			SearchEntity srchBE = new SearchEntity(reportCode, "List of all My Loads")
+			srchBE = new SearchEntity(reportCode, "List of all My Loads")
 					.addColumn("PRI_NAME", "Load Name").addColumn("PRI_JOB_ID", "Job ID")
 					.addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address").addColumn("PRI_DESCRIPTION", "Description")
 
@@ -5167,14 +5169,52 @@ public void makePayment(QDataAnswerMessage m) {
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		try {
-
-			JsonObject dt = new JsonObject(resultJson);
-			if (dt != null) {
-				publishData(dt);
+			if (msg.getItems()!=null) {
+				
+				// Now work out sums
+				boolean first = true;
+				Map<String,Object> sums = new HashMap<String,Object>(); // store the column sums
+				Map<String,DataType> dtypes = new HashMap<String,DataType>();
+				Map<String,Attribute> attributes = new HashMap<String,Attribute>();
+				
+				
+				for (BaseEntity row : msg.getItems()) {
+					if (first) {
+						this.addAttributes(row);
+						for (EntityAttribute col1 : row.getBaseEntityAttributes()) {
+							if (DataType.summable(col1.getAttribute().getDataType())) {
+								sums.put(col1.getAttribute().getCode(), DataType.Zero(col1.getAttribute().getDataType()));
+								dtypes.put(col1.getAttribute().getCode(), col1.getAttribute().getDataType());
+								attributes.put(col1.getAttribute().getCode(), col1.getAttribute());
+							}
+						}
+						first = false;
+					}
+					// for every column determine the data type
+					for (EntityAttribute col :   row.getBaseEntityAttributes()) {
+						if (sums.containsKey(col.getAttributeCode())) {
+							Object currentSum = sums.get(col.getAttributeCode());
+							Object sum = DataType.add(dtypes.get(col.getAttributeCode()),currentSum,(Object)col.getValue());
+							sums.put(col.getAttribute().getCode(), sum);
+						}
+					}
+				}
+				
+				// Now append a sum baseentity
+				BaseEntity sumBe = new BaseEntity("SUM_"+reportCode.substring("SBE_".length()),"Summary "+srchBE.getName());
+				for (String sumKey : sums.keySet()) {
+					Attribute sumAttribute = attributes.get(sumKey);
+					Object sum = sums.get(sumKey);
+					sumBe.addAttribute(sumAttribute, 0.0, sum.toString());
+				
+				}
+				msg.setSum(sumBe);
+				publishCmd(msg);
 			}
+
 		} catch (Exception e) {
 
-		}
+		} 
 
 		// JsonArray columnHeaders = new JsonArray();
 		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
@@ -5885,14 +5925,20 @@ public void makePayment(QDataAnswerMessage m) {
 				if (msg instanceof QDataBaseEntityMessage) {
 
 					String grpCode = msg.getParentCode();
-					if (grpCode.equalsIgnoreCase("GRP_REPORTS")) {
-						System.out.println("Dubug");
-					}
-
 					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
 
 					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
-
+					
+					/* GRP_ROOT does not have any parent, so we create its own message */
+					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+						
+						BaseEntity[] roots = new BaseEntity[1];
+						roots[0] = parent;
+						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT", "LNK_CORE");
+						rootMessage.setToken(getToken());
+						baseEntityMsgs.add(rootMessage);
+					}
+					
 					for (BaseEntity child : msg.getItems()) {
 
 						String childCode = child.getCode();
