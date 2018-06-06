@@ -5178,7 +5178,6 @@ public void makePayment(QDataAnswerMessage m) {
 						this.addAttributes(row);
 						for (EntityAttribute col1 : row.getBaseEntityAttributes()) {
 							if (DataType.summable(col1.getAttribute().getDataType())) {
-								Object sum = DataType.add(col1.getValue());
 								sums.put(col1.getAttribute().getCode(), DataType.Zero(col1.getAttribute().getDataType()));
 							}
 						}
@@ -5188,7 +5187,7 @@ public void makePayment(QDataAnswerMessage m) {
 					for (EntityAttribute col :   row.getBaseEntityAttributes()) {
 						if (sums.containsKey(col.getAttributeCode())) {
 							Object currentSum = sums.get(col.getAttributeCode());
-							Object sum = DataType.add(currentSum,col.getValue());
+							Object sum = DataType.add(currentSum,(Object)col.getValue());
 							sums.put(col.getAttribute().getCode(), sum);
 						}
 					}
