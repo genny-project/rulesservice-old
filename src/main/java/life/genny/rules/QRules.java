@@ -5137,10 +5137,11 @@ public void makePayment(QDataAnswerMessage m) {
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 
 		String jsonSearchBE = null;
+		SearchEntity srchBE = null;
 
 		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
 			// srchBE.setStakeholder(getUser().getCode());
-			SearchEntity srchBE = new SearchEntity(reportCode, "List of all My Loads")
+			srchBE = new SearchEntity(reportCode, "List of all My Loads")
 					.addColumn("PRI_NAME", "Load Name").addColumn("PRI_JOB_ID", "Job ID")
 					.addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address").addColumn("PRI_DESCRIPTION", "Description")
 
@@ -5173,12 +5174,18 @@ public void makePayment(QDataAnswerMessage m) {
 				// Now work out sums
 				boolean first = true;
 				Map<String,Object> sums = new HashMap<String,Object>(); // store the column sums
+				Map<String,DataType> dtypes = new HashMap<String,DataType>();
+				Map<String,Attribute> attributes = new HashMap<String,Attribute>();
+				
+				
 				for (BaseEntity row : msg.getItems()) {
 					if (first) {
 						this.addAttributes(row);
 						for (EntityAttribute col1 : row.getBaseEntityAttributes()) {
 							if (DataType.summable(col1.getAttribute().getDataType())) {
 								sums.put(col1.getAttribute().getCode(), DataType.Zero(col1.getAttribute().getDataType()));
+								dtypes.put(col1.getAttribute().getCode(), col1.getAttribute().getDataType());
+								attributes.put(col1.getAttribute().getCode(), col1.getAttribute());
 							}
 						}
 						first = false;
@@ -5187,19 +5194,27 @@ public void makePayment(QDataAnswerMessage m) {
 					for (EntityAttribute col :   row.getBaseEntityAttributes()) {
 						if (sums.containsKey(col.getAttributeCode())) {
 							Object currentSum = sums.get(col.getAttributeCode());
-							Object sum = DataType.add(currentSum,(Object)col.getValue());
+							Object sum = DataType.add(dtypes.get(col.getAttributeCode()),currentSum,(Object)col.getValue());
 							sums.put(col.getAttribute().getCode(), sum);
 						}
 					}
 				}
 				
+				// Now append a sum baseentity
+				BaseEntity sumBe = new BaseEntity("SUM_"+reportCode.substring("SBE_".length()),"Summary "+srchBE.getName());
+				for (String sumKey : sums.keySet()) {
+					Attribute sumAttribute = attributes.get(sumKey);
+					Object sum = sums.get(sumKey);
+					sumBe.addAttribute(sumAttribute, 0.0, sum.toString());
 				
-				publishData(msg);
+				}
+				msg.setSum(sumBe);
+				publishCmd(msg);
 			}
 
 		} catch (Exception e) {
 
-		}
+		} 
 
 		// JsonArray columnHeaders = new JsonArray();
 		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
