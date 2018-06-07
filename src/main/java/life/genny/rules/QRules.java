@@ -5826,7 +5826,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public boolean isAddressPresent(final String personCode) {
 		boolean ret = false;
 
-		BaseEntity person = this.baseEntityUtils.getBaseEntityByCode(personCode);
+		BaseEntity person = this.baseEntity.getBaseEntityByCode(personCode);
 
 		if (person.containsEntityAttribute("PRI_ADDRESS_ADDRESS1")) {
 			if (person.containsEntityAttribute("PRI_ADDRESS_COUNTRY")) {
@@ -5851,7 +5851,7 @@ public void makePayment(QDataAnswerMessage m) {
 			QDataAnswerMessage msg = new QDataAnswerMessage(
 					new Answer(personCode, personCode, "PRI_ADDRESS_JSON", jsonAddress));
 			List<Answer> answers = processAddressAnswers(msg);
-			this.baseEntityUtils.saveAnswers(answers);
+			this.baseEntity.saveAnswers(answers);
 			System.out.println(person.getCode()+" fixed using existing JSON");
 		} else {
 			String jsonFull = person.getValue("PRI_ADDRESS_FULL", null);
@@ -5861,7 +5861,7 @@ public void makePayment(QDataAnswerMessage m) {
 				List<Answer> answers = new ArrayList<Answer>();
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_CITY", city));
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_SUBURB", city));
-				this.baseEntityUtils.saveAnswers(answers);
+				this.baseEntity.saveAnswers(answers);
 				System.out.println(person.getCode()+" fixed using existing Full Address");
 			} else {
 				log.error("ERROR!! " + personCode + " does not contain Address Full");
