@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -35,6 +38,10 @@ import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
 	
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+
+	
 	private Map<String, Object> decodedMapToken;
 	private String token;
 	private String realm;
@@ -53,6 +60,21 @@ public class BaseEntityUtils {
 	
 	public void set(final String key, Object value) {
 		this.decodedMapToken.put(key, value);
+	}
+	
+	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
+	{
+		
+		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
+		try {
+			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
+			return attribute;
+		} catch (IOException e) {
+			log.error("Socket error trying to post attribute");
+			throw new IOException("Cannot save attribute");
+		}
+
+
 	}
 	
 	public void addAttributes(BaseEntity be) {
@@ -728,16 +750,7 @@ public class BaseEntityUtils {
 		return links;
 	}
 	
-	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
-		Link link = new Link(parentCode, childCode, linkCode);
-		try {
-			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", link.toString(), this.token);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
 
-	}
 
 	public String updateBaseEntity(BaseEntity be) {
 		try {
