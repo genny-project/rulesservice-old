@@ -147,10 +147,14 @@ public class RulesUtils {
 
 			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
-			println(url);
+      println(url);
+			println("ok");
 
 			/* we make a GET request */
-			String jsonStr = QwandaUtils.apiGet(url, null);
+      jsonStr = QwandaUtils.apiGet(url, null);
+      System.out.println("Got layout result: ");
+      System.out.println(jsonStr);
+
 			if(jsonStr != null) {
 
 				/* we serialise the layout into a JsonObject */
@@ -175,6 +179,8 @@ public class RulesUtils {
       System.out.println(jsonStr);
       return jsonStr;
 		}
+
+    return null;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {
