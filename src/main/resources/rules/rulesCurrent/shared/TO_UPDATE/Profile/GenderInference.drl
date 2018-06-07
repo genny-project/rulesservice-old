@@ -31,7 +31,7 @@ rule "Inference Gender Change"
             genderAnswer.setWeight(weight);
             genderAnswer.setInferred(true);
             RulesUtils.println(genderAnswer);
-            rules.baseEntityUtils.saveAnswer(genderAnswer);
+            rules.baseEntity.saveAnswer(genderAnswer);
         }else{
             rules.println("Sorry, No Inferred Rule was executed ");
         }

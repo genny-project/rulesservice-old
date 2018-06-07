@@ -32,19 +32,19 @@ then
 		         rules.publishData(beAnswer);
 
 		    	 	//rules.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
-		    	 	rules.baseEntityUtils.moveBaseEntitySetLinkValue(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED", "LNK_CORE", "BEG");
+		    	 	rules.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED", "LNK_CORE", "BEG");
 
-			    	BaseEntity jobBe = rules.baseEntityUtils.getBaseEntityByCode(begCode);
+			    	BaseEntity jobBe = rules.baseEntity.getBaseEntityByCode(begCode);
 			    	String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
-        			BaseEntity offerBe = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
+        			BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
         			String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
         			String ownerCode = jobBe.getValue("PRI_AUTHOR",null);
 
         			/* Add new attribute to save the time when load was dropped off */
 	      		Answer jobDeliveryDateTimeAnswer = new Answer(rules.getUser().getCode(), begCode, "PRI_DROPOFF_DATETIME", rules.getZonedCurrentLocalDateTime());
-	      		rules.baseEntityUtils.saveAnswer(jobDeliveryDateTimeAnswer);
+	      		rules.baseEntity.saveAnswer(jobDeliveryDateTimeAnswer);
 
-	      		BaseEntity loadBe = rules.baseEntityUtils.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
+	      		BaseEntity loadBe = rules.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
 
         			HashMap<String, String> contextMap = new HashMap<String, String>();
 				contextMap.put("JOB", begCode);
@@ -58,8 +58,8 @@ then
 				rules.sendMessage("OK", recipientCodes, contextMap, "MSG_CH40_DELIVERED", "EMAIL");
 
 				/* Update the Job status   */
-			       rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
-			       rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_NO_ACTION.value());
+			       rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+ownerCode, Status.NEEDS_ACTION.value());
+			       rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, "STA_"+quoterCode, Status.NEEDS_NO_ACTION.value());
 
 
 		    	    }

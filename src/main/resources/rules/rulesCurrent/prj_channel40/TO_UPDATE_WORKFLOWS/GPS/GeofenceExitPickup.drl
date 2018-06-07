@@ -17,7 +17,7 @@ rule "Geofence Exit Pickup Point"
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
 
-		rules.baseEntityUtils.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT", "LNK_CORE");
+		rules.baseEntity.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT", "LNK_CORE");
 
 		RulesUtils.footer(drools.getRule().getName());
 

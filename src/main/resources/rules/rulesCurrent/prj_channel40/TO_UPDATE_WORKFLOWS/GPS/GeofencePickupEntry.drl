@@ -17,7 +17,7 @@ rule "Geofence Enter Pickup Point"
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
 
-		List<Link> linkList = rules.baseEntityUtils.getLinks(begCode,"LNK_BEG");
+		List<Link> linkList = rules.baseEntity.getLinks(begCode,"LNK_BEG");
 		String ownerCode = null;
 		String loadCode = null;
 

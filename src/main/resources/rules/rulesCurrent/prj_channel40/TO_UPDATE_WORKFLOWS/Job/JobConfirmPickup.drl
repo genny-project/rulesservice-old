@@ -20,18 +20,18 @@ then
   		     String begCode = $m.getItemCode();
 		     if(begCode != null) {
 		    	 	//rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT","LNK_CORE");
-		    	 	rules.baseEntityUtils.moveBaseEntitySetLinkValue(begCode, "GRP_APPROVED",	"GRP_IN_TRANSIT", "LNK_CORE", "BEG");
+		    	 	rules.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_APPROVED",	"GRP_IN_TRANSIT", "LNK_CORE", "BEG");
 		     }
 
 		/* To save pick-up time as an attribute of a job */
 		Answer pickupTimeAnswer = new Answer(begCode, begCode, "PRI_DRIVER_CONFIRM_PICKUP_DATETIME", rules.getZonedCurrentLocalDateTime());
-		rules.baseEntityUtils.saveAnswer(pickupTimeAnswer);
+		rules.baseEntity.saveAnswer(pickupTimeAnswer);
 
 		/* To find the owner of a job */
 		String ownerCode = null;
 		String loadCode = null;
 
-		List<Link> links = rules.baseEntityUtils.getLinks(begCode, "LNK_BEG");
+		List<Link> links = rules.baseEntity.getLinks(begCode, "LNK_BEG");
 		if (links != null) {
 			for (Link link : links) {
 

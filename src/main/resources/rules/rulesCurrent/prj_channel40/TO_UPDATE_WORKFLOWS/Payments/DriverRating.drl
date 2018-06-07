@@ -20,9 +20,9 @@ rule "Display Dashboard On Rating Submission"
 
 	    String begCode = user.getValue("STT_JOB_IS_RATING", null);
 
-       	 BaseEntity jobBe = rules.baseEntityUtils.getBaseEntityByCode(begCode);
+       	 BaseEntity jobBe = rules.baseEntity.getBaseEntityByCode(begCode);
          String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
-         BaseEntity offerBe = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
+         BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
          String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
 
          rules.println("The BEG/JOB Code is :: "+begCode);
@@ -35,7 +35,7 @@ rule "Display Dashboard On Rating Submission"
        	userCodesForStatusColourChange.add(quoterCode);
 
        /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-		rules.baseEntityUtils.updateBaseEntityStatus(begCode, userCodesForStatusColourChange, "warning");
+		rules.baseEntity.updateBaseEntityStatus(begCode, userCodesForStatusColourChange, "warning");
 
 
 	  /* redirecting user to bucket */

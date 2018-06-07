@@ -73,14 +73,14 @@ rule "Make Offer"
 
          /* Check if a link exists between BEG & OFFER */
 
-          BaseEntity oldOffer = rules.baseEntityUtils.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
+          BaseEntity oldOffer = rules.baseEntity.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
           if(oldOffer != null) {
             offerCode = oldOffer.getCode();
           }
           else {
 
             /* Create Offer BE */
-	          BaseEntity offer = rules.baseEntityUtils.createBaseEntityByCode(userCode , "OFR", "Offer");
+	          BaseEntity offer = rules.baseEntity.create(userCode , "OFR", "Offer");
 	          RulesUtils.ruleLogger("OFFER Base Entity", offer);
 	          /* Get Offer Code */
 	          offerCode = offer.getCode();
@@ -100,7 +100,7 @@ rule "Make Offer"
               answerList.add(quoterFullName);
               answerList.add(jobCode);
 
-			        rules.baseEntityUtils.saveAnswers(answerList);
+			        rules.baseEntity.saveAnswers(answerList);
               rules.publishData(answerList);
           }
 

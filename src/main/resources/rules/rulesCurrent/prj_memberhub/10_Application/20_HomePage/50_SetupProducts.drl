@@ -26,7 +26,7 @@ rule "Setup Products"
 
         /* Creating a link between USER & PRD_HOLIDAY */
         if(!isHomeloan){
-            rules.baseEntityUtils.createLink(rules.getUser().getCode(), homeLoanCode, linkCode, linkHomeloan, 1.0);
+            rules.baseEntity.createLink(rules.getUser().getCode(), homeLoanCode, linkCode, linkHomeloan, 1.0);
         }
 
         /* Check if link exists between USER & PRD_HOME_LOAN */
@@ -35,7 +35,7 @@ rule "Setup Products"
 
         /* Creating a link between USER & PRD_HOME_LOAN */
         if(!isHoilday){
-            rules.baseEntityUtils.createLink(rules.getUser().getCode(), holidayCode, linkCode, linkHoliday, 1.0);
+            rules.baseEntity.createLink(rules.getUser().getCode(), holidayCode, linkCode, linkHoliday, 1.0);
         }
 
         /* Send begs */
