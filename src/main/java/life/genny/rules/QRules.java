@@ -1565,7 +1565,7 @@ public class QRules {
 
 					/* Sending toast message to all the beg frontends */
 					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
-					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO:																										
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO:
 					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 				}else {
 					println("Error! The stakeholder for given chatCode is null");
@@ -1850,6 +1850,9 @@ public class QRules {
 		try {
 
 			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
+      this.println(subLayoutMap);
+      this.println("LOG LORIS");
+
 			if (subLayoutMap != null) {
 
 				JsonArray subLayouts = new JsonArray(subLayoutMap);
@@ -1885,6 +1888,7 @@ public class QRules {
 							}
 						}
 					}
+
 					/* send sublayout to FE */
 					QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
 					publishCmd(msg);

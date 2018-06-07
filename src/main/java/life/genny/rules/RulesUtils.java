@@ -137,18 +137,24 @@ public class RulesUtils {
 
   	String jsonStr = "";
 		try {
-			
-			path = realm + "/" + path;
+
+      if(path.startsWith("/") == false) {
+        path = realm + "/" + path;
+      }
+      else {
+        path = realm + path;
+      }
+
 			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
 			println(url);
 
 			/* we make a GET request */
-			String jsonString = QwandaUtils.apiGet(url, null);
-			if(jsonString != null) {
+			String jsonStr = QwandaUtils.apiGet(url, null);
+			if(jsonStr != null) {
 
 				/* we serialise the layout into a JsonObject */
-				JsonObject layoutObject = new JsonObject(jsonString);
+				JsonObject layoutObject = new JsonObject(jsonStr);
 				if(layoutObject != null) {
 
 					/* we check if an error happened when grabbing the layout */
@@ -160,14 +166,15 @@ public class RulesUtils {
 					else {
 
 						/* otherwise we return the layout */
-						return jsonString;
+						return jsonStr;
 					}
 				}
 			}
 		}
 		catch(Exception e) {
+      System.out.println(jsonStr);
+      return jsonStr;
 		}
-		return jsonStr;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {
