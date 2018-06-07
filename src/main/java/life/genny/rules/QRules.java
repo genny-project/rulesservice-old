@@ -123,6 +123,8 @@ import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
+import life.genny.rules.Layout.LayoutUtils;
+import life.genny.rules.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
@@ -1302,9 +1304,7 @@ public class QRules {
 		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
 
 			/* Layout V1 */
-			QCmdViewFormMessage cmdFormView = new QCmdViewFormMessage(questionGroupCode);
-			cmdFormView.setIsPopup(isPopup);
-			publishCmd(cmdFormView);
+			this.layoutUtils.sendView(ViewType.Form, questionGroupCode, isPopup);
 
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);

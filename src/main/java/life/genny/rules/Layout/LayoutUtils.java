@@ -1,4 +1,4 @@
-package life.genny.rules;
+package life.genny.rules.Layout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,8 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QCmdViewFormMessage;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.BaseEntityUtils;
+import life.genny.rules.RulesUtils;
 
 enum ViewType {
 	Form,
