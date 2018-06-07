@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,9 +61,17 @@ public class PaymentUtils {
 	/* Create a new logger for this class */
 	protected static final Logger log = org.apache.logging.log4j.LogManager.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	/* Define constants */
-	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
-	public static final String PROVIDER_TYPE_BANK = "bank";
+	private Map<String, Object> decodedMapToken;
+	private String token;
+	private String realm;
+	private String qwandaServiceUrl;
+
+	public PaymentUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
+		this.decodedMapToken = decodedMapToken;
+		this.qwandaServiceUrl = qwandaServiceUrl;
+		this.token = token;
+		this.realm = realm;
+	}
 
 	/**
 	* Returns the authentication key for the payments service - key is generated as per documentation here
@@ -793,44 +802,57 @@ public class PaymentUtils {
 			String itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
 			
 			/* convert string into item-search object */
-			QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);
-			System.out.println("item object ::"+itemObj);
-			
+			QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);			
 			QPaymentsAssemblyItemResponse items = itemObj.getItems();
 			
-			Double itemPrice = items.getAmount();
-			System.out.println("item price ::"+itemPrice);
-
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
 			String driverEmail = driverBe.getValue("PRI_EMAIL", null);
-
 			/* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
 			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
+			
+			Boolean isOwnerEmail = false;
+			Boolean isDriverEmail = false;
+			Boolean isPriceEqual = false;
+			
+			if(items != null) {
+				Double itemPrice = items.getAmount();
+				System.out.println("item price ::"+itemPrice);
+				
+				QPaymentsAssemblyUser buyerOwnerInfo = items.getBuyer();
+				
+				if(buyerOwnerInfo != null && ownerEmail != null) {
+					QPaymentsUserContactInfo ownerContactInfo = buyerOwnerInfo.getContactInfo();
+					
+					/* compare if item-owner is same as offer-owner */
+					isOwnerEmail = ownerContactInfo.getEmail().equals(ownerEmail);
+					System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
 
-			String str = String.format("%.2f",calculatedItemPriceInCents);
-			calculatedItemPriceInCents = Double.parseDouble(str);
+				}
+				
+				QPaymentsAssemblyUser sellerDriverInfo = items.getSeller();
+				
+				if(sellerDriverInfo != null && driverEmail != null) {
+					QPaymentsUserContactInfo driverContactInfo = sellerDriverInfo.getContactInfo();
+					
+					/* compare if item-driver is same as offer-driver */
+					isDriverEmail = driverContactInfo.getEmail().equals(driverEmail);
+					System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
+				}
+				
+				if(driverPriceIncGST != null) {
+					Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
 
-			/* convert into cents */
-			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
-
-			QPaymentsAssemblyUser buyerOwnerInfo = items.getBuyer();
-			QPaymentsUserContactInfo ownerContactInfo = buyerOwnerInfo.getContactInfo();
-
-			QPaymentsAssemblyUser sellerDriverInfo = items.getSeller();
-			QPaymentsUserContactInfo driverContactInfo = sellerDriverInfo.getContactInfo();
-
-			/* compare if item-owner is same as offer-owner */
-			Boolean isOwnerEmail = ownerContactInfo.getEmail().equals(ownerEmail);
-			System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
-
-			/* compare if item-driver is same as offer-driver */
-			Boolean isDriverEmail = driverContactInfo.getEmail().equals(driverEmail);
-			System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
-
-			/* compare if item-price is same as offer-price */
-			Boolean isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
-			System.out.println("Is price attribute for item equal ?"+isPriceEqual);
+					String str = String.format("%.2f",calculatedItemPriceInCents);
+					calculatedItemPriceInCents = Double.parseDouble(str);
+					/* convert into cents */
+					System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
+					
+					/* compare if item-price is same as offer-price */
+					isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
+					System.out.println("Is price attribute for item equal ?"+isPriceEqual);
+				}
+				
+			}
 
 			/* if comparison succeeds, no need to create new item */
 			if(isOwnerEmail && isDriverEmail && isPriceEqual) {
@@ -838,7 +860,6 @@ public class PaymentUtils {
 			} else {
 				isAssemblyItemValid = false;
 			}
-
 
 		} catch (PaymentException e) {
 			isAssemblyItemValid = false;
