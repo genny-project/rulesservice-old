@@ -12,7 +12,7 @@ rule "Check user company - Step 3"
 		
 		
 		/* Get company code for this user 
-        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
+        BaseEntity company = rules.baseEntity.getParent(userCode, "LNK_STAFF");
         String companyCode = company.getCode();
        
         rules.println("UPDATING link value OF LINK BETWEEN   ::   " + companyCode + "  &  " + userCode);

@@ -19,7 +19,7 @@ rule "Create BaseEntity"
              rules.println("Create BaseEntity: missing beCode. defaulting to user code");
              beCode = rules.getUser().getCode();
         }
-        
+
  		if (bePrefix == null) {
             rules.println("Create BaseEntity: missing bePrefix");
         }
@@ -27,7 +27,7 @@ rule "Create BaseEntity"
             rules.println("Create BaseEntity: missing beName");
         }
         else {
-            BaseEntity be = rules.createBaseEntityByCode( beCode, bePrefix, beName );
+            BaseEntity be = rules.baseEntity.create( beCode, bePrefix, beName );
 
             rules.set("baseEntity", be);
             rules.setState("CREATED_BASE_ENTITY");

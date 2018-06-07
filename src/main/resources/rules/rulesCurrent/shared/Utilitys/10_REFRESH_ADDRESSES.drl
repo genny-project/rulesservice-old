@@ -9,21 +9,22 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
 
-rule "Seed New Items Cache"
+rule "Refresh Addresses"
 
-    ruleflow-group 'GenerateSearches'
- 
+    ruleflow-group 'RefreshAddresses'
      when
-       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
+       rules: QRules( !isState("REFRESH_ADDRESSES"))
      then
-
+	 rules.setDrools(drools);
      rules.header();
-        rules.setState("GENERATE_NEW_ITEMS_CACHE");
-		rules.println("Generating  New Items Cache for "+rules.realm());
-		rules.reloadCache(); 
-		rules.generateItemCaches("ARCHIVED_PRODUCTS");
- 
+        rules.setState("REFRESH_ADDRESSES");
+		rules.println("Refreshing Person Addresses for "+rules.realm());
+
+		rules.processAddresses(rules.realm());
+
+
      rules.footer();
 end
