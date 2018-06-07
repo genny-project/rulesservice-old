@@ -1,0 +1,19 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - User is NOT a company"
+	when
+		 rules: QRules( 	(isState("EVENT_BTN_CLICK") && isState("BTN_SELECT_COMPANY_NO")) && !isState("SELECTED_COMPANY_ROLE_NO") )   
+	 then
+	    rules.header();
+		
+		rules.setState("SELECTED_COMPANY_ROLE_NO");
+		
+		/* we set the company role as FALSE */
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_COMPANY", "FALSE");
+		
+		rules.setState("COMPANY_IS_READY");
+	    rules.footer();     		      
+end
