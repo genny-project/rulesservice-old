@@ -830,7 +830,7 @@ public class QRules {
 	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
 
 		println("Loading layout: " + folderName + "/" + layoutPath);
-		String layout = RulesUtils.getLayout(folderName + "/" + layoutPath);
+		String layout = RulesUtils.getLayout(folderName, layoutPath);
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
 		publishCmd(layoutCmd);
 		println(layoutCode + " SENT TO FRONTEND");
@@ -864,7 +864,7 @@ public class QRules {
 
 		QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_POPUP", layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		String sublayoutString = RulesUtils.getLayout(sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm(), sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		if (root != null) {
@@ -893,7 +893,7 @@ public class QRules {
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
 		println("Loading url: " + realm() + "/" + sublayoutPath);
-		String sublayoutString = RulesUtils.getLayout(realm() + "/" + sublayoutPath);
+		String sublayoutString = RulesUtils.getLayout(realm(), "/" + sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
@@ -1043,13 +1043,13 @@ public class QRules {
 		msg.put("token", getToken());
 		Producer.getToWebCmds().write(msg).end();
 	}
-	
+
 	public void publishCmd(final QwandaMessage msg) {
-		
+
 		if(msg.askData != null && msg.askData.getMessages().length > 0) {
 			this.publishCmd(msg.askData);
 		}
-		
+
 		if(msg.asks != null) {
  			this.publishCmd(msg.asks);
 		}
@@ -1283,35 +1283,35 @@ public class QRules {
 			}
 		}
 	}
-	
+
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
 		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
-	
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
 	}
-	
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		
+
 		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, token, stakeholderCode);
 		if(questions != null) {
-				
+
 			this.publishCmd(questions);
 			return true;
 		}
-		
+
 		return false;
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
 	}
-	
+
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
-		
+
 		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
-				
+
 			/* Layout V1 */
 			QCmdViewFormMessage cmdFormView = new QCmdViewFormMessage(questionGroupCode);
 			cmdFormView.setIsPopup(isPopup);
@@ -1840,7 +1840,7 @@ public class QRules {
 
 		try {
 
-			String subLayoutMap = RulesUtils.getLayout(realm + "/sublayouts");
+			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
 			if (subLayoutMap != null) {
 
 				JsonArray subLayouts = new JsonArray(subLayoutMap);
@@ -3052,7 +3052,7 @@ public void makePayment(QDataAnswerMessage m) {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
 					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
 					this.publishCmd(message);
-						
+
 				} catch (Exception e) {
 //					e.printStackTrace();
 				}

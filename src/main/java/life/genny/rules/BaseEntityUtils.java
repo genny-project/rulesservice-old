@@ -50,7 +50,7 @@ public class BaseEntityUtils {
 
   /* =============== refactoring =============== */
 
-  
+
   public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
     String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
@@ -461,14 +461,14 @@ public class BaseEntityUtils {
 
 		return links;
 	}
-	
+
 	public BaseEntity getLinkedBaseEntity(String beCode, String linkCode, String linkValue) {
-		
+
 		List<BaseEntity> bes = this.getLinkedBaseEntities(beCode, linkCode, linkValue);
 		if(bes != null && bes.size() > 0) {
 			return bes.get(0);
 		}
-		
+
 		return null;
 	}
 
@@ -764,17 +764,6 @@ public class BaseEntityUtils {
 		List<Link> links = RulesUtils.getLinks(this.qwandaServiceUrl, this.decodedMapToken, this.token, parentCode,
 				linkCode);
 		return links;
-	}
-
-	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
-		Link link = new Link(parentCode, childCode, linkCode);
-		try {
-			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", link.toString(), this.token);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-
 	}
 
 	public String updateBaseEntity(BaseEntity be) {
