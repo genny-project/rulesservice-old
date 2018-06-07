@@ -105,18 +105,18 @@ rule "Make Offer"
           }
 
           /* Send Offer Questions */
-          rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+          rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", true);
 
           }
           else{
 
            /* Send Payment Method Questions */
-           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
            rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
           }
         }else{
            /* Send Payment Method Questions */
-          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
            rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
            //Send question QUE_PAYMENT_METHOD_GRP
        }
