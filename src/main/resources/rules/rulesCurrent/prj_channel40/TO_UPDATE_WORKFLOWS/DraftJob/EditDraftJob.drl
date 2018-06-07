@@ -20,10 +20,10 @@ rule "Edit Draft Jobs"
         String jobCode = dataJson.getString("itemCode");
         rules.println("The job code is   :: "+jobCode);
 
-       rules.publishCmd(rules.baseEntityUtils.getBaseEntityByCode(jobCode),"job");
+       rules.publishCmd(rules.baseEntity.getBaseEntityByCode(jobCode),"job");
 
     /*  Get load for the given job/BEG   */
-      BaseEntity load = rules.baseEntityUtils.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
+      BaseEntity load = rules.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
       rules.publishCmd(load, "load");
 
     /*    Getting Post Load Question GRP        */

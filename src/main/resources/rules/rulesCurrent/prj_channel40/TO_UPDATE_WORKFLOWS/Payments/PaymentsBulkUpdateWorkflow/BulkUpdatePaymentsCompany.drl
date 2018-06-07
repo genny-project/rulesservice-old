@@ -15,7 +15,7 @@ rule "Bulk Update assembly company info"
 
      BaseEntity userBe = rules.getUser();
      String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
-     BaseEntity companyBe = rules.baseEntityUtils.getParent(userBe.getCode(), "LNK_STAFF");
+     BaseEntity companyBe = rules.baseEntity.getParent(userBe.getCode(), "LNK_STAFF");
 
      String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 

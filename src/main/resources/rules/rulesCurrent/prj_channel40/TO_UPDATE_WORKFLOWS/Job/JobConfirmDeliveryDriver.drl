@@ -69,7 +69,7 @@ then
 		     if(begCode != null) {
 
 		    	 	/* mark job as delivered by driver */
-	            rules.baseEntityUtils.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
+	            rules.baseEntity.updateBaseEntityAttribute(begCode, begCode, "PRI_DRIVER_CONFIRMED_DELIVERY", "true");
 		     }
 		}
 

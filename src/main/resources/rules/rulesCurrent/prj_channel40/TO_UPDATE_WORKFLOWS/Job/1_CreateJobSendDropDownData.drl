@@ -17,7 +17,7 @@ rule "Send DropDown Datas"
      System.out.println("The user Code is  ::  " +userCode);
 
    /* Get the users Company Code  */
-    BaseEntity company =  rules.baseEntityUtils.getParent(userCode,"LNK_STAFF");
+    BaseEntity company =  rules.baseEntity.getParent(userCode,"LNK_STAFF");
     System.out.println("The users company code is  ::   " +company.getCode());
 
    /*      Getting list of loads      */

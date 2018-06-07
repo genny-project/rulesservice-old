@@ -23,7 +23,7 @@ then
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
 
-		List<Link> linkList = rules.baseEntityUtils.getLinks(begCode,"LNK_BEG");
+		List<Link> linkList = rules.baseEntity.getLinks(begCode,"LNK_BEG");
 		String ownerCode = null;
 		String loadCode = null;
 
@@ -50,7 +50,7 @@ then
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "SMS");
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "EMAIL");
 
-		rules.baseEntityUtils.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
+		rules.baseEntity.moveBaseEntity(begCode, "GRP_IN_TRANSIT", "GRP_COMPLETED","LNK_CORE");
 
 		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");
 		RulesUtils.println("-------------------- MOVING " + begCode + " -------------------------");

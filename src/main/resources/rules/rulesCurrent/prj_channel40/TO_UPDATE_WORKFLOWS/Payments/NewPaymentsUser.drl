@@ -31,7 +31,7 @@ rule "New Payments User"
      if(assemblyId != null) {
       /* Creates a new attribute for assembly user ID */
 		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode() , "PRI_ASSEMBLY_USER_ID", assemblyId);
-		rules.baseEntityUtils.saveAnswer(assemblyIdAnswer);
+		rules.baseEntity.saveAnswer(assemblyIdAnswer);
 		rules.println("assembly ID created in our system ::"+assemblyId);
 		rules.setState("IS_ASSEMBLY_USER_CREATED");
 	 	drools.setFocus("payments");

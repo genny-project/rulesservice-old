@@ -22,7 +22,7 @@ rule "Payments Company Creation Step 3 : Create Payments Assembly Company"
     		String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
     	
    	 	/* Getting company baseentity of the user */
-    		BaseEntity companyBe = rules.baseEntityUtils.getParent(rules.getUser().getCode(), "LNK_STAFF");
+    		BaseEntity companyBe = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
 
      	rules.println("Company not found for user..So creating a Company now..");
 
@@ -36,7 +36,7 @@ rule "Payments Company Creation Step 3 : Create Payments Assembly Company"
 			if(companyId != null) {
 
     	 		Answer assemblyCompanyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_COMPANY_ID", companyId);
-    	 		rules.baseEntityUtils.saveAnswer(assemblyCompanyIdAnswer);
+    	 		rules.baseEntity.saveAnswer(assemblyCompanyIdAnswer);
      			rules.println("Assembly Company created");
      			rules.setState("IS_ASSEMBLY_COMPANY_CREATED");
 			}

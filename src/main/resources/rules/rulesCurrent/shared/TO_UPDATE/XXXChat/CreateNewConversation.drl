@@ -33,7 +33,7 @@ rule "Create Conversation"
 
 		if(receiverCode != null && begCode != null) {
 
-			List<BaseEntity> chats = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
+			List<BaseEntity> chats = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100, true);
 			Boolean foundConversation = false;
 			String chatCode = null;
 
@@ -43,7 +43,7 @@ rule "Create Conversation"
 
 					BaseEntity chat = chats.get(i);
 
-					List<BaseEntity> users = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
+					List<BaseEntity> users = rules.baseEntity.getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER", 0, 100, true);
 					if (users != null) {
 
 						Boolean foundCurrentUser = false;
@@ -86,10 +86,10 @@ rule "Create Conversation"
 				rules.showLoading("Creating a new conversation...");
 
 				/* GET beg BE */
-					BaseEntity beg = rules.baseEntityUtils.getBaseEntityByCode(begCode);
+					BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);
 
 				/* Create chat BE */
-					BaseEntity chat = rules.baseEntityUtils.createBaseEntityByCode(userCode, "CHT", "Chat");
+					BaseEntity chat = rules.baseEntity.create(userCode, "CHT", "Chat");
 					rules.println("NEW CHAT CODE   ::   " + chat.getCode());
 
 				/* Subscribe Users to chat BaseEntity */
@@ -100,23 +100,23 @@ rule "Create Conversation"
 					String chatTitle = beg.getLoopValue("PRI_TITLE", null);
 					if(chatTitle == null) chatTitle = "New Conversation";
 
-					rules.baseEntityUtils.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_TITLE", chatTitle));
-					rules.baseEntityUtils.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm")));
+					rules.baseEntity.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_TITLE", chatTitle));
+					rules.baseEntity.saveAnswer(new Answer(chat.getCode(), chat.getCode(), "PRI_DATE_LAST_MESSAGE", RulesUtils.getTodaysDate("DD/MM/YYYY HH:mm")));
 
 				/* link GRP_MESSAGES and CHAT BE || list-item-conversation */
-					rules.baseEntityUtils.createLink("GRP_MESSAGES", chat.getCode(), "LNK_CHAT", "chat_conversation", 1.0);
+					rules.baseEntity.createLink("GRP_MESSAGES", chat.getCode(), "LNK_CHAT", "chat_conversation", 1.0);
 
 				/* Link users to chat */
-					rules.baseEntityUtils.createLink(chat.getCode(), userCode, "LNK_USER", "sender", 1.0);
-					rules.baseEntityUtils.createLink(chat.getCode(), receiverCode, "LNK_USER", "receiver", 1.0);
+					rules.baseEntity.createLink(chat.getCode(), userCode, "LNK_USER", "sender", 1.0);
+					rules.baseEntity.createLink(chat.getCode(), receiverCode, "LNK_USER", "receiver", 1.0);
 
 				/* SEND (GRP_MESSAGES, CHAT, SENDER, RECIEVER) BaseEntitys to recipients */
 					String[] chatRecipients = VertxUtils.getSubscribers(rules.realm(), chat.getCode());
 					rules.println("CHAT subscribers   ::   " + Arrays.toString(chatRecipients));
 
-					rules.baseEntityUtils.publishBaseEntityByCode("GRP_MESSAGES", "GRP_MESSAGES", "LNK_BEG", chatRecipients);
-					rules.baseEntityUtils.publishBaseEntityByCode(chat.getCode(), userCode, "LNK_USER", chatRecipients);
-					rules.baseEntityUtils.publishBaseEntityByCode(chat.getCode(), receiverCode, "LNK_USER", chatRecipients);
+					rules.baseEntity.publishBaseEntityByCode("GRP_MESSAGES", "GRP_MESSAGES", "LNK_BEG", chatRecipients);
+					rules.baseEntity.publishBaseEntityByCode(chat.getCode(), userCode, "LNK_USER", chatRecipients);
+					rules.baseEntity.publishBaseEntityByCode(chat.getCode(), receiverCode, "LNK_USER", chatRecipients);
 
 				/* redirect user to messaging screen */
 					rules.sendSublayout("messages-layout", "messages-layout.json", chat.getCode());

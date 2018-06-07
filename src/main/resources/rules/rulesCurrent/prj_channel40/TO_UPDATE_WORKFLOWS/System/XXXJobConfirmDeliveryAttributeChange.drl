@@ -21,7 +21,7 @@ ruleflow-group 'AttributeChange'
         
         BaseEntity jobBe = $m.getBe();
         String offerCode = jobBe.getValue("STT_HOT_OFFER",null);
-        BaseEntity offerBe = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
+        BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
         String quoterCode = offerBe.getValue("PRI_QUOTER_CODE", null);
        
         /* String offerCode = MergeUtil.getAttrValue(jobCode, "STT_HOT_OFFER", rules.getToken());

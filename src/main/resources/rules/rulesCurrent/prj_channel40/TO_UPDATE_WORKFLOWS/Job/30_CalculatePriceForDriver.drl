@@ -25,7 +25,7 @@ rule "Calculate Price for Driver"
 
         rules.setState("CALCULATE_DRIVER_PRICE");
         Answer newAnswer = $m.getAnswer();
-        BaseEntity source = rules.baseEntityUtils.getBaseEntityByCode(newAnswer.getSourceCode());
+        BaseEntity source = rules.baseEntity.getBaseEntityByCode(newAnswer.getSourceCode());
 
         if (rules.isUserSeller(source)) {
         		String tokenString = rules.getToken();
@@ -62,7 +62,7 @@ rule "Calculate Price for Driver"
             /* Get userRole */
                 String userRole = null;
 
-                    BaseEntity offer = rules.baseEntityUtils.getBaseEntityByCode(newAnswer.getTargetCode());
+                    BaseEntity offer = rules.baseEntity.getBaseEntityByCode(newAnswer.getTargetCode());
                     System.out.println(" offerCode BE "+ offer.getCode());
                     userRole = offer.getValue("PRI_NEXT_ACTION",null);
 
@@ -112,7 +112,7 @@ rule "Calculate Price for Driver"
                            /* answers.add(new Answer(newAnswer.getSourceCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString)); */
                             answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceIncGstCode, feePriceIncGSTString));
                             answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceExcGstCode, feePriceExcGSTString));
-                            rules.baseEntityUtils.saveAnswers(answers);
+                            rules.baseEntity.saveAnswers(answers);
                     }
                      else {
                      	rules.println("ERROR: User Role not acceptable - "+userRole);

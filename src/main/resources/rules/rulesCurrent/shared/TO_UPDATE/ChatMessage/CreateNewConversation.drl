@@ -38,7 +38,7 @@ then
           receiverCode = itemCode;
         }
         else {
-          BaseEntity receiver = rules.baseEntityUtils.getLinkedBaseEntities(itemCode, "LNK_OFR", "CREATOR").get(0);
+          BaseEntity receiver = rules.baseEntity.getLinkedBaseEntities(itemCode, "LNK_OFR", "CREATOR").get(0);
           receiverCode = receiver.getCode();
         }
 
@@ -66,7 +66,7 @@ then
           rules.showLoading("Creating new conversation...");
 
           /* create new conversation */
-          BaseEntity newConvo = rules.baseEntityUtils.createBaseEntityByCode(rules.getUser().getCode(), "CHT", "Chat");
+          BaseEntity newConvo = rules.baseEntity.create(rules.getUser().getCode(), "CHT", "Chat");
 
           if(newConvo != null) {
 
@@ -79,14 +79,14 @@ then
             List<Answer> answers = new ArrayList<Answer>();
             answers.add(titleConvo);
             answers.add(lastMessageDate);
-            rules.baseEntityUtils.saveAnswers(answers);
+            rules.baseEntity.saveAnswers(answers);
 
             /* Link convo to GRP_MESSAGES */
-            rules.baseEntityUtils.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "CHAT", 1.0);
+            rules.baseEntity.createLink("GRP_MESSAGES", newConvo.getCode(), "LNK_CHAT",  "CHAT", 1.0);
 
             /* Link users to chat */
-            rules.baseEntityUtils.createLink(newConvo.getCode(), rules.getUser().getCode(), "LNK_USER", "sender", 1.0);
-            rules.baseEntityUtils.createLink(newConvo.getCode(), receiverCode, "LNK_USER",  "receiver", 1.0);
+            rules.baseEntity.createLink(newConvo.getCode(), rules.getUser().getCode(), "LNK_USER", "sender", 1.0);
+            rules.baseEntity.createLink(newConvo.getCode(), receiverCode, "LNK_USER",  "receiver", 1.0);
 
             /* Fetch new conversation and send it to relevant users */
             // rules.publishData(newConvo, recipientCodeArray);
@@ -97,10 +97,10 @@ then
         /* Send sender BE to receiver and receiver BE to sender  */
         String[] receiverCodeInArray = {receiverCode};
         String[] senderCodeInArray = {userCode};
-        rules.publishData(rules.baseEntityUtils.getBaseEntityByCode(userCode), receiverCodeInArray );
-        rules.publishData(rules.baseEntityUtils.getBaseEntityByCode(receiverCode), senderCodeInArray );
+        rules.publishData(rules.baseEntity.getBaseEntityByCode(userCode), receiverCodeInArray );
+        rules.publishData(rules.baseEntity.getBaseEntityByCode(receiverCode), senderCodeInArray );
         rules.sendChatMessages(chatCode, 0, 500);
-        rules.publishData(rules.baseEntityUtils.getBaseEntityByCode("GRP_MESSAGES"), receiverCodeInArray );
+        rules.publishData(rules.baseEntity.getBaseEntityByCode("GRP_MESSAGES"), receiverCodeInArray );
         // rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);
         rules.sendCmdSplitView("GRP_MESSAGES", chatCode);
       }

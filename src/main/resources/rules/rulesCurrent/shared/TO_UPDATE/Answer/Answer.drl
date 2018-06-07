@@ -55,7 +55,7 @@ ruleflow-group 'Answer'
 			}
 		}
 
-	   rules.baseEntityUtils.saveAnswers(answersToSave);
+	   rules.baseEntity.saveAnswers(answersToSave);
 
 
        rules.footer();

@@ -19,7 +19,7 @@ rule "Is user company setup - step 2 - driver"
    	    
 		
 		/* we check if the user is linked to a company */
-		BaseEntity company = rules.baseEntityUtils.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		BaseEntity company = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
 		Boolean driverCompanyExists = company != null;
 		
 		if(driverCompanyExists && rules.isMandatoryFieldsEntered(company.getCode(), "QUE_NEW_USER_COMPANY_GRP")) {

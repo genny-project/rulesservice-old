@@ -16,7 +16,7 @@ rule "Step 1 for payments-company updation : Check if user belongs to company"
 		rules.setState("LOOP_COMPANY_UPDATE");
 
 		BaseEntity userBe = rules.getUser();
-		BaseEntity companyBe = rules.baseEntityUtils.getParent(userBe.getCode(), "LNK_STAFF"); 
+		BaseEntity companyBe = rules.baseEntity.getParent(userBe.getCode(), "LNK_STAFF"); 
 
 		if(companyBe != null) {
 			drools.setFocus("payments-company-update");

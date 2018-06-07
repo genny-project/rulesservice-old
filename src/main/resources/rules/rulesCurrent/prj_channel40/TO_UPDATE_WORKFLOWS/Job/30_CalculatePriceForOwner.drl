@@ -25,7 +25,7 @@ then
   rules.setState("CALCULATE_OWNER_PRICE");
 
          Answer newAnswer = $m.getAnswer();
-          BaseEntity source = rules.baseEntityUtils.getBaseEntityByCode(newAnswer.getSourceCode());
+          BaseEntity source = rules.baseEntity.getBaseEntityByCode(newAnswer.getSourceCode());
 
   if(rules.isUserBuyer(source)) {
 
@@ -86,7 +86,7 @@ then
       String userRole = null;
       if(isOffer) {
           String offerCode = newAnswer.getTargetCode();
-          BaseEntity offerBe = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
+          BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
           rules.println(" offerCode BE "+ offerCode);
 
           /* userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);  */
@@ -139,7 +139,7 @@ then
               answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceIncGstCode, JsonUtils.toJson(feePriceIncGST)));
               answers.add(new Answer(newAnswer.getSourceCode(), begCode, feePriceExcGstCode, JsonUtils.toJson(feePriceExcGST)));
               answers.add(owIncGST);
-              rules.baseEntityUtils.saveAnswers(answers);
+              rules.baseEntity.saveAnswers(answers);
           }
       }
   }
