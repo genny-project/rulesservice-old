@@ -26,11 +26,11 @@ rule "Load Description Attribute Change"
          String loadDescription = newAnswer.getValue();
 
        /* Get the sourceCode(Job code) for this LOAD */
-       BaseEntity job = rules.baseEntityUtils.getParent(newAnswer.getTargetCode(), "LNK_BEG");
+       BaseEntity job = rules.baseEntity.getParent(newAnswer.getTargetCode(), "LNK_BEG");
 
        Answer jobDescriptionAnswer = new Answer(rules.getUser().getCode() ,job.getCode(), newAnswer.getAttributeCode() ,loadDescription);
        //rules.publishData(jobDescriptionAnswer);
-       rules.baseEntityUtils.saveAnswer(jobDescriptionAnswer);
+       rules.baseEntity.saveAnswer(jobDescriptionAnswer);
 
        rules.footer();
 end

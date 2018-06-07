@@ -81,7 +81,7 @@ rule "Submit LOAD"
      		}
      	}
 
-       String layout = RulesUtils.getLayout("card.json");
+       String layout = RulesUtils.getLayout(rules.realm(), "card.json");
      	/* sending cmd BUCKET_VIEW */
         QCmdMessage cmdBucketView = new QCmdMessage("CMD_VIEW","BUCKET_VIEW");
         JsonObject bucketViewJson = new JsonObject().mapFrom(cmdBucketView);

@@ -27,10 +27,10 @@ rule "TV_SELECT Individual Draft Jobs"
 	     String parentCode = parentCodeObj.toString();
 	     if (jobCode != null && !jobCode.isEmpty() && parentCode != null && !parentCode.isEmpty()){
 
-		     rules.publishCmd(rules.baseEntityUtils.getBaseEntityByCode(jobCode),"job");
+		     rules.publishCmd(rules.baseEntity.getBaseEntityByCode(jobCode),"job");
 
 		    /*  Get load for the given job/BEG   */
-		      BaseEntity load = rules.baseEntityUtils.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
+		      BaseEntity load = rules.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
 		     rules.publishCmd(load, "load");
 
 		    /*    Getting Post Load Question GRP        */
@@ -50,7 +50,7 @@ rule "TV_SELECT Individual Draft Jobs"
 		    /*    Sending cmd SUBLAYOUT_CHANGE      */
 		     QCmdMessage cmdJobSublayout = new QCmdMessage("CMD_SUBLAYOUT","JobLayout");
 		     JsonObject cmdJobSublayoutJson = new JsonObject().mapFrom(cmdJobSublayout);
-		     String createJobLayout = RulesUtils.getLayout(rules.realm() + "/create_job.json");
+		     String createJobLayout = RulesUtils.getLayout(rules.realm(), "/create_job.json");
 		       cmdJobSublayoutJson.put("items",createJobLayout);
 		       cmdJobSublayoutJson.put("token", rules.getToken());
 		      QwandaUtils.jsonLogger("SubLayout Data",cmdJobSublayoutJson);

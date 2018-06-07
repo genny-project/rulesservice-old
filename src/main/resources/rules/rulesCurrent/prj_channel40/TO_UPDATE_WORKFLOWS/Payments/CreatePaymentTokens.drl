@@ -34,7 +34,7 @@ rule "Create Assembly Tokens"
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.baseEntityUtils.saveAnswers(answers);
+			rules.baseEntity.saveAnswers(answers);
 		}
 
 		RulesUtils.footer(drools.getRule().getName());

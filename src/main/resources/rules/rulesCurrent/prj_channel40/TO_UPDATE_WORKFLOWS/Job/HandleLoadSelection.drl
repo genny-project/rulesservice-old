@@ -40,7 +40,7 @@ rule "Handle Load Selection"
 
         /*  Grab attributes from load and save it to newly load    */
          Map<String, String> map = new HashMap<>();
-         map = rules.baseEntityUtils.getMapOfAllAttributesValuesForBaseEntity(loadTemplateCode);
+         map = rules.baseEntity.getMapOfAllAttributesValuesForBaseEntity(loadTemplateCode);
          map.remove("LNK_LOAD_LISTS");
           RulesUtils.ruleLogger(" MAP DATA ",map );
           List<Answer> answers = new ArrayList<Answer>();
@@ -50,11 +50,11 @@ rule "Handle Load Selection"
                        Answer answerObj = new Answer(rules.getUser().getCode(), newLoadCode, entry.getKey(), entry.getValue() );
                        answers.add(answerObj);
                   }
-                    rules.baseEntityUtils.saveAnswers(answers);
+                    rules.baseEntity.saveAnswers(answers);
                }catch (Exception e) {
                }
            rules.println("The new laod with attribute is ::   "+newLoadCode.toString());
-           BaseEntity newLoad = rules.baseEntityUtils.getBaseEntityByCode(newLoadCode);
+           BaseEntity newLoad = rules.baseEntity.getBaseEntityByCode(newLoadCode);
            String[] recipientArray = { rules.getUser().getCode() };
         	rules.publishBE(newLoad,recipientArray);
 

@@ -17,7 +17,7 @@ rule "User Payments Methods"
 
     	/* Save token answers */
         String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = rules.baseEntityUtils.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+       	String assemblyId = rules.baseEntity.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
 
        	if(assemblyId != null) {
 
@@ -35,7 +35,7 @@ rule "User Payments Methods"
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.baseEntityUtils.saveAnswers(answers);
+			rules.baseEntity.saveAnswers(answers);
 
 
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
@@ -44,7 +44,7 @@ rule "User Payments Methods"
        	}
 
         String userCode = rules.getUser().getCode();
-        rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", true);
+        rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
  		rules.sendSublayout("PAYMENT_METHODS", "user-profile-payment-methods.json");
 
  		rules.setState("USER_PAYMENT_METHOD_CREATED");

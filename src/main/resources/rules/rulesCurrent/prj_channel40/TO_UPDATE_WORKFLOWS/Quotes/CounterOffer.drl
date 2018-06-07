@@ -82,10 +82,10 @@ rule "Counter Offer"
             userRole = MergeUtil.getAttrValue(offerCode, "PRI_NEXT_ACTION", tokenString);
 
             if(userRole != null && userRole.equals("OWNER")){
-                rules.askQuestions(userCode, offerCode, "QUE_OFFER_OWNER_GRP", false, true); /* false for form_view*/
+                rules.askQuestions(userCode, offerCode, "QUE_OFFER_OWNER_GRP", true);
             }
             if(userRole == null || userRole.equals("QUOTER")){
-                rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+                rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", true);
             }
         rules.footer();
 end

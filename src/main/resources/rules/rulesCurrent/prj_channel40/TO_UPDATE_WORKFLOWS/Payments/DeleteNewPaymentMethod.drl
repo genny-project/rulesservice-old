@@ -40,7 +40,7 @@ rule "Delete new payment method - user"
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.baseEntityUtils.saveAnswers(answers);
+			rules.baseEntity.saveAnswers(answers);
        	}
 
 		if(deletedPaymentMethodId != null) {
@@ -77,7 +77,7 @@ rule "Delete new payment method - user"
 				if(isDeleted) {
 					String finalPaymentMethods = newPaymentMethodsArray.toString();
 					Answer paymentAnswer = new Answer(userCode, userCode, "PRI_USER_PAYMENT_METHODS", finalPaymentMethods);
-	            		rules.baseEntityUtils.saveAnswer(paymentAnswer);
+	            		rules.baseEntity.saveAnswer(paymentAnswer);
 				}
 
 			}

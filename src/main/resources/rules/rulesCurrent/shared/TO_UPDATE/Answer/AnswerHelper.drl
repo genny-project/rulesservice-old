@@ -34,7 +34,7 @@ ruleflow-group 'Answer'
 					helperAnswers.add(new Answer(firstAnswer.getSourceCode(),firstAnswer.getTargetCode(),"PRI_ADDRESS_FULL","64 Fakenham Rd, Ashburton, VIC"));
 					rules.publishData(new Answer(firstAnswer.getSourceCode(),firstAnswer.getTargetCode(),"PRI_ADDRESS_FULL","64 Fakenham Rd, Ashburton, VIC"));
 					rules.publishData(new Answer(firstAnswer.getSourceCode(),firstAnswer.getTargetCode(),"PRI_ADDRESS_JSON","{\"street_address\":\"61 Fakenham Road\",\"suburb\":\"Ashburton\",\"state\":\"VIC\",\"postal_code\":\"3147\",\"country\":\"AU\",\"full_address\":\"61 Fakenham Rd, Ashburton VIC 3147, Australia\",\"latitude\":-37.862308,\"longitude\":145.08747100000005}"));
-					rules.baseEntityUtils.saveAnswers(helperAnswers);
+					rules.baseEntity.saveAnswers(helperAnswers);
 				}
 			}
 		}

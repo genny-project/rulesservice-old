@@ -21,7 +21,7 @@ rule "Send Question"
             rules.println("Send Question: missing questionGroupCode");
         }
         else {
-            rules.sendQuestions(questionSourceCode, questionTargetCode, questionGroupCode, true);
+            rules.sendQuestions(questionSourceCode, questionTargetCode, questionGroupCode);
 
             rules.setState("SENT_QUESTION");
             rules.setState(questionGroupCode);
