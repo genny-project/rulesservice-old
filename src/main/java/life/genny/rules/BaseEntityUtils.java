@@ -437,6 +437,16 @@ public class BaseEntityUtils {
 
 		return links;
 	}
+	
+	public BaseEntity getLinkedBaseEntity(String beCode, String linkCode, String linkValue) {
+		
+		List<BaseEntity> bes = this.getLinkedBaseEntities(beCode, linkCode, linkValue);
+		if(bes != null && bes.size() > 0) {
+			return bes.get(0);
+		}
+		
+		return null;
+	}
 
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be) {
 		return this.getLinkedBaseEntities(be.getCode(), null, null);
