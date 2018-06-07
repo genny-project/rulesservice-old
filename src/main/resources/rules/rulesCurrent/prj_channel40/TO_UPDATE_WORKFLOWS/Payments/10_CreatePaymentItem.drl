@@ -29,7 +29,7 @@ rule "Create Payment Item"
 		BaseEntity offerBe = rules.baseEntityUtils.getBaseEntityByCode(offerCode);
 		String BEGCode = offerBe.getValue("PRI_BEG_CODE", null);
 		rules.println("BEG CODE ::"+BEGCode);
-
+    
 		BaseEntity begBe = rules.baseEntityUtils.getBaseEntityByCode(BEGCode);
 		BaseEntity loadBe = rules.baseEntityUtils.getLinkedBaseEntity(BEGCode, "LNK_BEG", "LOAD");
 
