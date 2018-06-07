@@ -8397,7 +8397,6 @@ public class QRules {
 		JsonObject listView = new JsonObject();
 		listView.put("code", "LIST_VIEW");
 		listView.put("root", listCode);
-
 		
 		JsonObject bucketView = new JsonObject();
 		bucketView.put("code", "BUCKET_VIEW");
@@ -8407,16 +8406,39 @@ public class QRules {
 		detailView.put("code", "DETAIL_VIEW");
 		detailView.put("root", begCode);
 		detailView.put("layoutCode", "detail-view");
+		detailView.put("parentCode", listCode);
 		
 		JsonArray dataArray = new JsonArray();	
 		dataArray.add(bucketView);
 		dataArray.add(detailView);
 		
+		JsonObject layout1 = new JsonObject();
+		layout1.put("code", "BUCKET_VIEW");
+		layout1.put("root", bucketCode);
+
+		JsonObject layout2 = new JsonObject();
+		layout2.put("code", "DETAIL_VIEW");
+		layout2.put("root", begCode);
+		
+		JsonObject tabObject1 = new JsonObject();
+		tabObject1.put("name", "Process Card");
+		tabObject1.put("icon", "view-agenda");
+		tabObject1.put("layout", layout1);
+		
+		JsonObject tabObject2 = new JsonObject();
+		tabObject2.put("name", "Detail View");
+		tabObject2.put("icon", "reorder");
+		tabObject2.put("layout", layout2);
+		
+		
+		JsonArray tabArray = new JsonArray();
+		tabArray.add(tabObject1);
+		tabArray.add(tabObject2);
 		
 		JsonObject tabView = new JsonObject();
 		tabView.put("code", "TAB_VIEW");
 		tabView.put("root", dataArray);		
-
+		tabView.put("tabs", tabArray);		
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(listView);
