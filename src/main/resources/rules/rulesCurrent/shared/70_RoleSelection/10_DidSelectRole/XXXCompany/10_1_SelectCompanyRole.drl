@@ -13,8 +13,8 @@ rule "Select Company Role"
 		
 		/* PRI_IS_DRIVER and PRI_IS_OWNER */
 		/* COMPANY representatives are freight owners */
-		rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_OWNER", "TRUE");
-		rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_DRIVER", "FALSE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_OWNER", "TRUE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_DRIVER", "FALSE");
 
 		rules.setState("COMPANY_SELECTED");
 	    rules.footer();     		      

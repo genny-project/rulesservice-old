@@ -30,7 +30,7 @@ rule "Create Link"
             rules.println("Create Link: missing linkWeight");
         }
         else {
-            rules.baseEntityUtils.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);
+            rules.baseEntity.createLink(linkSourceCode, linkTargetCode, linkCode, linkValue, linkWeight);
 
 		    rules.setState("CREATED_LINK");
 		    rules.setState(linkValue);

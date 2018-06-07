@@ -13,7 +13,7 @@ rule "Send User Company"
      	String userCode = rules.getUser().getCode();
 
      	/*  Get Company Code of the current user   */
-        BaseEntity company = rules.baseEntityUtils.getParent(userCode, "LNK_STAFF");
+        BaseEntity company = rules.baseEntity.getParent(userCode, "LNK_STAFF");
 
         if(company != null)
         {

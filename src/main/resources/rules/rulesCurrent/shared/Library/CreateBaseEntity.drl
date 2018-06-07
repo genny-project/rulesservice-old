@@ -27,7 +27,7 @@ rule "Create BaseEntity"
             rules.println("Create BaseEntity: missing beName");
         }
         else {
-            BaseEntity be = rules.baseEntityUtils.createBaseEntityByCode( beCode, bePrefix, beName );
+            BaseEntity be = rules.baseEntity.create( beCode, bePrefix, beName );
 
             rules.set("baseEntity", be);
             rules.setState("CREATED_BASE_ENTITY");
