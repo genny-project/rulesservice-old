@@ -33,7 +33,7 @@ rule "Submit Job"
         String dataString = $m.data.getValue();
         JsonObject dataJson = new JsonObject(dataString);
         String jobCode = dataJson.getString("targetCode");
-        BaseEntity job = rules.getBaseEntityByCode(jobCode);
+        BaseEntity job = rules.baseEntityUtils.getBaseEntityByCode(jobCode);
         String actionCode = dataJson.getString("action");
         rules.println("The job code is   :: "+jobCode);
 
@@ -61,7 +61,7 @@ rule "Submit Job"
 
     			/* Add new attribute to save that a job is existing */
     	      	Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), jobCode, "PRI_JOB_IS_SUBMITTED", "true");
-    	      	rules.saveAnswer(newJobSubmitAnswer);
+    	      	rules.baseEntityUtils.saveAnswer(newJobSubmitAnswer);
 
     	      	String jobCreatorEmail = rules.getUser().getValue("PRI_EMAIL", null);
     	      	String jobTitle = job.getValue("PRI_TITLE", null);
@@ -82,7 +82,7 @@ rule "Submit Job"
 
       /*  Calling the rule group : BucketView     */
      rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
-     rules.generateNewItemsCache();
+     rules.reloadCache();
      drools.setFocus("ispayments");  /* NOW Set up Payments */
 
      rules.footer();

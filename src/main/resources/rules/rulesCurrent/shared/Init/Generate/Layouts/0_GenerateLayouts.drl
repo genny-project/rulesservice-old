@@ -24,7 +24,7 @@ rule "Generate Layouts"
 
         rules.setState("GENERATE_LAYOUTS");
 		rules.println("Generating layouts");
-		rules.getAllLayouts();
+		rules.layoutUtils.getAllLayouts();
 
     rules.footer();
 

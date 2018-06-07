@@ -43,7 +43,7 @@ rule "Create Job"
      
     /*  Add author to the load    */
       Answer loadAuthorAns = new Answer(rules.getUser().getCode(),load.getCode(), "PRI_AUTHOR", rules.getUser().getCode() );  
-      rules.saveAnswer(loadAuthorAns);    	  
+      rules.baseEntityUtils.saveAnswer(loadAuthorAns);    	  
     
     
      /*  link newly created LOAD to JOB/BEG    */
@@ -54,20 +54,20 @@ rule "Create Job"
        /*  Adding Offer Count to 0   */
        	  Answer offerCountAns = new Answer(rules.getUser().getCode(),beg.getCode(), "PRI_OFFER_COUNT", "0" ); 	  
         /* Publish Answer   */
-       	 rules.saveAnswer(offerCountAns); 
+       	 rules.baseEntityUtils.saveAnswer(offerCountAns); 
 	    
          /*     Moving the BEG      */
     /*        Link link = new Link("GRP_DRAFTS",beg.getCode(),"LNK_CORE");
  	       String output = QwandaUtils.apiPostEntity(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/move/GRP_NEW_ITEMS", JsonUtils.toJson(link), rules.getToken()); 	       */
  	       
  	      /*    Send newly created job with its attributes   */   
- 	      BaseEntity job = rules.getBaseEntityByCode(beg.getCode());     
+ 	      BaseEntity job = rules.baseEntityUtils.getBaseEntityByCode(beg.getCode());     
       /*     JsonObject newJobDetails = new JsonObject( QwandaUtils.apiGet(rules.getQwandaServiceUrl()+"/qwanda/baseentitys/"+beg.getCode()+"/linkcodes/LNK_BEG/attributes", rules.getToken()));
            rules.println("The newly submitted Job details     ::     "+newJobDetails.toString());
            rules.publishCmd(newJobDetails); */
            
           /* Get the sourceCode(Company code) for this User */
-            BaseEntity company = rules.getParent(rules.getUser().getCode(), "LNK_STAFF");
+            BaseEntity company = rules.baseEntityUtils.getParent(rules.getUser().getCode(), "LNK_STAFF");
          
          /* link newly created Job to GRP_LOADS   */
            rules.println("The beg Code is  ::  "+beg.getCode());

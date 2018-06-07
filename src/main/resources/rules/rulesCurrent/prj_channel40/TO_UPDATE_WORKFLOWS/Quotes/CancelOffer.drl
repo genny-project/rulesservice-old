@@ -76,7 +76,7 @@ rule "Cancel Offer"
             String linkOwner = "OWNER";
 
         /* GET OFFER BaseEntity */
-            BaseEntity offer =  rules.getBaseEntityByCode(offerCode);
+            BaseEntity offer =  rules.baseEntityUtils.getBaseEntityByCode(offerCode);
 
         /* GET attributes of the OFFER BE */
             String begCode = offer.getLoopValue("PRI_BEG_CODE", null);
@@ -85,7 +85,7 @@ rule "Cancel Offer"
             rules.println("quoterCode       ::   " + quoterCode);
 
         /* GET BEG BE */
-            BaseEntity beg = rules.getBaseEntityByCode(begCode);
+            BaseEntity beg = rules.baseEntityUtils.getBaseEntityByCode(begCode);
 
         /* GET ownerCode */
             Optional<String> optOwnerCode = beg.getValue("PRI_AUTHOR");
@@ -100,10 +100,10 @@ rule "Cancel Offer"
             }
 
         /* Update PRI_NEXT_ACTION = null */
-            rules.saveAnswer(new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE"));
+            rules.baseEntityUtils.saveAnswer(new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE"));
 
 		/* Update link between BEG and OFFER to weight= 0.0 */
-            rules.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);
+            rules.baseEntityUtils.updateLink(begCode, offerCode, linkCode, linkOffer, 0.0);
 
 		/* Update the number of offerCount for BEG */
 			Integer offerCount = beg.getLoopValue("PRI_OFFER_COUNT", 0);
@@ -111,7 +111,7 @@ rule "Cancel Offer"
 				offerCount = offerCount - 1;
 			}
 			rules.println("Offer Count is   ::   " + offerCount);
-			rules.saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
+			rules.baseEntityUtils.saveAnswer(new Answer(beg.getCode(), beg.getCode(), "PRI_OFFER_COUNT", offerCount.toString()));
 
 		/* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients    */
 	        String[] offerRecipients = VertxUtils.getSubscribers(rules.realm(),offer.getCode());

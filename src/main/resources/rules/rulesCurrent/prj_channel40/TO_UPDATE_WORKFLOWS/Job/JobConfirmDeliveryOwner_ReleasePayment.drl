@@ -45,17 +45,17 @@ rule "Job Confirm Delivery - Owner and Release Payment"
 
       if(begCode != null) {
 
-        begBe = rules.getBaseEntityByCode(begCode);
+        begBe = rules.baseEntityUtils.getBaseEntityByCode(begCode);
 
         /* getting driver code from links */
-        List<Link> linkList = rules.getLinks(begCode,"LNK_BEG");
+        List<Link> linkList = rules.baseEntityUtils.getLinks(begCode,"LNK_BEG");
 
         if(linkList != null) {
 
           for(Link link : linkList) {
             if(link.getLinkValue().equals("DRIVER")) {
               driverCode = link.getTargetCode();
-              driverBe = rules.getBaseEntityByCode(driverCode);
+              driverBe = rules.baseEntityUtils.getBaseEntityByCode(driverCode);
             }
           }
         }
@@ -69,70 +69,69 @@ rule "Job Confirm Delivery - Owner and Release Payment"
         }
 
         Boolean isRealeasePaymentDone = begBe.getLoopValue("PRI_IS_RELEASE_PAYMENT_DONE", false);
-        String paymentStatus = rules.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
-        
+        String paymentStatus = rules.baseEntityUtils.getBaseEntityValueAsString(begCode, "PRI_ITEM_STATUS");
+
         if(paymentStatus != null && paymentStatus.contains("ITEM_PAYMENT_COMPLETED")) {
 
         		/*    Adding Release Payment Done status  */
             Answer paymentDoneAns = new Answer(rules.getUser().getCode(), begCode, "PRI_IS_RELEASE_PAYMENT_DONE", "TRUE" );
-            rules.saveAnswer(paymentDoneAns);
+            rules.baseEntityUtils.saveAnswer(paymentDoneAns);
 
             /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-            rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+            rules.baseEntityUtils.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
             /* we mark the job as paid once the confirm-delivery button is clicked and release-payment is success */
-            rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+            rules.baseEntityUtils.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
             rules.setState("CONFIRMED_DELIVERY_OWNER");
-            
+
             /* reload cache */
-      		rules.generateNewItemsCache();
-      		
+      		rules.reloadCache();
+
          } else {
-        	 
+
          	/* if payment is already released and is successful, set success states */
         		rules.println(isRealeasePaymentDone);
 
         		if(isRealeasePaymentDone) {
 
          		 /* change status colour to both driver and owner to Orange :  Funds Cleared disbursement processing */
-          		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+          		rules.baseEntityUtils.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
           		/* we move the job to PAID */
-          		rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+          		rules.baseEntityUtils.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
           		rules.setState("CONFIRMED_DELIVERY_OWNER");
-          		
+
           		/* reload cache */
-          		rules.generateNewItemsCache();
+          		rules.reloadCache();
 
         		} else {
 
           		/* when payment release process is flowing first time for an item */
 
           		if(ownerCode != null && driverCode != null) {
-        		 
+
         			/* hitting release payment API */
             		Boolean isPaymentReleased = rules.releasePayment(begBe, user, driverBe, assemblyAuthKey);
 
-            		/* when release-payment is success */
-            		if(isPaymentReleased) {       
+                if(isPaymentReleased) {
 
-              		/* we move the job to GRP_PAID */
-              		rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+                  /* we move the job to GRP_PAID */
+                  rules.baseEntityUtils.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
-              		/* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
-              		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
+                  /* change status colour to both driver and owner to Orange (warning) :  Funds Cleared disbursement processing */
+                  rules.baseEntityUtils.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "warning");
 
-              		rules.setState("CONFIRMED_DELIVERY_OWNER");
-              		
-              		/* reload cache */
-              		rules.generateNewItemsCache();
-           		}
+                  rules.setState("CONFIRMED_DELIVERY_OWNER");
+
+                  /* reload cache */
+                  rules.reloadCache();
+                }
            	  }
        	 	}
       	 }
       }
-   
+
       rules.footer();
 end

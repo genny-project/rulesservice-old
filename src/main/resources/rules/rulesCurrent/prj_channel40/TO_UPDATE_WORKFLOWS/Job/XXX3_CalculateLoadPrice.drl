@@ -133,27 +133,27 @@
 // 						/* Saving  OWNER_PRICE_EXC_GST */ 
 // 							Answer ownerPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);          
 // 							rules.publishData(ownerPriceExcGSTAnswer); 
-// 							//rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
+// 							//rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
 						
 // 						/* Saving  DRIVER_PRICE_INC_GST */ 
 // 							Answer driverPriceIncGSTAnswer = new Answer(rules.getUser().getCode(), begCode, driverPriceIncGstCode, driverPriceIncGSTString);          
 // 							rules.publishData(driverPriceIncGSTAnswer);  
-// 							//rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
+// 							//rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
 
 // 						/* Saving  DRIVER_PRICE_EXC_GST */ 
 // 							Answer driverPriceExcGSTAnswer = new Answer(rules.getUser().getCode(), begCode, driverPriceExcGstCode, driverPriceExcGSTString);          
 // 							rules.publishData(driverPriceExcGSTAnswer); 
-// 							//rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
+// 							//rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
 
 // 						/* Saving  FEE_INC_GST */ 
 // 							Answer feePriceIncGSTAnswer = new Answer(rules.getUser().getCode(), begCode, feePriceIncGstCode, feePriceIncGSTString);          
 // 							rules.publishData(feePriceIncGSTAnswer);   
-// 							//rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
+// 							//rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
 
 // 						/* Saving  FEE_EXC_GST */ 
 // 							Answer feePriceExcGSTAnswer = new Answer(rules.getUser().getCode(), begCode, feePriceExcGstCode, feePriceExcGSTString);         
 // 							rules.publishData(feePriceExcGSTAnswer); 
-// 							//rules.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
+// 							//rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), begCode, ownerPriceExcGstCode, ownerPriceExcGSTString);
 // 				}
 // 			}
 // 		rules.footer();

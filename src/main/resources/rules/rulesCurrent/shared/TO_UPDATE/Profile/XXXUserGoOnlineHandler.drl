@@ -19,7 +19,7 @@ rule "User go online event"
         HashMap<String,String> contextMap = new HashMap<String, String>();
         rules.sendMessage("", recipientArr, contextMap,"MSG_CH40_WELCOME_TOAST", "TOAST");
         
-        rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
+        rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ONLINE", "TRUE");
         
 		rules.footer();      
 end

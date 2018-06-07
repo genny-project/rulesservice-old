@@ -23,9 +23,9 @@ rule "Generate Bucket caches"
         rules.setState("GENERATE_BUCKET_CACHES");
 		rules.println("Generating  Bucket Caches for "+rules.realm());
 
-		BaseEntity searchNewItems = rules.getBaseEntityByCode("SBE_NEW_ITEMS");
+		BaseEntity searchNewItems = rules.baseEntityUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
 
-		rules.generateItemCaches("BUCKETS"); 
+		rules.reloadCache();
 
 
      rules.footer();

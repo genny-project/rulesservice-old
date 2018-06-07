@@ -12,7 +12,7 @@ rule "Setup Products"
 
 		  rules.setState("APPLICATION_READY");
 		  rules.setState("TRIGGER_APPLICATION");
-		  
+
       String homeLoanCode = "PRD_HOME_LOAN";
         String holidayCode = "PRD_HOLIDAY";
         String linkCode= "LNK_SCORE";
@@ -26,7 +26,7 @@ rule "Setup Products"
 
         /* Creating a link between USER & PRD_HOLIDAY */
         if(!isHomeloan){
-            rules.createLink(rules.getUser().getCode(), homeLoanCode, linkCode, linkHomeloan, 1.0);
+            rules.baseEntityUtils.createLink(rules.getUser().getCode(), homeLoanCode, linkCode, linkHomeloan, 1.0);
         }
 
         /* Check if link exists between USER & PRD_HOME_LOAN */
@@ -35,12 +35,12 @@ rule "Setup Products"
 
         /* Creating a link between USER & PRD_HOME_LOAN */
         if(!isHoilday){
-            rules.createLink(rules.getUser().getCode(), holidayCode, linkCode, linkHoliday, 1.0);
+            rules.baseEntityUtils.createLink(rules.getUser().getCode(), holidayCode, linkCode, linkHoliday, 1.0);
         }
 
         /* Send begs */
         rules.publishBaseEntityByCode(homeLoanCode);
         rules.publishBaseEntityByCode(holidayCode);
-        		  
+
 	    rules.footer();
 end
