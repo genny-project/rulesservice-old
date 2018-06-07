@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -55,7 +53,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
@@ -75,10 +72,7 @@ import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
-import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QCmdReloadMessage;
-import life.genny.qwanda.message.QCmdViewFormMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
@@ -86,7 +80,6 @@ import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QDataMessage;
-import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QDataToastMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
@@ -116,14 +109,14 @@ import life.genny.qwanda.payments.QReleasePayment;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
-import life.genny.qwanda.validation.Validation;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.SecurityUtils;
 import life.genny.rules.Layout.LayoutUtils;
+import life.genny.rules.Layout.LayoutViewData;
 import life.genny.rules.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.MoneyHelper;
@@ -131,7 +124,6 @@ import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
 import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
-import life.genny.qwandautils.JsonUtils;
 
 public class QRules {
 
@@ -1304,13 +1296,19 @@ public class QRules {
 		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
 
 			/* Layout V1 */
-			this.layoutUtils.sendView(ViewType.Form, questionGroupCode, isPopup);
+			
+			LayoutViewData viewData = new LayoutViewData(ViewType.Form, questionGroupCode, isPopup);
+			QCmdMessage viewMessage = this.layoutUtils.sendView(viewData);
+			if(viewMessage != null) {
+				this.publishCmd(viewMessage);
+			}
 
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
 		}
 	}
+	
 
 	public void header() {
 		try {
@@ -3191,6 +3189,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display
 	 */
 	public void sendCmdSplitView(final String parentCode, final String chatCode) {
+		
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 

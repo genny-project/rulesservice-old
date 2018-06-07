@@ -13,7 +13,8 @@ import life.genny.qwanda.Layout;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QCmdViewFormMessage;
+import life.genny.qwanda.message.QCmdViewMessage;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.BaseEntityUtils;
 import life.genny.rules.RulesUtils;
@@ -170,21 +171,47 @@ public class LayoutUtils {
 		return layoutCmd;
 	}
 	
-	public QCmdMessage sendView(ViewType viewType, String rootCode) {
-		return this.sendView(viewType, rootCode, false);
+	public QCmdMessage sendView(LayoutViewData viewData) {
+		return this.sendView(viewData, false);
 	}
 	
-	public QCmdMessage sendView(ViewType viewType, String rootCode, Boolean isPopup) {
+	public QCmdMessage sendView(LayoutViewData viewData, Boolean isPopup) {
 		
-		switch(viewType) {
-		case Form: {
-			
-			QCmdViewFormMessage formViewMessage = new QCmdViewFormMessage(rootCode);
-			formViewMessage.setIsPopup(isPopup);
-			return formViewMessage;
-		}
-		default:
+		if(viewData == null) {
 			return null;
+		}
+		
+		switch(viewData.viewType) {
+		case Custom:
+			return null;
+		case SplitView: {
+			
+			if(viewData.getAdditionalData() != null) {
+				
+				QCmdViewMessage viewCmd = new QCmdViewMessage(viewData.viewType.getViewType(), viewData.getRoot());
+				viewCmd.setIsPopup(isPopup);
+				
+				JsonArray views = new JsonArray();
+				
+				viewData.getAdditionalData().forEach((key, value) -> {
+					
+					QCmdViewMessage v = new QCmdViewMessage(value.viewType.getViewType(), value.getRoot());
+					try {
+						views.add(JsonUtils.toJson(v));
+					}
+					catch(Exception e) {}
+				});
+				
+				viewCmd.setRoot(views);
+				return viewCmd;
+			}
+		}
+		default: {
+			
+			QCmdViewMessage viewCmd = new QCmdViewMessage(viewData.viewType.getViewType(), viewData.getRoot());
+			viewCmd.setIsPopup(isPopup);
+			return viewCmd;
+		}
 		}
 	}
 }
