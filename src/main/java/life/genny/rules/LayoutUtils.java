@@ -1,35 +1,28 @@
 package life.genny.rules;
 
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.logging.log4j.Logger;
-
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import life.genny.qwanda.Answer;
 import life.genny.qwanda.Layout;
-import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.message.QBulkMessage;
-import life.genny.qwanda.message.QDataBaseEntityMessage;
-import life.genny.qwandautils.JsonUtils;
+import life.genny.qwanda.message.QCmdLayoutMessage;
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdViewFormMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.utils.VertxUtils;
+
+enum ViewType {
+	Form,
+	Table,
+	List,
+	SplitView,
+	Custom
+}
 
 public class LayoutUtils {
 
@@ -45,8 +38,8 @@ public class LayoutUtils {
 		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
 		this.realm = realm;
+		
 		this.baseEntityUtils = new BaseEntityUtils(this.qwandaServiceUrl, this.token, decodedMapToken, realm);
-
 	}
 
 	public List<BaseEntity> getAllLayouts() {
@@ -174,5 +167,30 @@ public class LayoutUtils {
 
  		/* return the serialized layout */
  		return newLayout;
+	}
+	
+	public QCmdMessage sendLayout(String layoutCode, String layoutPath) {
+		
+		String layout = RulesUtils.getLayout(this.realm, layoutPath);
+		QCmdLayoutMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
+		return layoutCmd;
+	}
+	
+	public QCmdMessage sendView(ViewType viewType, String rootCode) {
+		return this.sendView(viewType, rootCode, false);
+	}
+	
+	public QCmdMessage sendView(ViewType viewType, String rootCode, Boolean isPopup) {
+		
+		switch(viewType) {
+		case Form: {
+			
+			QCmdViewFormMessage formViewMessage = new QCmdViewFormMessage(rootCode);
+			formViewMessage.setIsPopup(isPopup);
+			return formViewMessage;
+		}
+		default:
+			return null;
+		}
 	}
 }

@@ -26,7 +26,13 @@ rule "Check user company - step 0 - SELLER"
 			}
 		}
 		else {
-			rules.setState("COMPANY_IS_READY"); /* we skip the workflow */
+		
+			if(canUserBeACompany) {
+				rules.setState("CHECK_COMPANY_EXISTS");
+			}
+			else {
+				rules.setState("COMPANY_IS_READY"); /* we skip the workflow */
+			}
 		}
 				
 	    rules.footer();     		      

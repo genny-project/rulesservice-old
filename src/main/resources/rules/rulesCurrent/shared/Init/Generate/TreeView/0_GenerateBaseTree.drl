@@ -33,6 +33,9 @@ rule "Generate Base Tree"
 		List<BaseEntity> reportsHeader = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
 
+    List<BaseEntity> company = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANY_SETTINGS", "LNK_CORE", 0, 50, false);
+	  bulkmsg.add(new QDataBaseEntityMessage(company.toArray(new BaseEntity[0]),"GRP_COMPANY_SETTINGS", "LNK_CORE"));
+
 		List<BaseEntity> admin = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
 

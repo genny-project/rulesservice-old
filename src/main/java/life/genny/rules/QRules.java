@@ -770,12 +770,6 @@ public class QRules {
 		}
 	}
 
-	public void sendReloadPage() {
-
-		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
-		this.publishCmd(cmdReload);
-	}
-
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
 
@@ -822,16 +816,11 @@ public class QRules {
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
-		this.sendLayout(layoutCode, layoutPath, realm());
-	}
 
-	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
-
-		println("Loading layout: " + folderName + "/" + layoutPath);
-		String layout = RulesUtils.getLayout(folderName, layoutPath);
-		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
-		publishCmd(layoutCmd);
-		println(layoutCode + " SENT TO FRONTEND");
+     QCmdMessage cmdLayout = this.layoutUtils.sendLayout(layoutCode, layoutPath);
+     if(cmdLayout != null) {
+       this.publishCmd(cmdLayout);
+     }
 	}
 
 	public void sendPopupCmd(final String cmd_view, final String root) {
@@ -2542,96 +2531,6 @@ public class QRules {
 
 	}
 
-	/**
-	 * @param bulkmsg
-	 * @return
-	 */
-	private void sendTreeViewData(List<QDataBaseEntityMessage> bulkmsg, BaseEntity user) {
-
-		List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-		/* Removing GRP_DRAFTS be if user is a Driver */
-
-		if (this.isUserSeller()) {
-
-			for (BaseEntity be : root) {
-				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
-					toRemove.add(be);
-					println("GRP_DRAFTS & GRP_BIN has been added to remove list");
-				}
-
-			}
-			root.removeAll(toRemove);
-			// println("GRP_DRAFTS & GRP_BIN have been removed from root");
-		}
-		bulkmsg.add(publishCmd(root, "GRP_ROOT", "LNK_CORE"));
-		// println(root);
-
-		List<BaseEntity> reportsHeader = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
-		// println("User is Admin " + hasRole("admin"));
-		if (reportsHeader != null) {
-			if (isRealm("channel40")) { // Removing USER Reports for channel40
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for driver role
-
-			if (this.isUserSeller()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for owner role
-
-			else if (this.isUserBuyer()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// checking for admin role
-			if (!(hasRole("admin"))) {
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Removing reports not related to the user based on their role
-			reportsHeader.removeAll(reportsHeaderToRemove);
-		} else {
-			println("The group GRP_REPORTS doesn't have any child");
-		}
-		// println("Unrelated reports have been removed ");
-		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
-
-		List<BaseEntity> admin = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
-		bulkmsg.add(publishCmd(admin, "GRP_ADMIN", "LNK_CORE"));
-
-		/*
-		 * if(hasRole("admin")){ List<BaseEntity> reports =
-		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
-		 */
-
-		if (this.isUserBuyer()) {
-
-			List<BaseEntity> bin = this.baseEntity.getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
-					20, false);
-			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
-		}
-
-	}
-
 	static QBulkMessage cache = null;
 	static String cache2 = null;
 
@@ -4181,6 +4080,8 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return null;
 	}
+
+
 
 	/*
 	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO:

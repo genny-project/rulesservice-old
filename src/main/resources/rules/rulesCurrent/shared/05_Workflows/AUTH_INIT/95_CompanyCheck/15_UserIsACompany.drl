@@ -15,6 +15,6 @@ rule "Check user company - User is a company"
 		rules.setState("PRI_IS_COMPANY");
 		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_COMPANY", "TRUE");
 
-		rules.setState("CHECK_COMPANY_EXISTS");
+		rules.setState("CHECK_USER_COMPANY");
 	    rules.footer();
 end
