@@ -22,15 +22,17 @@ rule "Create Payment Item"
 
 		String offerCode = m.getItemCode();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-       	String assemblyId = rules.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
+       	String assemblyId = rules.baseEntity.getBaseEntityValueAsString(rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID");
 
 
 		/*Getting BEG code from offerCode that has been confirmed */
-		String BEGCode = PaymentUtils.getBegCode(offerCode, rules.getToken());
+		BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
+		String BEGCode = offerBe.getValue("PRI_BEG_CODE", null);
 		rules.println("BEG CODE ::"+BEGCode);
-		BaseEntity begBe = rules.getBaseEntityByCode(BEGCode);
-		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
-		BaseEntity loadBe = rules.getChildren(BEGCode, "LNK_BEG", "LOAD");
+
+		BaseEntity begBe = rules.baseEntity.getBaseEntityByCode(BEGCode);
+		BaseEntity loadBe = rules.baseEntity.getLinkedBaseEntity(BEGCode, "LNK_BEG", "LOAD");
+
 		BaseEntity ownerBe = rules.getUser();
 		BaseEntity driverBe = null;
 
@@ -50,7 +52,7 @@ rule "Create Payment Item"
 			answers.add(cardTokenAnswer);
 			answers.add(bankTokenAnswer);
 
-			rules.saveAnswers(answers);
+			rules.baseEntity.saveAnswers(answers);
 
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionCardToken);
 			rules.println("***** ONE TIME TOKEN "+oneTimeTransactionBankToken);
@@ -61,10 +63,10 @@ rule "Create Payment Item"
        	String quoterCode_driver = offerBe.getValue("PRI_QUOTER_CODE", null);
        	if(quoterCode_driver != null) {
        		/* if OFFER has an attribute has attribute PRI_QUOTER_CODE, fetch it as the confirmed driver */
-       		driverBe = rules.getBaseEntityByCode(quoterCode_driver);
+       		driverBe = rules.baseEntity.getBaseEntityByCode(quoterCode_driver);
        	} else {
        		/* if attribute PRI_QUOTER_CODE returns null, then fetch the Driver BE from the links of the OFFER */
-       		driverBe = rules.getChildren(offerCode, "LNK_OFR", "CREATOR");
+       		driverBe = rules.baseEntity.getLinkedBaseEntities(offerCode, "LNK_OFR", "CREATOR").get(0);
        	}
 
 
@@ -99,7 +101,7 @@ rule "Create Payment Item"
        	 	if(itemId != null) {
        	 		rules.println("Saving Answer");
 				Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
-	    			rules.saveAnswer(itemIdAnswer);
+	    			rules.baseEntity.saveAnswer(itemIdAnswer);
        	 	}
        	 	else {
        	 		HashMap<String,String> contextMap = new HashMap<String, String>();
@@ -122,7 +124,7 @@ rule "Create Payment Item"
 
 			//To save the datetime of item creation
 			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
-			rules.saveAnswer(itemCreationDateTime);
+			rules.baseEntity.saveAnswer(itemCreationDateTime);
 
 			rules.println("BEG CODE ::"+BEGCode);
 			rules.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");

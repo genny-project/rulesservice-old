@@ -17,7 +17,7 @@ rule "Step 2 for payments-company updation : Assembly Company updation for attri
         rules.setState("COMPANY_UPDATE_ACN_LOOP");
 
         BaseEntity userBe = rules.getUser();
-     	BaseEntity companyBe = rules.getParent(userBe.getCode(), "LNK_STAFF");
+     	BaseEntity companyBe = rules.baseEntity.getParent(userBe.getCode(), "LNK_STAFF");
 		String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 		String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);

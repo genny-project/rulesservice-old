@@ -11,17 +11,14 @@ rule "Geofence Exit Pickup Point"
 	  $m : QEventMessage( event_type == "GEOFENCE_EXIT" && data.code.contains("PICKUP"))
 	  rules: QRules()
 	then
-    
+
 		RulesUtils.header(drools.getRule().getName());
-  
+
 		String begCode = $m.data.getCode();
 		String action = $m.data.getValue();
-		
-		RulesUtils.println("---- ACTION ----");
-		RulesUtils.println("EXITED PICKUP POINT");
-		
-		rules.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT", "LNK_CORE");
-		
+
+		rules.baseEntity.moveBaseEntity(begCode, "GRP_APPROVED", "GRP_IN_TRANSIT", "LNK_CORE");
+
 		RulesUtils.footer(drools.getRule().getName());
 
 end
