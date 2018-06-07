@@ -2656,8 +2656,6 @@ public void makePayment(QDataAnswerMessage m) {
                     this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
                     publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
-                    this.reloadCache();
-
                     /* Update PRI_NEXT_ACTION = OWNER */
                     Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
                     this.baseEntity.saveAnswer(begNextAction);
@@ -2688,6 +2686,8 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+
+                    this.reloadCache();
                 }
             }
         }
