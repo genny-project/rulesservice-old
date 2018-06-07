@@ -38,7 +38,7 @@ rule "Bulk Update assembly user info"
 
      	 		if(PaymentUtils.isBankAccount(paymentMethodObject)) {
 
-     	 			rules.fetchOneTimePaymentsToken.disburseAccount(assemblyId, paymentMethodObject, assemblyAuthToken);
+     	 			rules.disburseAccount(assemblyId, paymentMethodObject, assemblyAuthToken);
      	 		}
      	 	}
      	 }
