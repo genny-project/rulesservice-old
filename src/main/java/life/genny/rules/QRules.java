@@ -4582,8 +4582,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 						BaseEntity[] roots = new BaseEntity[1];
 						roots[0] = parent;
-						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT",
-								"LNK_CORE");
+						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT", "LNK_CORE");
 						rootMessage.setToken(getToken());
 						baseEntityMsgs.add(rootMessage);
 					}
