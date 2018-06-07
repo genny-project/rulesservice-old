@@ -22,7 +22,7 @@ rule "Ask Question"
             rules.println("Ask Question: missing questionGroupCode");
         }
         else {
-            rules.askQuestionsToUser( questionSourceCode,
+            rules.askQuestions( questionSourceCode,
                                 questionTargetCode,
                                 questionGroupCode,
                                 questionIsPopup );

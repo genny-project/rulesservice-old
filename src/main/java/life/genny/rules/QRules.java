@@ -74,7 +74,6 @@ import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
-import life.genny.qwanda.message.QCmdFormMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
@@ -121,6 +120,7 @@ import life.genny.qwanda.validation.Validation;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
+import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
 import life.genny.security.SecureResources;
@@ -1043,6 +1043,17 @@ public class QRules {
 		msg.put("token", getToken());
 		Producer.getToWebCmds().write(msg).end();
 	}
+	
+	public void publishCmd(final QwandaMessage msg) {
+		
+		if(msg.askData != null && msg.askData.getMessages().length > 0) {
+			this.publishCmd(msg.askData);
+		}
+		
+		if(msg.asks != null) {
+ 			this.publishCmd(msg.asks);
+		}
+	}
 
 	public void publishCmd(final String jsonString) {
 		Producer.getToWebCmds().write(jsonString).end();
@@ -1050,13 +1061,15 @@ public class QRules {
 
 	public QMessage publishCmd(final QDataMessage msg) {
 		msg.setToken(getToken());
-		publish("cmds", msg);
+		String json = JsonUtils.toJson(msg);
+		publish("cmds", json);
 		return msg;
 	}
 
 	public void publishCmd(final QBulkMessage msg) {
 		msg.setToken(getToken());
-		publish("cmds", msg);
+		String json = JsonUtils.toJson(msg);
+		publish("cmds", json);
 	}
 
 	public QMessage publishCmd(final QDataSubLayoutMessage msg) {
@@ -1270,92 +1283,43 @@ public class QRules {
 			}
 		}
 	}
-
-	public Boolean doesQuestionGroupExist(final String questionCode) {
-
-		/* we grab the question group using the questionCode */
-		QDataAskMessage questions = this.getQuestions(this.getUser().getCode(), this.getUser().getCode(), questionCode);
-
-		/* we check if the question payload is not empty */
-		if (questions != null) {
-
-			/* we check if the question group contains at least one question */
-			if (questions.getItems() != null && questions.getItems().length > 0) {
-
-				Ask firstQuestion = questions.getItems()[0];
-
-				/* we check if the question is a question group */
-				if (firstQuestion.getAttributeCode().contains("QQQ_QUESTION_GROUP_BUTTON_SUBMIT")) {
-
-					/* we see if this group contains at least one question */
-					return firstQuestion.getChildAsks().length > 0;
-				} else {
-
-					/* if it is an ask we return true */
-					return true;
-				}
-			}
-		}
-
-		/* we return false otherwise */
-		return false;
-	}
-
-	public QDataAskMessage getQuestions(final String sourceCode, final String targetCode, final String questionCode) {
-
-		String json;
-		try {
-			json = QwandaUtils.apiGet(getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
-					+ questionCode + "/" + targetCode, getToken());
-			QDataAskMessage msg = JsonUtils.fromJson(json, QDataAskMessage.class);
-			;
-			return msg;
-
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	
+	public Boolean doesQuestionGroupExist(String questionGroupCode) {
+		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
 	
-	public Boolean sendQuestions(final String sourceCode, final String targetCode, final String questionCode) throws ClientProtocolException, IOException {
-
-		QDataAskMessage msg = this.getQuestions(sourceCode, targetCode, questionCode);
-		if (msg != null) {
-			publishData(msg);
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
+	}
+	
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		
+		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, token, stakeholderCode);
+		if(questions != null) {
+				
+			this.publishCmd(questions);
 			return true;
-		} 
+		}
 		
 		return false;
 	}
 
-	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode) {
-		this.askQuestionsToUser(sourceCode, targetCode, questionGroupCode, false);
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
 	}
 	
-	public void askQuestionsToUser(final String sourceCode, final String targetCode, final String questionGroupCode, Boolean isPopup) {
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
+		
+		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
+				
+			/* Layout V1 */
+			QCmdViewFormMessage cmdFormView = new QCmdViewFormMessage(questionGroupCode);
+			cmdFormView.setIsPopup(isPopup);
+			publishCmd(cmdFormView);
 
-		try {
-
-			/* we send the required questions + data first */
-			if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
-
-				/* if sending the questions worked, we ask user */
-
-				/* Layout V1 */
-				QCmdViewMessage cmdFormView = new QCmdViewMessage("FORM_VIEW", questionGroupCode);
-				cmdFormView.setIsPopup(isPopup);
-				publishCmd(cmdFormView);
-
-				/* Layout V2 */
-				QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
-				this.publishCmd(formCmd);
-			}
-
-		} catch (Exception e) {
-
+			/* Layout V2 */
+			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
+			this.publishCmd(formCmd); */
 		}
 	}
 
@@ -3085,7 +3049,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 				/* we send the questions */
 				try {
-					sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
+					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
+					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
+					this.publishCmd(message);
+						
 				} catch (Exception e) {
 //					e.printStackTrace();
 				}
