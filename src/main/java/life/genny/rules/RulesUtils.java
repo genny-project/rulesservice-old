@@ -138,7 +138,7 @@ public class RulesUtils {
   	String jsonStr = "";
 		try {
 			
-			path = realm + path;
+			path = realm + "/" + path;
 			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
 			println(url);
