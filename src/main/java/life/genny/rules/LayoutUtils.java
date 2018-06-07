@@ -85,7 +85,7 @@ public class LayoutUtils {
 
 		String pathToLayout = realmCode + subpath; //channel40 + /sublayouts
 
-		String subLayoutMap = RulesUtils.getLayout(pathToLayout);
+		String subLayoutMap = RulesUtils.getLayout(realmCode, pathToLayout);
 		System.out.println("Downloading layouts: " + pathToLayout);
 
 		if (subLayoutMap != null) {
