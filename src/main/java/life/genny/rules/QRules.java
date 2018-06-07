@@ -122,6 +122,7 @@ import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
 import life.genny.security.SecureResources;
+import life.genny.utils.DateUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -1705,43 +1706,51 @@ public class QRules {
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
-				List<BaseEntity> stakeholders = this.baseEntity.getParents(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-				/* List of receivers except current user */
-				String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					if (!stakeholder.getCode().equals(getUser().getCode())) {
-						msgReceiversCodeArray[counter] = stakeholder.getCode();
-						counter += 1;
+				List<BaseEntity> stakeholders = this.baseEntity.getLinkedBaseEntities(chatCode, "LNK_USER");
+				if (stakeholders != null) {
+					String[] recipientCodeArray = new String[stakeholders.size()];
+					/* List of receivers except current user */
+					String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
+					int counter = 0;
+					for (BaseEntity stakeholder : stakeholders) {
+						recipientCodeArray[counter] = stakeholder.getCode();
+						if (!stakeholder.getCode().equals(getUser().getCode())) {
+							msgReceiversCodeArray[counter] = stakeholder.getCode();
+							counter += 1;
+						}
 					}
+					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
+					answers.add(
+							new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
+					this.baseEntity.saveAnswers(answers);
+					/* Add current date-time to char as */
+					this.baseEntity.saveAnswer(
+							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
+
+					System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
+					/* Publish chat to Receiver */
+					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
+					/* Publish message to Receiver */
+					publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had
+																													// to
+																													// use
+																													// getCode()
+
+					QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
+
+					/* Sending Messages */
+					HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("SENDER", getUser().getCode());
+					contextMap.put("CONVERSATION", newMessage.getCode());
+
+					/* Sending toast message to all the beg frontends */
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO:																										
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+				}else {
+					println("Error! The stakeholder for given chatCode is null");
 				}
-				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
-				this.baseEntity.saveAnswers(answers);
-				/* Add current date-time to char as */
-				this.baseEntity.saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE",
-						QwandaUtils.getZonedCurrentLocalDateTime()));
-
-				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
-				/* Publish chat to Receiver */
-				publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
-				/* Publish message to Receiver */
-				publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had to use getCode()
-
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
-
-				/* Sending Messages */
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("SENDER", getUser().getCode());
-				contextMap.put("CONVERSATION", newMessage.getCode());
-
-				/* Sending toast message to all the beg frontends */
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO: SMS
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 			}
 		}
 	}
