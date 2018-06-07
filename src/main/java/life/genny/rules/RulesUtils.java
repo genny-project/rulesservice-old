@@ -152,7 +152,7 @@ public class RulesUtils {
 				if(layoutObject != null) {
 					
 					/* we check if an error happened when grabbing the layout */
-					if(layoutObject.containsKey("Error") || layoutObject.containsKey("error")) {
+					if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
 						
 						/* we try to grab the layout using the genny realm */
 						return RulesUtils.getLayout("genny", path);
