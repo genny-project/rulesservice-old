@@ -750,19 +750,19 @@ public class QRules {
 
 			if (isIntern) {
 
-				List<BaseEntity> root = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE",
+				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE",
 						0, 20, false);
 				publishCmd(root, "GRP_ROOT", "LNK_CORE");
 
-				List<BaseEntity> dashboard = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
+				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
 						"LNK_CORE", 0, 20, false);
 				publishCmd(dashboard, "GRP_DASHBOARD", "LNK_CORE");
 
-				List<BaseEntity> internships = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
+				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
 						"LNK_CORE", 0, 50, false);
 				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
 
-				List<BaseEntity> companies = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
+				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
 						"LNK_CORE", 0, 50, false);
 
 				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
@@ -5763,7 +5763,7 @@ public void makePayment(QDataAnswerMessage m) {
 			// save to database and cache
 
 			try {
-				baseEntityUtils.saveAttribute(attribute,token);
+				baseEntity.saveAttribute(attribute,token);
 				// no roles would have this attribute yet
 				// return
 				capabilityManifest.add(attribute);

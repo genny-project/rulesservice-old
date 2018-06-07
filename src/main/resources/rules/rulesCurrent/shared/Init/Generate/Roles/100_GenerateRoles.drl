@@ -27,7 +27,7 @@ rule "GenerateRoles"
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-		List<BaseEntity> roles = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_ROLES", "LNK_CORE", 0, 500, false);
+		List<BaseEntity> roles = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROLES", "LNK_CORE", 0, 500, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(roles.toArray(new BaseEntity[0]),"GRP_ROLES", "LNK_CORE"));
 
 		// Save the roles for future use
