@@ -3553,12 +3553,9 @@ public void makePayment(QDataAnswerMessage m) {
 	/* Search the text value in all jobs */
 	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
 		println("Get All Users - The search BE is  :: " + searchBeCode);
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users"); // createBaseEntityByCode2(searchBeCode,
-		// "Get All Users");
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users");
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
-		// if( getBaseEntityByCode(searchBeCode) == null ) {
-		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
 		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
 		JsonObject image = new JsonObject();
 		image.put("code", "PRI_IMAGE_URL");
@@ -3684,13 +3681,10 @@ public void makePayment(QDataAnswerMessage m) {
 	// Search and send all the Drivers
 	public void sendAllDrivers(String searchBeCode) throws ClientProtocolException, IOException {
 		println("Get All Drivers - The search BE is  :: " + searchBeCode);
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); // createBaseEntityByCode2(searchBeCode,
-		// "Get All Users");
+		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers");
 
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
-		// if( getBaseEntityByCode(searchBeCode) == null ) {
-		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
 		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
 		JsonObject image = new JsonObject();
 		image.put("code", "PRI_IMAGE_URL");
