@@ -29,7 +29,9 @@ rule "Trigger Delete BEG"
 					rules.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_BIN", "LNK_CORE", "BEG");
 					
 					
-					rules.setState("TRIGGER_HOMEPAGE");
+					rules.setState("EVENT_BTN_CLICK");
+					rules.setState("BTN_BACK_BUTTON");
+
 					rules.setState("TRIGGER_DELETE_BEG_MESSAGE");
 					rules.println("Message had been triggered");
 				}else{

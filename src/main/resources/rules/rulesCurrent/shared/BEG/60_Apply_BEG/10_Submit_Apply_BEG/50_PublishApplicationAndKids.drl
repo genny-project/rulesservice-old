@@ -26,12 +26,17 @@ rule "Submit Apply BEG - Step 5"
 
             if(recipient != null){
 	            rules.println("RECIPIENTS   ::   " + Arrays.toString(recipient) );
+               
+                /* SAVE Applied Date for APPLICATION */
+		        rules.saveAnswer(new Answer(rules.getUser().getCode(), application.getCode(), "PRI_GRP_APPLIED_DATE", rules.getCurrentLocalDateTime()));
                 
                 rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipient);
                 rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", recipient);
                 rules.publishBaseEntityByCode(application.getCode(), "GRP_APPLIED", "LNK_CORE", recipient);
                 rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", recipient);
                 rules.setState("TRIGGER_HOMEPAGE");
+
+                
             }
 		}
 	 	rules.footer();      
