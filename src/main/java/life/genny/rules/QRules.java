@@ -8424,11 +8424,11 @@ public class QRules {
 		
 		JsonObject tabObject1 = new JsonObject();
 		tabObject1.put("name", "Process Card");
-		tabObject1.put("icon", "view_agenda");
+		tabObject1.put("icon", "table_chart");
 		tabObject1.put("layout", layout1);
 		
 		JsonObject tabObject2 = new JsonObject();
-		tabObject2.put("name", "Detail View");
+		tabObject2.put("name", "Internship Details");
 		tabObject2.put("icon", "reorder");
 		tabObject2.put("layout", layout2);
 		
