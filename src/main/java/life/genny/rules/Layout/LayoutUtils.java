@@ -18,14 +18,6 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.BaseEntityUtils;
 import life.genny.rules.RulesUtils;
 
-enum ViewType {
-	Form,
-	Table,
-	List,
-	SplitView,
-	Custom
-}
-
 public class LayoutUtils {
 
 	private Map<String, Object> decodedMapToken;
