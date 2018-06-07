@@ -53,10 +53,14 @@ import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemSearchResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUser;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.rules.BaseEntityUtils;
+
 
 public class PaymentUtils {
 
@@ -821,48 +825,48 @@ public class PaymentUtils {
   //offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
     public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
         Boolean isAssemblyItemValid = false;
-        
+
         try {
             String itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
-            
+
             /* convert string into item-search object */
-            QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);            
+            QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);
             QPaymentsAssemblyItemResponse items = itemObj.getItems();
-            
+
             String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
             String driverEmail = driverBe.getValue("PRI_EMAIL", null);
             /* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
             Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-            
+
             Boolean isOwnerEmail = false;
             Boolean isDriverEmail = false;
             Boolean isPriceEqual = false;
-            
+
             if(items != null) {
                 Double itemPrice = items.getAmount();
                 System.out.println("item price ::"+itemPrice);
-                
+
                 QPaymentsAssemblyUser buyerOwnerInfo = items.getBuyer();
-                
+
                 if(buyerOwnerInfo != null && ownerEmail != null) {
                     QPaymentsUserContactInfo ownerContactInfo = buyerOwnerInfo.getContactInfo();
-                    
+
                     /* compare if item-owner is same as offer-owner */
                     isOwnerEmail = ownerContactInfo.getEmail().equals(ownerEmail);
                     System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
 
                 }
-                
+
                 QPaymentsAssemblyUser sellerDriverInfo = items.getSeller();
-                
+
                 if(sellerDriverInfo != null && driverEmail != null) {
                     QPaymentsUserContactInfo driverContactInfo = sellerDriverInfo.getContactInfo();
-                    
+
                     /* compare if item-driver is same as offer-driver */
                     isDriverEmail = driverContactInfo.getEmail().equals(driverEmail);
                     System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
                 }
-                
+
                 if(driverPriceIncGST != null) {
                     Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
 
@@ -870,12 +874,12 @@ public class PaymentUtils {
                     calculatedItemPriceInCents = Double.parseDouble(str);
                     /* convert into cents */
                     System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
-                    
+
                     /* compare if item-price is same as offer-price */
                     isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
                     System.out.println("Is price attribute for item equal ?"+isPriceEqual);
                 }
-                
+
             }
 
             /* if comparison succeeds, no need to create new item */
@@ -888,7 +892,7 @@ public class PaymentUtils {
         } catch (PaymentException e) {
             isAssemblyItemValid = false;
         }
-        
+
         return isAssemblyItemValid;
     }
 
