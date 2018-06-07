@@ -133,10 +133,12 @@ public class RulesUtils {
 		return dateFormatter.format(date);
 	}
 
-	public static String getLayout(String realm, final String path) {
+	public static String getLayout(String realm, String path) {
 
   	String jsonStr = "";
 		try {
+			
+			path = realm + path;
 			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
 			println(url);
