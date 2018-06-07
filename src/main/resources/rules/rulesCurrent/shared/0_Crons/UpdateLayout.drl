@@ -10,6 +10,6 @@ rule "Update Realm Layouts"
         rules.header();
 
         rules.setState("UPDATED_LAYOUTS");
-        rules.getAllLayouts();
+        rules.layoutUtils.getAllLayouts();
         rules.footer();
 end

@@ -13,7 +13,7 @@ rule "Select Intern Role"
 	    rules.header();
 	 	rules.println("hi");
 		rules.setState("HAS_SENT_SUBLAYOUT");
-	/*	rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "TRUE");  */
+	/*	rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_INTERN", "TRUE");  */
 		rules.setState("INTERN_SELECTED");
 	    rules.footer();     		      
 end

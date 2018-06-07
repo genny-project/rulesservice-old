@@ -1,0 +1,30 @@
+package life.genny.rules;
+
+
+import life.genny.rules.QRules;
+
+rule "TV_SELECT Event - Generate Report"
+	   no-loop true
+       ruleflow-group 'TV_SELECT'
+       salience 5
+     when
+       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") && 
+                       ( isState("GRP_REPORTS") || isState("PARENT_GRP_REPORTS")  ) && 
+                       !isState("REPORTS_LAYOUT_SENT") ) 
+     then
+
+      rules.header();
+     
+        rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
+         												 executes based on this state */
+        rules.setState("REPORTS_LAYOUT_SENT");
+        Object grpCodeObj = rules.get("tvSelectValue");
+        if( grpCodeObj != null ){      
+             String grpCode = grpCodeObj.toString();
+             if(grpCode != null && !grpCode.isEmpty()){
+   	    			rules.generateReport(grpCode);
+   	    		}
+	    }
+	    
+     rules.footer();
+end
