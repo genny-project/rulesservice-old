@@ -16,8 +16,8 @@ rule "Select Buyer Role"
 		rules.setState("PRI_IS_BUYER");
 		rules.setState("ROLE_SET");
 
-		rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "TRUE");
-		rules.baseEntityUtils.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "FALSE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "TRUE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "FALSE");
 
 	    rules.footer();
 end

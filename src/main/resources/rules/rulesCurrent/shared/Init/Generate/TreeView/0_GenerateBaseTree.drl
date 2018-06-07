@@ -27,23 +27,23 @@ rule "Generate Base Tree"
 
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 
-		List<BaseEntity> root = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
+		List<BaseEntity> root = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
 
-		List<BaseEntity> reportsHeader = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
+		List<BaseEntity> reportsHeader = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
 
-		List<BaseEntity> admin = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
+		List<BaseEntity> admin = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
 	  bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
 
-		List<BaseEntity> buckets = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
+		List<BaseEntity> buckets = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
 		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
 
 		// Save the buckets for future use
 		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), bucketMsg);
 
-    List<BaseEntity> archivedProducts = rules.baseEntityUtils.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
+    List<BaseEntity> archivedProducts = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
     QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "ARCHIVED_PRODUCTS", rules.realm(), archivedProductsMessage);
 
