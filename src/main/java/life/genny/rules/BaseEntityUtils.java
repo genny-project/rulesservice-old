@@ -34,27 +34,51 @@ import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
-	
+
 	private Map<String, Object> decodedMapToken;
 	private String token;
 	private String realm;
 	private String qwandaServiceUrl;
 
 	public BaseEntityUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
-		this.decodedMapToken = decodedMapToken;
+
+  	this.decodedMapToken = decodedMapToken;
 		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
 		this.realm = realm;
 	}
-	
+
+  /* =============== refactoring =============== */
+
+  
+  public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
+
+    String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
+    if (uniqueId != null) {
+
+      BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
+      this.addAttributes(newBaseEntity);
+      VertxUtils.writeCachedJson(newBaseEntity.getCode(), JsonUtils.toJson(newBaseEntity));
+      return newBaseEntity;
+    }
+
+    return null;
+  }
+
+
+
+  /*================================ */
+  /* old code */
+
+
 	public Object get(final String key) {
 		return this.decodedMapToken.get(key);
 	}
-	
+
 	public void set(final String key, Object value) {
 		this.decodedMapToken.put(key, value);
 	}
-	
+
 	public void addAttributes(BaseEntity be) {
 
 		if (be != null) {
@@ -82,7 +106,7 @@ public class BaseEntityUtils {
 			}
 		}
 	}
-	
+
 	public void saveAnswer(Answer answer) {
 
 		try {
@@ -94,9 +118,9 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
-		
+
 		if (!changeEvent) {
 			for (Answer answer : answers) {
 				answer.setChangeEvent(false);
@@ -118,11 +142,11 @@ public class BaseEntityUtils {
 			//log.error("Socket error trying to post answer");
 		}
 	}
-	
+
 	public void saveAnswers(List<Answer> answers) {
 		this.saveAnswers(answers, true);
 	}
-	
+
 
 	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
 			String token) {
@@ -157,18 +181,18 @@ public class BaseEntityUtils {
 
 		return null;
 	}
-	
+
 	public void updateBaseEntityAttribute(final String sourceCode, final String beCode, final String attributeCode,
 			final String newValue) {
 		List<Answer> answers = new ArrayList<Answer>();
 		answers.add(new Answer(sourceCode, beCode, attributeCode, newValue));
 		this.saveAnswers(answers);
 	}
-	
+
 	public BaseEntity getBaseEntityByCode(final String code) {
 		return this.getBaseEntityByCode(code, true);
 	}
-	
+
 	public BaseEntity getBaseEntityByCode(final String code, Boolean withAttributes) {
 
 		BaseEntity be = null;
@@ -188,7 +212,7 @@ public class BaseEntityUtils {
 
 		return be;
 	}
-	
+
 	public BaseEntity getBaseEntityByAttributeAndValue(final String attributeCode, final String value) {
 
 		BaseEntity be = null;
@@ -196,21 +220,21 @@ public class BaseEntityUtils {
 		this.addAttributes(be);
 		return be;
 	}
-	
+
 	public List<BaseEntity> getBaseEntitysByAttributeAndValue(final String attributeCode, final String value) {
 
 		List<BaseEntity> bes = null;
 		bes = RulesUtils.getBaseEntitysByAttributeAndValue(this.qwandaServiceUrl, this.decodedMapToken, this.token, attributeCode, value);
 		return bes;
 	}
-	
+
 	public void clearBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize) {
-		
+
 		String key = parentCode + linkCode + "-" + pageStart + "-" + pageSize;
 		VertxUtils.putObject(this.realm, "LIST", key, null);
 	}
-	
+
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 		cache = false;
@@ -281,7 +305,7 @@ public class BaseEntityUtils {
 		if (cache) {
 			set("BES_" + parentCode.toUpperCase() + "_" + linkCode, bes); // WATCH THIS!!!
 		}
-		
+
 		return bes;
 	}
 
@@ -313,7 +337,7 @@ public class BaseEntityUtils {
 
 		return null;
 	}
-	
+
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
 		Optional<EntityAttribute> ea = be.findEntityAttribute(attributeCode);
@@ -338,7 +362,7 @@ public class BaseEntityUtils {
 
 		return attributeVal;
 	}
-	
+
 	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
 
 		String attrValue = null;
@@ -391,7 +415,7 @@ public class BaseEntityUtils {
 
 		return null;
 	}
-	
+
 	public List<BaseEntity> getParents(final String targetCode, final String linkCode) {
 		List<BaseEntity> parents = null;
 		long sTime = System.nanoTime();
@@ -420,7 +444,7 @@ public class BaseEntityUtils {
 		double difference = (System.nanoTime() - sTime) / 1e6; // get ms
 		return parents;
 	}
-	
+
 	public List<EntityEntity> getLinks(BaseEntity be) {
 		return this.getLinks(be.getCode());
 	}
@@ -610,31 +634,35 @@ public class BaseEntityUtils {
 	/* returns a duplicated BaseEntity from an existing beCode */
 	public BaseEntity duplicateBaseEntityAttributesAndLinks(final BaseEntity oldBe, final String bePrefix,
 			final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+
+    BaseEntity newBe = this.create(oldBe.getCode(), bePrefix, name);
 		duplicateAttributes(oldBe, newBe);
 		duplicateLinks(oldBe, newBe);
 		return getBaseEntityByCode(newBe.getCode());
 	}
 
 	public BaseEntity duplicateBaseEntityAttributes(final BaseEntity oldBe, final String bePrefix, final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+
+    BaseEntity newBe = this.create(oldBe.getCode(), bePrefix, name);
 		duplicateAttributes(oldBe, newBe);
 		return getBaseEntityByCode(newBe.getCode());
 	}
 
 	public BaseEntity duplicateBaseEntityLinks(final BaseEntity oldBe, final String bePrefix, final String name) {
-		BaseEntity newBe = createBaseEntityByCode(oldBe.getCode(), bePrefix, name);
+
+  	BaseEntity newBe = this.create(oldBe.getCode(), bePrefix, name);
 		duplicateLinks(oldBe, newBe);
 		return getBaseEntityByCode(newBe.getCode());
 	}
 
 	public void duplicateAttributes(final BaseEntity oldBe, final BaseEntity newBe) {
-		List<Answer> duplicateAnswerList = new ArrayList<>();
+
+  	List<Answer> duplicateAnswerList = new ArrayList<>();
 
 		for (EntityAttribute ea : oldBe.getBaseEntityAttributes()) {
 			duplicateAnswerList.add(new Answer(newBe.getCode(), newBe.getCode(), ea.getAttributeCode(), ea.getValue()));
 		}
-		
+
 		this.saveAnswers(duplicateAnswerList);
 	}
 
@@ -731,13 +759,13 @@ public class BaseEntityUtils {
 			this.updateBaseEntityStatus(beCode, userCode, status);
 		}
 	}
-	
+
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
 		List<Link> links = RulesUtils.getLinks(this.qwandaServiceUrl, this.decodedMapToken, this.token, parentCode,
 				linkCode);
 		return links;
 	}
-	
+
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
@@ -759,7 +787,7 @@ public class BaseEntityUtils {
 		}
 		return null;
 	}
-	
+
 	public BaseEntity updateCachedBaseEntity(final Answer answer) {
 		BaseEntity cachedBe = this.getBaseEntityByCode(answer.getTargetCode());
 		// Add an attribute if not already there
@@ -810,7 +838,7 @@ public class BaseEntityUtils {
 		VertxUtils.writeCachedJson(cachedBe.getCode(), JsonUtils.toJson(cachedBe));
 		return cachedBe;
 	}
-	
+
 	public Link createLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
 
 		System.out.println("CREATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
@@ -849,39 +877,19 @@ public class BaseEntityUtils {
 		}
 		return link;
 	}
-	
+
 	public Link[] getUpdatedLink(String parentCode, String linkCode) {
 		List<Link> links = this.getLinks(parentCode, linkCode);
 		Link[] items = new Link[links.size()];
 		items = (Link[]) links.toArray(items);
 		return items;
 	}
-	
-	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, this.token);
-		if (uniqueId != null) {
-			BaseEntity beg = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
-			addAttributes(beg);
-			VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
-			return beg;
-		}
-
-		return null;
-	}
-
-	public BaseEntity createBaseEntityByCode2(final String beCode, final String name) {
-		BaseEntity beg = QwandaUtils.createBaseEntityByCode(beCode, name, qwandaServiceUrl, this.token);
-		addAttributes(beg);
-		VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
-		return beg;
-	}
-	
 	/*
 	 * Gets all the attribute and their value for the given basenentity code
 	 */
 	public Map<String, String> getMapOfAllAttributesValuesForBaseEntity(String beCode) {
-		
+
 		BaseEntity be = this.getBaseEntityByCode(beCode);
 		System.out.println("The load is ::" + be);
 		Set<EntityAttribute> eaSet = be.getBaseEntityAttributes();
@@ -896,7 +904,7 @@ public class BaseEntityUtils {
 
 		return attributeValueMap;
 	}
-	
+
 	public List getLinkList(String groupCode, String linkCode, String linkValue, String token) {
 
 		// String qwandaServiceUrl = "http://localhost:8280";
@@ -917,7 +925,7 @@ public class BaseEntityUtils {
 		return linkList;
 
 	}
-	
+
 	/*
 	 * Sorting Columns of a SearchEntity as per the weight in either Ascening or
 	 * descending order
@@ -926,7 +934,7 @@ public class BaseEntityUtils {
 
 		if (ea.size() > 1) {
 			Collections.sort(ea, new Comparator<EntityAttribute>() {
-				
+
 				@Override
 				public int compare(EntityAttribute ea1, EntityAttribute ea2) {
 					if (ea1.getWeight() != null && ea2.getWeight() != null) {
@@ -940,7 +948,7 @@ public class BaseEntityUtils {
 				}
 			});
 		}
-		
+
 		List<String> searchHeader = new ArrayList<String>();
 		for (EntityAttribute ea1 : ea) {
 			searchHeader.add(ea1.getAttributeCode().substring("COL_".length()));
@@ -948,16 +956,16 @@ public class BaseEntityUtils {
 
 		return searchHeader;
 	}
-	
+
 	public BaseEntity baseEntityForLayout(String realm, String token, Layout layout) {
 
 		if (layout.getPath() == null) {
 			return null;
 		}
-		
+
 		String serviceToken = RulesUtils.generateServiceToken(realm);
 		if(serviceToken != null) {
-			
+
 			BaseEntity beLayout = null;
 
 			/* we check if the baseentity for this layout already exists */
@@ -1029,10 +1037,10 @@ public class BaseEntityUtils {
 					this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 				}
 			}
-			
+
 			return this.getBaseEntityByCode(beLayout.getCode());
 		}
-		
+
 		return null;
 	}
 }
