@@ -21,6 +21,8 @@ rule "Pre Init Startup"
 
                 rules.createServiceUser();
 			    drools.setFocus("GenerateSearches");
+			    drools.setFocus("GenerateCapabilities");
+			    drools.setFocus("GenerateRoles");
 			    drools.setFocus("GenerateReports");
 
 	             drools.setFocus("GenerateTree");
