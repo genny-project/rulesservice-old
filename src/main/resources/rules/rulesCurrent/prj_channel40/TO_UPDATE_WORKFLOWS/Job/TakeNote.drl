@@ -59,7 +59,7 @@ rule "Take Note"
             String userCode =  rules.getUser().getCode();
             System.out.println("usercode   ::   "+ userCode);
         /* Send Take Note Questions */
-          rules.askQuestionsToUser(userCode, begCode, "QUE_ADMIN_NOTES_GRP", true);
+          rules.askQuestions(userCode, begCode, "QUE_ADMIN_NOTES_GRP", true);
 
 
         rules.footer();

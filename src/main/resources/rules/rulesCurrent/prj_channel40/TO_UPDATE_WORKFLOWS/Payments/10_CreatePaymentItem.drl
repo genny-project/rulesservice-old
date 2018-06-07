@@ -128,7 +128,7 @@ rule "Create Payment Item"
 
 			rules.println("BEG CODE ::"+BEGCode);
 			rules.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
-	        rules.askQuestionsToUser(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
+	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
 		}
 		rules.setState("CREATED_PAYMENT_ITEM");
 		rules.footer();

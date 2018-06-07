@@ -105,7 +105,7 @@ rule "Make Offer"
           }
 
           /* Send Offer Questions */
-          rules.askQuestionsToUser(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", true);
+          rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", true);
 
           }
           else{
