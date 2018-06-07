@@ -50,7 +50,7 @@ public class BaseEntityUtils {
 
   /* =============== refactoring =============== */
 
-  /* create baseEntity */
+  
   public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
     String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
@@ -58,8 +58,8 @@ public class BaseEntityUtils {
 
       BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
       this.addAttributes(newBaseEntity);
-      VertxUtils.writeCachedJson(newBaseEntity.getCode(), JsonUtils.toJson(beg));
-      return beg;
+      VertxUtils.writeCachedJson(newBaseEntity.getCode(), JsonUtils.toJson(newBaseEntity));
+      return newBaseEntity;
     }
 
     return null;
@@ -873,26 +873,6 @@ public class BaseEntityUtils {
 		Link[] items = new Link[links.size()];
 		items = (Link[]) links.toArray(items);
 		return items;
-	}
-
-	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
-
-		String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, this.token);
-		if (uniqueId != null) {
-			BaseEntity beg = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
-			addAttributes(beg);
-			VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
-			return beg;
-		}
-
-		return null;
-	}
-
-	public BaseEntity createBaseEntityByCode2(final String beCode, final String name) {
-		BaseEntity beg = QwandaUtils.createBaseEntityByCode(beCode, name, qwandaServiceUrl, this.token);
-		addAttributes(beg);
-		VertxUtils.writeCachedJson(beg.getCode(), JsonUtils.toJson(beg));
-		return beg;
 	}
 
 	/*
