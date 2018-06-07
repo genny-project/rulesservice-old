@@ -11,7 +11,7 @@ rule "Send Bucket Layout To Frontend"
 
       rules.setState("SENT_BUCKET_LAYOUT");
 
-     	String layout = RulesUtils.getLayout("card.json");
+     	String layout = RulesUtils.getLayout(rules.realm(), "card.json");
      	String viewCode = "BUCKET_DASHBOARD";
      	String grpBE = "GRP_DASHBOARD";
 
