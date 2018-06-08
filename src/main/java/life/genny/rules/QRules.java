@@ -74,10 +74,6 @@ import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
-<<<<<<< Updated upstream
-=======
-//import life.genny.qwanda.message.QCmdFormMessage;
->>>>>>> Stashed changes
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
