@@ -70,6 +70,8 @@ rule "Submit Job"
 
     	      	/* Send slack message that new job is created */
     	      	rules.sendSlackNotification("New job has been created by user => code : "+rules.getUser().getCode() + ", user email : " +jobCreatorEmail +". Job details are => Job code : "+ jobCode + ", Job title : "+ jobTitle+ ", Pick-up address : "+pickupAddress+ ", Drop-off address : "+dropOffAddress);
+    	      	
+    	      	
        		}
 
 

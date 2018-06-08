@@ -166,9 +166,7 @@ public class LayoutUtils {
 
 		/* format the path of the layout to be an valid URI */
  		if(newLayout.getPath() != null) {
-      System.out.println("LAYOUT PATH BEFORE: " + newLayout.getPath());
  			newLayout.setPath(newLayout.getPath().replace((realmCode + "//"), "/").replaceAll("index.json", "").replace(".json", "").replace("sublayouts/", "").replaceAll("//", ""));
-      System.out.println("LAYOUT PATH AFTER: " + newLayout.getPath());
  		}
 
  		/* download content of the layout */
