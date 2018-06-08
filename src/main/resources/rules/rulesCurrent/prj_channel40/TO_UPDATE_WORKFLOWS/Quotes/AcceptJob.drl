@@ -55,18 +55,18 @@ rule "Accept Job"
         rules: QRules(!isState("JOB_ACCEPTED"))
     then
         rules.header();
-        
-        
+
+
         rules.showLoading("Please wait for a moment...");
         drools.setFocus("ispayments");  /* NOW Set up Payments */
-         
+
   		rules.acceptJob($m);
   		rules.setState("JOB_ACCEPTED");
-                
+
         /* Send BUCKETVIEW Cmd */
-        rules.setState("TRIGGER_HOMEPAGE"); 
-        
-        rules.generateNewItemsCache();       
-        
+        rules.setState("TRIGGER_HOMEPAGE");
+
+        rules.reloadCache();
+
         rules.footer();
 end

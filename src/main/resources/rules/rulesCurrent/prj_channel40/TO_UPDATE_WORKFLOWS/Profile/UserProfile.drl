@@ -17,37 +17,37 @@ rule "User-Profile"
   	    String userCode = user.getCode();
 
   	    drools.setFocus("ispayments");  /* NOW Set up Payments */
+        //rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
+        if(userCode != null){
+           /*  Get Company Code of the current user   */
+           BaseEntity company = rules.baseEntity.getParent(userCode, "LNK_STAFF");
+           if(company != null)
+           {
+              rules.println("Company BE is  :: "+company.toString());
+              String companyCode = company.getCode();
+              rules.println("The Company Code is :: "+companyCode);
+              /*  Send Company asks   */
+              rules.sendQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP");
+            }
 
+           /*  Send Bank Details asks   */
+           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
 
-        rules.sendQuestions(userCode,userCode,"QUE_USER_PROFILE_GRP", false);
-       /*  Get Company Code of the current user   */
-        BaseEntity company = rules.getParent(userCode, "LNK_STAFF");
-        if(company != null)
-        {
-            rules.println("Company BE is  :: "+company.toString());
-            String companyCode = company.getCode();
-            rules.println("The Company Code is :: "+companyCode);
-           /*    Send Company asks   */
-            rules.sendQuestions(userCode, companyCode, "QUE_USER_COMPANY_GRP", false);
+           if( rules.isUserSeller(user) ){
+             rules.sendQuestions(userCode,userCode,"QUE_SELLER_GRP");
+             /*  Send User Documents asks   */
+             rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP");
 
-        }
-
-        /*  Send Bank Details asks   */
-          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
-
-        if( rules.isUserSeller(user) ){
-          /*  Send User Documents asks   */
-           rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
-
-	      /* Send Driver SubLayout  */
-		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-driver.json");
+	         /* Send Driver SubLayout  */
+		     rules.sendSublayout("SUB_USER_PROFILE", "user-profile-driver.json");
 	    }
 	   else{
-	      /* Send Owner SubLayout  */
-		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json");
+	        rules.sendQuestions(userCode,userCode,"QUE_BUYER_GRP");
+	        /* Send Owner SubLayout  */
+		    rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json");
 	    }
 
-
+      }
 
        rules.footer();
 end

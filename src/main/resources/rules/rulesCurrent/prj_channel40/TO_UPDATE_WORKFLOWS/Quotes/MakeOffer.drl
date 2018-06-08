@@ -73,14 +73,14 @@ rule "Make Offer"
 
          /* Check if a link exists between BEG & OFFER */
 
-          BaseEntity oldOffer = rules.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
+          BaseEntity oldOffer = rules.baseEntity.getOfferBaseEntity(begCode, linkCode, linkOffer, userCode, tokenString);
           if(oldOffer != null) {
             offerCode = oldOffer.getCode();
           }
           else {
 
             /* Create Offer BE */
-	          BaseEntity offer = rules.createBaseEntityByCode(userCode , "OFR", "Offer");
+	          BaseEntity offer = rules.baseEntity.create(userCode , "OFR", "Offer");
 	          RulesUtils.ruleLogger("OFFER Base Entity", offer);
 	          /* Get Offer Code */
 	          offerCode = offer.getCode();
@@ -100,23 +100,23 @@ rule "Make Offer"
               answerList.add(quoterFullName);
               answerList.add(jobCode);
 
-			        rules.saveAnswers(answerList);
+			        rules.baseEntity.saveAnswers(answerList);
               rules.publishData(answerList);
           }
 
           /* Send Offer Questions */
-          rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", false, true); /* false for form_view*/
+          rules.askQuestions(userCode, offerCode, "QUE_OFFER_DRIVER_GRP", true);
 
           }
           else{
 
            /* Send Payment Method Questions */
-           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
            rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
           }
         }else{
            /* Send Payment Method Questions */
-          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
+          rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP");
            rules.sendSublayout("driver-profile", "driver_payment_methods.json", true);
            //Send question QUE_PAYMENT_METHOD_GRP
        }
