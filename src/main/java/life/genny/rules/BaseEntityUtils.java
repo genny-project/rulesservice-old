@@ -91,7 +91,7 @@ public class BaseEntityUtils {
 	  }
 	  
 	  for (String capabilityCode : capabilityCodes) {
-		  Attribute capabilityAttribute = RulesUtils.attributeMap.get(capabilityCode);
+		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_"+capabilityCode);
 		  try {
 			role.addAttribute(capabilityAttribute,1.0,"TRUE");
 		} catch (BadDataException e) {
