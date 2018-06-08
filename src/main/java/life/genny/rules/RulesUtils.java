@@ -173,7 +173,6 @@ public class RulesUtils {
 			}
 		}
 		catch(Exception e) {
-      System.out.println(jsonStr);
       return jsonStr;
 		}
 
