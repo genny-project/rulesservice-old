@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,6 +79,39 @@ public class BaseEntityUtils {
   /* old code */
 
 
+  public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
+	  String code = "ROL_"+uniqueCode.toUpperCase();
+	  log.info("Creating Role "+code+":"+name);
+	  BaseEntity role = this.getBaseEntityByCode(code);
+	  if (role==null) {
+	      role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
+	      this.addAttributes(role);
+	      
+	      VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
+	  }
+	  
+	  for (String capabilityCode : capabilityCodes) {
+		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_"+capabilityCode);
+		  try {
+			role.addAttribute(capabilityAttribute,1.0,"TRUE");
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  }
+	  
+	  // Now force the role to only have these capabilitys
+		try {
+			String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  
+	  return role;
+	  }
+
+  
 	public Object get(final String key) {
 		return this.decodedMapToken.get(key);
 	}
