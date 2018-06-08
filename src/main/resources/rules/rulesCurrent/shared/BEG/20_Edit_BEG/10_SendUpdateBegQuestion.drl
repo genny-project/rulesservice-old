@@ -13,6 +13,9 @@ rule "Update BEG - Step 1"
         if(begCode != null){
             BaseEntity beg = rules.getBaseEntityByCode(begCode);
             if(beg != null){
+
+                rules.set("begBe", beg);
+                
                 rules.println("THIS IS THE BEG :: "+beg);
                 rules.set("questionSourceCode", rules.getUser().getCode());
                 rules.set("questionTargetCode", beg.getCode());
