@@ -24,6 +24,10 @@ rule "Setup New User"
 	   							    "PRI_REGISTRATION_DATETIME", DateUtils.getCurrentUTCDateTime())
 	   				    );
 
+        /* send notification for new registration */
+        String message = "New registration: " + user.getValue("PRI_FIRSTNAME", "") + " " + user.getValue("PRI_LASTNAME") + ". Email: " + user.getValue("PRI_EMAIL", "");
+  			rules.sendSlackNotification(message);
+
         rules.setState("DID_SETUP_NEW_USER");
 
         rules.clearState("PROFILE_CHECK_COMPLETED");
