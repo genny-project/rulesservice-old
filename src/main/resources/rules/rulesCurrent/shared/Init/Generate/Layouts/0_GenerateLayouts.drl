@@ -11,19 +11,21 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
-rule "Seed New Items Cache"
+rule "Generate Layouts"
 
-    ruleflow-group 'GenerateSearches'
- 
+    ruleflow-group 'GenerateLayouts'
+    salience 700
+
      when
-       rules: QRules( isState("SBE_NEW_ITEMS1") && !isState("GENERATE_NEW_ITEMS_CACHE"))
+       rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_LAYOUTS"))
      then
 
-     rules.header();
-        rules.setState("GENERATE_NEW_ITEMS_CACHE");
-		rules.println("Generating  New Items Cache for "+rules.realm());
-		rules.reloadCache(); 
-		rules.generateItemCaches("ARCHIVED_PRODUCTS");
- 
-     rules.footer();
+    rules.header();
+
+        rules.setState("GENERATE_LAYOUTS");
+		rules.println("Generating layouts");
+		rules.layoutUtils.getAllLayouts();
+
+    rules.footer();
+
 end

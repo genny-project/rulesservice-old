@@ -7,17 +7,17 @@ rule "Select Seller Role - Step 0"
 
 	when
 		 rules: QRules( 	isState("BTN_SELECT_ROLE_SELLER") &&  isState("ROLE_SELECTION") &&
-						!isState("SELLER_SELECTED") )   
+						!isState("SELLER_SELECTED") )
 	 then
 	    rules.header();
-	
+
 		rules.setState("SELLER_SELECTED");
-		
+
 		rules.setState("PRI_IS_SELLER");
 		rules.setState("ROLE_SET");
-		
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "FALSE");
-		rules.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "TRUE");
-		
-	    rules.footer();     		      
+
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "FALSE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "TRUE");
+
+	    rules.footer();
 end
