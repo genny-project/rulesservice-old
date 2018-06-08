@@ -26,6 +26,7 @@ rule "Create Job"
    then
      rules.header();
 
+     rules.setState("CREATE_LOAD_CLICKED");
       drools.setFocus("CreateLoad");
 
     /*     Creating new base-entity BEG for Posting new Job      */
