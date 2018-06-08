@@ -191,7 +191,7 @@ public class QRules {
 			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 		} catch (Exception e) {
 
 		}
