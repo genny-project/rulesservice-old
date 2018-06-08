@@ -138,7 +138,7 @@ public class RulesUtils {
   	String jsonStr = "";
 		try {
 
-      if(path.startsWith("/") == false) {
+      if(path.startsWith("/") == false && realm.endsWith("/") == false) {
         path = realm + "/" + path;
       }
       else {
@@ -148,12 +148,9 @@ public class RulesUtils {
 			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
       println(url);
-			println("ok");
 
 			/* we make a GET request */
       jsonStr = QwandaUtils.apiGet(url, null);
-      System.out.println("Got layout result: ");
-      System.out.println(jsonStr);
 
 			if(jsonStr != null) {
 
