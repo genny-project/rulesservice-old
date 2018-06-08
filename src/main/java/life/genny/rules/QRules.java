@@ -2518,8 +2518,10 @@ public void makePayment(QDataAnswerMessage m) {
         String userCode = getUser().getCode();
         String begCode = null;
         Answer[] dataAnswers = m.getItems();
+
         for (Answer answer : dataAnswers) {
-            String targetCode = answer.getTargetCode();
+           
+        	String targetCode = answer.getTargetCode();
             String sourceCode = answer.getSourceCode();
             String attributeCode = answer.getAttributeCode();
             String value = answer.getValue();
@@ -2552,6 +2554,8 @@ public void makePayment(QDataAnswerMessage m) {
                 // saveAnswers(userSpecificAnswers);
             }
         }
+        
+        
         String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
         BaseEntity userBe = getUser();
         String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
@@ -2571,7 +2575,8 @@ public void makePayment(QDataAnswerMessage m) {
 
                 /* if make payment succeeds, move bucket and send notifications */
                 if(isMakePaymentSuccess) {
-                		/* GET attributes of OFFER BE */
+                		
+                	/* GET attributes of OFFER BE */
                     Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
                     Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
                     Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);

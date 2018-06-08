@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.javamoney.moneta.Money;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -73,8 +74,30 @@ public class BaseEntityUtils {
 
     return null;
   }
+  
+  public void copyBaseEntityAttribute(BaseEntity baseEntity1, BaseEntity baseEntity2, String attributeCode) {
+	  
+	  Object value = baseEntity2.getValue(attributeCode, null);
+	  if(value != null) {
+		  Answer newAnswer = new Answer(baseEntity1.getCode(), baseEntity1.getCode(), attributeCode, JsonUtils.toJson(value));
+		  this.saveAnswer(newAnswer);
+	  }
+  }
 
-
+  public void copyBaseEntityAttributes(BaseEntity baseEntity1, BaseEntity baseEntity2, String[] attributeCodes) {
+	
+	  List<Answer> answers = new ArrayList<Answer>();
+	  for(String attributeCode: attributeCodes) {
+		  
+		  Object value = baseEntity2.getValue(attributeCode, null);
+		  if(value != null) {
+			  Answer newAnswer = new Answer(baseEntity1.getCode(), baseEntity1.getCode(), attributeCode, JsonUtils.toJson(value));
+			  answers.add(newAnswer);
+		  }
+	  }
+	  
+	  this.saveAnswers(answers);
+  }
 
   /*================================ */
   /* old code */
