@@ -76,14 +76,8 @@ rule "Submit Job"
          		/*Sending email to quoters who have made offer to a job, when a job is edited */
          		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
            		rules.triggerEmailForJobUpdate(jobCode);
-
          	 	}
       }
-
-      /*  Calling the rule group : BucketView     */
-     rules.sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
-     rules.reloadCache();
-     drools.setFocus("ispayments");  /* NOW Set up Payments */
 
      rules.footer();
 

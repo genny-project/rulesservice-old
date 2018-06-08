@@ -2521,6 +2521,8 @@ public class QRules {
 
 public void makePayment(QDataAnswerMessage m) {
 
+        showLoading("Processing payment...");
+
         String userCode = getUser().getCode();
         String begCode = null;
         Answer[] dataAnswers = m.getItems();
@@ -2567,7 +2569,7 @@ public void makePayment(QDataAnswerMessage m) {
             String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
             if (offerCode != null) {
                 /* Make payment */
-                showLoading("Processing payment...");
+
                 BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
                 String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
                 BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
@@ -3106,7 +3108,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void saveJob(BaseEntity job) {
 
+    this.showLoading("Creating job...");
+
 		String jobCode = job.getCode();
+
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
 		 * triggered in another rule
@@ -3184,18 +3189,23 @@ public void makePayment(QDataAnswerMessage m) {
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
 
-		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+
+    /* we push the job to the creator */
+    String[] creatorRecipient = { getUser().getCode() };
+    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+
 		/* SEND LOAD BE */
-		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+
 		/* publishing to Owner */
-		publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
-		publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
+		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
+		// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
 
 		if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
 			/* Sending Messages */
-
-			println("new job");
 
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
@@ -3239,7 +3249,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 
+    this.redirectToHomePage();
 		this.reloadCache();
+    drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
