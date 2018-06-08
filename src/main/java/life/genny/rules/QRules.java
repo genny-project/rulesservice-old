@@ -5786,6 +5786,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
 		String fullCapabilityCode = "CAP_"+capabilityCode.toUpperCase();
+		println("Setting Capability : "+fullCapabilityCode+" : "+name);
 		Attribute attribute = RulesUtils.attributeMap.get(fullCapabilityCode);
 		if (attribute != null) {
 			capabilityManifest.add(attribute);

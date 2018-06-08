@@ -17,7 +17,7 @@ rule "GenerateRoles"
     salience 700
 
      when
-       rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_ROLES"))
+       rules: QRules(isState("GENERATE_STARTUP") && isState("GENERATE_TEST_ROLES") && !isState("GENERATE_ROLES"))
      then
 
     rules.header();
