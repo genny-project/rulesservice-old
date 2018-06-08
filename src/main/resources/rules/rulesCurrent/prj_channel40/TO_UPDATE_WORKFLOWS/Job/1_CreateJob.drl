@@ -26,6 +26,7 @@ rule "Create Job"
    then
      rules.header();
 
+     rules.setState("CREATE_LOAD_CLICKED");
       drools.setFocus("CreateLoad");
 
     /*     Creating new base-entity BEG for Posting new Job      */
@@ -61,13 +62,7 @@ rule "Create Job"
 
     /*    Getting Post Load Question GRP        */
 
-      String stakeHolderFilter = null;
-      BaseEntity company =  rules.baseEntity.getParent(rules.getUser().getCode(),"LNK_STAFF");
-      if(company != null) {
-    	  stakeHolderFilter = company.getCode();
-     }
-
- 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", stakeHolderFilter);
+ 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", rules.getUser().getCode());
  	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP");
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
