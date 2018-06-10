@@ -820,6 +820,10 @@ public class QRules {
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
+      /* send notification for new registration */
+      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+      this.sendSlackNotification(message);
+
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -903,9 +907,9 @@ public class QRules {
 
 		publish("cmds", cmdJobSublayoutJson);
 	}
-	
+
 	private void navigate(NavigationType navigationType, String newRoute) {
-		
+
 		QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
 		this.publishCmd(navigationMessage);
 		/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
@@ -913,13 +917,13 @@ public class QRules {
 		json.put("token", getToken());
 		publish("cmds", json); */
 	}
-	
+
 	public void navigateTo(String newRoute) {
-		
+
 		NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
 		this.navigate(type, newRoute);
 	}
-	
+
 	public void navigateBack(NavigationType navigationType, String newRoute) {
 
 		NavigationType type = NavigationType.valueOf("ROUTE_BACK");
