@@ -71,7 +71,7 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
-import life.genny.qwanda.entity.NavigationType;
+// import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
@@ -908,27 +908,27 @@ public class QRules {
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
-	private void navigate(NavigationType navigationType, String newRoute) {
-
-		QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
-		this.publishCmd(navigationMessage);
-		/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-		JsonObject json = JsonObject.mapFrom(cmdNavigate);
-		json.put("token", getToken());
-		publish("cmds", json); */
-	}
+	// private void navigate(NavigationType navigationType, String newRoute) {
+  //
+	// 	// QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
+	// 	// this.publishCmd(navigationMessage);
+	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+	// 	json.put("token", getToken());
+	// 	publish("cmds", json); */
+	// }
 
 	public void navigateTo(String newRoute) {
 
-		NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
-		this.navigate(type, newRoute);
+		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
+		// this.navigate(type, newRoute);
 	}
 
-	public void navigateBack(NavigationType navigationType, String newRoute) {
-
-		NavigationType type = NavigationType.valueOf("ROUTE_BACK");
-		this.navigate(type, newRoute);
-	}
+	// public void navigateBack(NavigationType navigationType, String newRoute) {
+  //
+	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
+	// 	// this.navigate(type, newRoute);
+	// }
 
 	public void showLoading(String text) {
 
