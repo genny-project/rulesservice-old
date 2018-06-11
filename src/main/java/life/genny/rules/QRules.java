@@ -5216,14 +5216,14 @@ public class QRules {
 		return paymentFeeId;
 	}
 
-	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
+	public Boolean makePayment(String itemId, BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
 			String authToken) {
 
 		Boolean isMakePaymentSuccess = false;
 		if (begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
 
 			try {
-				String itemId = begBe.getValue("PRI_ITEM_ID", null);
+
 				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
 
 				/* To get the type of payment (Bank account / card) */
