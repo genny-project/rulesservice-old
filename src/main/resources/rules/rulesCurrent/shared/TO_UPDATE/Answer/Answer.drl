@@ -46,9 +46,6 @@ ruleflow-group 'Answer'
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m);
 			}
-			else if(attributeCode.contains("PRI_PAYMENT_METHOD") && !rules.isState("PAYMENT_ANSWER")) {
-				rules.setState("PAYMENT_ANSWER");
-			}
 			else {
 				answersToSave.addAll(rules.processAnswer($m));
 			}
