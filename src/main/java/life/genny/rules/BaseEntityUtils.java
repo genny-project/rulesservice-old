@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 import org.javamoney.moneta.Money;
@@ -39,11 +41,11 @@ import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
 
-	
+
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	
+
 
 	private Map<String, Object> decodedMapToken;
 	private String token;
@@ -74,9 +76,9 @@ public class BaseEntityUtils {
 
     return null;
   }
-  
+
   public void copyBaseEntityAttribute(BaseEntity baseEntity1, BaseEntity baseEntity2, String attributeCode) {
-	  
+
 	  Object value = baseEntity2.getValue(attributeCode, null);
 	  if(value != null) {
 		  Answer newAnswer = new Answer(baseEntity1.getCode(), baseEntity1.getCode(), attributeCode, JsonUtils.toJson(value));
@@ -85,20 +87,20 @@ public class BaseEntityUtils {
   }
 
   public void copyBaseEntityAttributes(BaseEntity baseEntity1, BaseEntity baseEntity2, String[] attributeCodes) {
-	
+
 	  List<Answer> answers = new ArrayList<Answer>();
 	  for(String attributeCode: attributeCodes) {
-		  
+
 		  Object value = baseEntity2.getValue(attributeCode, null);
 		  if(value != null) {
 			  Answer newAnswer = new Answer(baseEntity1.getCode(), baseEntity1.getCode(), attributeCode, JsonUtils.toJson(value));
 			  answers.add(newAnswer);
 		  }
 	  }
-	  
+
 	  this.saveAnswers(answers);
   }
-  
+
    public void updateStatus(BaseEntity be, String userCode, String status) {
 		this.updateStatus(be.getCode(), userCode, status);
 	}
@@ -127,7 +129,7 @@ public class BaseEntityUtils {
 				answer.setChangeEvent(false);
 			}
 		}
-		
+
 		Answer items[] = new Answer[answers.size()];
 		items = answers.toArray(items);
 
@@ -148,19 +150,26 @@ public class BaseEntityUtils {
 	public void saveAnswers(List<Answer> answers) {
 		this.saveAnswers(answers, true);
 	}
-	
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode) {
-		return this.moveBaseEntity(baseEntityCode, sourceCode, targetCode, linkCode, "LINK");
+
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, Consumer<String> callback) {
+		return this.moveBaseEntity(baseEntityCode, sourceCode, targetCode, linkCode, "LINK", callback);
 	}
 
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, final String linkValue) {
+  public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, final String linkValue) {
+    return this.moveBaseEntity(baseEntityCode, sourceCode, targetCode, linkCode, linkValue, null);
+  }
+
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode) {
+		return this.moveBaseEntity(baseEntityCode, sourceCode, targetCode, linkCode, "LINK", null);
+	}
+
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, final String linkValue,  Consumer<String> callback) {
 
 		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
 
 		try {
 
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), this.token);
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode, JsonUtils.toJson(link), this.token, callback);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -181,10 +190,10 @@ public class BaseEntityUtils {
 		this.decodedMapToken.put(key, value);
 	}
 
-	
+
 	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
 	{
-		
+
 		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
 		try {
 			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
@@ -196,7 +205,7 @@ public class BaseEntityUtils {
 
 
 	}
-	
+
 
 	public void addAttributes(BaseEntity be) {
 
