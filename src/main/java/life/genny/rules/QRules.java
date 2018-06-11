@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
 import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
@@ -53,6 +54,7 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channel.Consumer;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Ask;
@@ -2665,8 +2667,7 @@ public void makePayment(QDataAnswerMessage m) {
                         for (String code : unsubscribeSet) {
                             unsubscribeArr[i++] = code;
                         }
-                        /* sending cmd BUCKETVIEW */
-                        this.redirectToHomePage();
+
                         println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
                         VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
                     }
@@ -4495,15 +4496,45 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void reloadCache() {
+		
+		BaseEntityUtils beUtils = this.baseEntity;
+		CacheUtils cacheUtils = this.cacheUtils;
+		
+		String realm = this.realm();
+		
+		Runnable run = new Runnable() {
 
-		/* we check if the search BEs have been created */
-		BaseEntity searchNewItems = this.baseEntity.getBaseEntityByCode("SBE_NEW_ITEMS");
-		if (searchNewItems == null) {
-			drools.setFocus("GenerateSearches");
-		}
-
-		this.cacheUtils.refresh(this.realm(), "BUCKETS");
-		this.cacheUtils.refresh(this.realm(), "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+			@Override
+			public void run() {
+				
+				/* we check if the search BEs have been created */
+	        		BaseEntity searchNewItems = beUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
+	        		if (searchNewItems == null) {
+	        			drools.setFocus("GenerateSearches");
+	        		}
+	
+	        		cacheUtils.refresh(realm, "BUCKETS");
+	        		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+			}
+		};
+		
+		run.run();
+		
+		/*
+    	
+    		Timer t = new java.util.Timer();
+	    t.schedule( 
+	            new java.util.TimerTask() {
+	               
+	            	@Override
+	                public void run() {
+	                    
+	                		run.run();
+	                     t.cancel();
+	                }
+	            }, 
+	            10000 
+	    ); */
 	}
 
 	public void sendApplicationData() {
