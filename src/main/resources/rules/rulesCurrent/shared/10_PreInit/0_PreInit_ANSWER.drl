@@ -11,6 +11,15 @@ rule "Pre Init Answer"
         rules.println("RULE INIT ANSWER: "+ m + " - " + m.getItems());
 
         rules.setState("DATA_ANSWER");
+
+        Answer[] answers = m.getItems();
+		if(answers != null && answers.length > 0) {
+			for(Answer answer: answers) {
+				rules.setState(answer.getAttributeCode());
+				rules.set(answer.getAttributeCode(), answer);
+			}
+		}
+
         rules.setState("STARTED");
 
         drools.setFocus("Answer");

@@ -98,6 +98,76 @@ public class BaseEntityUtils {
 	  
 	  this.saveAnswers(answers);
   }
+  
+   public void updateStatus(BaseEntity be, String userCode, String status) {
+		this.updateStatus(be.getCode(), userCode, status);
+	}
+
+	public void updateStatus(String beCode, String userCode, String status) {
+
+		String attributeCode = "STA_" + userCode;
+		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
+	}
+
+	public void updateStatus(BaseEntity be, List<String> userCodes, String status) {
+		this.updateStatus(be.getCode(), userCodes, status);
+	}
+
+	public void updateStatus(String beCode, List<String> userCodes, String status) {
+
+		for (String userCode : userCodes) {
+			this.updateStatus(beCode, userCode, status);
+		}
+	}
+
+	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
+
+		if (!changeEvent) {
+			for (Answer answer : answers) {
+				answer.setChangeEvent(false);
+			}
+		}
+		
+		Answer items[] = new Answer[answers.size()];
+		items = answers.toArray(items);
+
+		QDataAnswerMessage msg = new QDataAnswerMessage(items);
+
+		this.updateCachedBaseEntity(answers);
+
+		String jsonAnswer = JsonUtils.toJson(msg);
+		jsonAnswer.replace("\\\"", "\"");
+
+		try {
+			QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/answers/bulk2", jsonAnswer, token);
+		} catch (IOException e) {
+			//log.error("Socket error trying to post answer");
+		}
+	}
+
+	public void saveAnswers(List<Answer> answers) {
+		this.saveAnswers(answers, true);
+	}
+	
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode) {
+		return this.moveBaseEntity(baseEntityCode, sourceCode, targetCode, linkCode, "LINK");
+	}
+
+	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, final String linkValue) {
+
+		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
+
+		try {
+
+			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
+					JsonUtils.toJson(link), this.token);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
   /*================================ */
   /* old code */
@@ -167,35 +237,6 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 	}
-
-	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
-
-		if (!changeEvent) {
-			for (Answer answer : answers) {
-				answer.setChangeEvent(false);
-			}
-		}
-		Answer items[] = new Answer[answers.size()];
-		items = answers.toArray(items);
-
-		QDataAnswerMessage msg = new QDataAnswerMessage(items);
-
-		this.updateCachedBaseEntity(answers);
-
-		String jsonAnswer = JsonUtils.toJson(msg);
-		jsonAnswer.replace("\\\"", "\"");
-
-		try {
-			QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/answers/bulk2", jsonAnswer, token);
-		} catch (IOException e) {
-			//log.error("Socket error trying to post answer");
-		}
-	}
-
-	public void saveAnswers(List<Answer> answers) {
-		this.saveAnswers(answers, true);
-	}
-
 
 	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
 			String token) {
@@ -356,35 +397,6 @@ public class BaseEntityUtils {
 		}
 
 		return bes;
-	}
-
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
-			final String linkCode) {
-		Link link = new Link(sourceCode, baseEntityCode, linkCode);
-		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public String moveBaseEntitySetLinkValue(final String baseEntityCode, final String sourceCode,
-			final String targetCode, final String linkCode, final String linkValue) {
-
-		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
-
-		try {
-
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), this.token);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
 	}
 
 	public Object getBaseEntityValue(final String baseEntityCode, final String attributeCode) {
@@ -786,27 +798,6 @@ public class BaseEntityUtils {
 			}
 		}
 		return getBaseEntityByCode(newBe.getCode());
-	}
-
-	public void updateBaseEntityStatus(BaseEntity be, String userCode, String status) {
-		this.updateBaseEntityStatus(be.getCode(), userCode, status);
-	}
-
-	public void updateBaseEntityStatus(String beCode, String userCode, String status) {
-
-		String attributeCode = "STA_" + userCode;
-		this.updateBaseEntityAttribute(userCode, beCode, attributeCode, status);
-	}
-
-	public void updateBaseEntityStatus(BaseEntity be, List<String> userCodes, String status) {
-		this.updateBaseEntityStatus(be.getCode(), userCodes, status);
-	}
-
-	public void updateBaseEntityStatus(String beCode, List<String> userCodes, String status) {
-
-		for (String userCode : userCodes) {
-			this.updateBaseEntityStatus(beCode, userCode, status);
-		}
 	}
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {

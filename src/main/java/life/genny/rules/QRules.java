@@ -693,7 +693,7 @@ public class QRules {
 						if (created.isBefore(lastWeek)) {
 
 							/* BEG was paid >1 week - we archive it */
-							this.baseEntity.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
+							this.baseEntity.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
 						}
 					}
 				}
@@ -2976,9 +2976,9 @@ public class QRules {
 		/* Moving the BEG to GRP_NEW_ITEMS */
 		/*
 		 * The moveBaseEntity without linkValue sets the linkValue to default value,
-		 * "LINK". So using moveBaseEntitySetLinkValue()
+		 * "LINK". So using moveBaseEntity()
 		 */
-		this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
+		this.baseEntity.moveBaseEntity(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 
 		/* Get the sourceCode(Company code) for this User */
 		BaseEntity company = this.baseEntity.getParent(getUser().getCode(), "LNK_STAFF");

@@ -7,7 +7,7 @@ rule "Pre Init Attribute Change"
 	salience 10000
 /*	ruleflow-group 'Init' */
     when
-          m : QEventMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
+          m : QEventAttributeValueChangeMessage()
           rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
@@ -15,6 +15,10 @@ rule "Pre Init Attribute Change"
  
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");
         rules.setState("STARTED");
+                
+        rules.setState(m.getData().getCode());
+        rules.setState(m.getAnswer().getTargetCode());
+        rules.setState("EVENT_ATTRIBUTE_CHANGE");
 		
         	drools.setFocus("AttributeChange");
        		      
