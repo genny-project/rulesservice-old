@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -52,12 +56,19 @@ public class BaseEntityUtils {
 	private String realm;
 	private String qwandaServiceUrl;
 
+    private List<Answer> bufferAnswers;
+    private ScheduledExecutorService answerScheduler;
+
 	public BaseEntityUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
 
   	this.decodedMapToken = decodedMapToken;
-		this.qwandaServiceUrl = qwandaServiceUrl;
+
+  		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
 		this.realm = realm;
+
+		this.bufferAnswers = new ArrayList<Answer>();
+		this.answerScheduler = Executors.newScheduledThreadPool(1);
 	}
 
   /* =============== refactoring =============== */
@@ -122,6 +133,17 @@ public class BaseEntityUtils {
 		}
 	}
 
+  public void saveAnswer(Answer answer) {
+
+		List<Answer> answers = new ArrayList<Answer>();
+		answers.add(answer);
+		this.saveAnswers(answers);
+	}
+
+	public void saveAnswers(List<Answer> answers) {
+		this.saveAnswers(answers, true);
+	}
+
 	public void saveAnswers(List<Answer> answers, final boolean changeEvent) {
 
 		if (!changeEvent) {
@@ -130,25 +152,60 @@ public class BaseEntityUtils {
 			}
 		}
 
-		Answer items[] = new Answer[answers.size()];
-		items = answers.toArray(items);
+		System.out.println("-------------------------");
 
-		QDataAnswerMessage msg = new QDataAnswerMessage(items);
+	    /* we update the cache */
+	    this.updateCachedBaseEntity(answers);
 
-		this.updateCachedBaseEntity(answers);
+	    /* we add the answers to the buffer */
+	    this.bufferAnswers.addAll(answers);
 
-		String jsonAnswer = JsonUtils.toJson(msg);
-		jsonAnswer.replace("\\\"", "\"");
+	    /* we restart the timer */
+	    if(this.answerScheduler.isTerminated() == false) {
+	    		this.answerScheduler.shutdown();
+	    }
 
-		try {
-			QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/answers/bulk2", jsonAnswer, token);
-		} catch (IOException e) {
-			//log.error("Socket error trying to post answer");
-		}
+		this.answerScheduler = Executors.newScheduledThreadPool(1);
+
+	    Runnable processAnswersRunnable = this.processAnswers();
+	    this.answerScheduler.schedule(new Runnable() {
+
+		    	public void run() {
+		    		System.out.println("============ RUNNING ============");
+		    		processAnswersRunnable.run();
+		    	}
+
+	    }, 2, TimeUnit.SECONDS);
 	}
 
-	public void saveAnswers(List<Answer> answers) {
-		this.saveAnswers(answers, true);
+	private Runnable processAnswers() {
+
+		return new Runnable() {
+
+			public void run() {
+
+				System.out.println("===========================");
+				System.out.println("PROCESSING ANSWERS");
+				System.out.println( bufferAnswers.size() );
+
+				if(bufferAnswers != null && bufferAnswers.size() > 0) {
+
+					Answer items[] = new Answer[bufferAnswers.size()];
+					items = bufferAnswers.toArray(items);
+          bufferAnswers = new ArrayList<Answer>();
+					QDataAnswerMessage msg = new QDataAnswerMessage(items);
+					String jsonAnswer = JsonUtils.toJson(msg);
+					jsonAnswer.replace("\\\"", "\"");
+
+					try {
+						QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk2", jsonAnswer, token);
+
+					} catch (IOException e) {
+						//log.error("Socket error trying to post answer");
+					}
+				}
+			}
+		};
 	}
 
 	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode, final String linkCode, Consumer<String> callback) {
@@ -232,18 +289,6 @@ public class BaseEntityUtils {
 					}
 				}
 			}
-		}
-	}
-
-	public void saveAnswer(Answer answer) {
-
-		try {
-			this.updateCachedBaseEntity(answer);
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), this.token);
-			// Now update the Cache
-
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 

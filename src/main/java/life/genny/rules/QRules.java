@@ -551,6 +551,20 @@ public class QRules {
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
+	
+	public void publishBaseEntityByCode(BaseEntity be, String parentCode) {
+
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = be;
+		
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, "LNK_CORE");
+		msg.setRecipientCodeArray(recipients);
+		publishData(msg, recipients);
+
+	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -2660,6 +2674,12 @@ public class QRules {
 		}
 		System.out.println("The result   ::  " + result);
 
+	}
+	
+	public void clearBaseEntity(String baseEntityCode) {
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		this.clearBaseEntity(baseEntityCode, recipients);
 	}
 
 	/* sets delete field to true so that FE removes the BE from their store */
