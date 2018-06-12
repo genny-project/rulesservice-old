@@ -1312,7 +1312,7 @@ public class QRules {
       if(user != null) {
 
         /* get the list of category types user has  */
-        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(, sourceAttributeCode);
+        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(user, sourceAttributeCode);
         if(productCategoryList != null){
 
            for(String loadTypeCode : productCategoryList ){
