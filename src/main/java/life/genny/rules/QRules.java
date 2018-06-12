@@ -1310,12 +1310,12 @@ public class QRules {
   	   Long categoryTypeInBits = 0L;
 
         /* get the list of category types user has  */
-        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
         if(productCategoryList != null){
 
            for(String loadTypeCode : productCategoryList ){
 
-                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+                BaseEntity loadCat = this.baseEntity.getBaseEntityByCode(loadTypeCode);
 
                 /* get the bit value for the SEL BE  */
                 Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
