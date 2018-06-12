@@ -2165,7 +2165,7 @@ public class QRules {
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
-			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", link.toString(), getToken());
+			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2176,7 +2176,7 @@ public class QRules {
 	public String removeLink(final String parentCode, final String childCode, final String linkCode, final String linkValue) {
 		Link link = new Link(parentCode, childCode, linkCode, linkValue);
 		try {
-			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", link.toString(), getToken());
+			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2774,7 +2774,7 @@ public class QRules {
 	}
 
 	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
-
+        
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
