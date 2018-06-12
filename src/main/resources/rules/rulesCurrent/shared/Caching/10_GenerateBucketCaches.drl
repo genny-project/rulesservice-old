@@ -18,7 +18,6 @@ rule "Generate Bucket caches"
      when
        rules: QRules( !isState("GENERATE_BUCKET_CACHES"))
      then
-	 rules.setDrools(drools);
      rules.header();
         rules.setState("GENERATE_BUCKET_CACHES");
 		rules.println("Generating  Bucket Caches for "+rules.realm());
