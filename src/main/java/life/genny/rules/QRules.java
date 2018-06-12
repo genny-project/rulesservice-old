@@ -2172,6 +2172,17 @@ public class QRules {
 		return null;
 
 	}
+	/* Remove link with specific link Value */
+	public String removeLink(final String parentCode, final String childCode, final String linkCode, final String linkValue) {
+		Link link = new Link(parentCode, childCode, linkCode, linkValue);
+		try {
+			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", link.toString(), getToken());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 
 	/*
 	 * @param BaseEntity
