@@ -42,19 +42,22 @@ rule "Delete job"
 		rules.fastClearBaseEntity(begCode, allBegRecipients);
 
 	   	/*     Moving the BEG      */
-        rules.baseEntity.moveBaseEntitySetLinkValue(begCode,groupCode, "GRP_BIN", "LNK_CORE", rules.getUser().getCode());
+        rules.baseEntity.moveBaseEntitySetLinkValue(begCode, groupCode, "GRP_BIN", "LNK_CORE", "BEG");
+        //rules.setState("DATA_SENT_FINISHED");
+        rules.setState("TRIGGER_HOMEPAGE");
+        // rules.setState("APPLICATION_READY_SEND_DATA");
+       if(groupCode.equalsIgnoreCase("GRP_NEW_ITEMS")){
+	       	/* Sending Messages */
+	       HashMap<String,String> contextMap = new HashMap<String, String>();
+	       contextMap.put("JOB", begCode);
+	       contextMap.put("OWNER", rules.getUser().getCode());
+	
+	
+	       /* Sending toast message to all the beg frontends */
+	        rules.sendMessage("", allBegRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
+       }
 
-       	/* Sending Messages */
-       HashMap<String,String> contextMap = new HashMap<String, String>();
-       contextMap.put("JOB", begCode);
-       contextMap.put("OWNER", rules.getUser().getCode());
-
-
-       /* Sending toast message to all the beg frontends */
-        rules.sendMessage("", allBegRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
-
-		rules.setState("TRIGGER_HOMEPAGE");
-    	rules.reloadCache();       
+    	    rules.reloadCache();       
 
 	    rules.footer();
 end
