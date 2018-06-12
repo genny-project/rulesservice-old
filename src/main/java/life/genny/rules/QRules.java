@@ -3165,7 +3165,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
 				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
 				if (roleBE==null) {
-					return false;
+					continue;
 				}
 				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
 				if (optEaCap.isPresent()) {

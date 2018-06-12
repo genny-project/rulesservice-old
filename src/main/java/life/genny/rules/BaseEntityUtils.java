@@ -79,7 +79,7 @@ public class BaseEntityUtils {
   /* old code */
 
 
-  public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
+  public BaseEntity createRole(final String uniqueCode, final String name, final String token, String ... capabilityCodes) {
 
 	  String code = "ROL_IS_" + uniqueCode.toUpperCase();
 
@@ -111,6 +111,10 @@ public class BaseEntityUtils {
 	  } catch (IOException e) {
 		  e.printStackTrace();
 	  }
+	  
+	  /* Now link the role to the GRP_ROLES */
+		QwandaUtils.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0, token);// Creating
+
 
 	  return role;
   }
