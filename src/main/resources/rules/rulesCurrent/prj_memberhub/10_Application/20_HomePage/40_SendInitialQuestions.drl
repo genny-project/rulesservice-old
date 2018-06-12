@@ -4,15 +4,14 @@ import life.genny.rules.QRules;
 
 rule "Send Initial Questions"
     when
-        rules: QRules( isState("LOOP_SENT_BUCKET_DATA") && !isState("SENT_INITIAL_QUESTIONS") )
+        rules: QRules( isState("SEND_INITIAL_QUESTIONS") && !isState("SENT_INITIAL_QUESTIONS") )
      then
      	rules.header();
 
      	rules.setState("SENT_INITIAL_QUESTIONS");
 
-		  
-		rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MEMBERHUB_GRP", false); /* false for form_view*/
-        rules.setState("MEMBERHUB_QUESTIONS_READY");
-		  
+		  rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MEMBERHUB_GRP");
+      rules.setState("MEMBERHUB_QUESTIONS_READY");
+
 	    rules.footer();
 end

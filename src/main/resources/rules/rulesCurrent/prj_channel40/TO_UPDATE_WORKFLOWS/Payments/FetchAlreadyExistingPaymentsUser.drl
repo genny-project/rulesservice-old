@@ -27,7 +27,7 @@ rule "Payment creation failure - Check for existing payment user in payments-ser
   		
   	if(existingAssemblyId != null) {
   		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);
-     	rules.saveAnswer(assemblyIdAnswer);
+     	rules.baseEntity.saveAnswer(assemblyIdAnswer);
      	rules.println("assembly ID created in our system ::"+existingAssemblyId); 
      	rules.setState("IS_ASSEMBLY_USER_CREATED");
      	drools.setFocus("payments");

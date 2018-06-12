@@ -36,13 +36,16 @@ rule "User-Profile"
           rules.sendQuestions(userCode, userCode, "QUE_PAYMENT_METHOD_GRP", false);
 
         if( rules.isUserSeller(user) ){
-        
+
+          /* Sendf user profile questions */
+          rules.sendQuestions(userCode,userCode,"QUE_SELLER_GRP");
+
           /*   Getting list of the load category   */
-           rules.sendSelections("GRP_LOAD_CATEGORY", "LNK_CORE", 20);
-           
-          /*  Send User Documents asks   */ 
+          /* rules.sendSelections("GRP_LOAD_CATEGORY", "LNK_CORE", 20); */
+
+          /*  Send User Documents asks   */
            rules.sendQuestions(userCode, userCode, "QUE_DRIVER_LOAD_TYPES_GRP", false);
-           
+
           /*  Send User Documents asks   */
            rules.sendQuestions(userCode, userCode, "QUE_USER_DOCUMENTS_GRP", false);
 
@@ -50,11 +53,12 @@ rule "User-Profile"
 		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-driver.json");
 	    }
 	   else{
-	      /* Send Owner SubLayout  */
-		   rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json");
+	        rules.sendQuestions(userCode,userCode,"QUE_BUYER_GRP");
+	        /* Send Owner SubLayout  */
+		    rules.sendSublayout("SUB_USER_PROFILE", "user-profile-owner.json");
 	    }
 
-
+      }
 
        rules.footer();
 end

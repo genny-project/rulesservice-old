@@ -9,8 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +33,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.PaymentsResponse;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
 import life.genny.qwanda.message.QDataAnswerMessage;
@@ -51,11 +48,12 @@ import life.genny.qwanda.payments.QPaymentsLocationInfo;
 import life.genny.qwanda.payments.QPaymentsUser;
 import life.genny.qwanda.payments.QPaymentsUserContactInfo;
 import life.genny.qwanda.payments.QPaymentsUserInfo;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemSearchResponse;
+import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUser;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.MergeUtil;
-import life.genny.qwandautils.QwandaUtils;
 
 public class PaymentUtils {
 
@@ -65,7 +63,6 @@ public class PaymentUtils {
 	/* Define constants */
 	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
 	public static final String PROVIDER_TYPE_BANK = "bank";
-	public static final String CONTACT_ADMIN_TEXT = "Please contact support for assistance"; /* TODO Use an environment variable to include support contact info */
 
 	/**
 	* Returns the authentication key for the payments service - key is generated as per documentation here
@@ -282,11 +279,11 @@ public class PaymentUtils {
 
 	/* Creates a new user in Assembly */
 	public static QPaymentsUserInfo getPaymentsUserInfo(BaseEntity userBe) throws IllegalArgumentException {
-		
+
 		QPaymentsUserInfo personalInfo = null;
-	
+
 		if(userBe != null) {
-			
+
 			String formattedDOBString = null;
 			String firstName = userBe.getValue("PRI_FIRSTNAME", null);
 			String lastName = userBe.getValue("PRI_LASTNAME", null);
@@ -298,77 +295,77 @@ public class PaymentUtils {
 				DateTimeFormatter assemblyDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 				formattedDOBString = assemblyDateFormatter.format(dob);
 				System.out.println("another formatted dob ::"+formattedDOBString);
-				
-				dob = LocalDate.parse(formattedDOBString, assemblyDateFormatter);					
+
+				dob = LocalDate.parse(formattedDOBString, assemblyDateFormatter);
 			}
-			
+
 			personalInfo = new QPaymentsUserInfo(firstName, lastName, dob);
 		}
-		
+
 		return personalInfo;
-		
+
 	}
-	
+
 	public static QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity userBe) throws IllegalArgumentException {
-		
+
 		QPaymentsUserContactInfo userContactInfo = null;
-		
+
 		if(userBe != null) {
-			
+
 			String email = userBe.getValue("PRI_EMAIL", null);
 			userContactInfo = new QPaymentsUserContactInfo(email);
 		}
-		
+
 		return userContactInfo;
 
 	}
-	
+
 	public static QPaymentsLocationInfo getPaymentsLocationInfo(BaseEntity be) throws IllegalArgumentException {
-		
+
 		QPaymentsLocationInfo userLocationInfo = null;
 		String city = null;
 		String country = null;
-		
+
 		if(be != null) {
-			
+
 			String addressLine1 = be.getValue("PRI_ADDRESS_ADDRESS1", null);
 			String addressLine2 = be.getValue("PRI_ADDRESS_ADDRESS2", null);
-			
+
 			city = be.getValue("PRI_ADDRESS_CITY", null);
 			if(city == null) {
-				city = be.getValue("PRI_ADDRESS_SUBURB", null);	
+				city = be.getValue("PRI_ADDRESS_SUBURB", null);
 			}
-			
+
 			country = be.getValue("PRI_ADDRESS_COUNTRY", null);
 			if(country == null) {
 				city = "AU";
 			}
-			
+
 			String state = be.getValue("PRI_ADDRESS_STATE", null);
 			String postCode = be.getValue("PRI_ADDRESS_POSTCODE", null);
-			
+
 			userLocationInfo = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
-			
+
 			/* address line2 is not mandatory. If available, assembly will be updated */
 			if(addressLine2 != null) {
 				userLocationInfo.setAddressLine2(addressLine2);
 			}
 		}
-		
+
 		return userLocationInfo;
-		
+
 	}
-	
+
 	public static QPaymentsCompanyContactInfo getPaymentsCompanyContactInfo(BaseEntity companyBe) throws IllegalArgumentException {
-		
+
 		QPaymentsCompanyContactInfo companyObj = null;
-		
+
 		String companyPhoneNumber = companyBe.getValue("PRI_LANDLINE", null);
 		companyObj = new QPaymentsCompanyContactInfo(companyPhoneNumber);
-		
+
 		return companyObj;
 	}
-	
+
 
 	/* Returns a users information based upon their user ID */
 	public static String getPaymentsUser(String assemblyUserId, String authToken){
@@ -383,14 +380,14 @@ public class PaymentUtils {
 
 	/* Called when a particular attribute is updated for a user */
 	public static QPaymentsUser updateUserInfo(String paymentsUserId, String attributeCode, String value) {
-		
+
 		QPaymentsUserInfo personalInfo = null;
 		QPaymentsLocationInfo locationInfo = null;
 		QPaymentsUserContactInfo userContactInfo = null;
 		QPaymentsUser user = null;
 
 		/* Personal Info Update Objects  */
-		
+
 		/* Check which value was updated and update in Assembly accordingly */
 		switch (attributeCode) {
 			case "PRI_FIRSTNAME":
@@ -428,7 +425,7 @@ public class PaymentUtils {
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setAddressLine1(value);
 				break;
-				
+
 			case "PRI_ADDRESS_ADDRESS2":
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setAddressLine2(value);
@@ -449,12 +446,12 @@ public class PaymentUtils {
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setState(value);
 				break;
-				
+
 			case "PRI_ADDRESS_COUNTRY":
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setCountry(value);
 				break;
-				
+
 			case "PRI_ADDRESS_POSTCODE":
 				locationInfo = new QPaymentsLocationInfo();
 				locationInfo.setPostcode(value);
@@ -490,7 +487,7 @@ public class PaymentUtils {
 		/* Company Info Update Objects */
 		QPaymentsCompany company = new QPaymentsCompany();
 		company.setId(companyId);
-		
+
 		QPaymentsCompanyContactInfo companyContactObj = null;
 		QPaymentsLocationInfo locationObj = null;
 
@@ -522,7 +519,7 @@ public class PaymentUtils {
 				locationObj = new QPaymentsLocationInfo();
 				locationObj.setAddressLine1(value);
 				break;
-				
+
 			case "PRI_ADDRESS_ADDRESS2":
 				locationObj = new QPaymentsLocationInfo();
 				locationObj.setAddressLine2(value);
@@ -542,12 +539,12 @@ public class PaymentUtils {
 				locationObj = new QPaymentsLocationInfo();
 				locationObj.setState(value);
 				break;
-			
+
 			case "PRI_ADDRESS_COUNTRY":
 				locationObj = new QPaymentsLocationInfo();
 				locationObj.setCountry(value);
 				break;
-				
+
 			case "PRI_ADDRESS_POSTCODE":
 				locationObj = new QPaymentsLocationInfo();
 				locationObj.setPostcode(value);
@@ -567,25 +564,25 @@ public class PaymentUtils {
 			QPaymentsUser user = new QPaymentsUser(userId);
 			company.setUser(user);
 
-		}	
+		}
 		return company;
 	}
-	
+
 	/* To get payments user with the paymentsId field */
 	public static QPaymentsUser getPaymentsUser(BaseEntity userBe) throws IllegalArgumentException{
-		
+
 		String paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 		QPaymentsUser user = new QPaymentsUser(paymentsUserId);
 		return user;
 	}
-	
+
 	/* Get the name of the job with job id AS payments items name */
 	public static String getPaymentsItemName(BaseEntity loadBe, BaseEntity begBe) {
-		
+
 		String paymentsItemName = null;
 		if (loadBe != null) {
 
-			/* Get the title, description and job ID for this item from the base entity group */ 
+			/* Get the title, description and job ID for this item from the base entity group */
 			paymentsItemName = loadBe.getValue("PRI_TITLE", null);
 			// Hack to stop undefined name
 			if (StringUtils.isBlank(paymentsItemName)) {
@@ -598,7 +595,7 @@ public class PaymentUtils {
 					}
 				}
 			}
-			
+
 			/* If job ID is present for beg, concat it to the itemName */
 			String begJobId = null;
 			if(begBe != null) {
@@ -606,62 +603,50 @@ public class PaymentUtils {
 				paymentsItemName = paymentsItemName.concat(", Job #" + begJobId);
 			}
 		}
-		
+
 		return paymentsItemName;
 	}
-	
+
 	public static Money getRoundedMoneyInCents(Money money) {
-		
+
 		Money roundedMoneyInCents = null;
 		if(money != null) {
 			BigDecimal begPrice = new BigDecimal(money.getNumber().doubleValue());
-			
+
 			// 350 Dollars sent to Assembly as 3.50$, so multiplying with 100
 			/* Convert dollars into cents */
 			BigDecimal finalFee = begPrice.multiply(new BigDecimal(100));
-			
+
 			/* Round off to 2 decimal places */
 			String roundedMoneyString = String.format("%.2f", finalFee);
-			
+
 			/* Converting string back to money */
 			roundedMoneyInCents = Money.of(Double.valueOf(roundedMoneyString), money.getCurrency());
 		}
 		return roundedMoneyInCents;
 	}
-	
+
 	/* Set all the known information in the fee object */
 	public static QPaymentsFee getFeeObject(BaseEntity offerBe) throws IllegalArgumentException {
-		
+
 		Money begFee = offerBe.getValue("PRI_OFFER_FEE_INC_GST", null);
 		QPaymentsFee feeObj = null;
-		
+
 		if(begFee != null) {
-			
+
 			Money feeInCents = getRoundedMoneyInCents(begFee);
 			System.out.println("money in in cents ::"+feeInCents);
-			
+
 			if(feeInCents == null) {
 				throw new IllegalArgumentException("Something went wrong during pricing calculations. Fee for item cannot be empty");
 			}
-			
+
 			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
 		}
 		return feeObj;
-		
+
 	}
 
-	public static String getBegCode(String offerCode, String tokenString) {
-		return MergeUtil.getAttrValue(offerCode, "PRI_BEG_CODE", tokenString);
-	}
-
-	/* Saves an answer */
-	public static void saveAnswer(String qwandaServiceUrl, Answer answer, String token) {
-		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers", JsonUtils.toJson(answer), token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public static Boolean checkIfAnswerContainsPaymentAttribute(QDataAnswerMessage m) {
 		Boolean isAnswerContainsPaymentAttribute = false;
@@ -704,7 +689,7 @@ public class PaymentUtils {
 				String paymentMethodId = paymentMethodPojo.getId();
 				System.out.println("type ::" + paymentMethodPojo.getType());
 				System.out.println("id ::" + paymentMethodId );
-				
+
 				/* Return the payment type when the account id matches with the user payment method */
 				if(accountId.equals(paymentMethodId)) {
 					paymentType = paymentMethodPojo.getType();
@@ -717,7 +702,7 @@ public class PaymentUtils {
 
 	/* Bulk updates a user in Assembly */
 	public static QPaymentsUser getCompleteUserObj(BaseEntity userBe, String paymentsUserId) throws IllegalArgumentException {
-		
+
 		/* Get all of the users information */
 		String firstName = userBe.getValue("PRI_FIRSTNAME", null);
 		String lastName = userBe.getValue("PRI_LASTNAME", null);
@@ -755,13 +740,13 @@ public class PaymentUtils {
 		String state = companyBe.getValue("PRI_ADDRESS_STATE", null);
 		String country = companyBe.getValue("PRI_ADDRESS_COUNTRY", null);
 		String postCode = companyBe.getValue("PRI_ADDRESS_POSTCODE", null);
-		
+
 		/* Create objects to store the request */
 		QPaymentsLocationInfo locationObj = new QPaymentsLocationInfo(addressLine1, city, state, postCode, country);
 		QPaymentsCompanyContactInfo contactInfoObj = new QPaymentsCompanyContactInfo(companyPhone);
 		QPaymentsUser userObj = new QPaymentsUser(paymentsUserId);
 		QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, abn, gst, locationObj, userObj, contactInfoObj);
-		
+
 		return companyObj;
 
 	}
@@ -769,7 +754,7 @@ public class PaymentUtils {
 	/* Returns true of false depending on whether the payment method provided is a bank account */
 	public static Boolean isBankAccount(QPaymentMethod paymentMethod) {
 		Boolean isBankAccount = false;
-		
+
 		if(paymentMethod != null) {
 
 			if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT)) {
@@ -803,59 +788,76 @@ public class PaymentUtils {
 	//offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
 	public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
 		Boolean isAssemblyItemValid = false;
-		String itemResponse = null;
 
 		try {
-			itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
+			String itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
 
-			JSONObject itemResponseObj = JsonUtils.fromJson(itemResponse, JSONObject.class);
-
-			//Get all values for "items" key
-			Map<String, Object> itemDescObj = (Map<String, Object>) itemResponseObj.get("items");
-
-			Double itemPrice = (Double) itemDescObj.get("amount");
-			System.out.println("item price ::"+itemPrice);
+			/* convert string into item-search object */
+			QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);
+      if(itemObj == null) return false;
+      
+			QPaymentsAssemblyItemResponse items = itemObj.getItems();
 
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);
 			String driverEmail = driverBe.getValue("PRI_EMAIL", null);
-
 			/* Since itemprice = PRI_OFFER_DRIVER_PRICE_EXC_GST + PRI_OFFER_FEE_EXC_GST */
 			Money driverPriceIncGST = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-			Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
 
-			String str = String.format("%.2f",calculatedItemPriceInCents);
-			calculatedItemPriceInCents = Double.parseDouble(str);
+			Boolean isOwnerEmail = false;
+			Boolean isDriverEmail = false;
+			Boolean isPriceEqual = false;
 
-			/* convert into cents */
-			System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
+			if(items != null) {
+				Double itemPrice = items.getAmount();
+				System.out.println("item price ::"+itemPrice);
 
-			Map<String, Object> buyerOwnerInfo = (Map<String, Object>) itemDescObj.get("buyer");
-			Map<String, Object> ownerContactInfo = (Map<String, Object>) buyerOwnerInfo.get("contactInfo");
+				QPaymentsAssemblyUser buyerOwnerInfo = items.getBuyer();
 
-			Map<String, Object> sellerDriverInfo = (Map<String, Object>) itemDescObj.get("seller");
-			Map<String, Object> driverContactInfo = (Map<String, Object>) sellerDriverInfo.get("contactInfo");
+				if(buyerOwnerInfo != null && ownerEmail != null) {
+					QPaymentsUserContactInfo ownerContactInfo = buyerOwnerInfo.getContactInfo();
 
-			Boolean isOwnerEmail = ownerContactInfo.get("email").equals(ownerEmail);
-			System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
+					/* compare if item-owner is same as offer-owner */
+					isOwnerEmail = ownerContactInfo.getEmail().equals(ownerEmail);
+					System.out.println("Is email attribute for owner equal ?"+isOwnerEmail);
 
-			Boolean isDriverEmail = driverContactInfo.get("email").equals(driverEmail);
-			System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
+				}
 
-			Boolean isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
-			System.out.println("Is price attribute for item equal ?"+isPriceEqual);
+				QPaymentsAssemblyUser sellerDriverInfo = items.getSeller();
 
-			if(ownerContactInfo.get("email").equals(ownerEmail) && driverContactInfo.get("email").equals(driverEmail) && Double.compare(calculatedItemPriceInCents, itemPrice) == 0) {
+				if(sellerDriverInfo != null && driverEmail != null) {
+					QPaymentsUserContactInfo driverContactInfo = sellerDriverInfo.getContactInfo();
 
+					/* compare if item-driver is same as offer-driver */
+					isDriverEmail = driverContactInfo.getEmail().equals(driverEmail);
+					System.out.println("Is email attribute for driver equal ?"+isDriverEmail);
+				}
+
+				if(driverPriceIncGST != null) {
+					Double calculatedItemPriceInCents = driverPriceIncGST.getNumber().doubleValue() * 100;
+
+					String str = String.format("%.2f",calculatedItemPriceInCents);
+					calculatedItemPriceInCents = Double.parseDouble(str);
+					/* convert into cents */
+					System.out.println("calculated item price in cents ::"+calculatedItemPriceInCents);
+
+					/* compare if item-price is same as offer-price */
+					isPriceEqual = (Double.compare(calculatedItemPriceInCents, itemPrice) == 0);
+					System.out.println("Is price attribute for item equal ?"+isPriceEqual);
+				}
+
+			}
+
+			/* if comparison succeeds, no need to create new item */
+			if(isOwnerEmail && isDriverEmail && isPriceEqual) {
 				isAssemblyItemValid = true;
 			} else {
 				isAssemblyItemValid = false;
 			}
 
-
 		} catch (PaymentException e) {
 			isAssemblyItemValid = false;
 		}
-		
+
 		return isAssemblyItemValid;
 	}
 
@@ -885,7 +887,7 @@ public class PaymentUtils {
 					Gson gson = new Gson();
 					JsonElement jsonElement = gson.toJsonTree(paymentMethod);
 					QPaymentMethod paymentMethodPojo = gson.fromJson(jsonElement, QPaymentMethod.class);
-					
+
 					System.out.println("type ::" + paymentMethodPojo.getType());
 					System.out.println("number" + paymentMethodPojo.getNumber());
 					System.out.println("id ::" + paymentMethodPojo.getId());
@@ -906,69 +908,69 @@ public class PaymentUtils {
 
  		return selectedOwnerPaymentMethod;
 	}
-	
+
 	/* Utils to get the payments user from search results based on email */
 	public static String getPaymentsUserIdFromSearch(QPaymentsAssemblyUserSearchResponse response, String searchEmail) throws PaymentException{
-		
+
 		String paymentsUserId = null;
 		int searchCount = response.getMeta().getTotal();
-		
+
 		/* if response is greater than 0 */
 		if(searchCount > 0) {
-			
+
 			/* Iterate through all users in search response */
 			for(QPaymentsAssemblyUserResponse userResponseObj : response.getUsers()) {
-				
+
 				/* If the email matches, fetch the assembly ID of the user and return it */
 				String userResponseEmail = userResponseObj.getContactInfo().getEmail();
 				if(userResponseEmail != null && userResponseEmail.equals(searchEmail)) {
 					paymentsUserId = userResponseObj.getId();
 					return paymentsUserId;
-				}						
+				}
 			}
 		} else {
 			throw new PaymentException("No user found in Payments-service for the emailId :"+searchEmail);
 		}
-		return paymentsUserId;				
+		return paymentsUserId;
 	}
-	
+
 	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
 		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
 		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
 		String itemId = begBe.getValue("PRI_ITEM_ID", null);
 		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
-		
+
 		QPaymentMethod account = new QPaymentMethod(accountId);
 		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
-		
-		return makePaymentObj;	
+
+		return makePaymentObj;
 	}
-	
+
 	public static QPaymentMethod getMaskedPaymentMethod(QPaymentMethod paymentMethod) {
-		
+
 		Character[] toBeIgnoreCharacterArr = { '-' };
-		
+
 		if(paymentMethod.getType().equals(PaymentType.CARD) && paymentMethod.getNumber() != null ) {
 			String maskedCreditCardNumber = StringFormattingUtils.maskWithRange(paymentMethod.getNumber().replaceAll("\\s+", "-") , 0, 15,
 					"X", toBeIgnoreCharacterArr);
 
 			paymentMethod.setNumber(maskedCreditCardNumber);
 		}
-		
+
 		if(paymentMethod.getType().equals(PaymentType.BANK_ACCOUNT) && paymentMethod.getBsb() != null && paymentMethod.getAccountNumber() != null) {
 			String bsb = paymentMethod.getBsb().replaceAll("\\s+", "-");
 			String accountNumber = paymentMethod.getAccountNumber().replaceAll("\\s+", "-");
-			
+
 			String maskedBsb = StringFormattingUtils.maskWithRange(bsb, 0, 5, "X", toBeIgnoreCharacterArr);
 			String maskedAccountNumber = StringFormattingUtils.maskWithRange(accountNumber, 0, 4, "X",
 
 					toBeIgnoreCharacterArr);
-			
+
 			paymentMethod.setAccountNumber(maskedAccountNumber);
 			paymentMethod.setBsb(maskedBsb);
 		}
-			
-		return paymentMethod;	
+
+		return paymentMethod;
 	}
 
 

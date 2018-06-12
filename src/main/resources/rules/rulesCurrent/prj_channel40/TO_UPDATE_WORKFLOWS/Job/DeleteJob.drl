@@ -42,7 +42,7 @@ rule "Delete job"
 		rules.fastClearBaseEntity(begCode, allBegRecipients);
 
 	   	/*     Moving the BEG      */
-        rules.moveBaseEntitySetLinkValue(begCode,groupCode, "GRP_BIN", "LNK_CORE", rules.getUser().getCode());
+        rules.baseEntity.moveBaseEntitySetLinkValue(begCode,groupCode, "GRP_BIN", "LNK_CORE", rules.getUser().getCode());
 
        	/* Sending Messages */
        HashMap<String,String> contextMap = new HashMap<String, String>();
@@ -54,7 +54,7 @@ rule "Delete job"
         rules.sendMessage("", allBegRecipients, contextMap, "MSG_CH40_NEW_JOB_DELETED", "TOAST");
 
 		rules.setState("TRIGGER_HOMEPAGE");
-    	rules.generateNewItemsCache();       
+    	rules.reloadCache();       
 
 	    rules.footer();
 end

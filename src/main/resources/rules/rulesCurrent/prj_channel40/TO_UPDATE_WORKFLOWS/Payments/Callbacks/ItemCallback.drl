@@ -19,7 +19,7 @@ package life.genny.rules;
 			rules.println("item object status ::"+m.getObject_status());
 			rules.println("item callback status ::"+m.getObject_message());
 
-			BaseEntity begBe = rules.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
+			BaseEntity begBe = rules.baseEntity.getBaseEntityByAttributeAndValue("PRI_ITEM_ID",  m.getObjectId());
 
 			/* This variable is for checking if callback is an existing/new callback status */
 			Boolean isUpdateAction = false;
@@ -39,28 +39,28 @@ package life.genny.rules;
 
 				rules.println("current payment status ::"+currentPaymentStatusString);
 
-				owner = rules.getChildren(begBe.getCode(), "LNK_BEG", "OWNER");
-				driver = rules.getChildren(begBe.getCode(), "LNK_BEG", "DRIVER");
-				load = rules.getChildren(begBe.getCode(), "LNK_BEG", "LOAD");
-				
+				owner = rules.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "OWNER").get(0);
+				driver = rules.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "DRIVER").get(0);
+				load = rules.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);
+
 				if(owner != null) {
 					rules.println("owner :: "+owner.getCode());
-					
+
 					/* Adding users who needs to get status-colour change */
 				 	userCodesForStatusColourChange.add(owner.getCode());
 				} else {
 					rules.println("OWNER link returned null for job : "+begBe.getCode());
 				}
-				
+
 				if(driver != null) {
 					rules.println("driver :: "+driver.getCode());
-					
+
 					/* Adding users who needs to get status-colour change */
 			    		userCodesForStatusColourChange.add(driver.getCode());
 				}else {
 					rules.println("DRIVER link returned null for job : "+begBe.getCode());
 				}
-				
+
 				if(load != null) {
 					rules.println("load ::"+load.getCode());
 				}else {
@@ -86,7 +86,7 @@ package life.genny.rules;
 
 						Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", finalPaymentStatus);
 
-		        rules.saveAnswer(paymentStatusAnswer);
+		        rules.baseEntity.saveAnswer(paymentStatusAnswer);
 		        isUpdateAction = true;
 
 
@@ -103,7 +103,7 @@ package life.genny.rules;
 					rules.println("Payment method string ::"+paymentStatusObj.toString());
 
 					Answer paymentStatusAnswer = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_ITEM_STATUS", "[" + paymentStatusObj.toString() + "]");
-		            	rules.saveAnswer(paymentStatusAnswer);
+		            	rules.baseEntity.saveAnswer(paymentStatusAnswer);
 		            	isUpdateAction = true;
 				}
 			}
@@ -116,7 +116,7 @@ package life.genny.rules;
 					/* toast and sms sent to both driver and owner, payment-escrow mail sent to owner */
 
 					/* hitting the method to change status-colour to green (success) - escrow status */
-			     	rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+			     	rules.baseEntity.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
 				 	String[] messageOwnerRecipient = new String[1];
 			     	messageOwnerRecipient[0] = owner.getCode();
@@ -141,7 +141,7 @@ package life.genny.rules;
 
 			     	/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been deposited and held at escrow"); */
 			     	Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
-			     	rules.saveAnswer(paymentStatus);
+			     	rules.baseEntity.saveAnswer(paymentStatus);
 
 
 		         } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_COMPLETED")) {
@@ -149,18 +149,18 @@ package life.genny.rules;
 		         	/* when payment release is complete, release-payment emails with invoices and toasts are sent to both owner and driver */
 
 		         		/* hitting the method to change status-colour to green - Payment to driver completed */
-			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
+			     		rules.baseEntity.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "success");
 
-		            		BaseEntity offerBe = rules.getBaseEntityByCode(offerCode);
+		            		BaseEntity offerBe = rules.baseEntity.getBaseEntityByCode(offerCode);
 			     		rules.triggerReleasePaymentMailWithAttachment(owner, driver, offerBe, load, begBe);
 
 						/* save status in database */
 			     		/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment to driver is completed"); */
 			     		Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
-			     		rules.saveAnswer(paymentStatus);
+			     		rules.baseEntity.saveAnswer(paymentStatus);
 
 			     		/* we mark the job as paid */
-          				rules.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
+          				rules.baseEntity.moveBaseEntitySetLinkValue(begBe.getCode(), "GRP_COMPLETED", "GRP_PAID", "LNK_CORE", "BEG");
 
 
 		           } else if(m.getObject_status().toString().equals("ITEM_PAYMENT_HELD") || m.getObject_status().toString().equals("ITEM_PAYMENT_PROBLEM")) {
@@ -169,7 +169,7 @@ package life.genny.rules;
 						/* Toast sent */
 
 						/* hitting the method to change status-colour to red - Payment held */
-			     		rules.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
+			     		rules.baseEntity.updateBaseEntityStatus(begBe, userCodesForStatusColourChange, "urgent");
 
 		            		HashMap<String, String> contextMap = new HashMap<String, String>();
 						contextMap.put("DRIVER", driver.getCode());
@@ -189,8 +189,8 @@ package life.genny.rules;
 
 						/* Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", "Payment has been held"); */
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
-						rules.saveAnswer(paymentStatus);
-						
+						rules.baseEntity.saveAnswer(paymentStatus);
+
 						rules.sendSlackNotification("Payment processing failed for the job : "+begBe.getCode() + ". Failure callback status recieved : "+m.getObject_status().toString());
 
 		            		} else if(m.getObject_status().toString().equals("ITEM_PAYMENT_INCOMING")) {
@@ -198,9 +198,9 @@ package life.genny.rules;
 						/* status is saved in DB */
 
 						Answer paymentStatus = new Answer(rules.getUser().getCode(), begBe.getCode(), "PRI_PAYMENT_STATUS", m.getObject_status().toString());
-						rules.saveAnswer(paymentStatus);
+						rules.baseEntity.saveAnswer(paymentStatus);
 			}
-			
+
 			}
 
 	     	rules.setState("ITEM_CALLBACK");
