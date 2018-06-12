@@ -1308,9 +1308,11 @@ public class QRules {
 	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
 
   	   Long categoryTypeInBits = 0L;
+       BaseEntity user = this.baseEntity.getBaseEntityByCode(userCode);
+      if(user != null) {
 
         /* get the list of category types user has  */
-        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(, sourceAttributeCode);
         if(productCategoryList != null){
 
            for(String loadTypeCode : productCategoryList ){
@@ -1328,6 +1330,7 @@ public class QRules {
         }
 
         this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+       }
 	}
 
   /*
