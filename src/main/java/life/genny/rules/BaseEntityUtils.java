@@ -1120,7 +1120,7 @@ public class BaseEntityUtils {
 	public String getAllChildCodes(final String parentCode, final String linkCode) {
 		String childs = null;
 		List<String> childBECodeList = new ArrayList<String>();
-		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		List<BaseEntity> childBE = this.getLinkedBaseEntities( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  childBECodeList.add(be.getCode());
