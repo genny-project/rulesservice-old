@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,11 +11,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -35,6 +37,12 @@ import life.genny.rules.Layout.LayoutUtils;
 import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
+
+	
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+
+	
 
 	private Map<String, Object> decodedMapToken;
 	private String token;
@@ -72,6 +80,39 @@ public class BaseEntityUtils {
   /* old code */
 
 
+  public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
+	  String code = "ROL_"+uniqueCode.toUpperCase();
+	  log.info("Creating Role "+code+":"+name);
+	  BaseEntity role = this.getBaseEntityByCode(code);
+	  if (role==null) {
+	      role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
+	      this.addAttributes(role);
+	      
+	      VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
+	  }
+	  
+	  for (String capabilityCode : capabilityCodes) {
+		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_"+capabilityCode);
+		  try {
+			role.addAttribute(capabilityAttribute,1.0,"TRUE");
+		} catch (BadDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  }
+	  
+	  // Now force the role to only have these capabilitys
+		try {
+			String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  
+	  return role;
+	  }
+
+  
 	public Object get(final String key) {
 		return this.decodedMapToken.get(key);
 	}
@@ -79,6 +120,23 @@ public class BaseEntityUtils {
 	public void set(final String key, Object value) {
 		this.decodedMapToken.put(key, value);
 	}
+
+	
+	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
+	{
+		
+		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
+		try {
+			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
+			return attribute;
+		} catch (IOException e) {
+			log.error("Socket error trying to post attribute");
+			throw new IOException("Cannot save attribute");
+		}
+
+
+	}
+	
 
 	public void addAttributes(BaseEntity be) {
 
@@ -766,6 +824,7 @@ public class BaseEntityUtils {
 				linkCode);
 		return links;
 	}
+
 
 	public String updateBaseEntity(BaseEntity be) {
 		try {

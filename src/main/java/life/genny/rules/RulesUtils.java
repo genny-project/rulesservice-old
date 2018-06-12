@@ -133,22 +133,29 @@ public class RulesUtils {
 		return dateFormatter.format(date);
 	}
 
-	public static String getLayout(final String realm, final String path) {
+	public static String getLayout(String realm, String path) {
 
 		/* first we try to grab the layout from the realm */
 		try {
 
-			String layoutPath = realm + "/" + path;
-			String url = getLayoutCacheURL(layoutPath);
+      if(path.startsWith("/") == false && realm.endsWith("/") == false) {
+        path = realm + "/" + path;
+      }
+      else {
+        path = realm + path;
+      }
+
+			String url = getLayoutCacheURL(path);
 			println("Trying to load url.....");
-			println(url);
+      println(url);
 
 			/* we make a GET request */
-			String jsonString = QwandaUtils.apiGet(url, null);
-			if(jsonString != null) {
+      jsonStr = QwandaUtils.apiGet(url, null);
+
+			if(jsonStr != null) {
 
 				/* we serialise the layout into a JsonObject */
-				JsonObject layoutObject = new JsonObject(jsonString);
+				JsonObject layoutObject = new JsonObject(jsonStr);
 				if(layoutObject != null) {
 
 					/* we check if an error happened when grabbing the layout */
@@ -160,15 +167,17 @@ public class RulesUtils {
 					else {
 
 						/* otherwise we return the layout */
-						return jsonString;
+						return jsonStr;
 					}
 				}
 			}
 		}
 		catch(Exception e) {
+      System.out.println(jsonStr);
+      return jsonStr;
 		}
 
-		return null;
+    return null;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {

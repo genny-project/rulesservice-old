@@ -68,11 +68,15 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
+// import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QCmdNavigateMessage;
+import life.genny.qwanda.message.QCmdReloadMessage;
+import life.genny.qwanda.message.QCmdViewFormMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
@@ -119,6 +123,7 @@ import life.genny.rules.Layout.LayoutUtils;
 import life.genny.rules.Layout.LayoutViewData;
 import life.genny.rules.Layout.ViewType;
 import life.genny.security.SecureResources;
+import life.genny.utils.DateUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -156,7 +161,7 @@ public class QRules {
 	/* Utils */
 	public BaseEntityUtils baseEntity;
 	public LayoutUtils layoutUtils;
-  public CacheUtils cacheUtils;
+	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
@@ -184,9 +189,8 @@ public class QRules {
 			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-		}
-		catch(Exception e) {
+			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+		} catch (Exception e) {
 
 		}
 	}
@@ -534,7 +538,6 @@ public class QRules {
 		return status;
 	}
 
-
 	public void publishBaseEntityByCode(final String be) {
 		String[] recipientArray = new String[1];
 		recipientArray[0] = be;
@@ -746,19 +749,21 @@ public class QRules {
 
 			if (isIntern) {
 
-				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE",
+						0, 20, false);
 				publishCmd(root, "GRP_ROOT", "LNK_CORE");
 
-				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20,
-						false);
+				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
+						"LNK_CORE", 0, 20, false);
 				publishCmd(dashboard, "GRP_DASHBOARD", "LNK_CORE");
 
-				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS", "LNK_CORE", 0, 50,
-						false);
+				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
+						"LNK_CORE", 0, 50, false);
 				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
 
-				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS", "LNK_CORE", 0, 50,
-						false);
+				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
+						"LNK_CORE", 0, 50, false);
+
 				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
 
 				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
@@ -804,6 +809,10 @@ public class QRules {
 			set("USER", be);
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
+
+      /* send notification for new registration */
+      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+      this.sendSlackNotification(message);
 
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
@@ -884,17 +893,27 @@ public class QRules {
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
+	// private void navigate(NavigationType navigationType, String newRoute) {
+  //
+	// 	// QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
+	// 	// this.publishCmd(navigationMessage);
+	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+	// 	json.put("token", getToken());
+	// 	publish("cmds", json); */
+	// }
+
 	public void navigateTo(String newRoute) {
 
-		if (newRoute == null) {
-			return;
-		}
-
-		QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-		JsonObject json = JsonObject.mapFrom(cmdNavigate);
-		json.put("token", getToken());
-		publish("cmds", json);
+		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
+		// this.navigate(type, newRoute);
 	}
+
+	// public void navigateBack(NavigationType navigationType, String newRoute) {
+  //
+	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
+	// 	// this.navigate(type, newRoute);
+	// }
 
 	public void showLoading(String text) {
 
@@ -1277,8 +1296,8 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 
-		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, token, stakeholderCode);
-		if(questions != null) {
+		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
+    if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
@@ -1296,7 +1315,7 @@ public class QRules {
 		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
 
 			/* Layout V1 */
-			
+
 			LayoutViewData viewData = new LayoutViewData(ViewType.Form, questionGroupCode, isPopup);
 			QCmdMessage viewMessage = this.layoutUtils.sendView(viewData);
 			if(viewMessage != null) {
@@ -1308,7 +1327,7 @@ public class QRules {
 			this.publishCmd(formCmd); */
 		}
 	}
-	
+
 
 	public void header() {
 		try {
@@ -1364,7 +1383,6 @@ public class QRules {
 	public void update() {
 		this.drools.update(this);
 	}
-
 
 	public void debug() {
 		println("");
@@ -1512,43 +1530,51 @@ public class QRules {
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
-				List<BaseEntity> stakeholders = this.baseEntity.getParents(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-				/* List of receivers except current user */
-				String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					if (!stakeholder.getCode().equals(getUser().getCode())) {
-						msgReceiversCodeArray[counter] = stakeholder.getCode();
-						counter += 1;
+				List<BaseEntity> stakeholders = this.baseEntity.getLinkedBaseEntities(chatCode, "LNK_USER");
+				if (stakeholders != null) {
+					String[] recipientCodeArray = new String[stakeholders.size()];
+					/* List of receivers except current user */
+					String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
+					int counter = 0;
+					for (BaseEntity stakeholder : stakeholders) {
+						recipientCodeArray[counter] = stakeholder.getCode();
+						if (!stakeholder.getCode().equals(getUser().getCode())) {
+							msgReceiversCodeArray[counter] = stakeholder.getCode();
+							counter += 1;
+						}
 					}
+					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
+					answers.add(
+							new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
+					this.baseEntity.saveAnswers(answers);
+					/* Add current date-time to char as */
+					this.baseEntity.saveAnswer(
+							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
+
+					System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
+					/* Publish chat to Receiver */
+					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
+					/* Publish message to Receiver */
+					publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had
+																													// to
+																													// use
+																													// getCode()
+
+					QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
+
+					/* Sending Messages */
+					HashMap<String, String> contextMap = new HashMap<String, String>();
+					contextMap.put("SENDER", getUser().getCode());
+					contextMap.put("CONVERSATION", newMessage.getCode());
+
+					/* Sending toast message to all the beg frontends */
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO:
+					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+				}else {
+					println("Error! The stakeholder for given chatCode is null");
 				}
-				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
-				this.baseEntity.saveAnswers(answers);
-				/* Add current date-time to char as */
-				this.baseEntity.saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE",
-						QwandaUtils.getZonedCurrentLocalDateTime()));
-
-				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
-				/* Publish chat to Receiver */
-				publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
-				/* Publish message to Receiver */
-				publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had to use getCode()
-
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
-
-				/* Sending Messages */
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("SENDER", getUser().getCode());
-				contextMap.put("CONVERSATION", newMessage.getCode());
-
-				/* Sending toast message to all the beg frontends */
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO: SMS
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 			}
 		}
 	}
@@ -1679,7 +1705,8 @@ public class QRules {
 
 	public List<Answer> processAnswer(QDataAnswerMessage m) {
 
-		List<Answer> answerList = new ArrayList<Answer>(Arrays.asList(m.getItems()));;
+		List<Answer> answerList = new ArrayList<Answer>(Arrays.asList(m.getItems()));
+		;
 		return answerList;
 	}
 
@@ -1830,6 +1857,9 @@ public class QRules {
 		try {
 
 			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
+      this.println(subLayoutMap);
+      this.println("LOG LORIS");
+
 			if (subLayoutMap != null) {
 
 				JsonArray subLayouts = new JsonArray(subLayoutMap);
@@ -1865,6 +1895,7 @@ public class QRules {
 							}
 						}
 					}
+
 					/* send sublayout to FE */
 					QDataSubLayoutMessage msg = new QDataSubLayoutMessage(layoutArray, getToken());
 					publishCmd(msg);
@@ -1890,7 +1921,7 @@ public class QRules {
 		List<BaseEntity> beLayouts = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_LAYOUTS", "LNK_CORE", 0, 500, false);
 		this.publishCmd(beLayouts, "GRP_LAYOUTS", "LNK_CORE");
 
-		/*List<BaseEntity> beLayouts = this.getAllLayouts(); */
+		/* List<BaseEntity> beLayouts = this.getAllLayouts(); */
 	}
 
 	/*
@@ -2399,6 +2430,8 @@ public class QRules {
 
 public void makePayment(QDataAnswerMessage m) {
 
+        showLoading("Processing payment...");
+
         String userCode = getUser().getCode();
         String begCode = null;
         Answer[] dataAnswers = m.getItems();
@@ -2445,7 +2478,7 @@ public void makePayment(QDataAnswerMessage m) {
             String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
             if (offerCode != null) {
                 /* Make payment */
-                showLoading("Processing payment...");
+
                 BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
                 String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
                 BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
@@ -2542,8 +2575,6 @@ public void makePayment(QDataAnswerMessage m) {
                     this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
                     publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
-                    this.reloadCache();
-
                     /* Update PRI_NEXT_ACTION = OWNER */
                     Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
                     this.baseEntity.saveAnswer(begNextAction);
@@ -2574,6 +2605,8 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+
+                    this.reloadCache();
                 }
             }
         }
@@ -2984,7 +3017,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void saveJob(BaseEntity job) {
 
+    this.showLoading("Creating job...");
+
 		String jobCode = job.getCode();
+
 		/*
 		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
 		 * triggered in another rule
@@ -3062,18 +3098,23 @@ public void makePayment(QDataAnswerMessage m) {
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
 
-		publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+
+    /* we push the job to the creator */
+    String[] creatorRecipient = { getUser().getCode() };
+    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+
 		/* SEND LOAD BE */
-		publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+
 		/* publishing to Owner */
-		publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
-		publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
+		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
+		// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
 
 		if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
 			/* Sending Messages */
-
-			println("new job");
 
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
@@ -3117,7 +3158,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 
-	     this.reloadCache();
+    this.redirectToHomePage();
+		this.reloadCache();
+    drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -3189,7 +3232,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display
 	 */
 	public void sendCmdSplitView(final String parentCode, final String chatCode) {
-		
+
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 
@@ -3734,14 +3777,13 @@ public void makePayment(QDataAnswerMessage m) {
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		try {
-			if (msg.getItems()!=null) {
+			if (msg.getItems() != null) {
 
 				// Now work out sums
 				boolean first = true;
-				Map<String,Object> sums = new HashMap<String,Object>(); // store the column sums
-				Map<String,DataType> dtypes = new HashMap<String,DataType>();
-				Map<String,Attribute> attributes = new HashMap<String,Attribute>();
-
+				Map<String, Object> sums = new HashMap<String, Object>(); // store the column sums
+				Map<String, DataType> dtypes = new HashMap<String, DataType>();
+				Map<String, Attribute> attributes = new HashMap<String, Attribute>();
 
 				for (BaseEntity row : msg.getItems()) {
 					if (first) {
@@ -4222,7 +4264,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public void generateTree() {
 
 		String token = RulesUtils.generateServiceToken(realm());
-		if(token != null) {
+		if (token != null) {
 			this.setNewTokenAndDecodedTokenMap(token);
 		}
 
@@ -4401,7 +4443,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 		long startTime = System.nanoTime();
 		BaseEntity user = this.getUser();
-		QBulkMessage items = this.cacheUtils.fetchAndSubscribeCachedItemsForStakeholder(realm(), cachedItemKey, user, subscriptions);
+		QBulkMessage items = this.cacheUtils.fetchAndSubscribeCachedItemsForStakeholder(realm(), cachedItemKey, user,
+				subscriptions);
 		if (items != null) {
 
 			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
@@ -4835,7 +4878,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void generateReport(final String parentCode) {
-		//String grpCode = m.getData().getValue();
+		// String grpCode = m.getData().getValue();
 		String grpCode = parentCode;
 		println("The Group Id is :: " + grpCode);
 		if (grpCode != null) {
@@ -5505,23 +5548,20 @@ public void makePayment(QDataAnswerMessage m) {
 		return isDeleted;
 	}
 
-	public void processAddresses(String realm)
-	{
+	public void processAddresses(String realm) {
 		// load in all the people in the db
-		QDataBaseEntityMessage qMsg=null;
+		QDataBaseEntityMessage qMsg = null;
 		String token = RulesUtils.generateServiceToken(realm);
 		SearchEntity allPeople = new SearchEntity("SBE_ALL_PEOPLE", "All People")
-				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "PER_%")
-				.setPageStart(0)
-				.setPageSize(100000);
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "PER_%").setPageStart(0).setPageSize(100000);
 		try {
-			qMsg = getSearchResults(allPeople,token);
+			qMsg = getSearchResults(allPeople, token);
 		} catch (IOException e) {
 			System.out.println("Error! Unable to get Search All People");
 
 		}
 		// check their addresses
-		System.out.println("Processing "+qMsg.getReturnCount()+" people ");
+		System.out.println("Processing " + qMsg.getReturnCount() + " people ");
 		for (BaseEntity person : qMsg.getItems()) {
 			System.out.println(person.getCode());
 			if (!isAddressPresent(person.getCode())) {
@@ -5530,7 +5570,6 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 
 	}
-
 
 	public boolean isAddressPresent(final String personCode) {
 		boolean ret = false;
@@ -5577,6 +5616,111 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 		}
 		return ret;
+	}
+
+	public void generateCapabilities() {
+		/* get all capabilities existing */
+		List<Attribute> existingCapability = new ArrayList<Attribute>();
+		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
+			if (existingAttributeCode.startsWith("CAP_")) {
+				existingCapability.add(RulesUtils.attributeMap.get(existingAttributeCode));
+			}
+		}
+
+		/* Force these capabilities to exist */
+		List<Attribute> capabilityManifest = new ArrayList<Attribute>();
+
+		String proj_realm = System.getenv("PROJECT_REALM");
+		String token = RulesUtils.generateServiceToken(proj_realm);
+
+		addCapability(capabilityManifest,"ADD_QUOTE", "Allowed to post a quote",token);
+		addCapability(capabilityManifest,"READ_QUOTE", "Allowed to read a quote",token);
+		addCapability(capabilityManifest,"DELETE_QUOTE", "Allowed to delete a quote",token);
+		addCapability(capabilityManifest,"UPDATE_QUOTE", "Allowed to update a quote",token);
+		addCapability(capabilityManifest,"ACCEPT_QUOTE", "Allowed to accept a quote",token);
+		addCapability(capabilityManifest,"ADD_CHAT_MESSAGE", "Allowed to add a chat message",token);
+		addCapability(capabilityManifest,"UPDATE_CHAT_MESSAGE", "Allowed to update a chat message",token);
+		addCapability(capabilityManifest,"READ_CHAT_MESSAGE", "Allowed to read a chat message",token);
+		addCapability(capabilityManifest,"DELETE_MESSAGE", "Allowed to delete a chat message",token);
+		addCapability(capabilityManifest,"ADD_CALL", "Allowed to create a voice call",token);
+		addCapability(capabilityManifest,"END_CALL", "Allowed to end a voice call",token);
+		addCapability(capabilityManifest,"READ_NEW_ITEMS", "Allowed to read New Items Column",token);
+		addCapability(capabilityManifest,"READ_PAID_ITEMS", "Allowed to read Paid Items Column",token);
+		addCapability(capabilityManifest,"ADD_ARCHIVE", "Allowed to move an item to archive",token);
+		addCapability(capabilityManifest,"READ_ARCHIVE", "Allowed to read archives",token);
+		addCapability(capabilityManifest,"DELETE_ARCHIVE", "Allowed to delete an archived item",token);
+		addCapability(capabilityManifest,"LOCATE_USER", "Allowed to locate a user",token);
+		addCapability(capabilityManifest,"SEND_GPS", "Allowed to send GPS",token);
+		addCapability(capabilityManifest,"ADD_ITEM", "Allowed to create a new Item",token);
+		addCapability(capabilityManifest,"DELETE_ITEM", "Allowed to delete an Item",token);
+		addCapability(capabilityManifest,"UPDATE_ITEM", "Allowed to update an Item",token);
+		addCapability(capabilityManifest,"ADD_USER", "Allowed to create a new user",token);
+		addCapability(capabilityManifest,"UPDATE_USER", "Allowed to update a user",token);
+		addCapability(capabilityManifest,"DELETE_USER", "Allowed to delete a user",token);
+		addCapability(capabilityManifest,"READ_USER", "Allowed to read a user",token);
+		addCapability(capabilityManifest,"ADD_PAYMENT_METHOD", "Allowed to add a payment item",token);
+		addCapability(capabilityManifest,"UPDATE_PAYMENT_METHOD", "Allowed to update a payment item",token);
+		addCapability(capabilityManifest,"READ_PAYMENT_METHOD", "Allowed to read a payment item",token);
+		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Allowed to delete a payment item",token);
+		addCapability(capabilityManifest,"READ_PROFILE", "Allowed to read profile",token);
+		addCapability(capabilityManifest,"READ_ACCOUNT", "Allowed to read account",token);
+		addCapability(capabilityManifest,"DELETE_ACCOUNT", "Allowed to delete an account",token);
+		addCapability(capabilityManifest,"MARK_PICKUP", "Allowed to mark pickup on an item",token);
+		addCapability(capabilityManifest,"MARK_DELIVERY", "Allowed to mark delivery on an item",token);
+
+		/* Remove any capabilities not in this forced list from roles */
+		existingCapability.removeAll(capabilityManifest);
+
+		/* for every capability that exists that is not in the manifest , find all entityAttributes */
+		for (Attribute toBeRemovedCapability : existingCapability) {
+			try {
+				RulesUtils.attributeMap.remove(toBeRemovedCapability.getCode()); // remove from cache
+				QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/baseentitys/attributes/" + toBeRemovedCapability.getCode() ,
+						token);
+				// update all the roles that use this attribute by reloading them into cache
+				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
+				for (BaseEntity role : rolesMsg.getItems()) {
+					role.removeAttribute(toBeRemovedCapability.getCode());
+					// Now update the db role to only have the attributes we want left
+					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+
+				}
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		// now regenerate the roles cache
+		drools.setFocus("GenerateRoles");
+
+	}
+
+	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
+		String fullCapabilityCode = "CAP_"+capabilityCode.toUpperCase();
+		println("Setting Capability : "+fullCapabilityCode+" : "+name);
+		Attribute attribute = RulesUtils.attributeMap.get(fullCapabilityCode);
+		if (attribute != null) {
+			capabilityManifest.add(attribute);
+			return attribute;
+		} else {
+			// create new attribute
+			attribute = new AttributeBoolean(fullCapabilityCode,name);
+			// save to database and cache
+
+			try {
+				baseEntity.saveAttribute(attribute,token);
+				// no roles would have this attribute yet
+				// return
+				capabilityManifest.add(attribute);
+				return attribute;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+
+		}
 	}
 
 }

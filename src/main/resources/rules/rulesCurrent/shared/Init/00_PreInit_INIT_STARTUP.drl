@@ -20,15 +20,21 @@ rule "Pre Init Startup"
 			if (rules.loadRealmData() ) {
 
                 rules.createServiceUser();
-			    drools.setFocus("GenerateSearches");
+                
+                /* Note: it looks like the setFocus operates in reverse order. A stack perhaps? */
+			    drools.setFocus("GenerateRoles");
+			    drools.setFocus("GenerateTestRoles");
+			    drools.setFocus("GenerateCapabilities");
+			   
 			    drools.setFocus("GenerateReports");
 
-	             drools.setFocus("GenerateTree");
-	             drools.setFocus("GenerateLayouts");
-	             drools.setFocus("GenerateCaches");
-	             drools.setFocus("GenerateLayouts");
-	             drools.setFocus("GenerateBucketCaches");
-	             drools.setFocus("GenerateArchiveCaches");
+	            drools.setFocus("GenerateTree");
+	            drools.setFocus("GenerateLayouts");
+	            drools.setFocus("GenerateCaches");
+	            drools.setFocus("GenerateLayouts");
+	            drools.setFocus("GenerateBucketCaches");
+	            drools.setFocus("GenerateArchiveCaches");
+	            drools.setFocus("GenerateSearches");
 
 	       }
 
