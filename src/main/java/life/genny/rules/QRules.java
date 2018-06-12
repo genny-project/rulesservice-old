@@ -1301,6 +1301,59 @@ public class QRules {
 		}
 	}
 
+  /*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+
+  	   Long categoryTypeInBits = 0L;
+
+        /* get the list of category types user has  */
+        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        if(productCategoryList != null){
+
+           for(String loadTypeCode : productCategoryList ){
+
+                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
+                if(bitValueStr != null){
+
+                   /* Combine all the bit values to the users category type attribute using or operator */
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }
+
+        this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+	}
+
+  /*
+	 * Returns the default Bit Mapped tag of all the category tags
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+              println("The bit value for "+be.getCode()+" is "+bitValue);
+              if(bitValue != null){
+                 /* Combine all the bit values to the default BitMap Tag using or operator */
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+
+	}
+
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
 		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
@@ -2861,6 +2914,13 @@ public void makePayment(QDataAnswerMessage m) {
 		System.out.println("The result   ::  " + result);
 
 	}
+
+  public void clearBaseEntity(String baseEntityCode) {
+
+    String[] recipients = new String[1];
+    recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, recipients);
+  }
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
