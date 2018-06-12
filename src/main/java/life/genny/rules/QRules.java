@@ -1336,7 +1336,7 @@ public class QRules {
 	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
 		Long defaultBitMappedTag = 0L;
 
-		List<BaseEntity> childBE = this.baseEntity.getAllChildrens( parentCode, linkCode);
+		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
