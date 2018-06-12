@@ -644,23 +644,6 @@ public class QRules {
 		}
 	}
 
-	public void showInternship(QEventBtnClickMessage m) {
-
-		/* this answer will always have 1 item */
-		String value = m.getData().getValue();
-		if (value != null) {
-
-			JsonObject data = new JsonObject(value);
-			if (data != null) {
-
-				String itemCode = data.getString("itemCode");
-				if (itemCode != null) {
-					this.sendSublayout("INTERNSHIP_DETAILS", "internships/details.json", itemCode);
-				}
-			}
-		}
-	}
-
 	public void archivePaidProducts() {
 
 		/* we get the list of products marked as "PAID" */
@@ -735,41 +718,6 @@ public class QRules {
 		}
 	}
 
-	public void sendInternMatchLayoutsAndData() {
-
-		BaseEntity user = getUser();
-
-		if (user != null) {
-
-			String internValue = this.baseEntity.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
-			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
-
-			/* Show loading indicator */
-			showLoading("Loading your interface...");
-
-			if (isIntern) {
-
-				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE",
-						0, 20, false);
-				publishCmd(root, "GRP_ROOT", "LNK_CORE");
-
-				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
-						"LNK_CORE", 0, 20, false);
-				publishCmd(dashboard, "GRP_DASHBOARD", "LNK_CORE");
-
-				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
-						"LNK_CORE", 0, 50, false);
-				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
-
-				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
-						"LNK_CORE", 0, 50, false);
-
-				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
-
-				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
-			}
-		}
-	}
 
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {

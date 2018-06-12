@@ -38,11 +38,11 @@ import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
 
-	
+
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	
+
 
 	private Map<String, Object> decodedMapToken;
 	private String token;
@@ -75,56 +75,59 @@ public class BaseEntityUtils {
   }
 
 
-
   /*================================ */
   /* old code */
 
 
   public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
-	  String code = "ROL_IS_"+uniqueCode.toUpperCase();
+
+	  String code = "ROL_IS_" + uniqueCode.toUpperCase();
+
 	  log.info("Creating Role "+code+":"+name);
+
 	  BaseEntity role = this.getBaseEntityByCode(code);
-	  if (role==null) {
-	      role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
-	      this.addAttributes(role);
-	      
-	      VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
+	  if (role == null) {
+
+		  role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
+		  this.addAttributes(role);
+
+		  VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
 	  }
-	  
+
 	  for (String capabilityCode : capabilityCodes) {
-		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_"+capabilityCode);
+
+		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_" + capabilityCode);
 		  try {
-			role.addAttribute(capabilityAttribute,1.0,"TRUE");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			  role.addAttribute(capabilityAttribute, 1.0, "TRUE");
+		  }
+		  catch (BadDataException e) {
+			  e.printStackTrace();
+		  }
 	  }
-	  
-	  // Now force the role to only have these capabilitys
-		try {
-			String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	  
+
+	  /* Now force the role to only have these capabilitys */
+	  try {
+		  String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
+	  } catch (IOException e) {
+		  e.printStackTrace();
+	  }
+
 	  return role;
-	  }
+  }
 
-  
-	public Object get(final String key) {
-		return this.decodedMapToken.get(key);
-	}
 
-	public void set(final String key, Object value) {
-		this.decodedMapToken.put(key, value);
-	}
+  public Object get(final String key) {
+	  return this.decodedMapToken.get(key);
+  }
 
-	
+  public void set(final String key, Object value) {
+	  this.decodedMapToken.put(key, value);
+  }
+
+
 	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
 	{
-		
+
 		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
 		try {
 			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
@@ -136,7 +139,7 @@ public class BaseEntityUtils {
 
 
 	}
-	
+
 
 	public void addAttributes(BaseEntity be) {
 
