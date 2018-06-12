@@ -73,11 +73,33 @@ public class BaseEntityUtils {
     return null;
   }
 
-
-
   /*================================ */
   /* old code */
 
+
+    /* Get array String value from an attribute of the BE  */
+    	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+
+    		String attributeValue = be.getValue(attributeCode, null);
+
+    		if (attributeValue != null) {
+
+          List<String> values = new ArrayList<String>();
+
+          /* Removing brackets "[]" and double quotes from the strings */
+    			String trimmedStr = attributeValue.substring(1, attributeValue.length() - 1).toString().replaceAll("\"", "");
+    			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+    			    values = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+    			    return values;
+    			}
+          else {
+    				return null;
+    			}
+    		}
+        else {
+          return null;
+        }
+    	}
 
   public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
 	  String code = "ROL_"+uniqueCode.toUpperCase();
