@@ -2872,15 +2872,6 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	/* sets delete field to true so that FE removes the BE from their store */
-	public void clearBaseEntity(String baseEntityCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);
-		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
-		beMsg.setDelete(true);
-		publishData(beMsg);
-
-	}
-
-	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode, "FastBE");
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
