@@ -192,9 +192,12 @@ public class QRules {
 		try {
 
 			/* initialising utils */
+			/* TODO: to update so it is static */
 			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
+			
 			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 		} catch (Exception e) {
 
@@ -2706,7 +2709,7 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
-                    this.reloadCache();
+                   // this.reloadCache();
                 }
             }
         }
@@ -3117,7 +3120,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void saveJob(BaseEntity job) {
 
-    this.showLoading("Creating job...");
+		this.showLoading("Creating job...");
 
 		String jobCode = job.getCode();
 
@@ -3198,15 +3201,15 @@ public void makePayment(QDataAnswerMessage m) {
 				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
 		publishData(msgLnkBegLoad, recipientCodes);
 
-
-    /* we push the job to the creator */
-    String[] creatorRecipient = { getUser().getCode() };
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
-
-		/* SEND LOAD BE */
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+	
+	    /* we push the job to the creator */
+	    String[] creatorRecipient = { getUser().getCode() };
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+	
+			/* SEND LOAD BE */
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
 		/* publishing to Owner */
 		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
@@ -3258,9 +3261,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 
-    this.redirectToHomePage();
-		this.reloadCache();
-    drools.setFocus("ispayments");  /* NOW Set up Payments */
+		this.redirectToHomePage();
+//		this.reloadCache();
+		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4502,39 +4505,14 @@ public void makePayment(QDataAnswerMessage m) {
 		
 		String realm = this.realm();
 		
-		Runnable run = new Runnable() {
+		/* we check if the search BEs have been created */
+		BaseEntity searchNewItems = beUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
+		if (searchNewItems == null) {
+			drools.setFocus("GenerateSearches");
+		}
 
-			@Override
-			public void run() {
-				
-				/* we check if the search BEs have been created */
-	        		BaseEntity searchNewItems = beUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
-	        		if (searchNewItems == null) {
-	        			drools.setFocus("GenerateSearches");
-	        		}
-	
-	        		cacheUtils.refresh(realm, "BUCKETS");
-	        		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
-			}
-		};
-		
-		run.run();
-		
-		/*
-    	
-    		Timer t = new java.util.Timer();
-	    t.schedule( 
-	            new java.util.TimerTask() {
-	               
-	            	@Override
-	                public void run() {
-	                    
-	                		run.run();
-	                     t.cancel();
-	                }
-	            }, 
-	            10000 
-	    ); */
+		cacheUtils.refresh(realm, "BUCKETS");
+		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
 	public void sendApplicationData() {
