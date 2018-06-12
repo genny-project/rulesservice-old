@@ -543,9 +543,9 @@ public class QRules {
 	}
 
 	public void publishBaseEntityByCode(final String be) {
-		String[] recipientArray = new String[1];
-		recipientArray[0] = be;
-		publishBaseEntityByCode(be, null, null, recipientArray);
+		//String[] recipientArray = new String[1];
+		//recipientArray[0] = be;
+		publishBaseEntityByCode(be, null, null, null);
 	}
 
 	public void publishBaseEntityByCode(final String be, final Boolean delete) {
@@ -2870,7 +2870,18 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
+	
+	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE 
+	 * removes the BE from their store 
+	 */
+	public void clearBaseEntity(String baseEntityCode, String parentCode, String[] recipients) {
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true, parentCode);
+		publishData(beMsg, recipients);
 
+	}
+	
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode, "FastBE");
