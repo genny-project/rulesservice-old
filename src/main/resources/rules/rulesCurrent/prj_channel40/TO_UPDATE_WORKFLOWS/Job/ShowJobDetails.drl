@@ -41,8 +41,9 @@ rule "Show more info about job"
 				case "GRP_APPROVED":
 				case "GRP_PAID":
 				case "GRP_DELIVERED":
-        case "GRP_COMPLETED":
+                case "GRP_COMPLETED":
 				case "GRP_HISTORY":
+				case "GRP_BIN":
 
 				     rules.sendSublayout("LOAD_DETAILS", "loadLayout.json", baseEntityCode);
 
