@@ -55,7 +55,7 @@ public class CacheUtils {
 		return !this.isUserBuyer(user);
 	}
 
-	/*     */ 
+	/*     */
 
 	public void refresh(String realm, String cachedItemKey) {
 
@@ -287,8 +287,20 @@ public class CacheUtils {
 						/* if it is a BEG */
 						else if(itemCode.startsWith("BEG_")) {
 
-							if(message.getParentCode().equals("GRP_NEW_ITEMS") && this.isUserSeller(stakeholder)) {
-								baseEntityKids.add(item);
+                  /* we check if the user has got any filter on the products to display */
+                  List<String> productTypeTag = this.baseEntityUtils.getBaseEntityAttrValueList(stakeholder, "LNK_PRODUCT_CATEGORY_LIST_TAG");
+                  if(productTypeTag != null) {
+
+                    String begTag = item.getValue("LNK_PRODUCT_CATEGORY_TAG", null);
+                    if( begTag != null && productTypeTag.contains(begTag) ) {
+                      baseEntityKids.add(item);
+                     }
+                  }
+                  else {
+
+                    /* if not filter has been selected, we send them all */
+                    baseEntityKids.add(item);
+                  }
 							}
 							else {
 
