@@ -37,11 +37,11 @@ import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
 
-	
+
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	
+
 
 	private Map<String, Object> decodedMapToken;
 	private String token;
@@ -86,10 +86,10 @@ public class BaseEntityUtils {
 	  if (role==null) {
 	      role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
 	      this.addAttributes(role);
-	      
+
 	      VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
 	  }
-	  
+
 	  for (String capabilityCode : capabilityCodes) {
 		  Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_"+capabilityCode);
 		  try {
@@ -99,7 +99,7 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 	  }
-	  
+
 	  // Now force the role to only have these capabilitys
 		try {
 			String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
@@ -107,11 +107,11 @@ public class BaseEntityUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	  
+
 	  return role;
 	  }
 
-  
+
 	public Object get(final String key) {
 		return this.decodedMapToken.get(key);
 	}
@@ -120,10 +120,10 @@ public class BaseEntityUtils {
 		this.decodedMapToken.put(key, value);
 	}
 
-	
+
 	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
 	{
-		
+
 		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
 		try {
 			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
@@ -135,7 +135,7 @@ public class BaseEntityUtils {
 
 
 	}
-	
+
 
 	public void addAttributes(BaseEntity be) {
 
@@ -1090,5 +1090,23 @@ public class BaseEntityUtils {
 		}
 
 		return null;
+	}
+
+  /*
+	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
+	 */
+	public String getAllChildCodes(final String parentCode, final String linkCode) {
+		String childs = null;
+		List<String> childBECodeList = new ArrayList<String>();
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  childBECodeList.add(be.getCode());
+		  }
+		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childs = "["+childs+"]";
+		}
+
+		return childs;
 	}
 }
