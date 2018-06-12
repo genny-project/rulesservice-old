@@ -30,4 +30,12 @@ public class LayoutViewData {
 	public void setAdditionalData(Map<String, LayoutViewData> additionalData) {
 		this.additionalData = additionalData;
 	}
+	
+	public void setIsPopup(Boolean isPopup) {
+		this.isPopup = true;
+	}
+	
+	public Boolean getIsPopup() {
+		return this.isPopup;
+	}
 }

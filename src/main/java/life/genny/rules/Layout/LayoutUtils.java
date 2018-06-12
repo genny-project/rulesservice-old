@@ -172,10 +172,6 @@ public class LayoutUtils {
 	}
 	
 	public QCmdMessage sendView(LayoutViewData viewData) {
-		return this.sendView(viewData, false);
-	}
-	
-	public QCmdMessage sendView(LayoutViewData viewData, Boolean isPopup) {
 		
 		if(viewData == null) {
 			return null;
@@ -189,7 +185,7 @@ public class LayoutUtils {
 			if(viewData.getAdditionalData() != null) {
 				
 				QCmdViewMessage viewCmd = new QCmdViewMessage(viewData.viewType.getViewType(), viewData.getRoot());
-				viewCmd.setIsPopup(isPopup);
+				viewCmd.setIsPopup(viewData.getIsPopup());
 				
 				JsonArray views = new JsonArray();
 				
@@ -209,7 +205,7 @@ public class LayoutUtils {
 		default: {
 			
 			QCmdViewMessage viewCmd = new QCmdViewMessage(viewData.viewType.getViewType(), viewData.getRoot());
-			viewCmd.setIsPopup(isPopup);
+			viewCmd.setIsPopup(viewData.getIsPopup());
 			return viewCmd;
 		}
 		}

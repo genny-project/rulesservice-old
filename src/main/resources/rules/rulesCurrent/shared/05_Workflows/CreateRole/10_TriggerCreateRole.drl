@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Create New Role - Step 1"
+    when
+        rules: QRules( 	isState("EVENT_BTN_CLICK")  &&
+        					isState("BTN_CREATE_ROLE") &&
+                        !isState("DID_TRIGGER_CREATE_ROLE") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_TRIGGER_CREATE_ROLE");
+        rules.setState("CREATE_NEW_ROLE");
+        
+	    rules.footer();
+end
