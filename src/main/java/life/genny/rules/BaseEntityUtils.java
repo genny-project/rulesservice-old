@@ -81,7 +81,7 @@ public class BaseEntityUtils {
 
 
   public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
-	  String code = "ROL_"+uniqueCode.toUpperCase();
+	  String code = "ROL_IS_"+uniqueCode.toUpperCase();
 	  log.info("Creating Role "+code+":"+name);
 	  BaseEntity role = this.getBaseEntityByCode(code);
 	  if (role==null) {
