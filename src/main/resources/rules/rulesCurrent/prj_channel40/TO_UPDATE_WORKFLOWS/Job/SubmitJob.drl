@@ -47,8 +47,8 @@ rule "Submit Job"
        		if ((!job.getValue("PRI_JOB_IS_SUBMITTED", false))&&(!"PER_ADAMCROW63_AT_GMAILCOM".equals(author))) {
 
 
-       			/* Send email to admins*/
-       			HashMap<String, String> contextMap = new HashMap<String, String>();
+   			/* Send email to admins*/
+   			HashMap<String, String> contextMap = new HashMap<String, String>();
     			contextMap.put("JOB", jobCode);
     			contextMap.put("OWNER", rules.getUser().getCode());
 
@@ -71,14 +71,13 @@ rule "Submit Job"
     	      	/* Send slack message that new job is created */
     	      	rules.sendSlackNotification("New job has been created by user => code : "+rules.getUser().getCode() + ", user email : " +jobCreatorEmail +". Job details are => Job code : "+ jobCode + ", Job title : "+ jobTitle+ ", Pick-up address : "+pickupAddress+ ", Drop-off address : "+dropOffAddress);
     	      	
-    	      	
        		}
 
 
-         		/*Sending email to quoters who have made offer to a job, when a job is edited */
-         		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
-           		rules.triggerEmailForJobUpdate(jobCode);
-         	 	}
+     		/*Sending email to quoters who have made offer to a job, when a job is edited */
+     		if(job.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+     			rules.triggerEmailForJobUpdate(jobCode);
+     	 	}
       }
 
      rules.footer();
