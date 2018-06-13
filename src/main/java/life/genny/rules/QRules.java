@@ -1301,6 +1301,62 @@ public class QRules {
 		}
 	}
 
+  /*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+
+  	   Long categoryTypeInBits = 0L;
+       BaseEntity user = this.baseEntity.getBaseEntityByCode(userCode);
+      if(user != null) {
+
+        /* get the list of category types user has  */
+        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(user, sourceAttributeCode);
+        if(productCategoryList != null){
+
+           for(String loadTypeCode : productCategoryList ){
+
+                BaseEntity loadCat = this.baseEntity.getBaseEntityByCode(loadTypeCode);
+
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
+                if(bitValueStr != null){
+
+                   /* Combine all the bit values to the users category type attribute using or operator */
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }
+
+        this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+       }
+	}
+
+  /*
+	 * Returns the default Bit Mapped tag of all the category tags
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+
+		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+
+              if(bitValue != null){
+                 /* Combine all the bit values to the default BitMap Tag using or operator */
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+
+	}
+
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
 		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
@@ -2862,6 +2918,13 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+  public void clearBaseEntity(String baseEntityCode) {
+
+    String[] recipients = new String[1];
+    recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, recipients);
+  }
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -3114,7 +3177,7 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 	}
 
-	public void saveJob(BaseEntity job) {
+  public void saveJob(BaseEntity job) {
 
     this.showLoading("Creating job...");
 
