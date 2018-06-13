@@ -1118,4 +1118,23 @@ public class BaseEntityUtils {
 
 		return childs;
 	}
+	
+	/* Get array String value from an attribute of the BE  */
+	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+		
+		String myLoadTypes = be.getValue(attributeCode, null);
+															
+		if (myLoadTypes != null) {
+			List<String> loadTypesList = new ArrayList<String>();
+			/* Removing brackets "[]" and double quotes from the strings */
+			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
+			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+			    loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			    return loadTypesList;
+			}else {
+				return null;
+			}
+		} else
+			return null;
+	}
 }
