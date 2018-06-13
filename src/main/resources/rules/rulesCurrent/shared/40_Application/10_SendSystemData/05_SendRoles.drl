@@ -8,7 +8,7 @@ import life.genny.qwanda.message.QDataBaseEntityMessage;
 
 rule "Send Roles"
     when
-         rules: QRules( isState("SENT_ALL_ATTRIBUTES") && !isState("SEND_ROLES") )
+         rules: QRules( isState("SENT_ALL_CAPABILITIES") && !isState("SEND_ROLES") )
      then
      	rules.header();
         rules.setState("SEND_ROLES");

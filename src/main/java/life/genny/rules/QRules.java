@@ -5594,7 +5594,9 @@ public void makePayment(QDataAnswerMessage m) {
 		return ret;
 	}
 
-	public void generateCapabilities() {
+	public List<BaseEntity> generateCapabilities() {
+		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
+		
 		/* get all capabilities existing */
 		List<Attribute> existingCapability = new ArrayList<Attribute>();
 		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
@@ -5670,6 +5672,13 @@ public void makePayment(QDataAnswerMessage m) {
 		// now regenerate the roles cache
 		drools.setFocus("GenerateRoles");
 
+		// Convert CapabilityManifest to a list of Virtual baseEntitys
+		for (Attribute capability: capabilityManifest) {
+			BaseEntity cBe = new BaseEntity(capability.getCode(),capability.getName());
+			virtualCapabilityBEs.add(cBe);
+		}
+		
+		return virtualCapabilityBEs;
 	}
 
 	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
