@@ -862,17 +862,17 @@ public class QRules {
 	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
 	// 	// this.navigate(type, newRoute);
 	// }
-	
+
 	public void showLoading(String text) {
 		this.showLoading(text, false);
 	}
-	
+
 	public void showLoading(String text, Boolean isPopup) {
 
 		if (text == null) {
 			text = "Loading...";
 		}
-		
+
 		String viewType = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		QCmdMessage cmdLoading = new QCmdMessage(viewType, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
@@ -1276,8 +1276,10 @@ public class QRules {
 			}
 
 			/* Layout V2 */
-			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
-			this.publishCmd(formCmd); */
+		  // QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
+			// this.publishCmd(formCmd);
+
+      this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -3158,11 +3160,11 @@ public void makePayment(QDataAnswerMessage m) {
 
 		return false;
 	}
-	
+
 	public boolean hasCapability(final String capability) {
 
 		// Fetch the roles and check the capability attributes of each role
-		
+
 		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
 		for (EntityAttribute role : roles) { // should store in cached map
 			Boolean value = role.getValue();
@@ -3179,7 +3181,7 @@ public void makePayment(QDataAnswerMessage m) {
 						return true;
 					}
 				}
-					
+
 			}
 		}
 		return false;
@@ -5601,7 +5603,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public List<BaseEntity> generateCapabilities() {
 		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
-		
+
 		/* get all capabilities existing */
 		List<Attribute> existingCapability = new ArrayList<Attribute>();
 		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
@@ -5682,7 +5684,7 @@ public void makePayment(QDataAnswerMessage m) {
 			BaseEntity cBe = new BaseEntity(capability.getCode(),capability.getName());
 			virtualCapabilityBEs.add(cBe);
 		}
-		
+
 		return virtualCapabilityBEs;
 	}
 
