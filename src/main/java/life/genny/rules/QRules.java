@@ -910,8 +910,7 @@ public class QRules {
 
 	// private void navigate(NavigationType navigationType, String newRoute) {
   //
-	// 	// QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
-	// 	// this.publishCmd(navigationMessage);
+
 	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
 	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
 	// 	json.put("token", getToken());
@@ -919,6 +918,11 @@ public class QRules {
 	// }
 
 	public void navigateTo(String newRoute) {
+
+    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+  	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+  	json.put("token", getToken());
+  	publish("cmds", json);
 
 		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
 		// this.navigate(type, newRoute);
@@ -1437,6 +1441,8 @@ public class QRules {
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
+
+      this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -3409,6 +3415,32 @@ public void makePayment(QDataAnswerMessage m) {
 		return false;
 	}
 
+	public boolean hasCapability(final String capability) {
+
+		// Fetch the roles and check the capability attributes of each role
+
+		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
+		for (EntityAttribute role : roles) { // should store in cached map
+			Boolean value = role.getValue();
+			if (value) {
+				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
+				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
+				if (roleBE==null) {
+					return false;
+				}
+				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
+				if (optEaCap.isPresent()) {
+					EntityAttribute eaCap = optEaCap.get();
+					if ((eaCap.getValueBoolean()!=null)&&(eaCap.getValueBoolean())) {
+						return true;
+					}
+				}
+
+			}
+		}
+		return false;
+	}
+
 	public String getZonedCurrentLocalDateTime() {
 
 		LocalDateTime ldt = LocalDateTime.now();
@@ -3898,6 +3930,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* TODO: refactor this. */
 	public void redirectToHomePage() {
+
+    this.navigateTo("/home");
 		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
@@ -4628,7 +4662,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		if (this.hasCapability("READ_NEW_ITEMS")) {
+			subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		}
 
 		this.sendCachedItem("BUCKETS", subscriptions);
 
