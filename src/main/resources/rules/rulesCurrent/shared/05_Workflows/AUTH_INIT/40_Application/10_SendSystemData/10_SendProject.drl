@@ -5,7 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Send Project"
     when
-         rules: QRules( isState("SEND_ROLES") && !isState("LOOP_SEND_PROJECT") )
+         rules: QRules( isState("SEND_PROJECT") && !isState("LOOP_SEND_PROJECT") )
      then
      	rules.header();
         rules.setState("LOOP_SEND_PROJECT");

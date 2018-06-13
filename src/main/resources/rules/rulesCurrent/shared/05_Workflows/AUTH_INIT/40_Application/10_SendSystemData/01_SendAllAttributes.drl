@@ -11,5 +11,6 @@ rule "Send All Attributes"
         rules.sendAllAttributes();
         rules.setState("SENT_ALL_ATTRIBUTES");
         rules.setState("LOOP_SEND_ATTRIBUTES");
+        rules.setState("SEND_CAPABILITIES");
 	    rules.footer();
 end
