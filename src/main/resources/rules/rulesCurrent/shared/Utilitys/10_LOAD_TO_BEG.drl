@@ -10,43 +10,56 @@ import java.util.List;
 import java.util.ArrayList;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
 
-rule "ProductCategoryTags"
+rule "LoadToBeg"
 
-    ruleflow-group 'ProductCategoryTags'
+    ruleflow-group 'LoadToBeg'
      when
-       rules: QRules( !isState("PRODUCT_CATEGORY_TAGS"))
+       rules: QRules( !isState("LOAD_TO_BEG"))
      then
 	 rules.setDrools(drools);
      rules.header();
-        rules.setState("PRODUCT_CATEGORY_TAGS");
-		rules.println("Processing PRODUCT_CATEGORY_TAGS for "+rules.realm());
+        rules.setState("PLOAD_TO_BEG");
+		rules.println("Processing LOAD TO BEG for "+rules.realm());
 
-        SearchEntity searchBE = new SearchEntity("SBE_GET_ALL_DRIVERS","All Drivers")
+        SearchEntity searchBE = new SearchEntity("SBE_GET_ALL_BEGS","All Jobs")
   	     .addSort("PRI_CREATED","Created",SearchEntity.Sort.DESC)
-  	     .addFilter("PRI_IS_SELLER",true)
+  	     .addFilter("PRI_CODE",SearchEntity.StringFilter.LIKE,"BEG_%")
   	     .setPageStart(0)
   	     .setPageSize(10000);
 
 
 		QDataBaseEntityMessage msg = rules.getSearchResults(searchBE);
+			rules.println("Got "+msg.getItems().length+" items");
 
 		Integer count = 0;
 		
 		for (BaseEntity be : msg.getItems()) {
 			rules.println("Processing "+count+" of "+msg.getItems().length+" "+be.getCode()+" ");
-			Answer ans1 = new Answer(be.getCode(),be.getCode(),"PRI_PRODUCT_CATEGORY_TAG_BITMASKED","524287");
-			Answer ans2 = new Answer(be.getCode(),be.getCode(),"LNK_PRODUCT_CATEGORY_LIST_TAG",
-			"[\"SEL_BDL\", \"SEL_PAR\", \"SEL_MAC2\", \"SEL_TRA1\", \"SEL_BOT\", \"SEL_TRA2\", \"SEL_VEC\", \"SEL_GEN\", \"SEL_LSK\", \"SEL_BTR\", \"SEL_TRC\", \"SEL_CRV\", \"SEL_BPT\", \"SEL_GENL\", \"SEL_PAL\", \"SEL_SCT\", \"SEL_MAC3\", \"SEL_MAC1\", \"SEL_TRA3\"]");		
 			
+			/* find the load */
+			BaseEntity load = null;
+			for (EntityEntity ee : be.getLinks()) {
+				if (ee.getLink().getTargetCode().startsWith("LOD_")) {
+					load = rules.baseEntity.getBaseEntityByCode(ee.getLink().getSourceCode());
+					break;
+				}
+			}
+			if (load != null) {
+			rules.println("LOAD FOUND FOR "+be.getCode()+" = "+load.getCode());
+			String loadValue = load.getValue("LNK_LOAD_CATEGORY_LISTS",null);
+			Answer ans1 = new Answer(be.getCode(),be.getCode(),"LNK_PRODUCT_CATEGORY_TAG",loadValue);
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(ans1);
-			answers.add(ans2);
 			rules.baseEntity.saveAnswers(answers);
+			} else {
+				rules.println("ERROR! NO LOAD FOUND FOR "+be.getCode());
+			}
 			count++;
-		}
+		}	
 
      rules.footer();
 end
