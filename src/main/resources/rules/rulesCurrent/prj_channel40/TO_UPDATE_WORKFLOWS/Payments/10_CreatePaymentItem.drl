@@ -116,11 +116,7 @@ rule "Create Payment Item"
        	}
 
 
-		/* Ugly way of checking */
-		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
-		rules.println("payment ID attribute value ::"+paymentIdAttributeValue);
-
-		if(paymentIdAttributeValue != null && assemblyId != null) {
+		if(paymentItemId != null && assemblyId != null) {
 
 			//To save the datetime of item creation
 			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
