@@ -3254,7 +3254,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 			/* Sending message to BEG OWNER */
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-
+			
+			unsubscribe();
 		}
 
     this.redirectToHomePage();
@@ -5817,6 +5818,25 @@ public void makePayment(QDataAnswerMessage m) {
 			return null;
 
 		}
+	}
+	
+
+	public void unsubscribe() {
+				
+		BaseEntity userBe = getUser();
+		String templateCode = "MSG_CH40_TEST";
+	
+		String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":\"MSG_CH40_TEST\"}}";
+        println("json ::" +json);
+		String base64 = encodeToBase64(json);
+        
+        HashMap<String, String> contextMap = new HashMap<String, String>();
+		contextMap.put("OWNER", getUser().getCode());
+		contextMap.put("DRIVER", getUser().getCode());
+        contextMap.put("URL", "http://localhost:3000/?state=" + base64);
+        String[] arr = { userBe.getCode() };
+        
+		sendMessage("", arr, contextMap, "MSG_CH40_TEST", "EMAIL");
 	}
 
 }
