@@ -1356,6 +1356,50 @@ public class QRules {
 		return defaultBitMappedTag;
 
 	}
+	
+	/*
+	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
+	 */
+	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
+		BaseEntity selBE = this.baseEntity.getBaseEntityByCode(tagCode);
+		if (selBE != null) {
+			Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
+			// String realm = realm();
+			String serviceToken = RulesUtils.generateServiceToken(realm());
+			QDataBaseEntityMessage msg = null;
+			List<BaseEntity> beList = new ArrayList<BaseEntity>();
+			if (bitMaskValue != null) {
+				SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+						.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
+						.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE,
+								bitMaskValue)
+						.setPageStart(0).setPageSize(10000);
+				try {
+					System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+					// msg = getSearchResults(searchBE);
+					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
+					System.out.println("the msg is :: " + msg);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				if (msg != null && msg.getItems().length != 0) {
+					BaseEntity[] beArray = msg.getItems();
+					for (BaseEntity be : beArray) {
+						beList.add(be);
+					}
+				} else
+					System.out.println("Error! The search result is null.");
+			} else {
+				System.out.println("Error! The bitmask value of the tagCode is null.");
+
+			}
+			return beList;
+		}
+		return null;
+	}
 
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
 		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
@@ -2920,9 +2964,9 @@ public void makePayment(QDataAnswerMessage m) {
 
   public void clearBaseEntity(String baseEntityCode) {
 
-    String[] recipients = new String[1];
-    recipients[0] = this.getUser().getCode();
-    this.clearBaseEntity(baseEntityCode, recipients);
+    //String[] recipients = new String[1];
+    //recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, null);
   }
 
 	/* sets delete field to true so that FE removes the BE from their store */
@@ -3177,152 +3221,149 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 	}
 
-  public void saveJob(BaseEntity job) {
+	public void saveJob(BaseEntity job) {
 
-    this.showLoading("Creating job...");
+		this.showLoading("Creating job...");
 
 		String jobCode = job.getCode();
+		if (jobCode != null && !jobCode.isEmpty()) {
+			/* link newly created Job to GRP_LOADS */
+			BaseEntity load = this.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
+			BaseEntity user = getUser();
+			if (load != null && user != null) {
 
-		/*
-		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
-		 * triggered in another rule
-		 */
-		Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE", 0.0);
-		Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE", 0.0);
-		Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);
-		Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE", 0.0);
+				String loadCode = load.getCode();
+				String userCode = user.getCode();
+				if (loadCode != null && !loadCode.isEmpty() && userCode != null && !userCode.isEmpty()) {
+					/*
+					 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
+					 * triggered in another rule
+					 */
+					Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE", 0.0);
+					Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE", 0.0);
+					Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);
+					Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE", 0.0);
 
-		/* Add author to the load */
-		List<Answer> answers = new ArrayList<Answer>();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
+					/* Add author to the load */
+					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
+					answers.add(
+							new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
 
-		Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
-				deliveryLongitude);
-		if (totalDistance > 0) {
-			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance + "");
-			answers.add(totalDistanceAnswer);
-		}
-
-		/* Adding Offer Count to 0 */
-		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
-		/* Publish Answer */
-		answers.add(offerCountAns);
-
-		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
-		// Setting color to green for new jobs for both driver and owner
-		/*
-		 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
-		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
-		 */
-
-		BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
-		Long jobId = updatedJob.getId();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
-		this.baseEntity.saveAnswers(answers);
-
-		/* Determine the recipient code */
-		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-		println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
-
-		/*
-		 * Send newly created job with its attributes to all drivers so that it exists
-		 * before link change
-		 */
-		BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
-		println("The newly submitted Job details     ::     " + newJobDetails.toString());
-		publishData(newJobDetails, recipientCodes);
-		/* publishing to Owner */
-		publishBE(newJobDetails);
-
-		/* Moving the BEG to GRP_NEW_ITEMS */
-		/*
-		 * The moveBaseEntity without linkValue sets the linkValue to default value,
-		 * "LINK". So using moveBaseEntitySetLinkValue()
-		 */
-		this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
-
-		/* Get the sourceCode(Company code) for this User */
-		BaseEntity company = this.baseEntity.getParent(getUser().getCode(), "LNK_STAFF");
-
-		/* link newly created Job to GRP_LOADS */
-		BaseEntity load = this.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
-		String loadCode = load.getCode();
-		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
-				(double) 1, getToken());
-		println("The load has been added to the GRP_LOADS ");
-
-		/* we link the load to the user */
-		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
-
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad, recipientCodes);
-
-
-    /* we push the job to the creator */
-    String[] creatorRecipient = { getUser().getCode() };
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
-
-		/* SEND LOAD BE */
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
-
-		/* publishing to Owner */
-		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
-		// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
-
-		if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
-
-			/* Sending Messages */
-
-			HashMap<String, String> contextMap = new HashMap<String, String>();
-			contextMap.put("JOB", jobCode);
-			contextMap.put("OWNER", getUser().getCode());
-
-			println("The String Array is ::" + Arrays.toString(recipientCodes));
-
-			/* Getting all people */
-			List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
-			System.out.println("size ::" + people.size());
-			List<BaseEntity> sellersBe = new ArrayList<>();
-
-			/* Getting all driver BEs */
-			for (BaseEntity stakeholderBe : people) {
-
-				try {
-
-					if (this.isUserSeller(stakeholderBe)) {
-						sellersBe.add(stakeholderBe);
+					Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
+							deliveryLongitude);
+					if (totalDistance > 0) {
+						Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M",
+								totalDistance + "");
+						answers.add(totalDistanceAnswer);
 					}
 
-				} catch (Exception e) {
+					/* Get Product Category tag from load and save it to the BEG/Job */
+					String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null);
+					if (loadType != null) {
+						answers.add(new Answer(userCode, jobCode, "LNK_PRODUCT_CATEGORY_TAG", loadType));
+					}
 
+					/* Adding Offer Count to 0 */
+					Answer offerCountAns = new Answer(userCode, jobCode, "PRI_OFFER_COUNT", "0");
+					/* Publish Answer */
+					answers.add(offerCountAns);
+
+					/* set Status of the job */
+					answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
+					// Setting color to green for new jobs for both driver and owner
+					/*
+					 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
+					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
+					 */
+
+					BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
+					Long jobId = updatedJob.getId();
+					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
+					this.baseEntity.saveAnswers(answers);
+
+					/* Get all the sellers who have opted for this product category tag */
+					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
+							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+					int i = 0;
+					String[] recipientCodes = new String[sellersBe.size()];
+					for (BaseEntity taggedSellerBe : sellersBe) {
+						recipientCodes[i] = taggedSellerBe.getCode();
+						i++;
+					}
+					println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
+
+					/*
+					 * Send newly created job with its attributes to all drivers so that it exists
+					 * before link change
+					 */
+					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
+					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+					publishData(newJobDetails, recipientCodes);
+					/* publishing to Owner */
+					publishBE(newJobDetails);
+
+					/* Moving the BEG to GRP_NEW_ITEMS */
+					/*
+					 * The moveBaseEntity without linkValue sets the linkValue to default value,
+					 * "LINK". So using moveBaseEntitySetLinkValue()
+					 */
+					this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE",
+							"BEG");
+
+					/* Get the sourceCode(Company code) for this User */
+					BaseEntity company = this.baseEntity.getParent(userCode, "LNK_STAFF");
+
+					Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD",
+							company.getCode(), (double) 1, getToken());
+					println("The load has been added to the GRP_LOADS ");
+
+					/* we link the load to the user */
+					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
+
+					QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+							new Link(jobCode, loadCode, "LNK_BEG"), null, getToken());
+					publishData(msgLnkBegLoad, recipientCodes);
+
+					/* we push the job to the creator */
+					String[] creatorRecipient = { getUser().getCode() };
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+
+					/* SEND LOAD BE */
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+
+					/* publishing to Owner */
+					// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
+					// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
+
+					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+
+						/* Sending Messages */
+
+						HashMap<String, String> contextMap = new HashMap<String, String>();
+						contextMap.put("JOB", jobCode);
+						contextMap.put("OWNER", getUser().getCode());
+
+						println("The String Array is ::" + Arrays.toString(recipientCodes));
+
+						/* Sending toast message to owner frontend */
+						sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+
+						/* Sending message to BEG OWNER */
+						sendMessage("", recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+
+					}
+
+					this.redirectToHomePage();
+					this.reloadCache();
+					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-
+		}else {
+			println("Error!! The Job/Beg code is null ");
 		}
-
-    this.redirectToHomePage();
-		this.reloadCache();
-    drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4573,9 +4614,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
+		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
 
 		/* no need to send data again if the user is not logging in or registering */
-		if (!isLogin && !isRegistration) {
+		if (!isLogin && !isRegistration && !isProductTypeTagUpdated) {
 			this.setState("DATA_SENT_FINISHED");
 			return;
 		}

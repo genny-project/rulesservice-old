@@ -296,6 +296,8 @@ public class CacheUtils {
                   String begTag = item.getValue("LNK_PRODUCT_CATEGORY_TAG", null);
                   if( begTag != null && productTypeTag.contains(begTag) ) {
                     baseEntityKids.add(item);
+                   }else {
+                	     excludedBes.put(itemCode, true);
                    }
                 }
                 else {
