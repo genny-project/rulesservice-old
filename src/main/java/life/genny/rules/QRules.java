@@ -3305,6 +3305,32 @@ public void makePayment(QDataAnswerMessage m) {
 
 		return false;
 	}
+	
+	public boolean hasCapability(final String capability) {
+
+		// Fetch the roles and check the capability attributes of each role
+		
+		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
+		for (EntityAttribute role : roles) { // should store in cached map
+			Boolean value = role.getValue();
+			if (value) {
+				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
+				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
+				if (roleBE==null) {
+					return false;
+				}
+				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
+				if (optEaCap.isPresent()) {
+					EntityAttribute eaCap = optEaCap.get();
+					if ((eaCap.getValueBoolean()!=null)&&(eaCap.getValueBoolean())) {
+						return true;
+					}
+				}
+					
+			}
+		}
+		return false;
+	}
 
 	public String getZonedCurrentLocalDateTime() {
 
@@ -4524,7 +4550,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		if (this.hasCapability("READ_NEW_ITEMS")) {
+			subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		}
 
 		this.sendCachedItem("BUCKETS", subscriptions);
 
