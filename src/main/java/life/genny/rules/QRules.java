@@ -1341,6 +1341,8 @@ public class QRules {
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
+
+      this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
