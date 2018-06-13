@@ -862,14 +862,19 @@ public class QRules {
 	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
 	// 	// this.navigate(type, newRoute);
 	// }
-
+	
 	public void showLoading(String text) {
+		this.showLoading(text, false);
+	}
+	
+	public void showLoading(String text, Boolean isPopup) {
 
 		if (text == null) {
 			text = "Loading...";
 		}
-
-		QCmdMessage cmdLoading = new QCmdMessage("CMD_VIEW", "LOADING");
+		
+		String viewType = isPopup ? "CMD_POPUP" : "CMD_VIEW";
+		QCmdMessage cmdLoading = new QCmdMessage(viewType, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
 		json.put("root", text);
 		json.put("token", getToken());
