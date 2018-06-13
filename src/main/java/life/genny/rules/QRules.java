@@ -910,8 +910,7 @@ public class QRules {
 
 	// private void navigate(NavigationType navigationType, String newRoute) {
   //
-	// 	// QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
-	// 	// this.publishCmd(navigationMessage);
+
 	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
 	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
 	// 	json.put("token", getToken());
@@ -919,6 +918,11 @@ public class QRules {
 	// }
 
 	public void navigateTo(String newRoute) {
+
+    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+  	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+  	json.put("token", getToken());
+  	publish("cmds", json);
 
 		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
 		// this.navigate(type, newRoute);
@@ -3304,11 +3308,11 @@ public void makePayment(QDataAnswerMessage m) {
 
 		return false;
 	}
-	
+
 	public boolean hasCapability(final String capability) {
 
 		// Fetch the roles and check the capability attributes of each role
-		
+
 		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
 		for (EntityAttribute role : roles) { // should store in cached map
 			Boolean value = role.getValue();
@@ -3325,7 +3329,7 @@ public void makePayment(QDataAnswerMessage m) {
 						return true;
 					}
 				}
-					
+
 			}
 		}
 		return false;
@@ -3820,6 +3824,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* TODO: refactor this. */
 	public void redirectToHomePage() {
+
+    this.navigateTo("/home");
 		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
