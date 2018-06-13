@@ -22,7 +22,6 @@ rule "GenerateRoles"
 
     rules.header();
 
-    rules.setState("GENERATE_ROLES");
 		rules.println("Generating Roles Cache for "+rules.realm());
 
 		List<BaseEntity> roles = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROLES", "LNK_CORE", 0, 500, false);

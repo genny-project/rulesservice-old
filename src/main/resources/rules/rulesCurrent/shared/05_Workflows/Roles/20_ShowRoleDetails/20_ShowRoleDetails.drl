@@ -1,0 +1,27 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Show Load Details - Step 2"
+    when
+        rules: QRules( 	isState("SHOW_ROLE_DETAILS")  &&
+                        !isState("DID_SHOW_ROLE_DETAILS") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_SHOW_ROLE_DETAILS");
+        
+        BaseEntity selectedRole = rules.getAsBaseEntity("selectedRole");
+        if(selectedRole != null) {
+        		
+        		/* we send the questions */
+    			rules.sendQuestions(rules.getUser().getCode(), selectedRole.getCode(), "QUE_ROLE_GRP");
+        	
+        		/* we show the layout with the updated root code */
+            rules.sendSublayout("company_role_sublayout", "/company/company_settings.json", selectedRole.getCode());
+        }
+        
+	    rules.footer();
+end

@@ -2,6 +2,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.Attribute;
 
 rule "Create New Role - Step 4 - Submit"
     when
@@ -13,6 +14,9 @@ rule "Create New Role - Step 4 - Submit"
         rules.header();
 
         rules.setState("DID_SUBMIT_NEW_ROLE");
+        
+        /* we show a loading */
+        rules.showLoading("", true);
         
         String targetCode = rules.getAsString("targetCode");
         if(targetCode != null) {
@@ -26,16 +30,22 @@ rule "Create New Role - Step 4 - Submit"
         			/* we grab the capabilities */
         			String capabilities = newRoleBe.getValue("LNK_SELECT_CAPABILITY", null);
         			
-        			if(roleName != null && capabilities != null) {
+        			/* we grab the current user's company */
+        			BaseEntity company = rules.getUserCompany();
+        			
+        			if(roleName != null && capabilities != null && company != null) {
         				
         				/* we get an array of capabilities */
-        				capabilities = capabilities.replaceAll("[\\[\\](){}]", "");
+        				capabilities = capabilities.replaceAll("[\\[\\](){}]", "").replaceAll("\"", "");
         				String[] capabilitiesArray = capabilities.split(",");
         				
-        				
+        				/* we add the capabilities to the role */
+        				rules.baseEntity.setupNewRole(newRoleBe, company, roleName, capabilitiesArray);
         			}
         		}
         }
+        
+        rules.setState("SHOW_COMPANY_ROLES");
         
 	    rules.footer();
 end

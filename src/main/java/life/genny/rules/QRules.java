@@ -47,6 +47,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import com.hazelcast.util.collection.ArrayUtils;
+import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -433,6 +434,17 @@ public class QRules {
 		}
 
 		return be;
+	}
+	
+	public BaseEntity getUserCompany() {
+		
+		BaseEntity user = this.getUser();
+		if(user != null) {
+			BaseEntity company = this.baseEntity.getParent(user.getCode(), "LNK_STAFF");
+			return company;
+		}
+		
+		return null;
 	}
 
 	/* TODO: to remove */
@@ -1262,10 +1274,14 @@ public class QRules {
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
 	}
-
+	
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
+		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup);
+	}
 
-		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean isPopup) {
+
+		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode)) {
 
 			/* Layout V1 */
 
@@ -3852,7 +3868,7 @@ public void makePayment(QDataAnswerMessage m) {
 				token);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + msg);
-
+			
 		return msg;
 	}
 
@@ -5602,6 +5618,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public List<BaseEntity> generateCapabilities() {
+		
 		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
 
 		/* get all capabilities existing */
@@ -5689,13 +5706,17 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
+		
 		String fullCapabilityCode = "CAP_"+capabilityCode.toUpperCase();
 		println("Setting Capability : "+fullCapabilityCode+" : "+name);
+		
 		Attribute attribute = RulesUtils.attributeMap.get(fullCapabilityCode);
+		
 		if (attribute != null) {
 			capabilityManifest.add(attribute);
 			return attribute;
-		} else {
+		} 
+		else {
 			// create new attribute
 			attribute = new AttributeBoolean(fullCapabilityCode,name);
 			// save to database and cache

@@ -14,8 +14,6 @@ rule "Invite New User - Step 0 - Create New User"
 
 		rules.setState("LOOP_INVITE_USER");
 
-    	  
-		
-		/*rules.setState("INVITE_USER_SEND_DATA"); */
+		rules.setState("INVITE_USER_SEND_DATA");
       	rules.footer();
 end

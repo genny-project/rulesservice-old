@@ -14,6 +14,7 @@ rule "Create New Role - Step 3"
         rules.setState("DID_ASK_ROLE_QUESTIONS");
         
         BaseEntity newRole = rules.getAsBaseEntity("newRole");
+        
         if(newRole != null) {
         		rules.askQuestions(rules.getUser().getCode(), newRole.getCode(), "QUE_ROLE_GRP", true);
         }

@@ -1,0 +1,31 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+
+rule "Check user company - Step 3.5"
+     when
+     	rules: QRules( 	isState("SET_COMPANY_ADMIN_ROLE") && !isState("DID_SET_COMPANY_ADMIN_ROLE") ) 
+     then      
+        rules.header();     
+
+		rules.setState("DID_SET_COMPANY_ADMIN_ROLE");
+		
+		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
+		
+		/* we create the company admin role */
+        BaseEntity adminRole = rules.baseEntity.create(companyBe.getCode(), "ROL", "Company Admin");
+
+		/* we attach default roles to this company */
+		String[] capabilitiesArray = { "CAP_ADD_CHAT_MESSAGE","CAP_UPDATE_CHAT_MESSAGE", "CAP_ADD_ITEM", "CAP_MARK_DELIVERY" };
+		
+		/* we add the capabilities to the role */
+		rules.baseEntity.setupNewRole(adminRole, companyBe, "Company Admin", capabilitiesArray);
+		
+		rules.baseEntity.createLink(rules.getUser().getCode(), adminRole.getCode(), "LNK_ROLE", "ROLE", 1.0);
+
+		rules.setState("COMPANY_EXISTS");
+
+		rules.footer();     		      
+end
+     	

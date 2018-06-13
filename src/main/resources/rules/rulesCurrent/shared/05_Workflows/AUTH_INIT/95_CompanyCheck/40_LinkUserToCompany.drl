@@ -37,12 +37,7 @@ rule "Check user company - Step 3"
 			rules.setState("CREATE_LINK");
 
 			rules.setState("LINKED_COMPANY_TO_SELLER");
-			rules.setState("COMPANY_EXISTS");
-		}
-		else {
-			
-			/* TODO: handle this */
-			
+			rules.setState("SET_COMPANY_ADMIN_ROLE");
 		}
 		
 		rules.footer();     		      

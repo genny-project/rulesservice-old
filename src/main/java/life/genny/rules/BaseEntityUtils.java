@@ -59,7 +59,6 @@ public class BaseEntityUtils {
 
   /* =============== refactoring =============== */
 
-
   public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
     String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
@@ -74,12 +73,11 @@ public class BaseEntityUtils {
     return null;
   }
 
-
   /*================================ */
   /* old code */
 
 
-  public BaseEntity createRole(final String uniqueCode, final String name, final String token, String ... capabilityCodes) {
+  public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
 
 	  String code = "ROL_IS_" + uniqueCode.toUpperCase();
 
@@ -87,11 +85,7 @@ public class BaseEntityUtils {
 
 	  BaseEntity role = this.getBaseEntityByCode(code);
 	  if (role == null) {
-
-		  role = QwandaUtils.createBaseEntityByCode(code, name, qwandaServiceUrl, this.token);
-		  this.addAttributes(role);
-
-		  VertxUtils.writeCachedJson(role.getCode(), JsonUtils.toJson(role));
+		  role = this.create(uniqueCode, "ROL", name);
 	  }
 
 	  for (String capabilityCode : capabilityCodes) {
@@ -104,6 +98,15 @@ public class BaseEntityUtils {
 			  e.printStackTrace();
 		  }
 	  }
+	  
+	  /* we add the realm as an attribute */
+	  Attribute realmAttribute = RulesUtils.attributeMap.get("PRI_REALM");
+	  try {
+		  role.addAttribute(realmAttribute, 1.0, this.realm);
+	  }
+	  catch (BadDataException e) {
+		  e.printStackTrace();
+	  }
 
 	  /* Now force the role to only have these capabilitys */
 	  try {
@@ -111,14 +114,45 @@ public class BaseEntityUtils {
 	  } catch (IOException e) {
 		  e.printStackTrace();
 	  }
-	  
-	  /* Now link the role to the GRP_ROLES */
-		QwandaUtils.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0, token);// Creating
 
+	  /* Now link the role to the GRP_ROLES */
+	  this.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0);
 
 	  return role;
   }
 
+  public void setupNewRole(BaseEntity role, BaseEntity company, String roleName, String[] capabilities) {
+
+	  /* we set the role name */
+	  role.setName(roleName);
+
+	  /* we loop through the capabilities */
+	  for(int i = 0; i < capabilities.length; i++) {
+
+		  String capability = capabilities[i];
+
+		  /* we try to fetch the attribute */
+		  Attribute capabilityAttribute = RulesUtils.attributeMap.get(capability);
+		  if(capabilityAttribute != null) {
+
+			  try {
+				  
+				  /* we add the attribute to the role base entity */
+				  role.addAttribute(capabilityAttribute, 1.0, "TRUE");
+
+			  } catch (BadDataException e) {
+				  System.out.println("Could not add capability: " + capability + " to role: " + role.getName());
+			  }
+		  }
+	  }
+	  
+	  /* we link the company and the role */
+	  this.createLink(company.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
+	  
+	  /* we set the company as creator of this role */
+	  this.updateBaseEntityAttribute(company.getCode(), role.getCode(), "PRI_AUTHOR", company.getCode());
+	  
+  }
 
   public Object get(final String key) {
 	  return this.decodedMapToken.get(key);

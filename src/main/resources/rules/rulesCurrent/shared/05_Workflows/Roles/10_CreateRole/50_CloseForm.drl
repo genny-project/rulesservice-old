@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.Attribute;
+
+rule "Create New Role - Step 5"
+    when
+        rules: QRules( 	isState("SHOW_COMPANY_ROLES")  &&
+                        !isState("DID_GO_BACK") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_GO_BACK");
+        
+        /* we display the layout */
+        rules.sendSublayout("company_role_sublayout", "/company/company_settings.json");
+                
+	    rules.footer();
+end

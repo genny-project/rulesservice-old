@@ -18,11 +18,8 @@ rule "GenerateCapabilities"
 
 		List<BaseEntity> capabilities = rules.generateCapabilities();
 
-
-		// Save the roles for future use
+		// Save the capabilities for future use
 		QDataBaseEntityMessage capabilitiesMsg = new QDataBaseEntityMessage(capabilities.toArray(new BaseEntity[0]),"GRP_CAPABILITIES","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "CAPABILITIES", rules.realm(), capabilitiesMsg);
 
- 
-	
 end
