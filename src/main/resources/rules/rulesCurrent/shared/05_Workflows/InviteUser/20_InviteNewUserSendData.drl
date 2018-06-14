@@ -17,6 +17,7 @@ rule "Invite New User - Step 1 - Send Data"
 		/* we send the questions */
 		rules.sendQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_INVITE_USER_GRP");
 
-		rules.setState("INVITE_USER_SEND_LAYOUT");
+		 rules.setState("INVITE_USER_SEND_LAYOUT");
+		
     rules.footer();
 end
