@@ -13,6 +13,8 @@ rule "Delete BEG - Step 2 - Channel40"
 		
 		String begCode = rules.getAsString("itemCode");
 		String groupCode = rules.getAsString("hintCode");
+		
+		rules.println(groupCode);
 
          if(begCode != null && begCode != null) {
         	 
