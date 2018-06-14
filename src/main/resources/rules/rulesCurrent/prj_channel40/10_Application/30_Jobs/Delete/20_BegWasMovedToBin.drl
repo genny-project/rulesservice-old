@@ -12,7 +12,7 @@ rule "Delete BEG - Step 2 - Channel40"
 		rules.setState("DID_MOVE_JOB_TO_BIN");
 		
 		String begCode = rules.getAsString("itemCode");
-		String groupCode = rules.getAsString("parentCode");
+		String groupCode = rules.getAsString("hintCode");
 
          if(begCode != null && begCode != null) {
         	 
