@@ -245,7 +245,7 @@ public class QRules {
 	 * @return current realm
 	 */
 	public String realm() {
-		
+
 		String str = getAsString("realm");
 		// if(str == null) {
 		// str = "genny";
@@ -435,15 +435,15 @@ public class QRules {
 
 		return be;
 	}
-	
+
 	public BaseEntity getUserCompany() {
-		
+
 		BaseEntity user = this.getUser();
 		if(user != null) {
 			BaseEntity company = this.baseEntity.getParent(user.getCode(), "LNK_STAFF");
 			return company;
 		}
-		
+
 		return null;
 	}
 
@@ -752,19 +752,19 @@ public class QRules {
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
 		return this.createUser(firstname, lastname, name, username, email, null);
 	}
-	
+
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
-				
+
 		BaseEntity be = null;
 
 		try {
-			
+
 			/* we capitalise the variables */
 			firstname = StringUtils.capitalize(firstname);
 			lastname = StringUtils.capitalize(lastname);
 			name = StringUtils.capitalize(name);
 			String realm = null;
-			
+
 			/* if you are running in dev mode on your local machine, the only available realm is genny */
 			if(System.getenv("GENNY_DEV").equals("TRUE")) {
 				realm = "genny";
@@ -772,14 +772,14 @@ public class QRules {
 			else {
 				realm = this.realm();
 			}
-			
+
 			String token = RulesUtils.generateServiceToken(realm);
-			
+
 			/* if the keycloak id, we need to create a keycloak account for this user */
 			if(keycloakId == null) {
 				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
 			}
-			
+
 			/* we create the user in the system */
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
 					keycloakId);
@@ -794,12 +794,12 @@ public class QRules {
 			this.sendSlackNotification(message);
 
 		} catch (IOException e) {
-			log.error("Error in Creating User ");
+			this.sendToastNotification(e.getMessage(), "error");
 		}
-		
+
 		return be;
 	}
-	
+
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 
@@ -1295,7 +1295,7 @@ public class QRules {
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
 	}
-	
+
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup);
 	}
@@ -3889,7 +3889,7 @@ public void makePayment(QDataAnswerMessage m) {
 				token);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + msg);
-			
+
 		return msg;
 	}
 
@@ -4629,7 +4629,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4662,7 +4662,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4694,7 +4694,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4793,7 +4793,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* send toast to user */
 				/*
 				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
-				 * String[] recipientArr = { userBe.getCode() }; sendDirectToast(recipientArr,
+				 * String[] recipientArr = { userBe.getCode() }; sendToastNotification(recipientArr,
 				 * toastMessage, "warning");
 				 */
 				sendSlackNotification(message);
@@ -4826,9 +4826,13 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+	public void sendToastNotification(String message, String priority) {
+		String[] recipients = { this.getUser().getCode() };
+		this.sendToastNotification(recipients, message, priority);
+	}
 	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
-	public void sendDirectToast(String[] recipientArr, String toastMsg, String priority) {
+	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {
 
 		/* create toast */
 		/* priority can be "info" or "error or "warning" */
@@ -5007,7 +5011,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5107,7 +5111,7 @@ public void makePayment(QDataAnswerMessage m) {
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 			}
 
@@ -5161,7 +5165,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5299,7 +5303,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				if (userBe != null) {
 					String[] recipientArr = { userBe.getCode() };
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 
 				/* Send slack notification */
@@ -5389,7 +5393,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String[] recipientArr = { buyerBe.getCode() };
 				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
 						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
-				sendDirectToast(recipientArr, toastMessage, "warning");
+				sendToastNotification(recipientArr, toastMessage, "warning");
 				sendSlackNotification(
 						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
 			}
@@ -5505,7 +5509,7 @@ public void makePayment(QDataAnswerMessage m) {
 					+ " has failed." + e.getMessage();
 
 			/* send error toast message */
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack notification */
 			sendSlackNotification(toastMessage + ". Job code : " + begBe.getCode());
@@ -5639,7 +5643,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public List<BaseEntity> generateCapabilities() {
-		
+
 		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
 
 		/* get all capabilities existing */
@@ -5720,16 +5724,16 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
-		
+
 		String fullCapabilityCode = "CAP_"+capabilityCode.toUpperCase();
 		println("Setting Capability : "+fullCapabilityCode+" : "+name);
-		
+
 		Attribute attribute = RulesUtils.attributeMap.get(fullCapabilityCode);
-		
+
 		if (attribute != null) {
 			capabilityManifest.add(attribute);
 			return attribute;
-		} 
+		}
 		else {
 			// create new attribute
 			attribute = new AttributeBoolean(fullCapabilityCode,name);

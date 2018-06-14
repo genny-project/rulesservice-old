@@ -23,6 +23,8 @@ rule "Invite New User - Step 6 - Link User to company"
 			BaseEntity company = rules.getUserCompany();
 			if(company != null) {
 				
+				rules.showLoading("Adding user to the company...", true);
+				
 				/* we link the newly created user and link it to the company */
 				rules.baseEntity.createLink(company.getCode(), createdUser.getCode(), "LNK_STAFF", "STAFF", 1.0);
 				rules.setState("ASSIGN_ROLE_TO_USER");

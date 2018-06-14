@@ -25,12 +25,17 @@ rule "Invite New User - Step 5 - Create User Account"
 		if(firstname != null && lastname != null && email != null && username != null) {
 			
 			String name = firstname + " " + lastname;
+			
+			rules.showLoading("Creating user account...", true);
 
 			/* we set up the new user on keycloak + generate the final baseEntity */
 			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email);
 			if(createdUser != null) {
 				rules.set("createdUser", createdUser);
 				rules.setState("LINK_NEW_USER_TO_COMPANY");
+			}
+			else {
+				rules.setState("RETURN_TO_HOMEPAGE");
 			}
 		}
 	

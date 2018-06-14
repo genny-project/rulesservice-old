@@ -19,7 +19,15 @@ rule "Invite New User - Step 7 - Assign Role To User"
 		
 		if(newUser != null && createdUser != null) {
 			
-			rules.println(newUser.getValue("LNK_ASSIGNED_CPY_ROLE", ""));
+			rules.showLoading("Assigning role to user...", true);
+			
+			String selectedRole = newUser.getValue("LNK_ASSIGNED_CPY_ROLE", "");
+			if(selectedRole != null) {
+				
+				/* we link the user to the role */
+				rules.baseEntity.createLink(createdUser.getCode(), selectedRole, "LNK_ROLE", "ROLE", 1.0);
+				rules.setState("SEND_MESSAGE_TO_NEW_USER");
+			}
 		}
 	
       

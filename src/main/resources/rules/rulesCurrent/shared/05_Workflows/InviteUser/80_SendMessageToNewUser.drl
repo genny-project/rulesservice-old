@@ -22,6 +22,7 @@ rule "Invite New User - Step 8 - Send Message to User"
 			
 		}
 	
-      
+		rules.setState("RETURN_TO_HOMEPAGE");
+
       	rules.footer();
 end
