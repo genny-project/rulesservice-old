@@ -162,16 +162,19 @@ public class CacheUtils {
 			/* we then get the kids of these kids (OFR_ have kids as well for instance) */
 			for(BaseEntity kid: begKids) {
 
-				/* we grab all the kids */
-				List<BaseEntity> kidKids = this.baseEntityUtils.getLinkedBaseEntities(kid.getCode());
+				if(kid != null && kid.getCode() != null) {
+					
+					/* we grab all the kids */
+					List<BaseEntity> kidKids = this.baseEntityUtils.getLinkedBaseEntities(kid.getCode());
 
-				if (kidKids != null) {
+					if (kidKids != null) {
 
-					/* we create the base entity message for the kids */
-					QDataBaseEntityMessage kidMessage = new QDataBaseEntityMessage(kidKids.toArray(new BaseEntity[0]));
-					kidMessage.setAliasCode(kid.getCode());
-					kidMessage.setParentCode(kid.getCode());
-					bulkmsg.add(kidMessage);
+						/* we create the base entity message for the kids */
+						QDataBaseEntityMessage kidMessage = new QDataBaseEntityMessage(kidKids.toArray(new BaseEntity[0]));
+						kidMessage.setAliasCode(kid.getCode());
+						kidMessage.setParentCode(kid.getCode());
+						bulkmsg.add(kidMessage);
+					}
 				}
 			}
 		}
