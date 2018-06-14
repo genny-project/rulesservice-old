@@ -61,21 +61,20 @@ public class RulesUtils {
 
 	public static String executeRuleLogger(final String status, final String module, final String topColour,
 			final String bottomColour) {
-		String moduleLogger = "\n" + (devMode ? "" : bottomColour) + status + " ::  " + module
+		String moduleLogger =  (devMode ? "" : bottomColour) + status + " ::  " + module
 				+ (devMode ? "" : ANSI_RESET);
 		return moduleLogger;
 	}
 
 	public static String terminateRuleLogger(String module) {
-		return executeRuleLogger("END RULE", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
-				+ "======================================================================================================="
-				+ (devMode ? "" : ANSI_RESET);
+		return executeRuleLogger("<<<<<<<<<< END RULE", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
+					+ (devMode ? "" : ANSI_RESET);
 
 	}
 
 	public static String headerRuleLogger(String module) {
-		return "======================================================================================================="
-				+ executeRuleLogger("START RULE", module, ANSI_RED, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_RED)
+		return 
+				 executeRuleLogger(">>>>>>>>>> START RULE", module, ANSI_RED, ANSI_GREEN)  + (devMode ? "" : ANSI_RED)
 				+ (devMode ? "" : ANSI_RESET);
 	}
 
