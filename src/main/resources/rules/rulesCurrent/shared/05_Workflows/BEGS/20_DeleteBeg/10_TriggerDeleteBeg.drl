@@ -12,7 +12,7 @@ rule "Delete BEG - Step 1"
 		rules.setState("DID_TRIGGER_DELETE_BEG");
 
 		String begCode = rules.getAsString("itemCode");
-		String groupCode = rules.getAsString("parentCode");
+		String groupCode = rules.getAsString("hintCode");
 
          if(begCode != null && begCode != null ){
         	 	
