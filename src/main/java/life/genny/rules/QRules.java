@@ -1308,11 +1308,20 @@ public class QRules {
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
 	}
+	
+	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
+	}
+	
+	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
+	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 
-		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
-    if(questions != null) {
+		QwandaMessage questions = this.getQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode);
+		
+        if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
@@ -1323,6 +1332,7 @@ public class QRules {
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
+		
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
@@ -1578,6 +1588,12 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
+					
+					/* unsubscribe link for the template */
+					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
+					if(unsubscribeUrl != null) {
+						contextMap.put("URL", unsubscribeUrl);
+					}
 
 					/* Sending toast message to all the beg frontends */
 					sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
@@ -2689,6 +2705,10 @@ public void makePayment(QDataAnswerMessage m) {
                     contextMap.put("QUOTER", quoterCode);
                     contextMap.put("OFFER", offer.getCode());
                     contextMap.put("LOAD", loadBe.getCode());
+                    String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_CONFIRM_QUOTE_OWNER");
+                    if(unsubscribeUrl != null) {
+                    	contextMap.put("URL", unsubscribeUrl);
+                    }
                     String[] recipientArr = { userCode };
                     /* TOAST :: PAYMENT SUCCESS */
                     sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
@@ -2699,6 +2719,11 @@ public void makePayment(QDataAnswerMessage m) {
                     contextMapForDriver.put("OWNER", userCode);
                     contextMapForDriver.put("OFFER", offer.getCode());
                     contextMapForDriver.put("LOAD", loadBe.getCode());
+                    String unsubscribeUrlForConfirmQuoteDriver = getUnsubscribeLinkForEmailTemplate("MSG_CH40_CONFIRM_QUOTE_DRIVER");
+                    if(unsubscribeUrl != null) {
+                    	contextMapForDriver.put("URL", unsubscribeUrlForConfirmQuoteDriver);
+                    }
+                    
                     String[] recipientArrForDriver = { quoterCode };
                     /* Sending messages to DRIVER - Email and sms enabled */
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
@@ -3218,6 +3243,12 @@ public void makePayment(QDataAnswerMessage m) {
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
 			contextMap.put("OWNER", getUser().getCode());
+			
+			/* unsubscribe link for the template */
+			String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
+			if(unsubscribeUrl != null) {
+				contextMap.put("URL", unsubscribeUrl);
+			}
 
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
@@ -3253,9 +3284,9 @@ public void makePayment(QDataAnswerMessage m) {
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 			/* Sending message to BEG OWNER */
+			
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 			
-			unsubscribe();
 		}
 
     this.redirectToHomePage();
@@ -3782,6 +3813,12 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("OWNER", ownerCode);
 				contextMap.put("LOAD", loadCode);
 				contextMap.put("OFFER", offer);
+				
+				/* unsubscribe link for the template */
+				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
+				if(unsubscribeUrl != null) {
+					contextMap.put("URL", unsubscribeUrl);
+				}
 
 				println("sending edit-mail to driver : " + quoterCode + ", with offer : " + offer);
 
@@ -4280,19 +4317,33 @@ public void makePayment(QDataAnswerMessage m) {
 
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
+			
+			/* unsubscribe links for the templates */
+			String unsubscribeUrlForOwner = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_OWNER");
+			String unsubscribeUrlForDriver = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_DRIVER");
 
+			/* sending message for owner */
 			String[] messageToOwnerRecipients = new String[1];
 			messageToOwnerRecipients[0] = ownerBe.getCode();
+			
+			HashMap<String, String> contextMapForOwner = contextMap;
+			contextMapForOwner.put("URL", unsubscribeUrlForOwner);
+			
 			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER",
 					"TOAST");
-			sendMessage(messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
+			sendMessage(messageToOwnerRecipients, contextMapForOwner, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
 					ownerAttachmentList);
 
+			/* sending message for driver */
 			String[] messageToDriverRecipients = new String[1];
 			messageToDriverRecipients[0] = driverBe.getCode();
+			
+			HashMap<String, String> contextMapForDriver = contextMap;
+			contextMapForDriver.put("URL", unsubscribeUrlForDriver);
+			
 			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER",
 					"TOAST");
-			sendMessage(messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
+			sendMessage(messageToDriverRecipients, contextMapForDriver, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
 					driverAttachmentList);
 
 		} else {
@@ -5848,23 +5899,20 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 	}
 	
+	/* creating a redirect link for unsubscription and adding it in context map */
+	public String getUnsubscribeLinkForEmailTemplate(String templateCode) {
 
-	public void unsubscribe() {
-				
-		BaseEntity userBe = getUser();
-		String templateCode = "MSG_CH40_TEST";
-	
-		String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":\"MSG_CH40_TEST\"}}";
-        println("json ::" +json);
-		String base64 = encodeToBase64(json);
-        
-        HashMap<String, String> contextMap = new HashMap<String, String>();
-		contextMap.put("OWNER", getUser().getCode());
-		contextMap.put("DRIVER", getUser().getCode());
-        contextMap.put("URL", "http://localhost:3000/?state=" + base64);
-        String[] arr = { userBe.getCode() };
-        
-		sendMessage("", arr, contextMap, "MSG_CH40_TEST", "EMAIL");
+		String url = null;
+		if(templateCode != null) {
+			String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":"
+					+ "\"" + templateCode + "\"" + "}}";
+			println("json ::" + json);
+			String base64 = encodeToBase64(json);
+			url = "http://localhost:3000/?state=" + base64;
+		}
+		
+		return url;
 	}
+	
 
 }

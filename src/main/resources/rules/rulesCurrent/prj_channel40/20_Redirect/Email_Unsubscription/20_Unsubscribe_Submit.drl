@@ -3,23 +3,23 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.utils.VertxUtils;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils
 
 	rule "Email unsubscription submit"
 		no-loop true
 		when
-			rules: QRules( isState("EMAIL_UNSUBSCRIBE") && 
-			isState("EVENT_BTN_CLICK") && 
+			rules: QRules( isState("QUE_EMAIL_UNSUBSCRIPTION_GRP") &&
+			isState("EVENT_FORM_SUBMIT") && 
 			isState("STARTED") &&
 			!isState("EMAIL_UNSUBSCRIBE_SUBMIT") )
 		then
 			rules.header();
 			rules.setState("EMAIL_UNSUBSCRIBE_SUBMIT");
-
 			
-			rules.println("email unsubscription :: "+rules.getAsString("valueCode"));
 			BaseEntity userBe = rules.getUser();
 			
-			/* save answer - if template code needs to saved or not */
+			/* get answer - if template code needs to unsubscribed or not */
 			Boolean isUnsubscribed = userBe.getValue("PRI_IS_EMAIL_UNSUBSCRIBE", false);
 			
 			/* get the temporary template value stored in cache */
@@ -27,12 +27,49 @@ import life.genny.utils.VertxUtils;
 			
 			rules.println("has the user unsubscribed ::"+isUnsubscribed+ ", template code to be unsubscribed ::"+templateCode );
 			
-			String unsubscriptionTemplates = userBe.getValue("PRI_EMAIL_UNSUBSCRIPTION_TEMPLATES", null);
+			/* redirect to homepage, do other stuff in background */
+			rules.redirectToHomePage();
 			
-			if(unsubscriptionTemplates != null) {
-			}
+			BaseEntity unsubscriptionBe = rules.baseEntity.getBaseEntityByCode("COM_EMAIL_UNSUBSCRIPTION");
 			
+			if(unsubscriptionBe != null) {
 			
+				/* get the template code unsubscription attribute */
+				String templateUnsubscribeAttribute = templateCode + "_UNSUBSCRIBE";
+				String unsubscriptionListForTemplateCode = unsubscriptionBe.getValue(templateUnsubscribeAttribute, null);
+				rules.println("unsubscription List For TemplateCode ::"+unsubscriptionListForTemplateCode);
+				
+				if(unsubscriptionListForTemplateCode != null) {
+					
+					/* check if the unsubscription list already contains the userCode */
+					Boolean isUnsubscriptionAlreadyContainsUser = VertxUtils.checkIfAttributeValueContainsString(unsubscriptionBe, templateUnsubscribeAttribute, userBe.getCode());
+					
+					/* if list does not contain the user, then add it */
+					if(!isUnsubscriptionAlreadyContainsUser) {
+						
+						List<String> unsubscriptionList = new ArrayList<String>();
+						if(unsubscriptionListForTemplateCode.contains(",")) {
+							String [] items = unsubscriptionListForTemplateCode.split(",");
+							unsubscriptionList.addAll(Arrays.asList(items));
+							unsubscriptionList.add(userBe.getCode());
+						} else {
+							unsubscriptionList.add(unsubscriptionListForTemplateCode);
+							unsubscriptionList.add(userBe.getCode());
+						}
+								
+						/* save answer */
+						String finalList = StringUtils.join(unsubscriptionList, ',');
+						rules.println("final list ::"+finalList);
+						
+						Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, finalList);
+						rules.baseEntity.saveAnswer(answer);
+					} 
+					
+				} else {
+					Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, userBe.getCode());
+					rules.baseEntity.saveAnswer(answer);
+				}
+			}	
 	     	
 			rules.footer();
 	end

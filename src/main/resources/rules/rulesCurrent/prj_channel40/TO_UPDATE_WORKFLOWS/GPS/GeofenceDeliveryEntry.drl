@@ -44,6 +44,12 @@ then
 		contextMap.put("JOB", begCode);
 		contextMap.put("DRIVER", rules.getUser().getCode());
 		contextMap.put("LOAD", loadCode);
+		
+		/* unsubscribe link for the template */
+		String unsubscribeUrl = rules.getUnsubscribeLinkForEmailTemplate("MSG_CH40_DRIVER_NEARBY_DROPOFF");
+		if(unsubscribeUrl != null) {
+			contextMap.put("URL", unsubscribeUrl);
+		}
 
 		/* Sending message to BEG OWNER */
 		rules.sendMessage("", recipients, contextMap, "MSG_CH40_DRIVER_NEARBY_DROPOFF", "TOAST");
