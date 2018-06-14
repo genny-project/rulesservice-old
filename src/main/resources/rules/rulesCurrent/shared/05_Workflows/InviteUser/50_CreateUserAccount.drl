@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.attribute.EntityAttribute;
 
-rule "Invite New User - Step 5 - Create Keycloak Account"
+rule "Invite New User - Step 5 - Create User Account"
      when
         rules: QRules(  isState("CREATE_NEW_KEYCLOAK_ACCOUNT") && !isState("LOOP_DID_CREATE_KEYCLOAK_ACCOUNT") )
      then
@@ -27,7 +27,11 @@ rule "Invite New User - Step 5 - Create Keycloak Account"
 			String name = firstname + " " + lastname;
 
 			/* we set up the new user on keycloak + generate the final baseEntity */
-			rules.createUser(firstname, lastname, name, username, email);
+			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email);
+			if(createdUser != null) {
+				rules.set("createdUser", createdUser);
+				rules.setState("LINK_NEW_USER_TO_COMPANY");
+			}
 		}
 	
       

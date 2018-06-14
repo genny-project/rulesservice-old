@@ -40,7 +40,7 @@ rule "Send Roles"
         			}
         			
         			/* publishing */
-        			rules.publishCmd(companyRoles, userCompany.getCode(), "LNK_ROLE");
+        			rules.publishCmd(companyRoles, "GRP_ROLES", "LNK_ROLE");
         		}
         }
         

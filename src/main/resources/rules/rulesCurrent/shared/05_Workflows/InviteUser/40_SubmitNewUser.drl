@@ -13,7 +13,9 @@ rule "Invite New User - Step 4 - Submit New User"
         rules.header();
 
 		rules.setState("LOOP_DID_SUBMIT_NEW_USER");
-
+		
+		rules.showLoading("", true);
+		
 		String targetCode = rules.getAsString("targetCode");
 		
 		if(targetCode != null) {

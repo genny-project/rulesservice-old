@@ -1,0 +1,34 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+import java.util.stream.Collectors;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.EntityAttribute;
+
+rule "Invite New User - Step 6 - Link User to company"
+     when
+        rules: QRules(  isState("LINK_NEW_USER_TO_COMPANY") && !isState("LOOP_DID_LINK_USER_TO_COMPANY") )
+     then
+        rules.header();
+
+		rules.setState("LOOP_DID_LINK_USER_TO_COMPANY");
+
+		BaseEntity newUser = rules.getAsBaseEntity("newUser");
+		BaseEntity createdUser = rules.getAsBaseEntity("createdUser");
+		
+		if(newUser != null && createdUser != null) {
+			
+			/* we get the current user company */
+			BaseEntity company = rules.getUserCompany();
+			if(company != null) {
+				
+				/* we link the newly created user and link it to the company */
+				rules.baseEntity.createLink(company.getCode(), createdUser.getCode(), "LNK_STAFF", "STAFF", 1.0);
+				rules.setState("ASSIGN_ROLE_TO_USER");
+			}
+		}
+	
+      
+      	rules.footer();
+end
