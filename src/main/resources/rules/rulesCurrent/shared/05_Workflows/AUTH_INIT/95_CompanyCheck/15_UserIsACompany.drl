@@ -10,6 +10,8 @@ rule "Check user company - User is a company"
 	    rules.header();
 
 		rules.setState("SELECTED_COMPANY_ROLE");
+		
+		rules.showLoading("", true);
 
 		/* we set the company role */
 		rules.setState("PRI_IS_COMPANY");

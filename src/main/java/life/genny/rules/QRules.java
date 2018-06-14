@@ -245,7 +245,7 @@ public class QRules {
 	 * @return current realm
 	 */
 	public String realm() {
-
+		
 		String str = getAsString("realm");
 		// if(str == null) {
 		// str = "genny";
@@ -749,20 +749,39 @@ public class QRules {
 
 	}
 
-	public BaseEntity createUser() {
-
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
+		return this.createUser(firstname, lastname, name, username, email, null);
+	}
+	
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
+				
 		BaseEntity be = null;
 
-		String username = getAsString("preferred_username").toLowerCase();
-		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
-		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
-		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
-		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
-		String email = getAsString("email").toLowerCase();
-		String keycloakId = getAsString("sub").toLowerCase();
-
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+			
+			/* we capitalise the variables */
+			firstname = StringUtils.capitalize(firstname);
+			lastname = StringUtils.capitalize(lastname);
+			name = StringUtils.capitalize(name);
+			String realm = null;
+			
+			/* if you are running in dev mode on your local machine, the only available realm is genny */
+			if(System.getenv("GENNY_DEV").equals("TRUE")) {
+				realm = "genny";
+			}
+			else {
+				realm = this.realm();
+			}
+			
+			String token = RulesUtils.generateServiceToken(realm);
+			
+			/* if the keycloak id, we need to create a keycloak account for this user */
+			if(keycloakId == null) {
+				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
+			}
+			
+			/* we create the user in the system */
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -770,15 +789,17 @@ public class QRules {
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
-      /* send notification for new registration */
-      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
-      this.sendSlackNotification(message);
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
 
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
+		
 		return be;
 	}
+	
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 

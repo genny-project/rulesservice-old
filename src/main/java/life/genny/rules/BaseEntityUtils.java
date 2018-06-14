@@ -72,10 +72,7 @@ public class BaseEntityUtils {
 
     return null;
   }
-
-  /*================================ */
-  /* old code */
-
+  
 
   public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
 
@@ -103,6 +100,15 @@ public class BaseEntityUtils {
 	  Attribute realmAttribute = RulesUtils.attributeMap.get("PRI_REALM");
 	  try {
 		  role.addAttribute(realmAttribute, 1.0, this.realm);
+	  }
+	  catch (BadDataException e) {
+		  e.printStackTrace();
+	  }
+	  
+	  /* we add the name as an attribute */
+	  Attribute nameAttribute = RulesUtils.attributeMap.get("PRI_NAME");
+	  try {
+		  role.addAttribute(nameAttribute, 1.0, name);
 	  }
 	  catch (BadDataException e) {
 		  e.printStackTrace();
@@ -154,6 +160,9 @@ public class BaseEntityUtils {
 	  
   }
 
+  /*================================ */
+  /* old code */
+
   public Object get(final String key) {
 	  return this.decodedMapToken.get(key);
   }
@@ -162,22 +171,20 @@ public class BaseEntityUtils {
 	  this.decodedMapToken.put(key, value);
   }
 
+  public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
+  {
 
-	public Attribute saveAttribute(Attribute attribute, final String token) throws IOException
-	{
-
-		RulesUtils.attributeMap.put(attribute.getCode(), attribute);
-		try {
-			String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
-			return attribute;
-		} catch (IOException e) {
-			log.error("Socket error trying to post attribute");
-			throw new IOException("Cannot save attribute");
-		}
+	  RulesUtils.attributeMap.put(attribute.getCode(), attribute);
+	  try {
+		  String result = QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/attributes", JsonUtils.toJson(attribute), token);
+		  return attribute;
+	  } catch (IOException e) {
+		  log.error("Socket error trying to post attribute");
+		  throw new IOException("Cannot save attribute");
+	  }
 
 
-	}
-
+  }
 
 	public void addAttributes(BaseEntity be) {
 

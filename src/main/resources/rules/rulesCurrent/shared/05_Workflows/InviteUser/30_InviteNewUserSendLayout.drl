@@ -15,7 +15,7 @@ rule "Invite New User - Step 1 - Send Layout"
 		rules.setState("LOOP_INVITE_USER_SEND_LAYOUT");
 
     	  	/* we send the popup layout */
-		rules.sendSublayout("invite-user", "/company/invite_user.json", true); 
+		rules.sendSublayout("invite-user", "/company/invite_user.json", true);
 		/*rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_INVITE_USER_GRP", true, true); */
       
       	rules.footer();

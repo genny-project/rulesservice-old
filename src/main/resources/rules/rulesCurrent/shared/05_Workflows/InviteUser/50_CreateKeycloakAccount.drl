@@ -1,0 +1,35 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import java.util.List;
+import java.util.stream.Collectors;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.EntityAttribute;
+
+rule "Invite New User - Step 5 - Create Keycloak Account"
+     when
+        rules: QRules(  isState("CREATE_NEW_KEYCLOAK_ACCOUNT") && !isState("LOOP_DID_CREATE_KEYCLOAK_ACCOUNT") )
+     then
+        rules.header();
+
+		rules.setState("LOOP_DID_CREATE_KEYCLOAK_ACCOUNT");
+
+		BaseEntity newUser = rules.getAsBaseEntity("newUser");
+		
+		/* we grab the user details */
+		String firstname = newUser.getValue("PRI_FIRSTNAME", null);
+		String lastname = newUser.getValue("PRI_LASTNAME", null);
+		String email = newUser.getValue("PRI_EMAIL", null);
+		String username = email;
+		
+		if(firstname != null && lastname != null && email != null && username != null) {
+			
+			String name = firstname + " " + lastname;
+
+			/* we set up the new user on keycloak + generate the final baseEntity */
+			rules.createUser(firstname, lastname, name, username, email);
+		}
+	
+      
+      	rules.footer();
+end

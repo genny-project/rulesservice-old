@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.attribute.EntityAttribute;
 
-rule "Invite New User - Step 0 - Create New User"
+rule "Invite New User - Step 0"
      when
         rules: QRules(  isState("EVENT_BTN_CLICK") && isState("BTN_CPY_ADD_STAFF") && !isState("LOOP_INVITE_USER") )
      then
@@ -14,6 +14,6 @@ rule "Invite New User - Step 0 - Create New User"
 
 		rules.setState("LOOP_INVITE_USER");
 
-		rules.setState("INVITE_USER_SEND_DATA");
+		rules.setState("CREATE_USER_INVITE");
       	rules.footer();
 end
