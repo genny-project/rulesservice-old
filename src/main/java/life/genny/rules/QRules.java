@@ -1331,6 +1331,8 @@ public class QRules {
                    categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
                 }
            }
+        }else {
+        	   println("Error!! The productCategoryList is null");
         }
 
         this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
@@ -2974,12 +2976,29 @@ public void makePayment(QDataAnswerMessage m) {
     //recipients[0] = this.getUser().getCode();
     this.clearBaseEntity(baseEntityCode, null);
   }
+  
+   /* clears baseEntity and all its children linked  */
+   public void clearBaseEntity(String baseEntityCode, boolean deleteAllChildren) {
+	    this.clearBaseEntity(baseEntityCode, null, deleteAllChildren);
+    }
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
+		publishData(beMsg, recipients);
+
+	}
+	
+	/* sets delete field and deleteLinkedBaseEntities to true so that FE removes the BE and all its child from their store */
+	public void clearBaseEntity(String baseEntityCode, String[] recipients, boolean deleteAllChild) {
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		if(deleteAllChild) {
+			beMsg.setShouldDeleteLinkedBaseEntities(true);	
+		}
 		publishData(beMsg, recipients);
 
 	}
