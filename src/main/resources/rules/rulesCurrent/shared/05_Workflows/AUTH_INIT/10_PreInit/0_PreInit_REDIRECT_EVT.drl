@@ -18,11 +18,14 @@ rule "Pre Init Redirect Event"
 
         String dataCode = m.getData().getCode();
         String valueCode = m.getData().getValue();
+        rules.println("redirect datacode ::"+dataCode);
+        rules.println("redirect valueCode :: "+valueCode);
 
 		if(dataCode != null) {
  	 		rules.setState(dataCode);
 		}
 		if(valueCode != null) {
+			rules.set("dataCode", dataCode);
 			rules.set("valueCode", valueCode);
 		}
 end
