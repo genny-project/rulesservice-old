@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 
 rule "Delete BEG - Step 1 - Channel40"
 	when
-		rules: QRules( isState("EVENT_BTN_CLICK") && isState("BTN_DELETE_BEG") && !isState("DID_TRIGGER_DELETE_JOB") )
+		rules: QRules( isState("DID_TRIGGER_DELETE_BEG") && !isState("DID_TRIGGER_DELETE_JOB") )
 	then
 	
 		rules.header();
