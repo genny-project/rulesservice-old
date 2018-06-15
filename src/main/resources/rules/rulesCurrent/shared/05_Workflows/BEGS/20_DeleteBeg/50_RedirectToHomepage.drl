@@ -2,7 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 
-rule "Delete BEG - Step 4"
+rule "Delete BEG - Step 5"
 	when
 		rules: QRules( isState("REDIRECT_TO_HOMEPAGE") && !isState("DID_REDIRECT_TO_HOMEPAGE") )
 	then
@@ -12,7 +12,6 @@ rule "Delete BEG - Step 4"
 		rules.setState("DID_REDIRECT_TO_HOMEPAGE");
 
 		rules.redirectToHomePage();  
-		rules.setState("RELOAD_CACHE");
 
 	    rules.footer();
 end

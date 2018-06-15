@@ -22,7 +22,7 @@ rule "Delete BEG - Step 3"
 		        /*  publishing beg again as it was deleted and will be needed for GRP_BIN again  */
 		        rules.publishBaseEntityByCode(begCode);
 		        
-		        rules.setState("REDIRECT_TO_HOMEPAGE");
+		        rules.setState("RELOAD_CACHE");
          }     
 
 	    rules.footer();
