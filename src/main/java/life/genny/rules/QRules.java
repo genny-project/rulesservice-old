@@ -1333,6 +1333,14 @@ public class QRules {
 
 		return false;
 	}
+	
+	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
+	}
+	
+	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
+	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
