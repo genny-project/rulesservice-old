@@ -195,6 +195,11 @@ rule "Submit Offer Driver"
                         submitContextMapForOwner.put("QUOTER", quoterCode);
                         submitContextMapForOwner.put("OWNER", ownerCode);
                         submitContextMapForOwner.put("LOAD", loadBe.getCode());
+                        String unsubscribeUrl = rules.getUnsubscribeLinkForEmailTemplate("MSG_CH40_SUBMIT_QUOTE_OWNER");
+                        if(unsubscribeUrl != null) {
+                        		submitContextMapForOwner.put("URL", unsubscribeUrl);
+                        }
+                        
 
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "TOAST");
                         rules.sendMessage("", recipientArrForOwner, submitContextMapForOwner, "MSG_CH40_SUBMIT_QUOTE_OWNER", "EMAIL");

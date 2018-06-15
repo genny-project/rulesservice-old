@@ -50,6 +50,12 @@ then
 				contextMap.put("JOB", begCode);
 				contextMap.put("DRIVER", quoterCode);
 				contextMap.put("LOAD", loadBe.getCode());
+				
+				/* unsubscribe link for the template */
+				String unsubscribeUrl = rules.getUnsubscribeLinkForEmailTemplate("MSG_CH40_DELIVERED");
+				if(unsubscribeUrl != null) {
+					contextMap.put("URL", unsubscribeUrl);
+				}
 
 				String[] recipientCodes = {ownerCode};
 

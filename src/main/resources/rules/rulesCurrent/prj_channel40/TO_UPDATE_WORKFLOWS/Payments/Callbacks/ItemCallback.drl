@@ -130,6 +130,12 @@ package life.genny.rules;
 					contextMap.put("OWNER", owner.getCode());
 					contextMap.put("LOAD", load.getCode());
 					contextMap.put("OFFER", offerCode);
+					
+					/* unsubscribe link for the template */
+					String unsubscribeUrl = rules.getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_ESCROW_OWNER");
+					if(unsubscribeUrl != null) {
+						contextMap.put("URL", unsubscribeUrl);
+					}
 
 			     	rules.sendMessage(begBe.getCode(), messageOwnerRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
 			     	rules.sendMessage(begBe.getCode(), messageDriverRecipient, contextMap, "MSG_CH40_PAYMENT_DEPOSITED_SUCCESS", "TOAST");
