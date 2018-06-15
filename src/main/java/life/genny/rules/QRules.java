@@ -1316,7 +1316,7 @@ public class QRules {
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 
 		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
-    if(questions != null) {
+		if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
