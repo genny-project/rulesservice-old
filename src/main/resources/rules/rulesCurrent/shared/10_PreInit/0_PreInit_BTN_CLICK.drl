@@ -14,7 +14,7 @@ rule "Pre Init Btn Click"
         rules.setDrools(drools);
         rules.println("RULE INIT BTN_CLICK: "+m);
        
-        String quesCode = m.getData().getCode();
+        String btnCode = m.getData().getCode();
         String dataString = m.getData().getValue();
         
         try {
@@ -53,8 +53,8 @@ rule "Pre Init Btn Click"
         }
         catch( Exception e) {}
 
-        if(quesCode != null) {
-          rules.setState(quesCode);
+        if(btnCode != null) {
+          rules.setState(btnCode);
         }
         
         rules.setState("STARTED");
