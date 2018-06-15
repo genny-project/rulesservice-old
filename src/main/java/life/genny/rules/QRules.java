@@ -8400,7 +8400,7 @@ public class QRules {
 		msgCodes.add(codeListView);
 		msgCodes.add(bucketListView);
 		System.out.println("The JsonArray is :: " + msgCodes);
-		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("data", msgCodes);
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
 		publishCmd(cmdViewJson);
