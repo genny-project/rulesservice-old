@@ -13,14 +13,12 @@ rule "Pre Init Btn Click"
      then
         rules.setDrools(drools);
         rules.println("RULE INIT BTN_CLICK: "+m);
-        rules.setState("EVENT_BTN_CLICK");
-        rules.setState("STARTED");
-
-        String quesCode = m.getData().getCode();
-
+       
+        String btnCode = m.getData().getCode();
+        String dataString = m.getData().getValue();
+        
         try {
-
-            String dataString = m.getData().getValue();
+        
             JsonObject dataJson = new JsonObject(dataString);
 
             /* Get targetCode */
@@ -33,6 +31,9 @@ rule "Pre Init Btn Click"
 
             /* Get hint */
             String hintCode = dataJson.getString("hint");
+            if(hintCode == null) {
+            		hintCode = dataJson.getString("hintCode");
+            }
             rules.println("hintCode   ::   " + hintCode);
 
             /* Get actionCode */
@@ -56,11 +57,13 @@ rule "Pre Init Btn Click"
   		    rules.set("userCode", userCode);          
           }
         }
-        catch( Exception e) {
-          rules.println("button click event   ::   " +  m.getData());
-        }
+        catch( Exception e) {}
 
-        if(quesCode != null) {
-          rules.setState(quesCode);
+        if(btnCode != null) {
+          rules.setState(btnCode);
         }
+        
+        rules.setState("STARTED");
+        rules.setState("EVENT_BTN_CLICK");
+
 end
