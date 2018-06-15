@@ -31,9 +31,13 @@ rule "Pre Init Btn Click"
             String itemCode = dataJson.getString("itemCode");
             rules.println("itemCode   ::   " + itemCode);
 
-            /* Get itemCode */
+            /* Get hintCode */
             String hintCode = dataJson.getString("hint");
             rules.println("hintCode   ::   " + hintCode);
+            
+            /* Get messageCode */
+            String messageCode = dataJson.getString("message");
+            rules.println("messageCode   ::   " + messageCode);
 
             /* Get actionCode */
             String actionCode = dataJson.getString("action");
@@ -48,6 +52,9 @@ rule "Pre Init Btn Click"
           }
           if(hintCode != null) {
             rules.set("hintCode", hintCode);
+          }
+          if(messageCode != null) {
+            rules.set("messageCode", messageCode);
           }
         }
         catch( Exception e) {

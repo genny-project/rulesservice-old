@@ -7023,6 +7023,7 @@ public class QRules {
 		}
 		rootKids.removeAll(removeRootKids);
 		publishCmd(rootKids, "GRP_ROOT", "LNK_CORE");
+		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
 		List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> removeBuckets = new ArrayList<BaseEntity>();
@@ -7189,6 +7190,7 @@ public class QRules {
 
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be) {
 		return this.getLinkedBaseEntities(be.getCode(), null, null);
+		
 	}
 
 	public List<BaseEntity> getLinkedBaseEntities(String beCode) {
@@ -8062,6 +8064,7 @@ public class QRules {
 
 		/* SEND ROOT BaseEntity */
 		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
+		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
 		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
 
@@ -8459,11 +8462,31 @@ public class QRules {
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-		cmdViewJson.put("root", msgCodes);
+		cmdViewJson.put("root", begCode);
+		cmdViewJson.put("data", msgCodes);
 
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
 
 		publishCmd(cmdViewJson);
+	}
+	
+	public void addNote() {
+		
+		BaseEntity note = null;
+		List<Answer> answers = new ArrayList<Answer>();
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", getCurrentLocalDateTime()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
+		saveAnswers(answers);
+	}
+	public void sendNotes(BaseEntity context) {
+		
+		List<BaseEntity> notes = getBaseEntitysByParentAndLinkCode("GRP_NOTES", "LNK_CORE", 0, 5000, false, context.getCode());
+		if (notes != null) {
+			printList("notes", notes);
+		}else{
+			println("notes not found for the context");
+		}
 	}
 
 }

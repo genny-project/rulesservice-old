@@ -1,0 +1,31 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* LINK GRP_NOTES + NOTE */
+rule "Add Note - STEP 5"
+	when
+		rules: QRules( 	isState("PUBLISH_NOTE_BASEENTITY") &&
+						isState("CREATED_LINK") &&
+						!isState("LOOP_PUBLISH_NOTE_BASEENTITY"))
+	 then
+	 	rules.header();
+        rules.setState("LOOP_PUBLISH_NOTE_BASEENTITY");
+
+		BaseEntity note = rules.getAsBaseEntity("noteBe");
+
+		if(note == null){
+			rules.println("note is null");
+			return;
+
+		}else{
+			String[] recipient = { rules.getUser().getCode() };
+			rules.publishBaseEntityByCode(note.getCode(), "GRP_NOTES", "LNK_CORE", recipient);
+		}
+		rules.footer();
+end
+
+
+        
+        
+
+        

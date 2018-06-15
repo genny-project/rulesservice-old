@@ -1,0 +1,48 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Save Attributes to NOTE BaseEntity */
+rule "Add Note - STEP 2"
+	when
+		rules: QRules(  isState("SAVE_APPLICATION_CODE_AS_ATTRIBUTE") &&
+						isState("CREATED_BASE_ENTITY") &&
+						!isState("LOOP_SAVE_APPLICATION_CODE_AS_ATTRIBUTE")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_SAVE_APPLICATION_CODE_AS_ATTRIBUTE");
+		
+		BaseEntity note = rules.getAsBaseEntity("baseEntity");
+		BaseEntity context = rules.getAsBaseEntity("contextBe");
+	   	String message = rules.getAsString("messageCode");
+
+
+		if(context == null){
+			rules.println("context is null");
+			return;
+
+		}else if(note == null){
+			rules.println("note is null");
+			return;
+
+		}else if(message == null){
+			rules.println("message is null");
+			return;
+
+		}else{
+			rules.set("noteBe", note);
+        	rules.saveAnswer(new Answer (rules.getUser().getCode(), note.getCode(), "PRI_APPLICATION_CODE", context.getCode()));
+			rules.setState("ASK_NOTE_QUESTION");
+
+			List<Answer> answers = new ArrayList<Answer>();
+			answers.add(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CONTENT", message));
+			answers.add(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
+			answers.add(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", rules.getUser().getCode()));
+			answers.add(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", rules.getUser().getName()));
+			answers.add(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", "USER"));
+			rules.saveAnswers(answers);
+
+			rules.setState("LINK_GRP_NOTES_AND_NOTE");
+
+		}
+	 	rules.footer();      
+end
