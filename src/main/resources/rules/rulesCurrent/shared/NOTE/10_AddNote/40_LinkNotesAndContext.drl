@@ -28,7 +28,7 @@ rule "Add Note - STEP 4"
 			rules.set("linkSourceCode", note.getCode());
 			rules.set("linkTargetCode", context.getCode());
 			rules.set("linkCode", "LNK_NOTE");
-			rules.set("linkValue", context.getName());
+			rules.set("linkValue", "CONTEXT");
 			rules.set("linkWeight", 1.0);
 
 			rules.clearState("CREATED_LINK");

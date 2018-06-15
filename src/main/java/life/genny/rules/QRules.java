@@ -8484,13 +8484,30 @@ public class QRules {
 		saveAnswers(answers);
 	}
 	public void sendNotes(BaseEntity context) {
+		String[] recipient = { getUser().getCode() };
 		
+		clearBaseEntityAndChildren("GRP_NOTES");
+		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
+
 		List<BaseEntity> notes = getBaseEntitysByParentAndLinkCode("GRP_NOTES", "LNK_CORE", 0, 5000, false, context.getCode());
 		if (notes != null) {
 			printList("notes", notes);
+			publishCmd(notes, "GRP_NOTES", "LNK_CORE");
+
 		}else{
 			println("notes not found for the context");
 		}
+	}
+
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntityAndChildren(String baseEntityCode) {
+		String[] recipients = {this.getUser().getCode()};
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		beMsg.setShouldDeleteLinkedBaseEntities(true);
+		publishData(beMsg, recipients);
+
 	}
 	
 }

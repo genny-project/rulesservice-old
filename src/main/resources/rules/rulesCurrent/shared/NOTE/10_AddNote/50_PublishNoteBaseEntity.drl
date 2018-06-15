@@ -6,6 +6,7 @@ rule "Add Note - STEP 5"
 	when
 		rules: QRules( 	isState("PUBLISH_NOTE_BASEENTITY") &&
 						isState("CREATED_LINK") &&
+						isState("CONTEXT") &&
 						!isState("LOOP_PUBLISH_NOTE_BASEENTITY"))
 	 then
 	 	rules.header();
