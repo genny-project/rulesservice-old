@@ -134,7 +134,9 @@ public class RulesUtils {
 
 	public static String getLayout(String realm, String path) {
 
-  	String jsonStr = "";
+    String jsonStr = null;
+
+		/* first we try to grab the layout from the realm */
 		try {
 
       if(path.startsWith("/") == false && realm.endsWith("/") == false) {

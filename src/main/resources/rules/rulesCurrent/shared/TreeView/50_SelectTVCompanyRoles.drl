@@ -1,0 +1,35 @@
+package life.genny.rules;
+
+
+import java.util.Arrays;
+
+import io.vertx.core.json.JsonObject;
+import life.genny.rules.QRules;
+
+rule "TV_SELECT Event - Select Company Roles"
+	   no-loop true
+       ruleflow-group 'TV_SELECT'
+       salience 6
+     when
+       rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") &&
+                       ( isState("GRP_COMPANY_SETTINGS") || isState("GRP_ROLES")  ) &&
+                       !isState("COMPANY_ROLES_LAYOUT") )
+     then
+
+      rules.header();
+
+        rules.setState("TV_SELECT_RULE_EXECUTED"); /* Need to set this state compulsarily as the default rule
+         												 executes based on this state */
+        rules.setState("COMPANY_ROLES_LAYOUT");
+
+        /* we get the user company */
+		BaseEntity company = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		if(company != null) {
+			
+			/* we display the layout */
+	        rules.sendSublayout("company_role_sublayout", "/company/company_settings.json");
+		}
+		
+
+     rules.footer();
+end

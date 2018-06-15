@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Show Load Details - Step 1"
+    when
+        rules: QRules( 	isState("EVENT_BTN_CLICK")  &&
+						isState("SELECT_EVENT") &&
+						isState("ROL") &&
+                        !isState("DID_SELECT_ROLE") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_SELECT_ROLE");
+        
+        String itemCode = rules.getAsString("itemCode");
+        if(itemCode != null) {
+        	
+        		BaseEntity selectedRole = rules.baseEntity.getBaseEntityByCode(itemCode);
+        		if(selectedRole != null) {
+        			
+        			rules.set("selectedRole", selectedRole);
+        			rules.setState("SHOW_ROLE_DETAILS");
+        		}
+        }
+        
+	    rules.footer();
+end

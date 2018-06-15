@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -49,13 +47,13 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import com.hazelcast.util.collection.ArrayUtils;
+import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
-import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
@@ -77,7 +75,6 @@ import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
-import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QCmdNavigateMessage;
 import life.genny.qwanda.message.QCmdReloadMessage;
@@ -89,7 +86,6 @@ import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
 import life.genny.qwanda.message.QDataMessage;
-import life.genny.qwanda.message.QDataQSTMessage;
 import life.genny.qwanda.message.QDataSubLayoutMessage;
 import life.genny.qwanda.message.QDataToastMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
@@ -119,13 +115,15 @@ import life.genny.qwanda.payments.QReleasePayment;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
-import life.genny.qwanda.validation.Validation;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.SecurityUtils;
+import life.genny.rules.Layout.LayoutUtils;
+import life.genny.rules.Layout.LayoutViewData;
+import life.genny.rules.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.DateUtils;
 import life.genny.utils.MoneyHelper;
@@ -133,7 +131,6 @@ import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
 import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
-import life.genny.qwandautils.JsonUtils;
 
 public class QRules {
 
@@ -440,6 +437,17 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getUserCompany() {
+
+		BaseEntity user = this.getUser();
+		if(user != null) {
+			BaseEntity company = this.baseEntity.getParent(user.getCode(), "LNK_STAFF");
+			return company;
+		}
+
+		return null;
+	}
+
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
 
@@ -649,23 +657,6 @@ public class QRules {
 		}
 	}
 
-	public void showInternship(QEventBtnClickMessage m) {
-
-		/* this answer will always have 1 item */
-		String value = m.getData().getValue();
-		if (value != null) {
-
-			JsonObject data = new JsonObject(value);
-			if (data != null) {
-
-				String itemCode = data.getString("itemCode");
-				if (itemCode != null) {
-					this.sendSublayout("INTERNSHIP_DETAILS", "internships/details.json", itemCode);
-				}
-			}
-		}
-	}
-
 	public void archivePaidProducts() {
 
 		/* we get the list of products marked as "PAID" */
@@ -740,47 +731,6 @@ public class QRules {
 		}
 	}
 
-	public void sendInternMatchLayoutsAndData() {
-
-		BaseEntity user = getUser();
-
-		if (user != null) {
-
-			String internValue = this.baseEntity.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
-			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
-
-			/* Show loading indicator */
-			showLoading("Loading your interface...");
-
-			if (isIntern) {
-
-				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE",
-						0, 20, false);
-				publishCmd(root, "GRP_ROOT", "LNK_CORE");
-
-				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
-						"LNK_CORE", 0, 20, false);
-				publishCmd(dashboard, "GRP_DASHBOARD", "LNK_CORE");
-
-				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
-						"LNK_CORE", 0, 50, false);
-				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
-
-				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
-						"LNK_CORE", 0, 50, false);
-
-				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
-
-				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
-			}
-		}
-	}
-
-	public void sendReloadPage() {
-
-		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
-		this.publishCmd(cmdReload);
-	}
 
 	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
 			String templateCode, String messageType) {
@@ -800,20 +750,39 @@ public class QRules {
 
 	}
 
-	public BaseEntity createUser() {
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
+		return this.createUser(firstname, lastname, name, username, email, null);
+	}
+
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
 
 		BaseEntity be = null;
 
-		String username = getAsString("preferred_username").toLowerCase();
-		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
-		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
-		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
-		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
-		String email = getAsString("email").toLowerCase();
-		String keycloakId = getAsString("sub").toLowerCase();
-
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+
+			/* we capitalise the variables */
+			firstname = StringUtils.capitalize(firstname);
+			lastname = StringUtils.capitalize(lastname);
+			name = StringUtils.capitalize(name);
+			String realm = null;
+
+			/* if you are running in dev mode on your local machine, the only available realm is genny */
+			if(System.getenv("GENNY_DEV").equals("TRUE")) {
+				realm = "genny";
+			}
+			else {
+				realm = this.realm();
+			}
+
+			String token = RulesUtils.generateServiceToken(realm);
+
+			/* if the keycloak id, we need to create a keycloak account for this user */
+			if(keycloakId == null) {
+				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
+			}
+
+			/* we create the user in the system */
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -821,27 +790,24 @@ public class QRules {
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
-      /* send notification for new registration */
-      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
-      this.sendSlackNotification(message);
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
 
 		} catch (IOException e) {
-			log.error("Error in Creating User ");
+			this.sendToastNotification(e.getMessage(), "error");
 		}
+
 		return be;
 	}
 
+
 	public void sendLayout(final String layoutCode, final String layoutPath) {
-		this.sendLayout(layoutCode, layoutPath, realm());
-	}
 
-	public void sendLayout(final String layoutCode, final String layoutPath, final String folderName) {
-
-		println("Loading layout: " + folderName + "/" + layoutPath);
-		String layout = RulesUtils.getLayout(folderName, layoutPath);
-		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
-		publishCmd(layoutCmd);
-		println(layoutCode + " SENT TO FRONTEND");
+     QCmdMessage cmdLayout = this.layoutUtils.sendLayout(layoutCode, layoutPath);
+     if(cmdLayout != null) {
+       this.publishCmd(cmdLayout);
+     }
 	}
 
 	public void sendPopupCmd(final String cmd_view, final String root) {
@@ -898,14 +864,14 @@ public class QRules {
 			final boolean isPopup) {
 
 		String cmd_view = isPopup ? "CMD_POPUP" : "CMD_SUBLAYOUT";
+
 		QCmdMessage cmdJobSublayout = new QCmdMessage(cmd_view, layoutCode);
 		JsonObject cmdJobSublayoutJson = JsonObject.mapFrom(cmdJobSublayout);
-		println("Loading url: " + realm() + "/" + sublayoutPath);
-		String sublayoutString = RulesUtils.getLayout(realm(), "/" + sublayoutPath);
+
+		String sublayoutString = RulesUtils.getLayout(realm(), sublayoutPath);
 		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
-
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
@@ -936,12 +902,17 @@ public class QRules {
 	// }
 
 	public void showLoading(String text) {
+		this.showLoading(text, false);
+	}
+
+	public void showLoading(String text, Boolean isPopup) {
 
 		if (text == null) {
 			text = "Loading...";
 		}
 
-		QCmdMessage cmdLoading = new QCmdMessage("CMD_VIEW", "LOADING");
+		String viewType = isPopup ? "CMD_POPUP" : "CMD_VIEW";
+		QCmdMessage cmdLoading = new QCmdMessage(viewType, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
 		json.put("root", text);
 		json.put("token", getToken());
@@ -1313,11 +1284,11 @@ public class QRules {
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
 	}
-	
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
 	}
-  
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, true);
 	}
@@ -1333,20 +1304,36 @@ public class QRules {
 
 		return false;
 	}
+	
+	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
+	}
+	
+	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
+	}
+
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
-		
+
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
+		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup);
+	}
 
-		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode)) {
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean isPopup) {
+
+		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode)) {
 
 			/* Layout V1 */
-			QCmdViewFormMessage cmdFormView = new QCmdViewFormMessage(questionGroupCode);
-			cmdFormView.setIsPopup(isPopup);
-			publishCmd(cmdFormView);
+
+			LayoutViewData viewData = new LayoutViewData(ViewType.Form, questionGroupCode, isPopup);
+			QCmdMessage viewMessage = this.layoutUtils.sendView(viewData);
+			if(viewMessage != null) {
+				this.publishCmd(viewMessage);
+			}
 
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
@@ -1355,6 +1342,7 @@ public class QRules {
       this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
+
 
 	public void header() {
 		try {
@@ -1594,7 +1582,7 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
-					
+
 					/* unsubscribe link for the template */
 					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
 					if(unsubscribeUrl != null) {
@@ -1882,6 +1870,8 @@ public class QRules {
 		data.setRecipientCodeArray(recipientCodes);
 		publishCmd(data);
 	}
+
+	/* TODO: use layoutUtils */
 
 	private void sendSublayouts(final String realm) {
 
@@ -2388,96 +2378,6 @@ public class QRules {
 
 	}
 
-	/**
-	 * @param bulkmsg
-	 * @return
-	 */
-	private void sendTreeViewData(List<QDataBaseEntityMessage> bulkmsg, BaseEntity user) {
-
-		List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-		/* Removing GRP_DRAFTS be if user is a Driver */
-
-		if (this.isUserSeller()) {
-
-			for (BaseEntity be : root) {
-				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
-					toRemove.add(be);
-					println("GRP_DRAFTS & GRP_BIN has been added to remove list");
-				}
-
-			}
-			root.removeAll(toRemove);
-			// println("GRP_DRAFTS & GRP_BIN have been removed from root");
-		}
-		bulkmsg.add(publishCmd(root, "GRP_ROOT", "LNK_CORE"));
-		// println(root);
-
-		List<BaseEntity> reportsHeader = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
-		// println("User is Admin " + hasRole("admin"));
-		if (reportsHeader != null) {
-			if (isRealm("channel40")) { // Removing USER Reports for channel40
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for driver role
-
-			if (this.isUserSeller()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for owner role
-
-			else if (this.isUserBuyer()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// checking for admin role
-			if (!(hasRole("admin"))) {
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Removing reports not related to the user based on their role
-			reportsHeader.removeAll(reportsHeaderToRemove);
-		} else {
-			println("The group GRP_REPORTS doesn't have any child");
-		}
-		// println("Unrelated reports have been removed ");
-		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
-
-		List<BaseEntity> admin = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
-		bulkmsg.add(publishCmd(admin, "GRP_ADMIN", "LNK_CORE"));
-
-		/*
-		 * if(hasRole("admin")){ List<BaseEntity> reports =
-		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
-		 */
-
-		if (this.isUserBuyer()) {
-
-			List<BaseEntity> bin = this.baseEntity.getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
-					20, false);
-			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
-		}
-
-	}
-
 	static QBulkMessage cache = null;
 	static String cache2 = null;
 
@@ -2729,7 +2629,7 @@ public void makePayment(QDataAnswerMessage m) {
                     if(unsubscribeUrl != null) {
                     	contextMapForDriver.put("URL", unsubscribeUrlForConfirmQuoteDriver);
                     }
-                    
+
                     String[] recipientArrForDriver = { quoterCode };
                     /* Sending messages to DRIVER - Email and sms enabled */
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
@@ -2901,9 +2801,9 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
-	
-	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE 
-	 * removes the BE from their store 
+
+	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE
+	 * removes the BE from their store
 	 */
 	public void clearBaseEntity(String baseEntityCode, String parentCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -2912,7 +2812,7 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode, "FastBE");
@@ -3260,7 +3160,7 @@ public void makePayment(QDataAnswerMessage m) {
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
 			contextMap.put("OWNER", getUser().getCode());
-			
+
 			/* unsubscribe link for the template */
 			String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
 			if(unsubscribeUrl != null) {
@@ -3301,9 +3201,9 @@ public void makePayment(QDataAnswerMessage m) {
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 			/* Sending message to BEG OWNER */
-			
+
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-			
+
 		}
 
     this.redirectToHomePage();
@@ -3365,7 +3265,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
 				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
 				if (roleBE==null) {
-					return false;
+					continue;
 				}
 				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
 				if (optEaCap.isPresent()) {
@@ -3406,6 +3306,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display
 	 */
 	public void sendCmdSplitView(final String parentCode, final String chatCode) {
+
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
 		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 
@@ -3830,7 +3731,7 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("OWNER", ownerCode);
 				contextMap.put("LOAD", loadCode);
 				contextMap.put("OFFER", offer);
-				
+
 				/* unsubscribe link for the template */
 				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
 				if(unsubscribeUrl != null) {
@@ -4110,6 +4011,8 @@ public void makePayment(QDataAnswerMessage m) {
 		return null;
 	}
 
+
+
 	/*
 	 * Chat Message:- Send cmd_msg SPLIT_VIEW for the chat message display TODO:
 	 * Refactor
@@ -4336,7 +4239,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
-			
+
 			/* unsubscribe links for the templates */
 			String unsubscribeUrlForOwner = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_OWNER");
 			String unsubscribeUrlForDriver = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_DRIVER");
@@ -4344,10 +4247,10 @@ public void makePayment(QDataAnswerMessage m) {
 			/* sending message for owner */
 			String[] messageToOwnerRecipients = new String[1];
 			messageToOwnerRecipients[0] = ownerBe.getCode();
-			
+
 			HashMap<String, String> contextMapForOwner = contextMap;
 			contextMapForOwner.put("URL", unsubscribeUrlForOwner);
-			
+
 			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER",
 					"TOAST");
 			sendMessage(messageToOwnerRecipients, contextMapForOwner, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
@@ -4356,10 +4259,10 @@ public void makePayment(QDataAnswerMessage m) {
 			/* sending message for driver */
 			String[] messageToDriverRecipients = new String[1];
 			messageToDriverRecipients[0] = driverBe.getCode();
-			
+
 			HashMap<String, String> contextMapForDriver = contextMap;
 			contextMapForDriver.put("URL", unsubscribeUrlForDriver);
-			
+
 			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER",
 					"TOAST");
 			sendMessage(messageToDriverRecipients, contextMapForDriver, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
@@ -4804,7 +4707,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4837,7 +4740,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4869,7 +4772,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4968,7 +4871,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* send toast to user */
 				/*
 				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
-				 * String[] recipientArr = { userBe.getCode() }; sendDirectToast(recipientArr,
+				 * String[] recipientArr = { userBe.getCode() }; sendToastNotification(recipientArr,
 				 * toastMessage, "warning");
 				 */
 				sendSlackNotification(message);
@@ -5001,9 +4904,13 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+	public void sendToastNotification(String message, String priority) {
+		String[] recipients = { this.getUser().getCode() };
+		this.sendToastNotification(recipients, message, priority);
+	}
 	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
-	public void sendDirectToast(String[] recipientArr, String toastMsg, String priority) {
+	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {
 
 		/* create toast */
 		/* priority can be "info" or "error or "warning" */
@@ -5182,7 +5089,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5282,7 +5189,7 @@ public void makePayment(QDataAnswerMessage m) {
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 			}
 
@@ -5336,7 +5243,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5474,7 +5381,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				if (userBe != null) {
 					String[] recipientArr = { userBe.getCode() };
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 
 				/* Send slack notification */
@@ -5564,7 +5471,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String[] recipientArr = { buyerBe.getCode() };
 				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
 						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
-				sendDirectToast(recipientArr, toastMessage, "warning");
+				sendToastNotification(recipientArr, toastMessage, "warning");
 				sendSlackNotification(
 						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
 			}
@@ -5680,7 +5587,7 @@ public void makePayment(QDataAnswerMessage m) {
 					+ " has failed." + e.getMessage();
 
 			/* send error toast message */
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack notification */
 			sendSlackNotification(toastMessage + ". Job code : " + begBe.getCode());
@@ -5813,7 +5720,10 @@ public void makePayment(QDataAnswerMessage m) {
 		return ret;
 	}
 
-	public void generateCapabilities() {
+	public List<BaseEntity> generateCapabilities() {
+
+		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
+
 		/* get all capabilities existing */
 		List<Attribute> existingCapability = new ArrayList<Attribute>();
 		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
@@ -5828,40 +5738,33 @@ public void makePayment(QDataAnswerMessage m) {
 		String proj_realm = System.getenv("PROJECT_REALM");
 		String token = RulesUtils.generateServiceToken(proj_realm);
 
+		addCapability(capabilityManifest,"UPDATE_ROLES", "Allowed to update company roles",token);
+		addCapability(capabilityManifest,"ADD_USER", "Allowed to add users to the company",token);
 		addCapability(capabilityManifest,"ADD_QUOTE", "Allowed to post a quote",token);
-		addCapability(capabilityManifest,"READ_QUOTE", "Allowed to read a quote",token);
+		addCapability(capabilityManifest,"READ_QUOTE", "Allowed to see quotes",token);
 		addCapability(capabilityManifest,"DELETE_QUOTE", "Allowed to delete a quote",token);
 		addCapability(capabilityManifest,"UPDATE_QUOTE", "Allowed to update a quote",token);
 		addCapability(capabilityManifest,"ACCEPT_QUOTE", "Allowed to accept a quote",token);
-		addCapability(capabilityManifest,"ADD_CHAT_MESSAGE", "Allowed to add a chat message",token);
-		addCapability(capabilityManifest,"UPDATE_CHAT_MESSAGE", "Allowed to update a chat message",token);
-		addCapability(capabilityManifest,"READ_CHAT_MESSAGE", "Allowed to read a chat message",token);
+		addCapability(capabilityManifest,"ADD_CHAT_MESSAGE", "Allowed to send chat messages",token);
+		addCapability(capabilityManifest,"READ_CHAT_MESSAGE", "Allowed to see chat messages",token);
 		addCapability(capabilityManifest,"DELETE_MESSAGE", "Allowed to delete a chat message",token);
-		addCapability(capabilityManifest,"ADD_CALL", "Allowed to create a voice call",token);
-		addCapability(capabilityManifest,"END_CALL", "Allowed to end a voice call",token);
-		addCapability(capabilityManifest,"READ_NEW_ITEMS", "Allowed to read New Items Column",token);
-		addCapability(capabilityManifest,"READ_PAID_ITEMS", "Allowed to read Paid Items Column",token);
-		addCapability(capabilityManifest,"ADD_ARCHIVE", "Allowed to move an item to archive",token);
-		addCapability(capabilityManifest,"READ_ARCHIVE", "Allowed to read archives",token);
-		addCapability(capabilityManifest,"DELETE_ARCHIVE", "Allowed to delete an archived item",token);
+		addCapability(capabilityManifest,"ADD_CALL", "Allowed to make voice calls",token);
+		addCapability(capabilityManifest,"READ_NEW_ITEMS", "Allowed to see available jobs",token);
+		addCapability(capabilityManifest,"READ_PAID_ITEMS", "Allowed to see paid jobs",token);
+		addCapability(capabilityManifest,"READ_ARCHIVE", "Allowed to see archived jobs",token);
+		addCapability(capabilityManifest,"DELETE_ARCHIVE", "Allowed to delete an archived job",token);
 		addCapability(capabilityManifest,"LOCATE_USER", "Allowed to locate a user",token);
-		addCapability(capabilityManifest,"SEND_GPS", "Allowed to send GPS",token);
-		addCapability(capabilityManifest,"ADD_ITEM", "Allowed to create a new Item",token);
-		addCapability(capabilityManifest,"DELETE_ITEM", "Allowed to delete an Item",token);
-		addCapability(capabilityManifest,"UPDATE_ITEM", "Allowed to update an Item",token);
-		addCapability(capabilityManifest,"ADD_USER", "Allowed to create a new user",token);
+		addCapability(capabilityManifest,"ADD_ITEM", "Allowed to create a new job",token);
+		addCapability(capabilityManifest,"DELETE_ITEM", "Allowed to delete jobs",token);
+		addCapability(capabilityManifest,"UPDATE_ITEM", "Allowed to update a job",token);
 		addCapability(capabilityManifest,"UPDATE_USER", "Allowed to update a user",token);
 		addCapability(capabilityManifest,"DELETE_USER", "Allowed to delete a user",token);
-		addCapability(capabilityManifest,"READ_USER", "Allowed to read a user",token);
-		addCapability(capabilityManifest,"ADD_PAYMENT_METHOD", "Allowed to add a payment item",token);
-		addCapability(capabilityManifest,"UPDATE_PAYMENT_METHOD", "Allowed to update a payment item",token);
-		addCapability(capabilityManifest,"READ_PAYMENT_METHOD", "Allowed to read a payment item",token);
-		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Allowed to delete a payment item",token);
-		addCapability(capabilityManifest,"READ_PROFILE", "Allowed to read profile",token);
-		addCapability(capabilityManifest,"READ_ACCOUNT", "Allowed to read account",token);
-		addCapability(capabilityManifest,"DELETE_ACCOUNT", "Allowed to delete an account",token);
-		addCapability(capabilityManifest,"MARK_PICKUP", "Allowed to mark pickup on an item",token);
-		addCapability(capabilityManifest,"MARK_DELIVERY", "Allowed to mark delivery on an item",token);
+		addCapability(capabilityManifest,"ADD_PAYMENT_METHOD", "Allowed to add payment methods",token);
+		addCapability(capabilityManifest,"UPDATE_PAYMENT_METHOD", "Allowed to update a payment method",token);
+		addCapability(capabilityManifest,"READ_PAYMENT_METHOD", "Allowed to see payment methods",token);
+		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Allowed to delete payment methods",token);
+		addCapability(capabilityManifest,"MARK_PICKUP", "Allowed to mark jobs as picked up",token);
+		addCapability(capabilityManifest,"MARK_DELIVERY", "Allowed to mark jobs as delivered",token);
 
 		/* Remove any capabilities not in this forced list from roles */
 		existingCapability.removeAll(capabilityManifest);
@@ -5889,16 +5792,27 @@ public void makePayment(QDataAnswerMessage m) {
 		// now regenerate the roles cache
 		drools.setFocus("GenerateRoles");
 
+		// Convert CapabilityManifest to a list of Virtual baseEntitys
+		for (Attribute capability: capabilityManifest) {
+			BaseEntity cBe = new BaseEntity(capability.getCode(),capability.getName());
+			virtualCapabilityBEs.add(cBe);
+		}
+
+		return virtualCapabilityBEs;
 	}
 
 	public Attribute addCapability(List<Attribute> capabilityManifest,final String capabilityCode, final String name, final String token) {
+
 		String fullCapabilityCode = "CAP_"+capabilityCode.toUpperCase();
 		println("Setting Capability : "+fullCapabilityCode+" : "+name);
+
 		Attribute attribute = RulesUtils.attributeMap.get(fullCapabilityCode);
+
 		if (attribute != null) {
 			capabilityManifest.add(attribute);
 			return attribute;
-		} else {
+		}
+		else {
 			// create new attribute
 			attribute = new AttributeBoolean(fullCapabilityCode,name);
 			// save to database and cache
@@ -5917,7 +5831,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 	}
-	
+
 	/* creating a redirect link for unsubscription and adding it in context map */
 	public String getUnsubscribeLinkForEmailTemplate(String templateCode) {
 
@@ -5929,10 +5843,10 @@ public void makePayment(QDataAnswerMessage m) {
 			String base64 = encodeToBase64(json);
 			url = "http://localhost:3000/?state=" + base64;
 		}
-		
+
 		return url;
 	}
-	
+
 	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
 	}

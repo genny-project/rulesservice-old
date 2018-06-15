@@ -33,6 +33,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.Layout.LayoutUtils;
 import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
@@ -109,7 +110,7 @@ public class BaseEntityUtils {
 		return this.decodedMapToken.get(key);
 	}
 
-	public void set(final String key, Object value) {
+  public void set(final String key, Object value) {
 		this.decodedMapToken.put(key, value);
 	}
 

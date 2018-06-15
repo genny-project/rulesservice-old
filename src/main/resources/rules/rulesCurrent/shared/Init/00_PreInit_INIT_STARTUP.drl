@@ -23,7 +23,6 @@ rule "Pre Init Startup"
                 
                 /* Note: it looks like the setFocus operates in reverse order. A stack perhaps? */
 			    drools.setFocus("GenerateRoles");
-			    drools.setFocus("GenerateTestRoles");
 			    drools.setFocus("GenerateCapabilities");
 			   
 			    drools.setFocus("GenerateReports");

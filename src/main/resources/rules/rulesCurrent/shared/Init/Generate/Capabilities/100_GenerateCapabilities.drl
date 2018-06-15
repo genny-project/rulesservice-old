@@ -16,7 +16,10 @@ rule "GenerateCapabilities"
          rules.setState("GENERATE_CAPABILITIES");
          rules.println("Generating Genny Capabilities");
 
-		rules.generateCapabilities();
+		List<BaseEntity> capabilities = rules.generateCapabilities();
 
-	
+		// Save the capabilities for future use
+		QDataBaseEntityMessage capabilitiesMsg = new QDataBaseEntityMessage(capabilities.toArray(new BaseEntity[0]),"GRP_CAPABILITIES","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "CAPABILITIES", rules.realm(), capabilitiesMsg);
+
 end

@@ -1,0 +1,50 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.utils.VertxUtils;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+
+rule "Send Roles"
+    when
+         rules: QRules( isState("SEND_ROLES") && !isState("SENT_ROLES") )
+     then
+     	rules.header();
+
+        rules.setState("SENT_ROLES");
+
+     	/* send company roles */
+        BaseEntity userCompany = rules.getUserCompany();
+        if(userCompany != null) {
+        	
+        		/* we also fetch realm roles (pre-defined ones) */
+			SearchEntity realmRolesSearch = new SearchEntity("GRP_ROLES", "Realm Roles")
+			.addSort("PRI_CREATED","Created", SearchEntity.Sort.DESC)
+			.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE,"ROLE_IS_%")
+			.addFilter("PRI_REALM", SearchEntity.StringFilter.LIKE, rules.realm())
+			.setPageStart(0)
+			.setPageSize(10000);
+			
+			QDataBaseEntityMessage realmRolesMessage = rules.getSearchResults(realmRolesSearch);
+			
+        		List<BaseEntity> companyRoles = rules.baseEntity.getLinkedBaseEntities(userCompany.getCode(), "LNK_ROLE");
+        		if(companyRoles != null) {
+        				
+        			/* if we have realm roles */
+        			if(realmRolesMessage != null && realmRolesMessage.getItems() != null && realmRolesMessage.getItems().length > 0) {
+        				
+        				/* we add them to the list */
+        				List<BaseEntity> realmRoles = Arrays.asList(realmRolesMessage.getItems());
+        				companyRoles.addAll(realmRoles);
+        			}
+        			
+        			/* publishing */
+        			rules.publishCmd(companyRoles, "GRP_ROLES", "LNK_ROLE");
+        		}
+        }
+        
+        rules.setState("SEND_PROJECT");
+
+	    rules.footer();      		      
+end

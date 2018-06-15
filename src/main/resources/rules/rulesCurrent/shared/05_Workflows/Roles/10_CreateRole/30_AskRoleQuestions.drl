@@ -1,0 +1,23 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+
+rule "Create New Role - Step 3"
+    when
+        rules: QRules( 	isState("ASK_ROLE_CREATION_QUESTIONS")  &&
+                        !isState("DID_ASK_ROLE_QUESTIONS") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_ASK_ROLE_QUESTIONS");
+        
+        BaseEntity newRole = rules.getAsBaseEntity("newRole");
+        
+        if(newRole != null) {
+        		rules.askQuestions(rules.getUser().getCode(), newRole.getCode(), "QUE_ROLE_GRP", true);
+        }
+        
+	    rules.footer();
+end
