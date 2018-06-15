@@ -1312,10 +1312,18 @@ public class QRules {
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
 	}
-
+	
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
+	}
+	
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, true);
+	}
 
-		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelections) {
+
+		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelections);
 		if(questions != null) {
 
 			this.publishCmd(questions);
