@@ -8226,10 +8226,14 @@ public class QRules {
 						for (BaseEntity begGroup : begGroups) {
 
 							/* FOR GRP_APPLICATIONS BEGS */
-							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") || !begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
+							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") || 
+								!begGroup.getCode().equalsIgnoreCase("GRP_FILLED") ||
+								!begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
 								begGroupsToSend.add(begGroup);
 							}
 						}
+						printList("begGroupsToSend", begGroupsToSend);
+
 
 						/* subscribe to all the begs of the company */
 						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
@@ -8488,5 +8492,5 @@ public class QRules {
 			println("notes not found for the context");
 		}
 	}
-
+	
 }
