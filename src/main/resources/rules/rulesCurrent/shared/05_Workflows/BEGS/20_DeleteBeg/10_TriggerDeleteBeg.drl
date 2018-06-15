@@ -13,7 +13,10 @@ rule "Delete BEG - Step 1"
 
 		String begCode = rules.getAsString("itemCode");
 		String groupCode = rules.getAsString("hintCode");
-
+		
+		rules.println(begCode);
+		rules.println(groupCode);
+		
          if(begCode != null && begCode != null ){
         	 	
              rules.println("Deleting beg: " + begCode);
