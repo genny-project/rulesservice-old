@@ -1,37 +1,30 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-/* LINK GRP_NOTES + NOTE */
-rule "Add Note - STEP 4"
+/* LINK NOTE + CREATOR */
+rule "Add Note - STEP 5"
 	when
-		rules: QRules( 	isState("LINK_NOTE_AND_CONTEXT") &&
+		rules: QRules( 	isState("LINK_NOTE_AND_CREATOR") &&
 						isState("CREATED_LINK") &&
-						isState("NOTE") &&
-						!isState("LOOP_LINK_NOTE_AND_CONTEXT"))
+						isState("CONTEXT") &&
+						!isState("LOOP_LINK_NOTE_AND_CREATOR"))
 	 then
 	 	rules.header();
-        rules.setState("LOOP_LINK_NOTE_AND_CONTEXT");
+        rules.setState("LOOP_LINK_NOTE_AND_CREATOR");
 
 		BaseEntity note = rules.getAsBaseEntity("noteBe");
-		BaseEntity context = rules.getAsBaseEntity("contextBe");
 
 		if(note == null){
 			rules.println("note is null");
 			return;
 
-		}else if(context == null){
-			rules.println("context is null");
-			return;
-
 		}else{
 			/* link GRP_DRAFTS to BEG */
 			rules.set("linkSourceCode", note.getCode());
-			rules.set("linkTargetCode", context.getCode());
+			rules.set("linkTargetCode", rules.getUser().getCode());
 			rules.set("linkCode", "LNK_NOTE");
-			rules.set("linkValue", "CONTEXT");
+			rules.set("linkValue", "CREATOR");
 			rules.set("linkWeight", 1.0);
-
-			rules.clearState("CREATED_LINK");
 
 			rules.setState("CREATE_LINK");
 			rules.setState("PUBLISH_NOTE_BASEENTITY");
