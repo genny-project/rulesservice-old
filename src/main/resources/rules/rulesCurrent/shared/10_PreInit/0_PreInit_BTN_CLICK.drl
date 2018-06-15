@@ -17,9 +17,6 @@ rule "Pre Init Btn Click"
         String quesCode = m.getData().getCode();
         String dataString = m.getData().getValue();
         
-        rules.println("received: ");
-        rules.println(dataString);
-        
         try {
         
             JsonObject dataJson = new JsonObject(dataString);
@@ -54,17 +51,13 @@ rule "Pre Init Btn Click"
             rules.set("hintCode", hintCode);
           }
         }
-        catch( Exception e) {
-          rules.println("button click event   ::   " +  m.getData());
-          rules.set("itemCode", dataString);
-          rules.set("parentCode", "GRP_NEW_ITEMS");
-        }
+        catch( Exception e) {}
 
         if(quesCode != null) {
           rules.setState(quesCode);
         }
         
-        rules.setState("EVENT_BTN_CLICK");
         rules.setState("STARTED");
+        rules.setState("EVENT_BTN_CLICK");
 
 end
