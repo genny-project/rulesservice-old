@@ -57,6 +57,12 @@ rule "Pre Init Btn Click"
           rules.setState(quesCode);
         }
         
+        rules.println("================= TEST ==============");
+        String begCode = rules.getAsString("itemCode");
+		String groupCode = rules.getAsString("hintCode");
+		rules.println(begCode);
+		rules.println(groupCode);
+        
         rules.setState("STARTED");
         rules.setState("EVENT_BTN_CLICK");
 
