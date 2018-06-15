@@ -17,6 +17,9 @@ rule "Pre Init Btn Click"
         String quesCode = m.getData().getCode();
         String dataString = m.getData().getValue();
         
+        rules.println("received: ");
+        rules.println(dataString);
+        
         try {
         
             JsonObject dataJson = new JsonObject(dataString);
