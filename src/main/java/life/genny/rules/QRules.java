@@ -74,6 +74,7 @@ import life.genny.qwanda.exception.PaymentException;
 // import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
+import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdLayoutMessage;
@@ -5914,5 +5915,8 @@ public void makePayment(QDataAnswerMessage m) {
 		return url;
 	}
 	
+	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
+		return QwandaUtils.getTemplate(templateCode, getToken());
+	}
 
 }
