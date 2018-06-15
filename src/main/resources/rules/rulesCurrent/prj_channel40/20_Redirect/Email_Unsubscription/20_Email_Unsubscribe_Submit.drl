@@ -48,9 +48,11 @@ import org.apache.commons.lang3.StringUtils
 					if(!isUnsubscriptionAlreadyContainsUser) {
 						
 						List<String> unsubscriptionList = new ArrayList<String>();
+						/* if the list has multiple items, it will be delimited with comma */
 						if(unsubscriptionListForTemplateCode.contains(",")) {
+							/* string array is converted to list with Array.asList, the list will have a fixed size. Hence another list is created with exisiting items and the user to be unsubscribed */
 							String [] items = unsubscriptionListForTemplateCode.split(",");
-							unsubscriptionList.addAll(Arrays.asList(items));
+							unsubscriptionList.addAll(Arrays.asList(items)); 
 							unsubscriptionList.add(userBe.getCode());
 						} else {
 							unsubscriptionList.add(unsubscriptionListForTemplateCode);

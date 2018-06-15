@@ -5905,7 +5905,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String url = null;
 		if(templateCode != null) {
-			String json = "{\"loading\":\"Loading your documents...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":"
+			String json = "{\"loading\":\"Loading...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":"
 					+ "\"" + templateCode + "\"" + "}}";
 			println("json ::" + json);
 			String base64 = encodeToBase64(json);

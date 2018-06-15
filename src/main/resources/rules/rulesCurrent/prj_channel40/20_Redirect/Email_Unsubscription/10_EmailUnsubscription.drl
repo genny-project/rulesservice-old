@@ -35,7 +35,7 @@ import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 			if(template != null) {
 				if(isUnsubscriptionAlreadyContainsUser) {
 					String[] recipientArr = { userBe.getCode() };
-					String toastMessage = "You are already unsubscribed from the email with the subject - " + template.getSubject() + "?";
+					String toastMessage = "You are already unsubscribed from the email with the subject - " + template.getSubject();
 					rules.redirectToHomePage();
 					rules.sendDirectToast(recipientArr, toastMessage, "info");	
 				} else {
@@ -43,9 +43,6 @@ import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 				
 					/* temporary: save the template code into the cache for retrieval later */
 					VertxUtils.putObject(rules.realm(), "MSG_TEMPLATE", rules.getUser().getCode(), rules.getAsString("valueCode"));
-			
-					/* get template */
-					QBaseMSGMessageTemplate template = QwandaUtils.getTemplate( templateCode , rules.getToken());
 			
 					String customQuestion = "Do you want to unsubscribe from the email with the subject - "+ template.getSubject() + "?";
 				
