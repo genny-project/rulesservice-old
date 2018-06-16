@@ -103,7 +103,7 @@ rule "Create Payment Item"
 				    Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", paymentItemId);
 	    			rules.baseEntity.saveAnswer(itemIdAnswer);
        	 	}
-       	 	else {
+       	 	 /* else {
        	 		HashMap<String,String> contextMap = new HashMap<String, String>();
        	 		contextMap.put("JOB",BEGCode);
 
@@ -111,7 +111,7 @@ rule "Create Payment Item"
 
        	 		rules.sendMessage("", recipientArray, contextMap,"MSG_CH40_ITEM_CREATION_FAILED", "TOAST");
        	 		rules.setState("TRIGGER_HOMEPAGE");
-       	 	}
+       	 	} */
 
        	}
 
@@ -123,7 +123,7 @@ rule "Create Payment Item"
 
 			rules.println("BEG CODE ::"+BEGCode);
 			rules.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
-	    rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
+			rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
 		}
 		rules.footer();
 end

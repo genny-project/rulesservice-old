@@ -1347,14 +1347,6 @@ public class QRules {
 		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
-	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
-		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
-	}
-
-	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
-	}
-
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
 
@@ -1605,9 +1597,6 @@ public class QRules {
 					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
 					/* Publish message to Receiver */
 					publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had
-																													// to
-																													// use
-																													// getCode()
 
 					QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
 
@@ -1615,12 +1604,6 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
-
-					/* unsubscribe link for the template */
-					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
-					if(unsubscribeUrl != null) {
-						contextMap.put("URL", unsubscribeUrl);
-					}
 
 					/* unsubscribe link for the template */
 					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
@@ -3311,12 +3294,6 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("URL", unsubscribeUrl);
 			}
 
-			/* unsubscribe link for the template */
-			String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
-			if(unsubscribeUrl != null) {
-				contextMap.put("URL", unsubscribeUrl);
-			}
-
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
 			/* Getting all people */
@@ -3880,12 +3857,6 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("OWNER", ownerCode);
 				contextMap.put("LOAD", loadCode);
 				contextMap.put("OFFER", offer);
-
-				/* unsubscribe link for the template */
-				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
-				if(unsubscribeUrl != null) {
-					contextMap.put("URL", unsubscribeUrl);
-				}
 
 				/* unsubscribe link for the template */
 				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
@@ -5976,25 +5947,6 @@ public void makePayment(QDataAnswerMessage m) {
 			return null;
 
 		}
-	}
-
-	/* creating a redirect link for unsubscription and adding it in context map */
-	public String getUnsubscribeLinkForEmailTemplate(String templateCode) {
-
-		String url = null;
-		if(templateCode != null) {
-			String json = "{\"loading\":\"Loading...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":"
-					+ "\"" + templateCode + "\"" + "}}";
-			println("json ::" + json);
-			String base64 = encodeToBase64(json);
-			url = "http://localhost:3000/?state=" + base64;
-		}
-
-		return url;
-	}
-
-	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
-		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
 
 	/* creating a redirect link for unsubscription and adding it in context map */
