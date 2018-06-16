@@ -45,12 +45,17 @@ public class BaseEntityUtils {
 	private String realm;
 	private String qwandaServiceUrl;
 
+	private CacheUtils cacheUtil;
+
 	public BaseEntityUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
 
 		this.decodedMapToken = decodedMapToken;
 		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
 		this.realm = realm;
+
+		this.cacheUtil = new CacheUtils(qwandaServiceUrl, token, decodedMapToken, realm);
+		this.cacheUtil.setBaseEntityUtils(this);
 	}
 
 	/* =============== refactoring =============== */
@@ -373,27 +378,22 @@ public class BaseEntityUtils {
 		return bes;
 	}
 
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
-			final String linkCode) {
-		Link link = new Link(sourceCode, baseEntityCode, linkCode);
-		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public String moveBaseEntity(String baseEntityCode, String sourceCode, String targetCode, String linkCode) {
+		return this.moveBaseEntitySetLinkValue(baseEntityCode, sourceCode, targetCode, linkCode, "LINK");
 	}
 
-	public String moveBaseEntitySetLinkValue(final String baseEntityCode, final String sourceCode,
-			final String targetCode, final String linkCode, final String linkValue) {
+	public String moveBaseEntitySetLinkValue(String baseEntityCode, String sourceCode, String targetCode, String linkCode, final String linkValue) {
 
 		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
 
 		try {
 
+			/* we call the api */
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
 					JsonUtils.toJson(link), this.token);
+
+			/* we refresh the cache */
+			this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();

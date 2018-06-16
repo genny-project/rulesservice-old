@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
 import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
@@ -53,6 +54,7 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channel.Consumer;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Ask;
@@ -191,9 +193,12 @@ public class QRules {
 		try {
 
 			/* initialising utils */
+			/* TODO: to update so it is static */
 			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
+
 			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 		} catch (Exception e) {
 
@@ -1311,21 +1316,21 @@ public class QRules {
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
-		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, true);
 	}
-	
-	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
-		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
-	}
-  
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, true);
 	}
 
-	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelections) {
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
+	}
 
-		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelections);
-		if(questions != null) {
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelection) {
+
+	QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
+    if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
@@ -1333,18 +1338,18 @@ public class QRules {
 
 		return false;
 	}
-	
+
 	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
 	}
-	
+
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
-		
+
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
@@ -1592,9 +1597,6 @@ public class QRules {
 					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
 					/* Publish message to Receiver */
 					publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had
-																													// to
-																													// use
-																													// getCode()
 
 					QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
 
@@ -1602,7 +1604,7 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
-					
+
 					/* unsubscribe link for the template */
 					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
 					if(unsubscribeUrl != null) {
@@ -2696,10 +2698,17 @@ public void makePayment(QDataAnswerMessage m) {
                             unsubscribeArr[i++] = code;
                         }
                         /* sending cmd BUCKETVIEW */
-                        this.redirectToHomePage();
+                        // this.redirectToHomePage();
+
+                          /* we hide the job from them */
+
                         println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
                         VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
                     }
+
+                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
+                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
+
                     // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
                     this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
                     publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
@@ -2709,7 +2718,8 @@ public void makePayment(QDataAnswerMessage m) {
                     this.baseEntity.saveAnswer(begNextAction);
                     /* sending cmd BUCKETVIEW */
                     // this.setState("TRIGGER_HOMEPAGE");
-                    this.redirectToHomePage();
+
+                    this.reloadCache();
 
                     /* TOAST :: SUCCESS */
                     println("Sending success toast since make payment succeeded");
@@ -2721,8 +2731,9 @@ public void makePayment(QDataAnswerMessage m) {
                     contextMap.put("LOAD", loadBe.getCode());
                     String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_CONFIRM_QUOTE_OWNER");
                     if(unsubscribeUrl != null) {
-                    	contextMap.put("URL", unsubscribeUrl);
+                    		contextMap.put("URL", unsubscribeUrl);
                     }
+
                     String[] recipientArr = { userCode };
                     /* TOAST :: PAYMENT SUCCESS */
                     sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
@@ -2737,17 +2748,19 @@ public void makePayment(QDataAnswerMessage m) {
                     if(unsubscribeUrl != null) {
                     	contextMapForDriver.put("URL", unsubscribeUrlForConfirmQuoteDriver);
                     }
-                    
+
                     String[] recipientArrForDriver = { quoterCode };
                     /* Sending messages to DRIVER - Email and sms enabled */
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
-                    this.reloadCache();
+
                 }
             }
         }
+
+        this.redirectToHomePage();
     }
 
 	public void updateGPS(QDataGPSMessage m) {
@@ -2909,9 +2922,15 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
-	
-	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE 
-	 * removes the BE from their store 
+
+  public void clearBaseEntity(String baseEntityCode, String parentCode, String recipientCode) {
+    String[] recipients = new String[1];
+    recipients[0] = recipientCode;
+    this.clearBaseEntity(baseEntityCode, parentCode, recipients);
+	}
+
+	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE
+	 * removes the BE from their store
 	 */
 	public void clearBaseEntity(String baseEntityCode, String parentCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -2920,7 +2939,7 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void fastClearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = new BaseEntity(baseEntityCode, "FastBE");
@@ -3166,7 +3185,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void saveJob(BaseEntity job) {
 
-    this.showLoading("Creating job...");
+		this.showLoading("Creating job...");
 
 		String jobCode = job.getCode();
 
@@ -3248,14 +3267,14 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(msgLnkBegLoad, recipientCodes);
 
 
-    /* we push the job to the creator */
-    String[] creatorRecipient = { getUser().getCode() };
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+	    /* we push the job to the creator */
+	    String[] creatorRecipient = { getUser().getCode() };
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
-		/* SEND LOAD BE */
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+			/* SEND LOAD BE */
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
 		/* publishing to Owner */
 		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
@@ -3268,7 +3287,7 @@ public void makePayment(QDataAnswerMessage m) {
 			HashMap<String, String> contextMap = new HashMap<String, String>();
 			contextMap.put("JOB", jobCode);
 			contextMap.put("OWNER", getUser().getCode());
-			
+
 			/* unsubscribe link for the template */
 			String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
 			if(unsubscribeUrl != null) {
@@ -3309,14 +3328,14 @@ public void makePayment(QDataAnswerMessage m) {
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 			/* Sending message to BEG OWNER */
-			
+
 			sendMessage("", stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-			
+
 		}
 
-    this.redirectToHomePage();
-		this.reloadCache();
-    drools.setFocus("ispayments");  /* NOW Set up Payments */
+		this.redirectToHomePage();
+//		this.reloadCache();
+		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -3838,7 +3857,7 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("OWNER", ownerCode);
 				contextMap.put("LOAD", loadCode);
 				contextMap.put("OFFER", offer);
-				
+
 				/* unsubscribe link for the template */
 				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
 				if(unsubscribeUrl != null) {
@@ -4344,18 +4363,17 @@ public void makePayment(QDataAnswerMessage m) {
 
 				driverAttachmentList.add(driverInvoiceAttachment);
 			}
-			
+
 			/* unsubscribe links for the templates */
 			String unsubscribeUrlForOwner = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_OWNER");
 			String unsubscribeUrlForDriver = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_DRIVER");
 
-			/* sending message for owner */
 			String[] messageToOwnerRecipients = new String[1];
 			messageToOwnerRecipients[0] = ownerBe.getCode();
-			
+
 			HashMap<String, String> contextMapForOwner = contextMap;
 			contextMapForOwner.put("URL", unsubscribeUrlForOwner);
-			
+
 			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER",
 					"TOAST");
 			sendMessage(messageToOwnerRecipients, contextMapForOwner, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
@@ -4364,10 +4382,10 @@ public void makePayment(QDataAnswerMessage m) {
 			/* sending message for driver */
 			String[] messageToDriverRecipients = new String[1];
 			messageToDriverRecipients[0] = driverBe.getCode();
-			
+
 			HashMap<String, String> contextMapForDriver = contextMap;
 			contextMapForDriver.put("URL", unsubscribeUrlForDriver);
-			
+
 			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER",
 					"TOAST");
 			sendMessage(messageToDriverRecipients, contextMapForDriver, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
@@ -4601,14 +4619,19 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void reloadCache() {
 
+		BaseEntityUtils beUtils = this.baseEntity;
+		CacheUtils cacheUtils = this.cacheUtils;
+
+		String realm = this.realm();
+
 		/* we check if the search BEs have been created */
-		BaseEntity searchNewItems = this.baseEntity.getBaseEntityByCode("SBE_NEW_ITEMS");
+		BaseEntity searchNewItems = beUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
 		if (searchNewItems == null) {
 			drools.setFocus("GenerateSearches");
 		}
 
-		this.cacheUtils.refresh(this.realm(), "BUCKETS");
-		this.cacheUtils.refresh(this.realm(), "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+		cacheUtils.refresh(realm, "BUCKETS");
+		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
 	public void sendApplicationData() {
@@ -5925,7 +5948,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 	}
-	
+
 	/* creating a redirect link for unsubscription and adding it in context map */
 	public String getUnsubscribeLinkForEmailTemplate(String templateCode) {
 
@@ -5937,10 +5960,10 @@ public void makePayment(QDataAnswerMessage m) {
 			String base64 = encodeToBase64(json);
 			url = "http://localhost:3000/?state=" + base64;
 		}
-		
+
 		return url;
 	}
-	
+
 	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
