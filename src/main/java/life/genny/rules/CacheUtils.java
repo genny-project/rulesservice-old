@@ -143,7 +143,7 @@ public class CacheUtils {
 		List<QDataBaseEntityMessage> beMessagesToKeep = new ArrayList<QDataBaseEntityMessage>();
 		List<QDataBaseEntityMessage> beMessagesToMove = new ArrayList<QDataBaseEntityMessage>();
 		
-		if(sourceItemMessages != null) {
+		if(sourceItemMessages != null && sourceItemMessages.getMessages() != null && sourceItemMessages.getMessages().length > 0) {
 			
 			/* we loop through the messages to try to find the be message */
 			QDataBaseEntityMessage[] msgsArray = sourceItemMessages.getMessages();
@@ -153,13 +153,14 @@ public class CacheUtils {
 				
 				for(QDataBaseEntityMessage message: messages) {
 					
+					/* we grab the items of that message */
+					BaseEntity[] bes = message.getItems();
+					List<BaseEntity> besToKeep = new ArrayList<BaseEntity>();
+					List<BaseEntity> besToMove = new ArrayList<BaseEntity>();
+					
+					
 					/* if the parentCode is the sourceCode */
 					if(message.getParentCode().equals(sourceCode)) {
-						
-						/* we grab the items of that message */
-						BaseEntity[] bes = message.getItems();
-						List<BaseEntity> besToKeep = new ArrayList<BaseEntity>();
-						List<BaseEntity> besToMove = new ArrayList<BaseEntity>();
 						
 						for(BaseEntity be: bes) {
 							
@@ -175,33 +176,24 @@ public class CacheUtils {
 								besToMove.add(be);
 							}
 						}
-						
-						/* we assign the bes to keep to the message */
-						message.setItems(besToKeep.toArray(new BaseEntity[0]));
-						beMessagesToKeep.add(message);
-						
-						/* we create a message for the moving item */
-						QDataBaseEntityMessage newMessage = new QDataBaseEntityMessage(besToMove.toArray(new BaseEntity[0]));
-						newMessage.setParentCode(message.getParentCode());
-						
-						/* we add it to the list */
-						beMessagesToMove.add(newMessage);
 					}
 					/* if the parentCode is the beCode we need to move it as well */
 					else if(message.getParentCode().equals(baseEntity.getCode())) {
 						
-						/* we copy the message */
-						QDataBaseEntityMessage copy = message;
-						
-						/* we remove the message from the sourceMessages */
-						messages.remove(message);
-						
 						/* we add the copy to the target list */
-						beMessagesToMove.add(copy);
-						
-						/* we write it to the cache */
-						VertxUtils.putObject(realm, "CACHE", message.getParentCode(), messages);
+						besToMove.add(baseEntity);
 					}
+					
+					/* we assign the bes to keep to the message */
+					message.setItems(besToKeep.toArray(new BaseEntity[0]));
+					beMessagesToKeep.add(message);
+					
+					/* we create a message for the moving item */
+					QDataBaseEntityMessage newMessage = new QDataBaseEntityMessage(besToMove.toArray(new BaseEntity[0]));
+					newMessage.setParentCode(message.getParentCode());
+					
+					/* we add it to the list */
+					beMessagesToMove.add(newMessage);
 				}
 			}
 		}
