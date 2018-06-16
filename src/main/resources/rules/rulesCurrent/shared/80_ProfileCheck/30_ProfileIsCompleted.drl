@@ -9,15 +9,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import life.genny.qwandautils.MergeUtil;
 
-rule "Profile is completed - step 3 - channel40"
+rule "Profile is completed - step 3"
     when
 	    rules: QRules( isState("USER_PROFILE_ANSWERED") && !isState("LOOP_PROFILE_COMPLETED") )
      then
      	rules.header();
 
 		rules.setState("LOOP_PROFILE_COMPLETED");
-
-		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_PROFILE_COMPLETED", "TRUE");
 		rules.setState("PROFILE_IS_COMPLETED");
 		rules.setState("CHECK_USER_PHONE_NUMBER");
 

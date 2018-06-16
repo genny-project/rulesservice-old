@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import life.genny.qwandautils.MergeUtil;
 
-rule "Profile is NOT completed - step 3 - channel40"
+rule "Profile is NOT completed - step 3"
     when
 	    rules: QRules( isState("PROFILE_NOT_COMPLETED") && !isState("LOOP_PROFILE_NOT_COMPLETED") )
      then

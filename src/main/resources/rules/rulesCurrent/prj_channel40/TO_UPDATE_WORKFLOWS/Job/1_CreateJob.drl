@@ -28,6 +28,8 @@ rule "Create Job"
 
      rules.setState("CREATE_LOAD_CLICKED");
       drools.setFocus("CreateLoad");
+      
+      rules.showLoading("Loading form...");
 
     /*     Creating new base-entity BEG for Posting new Job      */
      BaseEntity beg = rules.baseEntity.create(rules.getUser().getCode(), "BEG", "New Load");
@@ -60,10 +62,9 @@ rule "Create Job"
         Link jobOwnerLink =  QwandaUtils.createLink(beg.getCode(), rules.getUser().getCode(), "LNK_BEG", "OWNER", (double) 1, rules.getToken());
         rules.println(" Added Load Owner to BEG/JOB ");
 
-    /*    Getting Post Load Question GRP        */
-
- 	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", rules.getUser().getCode());
- 	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP");
+        /*   We send the questions WITHOUT PUSHING THE DATA */
+     	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", rules.getUser().getCode(), false);
+     	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP", false);
 
     /*    Sending cmd SUBLAYOUT_CHANGE      */
      rules.sendSublayout("create-job", "create_job.json");
@@ -75,6 +76,11 @@ rule "Create Job"
       /* Add new attribute to check if a job is new or existing */
       Answer newJobSubmitAnswer = new Answer(rules.getUser().getCode(), beg.getCode(), "PRI_JOB_IS_SUBMITTED", "false");
       rules.baseEntity.saveAnswer(newJobSubmitAnswer);
+      
+      /*   We send the questions AND PUSHING THE DATA */
+  	 rules.sendQuestions(rules.getUser().getCode(), load.getCode(), "QUE_LOAD_DETAILS_GRP", rules.getUser().getCode(), true);
+  	 rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_JOB_DETAILS_GRP", true);
+
 
      rules.footer();
 

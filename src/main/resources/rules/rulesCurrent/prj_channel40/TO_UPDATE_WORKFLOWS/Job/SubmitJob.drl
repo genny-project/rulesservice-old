@@ -51,7 +51,13 @@ rule "Submit Job"
    			HashMap<String, String> contextMap = new HashMap<String, String>();
     			contextMap.put("JOB", jobCode);
     			contextMap.put("OWNER", rules.getUser().getCode());
-
+    			
+    			/* unsubscribe link for the template */
+			String unsubscribeUrl = rules.getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
+			if(unsubscribeUrl != null) {
+				contextMap.put("URL", unsubscribeUrl);
+			}
+    			
     			String[] recipientCodes = { "PER_MULLENS1122_AT_GMAILCOM", "PER_DREW_AT_CH40COMAU", "PER_ADAMCROW63_AT_GMAILCOM"};
 
     			rules.println("The String Array is ::" + Arrays.toString(recipientCodes));
