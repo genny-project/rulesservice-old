@@ -15,10 +15,11 @@ rule "Create Payment Item"
 	agenda-group "payments"
 	when
 		m : QEventBtnClickMessage( event_type == "BTN_CLICK" && data.code == "BTN_CONFIRM_OFFER" )
-		rules: QRules( !isState("CREATED_PAYMENT_ITEM") )
+		rules: QRules( isState("START_PAYMENT") && !isState("CREATED_PAYMENT_ITEM") )
 	then
 		rules.header();
 		rules.println("Item creation process started");
+    rules.setState("CREATED_PAYMENT_ITEM");
 
 		String offerCode = m.getItemCode();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
@@ -94,13 +95,12 @@ rule "Create Payment Item"
        	/* create a new payment item */
        	if(isNewItem) {
 
-       		String itemId = null;
-			itemId = rules.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
-       	 	rules.println("Payment item Id="+itemId);
+			     paymentItemId = rules.createPaymentItem(loadBe, offerBe, begBe, ownerBe, driverBe, assemblyAuthKey);
+       	 	rules.println("Payment item Id="+paymentItemId);
 
-       	 	if(itemId != null) {
+       	 	if(paymentItemId != null) {
        	 		rules.println("Saving Answer");
-				Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", itemId);
+				    Answer itemIdAnswer = new Answer(BEGCode, BEGCode, "PRI_ITEM_ID", paymentItemId);
 	    			rules.baseEntity.saveAnswer(itemIdAnswer);
        	 	}
        	 	else {
@@ -115,12 +115,7 @@ rule "Create Payment Item"
 
        	}
 
-
-		/* Ugly way of checking */
-		String paymentIdAttributeValue = MergeUtil.getAttrValue(BEGCode, "PRI_ITEM_ID", rules.getToken());
-		rules.println("payment ID attribute value ::"+paymentIdAttributeValue);
-
-		if(paymentIdAttributeValue != null && assemblyId != null) {
+		if(paymentItemId != null && assemblyId != null) {
 
 			//To save the datetime of item creation
 			Answer itemCreationDateTime = new Answer(rules.getUser().getCode(), BEGCode, "PRI_ITEM_CREATED_DATETIME", rules.getZonedCurrentLocalDateTime());
@@ -128,8 +123,7 @@ rule "Create Payment Item"
 
 			rules.println("BEG CODE ::"+BEGCode);
 			rules.println("payment itemID and assemblyUserId is not null, hence the payment gateway layout is sent now!");
-	        rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
+	    rules.askQuestions(rules.getUser().getCode(), BEGCode, "QUE_PAYMENT_METHOD_GRP");
 		}
-		rules.setState("CREATED_PAYMENT_ITEM");
 		rules.footer();
 end

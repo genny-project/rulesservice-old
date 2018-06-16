@@ -104,6 +104,7 @@ rule "Confirm Offer"
 							rules.publishBaseEntityByCode(begCode, "GRP_NEW_ITEMS", "LNK_CORE", offerRecipients);
 
 							/* Call Payment Rule */
+              rules.setState("START_PAYMENT");
 							drools.setFocus("payments");
 						}
 						else {
