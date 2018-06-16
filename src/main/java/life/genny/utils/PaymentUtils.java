@@ -787,7 +787,8 @@ public class PaymentUtils {
 
 	//offerBe, begBe, ownerBe, driverBe, assemblyAuthKey
 	public static Boolean checkForAssemblyItemValidity(String itemId, BaseEntity offerBe, BaseEntity ownerBe, BaseEntity driverBe, String assemblyAuthKey) {
-		Boolean isAssemblyItemValid = false;
+
+    Boolean isAssemblyItemValid = false;
 
 		try {
 			String itemResponse = PaymentEndpoint.getPaymentItem(itemId, assemblyAuthKey);
@@ -795,7 +796,7 @@ public class PaymentUtils {
 			/* convert string into item-search object */
 			QPaymentsAssemblyItemSearchResponse itemObj = JsonUtils.fromJson(itemResponse, QPaymentsAssemblyItemSearchResponse.class);
       if(itemObj == null) return false;
-      
+
 			QPaymentsAssemblyItemResponse items = itemObj.getItems();
 
 			String ownerEmail = ownerBe.getValue("PRI_EMAIL", null);

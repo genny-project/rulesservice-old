@@ -549,9 +549,9 @@ public class QRules {
 	}
 
 	public void publishBaseEntityByCode(final String be) {
-		String[] recipientArray = new String[1];
-		recipientArray[0] = be;
-		publishBaseEntityByCode(be, null, null, recipientArray);
+		//String[] recipientArray = new String[1];
+		//recipientArray[0] = be;
+		publishBaseEntityByCode(be, null, null, null);
 	}
 
 	public void publishBaseEntityByCode(final String be, final Boolean delete) {
@@ -916,8 +916,7 @@ public class QRules {
 
 	// private void navigate(NavigationType navigationType, String newRoute) {
   //
-	// 	// QCmdNavigateMessage navigationMessage = new QCmdNavigateMessage(navigationType, newRoute);
-	// 	// this.publishCmd(navigationMessage);
+
 	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
 	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
 	// 	json.put("token", getToken());
@@ -925,6 +924,11 @@ public class QRules {
 	// }
 
 	public void navigateTo(String newRoute) {
+
+    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
+  	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+  	json.put("token", getToken());
+  	publish("cmds", json);
 
 		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
 		// this.navigate(type, newRoute);
@@ -1314,11 +1318,11 @@ public class QRules {
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, true);
 	}
-	
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, true);
 	}
-	
+
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
 	}
@@ -1333,6 +1337,14 @@ public class QRules {
 		}
 
 		return false;
+	}
+
+	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
+	}
+
+	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
 	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -1360,6 +1372,8 @@ public class QRules {
 			/* Layout V2 */
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
+
+      this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -1601,6 +1615,12 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
+
+					/* unsubscribe link for the template */
+					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
+					if(unsubscribeUrl != null) {
+						contextMap.put("URL", unsubscribeUrl);
+					}
 
 					/* unsubscribe link for the template */
 					String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_MESSAGE_RECIEVED");
@@ -2730,7 +2750,7 @@ public void makePayment(QDataAnswerMessage m) {
                     if(unsubscribeUrl != null) {
                     		contextMap.put("URL", unsubscribeUrl);
                     }
-                    
+
                     String[] recipientArr = { userCode };
                     /* TOAST :: PAYMENT SUCCESS */
                     sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
@@ -2815,9 +2835,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String[] recipients = { userCode };
 		String verificationCode = generateVerificationCode();
-		if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
-			println("The verification code is ::" + verificationCode);
-		}
+	//	if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
+			println("The verification code is ::"+RulesUtils.ANSI_PURPLE + verificationCode+RulesUtils.ANSI_RESET);
+	//	}
 
 		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		this.baseEntity.saveAnswer(verificationCodeAns);
@@ -3291,6 +3311,12 @@ public void makePayment(QDataAnswerMessage m) {
 				contextMap.put("URL", unsubscribeUrl);
 			}
 
+			/* unsubscribe link for the template */
+			String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_NEW_JOB_POSTED");
+			if(unsubscribeUrl != null) {
+				contextMap.put("URL", unsubscribeUrl);
+			}
+
 			println("The String Array is ::" + Arrays.toString(recipientCodes));
 
 			/* Getting all people */
@@ -3375,6 +3401,32 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 		}
 
+		return false;
+	}
+
+	public boolean hasCapability(final String capability) {
+
+		// Fetch the roles and check the capability attributes of each role
+
+		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
+		for (EntityAttribute role : roles) { // should store in cached map
+			Boolean value = role.getValue();
+			if (value) {
+				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
+				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
+				if (roleBE==null) {
+					return false;
+				}
+				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
+				if (optEaCap.isPresent()) {
+					EntityAttribute eaCap = optEaCap.get();
+					if ((eaCap.getValueBoolean()!=null)&&(eaCap.getValueBoolean())) {
+						return true;
+					}
+				}
+
+			}
+		}
 		return false;
 	}
 
@@ -3835,6 +3887,12 @@ public void makePayment(QDataAnswerMessage m) {
 					contextMap.put("URL", unsubscribeUrl);
 				}
 
+				/* unsubscribe link for the template */
+				String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_JOB_EDITED");
+				if(unsubscribeUrl != null) {
+					contextMap.put("URL", unsubscribeUrl);
+				}
+
 				println("sending edit-mail to driver : " + quoterCode + ", with offer : " + offer);
 
 				sendMessage("", recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
@@ -3873,6 +3931,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* TODO: refactor this. */
 	public void redirectToHomePage() {
+
+    this.navigateTo("/home");
 		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
@@ -4345,9 +4405,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 			sendMessage(begBe.getCode(), messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER",
 					"TOAST");
-			sendMessage(messageToOwnerRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
+			sendMessage(messageToOwnerRecipients, contextMapForOwner, "MSG_CH40_PAYMENT_RELEASED_OWNER", "EMAIL",
 					ownerAttachmentList);
 
+			/* sending message for driver */
 			String[] messageToDriverRecipients = new String[1];
 			messageToDriverRecipients[0] = driverBe.getCode();
 
@@ -4356,7 +4417,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 			sendMessage(begBe.getCode(), messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER",
 					"TOAST");
-			sendMessage(messageToDriverRecipients, contextMap, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
+			sendMessage(messageToDriverRecipients, contextMapForDriver, "MSG_CH40_PAYMENT_RELEASED_DRIVER", "EMAIL",
 					driverAttachmentList);
 
 		} else {
@@ -4619,7 +4680,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		if (this.hasCapability("READ_NEW_ITEMS")) {
+			subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
+		}
 
 		this.sendCachedItem("BUCKETS", subscriptions);
 
@@ -5913,6 +5976,25 @@ public void makePayment(QDataAnswerMessage m) {
 			return null;
 
 		}
+	}
+
+	/* creating a redirect link for unsubscription and adding it in context map */
+	public String getUnsubscribeLinkForEmailTemplate(String templateCode) {
+
+		String url = null;
+		if(templateCode != null) {
+			String json = "{\"loading\":\"Loading...\",\"evt_type\":\"REDIRECT_EVENT\",\"evt_code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"data\":{\"code\":\"REDIRECT_UNSUBSCRIBE_MAIL_LIST\",\"value\":"
+					+ "\"" + templateCode + "\"" + "}}";
+			println("json ::" + json);
+			String base64 = encodeToBase64(json);
+			url = "http://localhost:3000/?state=" + base64;
+		}
+
+		return url;
+	}
+
+	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
+		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
 
 	/* creating a redirect link for unsubscription and adding it in context map */

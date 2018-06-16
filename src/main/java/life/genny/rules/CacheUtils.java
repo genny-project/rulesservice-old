@@ -265,7 +265,7 @@ public class CacheUtils {
 		/* 4. we cache all the kids of the baseEntity */
 
 		/* we grab all the kids */
-		List<BaseEntity> begKids = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
+		List<BaseEntity> begKids = this.baseEntityUtils.getBaseEntitysByParentAndLinkCode3(cachedItem.getCode(), "LNK_BEG", 0, 1000, false);
 
 		if (begKids != null) {
 
