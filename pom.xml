@@ -198,7 +198,15 @@
 
 	</dependencies>
 
-	<build>
+  <build>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>rules/rulesCurrent/prj_*/**</exclude>
+            </excludes>
+        </resource>
+    </resources>
 		<plugins>
 
 			<plugin>
