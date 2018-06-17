@@ -1,0 +1,3 @@
+[submodule "src/main/resources/rules/rulesCurrent/prj_internmatch"]
+	path = src/main/resources/rules/rulesCurrent/prj_internmatch
+	url = https://gitlab.outcome-hub.com/gada/prj_internmatch
