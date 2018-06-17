@@ -1,0 +1,17 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Send Main Layout"
+    when
+        rules: QRules(  isState("SEND_MAIN_LAYOUTS") &&
+                        !isState("LOOP_SEND_MAIN_LAYOUTS") )
+     then
+     	rules.header();
+        rules.setState("LOOP_SEND_MAIN_LAYOUTS");
+	    rules.println("Memberhub Send Layout");
+        rules.sendLayout("LAY_DEFAULT", "dashboard.json");
+        
+        rules.setState("MAIN_LAYOUTS_SENT");
+
+	    rules.footer();
+end
