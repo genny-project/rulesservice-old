@@ -1100,4 +1100,49 @@ public class BaseEntityUtils {
 
 		return null;
 	}
+	
+	/*
+	 * copy all the attributes from one BE to another BE 
+	 * sourceBe : FROM 
+	 * targetBe : TO
+	 */
+	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
+		
+		Map<String, String> map = new HashMap<>();
+		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
+		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
+
+		List<Answer> answers = new ArrayList<Answer>();
+		try{
+			for (Map.Entry<String, String> entry : map.entrySet()){	
+				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
+				answers.add(answerObj);
+			}   
+			saveAnswers(answers);              
+		} catch (Exception e) {}
+
+		return getBaseEntityByCode(targetBe.getCode());
+	}
+	
+	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
+		Link link = new Link(parentCode, childCode, linkCode);
+		try {
+			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+	/* Remove link with specific link Value */
+	public String removeLink(final String parentCode, final String childCode, final String linkCode, final String linkValue) {
+		Link link = new Link(parentCode, childCode, linkCode, linkValue);
+		try {
+			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 }
