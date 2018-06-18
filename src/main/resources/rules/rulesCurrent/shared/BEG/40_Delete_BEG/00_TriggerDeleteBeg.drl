@@ -28,6 +28,9 @@ rule "Trigger Delete BEG"
 					
 					rules.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_BIN", "LNK_CORE", "BEG");
 					
+					/* Generate note on delete beg */
+					rules.setState("GENERATE_DELETE_BEG_NOTE");
+
 					
 					rules.setState("EVENT_BTN_CLICK");
 					rules.setState("BTN_BACK_BUTTON");

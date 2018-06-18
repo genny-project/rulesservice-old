@@ -24,6 +24,8 @@ rule "View Application Details - Trigger View Application"
 			rules.println("applicationCode is null");
 		}
 		
+		/* Send Application Notes */		
+		rules.setState("SEND_APPLICATION_NOTES");
 		
 		rules.setState("TRIGGERED_VIEW_APPLICATION");
 	 	rules.footer();      

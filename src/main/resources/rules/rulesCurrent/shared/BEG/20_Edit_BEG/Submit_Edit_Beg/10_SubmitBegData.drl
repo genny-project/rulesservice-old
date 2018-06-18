@@ -18,7 +18,8 @@ rule "Submit BEG Data"
     }else{
       rules.println("beg is null");
     }
-
+    
+    rules.setState("GENERATE_EDIT_BEG_NOTE");
 		rules.setState("TRIGGER_VIEW_BEG");
 	 	rules.footer();      
 end

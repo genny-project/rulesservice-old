@@ -38,6 +38,8 @@ rule "Submit Add BEG - Step 4"
 
 				/* Go To Homepage */
 				rules.setState("TRIGGER_HOMEPAGE");
+				rules.setState("GENERATE_ADD_BEG_NOTE");
+
 			}else{
 				rules.println("begKids is null");
 				return;

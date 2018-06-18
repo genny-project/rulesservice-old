@@ -28,6 +28,9 @@ rule "Trigger Recover BEG"
 					
 					rules.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 					
+					/* Generate note on recover beg */
+					rules.setState("GENERATE_RECOVER_BEG_NOTE");
+					
 					rules.setState("TRIGGER_HOMEPAGE");
 					rules.setState("TRIGGER_RECOVER_BEG_MESSAGE");
 					rules.println("Message had been triggered");

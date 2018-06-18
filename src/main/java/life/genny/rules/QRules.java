@@ -8472,14 +8472,29 @@ public class QRules {
 		publishCmd(cmdViewJson);
 	}
 	
-	public void addNote() {
+	public BaseEntity createNote() {
 		
-		BaseEntity note = null;
+		BaseEntity note = this.createBaseEntityByCode(this.getUser().getCode(), "NOT", "NOTE");
+
 		List<Answer> answers = new ArrayList<Answer>();
+		// answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT", "System generated note : Intern has applied for an internship."));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", getCurrentLocalDateTime()));
-		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", "SYSTEM"));
 		saveAnswers(answers);
+
+		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
+		return note;
+	}
+	
+	public void LinkNoteAndContexts(BaseEntity note, final List<BaseEntity> contextList){
+		for(BaseEntity context : contextList){
+			this.LinkNoteAndContext(note, context);
+		}
+	}
+	public void LinkNoteAndContext(BaseEntity note, BaseEntity context){
+		this.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
 	}
 	public void sendNotes(BaseEntity context) {
 		String[] recipient = { getUser().getCode() };
