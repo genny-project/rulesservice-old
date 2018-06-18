@@ -8226,16 +8226,14 @@ public class QRules {
 						for (BaseEntity begGroup : begGroups) {
 
 							/* FOR GRP_APPLICATIONS BEGS */
-							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") || 
-								!begGroup.getCode().equalsIgnoreCase("GRP_FILLED") ||
-								!begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
+							if (begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")){
 								begGroupsToSend.add(begGroup);
 							}
 						}
 						printList("begGroupsToSend", begGroupsToSend);
 
 
-						/* subscribe to all the begs of the company */
+						/* subscribe to all the begs of GRP_NEW_ITEMS */
 						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
 						publishCmd(begGroupsToSend, rootKid.getCode(), "LNK_CORE");
 
