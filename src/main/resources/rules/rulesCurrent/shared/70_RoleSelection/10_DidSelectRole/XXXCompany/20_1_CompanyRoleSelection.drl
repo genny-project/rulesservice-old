@@ -15,7 +15,7 @@ rule "Selected Company Role"
 
         /* we create the company */
         /*BaseEntity newCompany = QwandaUtils.createBaseEntityByCode(QwandaUtils.getUniqueId(userCode, null, "CPY", rules.getToken()), "COMPANY", rules.getQwandaServiceUrl(), rules.getToken());
-        rules.createLink(companyCode, userCode, "LNK_STAFF", "REPRESENTATIVE", 1.0); */
+        rules.baseEntity.createLink(companyCode, userCode, "LNK_STAFF", "REPRESENTATIVE", 1.0); */
 
 		rules.setState("EXIT_ROLE_SELECTION");
 

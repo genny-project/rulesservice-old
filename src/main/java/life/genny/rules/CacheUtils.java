@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,18 +20,20 @@ public class CacheUtils {
 	private String realm;
 	private String qwandaServiceUrl;
 
-	public BaseEntityUtils baseEntityUtils;
+	private BaseEntityUtils baseEntityUtils;
 
 	public CacheUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
 
 		this.decodedMapToken = decodedMapToken;
 		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
-		this.realm = realm;
-
-		this.baseEntityUtils = new BaseEntityUtils(this.qwandaServiceUrl, this.token, decodedMapToken, realm);
+		this.realm = realm;		
 	}
-
+	
+	public void setBaseEntityUtils(BaseEntityUtils baseEntityUtils) {
+		this.baseEntityUtils = baseEntityUtils;
+	}
+	
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
 
@@ -130,7 +133,112 @@ public class CacheUtils {
 			}
 		}
 	}
+	
+	public void moveBaseEntity(BaseEntity baseEntity, String sourceCode, String targetCode) {
+		
+		/* we grabbed the cached item for sourceCode */
+		QBulkMessage sourceItemMessages = VertxUtils.getObject(realm, "CACHE", sourceCode, QBulkMessage.class);
+		QBulkMessage targetItemMessages = VertxUtils.getObject(realm, "CACHE", targetCode, QBulkMessage.class);
+		
+		List<QDataBaseEntityMessage> beMessagesToKeep = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> beMessagesToMove = new ArrayList<QDataBaseEntityMessage>();
+		
+		if(sourceItemMessages != null && sourceItemMessages.getMessages() != null && sourceItemMessages.getMessages().length > 0) {
+			
+			/* we loop through the messages to try to find the be message */
+			QDataBaseEntityMessage[] msgsArray = sourceItemMessages.getMessages();
+			List<QDataBaseEntityMessage> messages = Arrays.asList(msgsArray);
+			
+			if(messages != null && messages.size() > 0) {
+				
+				for(QDataBaseEntityMessage message: messages) {
+					
+					/* we grab the items of that message */
+					BaseEntity[] bes = message.getItems();
+					List<BaseEntity> besToKeep = new ArrayList<BaseEntity>();
+					List<BaseEntity> besToMove = new ArrayList<BaseEntity>();
+					
+					
+					/* if the parentCode is the sourceCode */
+					if(message.getParentCode().equals(sourceCode)) {
+						
+						for(BaseEntity be: bes) {
+							
+							/* if the be is NOT the be we are looking for */
+							if(be.getCode().equals(baseEntity.getCode()) == false) {
+								
+								/* we add it to the list of bes to keep */
+								besToKeep.add(be);
+							}
+							else {
+								
+								/* we add it to the list of bes to move */
+								besToMove.add(be);
+							}
+						}
+					}
+					/* if the parentCode is the beCode we need to move it as well */
+					else if(message.getParentCode().equals(baseEntity.getCode())) {
+						
+						/* we add the copy to the target list */
+						besToMove.add(baseEntity);
+					}
+					
+					/* we assign the bes to keep to the message */
+					message.setItems(besToKeep.toArray(new BaseEntity[0]));
+					beMessagesToKeep.add(message);
+					
+					/* we create a message for the moving item */
+					QDataBaseEntityMessage newMessage = new QDataBaseEntityMessage(besToMove.toArray(new BaseEntity[0]));
+					newMessage.setParentCode(message.getParentCode());
+					
+					/* we add it to the list */
+					beMessagesToMove.add(newMessage);
+				}
+			}
+		}
+		else {
+			
+			/* if the source cache is not found, we simply create a new message for the current base entity */
+			/* we create a message for the moving item */
+			List<QDataBaseEntityMessage> message = this.generateItemCacheHandleBaseEntity(targetCode, baseEntity);
 
+			/* we add it to the list */
+			beMessagesToMove.addAll(message);
+		}
+		
+		/* update source cache */
+		
+		if(sourceItemMessages == null) {
+			sourceItemMessages = new QBulkMessage();
+		}
+		
+		sourceItemMessages.add(beMessagesToKeep);
+		
+		/* we write it to the cache */
+		VertxUtils.putObject(realm, "CACHE", sourceCode, sourceItemMessages);
+		
+		/* update target cache */
+		
+		/* we then add the moving messages to the targetItem */
+		if(targetItemMessages == null) {
+			targetItemMessages = new QBulkMessage();
+		}
+		
+		targetItemMessages.add(beMessagesToMove);
+		
+		/* we write it to the cache */
+		VertxUtils.putObject(realm, "CACHE", targetCode, targetItemMessages);
+	}
+
+	public void moveBaseEntity(String beCode, String sourceCode, String targetCode) {
+		
+		BaseEntity baseEntity = this.baseEntityUtils.getBaseEntityByCode(beCode);
+		if(baseEntity != null) {
+			this.moveBaseEntity(baseEntity, sourceCode, targetCode);
+		}
+	}
+	
 	private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
 
 		/* 1. we add the cached item to the message "items" */
