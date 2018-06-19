@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
 import java.util.stream.Collectors;
 
 import javax.money.CurrencyUnit;
@@ -52,6 +53,7 @@ import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.channel.Consumer;
 import life.genny.channel.Producer;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
@@ -188,9 +190,12 @@ public class QRules {
 		try {
 
 			/* initialising utils */
+			/* TODO: to update so it is static */
 			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
+
 			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 		} catch (Exception e) {
 
@@ -1282,21 +1287,21 @@ public class QRules {
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
-		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode);
-	}
-
-	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
-		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, true);
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, true);
 	}
 
-	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelections) {
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean pushSelection) {
+		return this.sendQuestions(sourceCode, targetCode, questionGroupCode, sourceCode, pushSelection);
+	}
 
-		QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelections);
-		if(questions != null) {
+	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelection) {
+
+	QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
+    if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
@@ -1304,15 +1309,23 @@ public class QRules {
 
 		return false;
 	}
-	
+
 	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
 	}
-	
+
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
 	}
 
+
+	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
+		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
+	}
+
+	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
+		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
+	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
@@ -1572,9 +1585,6 @@ public class QRules {
 					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
 					/* Publish message to Receiver */
 					publishData(this.baseEntity.getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had
-																													// to
-																													// use
-																													// getCode()
 
 					QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
 
@@ -2588,10 +2598,17 @@ public void makePayment(QDataAnswerMessage m) {
                             unsubscribeArr[i++] = code;
                         }
                         /* sending cmd BUCKETVIEW */
-                        this.redirectToHomePage();
+                        // this.redirectToHomePage();
+
+                          /* we hide the job from them */
+
                         println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
                         VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
                     }
+
+                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
+                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
+
                     // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
                     this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
                     publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
@@ -2601,7 +2618,8 @@ public void makePayment(QDataAnswerMessage m) {
                     this.baseEntity.saveAnswer(begNextAction);
                     /* sending cmd BUCKETVIEW */
                     // this.setState("TRIGGER_HOMEPAGE");
-                    this.redirectToHomePage();
+
+                    this.reloadCache();
 
                     /* TOAST :: SUCCESS */
                     println("Sending success toast since make payment succeeded");
@@ -2613,8 +2631,9 @@ public void makePayment(QDataAnswerMessage m) {
                     contextMap.put("LOAD", loadBe.getCode());
                     String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate("MSG_CH40_CONFIRM_QUOTE_OWNER");
                     if(unsubscribeUrl != null) {
-                    	contextMap.put("URL", unsubscribeUrl);
+                    		contextMap.put("URL", unsubscribeUrl);
                     }
+
                     String[] recipientArr = { userCode };
                     /* TOAST :: PAYMENT SUCCESS */
                     sendMessage("", recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
@@ -2636,10 +2655,12 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
-                    this.reloadCache();
+
                 }
             }
         }
+
+        this.redirectToHomePage();
     }
 
 	public void updateGPS(QDataGPSMessage m) {
@@ -2802,6 +2823,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+  public void clearBaseEntity(String baseEntityCode, String parentCode, String recipientCode) {
+    String[] recipients = new String[1];
+    recipients[0] = recipientCode;
+    this.clearBaseEntity(baseEntityCode, parentCode, recipients);
+	}
+
 	/* sets delete field to true and the parentCode (required to remove the links as well) so that FE
 	 * removes the BE from their store
 	 */
@@ -2821,6 +2848,31 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(beMsg, recipients);
 
 	}
+
+  /* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(String baseEntityCode, String recipientCode) {
+
+    String[] recipients = new String[1];
+    recipients[0] = recipientCode;
+    this.clearBaseEntity(baseEntityCode, recipients);
+	}
+
+  public void clearBaseEntity(List<BaseEntity> bes, String recipientCode) {
+
+    for(BaseEntity be: bes) {
+
+      String[] recipients = new String[1];
+      recipients[0] = recipientCode;
+      this.clearBaseEntity(be.getCode(), recipients);
+    }
+  }
+
+  public void clearBaseEntity(List<BaseEntity> bes, String[] recipients) {
+
+    for(BaseEntity be: bes) {
+      this.clearBaseEntity(be.getCode(), recipients);
+    }
+  }
 
 	public void acceptJob(QEventBtnClickMessage m) {
 
@@ -3058,7 +3110,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void saveJob(BaseEntity job) {
 
-    this.showLoading("Creating job...");
+		this.showLoading("Creating job...");
 
 		String jobCode = job.getCode();
 
@@ -3140,14 +3192,14 @@ public void makePayment(QDataAnswerMessage m) {
 		publishData(msgLnkBegLoad, recipientCodes);
 
 
-    /* we push the job to the creator */
-    String[] creatorRecipient = { getUser().getCode() };
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+	    /* we push the job to the creator */
+	    String[] creatorRecipient = { getUser().getCode() };
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
-		/* SEND LOAD BE */
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+			/* SEND LOAD BE */
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
 		/* publishing to Owner */
 		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
@@ -3206,9 +3258,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 
-    this.redirectToHomePage();
-		this.reloadCache();
-    drools.setFocus("ispayments");  /* NOW Set up Payments */
+		this.redirectToHomePage();
+//		this.reloadCache();
+		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4244,7 +4296,6 @@ public void makePayment(QDataAnswerMessage m) {
 			String unsubscribeUrlForOwner = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_OWNER");
 			String unsubscribeUrlForDriver = getUnsubscribeLinkForEmailTemplate("MSG_CH40_PAYMENT_RELEASED_DRIVER");
 
-			/* sending message for owner */
 			String[] messageToOwnerRecipients = new String[1];
 			messageToOwnerRecipients[0] = ownerBe.getCode();
 
@@ -4496,14 +4547,19 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public void reloadCache() {
 
+		BaseEntityUtils beUtils = this.baseEntity;
+		CacheUtils cacheUtils = this.cacheUtils;
+
+		String realm = this.realm();
+
 		/* we check if the search BEs have been created */
-		BaseEntity searchNewItems = this.baseEntity.getBaseEntityByCode("SBE_NEW_ITEMS");
+		BaseEntity searchNewItems = beUtils.getBaseEntityByCode("SBE_NEW_ITEMS");
 		if (searchNewItems == null) {
 			drools.setFocus("GenerateSearches");
 		}
 
-		this.cacheUtils.refresh(this.realm(), "BUCKETS");
-		this.cacheUtils.refresh(this.realm(), "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+		cacheUtils.refresh(realm, "BUCKETS");
+		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
 	public void sendApplicationData() {
@@ -5849,6 +5905,377 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
+	}
+
+
+	/* TO DELETE */
+	public void sendHostCompanyData() {
+
+		String[] recipient = { getUser().getCode() };
+		BaseEntity company = this.baseEntity.getParent(getUser().getCode(), "LNK_STAFF");
+		if (company == null) {
+			println("company is null");
+			return;
+		}
+
+		/* SEND ROOT BaseEntity */
+		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
+		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
+		List<BaseEntity> rootKids = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
+
+		if (rootKids != null) {
+			printList("rootKids", rootKids);
+
+			for (BaseEntity rootKid : rootKids) {
+
+				/* FOR GRP_APPLICATIONS BEGS */
+				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					rootKidsToSend.add(rootKid);
+				}
+			}
+			printList("rootKidsToSend", rootKidsToSend);
+
+			/* subscribe to all the rootKids */
+			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
+			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
+
+			for (BaseEntity rootKid : rootKids) {
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
+					List<BaseEntity> begGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
+					if (begGroups != null) {
+						printList("begGroups", begGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), begGroups);
+						publishCmd(begGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity begGroup : begGroups) {
+
+							List<BaseEntity> begs = this.baseEntity.getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0,
+									500, false, company.getCode());
+							if (begs != null) {
+								printList("begs", begs);
+
+								/* subscribe to all the begs of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), begs);
+								publishCmd(begs, begGroup.getCode(), "LNK_CORE");
+
+								for (BaseEntity beg : begs) {
+									List<BaseEntity> begKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(),
+											"LNK_BEG", 0, 500, false);
+
+									if (begKids != null) {
+										printList("begKids", begKids);
+
+										/* subscribe to all the begKids of the company */
+										subscribeUserToBaseEntities(getUser().getCode(), begKids);
+										publishCmd(begKids, beg.getCode(), "LNK_BEG");
+
+										/* Send Applicants */
+										for (BaseEntity begKid : begKids) {
+
+											if (begKid.getName().equals("APPLICATION")) {
+												subscribeUserToBaseEntity(getUser().getCode(), begKid);
+
+												List<BaseEntity> applicationKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(
+														begKid.getCode(), "LNK_APP", 0, 500, false);
+
+												if (applicationKids != null) {
+													printList("applicationKids", applicationKids);
+
+													/* subscribe to all the applicationKids */
+													subscribeUserToBaseEntities(getUser().getCode(), applicationKids);
+													publishCmd(applicationKids, begKid.getCode(), "LNK_BEG");
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					} else {
+						println("GRP_BEG begs is null");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					List<BaseEntity> applicationGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(),
+							"LNK_CORE", 0, 20, false);
+					if (applicationGroups != null) {
+						printList("applicationGroups", applicationGroups);
+
+						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
+						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
+
+						/* subscribe to all the applicationGroups */
+						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
+						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = this.baseEntity.getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false, company.getCode());
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
+					}
+				}
+			}
+		}
+	}
+
+	public void sendInternData() {
+
+		String[] recipient = { getUser().getCode() };
+
+		/* SEND ROOT BaseEntity */
+		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
+		List<BaseEntity> rootKids = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
+
+		if (rootKids != null) {
+			printList("rootKids", rootKids);
+
+			for (BaseEntity rootKid : rootKids) {
+
+				/* FOR GRP_APPLICATIONS BEGS */
+				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					rootKidsToSend.add(rootKid);
+				}
+			}
+			printList("rootKidsToSend", rootKidsToSend);
+
+			/* subscribe to all the rootKids */
+			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
+			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
+
+			for (BaseEntity rootKid : rootKids) {
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
+					List<BaseEntity> begGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();
+
+					if (begGroups != null) {
+						printList("begGroups", begGroups);
+
+						for (BaseEntity begGroup : begGroups) {
+
+							/* FOR GRP_APPLICATIONS BEGS */
+							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") ||
+								!begGroup.getCode().equalsIgnoreCase("GRP_FILLED") ||
+								!begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
+								begGroupsToSend.add(begGroup);
+							}
+						}
+						printList("begGroupsToSend", begGroupsToSend);
+
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
+						publishCmd(begGroupsToSend, rootKid.getCode(), "LNK_CORE");
+
+						BaseEntity begApplication = null;
+						List<BaseEntity> begKids = new ArrayList<BaseEntity>();
+						for (BaseEntity begGroup : begGroups) {
+
+							if(begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")){
+								List<BaseEntity> begs = this.baseEntity.getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false);
+								if (begs != null) {
+									printList("begs", begs);
+
+									/* subscribe to all the begs of the company */
+									subscribeUserToBaseEntities(getUser().getCode(), begs);
+									publishCmd(begs, begGroup.getCode(), "LNK_CORE");
+
+									for (BaseEntity beg : begs) {
+										List<BaseEntity> applications = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
+										subscribeUserToBaseEntities(getUser().getCode(), applications);
+
+										if(applications.size() > 0){
+											println("application size :: "+applications.size());
+
+											/* i have an application */
+											for(BaseEntity application : applications) {
+												begApplication =  application;
+											}
+
+											println("application that is found :: "+begApplication.getCode());
+											begKids.add(begApplication);
+
+
+										}
+										List<BaseEntity> otherBegKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+										for (BaseEntity begKid : otherBegKids) {
+
+											if (!begKid.getName().equals("APPLICATION")) {
+												println("Baseentity kid :: "+begKid.getCode());
+												begKids.add(begKid);
+											}
+										}
+										/* subscribe to all the applications of the company */
+										subscribeUserToBaseEntities(getUser().getCode(), begKids);
+										publishCmd(begKids, beg.getCode(), "LNK_BEG");
+									}
+								}else{
+									println("begs is null");
+								}
+							}
+						}
+
+					}
+				}
+
+				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
+					List<BaseEntity> buckets = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (buckets != null) {
+						printList("buckets", buckets);
+
+						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
+						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), buckets);
+						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = this.baseEntity.getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false);
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
+					}
+				}
+			}
+
+
+		}
+	}
+
+	public void sendListTabView(final String listCode, final String bucketCode, final String begCode) {
+
+		JsonObject listView = new JsonObject();
+		listView.put("code", "LIST_VIEW");
+		listView.put("root", listCode);
+
+		JsonObject bucketView = new JsonObject();
+		bucketView.put("code", "BUCKET_VIEW");
+		bucketView.put("root", bucketCode);
+
+		JsonObject detailView = new JsonObject();
+		detailView.put("code", "DETAIL_VIEW");
+		detailView.put("root", begCode);
+		detailView.put("layoutCode", "detail-view");
+		detailView.put("parentCode", listCode);
+
+		JsonArray dataArray = new JsonArray();
+		dataArray.add(bucketView);
+		dataArray.add(detailView);
+
+		JsonObject layout1 = new JsonObject();
+		layout1.put("code", "BUCKET_VIEW");
+		layout1.put("root", bucketCode);
+
+		JsonObject layout2 = new JsonObject();
+		layout2.put("code", "DETAIL_VIEW");
+		layout2.put("root", begCode);
+		layout2.put("layoutCode", "detail-view");
+		layout2.put("parentCode", listCode);
+
+		JsonObject tabObject1 = new JsonObject();
+		tabObject1.put("name", "Process Card");
+		tabObject1.put("icon", "table_chart");
+		tabObject1.put("layout", layout1);
+
+		JsonObject tabObject2 = new JsonObject();
+		tabObject2.put("name", "Internship Details");
+		tabObject2.put("icon", "reorder");
+		tabObject2.put("layout", layout2);
+
+
+		JsonArray tabArray = new JsonArray();
+		tabArray.add(tabObject1);
+		tabArray.add(tabObject2);
+
+		JsonObject tabView = new JsonObject();
+		tabView.put("code", "TAB_VIEW");
+		tabView.put("root", dataArray);
+		tabView.put("tabs", tabArray);
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(listView);
+		msgCodes.add(tabView);
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", begCode);
+		cmdViewJson.put("data", msgCodes);
+
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+
+		publishCmd(cmdViewJson);
+	}
+
+	public void sendSplitView2(final String parentCode, final String bucketCode) {
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+
+		JsonObject codeListView = new JsonObject();
+		codeListView.put("code", "LIST_VIEW");
+		codeListView.put("root", parentCode);
+
+		JsonObject bucketListView = new JsonObject();
+		bucketListView.put("code", "BUCKET_VIEW");
+		bucketListView.put("root", bucketCode);
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(bucketListView);
+		System.out.println("The JsonArray is :: " + msgCodes);
+		cmdViewJson.put("data", msgCodes);
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		publishCmd(cmdViewJson);
 	}
 
 }
