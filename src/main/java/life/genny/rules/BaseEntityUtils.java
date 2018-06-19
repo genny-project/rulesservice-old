@@ -488,7 +488,7 @@ public class BaseEntityUtils {
 			String beJson = QwandaUtils.apiGet(this.qwandaServiceUrl + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", this.token);
 			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
-			if (linkArray.length > 0) {
+			if (linkArray != null && linkArray.length > 0) {
 
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				parents = new ArrayList<BaseEntity>();
