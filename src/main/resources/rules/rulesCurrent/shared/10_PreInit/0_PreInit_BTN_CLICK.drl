@@ -49,9 +49,11 @@ rule "Pre Init Btn Click"
           }
           if(itemCode != null) {
             rules.set("itemCode", itemCode);
+            rules.setState(itemCode);
           }
           if(hintCode != null) {
             rules.set("hintCode", hintCode);
+            rules.setState(hintCode);
           }
           if(messageCode != null) {
             rules.set("messageCode", messageCode);
