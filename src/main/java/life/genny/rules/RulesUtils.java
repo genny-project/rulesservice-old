@@ -135,48 +135,49 @@ public class RulesUtils {
 	public static String getLayout(String realm, String path) {
 
   	String jsonStr = "";
-		try {
+  	String finalPath = "";
+  	try {
 
-      if(path.startsWith("/") == false && realm.endsWith("/") == false) {
-        path = realm + "/" + path;
-      }
-      else {
-        path = realm + path;
-      }
+  		if(path.startsWith("/") == false && realm.endsWith("/") == false) {
+  			finalPath = realm + "/" + path;
+  		}
+  		else {
+  			finalPath = realm + path;
+  		}
 
-			String url = getLayoutCacheURL(path);
-			println("Trying to load url.....");
-      println(url);
+  		String url = getLayoutCacheURL(finalPath);
+  		println("Trying to load url.....");
+  		println(url);
 
-			/* we make a GET request */
-      jsonStr = QwandaUtils.apiGet(url, null);
+  		/* we make a GET request */
+  		jsonStr = QwandaUtils.apiGet(url, null);
 
-			if(jsonStr != null) {
+  		if(jsonStr != null) {
 
-				/* we serialise the layout into a JsonObject */
-				JsonObject layoutObject = new JsonObject(jsonStr);
-				if(layoutObject != null) {
+  			/* we serialise the layout into a JsonObject */
+  			JsonObject layoutObject = new JsonObject(jsonStr);
+  			if(layoutObject != null) {
 
-					/* we check if an error happened when grabbing the layout */
-					if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
+  				/* we check if an error happened when grabbing the layout */
+  				if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
 
-						/* we try to grab the layout using the genny realm */
-						return RulesUtils.getLayout("genny", path);
-					}
-					else {
+  					/* we try to grab the layout using the genny realm */
+  					return RulesUtils.getLayout("genny", path);
+  				}
+  				else {
 
-						/* otherwise we return the layout */
-						return jsonStr;
-					}
-				}
-			}
-		}
-		catch(Exception e) {
-      System.out.println(jsonStr);
-      return jsonStr;
-		}
+  					/* otherwise we return the layout */
+  					return jsonStr;
+  				}
+  			}
+  		}
+  	}
+  	catch(Exception e) {
+  		System.out.println(jsonStr);
+  		return jsonStr;
+  	}
 
-    return null;
+  	return null;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {
