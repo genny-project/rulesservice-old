@@ -4688,9 +4688,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		if (this.hasCapability("READ_NEW_ITEMS")) {
+		//if (this.hasCapability("READ_NEW_ITEMS")) {
 			subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
-		}
+		//}
 
 		this.sendCachedItem("BUCKETS", subscriptions);
 
