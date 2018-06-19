@@ -11,9 +11,11 @@ rule "Trigger Submit Add BEG"
 	 	rules.header();
         rules.setState("LOOP_TRIGGER_SUBMIT_ADD_BEG");
 		
+		rules.showLoading("", true);
+		
 		String begCode = rules.getAsString("quesTargetCode");
 		if(begCode != null){
-
+			
 			BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);			
 			if(beg != null){
 				rules.set("begBe", beg);

@@ -21,6 +21,7 @@ rule "Submit Add BEG - Step 0"
 			rules.println("begCode   ::   " + beg.getCode());		
 			rules.println("productCode   ::   " + product.getCode());
 			rules.baseEntity.copyAttributes(product, beg);
+			rules.setState("COPIED_ALL_ATTRIBUTES_FROM_PRODUCT_TO_BEG");
 			rules.setState("LINK_BEG_AND_CREATOR");
 		}
 	 	rules.footer();      

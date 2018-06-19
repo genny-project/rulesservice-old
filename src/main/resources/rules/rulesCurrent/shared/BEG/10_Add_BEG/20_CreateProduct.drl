@@ -16,6 +16,9 @@ rule "Add Product - Step 2"
 
 		BaseEntity beg = rules.getAsBaseEntity("baseEntity");	
 		if(beg != null){
+		
+			/* we link the creator */
+			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode());
 			rules.set("begBe", beg);
 		}else{
 			rules.println("beg is null");
