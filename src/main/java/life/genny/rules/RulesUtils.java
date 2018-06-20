@@ -830,7 +830,7 @@ public class RulesUtils {
 			linkJson = QwandaUtils.apiGet(
 					qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/" + linkCode + "/children",
 					token);
-			return JsonUtils.gson.fromJson(linkJson, new TypeToken<List<Link>>() {
+			return JsonUtils.fromJson(linkJson, new TypeToken<List<Link>>() {
 			}.getType());
 
 		} catch (IOException e) {
