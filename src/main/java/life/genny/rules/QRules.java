@@ -5324,9 +5324,20 @@ public class QRules {
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + msg);
+		System.out.println("The result   ::  " + JsonUtils.toJson(msg));
 		publishData(new JsonObject(resultJson));
 	}
+	
+	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
+        System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+        String jsonSearchBE = JsonUtils.toJson(searchBE);
+        String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+                getToken());
+        QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+        msg.setParentCode(parentCode);
+        System.out.println("The result   ::  " + msg);
+        publishData(new JsonObject(resultJson));
+    }
 
 	/*
 	 * Get search Results returns QDataBaseEntityMessage
@@ -7215,14 +7226,14 @@ public class QRules {
 				printList("students", students);
 
 				/* subscribe eduProvider staff to all the students of eduProvider */
+				subscribeUserToBaseEntity(getUser().getCode(), "GRP_INTERNS");
 				subscribeUserToBaseEntities(getUser().getCode(), students);
 				publishCmd(students, "GRP_INTERNS", "LNK_CORE");
 
-				this.sendListTabView("GRP_INTERNS", "GRP_APPLICATIONS", students.get(0).getCode());
-				
 			}else{
 				println("students is null");
 			}
+			this.sendListTabViewEdu("GRP_INTERNS", "GRP_APPLICATIONS", students.get(0).getCode());
 		}else{
 			println("rootKids is null");
 		}
@@ -8561,11 +8572,20 @@ public class QRules {
 		clearBaseEntityAndChildren("GRP_NOTES");
 		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
-		List<BaseEntity> notes = getBaseEntitysByParentAndLinkCode("GRP_NOTES", "LNK_CORE", 0, 5000, false, context.getCode());
-		if (notes != null) {
-			printList("notes", notes);
-			publishCmd(notes, "GRP_NOTES", "LNK_CORE");
+		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"Notes")
+		.setSourceCode("GRP_NOTES")
+		.setStakeholder(context.getCode())
+		.setPageStart(0)
+		.setPageSize(10000);
 
+		if (searchBE != null) {
+			/* Send search result */
+			try {
+				this.sendSearchResults(searchBE, "GRP_NOTES");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}else{
 			println("notes not found for the context");
 		}
@@ -8580,6 +8600,70 @@ public class QRules {
 		beMsg.setShouldDeleteLinkedBaseEntities(true);
 		publishData(beMsg, recipients);
 
+	}
+
+	public void sendListTabViewEdu(final String listCode, final String bucketCode, final String begCode) {
+
+		JsonObject listView = new JsonObject();
+		listView.put("code", "LIST_VIEW");
+		listView.put("root", listCode);
+		
+		JsonObject bucketView = new JsonObject();
+		bucketView.put("code", "BUCKET_VIEW");
+		bucketView.put("root", bucketCode);
+			
+		JsonObject detailView = new JsonObject();	
+		detailView.put("code", "DETAIL_VIEW");
+		detailView.put("root", begCode);
+		detailView.put("layoutCode", "intern-details-main");
+		detailView.put("parentCode", listCode);
+		
+		JsonArray dataArray = new JsonArray();	
+		dataArray.add(bucketView);
+		dataArray.add(detailView);
+		
+		JsonObject layout1 = new JsonObject();
+		layout1.put("code", "BUCKET_VIEW");
+		layout1.put("root", bucketCode);
+
+		JsonObject layout2 = new JsonObject();
+		layout2.put("code", "DETAIL_VIEW");
+		layout2.put("root", begCode);
+		layout2.put("layoutCode", "intern-details-main");
+		layout2.put("parentCode", listCode);
+		
+		JsonObject tabObject1 = new JsonObject();
+		tabObject1.put("name", "Process View");
+		tabObject1.put("icon", "table_chart");
+		tabObject1.put("layout", layout1);
+		
+		JsonObject tabObject2 = new JsonObject();
+		tabObject2.put("name", "Profile Details");
+		tabObject2.put("icon", "person");
+		tabObject2.put("layout", layout2);
+		
+		
+		JsonArray tabArray = new JsonArray();
+		tabArray.add(tabObject1);
+		tabArray.add(tabObject2);
+		
+		JsonObject tabView = new JsonObject();
+		tabView.put("code", "TAB_VIEW");
+		tabView.put("root", dataArray);		
+		tabView.put("tabs", tabArray);		
+
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(listView);
+		msgCodes.add(tabView);
+
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", begCode);
+		cmdViewJson.put("data", msgCodes);
+
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
+
+		publishCmd(cmdViewJson);
 	}
 	
 }
