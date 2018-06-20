@@ -2724,7 +2724,7 @@ public void makePayment(QDataAnswerMessage m) {
                     /* sending cmd BUCKETVIEW */
                     // this.setState("TRIGGER_HOMEPAGE");
 
-                    this.reloadCache();
+                    //this.reloadCache();
 
                     /* TOAST :: SUCCESS */
                     println("Sending success toast since make payment succeeded");
@@ -4681,9 +4681,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* we set all the buckets we would like user to subscribe to */
 		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		if (this.hasCapability("READ_NEW_ITEMS")) {
-			subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
-		}
+		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
 
 		this.sendCachedItem("BUCKETS", subscriptions);
 
@@ -5977,6 +5975,24 @@ public void makePayment(QDataAnswerMessage m) {
 			return null;
 
 		}
+	}
+	
+	public String generateRedirectUrl(String host, JsonObject data) {
+		
+		/* we stringify the json object */
+		try {
+			
+			String stringifiedJson = JsonUtils.toJson(data);
+			if(stringifiedJson != null) {
+				
+				/* we encode it for URL schema */
+				String base64 = this.encodeToBase64(stringifiedJson);
+				return host + "?state=" + base64;
+			}
+		}
+		catch (Exception e) {}
+
+		return null;
 	}
 
 	/* creating a redirect link for unsubscription and adding it in context map */
