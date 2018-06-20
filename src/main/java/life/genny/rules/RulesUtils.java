@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.reflect.TypeToken;
@@ -28,7 +29,11 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.KeycloakUtils;
+
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.SecurityUtils;
+import life.genny.security.SecureResources;
 import life.genny.utils.VertxUtils;
 
 
@@ -827,6 +832,68 @@ public class RulesUtils {
 		println(newBe.getCode());
 		return newBe;
 
+	}
+
+	public static String generateServiceToken(String realm) {
+
+		if (System.getenv("GENNYDEV") != null) {
+			realm = "genny";
+		}
+
+		String jsonFile = realm + ".json";
+
+		String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
+		if (keycloakJson == null) {
+			System.out.println("No keycloakMap for " + realm);
+			return null;
+		}
+		JsonObject realmJson = new JsonObject(keycloakJson);
+		JsonObject secretJson = realmJson.getJsonObject("credentials");
+		String secret = secretJson.getString("secret");
+
+		// fetch token from keycloak
+		String key = null;
+		String initVector = "PRJ_" + realm.toUpperCase();
+		initVector = StringUtils.rightPad(initVector, 16, '*');
+		String encryptedPassword = null;
+		if (System.getenv("GENNYDEV") != null) {
+			initVector = "PRJ_GENNY*******";
+		}
+
+		try {
+			key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
+		} catch (Exception e) {
+			println("PRJ_" + realm.toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
+		}
+
+		try {
+			encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
+		} catch (Exception e) {
+			println("PRJ_" + realm.toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
+		}
+
+		String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+
+		// Now ask the bridge for the keycloak to use
+		String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+				realmJson.getString("auth-server-url").length() - ("/auth".length()));
+
+		println(keycloakurl);
+
+		try {
+			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
+					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+
+			String token = KeycloakUtils.getToken(keycloakurl, realm, realm, secret, "service", password);
+			println("token = " + token);
+			return token;
+
+		} catch (Exception e) {
+			println(e);
+		}
+
+		return null;
 	}
 
 }
