@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Add Note"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("BTN_ADD_NOTE") && 
+						!isState("LOOP_TRIGGER_ADD_NOTE")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_ADD_NOTE");
+		
+	   	String applicationCode = rules.getAsString("itemCode");
+		if(applicationCode != null){
+
+			BaseEntity application = rules.baseEntity.getBaseEntityByCode(applicationCode);
+			rules.set("applicationBe", application);
+			
+			rules.setState("CREATE_NOTE_BASEENTITY");
+			
+		}else{
+			rules.println("applicationCode is null");
+		}
+	 	rules.footer();      
+end
