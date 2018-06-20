@@ -13,14 +13,10 @@ rule "Check user company - Step 3.5"
 		
 		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
 		
-		/* we grab the company admin role */
-        BaseEntity adminRole = rules.baseEntity.getRole("COMPANY_ADMIN");
-        if(adminRole == null) {
-        		rules.println("============================= AIE AIE ========================");
-        }
-		
-        /* we attach the role to the company */
-		rules.baseEntity.setRole(adminRole, companyBe);
+		BaseEntity adminRole = rules.baseEntity.createRole("COMPANY_ADMIN", "Company Admin", "CAP_ADD_CHAT_MESSAGE","CAP_UPDATE_CHAT_MESSAGE", "CAP_ADD_ITEM", "CAP_MARK_DELIVERY");
+
+		/* we attach the role to the company */
+		rules.baseEntity.setRole(companyBe, adminRole);
 		
 		/* we attach the role to the user */
 		rules.baseEntity.setRole(rules.getUser(), adminRole);

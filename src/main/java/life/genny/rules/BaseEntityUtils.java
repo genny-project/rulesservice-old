@@ -60,10 +60,16 @@ public class BaseEntityUtils {
 	}
 
 	/* =============== refactoring =============== */
-
 	public BaseEntity create(final String author, final String bePrefix, final String name) {
+		return this.create(author, bePrefix, name, null);
+	}
+	
+	public BaseEntity create(final String author, final String bePrefix, final String name, String uniqueId) {
 
-		String uniqueId = QwandaUtils.getUniqueId(bePrefix, author);
+		if(uniqueId == null) {
+			uniqueId = QwandaUtils.getUniqueId(bePrefix, author);
+		}
+		
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
@@ -80,19 +86,42 @@ public class BaseEntityUtils {
 
 	public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
 		
-		String uniqueId = "_IS_" + uniqueCode.toUpperCase();
-		String code = "ROL" + uniqueId;
+		String uniqueId = "IS_" + uniqueCode.toUpperCase();
+		String code = "ROL_" + uniqueId;
 
 		log.info("Creating Role "+code+":"+name);
 
 		BaseEntity role = this.getBaseEntityByCode(code);
 		if (role == null) {
-			role = this.create(uniqueId, "ROL", name);
+			role = this.create(uniqueId, "ROL", name, code);
 		}
 
-		for (String capabilityCode : capabilityCodes) {
+		return this.setupNewRole(role, name, capabilityCodes);
+	}
 
-			Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_" + capabilityCode);
+	public BaseEntity getRole(String name) {
+		
+		/* we re-generate the rol code based on the name */
+		String code = "ROL_IS_" + name.toUpperCase();
+		
+		/* we try to fetch the role */
+		return this.getBaseEntityByCode(code);
+	}
+	
+	public void setRole(BaseEntity be, BaseEntity role) {
+		if(be != null && role != null) {
+			this.createLink(be.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
+		}
+	}
+
+	public BaseEntity setupNewRole(BaseEntity role, String roleName, String[] capabilities) {
+
+		/* we set the role name */
+		role.setName(roleName);
+
+		for (String capabilityCode : capabilities) {
+
+			Attribute capabilityAttribute = RulesUtils.attributeMap.get(capabilityCode);
 			if(capabilityAttribute != null) {
 				
 				try {
@@ -103,15 +132,19 @@ public class BaseEntityUtils {
 				}
 			}
 		}
+		
+		List<Answer> answers = new ArrayList<Answer>();
 
 		/* we add the realm as an attribute */
-		Attribute realmAttribute = RulesUtils.attributeMap.get("PRI_REALM");
-		try {
-			role.addAttribute(realmAttribute, 1.0, this.realm);
-		}
-		catch (BadDataException e) {
-			e.printStackTrace();
-		}
+		Answer realmAnswer = new Answer(role.getCode(), role.getCode(), "PRI_REALM", this.realm);
+		answers.add(realmAnswer);
+		
+		/* we add the name as an attribute */
+		Answer nameAnswer = new Answer(role.getCode(), role.getCode(), "PRI_NAME", roleName);
+		answers.add(nameAnswer);
+		
+		/* we save the answers */
+		this.saveAnswers(answers);
 
 		/* Now force the role to only have these capabilitys */
 		try {
@@ -124,50 +157,6 @@ public class BaseEntityUtils {
 		this.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0);
 		
 		return role;
-	}
-
-	public BaseEntity getRole(String name) {
-		
-		/* we re-generate the rol code based on the name */
-		String code = "ROL_IS_" + name.toUpperCase();
-		
-		/* we try to fetch the role */
-		return this.getBaseEntityByCode(code);
-	}
-	
-	public void setRole(BaseEntity company, BaseEntity role) {
-		if(company != null && role != null) {
-			this.createLink(company.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
-		}
-	}
-
-	public void setupNewRole(BaseEntity role, BaseEntity company, String roleName, String[] capabilities) {
-
-		/* we set the role name */
-		role.setName(roleName);
-
-		/* we loop through the capabilities */
-		for(int i = 0; i < capabilities.length; i++) {
-
-			  String capability = capabilities[i];
-
-			  /* we try to fetch the attribute */
-			  Attribute capabilityAttribute = RulesUtils.attributeMap.get(capability);
-			  if(capabilityAttribute != null) {
-
-				  try {
-					  
-					  /* we add the attribute to the role base entity */
-					  role.addAttribute(capabilityAttribute, 1.0, "TRUE");
-
-				  } catch (BadDataException e) {
-					  System.out.println("Could not add capability: " + capability + " to role: " + role.getName());
-				  }
-			  }
-		  }
-		  
-		  /* we link the company and the role */
-		  this.createLink(company.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
 	 }
 
 	public Object get(final String key) {

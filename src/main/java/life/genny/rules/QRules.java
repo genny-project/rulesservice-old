@@ -1544,9 +1544,7 @@ public class QRules {
 		if (text != null && chatCode != null) {
 
 			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
+			BaseEntity newMessage = this.baseEntity.create(getUser().getCode(), "MSG", "message");
 			if (newMessage != null) {
 
 				List<BaseEntity> stakeholders = this.baseEntity.getLinkedBaseEntities(chatCode, "LNK_USER");
@@ -1611,9 +1609,7 @@ public class QRules {
 		if (text != null && chatCode != null) {
 
 			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
+			BaseEntity newMessage = this.baseEntity.create(this.getUser().getCode(), "MSG", "message");
 			if (newMessage != null) {
 
 				List<BaseEntity> stakeholders = this.baseEntity.getParents(chatCode, "LNK_USER");

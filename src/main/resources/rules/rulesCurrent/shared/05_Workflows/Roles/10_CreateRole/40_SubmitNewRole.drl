@@ -14,38 +14,41 @@ rule "Create New Role - Step 4 - Submit"
         rules.header();
 
         rules.setState("DID_SUBMIT_NEW_ROLE");
-        
+
         /* we show a loading */
         rules.showLoading("", true);
-        
+
         String targetCode = rules.getAsString("targetCode");
         if(targetCode != null) {
-        		
+
         		BaseEntity newRoleBe = rules.baseEntity.getBaseEntityByCode(targetCode);
         		if(newRoleBe != null) {
-        			
+
         			/* we grab the name of the new role */
         			String roleName = newRoleBe.getValue("PRI_NAME", null);
-        			
+
         			/* we grab the capabilities */
         			String capabilities = newRoleBe.getValue("LNK_SELECT_CAPABILITY", null);
-        			
+
         			/* we grab the current user's company */
         			BaseEntity company = rules.getUserCompany();
-        			
+
         			if(roleName != null && capabilities != null && company != null) {
-        				
+
         				/* we get an array of capabilities */
         				capabilities = capabilities.replaceAll("[\\[\\](){}]", "").replaceAll("\"", "");
         				String[] capabilitiesArray = capabilities.split(",");
-        				
+
         				/* we add the capabilities to the role */
-        				rules.baseEntity.setupNewRole(newRoleBe, company, roleName, capabilitiesArray);
+        				rules.baseEntity.setupNewRole(newRoleBe, roleName, capabilitiesArray);
+
+                /* we add the role to the company */
+                rules.baseEntity.setRole(company, newRoleBe);
         			}
         		}
         }
-        
+
         rules.setState("SHOW_COMPANY_ROLES");
-        
+
 	    rules.footer();
 end
