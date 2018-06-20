@@ -906,10 +906,6 @@ public class QRules {
 	// 	// this.navigate(type, newRoute);
 	// }
 
-	public void showLoading(String text) {
-		this.showLoading(text, false);
-	}
-
 	public void showLoading(String text, Boolean isPopup) {
 
 		if (text == null) {

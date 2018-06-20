@@ -61,9 +61,9 @@ public class BaseEntityUtils {
 
 	/* =============== refactoring =============== */
 
-	public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
+	public BaseEntity create(final String author, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
+		String uniqueId = QwandaUtils.getUniqueId(bePrefix, author);
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
@@ -79,24 +79,28 @@ public class BaseEntityUtils {
 	/* old code */
 
 	public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
-
-		String code = "ROL_IS_" + uniqueCode.toUpperCase();
+		
+		String uniqueId = "_IS_" + uniqueCode.toUpperCase();
+		String code = "ROL" + uniqueId;
 
 		log.info("Creating Role "+code+":"+name);
 
 		BaseEntity role = this.getBaseEntityByCode(code);
 		if (role == null) {
-			role = this.create(uniqueCode, "ROL", name);
+			role = this.create(uniqueId, "ROL", name);
 		}
 
 		for (String capabilityCode : capabilityCodes) {
 
 			Attribute capabilityAttribute = RulesUtils.attributeMap.get("CAP_" + capabilityCode);
-			try {
-				role.addAttribute(capabilityAttribute, 1.0, "TRUE");
-			}
-			catch (BadDataException e) {
-				e.printStackTrace();
+			if(capabilityAttribute != null) {
+				
+				try {
+					role.addAttribute(capabilityAttribute, 1.0, "TRUE");
+				}
+				catch (BadDataException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -118,7 +122,7 @@ public class BaseEntityUtils {
 
 		/* Now link the role to the GRP_ROLES */
 		this.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0);
-
+		
 		return role;
 	}
 
@@ -129,6 +133,12 @@ public class BaseEntityUtils {
 		
 		/* we try to fetch the role */
 		return this.getBaseEntityByCode(code);
+	}
+	
+	public void setRole(BaseEntity company, BaseEntity role) {
+		if(company != null && role != null) {
+			this.createLink(company.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
+		}
 	}
 
 	public void setupNewRole(BaseEntity role, BaseEntity company, String roleName, String[] capabilities) {
@@ -158,11 +168,7 @@ public class BaseEntityUtils {
 		  
 		  /* we link the company and the role */
 		  this.createLink(company.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
-		  
-		  /* we set the company as creator of this role */
-		  this.updateBaseEntityAttribute(company.getCode(), role.getCode(), "PRI_AUTHOR", company.getCode());
-		  
-	  }
+	 }
 
 	public Object get(final String key) {
 		return this.decodedMapToken.get(key);
