@@ -7234,6 +7234,7 @@ public class QRules {
 				println("students is null");
 			}
 			this.sendListTabViewEdu("GRP_INTERNS", "GRP_APPLICATIONS", students.get(0).getCode());
+
 		}else{
 			println("rootKids is null");
 		}
