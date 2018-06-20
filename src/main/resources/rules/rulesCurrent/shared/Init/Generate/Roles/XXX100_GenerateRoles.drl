@@ -14,20 +14,23 @@ import life.genny.utils.VertxUtils;
 rule "GenerateRoles"
 
     ruleflow-group 'GenerateRoles'
-    salience 200
+    salience 700
 
      when
-       rules: QRules(isState("GENERATE_STARTUP") && isState("GENERATE_CAPABILITIES") && !isState("GENERATED_ROLES"))
+       rules: QRules(isState("GENERATE_STARTUP") && isState("GENERATE_TEST_ROLES") && !isState("GENERATE_ROLES"))
      then
 
     rules.header();
 
-    rules.setState("GENERATED_ROLES");
-	rules.println("Generating Roles for "+rules.realm());
+		rules.println("Generating Roles Cache for "+rules.realm());
 
-	rules.baseEntity.createRole("COMPANY_ADMIN","Company Admin",
-	"CAP_ADD_ITEM"); 
-	
+		List<BaseEntity> roles = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROLES", "LNK_CORE", 0, 500, false);
+
+		// Save the roles for future use
+		QDataBaseEntityMessage rolesMsg = new QDataBaseEntityMessage(roles.toArray(new BaseEntity[0]),"GRP_ROLES","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "ROLES", rules.realm(), rolesMsg);
+
+ 
     rules.footer();
 
 end

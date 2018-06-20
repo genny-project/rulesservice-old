@@ -1315,15 +1315,6 @@ public class QRules {
 	}
 
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode);
-	}
-
-
-	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
-		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
-	}
-
-	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
 		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
