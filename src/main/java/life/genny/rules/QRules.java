@@ -1069,37 +1069,87 @@ public class QRules {
 
 	}
 
-	public BaseEntity createUser() {
+	// public BaseEntity createUser() {
+
+	// 	BaseEntity be = null;
+
+	// 	String username = getAsString("preferred_username").toLowerCase();
+	// 	String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
+	// 	String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
+	// 	String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
+	// 	String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
+	// 	String email = getAsString("email").toLowerCase();
+	// 	String keycloakId = getAsString("sub").toLowerCase();
+
+	// 	try {
+	// 		be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+	// 				keycloakId);
+	// 		VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
+	// 		be = getUser();
+	// 		set("USER", be);
+	// 		println("New User Created " + be);
+	// 		this.setState("DID_CREATE_NEW_USER");
+
+	// 	} catch (IOException e) {
+	// 		log.error("Error in Creating User ");
+	// 	}
+	// 	return be;
+	// }
+	
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email,
+			String keycloakId) {
 
 		BaseEntity be = null;
 
-		String username = getAsString("preferred_username").toLowerCase();
-		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
-		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
-		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
-		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
-		String email = getAsString("email").toLowerCase();
-		String keycloakId = getAsString("sub").toLowerCase();
-
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
-					keycloakId);
+
+			/* we capitalise the variables */
+			firstname = StringUtils.capitalize(firstname);
+			lastname = StringUtils.capitalize(lastname);
+			name = StringUtils.capitalize(name);
+			String realm = null;
+
+			/*
+			 * if you are running in dev mode on your local machine, the only available
+			 * realm is genny
+			 */
+			if (System.getenv("GENNY_DEV").equals("TRUE")) {
+				realm = "genny";
+			} else {
+				realm = this.realm();
+			}
+
+			String token = RulesUtils.generateServiceToken(realm);
+
+			/* if the keycloak id, we need to create a keycloak account for this user */
+			if (keycloakId == null) {
+				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
+			}
+
+			/* we create the user in the system */
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email,
+					this.realm(), name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
+
 		} catch (IOException e) {
-			log.error("Error in Creating User ");
+			this.sendToastNotification(e.getMessage(), "error");
 		}
+
 		return be;
 	}
 
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 
 		String layout = LayoutUtils.getLayout(realm(), "/" + layoutPath);
-		if(layout == null) {
+		if (layout == null) {
 			layout = LayoutUtils.getLayout("shared", "/" + layoutPath);
 		}
 		QCmdMessage layoutCmd = new QCmdLayoutMessage(layoutCode, layout);
@@ -1167,13 +1217,13 @@ public class QRules {
 
 		/* we try to load the current realm layout */
 		String sublayoutString = LayoutUtils.getLayout(realm(), "/" + sublayoutPath);
-		
-		if(sublayoutString == null) {
+
+		if (sublayoutString == null) {
 
 			/* we try to load the shared layout */
 			sublayoutString = LayoutUtils.getLayout("shared", "/" + sublayoutPath);
 		}
- 		cmdJobSublayoutJson.put("items", sublayoutString);
+		cmdJobSublayoutJson.put("items", sublayoutString);
 		cmdJobSublayoutJson.put("token", getToken());
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
 
@@ -1268,11 +1318,11 @@ public class QRules {
 	public void send(final String channel, final Object payload) {
 		send(channel, payload);
 	}
-	
+
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
 		this.publishCmd(be, aliasCode, null);
 	}
-	
+
 	public void publishCmd(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, aliasCode);
 		msg.setToken(getToken());
@@ -1281,8 +1331,6 @@ public class QRules {
 		}
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
-	
-
 
 	public void publishData(final BaseEntity be, final String aliasCode, final String[] recipientsCode) {
 
@@ -1293,8 +1341,6 @@ public class QRules {
 		}
 		publish("cmds", RulesUtils.toJsonObject(msg));
 	}
-
-	
 
 	public QDataBaseEntityMessage publishData(final BaseEntity be, final String[] recipientsCode) {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
@@ -1882,25 +1928,24 @@ public class QRules {
 		QDataAskMessage questions = this.getQuestions(this.getUser().getCode(), this.getUser().getCode(), questionCode);
 
 		/* we check if the question payload is not empty */
-		if(questions != null) {
+		if (questions != null) {
 
 			/* we check if the question group contains at least one question */
-			if(questions.getItems() != null && questions.getItems().length > 0) {
-				
+			if (questions.getItems() != null && questions.getItems().length > 0) {
+
 				Ask firstQuestion = questions.getItems()[0];
-				
+
 				/* we check if the question is a question group */
-				if(firstQuestion.getAttributeCode().contains("QQQ_QUESTION_GROUP_BUTTON_SUBMIT")) {
-					
+				if (firstQuestion.getAttributeCode().contains("QQQ_QUESTION_GROUP_BUTTON_SUBMIT")) {
+
 					/* we see if this group contains at least one question */
 					return firstQuestion.getChildAsks().length > 0;
-				}
-				else {
-					
+				} else {
+
 					/* if it is an ask we return true */
 					return true;
 				}
-			}			
+			}
 		}
 
 		/* we return false otherwise */
@@ -2165,18 +2210,22 @@ public class QRules {
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
-			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
+			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link),
+					getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 
 	}
+
 	/* Remove link with specific link Value */
-	public String removeLink(final String parentCode, final String childCode, final String linkCode, final String linkValue) {
+	public String removeLink(final String parentCode, final String childCode, final String linkCode,
+			final String linkValue) {
 		Link link = new Link(parentCode, childCode, linkCode, linkValue);
 		try {
-			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link), getToken());
+			return QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/entityentitys", JsonUtils.toJson(link),
+					getToken());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2774,7 +2823,7 @@ public class QRules {
 	}
 
 	public Link updateLink(String groupCode, String targetCode, String linkCode, String linkValue, Double weight) {
-        
+
 		log.info("UPDATING LINK between " + groupCode + "and" + targetCode + "with LINK VALUE = " + linkValue);
 		Link link = new Link(groupCode, targetCode, linkCode, linkValue);
 		link.setWeight(weight);
@@ -3836,7 +3885,7 @@ public class QRules {
 					 */
 
 					/* Update BEG to have DRIVER_CODE as an attribute */
-          answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+					answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
 					answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
 					saveAnswers(answers);
 
@@ -4138,7 +4187,7 @@ public class QRules {
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(List<BaseEntity> beList, String[] recipients) {
-		
+
 		BaseEntity[] beArr = new BaseEntity[beList.size()];
 		beArr = beList.toArray(beArr);
 
@@ -4146,7 +4195,7 @@ public class QRules {
 		beMsg.setToken(getToken());
 		beMsg.setDelete(true);
 		beMsg.setReplace(true);
-		
+
 		if (recipients != null) {
 			beMsg.setRecipientCodeArray(recipients);
 		}
@@ -5327,17 +5376,17 @@ public class QRules {
 		System.out.println("The result   ::  " + JsonUtils.toJson(msg));
 		publishData(new JsonObject(resultJson));
 	}
-	
+
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
-        System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
-        String jsonSearchBE = JsonUtils.toJson(searchBE);
-        String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-                getToken());
-        QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-        msg.setParentCode(parentCode);
-        System.out.println("The result   ::  " + msg);
-        publishData(new JsonObject(resultJson));
-    }
+		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		String jsonSearchBE = JsonUtils.toJson(searchBE);
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+				getToken());
+		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		msg.setParentCode(parentCode);
+		System.out.println("The result   ::  " + msg);
+		publishData(new JsonObject(resultJson));
+	}
 
 	/*
 	 * Get search Results returns QDataBaseEntityMessage
@@ -5349,7 +5398,6 @@ public class QRules {
 				getToken());
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + msg);
-
 		return msg;
 	}
 
@@ -6004,7 +6052,7 @@ public class QRules {
 		saveAnswers(attributesAns);
 
 	}
-	
+
 	public void sendTreeData() {
 
 		println("treedata realm is " + realm());
@@ -6088,17 +6136,14 @@ public class QRules {
 		}
 	}
 
-
-	
-
 	public void startupEvent(String caller) {
 
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
-			if(this.realm().equals("internmatch")){
+			if (this.realm().equals("internmatch")) {
 				this.generateTree2();
-			}else{
+			} else {
 				this.generateTree();
 			}
 			generateNewItemsCache();
@@ -6154,7 +6199,6 @@ public class QRules {
 		}
 
 	}
-	
 
 	public QBulkMessage fetchStakeholderBucketItems(final BaseEntity stakeholder, final Set<String> subscriptions) {
 
@@ -6169,7 +6213,7 @@ public class QRules {
 			for (BaseEntity bucket : bucketsMsg.getItems()) {
 
 				if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE")) {
-					if (bucket.getCode().equals("GRP_NEW_ITEMS")) {  // No need to fetch the new items group again
+					if (bucket.getCode().equals("GRP_NEW_ITEMS")) { // No need to fetch the new items group again
 						continue;
 					}
 				}
@@ -6267,21 +6311,21 @@ public class QRules {
 
 					if (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER", "").equals("TRUE")) {
 
-						if (linkedBE.getCode().startsWith("OFR_") && !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
+						if (linkedBE.getCode().startsWith("OFR_")
+								&& !linkedBE.getValue("PRI_QUOTER_CODE", "").equals(stakeholder.getCode())) {
 							continue;
 						}
 					}
 					if (linkedBE.getCode().startsWith("PER_")) {
 
-            if (linkedBE.getCode().equals(getUser().getCode())) {
+						if (linkedBE.getCode().equals(getUser().getCode())) {
 							continue; // assume no need to send the user details again
-						}
-            else {
+						} else {
 
-              Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
+							Set<EntityAttribute> allowedAttributes = new HashSet<EntityAttribute>();
 							for (EntityAttribute entityAttribute : linkedBE.getBaseEntityAttributes()) {
 
-                // strip privates
+								// strip privates
 								String attributeCode = entityAttribute.getAttributeCode();
 								switch (attributeCode) {
 								case "PRI_FIRSTNAME":
@@ -6310,9 +6354,9 @@ public class QRules {
 				}
 
 				QDataBaseEntityMessage begMsg = new QDataBaseEntityMessage(begKids.toArray(new BaseEntity[0]),
-					beg.getCode(), "LNK_BEG");
-				  begMsg.setToken(getToken());
-			   	bulkmsg.add(begMsg);
+						beg.getCode(), "LNK_BEG");
+				begMsg.setToken(getToken());
+				bulkmsg.add(begMsg);
 			}
 
 		} catch (IOException e) {
@@ -6433,7 +6477,7 @@ public class QRules {
 
 				if (newItems.getMessages() != null) {
 
-          			showLoading("processing driver jobs...");
+					showLoading("processing driver jobs...");
 
 					// filter out non associated filter BEG Kids
 					startTime = System.nanoTime();
@@ -6588,44 +6632,46 @@ public class QRules {
 		QBulkMessage ret = new QBulkMessage();
 		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
 
-		Map<String,List<BaseEntity>> bucketMap = new HashMap<String,List<BaseEntity>>();
-		Map<String,List<BaseEntity>> begMap = new HashMap<String,List<BaseEntity>>();
-		
+		Map<String, List<BaseEntity>> bucketMap = new HashMap<String, List<BaseEntity>>();
+		Map<String, List<BaseEntity>> begMap = new HashMap<String, List<BaseEntity>>();
+
 		for (QDataBaseEntityMessage msg : newItems.getMessages()) {
 			// remove any unwanted kids not associated with the stakeholder
 			if (msg instanceof QDataBaseEntityMessage) {
 				BaseEntity parent = getBaseEntityByCode(msg.getParentCode());
-				
-					if (parent.getCode().startsWith("GRP_")) {
-						if (!bucketMap.containsKey(parent.getCode())) {
-							bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-						}					
-						} else {
-						if (!begMap.containsKey(parent.getCode())) {
-							begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-						}
-					
+
+				if (parent.getCode().startsWith("GRP_")) {
+					if (!bucketMap.containsKey(parent.getCode())) {
+						bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
 					}
-				
+				} else {
+					if (!begMap.containsKey(parent.getCode())) {
+						begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
+					}
+
+				}
 
 				for (BaseEntity be : msg.getItems()) {
-					System.out.print(msg.getParentCode()+":"+parent.getId()+":"+be.getId()+":"+be.getCode());
+					System.out
+							.print(msg.getParentCode() + ":" + parent.getId() + ":" + be.getId() + ":" + be.getCode());
 
 					if (be.getCode().startsWith("BEG_")) {
-						if (processBeg(be,stakeholder)) {
+						if (processBeg(be, stakeholder)) {
 							System.out.println(" X");
 							continue;
 						} else {
 							System.out.println("");
 							if (!bucketMap.containsKey(parent.getCode())) {
 								bucketMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-								System.out.println("Parent of load = "+parent.getCode());
+								System.out.println("Parent of load = " + parent.getCode());
 							}
 							bucketMap.get(parent.getCode()).add(be);
 						}
 					}
 					// Quotes/Offers
-					if ((be.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if you are a seller
+					if ((be.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER")
+							|| stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { // don't show other offers if
+																						// you are a seller
 						Optional<EntityAttribute> personCode = be.findEntityAttribute("PRI_QUOTER_CODE");
 						if (personCode.isPresent()) {
 							if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
@@ -6635,7 +6681,7 @@ public class QRules {
 								System.out.println("");
 								if (!begMap.containsKey(parent.getCode())) {
 									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-									System.out.println("Parent of load = "+parent.getCode());
+									System.out.println("Parent of load = " + parent.getCode());
 								}
 								begMap.get(parent.getCode()).add(be);
 							}
@@ -6673,21 +6719,20 @@ public class QRules {
 								System.out.println(" (filtered)");
 								if (!begMap.containsKey(parent.getCode())) {
 									begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-									System.out.println("Parent of load = "+parent.getCode());
+									System.out.println("Parent of load = " + parent.getCode());
 								}
 								begMap.get(parent.getCode()).add(be);
 							}
 						} else {
-							System.out.println("");  // loads
+							System.out.println(""); // loads
 							if (!begMap.containsKey(parent.getCode())) {
 								begMap.put(parent.getCode(), new ArrayList<BaseEntity>());
-								System.out.println("Parent of load = "+parent.getCode());
+								System.out.println("Parent of load = " + parent.getCode());
 							}
 							begMap.get(parent.getCode()).add(be);
-							
+
 						}
 					}
-
 
 				}
 				if (parent.getCode().startsWith("BEG_")) {
@@ -6695,16 +6740,17 @@ public class QRules {
 				}
 
 			}
-			
+
 		}
 		for (String parent : bucketMap.keySet()) {
 			BaseEntity[] beArray = bucketMap.get(parent).toArray(new BaseEntity[bucketMap.get(parent).size()]);
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray,parent,"LNK_CORE");
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parent, "LNK_CORE");
 			messages.add(msg);
 		}
 
 		for (String parent : begMap.keySet()) {
-			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]),parent,"LNK_BEG");
+			QDataBaseEntityMessage msg = new QDataBaseEntityMessage(
+					begMap.get(parent).toArray(new BaseEntity[begMap.get(parent).size()]), parent, "LNK_BEG");
 			messages.add(msg);
 		}
 		ret.setMessages(messages.toArray(new QDataBaseEntityMessage[messages.size()]));
@@ -6716,8 +6762,9 @@ public class QRules {
 	 * @param stakeholder
 	 * @param newItems
 	 */
-	private QBulkMessage FilterOnlyUserBegs2(final String filterPrefix, final BaseEntity stakeholder, QBulkMessage newItems) {
-		
+	private QBulkMessage FilterOnlyUserBegs2(final String filterPrefix, final BaseEntity stakeholder,
+			QBulkMessage newItems) {
+
 		QBulkMessage ret = new QBulkMessage();
 		List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
 		Map<String, List<BaseEntity>> bucketMap = new HashMap<String, List<BaseEntity>>();
@@ -6740,7 +6787,8 @@ public class QRules {
 				}
 
 				for (BaseEntity be : msg.getItems()) {
-					System.out.print(msg.getParentCode() + ":" + parent.getId() + ":" + be.getId() + ":" + be.getCode());
+					System.out
+							.print(msg.getParentCode() + ":" + parent.getId() + ":" + be.getId() + ":" + be.getCode());
 
 					if (be.getCode().startsWith("APP_")) {
 						if (processBeg(be, stakeholder)) {
@@ -6755,11 +6803,10 @@ public class QRules {
 							bucketMap.get(parent.getCode()).add(be);
 						}
 					}
-					
+
 					/* APPLICATIONS */
-					if ( (be.getCode().startsWith(filterPrefix)) && 
-						(stakeholder.is("PRI_IS_SELLER") || 
-						stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) { 
+					if ((be.getCode().startsWith(filterPrefix)) && (stakeholder.is("PRI_IS_SELLER")
+							|| stakeholder.getValue("PRI_IS_SELLER").equals("TRUE"))) {
 						/* don't show other applications if you are a intern */
 
 						Optional<EntityAttribute> personCode = be.findEntityAttribute("PRI_APPLICANT_CODE");
@@ -6847,39 +6894,38 @@ public class QRules {
 		return ret;
 	}
 
-	public boolean processBeg(final BaseEntity beg,final BaseEntity stakeholder) {
+	public boolean processBeg(final BaseEntity beg, final BaseEntity stakeholder) {
 		boolean skip = false;
-			// check if this beg should be seen by this user
-		Optional<EntityAttribute> personCode  = null;
-		if (!((stakeholder.is("PRI_IS_BUYER")  || stakeholder.getValue("PRI_IS_BUYER","").equals("TRUE")))) {
-				 personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
+		// check if this beg should be seen by this user
+		Optional<EntityAttribute> personCode = null;
+		if (!((stakeholder.is("PRI_IS_BUYER") || stakeholder.getValue("PRI_IS_BUYER", "").equals("TRUE")))) {
+			personCode = beg.findEntityAttribute("STT_IN_TRANSIT");
 
 			if (personCode.isPresent()) {
-				if (!personCode.get().getAsString().equals(stakeholder.getCode()) ) { // not a stakeholdeer!
+				if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a stakeholdeer!
 					return true; // skip
-				} 
+				}
 			}
 		}
-				for (EntityEntity ee : beg.getLinks()) {
-					// if linkValue is ACCEPTED_OFFER
-					if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
-							&& (stakeholder.is("PRI_IS_SELLER")  || stakeholder.getValue("PRI_IS_SELLER","").equals("TRUE"))) {
-						BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
-						personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
-						if (personCode.isPresent()) {
-							if (!personCode.get().getAsString().equals(stakeholder.getCode())  ) { // not a
-								return true; // skip
-							} 
-						} else {
-							System.out.println("Person not found :" + acceptedBegChild.getCode());
-						}
+		for (EntityEntity ee : beg.getLinks()) {
+			// if linkValue is ACCEPTED_OFFER
+			if ("ACCEPTED_OFFER".equals(ee.getLink().getLinkValue())
+					&& (stakeholder.is("PRI_IS_SELLER") || stakeholder.getValue("PRI_IS_SELLER", "").equals("TRUE"))) {
+				BaseEntity acceptedBegChild = getBaseEntityByCode(ee.getLink().getTargetCode());
+				personCode = acceptedBegChild.findEntityAttribute("PRI_QUOTER_CODE");
+				if (personCode.isPresent()) {
+					if (!personCode.get().getAsString().equals(stakeholder.getCode())) { // not a
+						return true; // skip
 					}
+				} else {
+					System.out.println("Person not found :" + acceptedBegChild.getCode());
 				}
+			}
+		}
 
-			return skip;
+		return skip;
 	}
-	
-	
+
 	public void sendBucketLayouts() {
 		String viewCode = "BUCKET_DASHBOARD";
 		String grpBE = "GRP_DASHBOARD";
@@ -7156,7 +7202,7 @@ public class QRules {
 
 											if (begKid.getName().equals("APPLICATION")) {
 												subscribeUserToBaseEntity(getUser().getCode(), begKid);
-												
+
 												List<BaseEntity> applicationKids = getBaseEntitysByParentAndLinkCode(
 														begKid.getCode(), "LNK_APP", 0, 500, false);
 
@@ -7186,7 +7232,7 @@ public class QRules {
 
 						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
 						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-						
+
 						/* subscribe to all the applicationGroups */
 						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
 						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
@@ -7194,7 +7240,8 @@ public class QRules {
 				}
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0,
+							20, false);
 					if (contactGroups != null) {
 						printList("contactGroups", contactGroups);
 
@@ -7204,14 +7251,15 @@ public class QRules {
 
 						for (BaseEntity contactGroup : contactGroups) {
 
-							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false);
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(),
+									"LNK_CORE", 0, 500, false);
 							if (contacts != null) {
 								printList("contacts", contacts);
 
 								/* subscribe to all the contacts of the company */
 								subscribeUserToBaseEntities(getUser().getCode(), contacts);
 								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
-								
+
 							}
 						}
 					} else {
@@ -7230,12 +7278,12 @@ public class QRules {
 				subscribeUserToBaseEntities(getUser().getCode(), students);
 				publishCmd(students, "GRP_INTERNS", "LNK_CORE");
 
-			}else{
+			} else {
 				println("students is null");
 			}
 			this.sendListTabViewEdu("GRP_INTERNS", "GRP_APPLICATIONS", students.get(0).getCode());
 
-		}else{
+		} else {
 			println("rootKids is null");
 		}
 	}
@@ -7261,7 +7309,7 @@ public class QRules {
 
 	public List<BaseEntity> getLinkedBaseEntities(BaseEntity be) {
 		return this.getLinkedBaseEntities(be.getCode(), null, null);
-		
+
 	}
 
 	public List<BaseEntity> getLinkedBaseEntities(String beCode) {
@@ -7502,24 +7550,25 @@ public class QRules {
 	}
 
 	/*
-	 * copy all the attributes from one BE to another BE 
-	 * sourceBe : FROM 
-	 * targetBe : TO
+	 * copy all the attributes from one BE to another BE sourceBe : FROM targetBe :
+	 * TO
 	 */
 	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
-		
+
 		Map<String, String> map = new HashMap<>();
 		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
 		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
 
 		List<Answer> answers = new ArrayList<Answer>();
-		try{
-			for (Map.Entry<String, String> entry : map.entrySet()){	
-				Answer answerObj = new Answer(getUser().getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
+		try {
+			for (Map.Entry<String, String> entry : map.entrySet()) {
+				Answer answerObj = new Answer(getUser().getCode(), targetBe.getCode(), entry.getKey(),
+						entry.getValue());
 				answers.add(answerObj);
-			}   
-			saveAnswers(answers);              
-		} catch (Exception e) {}
+			}
+			saveAnswers(answers);
+		} catch (Exception e) {
+		}
 		println("Target BE with attributes   ::   " + targetBe.getCode().toString());
 		return getBaseEntityByCode(targetBe.getCode());
 	}
@@ -8082,48 +8131,48 @@ public class QRules {
 		}
 		return errorMessage.toString();
 	}
-	
+
 	public BaseEntity nextBucket(String currentBucketCode) {
-		
-		if(currentBucketCode != null) {
+
+		if (currentBucketCode != null) {
 
 			BaseEntity currentBucket = this.getBaseEntityByCode(currentBucketCode);
-			if(currentBucket != null) {
-				
+			if (currentBucket != null) {
+
 				BaseEntity parent = this.getParent(currentBucket.getCode(), "LNK_CORE");
-				if(parent != null){
-	
+				if (parent != null) {
+
 					this.println("Current Bucket Code       ::  " + currentBucket.getCode());
 					this.println("Parent of Current Bucket  ::  " + parent.getCode());
-		
-					List<BaseEntity> buckets = this.getBaseEntitysByParentAndLinkCode(parent.getCode(), "LNK_CORE", 0, 500, false); 
-		
-					if(buckets != null){
+
+					List<BaseEntity> buckets = this.getBaseEntitysByParentAndLinkCode(parent.getCode(), "LNK_CORE", 0,
+							500, false);
+
+					if (buckets != null) {
 						this.printList("buckets", buckets);
-		
+
 						Integer currentBucketIndex = currentBucket.getIndex();
-						if(currentBucketIndex >= 0) {						
-							for(BaseEntity bucket : buckets){
+						if (currentBucketIndex >= 0) {
+							for (BaseEntity bucket : buckets) {
 								Integer nextBucketIndex = bucket.getIndex();
-								if(	nextBucketIndex >= 0 && 
-									nextBucketIndex == currentBucketIndex+1 ) {
+								if (nextBucketIndex >= 0 && nextBucketIndex == currentBucketIndex + 1) {
 									return bucket;
-								}				
+								}
 							}
 						}
-					}else{
-						this.println("buckets is null");	
+					} else {
+						this.println("buckets is null");
 					}
-				}else{
+				} else {
 					this.println("currentBucket's parent is null");
 				}
 			}
-		}else {
+		} else {
 			this.println("currentBucketCode is null");
 		}
 		return null;
 	}
-	
+
 	public void sendHostCompanyData() {
 
 		String[] recipient = { getUser().getCode() };
@@ -8171,12 +8220,23 @@ public class QRules {
 
 							List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0,
 									500, false, company.getCode());
-							if (begs != null) {
-								printList("begs", begs);
+
+							SearchEntity searchBegs = new SearchEntity(drools.getRule().getName(), "BEGS")
+									.setStakeholder(company.getCode()).setSourceCode(begGroup.getCode())
+									.setLinkValue("BEG").setPageStart(0).setPageSize(10000);
+							if (begs != null && searchBegs != null) {
+								// printList("begs", begs);
 
 								/* subscribe to all the begs of the company */
 								subscribeUserToBaseEntities(getUser().getCode(), begs);
-								publishCmd(begs, begGroup.getCode(), "LNK_CORE");
+								/* Send search result */
+								try {
+									this.sendSearchResults(searchBegs);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								// publishCmd(begs, begGroup.getCode(), "LNK_CORE");
 
 								for (BaseEntity beg : begs) {
 									List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),
@@ -8194,7 +8254,7 @@ public class QRules {
 
 											if (begKid.getName().equals("APPLICATION")) {
 												subscribeUserToBaseEntity(getUser().getCode(), begKid);
-												
+
 												List<BaseEntity> applicationKids = getBaseEntitysByParentAndLinkCode(
 														begKid.getCode(), "LNK_APP", 0, 500, false);
 
@@ -8224,7 +8284,7 @@ public class QRules {
 
 						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
 						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-						
+
 						/* subscribe to all the applicationGroups */
 						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
 						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
@@ -8232,7 +8292,8 @@ public class QRules {
 				}
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0,
+							20, false);
 					if (contactGroups != null) {
 						printList("contactGroups", contactGroups);
 
@@ -8242,14 +8303,147 @@ public class QRules {
 
 						for (BaseEntity contactGroup : contactGroups) {
 
-							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false, company.getCode());
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(),
+									"LNK_CORE", 0, 500, false, company.getCode());
 							if (contacts != null) {
 								printList("contacts", contacts);
 
 								/* subscribe to all the contacts of the company */
 								subscribeUserToBaseEntities(getUser().getCode(), contacts);
 								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
-								
+
+							}
+						}
+					} else {
+						println("GRP_CONTACTS kids is null");
+					}
+				}
+			}
+		}
+	}
+	public void sendAgentData() {
+
+		String[] recipient = { getUser().getCode() };
+		
+		/* SEND ROOT BaseEntity */
+		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
+		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
+		List<BaseEntity> rootKids = getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
+		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
+
+		if (rootKids != null) {
+			printList("rootKids", rootKids);
+
+			for (BaseEntity rootKid : rootKids) {
+
+				/* FOR GRP_APPLICATIONS BEGS */
+				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					rootKidsToSend.add(rootKid);
+				}
+			}
+			printList("rootKidsToSend", rootKidsToSend);
+
+			/* subscribe to all the rootKids */
+			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
+			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
+
+			for (BaseEntity rootKid : rootKids) {
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
+					List<BaseEntity> begGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
+					if (begGroups != null) {
+						printList("begGroups", begGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), begGroups);
+						publishCmd(begGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity begGroup : begGroups) {
+
+							List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false);
+							
+							if (begs != null) {
+								printList("begs", begs);
+
+								/* subscribe to all the begs */
+								subscribeUserToBaseEntities(getUser().getCode(), begs);
+								/* Send search result */
+								publishCmd(begs, begGroup.getCode(), "LNK_CORE");
+
+								for (BaseEntity beg : begs) {
+									List<BaseEntity> begKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+
+									if (begKids != null) {
+										printList("begKids", begKids);
+
+										/* subscribe to all the begKids of the company */
+										subscribeUserToBaseEntities(getUser().getCode(), begKids);
+										publishCmd(begKids, beg.getCode(), "LNK_BEG");
+
+										/* Send Applicants */
+										for (BaseEntity begKid : begKids) {
+
+											if (begKid.getName().equals("APPLICATION")) {
+												subscribeUserToBaseEntity(getUser().getCode(), begKid);
+
+												List<BaseEntity> applicationKids = getBaseEntitysByParentAndLinkCode(
+														begKid.getCode(), "LNK_APP", 0, 500, false);
+
+												if (applicationKids != null) {
+													printList("applicationKids", applicationKids);
+
+													/* subscribe to all the applicationKids */
+													subscribeUserToBaseEntities(getUser().getCode(), applicationKids);
+													publishCmd(applicationKids, begKid.getCode(), "LNK_BEG");
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					} else {
+						println("GRP_BEG begs is null");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					List<BaseEntity> applicationGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(),
+							"LNK_CORE", 0, 20, false);
+					if (applicationGroups != null) {
+						printList("applicationGroups", applicationGroups);
+
+						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
+						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
+
+						/* subscribe to all the applicationGroups */
+						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
+						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
+					}
+				}
+
+				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0,
+							20, false);
+					if (contactGroups != null) {
+						printList("contactGroups", contactGroups);
+
+						/* subscribe to all the begs of the company */
+						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
+						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
+
+						for (BaseEntity contactGroup : contactGroups) {
+
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(),
+									"LNK_CORE", 0, 500, false);
+							if (contacts != null) {
+								printList("contacts", contacts);
+
+								/* subscribe to all the contacts of the company */
+								subscribeUserToBaseEntities(getUser().getCode(), contacts);
+								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
+
 							}
 						}
 					} else {
@@ -8280,7 +8474,7 @@ public class QRules {
 				}
 			}
 			printList("rootKidsToSend", rootKidsToSend);
-			
+
 			/* subscribe to all the rootKids */
 			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
 			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
@@ -8288,21 +8482,21 @@ public class QRules {
 			for (BaseEntity rootKid : rootKids) {
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
-					List<BaseEntity> begGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();					
-					
+					List<BaseEntity> begGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
+					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();
+
 					if (begGroups != null) {
 						printList("begGroups", begGroups);
-						
+
 						for (BaseEntity begGroup : begGroups) {
 
 							/* FOR GRP_APPLICATIONS BEGS */
-							if (begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")){
+							if (begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
 								begGroupsToSend.add(begGroup);
 							}
 						}
 						printList("begGroupsToSend", begGroupsToSend);
-
 
 						/* subscribe to all the begs of GRP_NEW_ITEMS */
 						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
@@ -8312,37 +8506,39 @@ public class QRules {
 						List<BaseEntity> begKids = new ArrayList<BaseEntity>();
 						for (BaseEntity begGroup : begGroups) {
 
-							if(begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")){
-								List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false);
+							if (begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")) {
+								List<BaseEntity> begs = getBaseEntitysByParentAndLinkCode(begGroup.getCode(),
+										"LNK_CORE", 0, 500, false);
 								if (begs != null) {
 									printList("begs", begs);
-	
+
 									/* subscribe to all the begs of the company */
 									subscribeUserToBaseEntities(getUser().getCode(), begs);
 									publishCmd(begs, begGroup.getCode(), "LNK_CORE");
-									
+
 									for (BaseEntity beg : begs) {
-										List<BaseEntity> applications = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
+										List<BaseEntity> applications = getBaseEntitysByParentAndLinkCode(beg.getCode(),
+												"LNK_BEG", 0, 500, false, this.getUser().getCode());
 										subscribeUserToBaseEntities(getUser().getCode(), applications);
-										
-										if(applications.size() > 0){
-											println("application size :: "+applications.size());
-											
+
+										if (applications.size() > 0) {
+											println("application size :: " + applications.size());
+
 											/* i have an application */
-											for(BaseEntity application : applications) {
-												begApplication =  application;
+											for (BaseEntity application : applications) {
+												begApplication = application;
 											}
-											
-											println("application that is found :: "+begApplication.getCode());
+
+											println("application that is found :: " + begApplication.getCode());
 											begKids.add(begApplication);
 
-											
 										}
-										List<BaseEntity> otherBegKids = getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
+										List<BaseEntity> otherBegKids = getBaseEntitysByParentAndLinkCode(beg.getCode(),
+												"LNK_BEG", 0, 500, false);
 										for (BaseEntity begKid : otherBegKids) {
 
 											if (!begKid.getName().equals("APPLICATION")) {
-												println("Baseentity kid :: "+begKid.getCode());
+												println("Baseentity kid :: " + begKid.getCode());
 												begKids.add(begKid);
 											}
 										}
@@ -8350,31 +8546,33 @@ public class QRules {
 										subscribeUserToBaseEntities(getUser().getCode(), begKids);
 										publishCmd(begKids, beg.getCode(), "LNK_BEG");
 									}
-								}else{
+								} else {
 									println("begs is null");
 								}
 							}
 						}
-						
+
 					}
 				}
 
-				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
-					List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+				if (rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
+					List<BaseEntity> buckets = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
+							false);
 					if (buckets != null) {
 						printList("buckets", buckets);
-						
+
 						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
 						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-						
+
 						/* subscribe to all the begs of the company */
 						subscribeUserToBaseEntities(getUser().getCode(), buckets);
 						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
 					}
 				}
-				
+
 				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
+					List<BaseEntity> contactGroups = getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0,
+							20, false);
 					if (contactGroups != null) {
 						printList("contactGroups", contactGroups);
 
@@ -8384,7 +8582,8 @@ public class QRules {
 
 						for (BaseEntity contactGroup : contactGroups) {
 
-							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false);
+							List<BaseEntity> contacts = getBaseEntitysByParentAndLinkCode(contactGroup.getCode(),
+									"LNK_CORE", 0, 500, false);
 							if (contacts != null) {
 								printList("contacts", contacts);
 
@@ -8400,7 +8599,6 @@ public class QRules {
 				}
 			}
 
-			
 		}
 	}
 
@@ -8419,12 +8617,12 @@ public class QRules {
 			reportListView.put("root", "null");
 		} else {
 			JsonObject columns = new JsonObject();
-			
-			//List<String> sortedColumns = new ArrayList<String>();
+
+			// List<String> sortedColumns = new ArrayList<String>();
 			// sortedColumns.add("PRI_APPLICANT_FULLNAME");
 			// sortedColumns.add("PRI_APPLICANT_USERNAME");
 			// sortedColumns.add("PRI_BEG_CODE");
-			
+
 			String[] beArr = new String[sortedColumns.size()];
 			beArr = sortedColumns.toArray(beArr);
 
@@ -8440,7 +8638,7 @@ public class QRules {
 
 			columns.put("columns", colHeaderArr);
 			reportListView.put("data", columns);
-			
+
 			reportListView.put("root", bucketCode);
 		}
 
@@ -8468,7 +8666,6 @@ public class QRules {
 		bucketListView.put("code", "BUCKET_VIEW");
 		bucketListView.put("root", bucketCode);
 
-
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(bucketListView);
@@ -8484,21 +8681,21 @@ public class QRules {
 		JsonObject listView = new JsonObject();
 		listView.put("code", "LIST_VIEW");
 		listView.put("root", listCode);
-		
+
 		JsonObject bucketView = new JsonObject();
 		bucketView.put("code", "BUCKET_VIEW");
 		bucketView.put("root", bucketCode);
-			
-		JsonObject detailView = new JsonObject();	
+
+		JsonObject detailView = new JsonObject();
 		detailView.put("code", "DETAIL_VIEW");
 		detailView.put("root", begCode);
 		detailView.put("layoutCode", "detail-view");
 		detailView.put("parentCode", listCode);
-		
-		JsonArray dataArray = new JsonArray();	
+
+		JsonArray dataArray = new JsonArray();
 		dataArray.add(bucketView);
 		dataArray.add(detailView);
-		
+
 		JsonObject layout1 = new JsonObject();
 		layout1.put("code", "BUCKET_VIEW");
 		layout1.put("root", bucketCode);
@@ -8508,26 +8705,25 @@ public class QRules {
 		layout2.put("root", begCode);
 		layout2.put("layoutCode", "detail-view");
 		layout2.put("parentCode", listCode);
-		
+
 		JsonObject tabObject1 = new JsonObject();
 		tabObject1.put("name", "Process Card");
 		tabObject1.put("icon", "table_chart");
 		tabObject1.put("layout", layout1);
-		
+
 		JsonObject tabObject2 = new JsonObject();
 		tabObject2.put("name", "Internship Details");
 		tabObject2.put("icon", "reorder");
 		tabObject2.put("layout", layout2);
-		
-		
+
 		JsonArray tabArray = new JsonArray();
 		tabArray.add(tabObject1);
 		tabArray.add(tabObject2);
-		
+
 		JsonObject tabView = new JsonObject();
 		tabView.put("code", "TAB_VIEW");
-		tabView.put("root", dataArray);		
-		tabView.put("tabs", tabArray);		
+		tabView.put("root", dataArray);
+		tabView.put("tabs", tabArray);
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(listView);
@@ -8542,13 +8738,14 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
-	
+
 	public BaseEntity createNote() {
-		
+
 		BaseEntity note = this.createBaseEntityByCode(this.getUser().getCode(), "NOT", "NOTE");
 
 		List<Answer> answers = new ArrayList<Answer>();
-		// answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT", "System generated note : Intern has applied for an internship."));
+		// answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT",
+		// "System generated note : Intern has applied for an internship."));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", getCurrentLocalDateTime()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
@@ -8558,26 +8755,25 @@ public class QRules {
 		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
 		return note;
 	}
-	
-	public void LinkNoteAndContexts(BaseEntity note, final List<BaseEntity> contextList){
-		for(BaseEntity context : contextList){
+
+	public void LinkNoteAndContexts(BaseEntity note, final List<BaseEntity> contextList) {
+		for (BaseEntity context : contextList) {
 			this.LinkNoteAndContext(note, context);
 		}
 	}
-	public void LinkNoteAndContext(BaseEntity note, BaseEntity context){
+
+	public void LinkNoteAndContext(BaseEntity note, BaseEntity context) {
 		this.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
 	}
+
 	public void sendNotes(BaseEntity context) {
 		String[] recipient = { getUser().getCode() };
-		
+
 		clearBaseEntityAndChildren("GRP_NOTES");
 		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
-		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(),"Notes")
-		.setSourceCode("GRP_NOTES")
-		.setStakeholder(context.getCode())
-		.setPageStart(0)
-		.setPageSize(10000);
+		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
+				.setStakeholder(context.getCode()).setPageStart(0).setPageSize(10000);
 
 		if (searchBE != null) {
 			/* Send search result */
@@ -8587,14 +8783,14 @@ public class QRules {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}else{
+		} else {
 			println("notes not found for the context");
 		}
 	}
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
-		String[] recipients = {this.getUser().getCode()};
+		String[] recipients = { this.getUser().getCode() };
 		BaseEntity be = getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
@@ -8608,21 +8804,21 @@ public class QRules {
 		JsonObject listView = new JsonObject();
 		listView.put("code", "LIST_VIEW");
 		listView.put("root", listCode);
-		
+
 		JsonObject bucketView = new JsonObject();
 		bucketView.put("code", "BUCKET_VIEW");
 		bucketView.put("root", bucketCode);
-			
-		JsonObject detailView = new JsonObject();	
+
+		JsonObject detailView = new JsonObject();
 		detailView.put("code", "DETAIL_VIEW");
 		detailView.put("root", begCode);
 		detailView.put("layoutCode", "intern-details-main");
 		detailView.put("parentCode", listCode);
-		
-		JsonArray dataArray = new JsonArray();	
+
+		JsonArray dataArray = new JsonArray();
 		dataArray.add(bucketView);
 		dataArray.add(detailView);
-		
+
 		JsonObject layout1 = new JsonObject();
 		layout1.put("code", "BUCKET_VIEW");
 		layout1.put("root", bucketCode);
@@ -8632,26 +8828,25 @@ public class QRules {
 		layout2.put("root", begCode);
 		layout2.put("layoutCode", "intern-details-main");
 		layout2.put("parentCode", listCode);
-		
+
 		JsonObject tabObject1 = new JsonObject();
 		tabObject1.put("name", "Process View");
 		tabObject1.put("icon", "table_chart");
 		tabObject1.put("layout", layout1);
-		
+
 		JsonObject tabObject2 = new JsonObject();
 		tabObject2.put("name", "Profile Details");
 		tabObject2.put("icon", "person");
 		tabObject2.put("layout", layout2);
-		
-		
+
 		JsonArray tabArray = new JsonArray();
 		tabArray.add(tabObject1);
 		tabArray.add(tabObject2);
-		
+
 		JsonObject tabView = new JsonObject();
 		tabView.put("code", "TAB_VIEW");
-		tabView.put("root", dataArray);		
-		tabView.put("tabs", tabArray);		
+		tabView.put("root", dataArray);
+		tabView.put("tabs", tabArray);
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(listView);
@@ -8666,5 +8861,26 @@ public class QRules {
 
 		publishCmd(cmdViewJson);
 	}
-	
+
+	public void sendToastNotification(String message, String priority) {
+		String[] recipients = { this.getUser().getCode() };
+		this.sendToastNotification(recipients, message, priority);
+	}
+
+	// TODO Priority field needs to be made as enum : error,info, warning
+	/* To send direct toast messages to the front end without templates */
+	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {
+
+		/* create toast */
+		/* priority can be "info" or "error or "warning" */
+		QDataToastMessage toast = new QDataToastMessage(priority, toastMsg);
+		toast.setToken(getToken());
+		toast.setRecipientCodeArray(recipientArr);
+
+		String toastJson = JsonUtils.toJson(toast);
+
+		publish("data", toastJson);
+
+	}
+
 }
