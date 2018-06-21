@@ -70,6 +70,7 @@ import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
@@ -913,39 +914,34 @@ public class QRules {
 
 		publish("cmds", cmdJobSublayoutJson);
 	}
-
-	// private void navigate(NavigationType navigationType, String newRoute) {
-  //
-
-	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
-	// 	json.put("token", getToken());
-	// 	publish("cmds", json); */
-	// }
-
-	public void navigateTo(String newRoute) {
-
-    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-  	JsonObject json = JsonObject.mapFrom(cmdNavigate);
-  	json.put("token", getToken());
-  	publish("cmds", json);
-
-		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
-		// this.navigate(type, newRoute);
+	
+	private void navigate(String navigationType) {
+		this.navigate(navigationType, null);
+	}
+	private void navigate(String navigationType, String newRoute) {
+			
+		this.println("NAVIGATION: " + navigationType);
+		this.println("Navigating to: " + newRoute);
+		QCmdMessage cmdNavigate = new QCmdMessage(navigationType, newRoute);
+	 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+	 	json.put("token", getToken());
+	 	publish("cmds", json);
 	}
 
-	// public void navigateBack(NavigationType navigationType, String newRoute) {
-  //
-	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
-	// 	// this.navigate(type, newRoute);
-	// }
-	
+	public void navigateTo(String newRoute) {
+		this.navigate("ROUTE_CHANGE", newRoute);
+	}
+
+	public void navigateBack() {
+		this.navigate("ROUTE_BACK");
+	}
+
 	public void showLoading(String text, boolean isPopup) {
-		
+
 		if (text == null) {
 			text = "Loading...";
 		}
-		
+
 		String viewCmd = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		QCmdMessage cmdLoading = new QCmdMessage(viewCmd, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
