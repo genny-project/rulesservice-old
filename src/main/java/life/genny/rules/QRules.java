@@ -1069,32 +1069,9 @@ public class QRules {
 
 	}
 
-	// public BaseEntity createUser() {
-
-	// 	BaseEntity be = null;
-
-	// 	String username = getAsString("preferred_username").toLowerCase();
-	// 	String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
-	// 	String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
-	// 	String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
-	// 	String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
-	// 	String email = getAsString("email").toLowerCase();
-	// 	String keycloakId = getAsString("sub").toLowerCase();
-
-	// 	try {
-	// 		be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
-	// 				keycloakId);
-	// 		VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
-	// 		be = getUser();
-	// 		set("USER", be);
-	// 		println("New User Created " + be);
-	// 		this.setState("DID_CREATE_NEW_USER");
-
-	// 	} catch (IOException e) {
-	// 		log.error("Error in Creating User ");
-	// 	}
-	// 	return be;
-	// }
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
+		return this.createUser(firstname, lastname, name, username, email, null);
+	}
 	
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email,
 			String keycloakId) {
