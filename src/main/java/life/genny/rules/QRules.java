@@ -2755,8 +2755,19 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-
-
+                    
+                    /* emails to rejected drivers */
+                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+                    List<String> rejectedDriver = new ArrayList<>();
+                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
+                        for(BaseEntity rejectedBe : rejectedOffers) {
+                        		String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
+                        		rejectedDriver.add(offerQuoterCode);     		
+                        } 
+                        println("rejected driver list ::"+rejectedDriver.toString());
+                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
+                        sendMessage("", rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                    }                 
                 }
             }
         }
