@@ -1247,17 +1247,22 @@ public class QRules {
 		publish("cmds", json);
 	}
 
-	public void showLoading(String text) {
+	public void showLoading(String text, boolean isPopup) {
 
 		if (text == null) {
 			text = "Loading...";
 		}
 
-		QCmdMessage cmdLoading = new QCmdMessage("CMD_VIEW", "LOADING");
+		String viewCmd = isPopup ? "CMD_POPUP" : "CMD_VIEW";
+		QCmdMessage cmdLoading = new QCmdMessage(viewCmd, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
 		json.put("root", text);
 		json.put("token", getToken());
 		publish("cmds", json);
+	}
+
+	public void showLoading(String text) {
+		this.showLoading(text, false);
 	}
 
 	public void sendParentLinks(final String targetCode, final String linkCode) {
