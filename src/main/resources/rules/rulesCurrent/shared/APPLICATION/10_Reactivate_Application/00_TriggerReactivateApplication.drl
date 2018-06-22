@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Trigger Activate Application"
+rule "Trigger Reactivate Application"
 	when
 		rules: QRules(  isState("EVENT_BTN_CLICK") &&
 						isState("BTN_ACTIVATE_APPLICATION") && 
@@ -12,12 +12,35 @@ rule "Trigger Activate Application"
 		
 	   	String applicationCode = rules.getAsString("itemCode");
 		if(applicationCode != null){
-			rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_DEACTIVATED", "FALSE" ) );
-            rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "orange");            
+
+			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
+			if(application != null){
+
+				if(	application.getLoopValue("PRI_IS_DEACTIVATED", false) != null &&
+					application.getLoopValue("PRI_IS_DEACTIVATED", false).
+					equals("TRUE") ){
+
+					rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_REJECTED", "FALSE" ) );
+            		rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "green");            
+				}
+				if(	application.getLoopValue("PRI_IS_REJECTED", false) != null &&
+					application.getLoopValue("PRI_IS_REJECTED", false).
+					equals("TRUE") ){
+
+					rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_REJECTED", "FALSE" ) );
+            		rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "green");            
+				}
+			}else{
+				rules.println("application is null");
+				return;
+			}
 
 			rules.setState("APPLICATION_IS_ACTIVATED");
+
 		}else{
 			rules.println("applicationCode is null");
+			return;
+
 		}
 	 	rules.footer();      
 end

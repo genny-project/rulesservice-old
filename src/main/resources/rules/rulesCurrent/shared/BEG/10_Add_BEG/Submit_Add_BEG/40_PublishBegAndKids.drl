@@ -36,9 +36,11 @@ rule "Submit Add BEG - Step 4"
 				/* Send BEG KIDS */
 				rules.publishCmd(begKids, beg.getCode(), "LNK_BEG", recipients);
 
+
 				/* Go To Homepage */
 				rules.setState("TRIGGER_HOMEPAGE");
 				rules.setState("GENERATE_ADD_BEG_NOTE");
+				rules.setState("PUBLISHED_BEG_AND_KIDS");
 
 			}else{
 				rules.println("begKids is null");

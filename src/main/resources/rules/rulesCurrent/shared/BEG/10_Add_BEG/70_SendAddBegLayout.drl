@@ -17,5 +17,6 @@ rule "Add Internship - Step 7"
 		rules.set("subLayoutIsPopup", true);
 		
 		rules.setState("SEND_SUBLAYOUT");
+		rules.setState("SENT_ADD_BEG_LAYOUT");
  		rules.footer();
 end
