@@ -3287,9 +3287,9 @@ public void makePayment(QDataAnswerMessage m) {
 		/* we link the load to the user */
 		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad, recipientCodes);
+//		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+//				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
+//		publishData(msgLnkBegLoad, recipientCodes);
 
 
 	    /* we push the job to the creator */
