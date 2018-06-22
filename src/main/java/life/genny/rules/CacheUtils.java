@@ -316,7 +316,7 @@ public class CacheUtils {
 				/* we grab all the kids */
 				List<BaseEntity> kidKids = this.baseEntityUtils.getLinkedBaseEntities(kid.getCode());
 
-				if (kidKids != null) {
+				if (kidKids != null && kidKids.size() > 0) {
 
 					/* we create the base entity message for the kids */
 					QDataBaseEntityMessage kidMessage = new QDataBaseEntityMessage(kidKids.toArray(new BaseEntity[0]));
