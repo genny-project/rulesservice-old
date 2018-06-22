@@ -34,9 +34,16 @@ rule "Submit Apply BEG - Step 5"
                 rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", recipient);
                 rules.publishBaseEntityByCode(application.getCode(), "GRP_APPLIED", "LNK_CORE", recipient);
                 rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", recipient);
+
+                rules.println("BaseEntityCode     :: " + beg.getCode());
+                rules.println("ApplicationCode     :: " + application.getCode());
                 
+                rules.set("begBe", beg);
+                rules.set("applicationBe", application);
+
                 rules.setState("GENERATE_APPLY_BEG_NOTE");
                 rules.setState("TRIGGER_HOMEPAGE");
+                rules.setState("TRIGGER_APPLY_BEG_MESSAGE");
             }
 		}
 	 	rules.footer();      
