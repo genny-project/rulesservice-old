@@ -5904,15 +5904,20 @@ public void makePayment(QDataAnswerMessage m) {
 				RulesUtils.attributeMap.remove(toBeRemovedCapability.getCode()); // remove from cache
 				QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/baseentitys/attributes/" + toBeRemovedCapability.getCode() ,
 						token);
+				
 				// update all the roles that use this attribute by reloading them into cache
 				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
-				for (BaseEntity role : rolesMsg.getItems()) {
-					role.removeAttribute(toBeRemovedCapability.getCode());
-					// Now update the db role to only have the attributes we want left
-					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+				if(rolesMsg != null) {
+					
+					for (BaseEntity role : rolesMsg.getItems()) {
+						
+						role.removeAttribute(toBeRemovedCapability.getCode());
+						
+						// Now update the db role to only have the attributes we want left
+						QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
 
+					}
 				}
-
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
