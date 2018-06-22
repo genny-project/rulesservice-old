@@ -28,11 +28,29 @@ rule "Invite New User - Step 5 - Create User Account"
 			
 			rules.showLoading("Creating user account...", true);
 
+			/* we setup the attribute map */
+			HashMap<String, String> attributes = new HashMap<String, String>();
+			attributes.put("PRI_IMAGE_URL", "https://s3.ap-southeast-2.amazonaws.com/channel40-images/jtaQozJT5HSpn3bX6P4EXSqQj3NDalkQ");
+			attributes.put("PRI_REGISTRATION_DATETIME", DateUtils.getCurrentUTCDateTime());
+			attributes.put("PRI_IS_COMPANY", "FALSE");
+			
+			/* if the current user is buyer */
+			if(rules.isUserBuyer()) {
+				attributes.put("PRI_IS_BUYER", "TRUE");
+				attributes.put("PRI_IS_SELLER", "FALSE");
+			}
+			else if(rules.isUserSeller()) {
+				attributes.put("PRI_IS_SELLER", "FALSE");
+				attributes.put("PRI_IS_BUYER", "TRUE");
+			}
+			
+			
 			/* we set up the new user on keycloak + generate the final baseEntity */
-			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email);
+			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email, attributes);
 			if(createdUser != null) {
+			    
 				rules.set("createdUser", createdUser);
-				rules.setState("LINK_NEW_USER_TO_COMPANY");
+				rules.setState("ASSIGN_ROLE_TO_USER");
 			}
 			else {
 				rules.setState("RETURN_TO_HOMEPAGE");

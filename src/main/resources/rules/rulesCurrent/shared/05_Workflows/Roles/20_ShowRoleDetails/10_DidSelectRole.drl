@@ -3,7 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.entity.BaseEntity;
 
-rule "Show Load Details - Step 1"
+rule "Show Role Details - Step 1"
     when
         rules: QRules( 	isState("EVENT_BTN_CLICK")  &&
 						isState("SELECT_EVENT") &&

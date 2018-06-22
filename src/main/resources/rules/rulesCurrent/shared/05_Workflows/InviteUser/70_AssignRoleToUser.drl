@@ -17,7 +17,7 @@ rule "Invite New User - Step 7 - Assign Role To User"
 		BaseEntity newUser = rules.getAsBaseEntity("newUser");
 		BaseEntity createdUser = rules.getAsBaseEntity("createdUser");
 		
-		if(newUser != null && createdUser != null) {
+		if(createdUser != null) {
 			
 			rules.showLoading("Assigning role to user...", true);
 			
@@ -26,6 +26,7 @@ rule "Invite New User - Step 7 - Assign Role To User"
 				
 				/* we link the user to the role */
 				rules.baseEntity.createLink(createdUser.getCode(), selectedRole, "LNK_ROLE", "ROLE", 1.0);
+				
 				rules.setState("SEND_MESSAGE_TO_NEW_USER");
 			}
 		}

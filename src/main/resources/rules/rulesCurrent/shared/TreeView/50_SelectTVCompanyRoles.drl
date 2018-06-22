@@ -12,7 +12,7 @@ rule "TV_SELECT Event - Select Company Roles"
        salience 6
      when
        rules: QRules( isState("STARTED") && isState("EVENT_TV_SELECT") &&
-                       ( isState("GRP_COMPANY_SETTINGS") || isState("GRP_ROLES")  ) &&
+                       ( isState("GRP_CPY_ROLES") || isState("GRP_ROLES")  ) &&
                        !isState("COMPANY_ROLES_LAYOUT") )
      then
 

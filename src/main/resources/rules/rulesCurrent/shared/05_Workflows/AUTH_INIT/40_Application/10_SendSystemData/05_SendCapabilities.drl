@@ -14,12 +14,13 @@ rule "Send Capabilities"
 
         rules.setState("SENT_CAPABILITIES");
 
-     	QDataBaseEntityMessage capabilitiesMsg = VertxUtils.getObject(rules.realm(), "CAPABILITIES", rules.realm(), QDataBaseEntityMessage.class);
-
-        if(capabilitiesMsg != null) {
-            rules.println("Sending "+capabilitiesMsg.getItems().length +" Capabilities  ");
-            rules.publishCmd(capabilitiesMsg);
-        }
+        /* we grab GRP_CAPABILITIES which contains all the capabilities of the system */
+		List<BaseEntity> capabilities = rules.getAvailableCapabilities(rules.getUser());
+		if(capabilities != null) {
+			
+			/* we publish the filtered capabilities */
+			rules.publishCmd(capabilities, "GRP_CAPABILITIES", "LNK_CORE");
+		}
         
         rules.setState("SEND_ROLES");
 

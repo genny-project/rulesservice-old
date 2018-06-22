@@ -16,7 +16,11 @@ rule "Create New Role - Step 3"
         BaseEntity newRole = rules.getAsBaseEntity("newRole");
         
         if(newRole != null) {
-        		rules.askQuestions(rules.getUser().getCode(), newRole.getCode(), "QUE_ROLE_GRP", true);
+        	
+        		/* we ask the user the questions but we do not automatically push the questions' data (GRP_CAPABILITIES) 
+        		 * as we have already sent them
+        		 */
+        		rules.askQuestions(rules.getUser().getCode(), newRole.getCode(), "QUE_ROLE_GRP", true, false);
         }
         
 	    rules.footer();

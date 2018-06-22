@@ -27,7 +27,9 @@ rule "Check user company - step 0 - BUYER"
 		}
 		else {
 			
-			if(canUserBeACompany) {
+			Boolean value = rules.getUser().getValue("PRI_IS_COMPANY", false);
+
+			if(canUserBeACompany && value == true) {
 				rules.setState("CHECK_COMPANY_EXISTS");
 			}
 			else {

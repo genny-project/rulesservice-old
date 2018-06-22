@@ -60,6 +60,7 @@ public class BaseEntityUtils {
 	}
 
 	/* =============== refactoring =============== */
+	
 	public BaseEntity create(final String author, final String bePrefix, final String name) {
 		return this.create(author, bePrefix, name, null);
 	}
@@ -118,20 +119,6 @@ public class BaseEntityUtils {
 
 		/* we set the role name */
 		role.setName(roleName);
-
-		for (String capabilityCode : capabilities) {
-
-			Attribute capabilityAttribute = RulesUtils.attributeMap.get(capabilityCode);
-			if(capabilityAttribute != null) {
-				
-				try {
-					role.addAttribute(capabilityAttribute, 1.0, "TRUE");
-				}
-				catch (BadDataException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 		
 		List<Answer> answers = new ArrayList<Answer>();
 
@@ -142,6 +129,19 @@ public class BaseEntityUtils {
 		/* we add the name as an attribute */
 		Answer nameAnswer = new Answer(role.getCode(), role.getCode(), "PRI_NAME", roleName);
 		answers.add(nameAnswer);
+		
+		try {
+			
+			/* we stringify the capabilities */
+			String capabilitiesString = JsonUtils.toJson(capabilities);
+			
+			/* we add the capabilities */
+			Answer capabilitiesAnswer = new Answer(role.getCode(), role.getCode(), "LNK_SELECT_CAPABILITY", capabilitiesString);
+			answers.add(capabilitiesAnswer);
+		}
+		catch(Exception e) {
+			
+		}
 		
 		/* we save the answers */
 		this.saveAnswers(answers);

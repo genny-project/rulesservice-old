@@ -756,11 +756,19 @@ public class QRules {
 
 	}
 
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes) {
+		return this.createUser(firstname, lastname, name, username, email, null, attributes);
+	}
+	
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
-		return this.createUser(firstname, lastname, name, username, email, null);
+		return this.createUser(firstname, lastname, name, username, email, null, null);
+	}
+	
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
+		return this.createUser(firstname, lastname, name, username, email, keycloakId, null);
 	}
 
-	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId, HashMap<String, String> attributes) {
 
 		BaseEntity be = null;
 
@@ -789,7 +797,7 @@ public class QRules {
 
 			/* we create the user in the system */
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
-					keycloakId);
+					keycloakId, attributes);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
 			set("USER", be);
@@ -1316,16 +1324,19 @@ public class QRules {
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, false);
-
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
-		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup);
+		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup, true);
+	}
+	
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup, Boolean pushSelections) {
+		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup, pushSelections);
 	}
 
-	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean isPopup) {
+	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean isPopup, Boolean pushSelections) {
 
-		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode)) {
+		if(this.sendQuestions(sourceCode, targetCode, questionGroupCode, stakeholderCode, pushSelections)) {
 
 			/* Layout V1 */
 
@@ -1339,7 +1350,7 @@ public class QRules {
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
 
-      this.navigateTo("/questions/" + questionGroupCode);
+			this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -3289,27 +3300,30 @@ public void makePayment(QDataAnswerMessage m) {
 		return false;
 	}
 
-	public boolean hasCapability(final String capability) {
+	public boolean hasCapability(BaseEntity baseEntity, String capability) {
 
 		// Fetch the roles and check the capability attributes of each role
 
-		List<EntityAttribute> roles = getUser().findPrefixEntityAttributes("PRI_IS_");
+		List<EntityAttribute> roles = baseEntity.findPrefixEntityAttributes("PRI_IS_");
 		for (EntityAttribute role : roles) { // should store in cached map
+
 			Boolean value = role.getValue();
 			if (value) {
-				String roleBeCode = "ROL_"+role.getAttributeCode().substring("PRI_".length());
+
+				String roleBeCode = "ROL_" + role.getAttributeCode().substring("PRI_".length());
 				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
-				if (roleBE==null) {
+				if (roleBE == null) {
 					continue;
 				}
+
 				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
 				if (optEaCap.isPresent()) {
+
 					EntityAttribute eaCap = optEaCap.get();
-					if ((eaCap.getValueBoolean()!=null)&&(eaCap.getValueBoolean())) {
+					if ((eaCap.getValueBoolean() != null) && (eaCap.getValueBoolean())) {
 						return true;
 					}
 				}
-
 			}
 		}
 		return false;
@@ -4475,26 +4489,42 @@ public void makePayment(QDataAnswerMessage m) {
 
 							// creating array as it can have multiple roles
 							String[] rolesAllowed = rolesAllowedStr.split(",");
-							Boolean match = false;
+							BaseEntity currentUser = this.getUser();
 
-							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
-								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
-									try { // handling exception when the value is not saved as valueBoolean
-										if (ea.getValueBoolean()) {
-											for (String role : rolesAllowed) {
-												match = role.equalsIgnoreCase(ea.getAttributeCode());
-												if (match) {
-													allowedChildren.add(child);
-												}
-											}
+							/* we loop through the roles allowed */
+							for(String allowedRole: rolesAllowed) {
+
+								/* if the allowed role is a proper role */
+								if(allowedRole.startsWith("PRI_IS_")) {
+
+									/* we check if the user has this role */
+									Boolean userHasRole = currentUser.getBaseEntityAttributes().stream().filter(attribute -> {
+
+										/* handling exception when the value is not saved as valueBoolean */
+										try {
+											return attribute.getAttribute().getCode().equals(allowedRole) && attribute.getValueBoolean() == true;
 										}
-									} catch (Exception e) {
-										System.out.println("Error!! The attribute value is not in boolean format");
+										catch(Exception e) {}
+
+										return false;
+									}).collect(Collectors.toList()).size() > 0;
+
+									if(userHasRole) {
+										allowedChildren.add(child);
 									}
 								}
 
+								/* if the role allowed is actually a capability */
+								else if(allowedRole.startsWith("CAP_")) {
+
+									/* if the user has the capability we allow */
+									if(this.hasCapability(currentUser, allowedRole)) {
+										allowedChildren.add(child);
+									}
+								}
 							}
-						} else {
+						}
+						else {
 							allowedChildren.add(child);
 						}
 					}
@@ -4555,8 +4585,6 @@ public void makePayment(QDataAnswerMessage m) {
 			this.setState("DATA_SENT_FINISHED");
 			return;
 		}
-
-		System.out.println("Entering new send application data ");
 
 		showLoading("Loading data...");
 
@@ -5756,6 +5784,70 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return ret;
 	}
+	
+	public List<BaseEntity> getAvailableCapabilities(BaseEntity user) {
+		
+		if(user == null) return null;
+		
+		List<BaseEntity> capabilities = new ArrayList<BaseEntity>();				
+		List<String> capabilityCodes = new ArrayList<String>();
+		
+		/* shared capabilities */
+		capabilityCodes.add("CAP_ADD_CALL");
+		capabilityCodes.add("CAP_ADD_CALL");
+		capabilityCodes.add("CAP_ADD_CHAT_MESSAGE");
+		capabilityCodes.add("CAP_ADD_PAYMENT_METHOD");
+		capabilityCodes.add("CAP_ADD_USER");
+		capabilityCodes.add("CAP_DELETE_ARCHIVE");
+		capabilityCodes.add("CAP_DELETE_MESSAGE");
+		capabilityCodes.add("CAP_DELETE_PAYMENT_METHOD");
+		capabilityCodes.add("CAP_DELETE_USER");
+		capabilityCodes.add("CAP_READ_ARCHIVE");
+		capabilityCodes.add("CAP_READ_CHAT_MESSAGE");
+		capabilityCodes.add("CAP_READ_PAID_ITEMS");
+		capabilityCodes.add("CAP_READ_PAYMENT_METHOD");
+		capabilityCodes.add("CAP_UPDATE_ITEM");
+		capabilityCodes.add("CAP_UPDATE_PAYMENT_METHOD");
+		capabilityCodes.add("CAP_UPDATE_ROLES");
+		capabilityCodes.add("CAP_UPDATE_USER");
+		
+		/* if the user is a buyer */
+		if(this.isUserBuyer(user)) {
+			
+			/* buyer specific capabilities */
+			capabilityCodes.add("CAP_ADD_ITEM");
+			capabilityCodes.add("CAP_DELETE_ITEM");
+			capabilityCodes.add("CAP_READ_QUOTE");
+		}
+		/* if the user is a seller */
+		else if(this.isUserSeller(user)) {
+			
+			/* seller specific capabilities */
+			capabilityCodes.add("CAP_ACCEPT_QUOTE");
+			capabilityCodes.add("CAP_ADD_QUOTE");
+			capabilityCodes.add("CAP_DELETE_QUOTE");
+			capabilityCodes.add("CAP_LOCATE_USER");
+			capabilityCodes.add("CAP_MARK_DELIVERY");
+			capabilityCodes.add("CAP_MARK_PICKUP");
+			capabilityCodes.add("CAP_READ_NEW_ITEMS");
+			capabilityCodes.add("CAP_UPDATE_QUOTE");
+		}
+		
+		/* we loop through the codes */
+		for(String capabilityCode: capabilityCodes) {
+			
+			/* we grab the attribute */
+			Attribute capability = RulesUtils.attributeMap.get(capabilityCode);
+			if(capability != null) {
+				
+				/* we create the virtual baseEntity */
+				BaseEntity capabilityEntity = new BaseEntity(capability.getCode(), capability.getName());
+				capabilities.add(capabilityEntity);
+			}
+		}
+		
+		return capabilities;
+	}
 
 	public List<BaseEntity> generateCapabilities() {
 
@@ -5775,7 +5867,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String proj_realm = System.getenv("PROJECT_REALM");
 		String token = RulesUtils.generateServiceToken(proj_realm);
 
-		addCapability(capabilityManifest,"UPDATE_ROLES", "Allowed to update company roles",token);
+		addCapability(capabilityManifest,"READ_ROLES", "Allowed to manage company roles",token);
 		addCapability(capabilityManifest,"ADD_USER", "Allowed to add users to the company",token);
 		addCapability(capabilityManifest,"ADD_QUOTE", "Allowed to post a quote",token);
 		addCapability(capabilityManifest,"READ_QUOTE", "Allowed to see quotes",token);
@@ -5826,6 +5918,7 @@ public void makePayment(QDataAnswerMessage m) {
 				e.printStackTrace();
 			}
 		}
+		
 		// now regenerate the roles cache
 		drools.setFocus("GenerateRoles");
 

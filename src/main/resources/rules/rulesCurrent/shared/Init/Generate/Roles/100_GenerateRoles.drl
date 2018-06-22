@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
-rule "GenerateRoles"
+rule "GenerateRoles - shared"
 
     ruleflow-group 'GenerateRoles'
     salience 200
@@ -25,9 +25,7 @@ rule "GenerateRoles"
     rules.setState("GENERATED_ROLES");
 	rules.println("Generating Roles for "+rules.realm());
 
-	rules.baseEntity.createRole("COMPANY_ADMIN","Company Admin",
-	"CAP_ADD_ITEM"); 
-	
+
     rules.footer();
 
 end

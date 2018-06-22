@@ -13,6 +13,8 @@ rule "Setup New User"
         rules.setState("LOOP_SETUP_NEW_USER");
 
         BaseEntity user = rules.getUser();
+        
+        rules.println("----------------------------------------- CREATING NEW USER -------------------------------------");
 
         /*  saving the default profile image   */
         rules.baseEntity.saveAnswer( new Answer (user.getCode(),
