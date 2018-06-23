@@ -5,7 +5,7 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Create New Role - Step 2.5 - send data"
     when
-        rules: QRules( 	isState("SEND_ROLE_QUESTION_DATA")  &&
+        rules: QRules( 	isState("SEND_QUESTION_DATA_FOR_ROLE")  &&
                         !isState("DID_SEND_ROLE_QUESTION_DATA") )
      then
 

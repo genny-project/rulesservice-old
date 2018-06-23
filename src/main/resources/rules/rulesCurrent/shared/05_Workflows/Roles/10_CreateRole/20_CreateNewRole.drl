@@ -30,11 +30,7 @@ rule "Create New Role - Step 2"
         if(newRole != null) {
         		
         		rules.set("newRole", newRole);
-        		rules.setState("SEND_ROLE_QUESTION_DATA");
-        		rules.println("================= SENDING DATA =====================");
-        }
-        else {
-        		rules.println("================= SEND DATA =====================");
+        		rules.setState("SEND_QUESTION_DATA_FOR_ROLE");
         }
         
 	    rules.footer();

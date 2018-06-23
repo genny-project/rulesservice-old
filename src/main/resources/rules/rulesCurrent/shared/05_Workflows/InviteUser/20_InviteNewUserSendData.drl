@@ -17,8 +17,8 @@ rule "Invite New User - Step 2 - Send Data"
 		BaseEntity newUser = rules.getAsBaseEntity("newUser");
 		if(newUser != null) {
 			
-			/* we send the questions */
-			rules.sendQuestions(rules.getUser().getCode(), newUser.getCode(), "QUE_INVITE_USER_GRP");
+			/* we send the questions but not the data */
+			rules.sendQuestions(rules.getUser().getCode(), newUser.getCode(), "QUE_INVITE_USER_GRP", false);			
 		}
 
 		rules.setState("INVITE_USER_SEND_LAYOUT");
