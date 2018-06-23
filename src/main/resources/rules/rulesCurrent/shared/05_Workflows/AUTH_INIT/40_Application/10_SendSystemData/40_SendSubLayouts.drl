@@ -3,7 +3,7 @@ import life.genny.rules.QRules;
 
 rule "Send Sub Layouts To Frontend"
     when
-        rules: QRules(  isState("SENT_USER_COMPANY") && 
+        rules: QRules(  isState("SEND_SUBLAYOUTS") && 
                         !isState("LOOP_SEND_SUB_LAYOUTS")  ) 
      then
 

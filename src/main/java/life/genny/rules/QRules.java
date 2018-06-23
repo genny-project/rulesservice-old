@@ -757,18 +757,26 @@ public class QRules {
 	}
 
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes) {
-		return this.createUser(firstname, lastname, name, username, email, null, attributes);
+		return this.createUser(firstname, lastname, name, username, email, null, attributes, null);
+	}
+	
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes, Link[] links) {
+		return this.createUser(firstname, lastname, name, username, email, null, attributes, links);
 	}
 	
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
-		return this.createUser(firstname, lastname, name, username, email, null, null);
+		return this.createUser(firstname, lastname, name, username, email, null, null, null);
 	}
 	
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
-		return this.createUser(firstname, lastname, name, username, email, keycloakId, null);
+		return this.createUser(firstname, lastname, name, username, email, keycloakId, null, null);
+	}
+	
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId, HashMap<String, String> attributes) {
+		return this.createUser(firstname, lastname, name, username, email, keycloakId, attributes, null);
 	}
 
-	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId, HashMap<String, String> attributes) {
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId, HashMap<String, String> attributes, Link[] links) {
 
 		BaseEntity be = null;
 
@@ -797,7 +805,7 @@ public class QRules {
 
 			/* we create the user in the system */
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
-					keycloakId, attributes);
+					keycloakId, attributes, links);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
 			set("USER", be);

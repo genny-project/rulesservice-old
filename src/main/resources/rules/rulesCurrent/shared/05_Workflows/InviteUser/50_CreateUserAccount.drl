@@ -44,13 +44,25 @@ rule "Invite New User - Step 5 - Create User Account"
 				attributes.put("PRI_IS_BUYER", "TRUE");
 			}
 			
+			/* links */
+			
+			Link[] links = new Link[1];
+			
+			/* we setup the link to the role */
+			String selectedRole = newUser.getValue("LNK_ASSIGNED_CPY_ROLE", "");
+			if(selectedRole != null) {
+				
+				/* we create the link from the user to the role */
+				Link newLink = new Link(null, selectedRole, "LNK_ROLE", "ROLE", 1.0);
+				links[0] = newLink;
+			}
 			
 			/* we set up the new user on keycloak + generate the final baseEntity */
-			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email, attributes);
+			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email, attributes, links);
 			if(createdUser != null) {
 			    
 				rules.set("createdUser", createdUser);
-				rules.setState("ASSIGN_ROLE_TO_USER");
+				rules.setState("SEND_MESSAGE_TO_NEW_USER");
 			}
 			else {
 				rules.setState("RETURN_TO_HOMEPAGE");

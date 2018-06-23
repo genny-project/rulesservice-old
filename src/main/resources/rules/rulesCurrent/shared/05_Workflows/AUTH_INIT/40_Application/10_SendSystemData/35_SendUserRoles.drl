@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "Send User Roles"
+    when
+        rules: QRules( isState("SEND_USER_ROLES")  && !isState("LOOP_SEND_USER_ROLES") )
+     then
+     	rules.header();
+     	rules.setState("LOOP_SEND_USER_ROLES");
+
+     	/* we grab the current user */
+     	BaseEntity user = rules.getUser();
+     	
+     	/* we grab all the linked roles */
+     	List<BaseEntity> roles = rules.baseEntity.getLinkedBaseEntities(user.getCode(), "LNK_ROLE");
+     	if(roles != null && roles.size() > 0) {
+     		
+     		/* we publish them */
+     		rules.publishCmd(roles, "GRP_ROLES", "LNK_CORE");
+     	}
+
+        rules.setState("SEND_SUBLAYOUTS");
+	    rules.footer();
+end
