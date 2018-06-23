@@ -29,6 +29,10 @@ rule "Check user company - Step 3.5"
 			
 			/* we attach the role to the user */
 			rules.baseEntity.setRole(rules.getUser(), adminRole);
+			
+			/* we push the company roles */
+			rules.clearState("SENT_ROLES");
+			rules.setState("SEND_ROLES");
 		}
 		
 		rules.setState("COMPANY_EXISTS");

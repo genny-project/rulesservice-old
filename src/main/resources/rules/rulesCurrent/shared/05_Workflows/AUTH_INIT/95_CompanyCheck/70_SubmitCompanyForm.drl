@@ -12,6 +12,7 @@ rule "Check user company - Step 6"
 	    rules.header();
 		
 		rules.setState("HAS_ANSWERED_COMPANY_QUESTIONS");
+		
 		rules.setState("COMPANY_IS_READY");
 		
 	    rules.footer();     		      
