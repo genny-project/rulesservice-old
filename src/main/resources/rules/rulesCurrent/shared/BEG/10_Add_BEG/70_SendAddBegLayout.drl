@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Add Internship - Step 7"
+rule "Add BEG - Step 7"
 	when
         rules: QRules(  isState("SEND_ADD_PRODUCT_QUESTION_LAYOUT") && 
                         isState("SENT_QUESTION")  &&

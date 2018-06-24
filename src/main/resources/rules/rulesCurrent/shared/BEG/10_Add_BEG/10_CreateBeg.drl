@@ -2,7 +2,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Create BEG BaseEntity */
-rule "Add Product - Step 1"
+rule "Add BEG - Step 1"
 	when
 		rules: QRules(  isState("CREATE_BEG_BASEENTITY") &&
 						!isState("LOOP_CREATE_BEG_BASEENTITY") ) 

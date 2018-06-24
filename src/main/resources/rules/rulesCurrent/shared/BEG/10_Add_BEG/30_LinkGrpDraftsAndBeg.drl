@@ -2,7 +2,7 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* LINK GRP_DRAFTS + BEG  */
-rule "Add Product - Step 3"
+rule "Add BEG - Step 3"
 	when
 		rules: QRules(  isState("LINK_GRP_DRAFTS_TO_BEG") &&
 						isState("CREATED_BASE_ENTITY") &&
