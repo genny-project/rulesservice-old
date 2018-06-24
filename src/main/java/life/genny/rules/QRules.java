@@ -1107,7 +1107,7 @@ public class QRules {
 			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email,
 					this.realm(), name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
-			be = getUser();
+			//be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
