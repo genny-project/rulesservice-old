@@ -1090,7 +1090,7 @@ public class QRules {
 			 * if you are running in dev mode on your local machine, the only available
 			 * realm is genny
 			 */
-			if (System.getenv("GENNY_DEV").equals("TRUE")) {
+			if (System.getenv("GENNY_DEV") != null && System.getenv("GENNY_DEV").equals("TRUE")) {
 				realm = "genny";
 			} else {
 				realm = this.realm();
