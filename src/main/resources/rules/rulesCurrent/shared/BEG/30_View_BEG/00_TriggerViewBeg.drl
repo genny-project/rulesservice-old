@@ -4,9 +4,9 @@ import life.genny.rules.QRules;
 rule "Trigger View BEG"
 	when
 			rules: QRules(  isState("EVENT_BTN_CLICK") &&
-											isState("BTN_VIEW_BEG") && 
-											!isState("LOOP_TRIGGER_VIEW_BEG")) 
-	 then
+							isState("BTN_VIEW_BEG") && 
+							!isState("LOOP_TRIGGER_VIEW_BEG")) 
+	then
 			rules.header();
 			rules.setState("LOOP_TRIGGER_VIEW_BEG");
 			String begCode = rules.getAsString("itemCode");
