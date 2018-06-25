@@ -759,19 +759,19 @@ public class QRules {
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes) {
 		return this.createUser(firstname, lastname, name, username, email, null, attributes, null);
 	}
-	
+
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes, Link[] links) {
 		return this.createUser(firstname, lastname, name, username, email, null, attributes, links);
 	}
-	
+
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
 		return this.createUser(firstname, lastname, name, username, email, null, null, null);
 	}
-	
+
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId) {
 		return this.createUser(firstname, lastname, name, username, email, keycloakId, null, null);
 	}
-	
+
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, String keycloakId, HashMap<String, String> attributes) {
 		return this.createUser(firstname, lastname, name, username, email, keycloakId, attributes, null);
 	}
@@ -1337,7 +1337,7 @@ public class QRules {
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup, true);
 	}
-	
+
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode, Boolean isPopup, Boolean pushSelections) {
 		this.askQuestions(sourceCode, targetCode, questionGroupCode, null, isPopup, pushSelections);
 	}
@@ -2657,7 +2657,18 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
-
+                    /* emails to rejected drivers */
+                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+                    List<String> rejectedDriver = new ArrayList<>();
+                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
+                        for(BaseEntity rejectedBe : rejectedOffers) {
+                        		String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
+                        		rejectedDriver.add(offerQuoterCode);
+                        }
+                        println("rejected driver list ::"+rejectedDriver.toString());
+                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
+                        sendMessage("", rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                    }
                 }
             }
         }
@@ -3019,28 +3030,27 @@ public void makePayment(QDataAnswerMessage m) {
 		sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
 
-	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m) {
+	public void processLoadTypeAnswer() {
 		/* Collect load code from answer */
-		Answer answer = m.getAnswer();
-		println("The created value  ::  " + answer.getCreatedDate());
-		println("Answer from QEventAttributeValueChangeMessage  ::  " + answer.toString());
-		String targetCode = answer.getTargetCode();
-		String sourceCode = answer.getSourceCode();
-		String loadCategoryCode = answer.getValue();
-		String attributeCode = m.data.getCode();
+		String targetCode = getAsString("targetCode");
+		String sourceCode = getAsString("sourceCode");
+		String loadCategoryCode = getAsString("value");
+		String attributeCode = getAsString("attributeCode");
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
 		println("The load type code is   ::  " + loadCategoryCode);
 
-		BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
+		if(targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null ) {
 
-		/* creating new Answer */
-		Answer newAnswer = new Answer(answer.getSourceCode(), answer.getTargetCode(), "PRI_LOAD_TYPE",
-				loadType.getName());
-		newAnswer.setInferred(true);
+			BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
 
-		this.baseEntity.saveAnswer(newAnswer);
+			/* creating new Answer */
+			Answer newAnswer = new Answer(sourceCode, targetCode, "PRI_LOAD_TYPE", loadType.getName());
+			newAnswer.setInferred(true);
+
+			this.baseEntity.saveAnswer(newAnswer);
+		}
 	}
 
 	public void sendRating(String data) throws ClientProtocolException, IOException {
@@ -3189,9 +3199,9 @@ public void makePayment(QDataAnswerMessage m) {
 		/* we link the load to the user */
 		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad, recipientCodes);
+//		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+//				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
+//		publishData(msgLnkBegLoad, recipientCodes);
 
 
 	    /* we push the job to the creator */
@@ -5792,14 +5802,14 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return ret;
 	}
-	
+
 	public List<BaseEntity> getAvailableCapabilities(BaseEntity user) {
-		
+
 		if(user == null) return null;
-		
-		List<BaseEntity> capabilities = new ArrayList<BaseEntity>();				
+
+		List<BaseEntity> capabilities = new ArrayList<BaseEntity>();
 		List<String> capabilityCodes = new ArrayList<String>();
-		
+
 		/* shared capabilities */
 		capabilityCodes.add("CAP_ADD_CALL");
 		capabilityCodes.add("CAP_ADD_CALL");
@@ -5820,10 +5830,10 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_UPDATE_USER");
 		capabilityCodes.add("CAP_ACCEPT_QUOTE");
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
-		
+
 		/* if the user is a buyer */
 		if(this.isUserBuyer(user)) {
-			
+
 			/* buyer specific capabilities */
 			capabilityCodes.add("CAP_ADD_ITEM");
 			capabilityCodes.add("CAP_DELETE_ITEM");
@@ -5831,7 +5841,7 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		/* if the user is a seller */
 		else if(this.isUserSeller(user)) {
-			
+
 			/* seller specific capabilities */
 			capabilityCodes.add("CAP_ADD_QUOTE");
 			capabilityCodes.add("CAP_DELETE_QUOTE");
@@ -5840,20 +5850,20 @@ public void makePayment(QDataAnswerMessage m) {
 			capabilityCodes.add("CAP_MARK_PICKUP");
 			capabilityCodes.add("CAP_READ_NEW_ITEMS");
 		}
-		
+
 		/* we loop through the codes */
 		for(String capabilityCode: capabilityCodes) {
-			
+
 			/* we grab the attribute */
 			Attribute capability = RulesUtils.attributeMap.get(capabilityCode);
 			if(capability != null) {
-				
+
 				/* we create the virtual baseEntity */
 				BaseEntity capabilityEntity = new BaseEntity(capability.getCode(), capability.getName());
 				capabilities.add(capabilityEntity);
 			}
 		}
-		
+
 		return capabilities;
 	}
 
@@ -5912,15 +5922,15 @@ public void makePayment(QDataAnswerMessage m) {
 				RulesUtils.attributeMap.remove(toBeRemovedCapability.getCode()); // remove from cache
 				QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/baseentitys/attributes/" + toBeRemovedCapability.getCode() ,
 						token);
-				
+
 				// update all the roles that use this attribute by reloading them into cache
 				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
 				if(rolesMsg != null) {
-					
+
 					for (BaseEntity role : rolesMsg.getItems()) {
-						
+
 						role.removeAttribute(toBeRemovedCapability.getCode());
-						
+
 						// Now update the db role to only have the attributes we want left
 						QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
 
@@ -5931,7 +5941,7 @@ public void makePayment(QDataAnswerMessage m) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// now regenerate the roles cache
 		drools.setFocus("GenerateRoles");
 

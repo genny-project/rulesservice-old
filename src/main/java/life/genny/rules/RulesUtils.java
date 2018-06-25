@@ -385,7 +385,7 @@ public class RulesUtils {
 		List<BaseEntity> items = getBaseEntitysByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,
 				value);
 
-		if (items != null) {
+		if (items.size() > 0 && items != null) {
 			if (!items.isEmpty())
 				return items.get(0);
 		}

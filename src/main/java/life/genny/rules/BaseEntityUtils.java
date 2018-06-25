@@ -60,17 +60,17 @@ public class BaseEntityUtils {
 	}
 
 	/* =============== refactoring =============== */
-	
+
 	public BaseEntity create(final String author, final String bePrefix, final String name) {
 		return this.create(author, bePrefix, name, null);
 	}
-	
+
 	public BaseEntity create(final String author, final String bePrefix, final String name, String uniqueId) {
 
 		if(uniqueId == null) {
 			uniqueId = QwandaUtils.getUniqueId(bePrefix, author);
 		}
-		
+
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
@@ -86,7 +86,7 @@ public class BaseEntityUtils {
 	/* old code */
 
 	public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
-		
+
 		String uniqueId = "IS_" + uniqueCode.toUpperCase();
 		String code = "ROL_" + uniqueId;
 
@@ -101,14 +101,14 @@ public class BaseEntityUtils {
 	}
 
 	public BaseEntity getRole(String name) {
-		
+
 		/* we re-generate the rol code based on the name */
 		String code = "ROL_IS_" + name.toUpperCase();
-		
+
 		/* we try to fetch the role */
 		return this.getBaseEntityByCode(code);
 	}
-	
+
 	public void setRole(BaseEntity be, BaseEntity role) {
 		if(be != null && role != null) {
 			this.createLink(be.getCode(), role.getCode(), "LNK_ROLE", "ROLE", 1.0);
@@ -119,30 +119,30 @@ public class BaseEntityUtils {
 
 		/* we set the role name */
 		role.setName(roleName);
-		
+
 		List<Answer> answers = new ArrayList<Answer>();
 
 		/* we add the realm as an attribute */
 		Answer realmAnswer = new Answer(role.getCode(), role.getCode(), "PRI_REALM", this.realm);
 		answers.add(realmAnswer);
-		
+
 		/* we add the name as an attribute */
 		Answer nameAnswer = new Answer(role.getCode(), role.getCode(), "PRI_NAME", roleName);
 		answers.add(nameAnswer);
-		
+
 		try {
-			
+
 			/* we stringify the capabilities */
 			String capabilitiesString = JsonUtils.toJson(capabilities);
-			
+
 			/* we add the capabilities */
 			Answer capabilitiesAnswer = new Answer(role.getCode(), role.getCode(), "LNK_SELECT_CAPABILITY", capabilitiesString);
 			answers.add(capabilitiesAnswer);
 		}
 		catch(Exception e) {
-			
+
 		}
-		
+
 		/* we save the answers */
 		this.saveAnswers(answers);
 
@@ -155,7 +155,7 @@ public class BaseEntityUtils {
 
 		/* Now link the role to the GRP_ROLES */
 		this.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0);
-		
+
 		return role;
 	 }
 
@@ -1149,30 +1149,30 @@ public class BaseEntityUtils {
 
 		return null;
 	}
-	
+
 	/*
-	 * copy all the attributes from one BE to another BE 
-	 * sourceBe : FROM 
+	 * copy all the attributes from one BE to another BE
+	 * sourceBe : FROM
 	 * targetBe : TO
 	 */
 	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
-		
+
 		Map<String, String> map = new HashMap<>();
 		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
 		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
 
 		List<Answer> answers = new ArrayList<Answer>();
 		try{
-			for (Map.Entry<String, String> entry : map.entrySet()){	
+			for (Map.Entry<String, String> entry : map.entrySet()){
 				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
 				answers.add(answerObj);
-			}   
-			saveAnswers(answers);              
+			}
+			saveAnswers(answers);
 		} catch (Exception e) {}
 
 		return getBaseEntityByCode(targetBe.getCode());
 	}
-	
+
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
