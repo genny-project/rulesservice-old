@@ -385,7 +385,7 @@ public class RulesUtils {
 		List<BaseEntity> items = getBaseEntitysByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,
 				value);
 
-		if (items != null) {
+		if (items.size() > 0 && items != null) {
 			if (!items.isEmpty())
 				return items.get(0);
 		}
@@ -902,7 +902,7 @@ public class RulesUtils {
 	}
 
 	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
-		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(oldBe.getCode(), null, prefix, token), name);
+		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(prefix, oldBe.getCode()), name);
 
 		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
 		println("Size of oldBe Attributes   ::   "+oldBe.getBaseEntityAttributes().size());

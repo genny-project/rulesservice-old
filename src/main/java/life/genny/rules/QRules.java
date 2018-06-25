@@ -1567,7 +1567,7 @@ public class QRules {
 
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
@@ -1634,7 +1634,7 @@ public class QRules {
 
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 

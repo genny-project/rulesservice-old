@@ -62,7 +62,7 @@ public class BaseEntityUtils {
 
 	public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
+		String uniqueId = QwandaUtils.getUniqueId(bePrefix, uniqueCode);
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
