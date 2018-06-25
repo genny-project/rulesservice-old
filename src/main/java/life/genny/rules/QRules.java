@@ -4137,7 +4137,7 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 	}
 
-  public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+  public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap,
       String templateCode, String messageType) {
 
     if (recipientArray != null && recipientArray.length > 0) {
