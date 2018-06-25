@@ -3804,6 +3804,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public void sortOffersInBeg(final String begCode) {
 		
 		//List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+		/* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
 		List<BaseEntity> offers = new ArrayList<BaseEntity>();
 		List<EntityEntity> allLinks = this.baseEntity.getLinks(begCode);
 		for(EntityEntity link : allLinks ) {
