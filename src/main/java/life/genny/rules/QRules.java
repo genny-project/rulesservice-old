@@ -3129,28 +3129,27 @@ public void makePayment(QDataAnswerMessage m) {
 		sendMessage("", recipientArrForDriver, contextMapForDriver, "MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
 
-	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m) {
+	public void processLoadTypeAnswer() {
 		/* Collect load code from answer */
-		Answer answer = m.getAnswer();
-		println("The created value  ::  " + answer.getCreatedDate());
-		println("Answer from QEventAttributeValueChangeMessage  ::  " + answer.toString());
-		String targetCode = answer.getTargetCode();
-		String sourceCode = answer.getSourceCode();
-		String loadCategoryCode = answer.getValue();
-		String attributeCode = m.data.getCode();
+		String targetCode = getAsString("targetCode");
+		String sourceCode = getAsString("sourceCode");
+		String loadCategoryCode = getAsString("value");
+		String attributeCode = getAsString("attributeCode");   
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
 		println("The load type code is   ::  " + loadCategoryCode);
+		
+		if(targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null ) {
 
-		BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
-
-		/* creating new Answer */
-		Answer newAnswer = new Answer(answer.getSourceCode(), answer.getTargetCode(), "PRI_LOAD_TYPE",
-				loadType.getName());
-		newAnswer.setInferred(true);
-
-		this.baseEntity.saveAnswer(newAnswer);
+			BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
+	
+			/* creating new Answer */
+			Answer newAnswer = new Answer(sourceCode, targetCode, "PRI_LOAD_TYPE", loadType.getName());
+			newAnswer.setInferred(true);
+	
+			this.baseEntity.saveAnswer(newAnswer);
+		}
 	}
 
 	public void sendRating(String data) throws ClientProtocolException, IOException {
@@ -3299,9 +3298,9 @@ public void makePayment(QDataAnswerMessage m) {
 		/* we link the load to the user */
 		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad, recipientCodes);
+//		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+//				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
+//		publishData(msgLnkBegLoad, recipientCodes);
 
 
 	    /* we push the job to the creator */
