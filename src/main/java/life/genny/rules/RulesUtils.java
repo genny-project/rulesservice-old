@@ -135,48 +135,49 @@ public class RulesUtils {
 	public static String getLayout(String realm, String path) {
 
   	String jsonStr = "";
-		try {
+  	String finalPath = "";
+  	try {
 
-      if(path.startsWith("/") == false && realm.endsWith("/") == false) {
-        path = realm + "/" + path;
-      }
-      else {
-        path = realm + path;
-      }
+  		if(path.startsWith("/") == false && realm.endsWith("/") == false) {
+  			finalPath = realm + "/" + path;
+  		}
+  		else {
+  			finalPath = realm + path;
+  		}
 
-			String url = getLayoutCacheURL(path);
-			println("Trying to load url.....");
-      println(url);
+  		String url = getLayoutCacheURL(finalPath);
+  		println("Trying to load url.....");
+  		println(url);
 
-			/* we make a GET request */
-      jsonStr = QwandaUtils.apiGet(url, null);
+  		/* we make a GET request */
+  		jsonStr = QwandaUtils.apiGet(url, null);
 
-			if(jsonStr != null) {
+  		if(jsonStr != null) {
 
-				/* we serialise the layout into a JsonObject */
-				JsonObject layoutObject = new JsonObject(jsonStr);
-				if(layoutObject != null) {
+  			/* we serialise the layout into a JsonObject */
+  			JsonObject layoutObject = new JsonObject(jsonStr);
+  			if(layoutObject != null) {
 
-					/* we check if an error happened when grabbing the layout */
-					if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
+  				/* we check if an error happened when grabbing the layout */
+  				if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
 
-						/* we try to grab the layout using the genny realm */
-						return RulesUtils.getLayout("genny", path);
-					}
-					else {
+  					/* we try to grab the layout using the genny realm */
+  					return RulesUtils.getLayout("genny", path);
+  				}
+  				else {
 
-						/* otherwise we return the layout */
-						return jsonStr;
-					}
-				}
-			}
-		}
-		catch(Exception e) {
-      System.out.println(jsonStr);
-      return jsonStr;
-		}
+  					/* otherwise we return the layout */
+  					return jsonStr;
+  				}
+  			}
+  		}
+  	}
+  	catch(Exception e) {
+  		System.out.println(jsonStr);
+  		return jsonStr;
+  	}
 
-    return null;
+  	return null;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {
@@ -384,7 +385,7 @@ public class RulesUtils {
 		List<BaseEntity> items = getBaseEntitysByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,
 				value);
 
-		if (items != null) {
+		if (items.size() > 0 && items != null) {
 			if (!items.isEmpty())
 				return items.get(0);
 		}
@@ -829,7 +830,7 @@ public class RulesUtils {
 			linkJson = QwandaUtils.apiGet(
 					qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/" + linkCode + "/children",
 					token);
-			return JsonUtils.gson.fromJson(linkJson, new TypeToken<List<Link>>() {
+			return JsonUtils.fromJson(linkJson, new TypeToken<List<Link>>() {
 			}.getType());
 
 		} catch (IOException e) {
@@ -901,7 +902,7 @@ public class RulesUtils {
 	}
 
 	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
-		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(oldBe.getCode(), null, prefix, token), name);
+		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(prefix, oldBe.getCode()), name);
 
 		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
 		println("Size of oldBe Attributes   ::   "+oldBe.getBaseEntityAttributes().size());

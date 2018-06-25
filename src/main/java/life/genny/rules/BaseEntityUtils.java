@@ -62,7 +62,7 @@ public class BaseEntityUtils {
 
 	public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
+		String uniqueId = QwandaUtils.getUniqueId(bePrefix, uniqueCode);
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
@@ -496,7 +496,7 @@ public class BaseEntityUtils {
 			String beJson = QwandaUtils.apiGet(this.qwandaServiceUrl + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", this.token);
 			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
-			if (linkArray.length > 0) {
+			if (linkArray != null && linkArray.length > 0) {
 
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				parents = new ArrayList<BaseEntity>();
