@@ -737,25 +737,6 @@ public class QRules {
 		}
 	}
 
-
-	public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
-			String templateCode, String messageType) {
-
-		if (recipientArray != null && recipientArray.length > 0) {
-
-			/* Adding project code to context */
-			String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-			contextMap.put("PROJECT", projectCode);
-
-			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
-					recipientArray, getToken());
-			publish("messages", message);
-		} else {
-			log.error("Recipient array is null and so message cant be sent");
-		}
-
-	}
-
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes) {
 		return this.createUser(firstname, lastname, name, username, email, null, attributes, null);
 	}
@@ -4154,8 +4135,25 @@ public void makePayment(QDataAnswerMessage m) {
 		} else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
-
 	}
+
+  public void sendMessage(String begCode, String[] recipientArray, HashMap<String, String> contextMap,
+      String templateCode, String messageType) {
+
+    if (recipientArray != null && recipientArray.length > 0) {
+
+      /* Adding project code to context */
+      String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
+      contextMap.put("PROJECT", projectCode);
+
+      JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
+          recipientArray, getToken());
+      publish("messages", message);
+    } else {
+      log.error("Recipient array is null and so message cant be sent");
+    }
+
+  }
 
 	public void triggerReleasePaymentMailWithAttachment(BaseEntity ownerBe, BaseEntity driverBe, BaseEntity offerBe,
 			BaseEntity loadBe, BaseEntity begBe) {
