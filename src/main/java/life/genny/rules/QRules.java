@@ -5818,6 +5818,8 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_UPDATE_PAYMENT_METHOD");
 		capabilityCodes.add("CAP_UPDATE_ROLES");
 		capabilityCodes.add("CAP_UPDATE_USER");
+		capabilityCodes.add("CAP_ACCEPT_QUOTE");
+		capabilityCodes.add("CAP_UPDATE_QUOTE");
 		
 		/* if the user is a buyer */
 		if(this.isUserBuyer(user)) {
@@ -5831,14 +5833,12 @@ public void makePayment(QDataAnswerMessage m) {
 		else if(this.isUserSeller(user)) {
 			
 			/* seller specific capabilities */
-			capabilityCodes.add("CAP_ACCEPT_QUOTE");
 			capabilityCodes.add("CAP_ADD_QUOTE");
 			capabilityCodes.add("CAP_DELETE_QUOTE");
 			capabilityCodes.add("CAP_LOCATE_USER");
 			capabilityCodes.add("CAP_MARK_DELIVERY");
 			capabilityCodes.add("CAP_MARK_PICKUP");
 			capabilityCodes.add("CAP_READ_NEW_ITEMS");
-			capabilityCodes.add("CAP_UPDATE_QUOTE");
 		}
 		
 		/* we loop through the codes */
