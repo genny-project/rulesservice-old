@@ -801,6 +801,25 @@ public class QRules {
 		return attributeVal;
 	}
 
+	/* Get array String value from an attribute of the BE  */
+    public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+        
+        String selectedValues = be.getValue(attributeCode, null);
+                                                            
+        if (selectedValues != null) {
+            List<String> valuesList = new ArrayList<String>();
+            /* Removing brackets "[]" and double quotes from the strings */
+            String trimmedStr = selectedValues.substring(1, selectedValues.length() - 1).toString().replaceAll("\"", "");
+            if(trimmedStr != null && !trimmedStr.isEmpty()) {
+                valuesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+                return valuesList;
+            }else {
+                return null;
+            }
+        } else
+            return null;
+    }
+
 	public String getBaseEntityValueAsString(final String baseEntityCode, final String attributeCode) {
 
 		String attrValue = null;
