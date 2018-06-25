@@ -65,6 +65,7 @@ import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
+import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
@@ -911,38 +912,33 @@ public class QRules {
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
-	// private void navigate(NavigationType navigationType, String newRoute) {
-  //
+	private void navigate(String navigationType) {
+		this.navigate(navigationType, null);
+	}
+	private void navigate(String navigationType, String newRoute) {
 
-	// 	/*QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-	// 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
-	// 	json.put("token", getToken());
-	// 	publish("cmds", json); */
-	// }
-
-	public void navigateTo(String newRoute) {
-
-    QCmdMessage cmdNavigate = new QCmdMessage("ROUTE_CHANGE", newRoute);
-  	JsonObject json = JsonObject.mapFrom(cmdNavigate);
-  	json.put("token", getToken());
-  	publish("cmds", json);
-
-		// NavigationType type = NavigationType.valueOf("ROUTE_CHANGE");
-		// this.navigate(type, newRoute);
+		this.println("NAVIGATION: " + navigationType);
+		this.println("Navigating to: " + newRoute);
+		QCmdMessage cmdNavigate = new QCmdMessage(navigationType, newRoute);
+	 	JsonObject json = JsonObject.mapFrom(cmdNavigate);
+	 	json.put("token", getToken());
+	 	publish("cmds", json);
 	}
 
-	// public void navigateBack(NavigationType navigationType, String newRoute) {
-  //
-	// 	// NavigationType type = NavigationType.valueOf("ROUTE_BACK");
-	// 	// this.navigate(type, newRoute);
-	// }
-	
+	public void navigateTo(String newRoute) {
+		this.navigate("ROUTE_CHANGE", newRoute);
+	}
+
+	public void navigateBack() {
+		this.navigate("ROUTE_BACK");
+	}
+
 	public void showLoading(String text, boolean isPopup) {
-		
+
 		if (text == null) {
 			text = "Loading...";
 		}
-		
+
 		String viewCmd = isPopup ? "CMD_POPUP" : "CMD_VIEW";
 		QCmdMessage cmdLoading = new QCmdMessage(viewCmd, "LOADING");
 		JsonObject json = JsonObject.mapFrom(cmdLoading);
@@ -1568,7 +1564,7 @@ public class QRules {
 
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
@@ -1606,7 +1602,7 @@ public class QRules {
 					HashMap<String, String> contextMap = new HashMap<String, String>();
 					contextMap.put("SENDER", getUser().getCode());
 					contextMap.put("CONVERSATION", newMessage.getCode());
-					
+
 
 					/* Sending toast message to all the beg frontends */
 					sendMessage(msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");
@@ -1630,7 +1626,7 @@ public class QRules {
 
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
@@ -2726,7 +2722,7 @@ public void makePayment(QDataAnswerMessage m) {
                     contextMap.put("QUOTER", quoterCode);
                     contextMap.put("OFFER", offer.getCode());
                     contextMap.put("LOAD", loadBe.getCode());
-        
+
 
                     String[] recipientArr = { userCode };
                     /* TOAST :: PAYMENT SUCCESS */
@@ -2745,6 +2741,18 @@ public void makePayment(QDataAnswerMessage m) {
                     sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
                     sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
 
+                    /* emails to rejected drivers */
+                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+                    List<String> rejectedDriver = new ArrayList<>();
+                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
+                        for(BaseEntity rejectedBe : rejectedOffers) {
+                            String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
+                            rejectedDriver.add(offerQuoterCode);
+                        }
+                        println("rejected driver list ::"+rejectedDriver.toString());
+                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
+                        sendMessage("", rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                    }
 
                 }
             }
@@ -3107,28 +3115,27 @@ public void makePayment(QDataAnswerMessage m) {
 		sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_ACCEPT_QUOTE_DRIVER", "TOAST");
 	}
 
-	public void processLoadTypeAnswer(QEventAttributeValueChangeMessage m) {
+	public void processLoadTypeAnswer() {
 		/* Collect load code from answer */
-		Answer answer = m.getAnswer();
-		println("The created value  ::  " + answer.getCreatedDate());
-		println("Answer from QEventAttributeValueChangeMessage  ::  " + answer.toString());
-		String targetCode = answer.getTargetCode();
-		String sourceCode = answer.getSourceCode();
-		String loadCategoryCode = answer.getValue();
-		String attributeCode = m.data.getCode();
+		String targetCode = getAsString("targetCode");
+		String sourceCode = getAsString("sourceCode");
+		String loadCategoryCode = getAsString("value");
+		String attributeCode = getAsString("attributeCode");
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
 		println("The load type code is   ::  " + loadCategoryCode);
 
-		BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
+		if(targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null ) {
 
-		/* creating new Answer */
-		Answer newAnswer = new Answer(answer.getSourceCode(), answer.getTargetCode(), "PRI_LOAD_TYPE",
-				loadType.getName());
-		newAnswer.setInferred(true);
+			BaseEntity loadType = this.baseEntity.getBaseEntityByCode(loadCategoryCode, false); // no attributes
 
-		this.baseEntity.saveAnswer(newAnswer);
+			/* creating new Answer */
+			Answer newAnswer = new Answer(sourceCode, targetCode, "PRI_LOAD_TYPE", loadType.getName());
+			newAnswer.setInferred(true);
+
+			this.baseEntity.saveAnswer(newAnswer);
+		}
 	}
 
 	public void sendRating(String data) throws ClientProtocolException, IOException {
@@ -3277,9 +3284,9 @@ public void makePayment(QDataAnswerMessage m) {
 		/* we link the load to the user */
 		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-		publishData(msgLnkBegLoad, recipientCodes);
+//		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
+//				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
+//		publishData(msgLnkBegLoad, recipientCodes);
 
 
 	    /* we push the job to the creator */
@@ -5946,10 +5953,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 	}
-	
-	
+
+
 	public String generateRedirectUrl(String host, JsonObject data) {
-        
+
         /* we stringify the json object */
         try {
             if(data != null) {
@@ -5962,18 +5969,18 @@ public void makePayment(QDataAnswerMessage m) {
 
         return null;
     }
-	
+
 	public String getUnsubscribeLinkForEmailTemplate(String host, String templateCode) {
-		
+
 		JsonObject data = new JsonObject();
 		data.put("loading", "Loading...");
 		data.put("evt_type", "REDIRECT_EVENT");
 		data.put("evt_code", "REDIRECT_UNSUBSCRIBE_MAIL_LIST");
-		
+
 		JsonObject dataObj = new JsonObject();
 		dataObj.put("code", "REDIRECT_UNSUBSCRIBE_MAIL_LIST");
 		dataObj.put("value", templateCode);
-		
+
 		data.put("data", dataObj);
 		String redirectUrl = generateRedirectUrl(host, data);
 		return redirectUrl;
@@ -5982,8 +5989,8 @@ public void makePayment(QDataAnswerMessage m) {
 	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
-	
-	
+
+
 	/* TO DELETE */
 	public void sendHostCompanyData() {
 
@@ -6055,7 +6062,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 											if (begKid.getName().equals("APPLICATION")) {
 												subscribeUserToBaseEntity(getUser().getCode(), begKid);
-												
+
 												List<BaseEntity> applicationKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(
 														begKid.getCode(), "LNK_APP", 0, 500, false);
 
@@ -6085,7 +6092,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
 						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-						
+
 						/* subscribe to all the applicationGroups */
 						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
 						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
@@ -6110,7 +6117,7 @@ public void makePayment(QDataAnswerMessage m) {
 								/* subscribe to all the contacts of the company */
 								subscribeUserToBaseEntities(getUser().getCode(), contacts);
 								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
-								
+
 							}
 						}
 					} else {
@@ -6141,7 +6148,7 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 			}
 			printList("rootKidsToSend", rootKidsToSend);
-			
+
 			/* subscribe to all the rootKids */
 			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
 			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
@@ -6150,15 +6157,15 @@ public void makePayment(QDataAnswerMessage m) {
 
 				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
 					List<BaseEntity> begGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();					
-					
+					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();
+
 					if (begGroups != null) {
 						printList("begGroups", begGroups);
-						
+
 						for (BaseEntity begGroup : begGroups) {
 
 							/* FOR GRP_APPLICATIONS BEGS */
-							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") || 
+							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") ||
 								!begGroup.getCode().equalsIgnoreCase("GRP_FILLED") ||
 								!begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
 								begGroupsToSend.add(begGroup);
@@ -6179,27 +6186,27 @@ public void makePayment(QDataAnswerMessage m) {
 								List<BaseEntity> begs = this.baseEntity.getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false);
 								if (begs != null) {
 									printList("begs", begs);
-	
+
 									/* subscribe to all the begs of the company */
 									subscribeUserToBaseEntities(getUser().getCode(), begs);
 									publishCmd(begs, begGroup.getCode(), "LNK_CORE");
-									
+
 									for (BaseEntity beg : begs) {
 										List<BaseEntity> applications = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
 										subscribeUserToBaseEntities(getUser().getCode(), applications);
-										
+
 										if(applications.size() > 0){
 											println("application size :: "+applications.size());
-											
+
 											/* i have an application */
 											for(BaseEntity application : applications) {
 												begApplication =  application;
 											}
-											
+
 											println("application that is found :: "+begApplication.getCode());
 											begKids.add(begApplication);
 
-											
+
 										}
 										List<BaseEntity> otherBegKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
 										for (BaseEntity begKid : otherBegKids) {
@@ -6218,7 +6225,7 @@ public void makePayment(QDataAnswerMessage m) {
 								}
 							}
 						}
-						
+
 					}
 				}
 
@@ -6226,16 +6233,16 @@ public void makePayment(QDataAnswerMessage m) {
 					List<BaseEntity> buckets = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
 					if (buckets != null) {
 						printList("buckets", buckets);
-						
+
 						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
 						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-						
+
 						/* subscribe to all the begs of the company */
 						subscribeUserToBaseEntities(getUser().getCode(), buckets);
 						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
 					}
 				}
-				
+
 				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
 					List<BaseEntity> contactGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
 					if (contactGroups != null) {
@@ -6263,30 +6270,30 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 			}
 
-			
+
 		}
 	}
-	
+
 	public void sendListTabView(final String listCode, final String bucketCode, final String begCode) {
 
 		JsonObject listView = new JsonObject();
 		listView.put("code", "LIST_VIEW");
 		listView.put("root", listCode);
-		
+
 		JsonObject bucketView = new JsonObject();
 		bucketView.put("code", "BUCKET_VIEW");
 		bucketView.put("root", bucketCode);
-			
-		JsonObject detailView = new JsonObject();	
+
+		JsonObject detailView = new JsonObject();
 		detailView.put("code", "DETAIL_VIEW");
 		detailView.put("root", begCode);
 		detailView.put("layoutCode", "detail-view");
 		detailView.put("parentCode", listCode);
-		
-		JsonArray dataArray = new JsonArray();	
+
+		JsonArray dataArray = new JsonArray();
 		dataArray.add(bucketView);
 		dataArray.add(detailView);
-		
+
 		JsonObject layout1 = new JsonObject();
 		layout1.put("code", "BUCKET_VIEW");
 		layout1.put("root", bucketCode);
@@ -6296,26 +6303,26 @@ public void makePayment(QDataAnswerMessage m) {
 		layout2.put("root", begCode);
 		layout2.put("layoutCode", "detail-view");
 		layout2.put("parentCode", listCode);
-		
+
 		JsonObject tabObject1 = new JsonObject();
 		tabObject1.put("name", "Process Card");
 		tabObject1.put("icon", "table_chart");
 		tabObject1.put("layout", layout1);
-		
+
 		JsonObject tabObject2 = new JsonObject();
 		tabObject2.put("name", "Internship Details");
 		tabObject2.put("icon", "reorder");
 		tabObject2.put("layout", layout2);
-		
-		
+
+
 		JsonArray tabArray = new JsonArray();
 		tabArray.add(tabObject1);
 		tabArray.add(tabObject2);
-		
+
 		JsonObject tabView = new JsonObject();
 		tabView.put("code", "TAB_VIEW");
-		tabView.put("root", dataArray);		
-		tabView.put("tabs", tabArray);		
+		tabView.put("root", dataArray);
+		tabView.put("tabs", tabArray);
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(listView);
@@ -6330,7 +6337,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		publishCmd(cmdViewJson);
 	}
-	
+
 	public void sendSplitView2(final String parentCode, final String bucketCode) {
 
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
