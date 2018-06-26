@@ -21,8 +21,11 @@ rule "Check user company - Step 3.5"
 			/* we create an array of capability codes */
 			String[] capabilityCodes = capabilities.stream().map(capability -> capability.getCode()).collect(Collectors.toList()).toArray(new String[0]);
 			
+			/* we get the initial of the company */
+			String initials = companyBe.getCode().substring(3, 2);
+			
 			/* we give all these capabilities to the admin */
-			BaseEntity adminRole = rules.baseEntity.createRole("COMPANY_ADMIN", "Company Admin", capabilityCodes);
+			BaseEntity adminRole = rules.baseEntity.createRole(initials + "+COMPANY_ADMIN", "Company Admin", capabilityCodes);
 
 			/* we attach the role to the company */
 			rules.baseEntity.setRole(companyBe, adminRole);
