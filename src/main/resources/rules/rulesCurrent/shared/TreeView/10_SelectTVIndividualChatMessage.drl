@@ -24,6 +24,7 @@ rule "TV_SELECT Individual Chat Message"
              if(grpCode != null && !grpCode.isEmpty()){
 		         rules.sendChatMessages(grpCode, 0, 10000);
 		  		 rules.sendCmdSplitView("GRP_MESSAGES", grpCode);
+		  		 rules.navigateTo("/messages");
 	  		 }
 		}
 		

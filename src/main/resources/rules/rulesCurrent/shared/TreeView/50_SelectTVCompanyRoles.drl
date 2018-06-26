@@ -28,6 +28,7 @@ rule "TV_SELECT Event - Select Company Roles"
 			
 			/* we display the layout */
 	        rules.sendSublayout("company_role_sublayout", "/company/company_settings.json");
+	        
 		}
 		
 

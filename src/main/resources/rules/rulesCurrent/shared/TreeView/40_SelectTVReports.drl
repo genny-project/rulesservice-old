@@ -23,6 +23,7 @@ rule "TV_SELECT Event - Generate Report"
              String grpCode = grpCodeObj.toString();
              if(grpCode != null && !grpCode.isEmpty()){
    	    			rules.generateReport(grpCode);
+   	    			rules.navigateTo("/reports");
    	    		}
 	    }
 	    
