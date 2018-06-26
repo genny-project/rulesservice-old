@@ -5781,7 +5781,6 @@ public void makePayment(QDataAnswerMessage m) {
 
 		/* shared capabilities */
 		capabilityCodes.add("CAP_ADD_CALL");
-		capabilityCodes.add("CAP_ADD_CALL");
 		capabilityCodes.add("CAP_ADD_CHAT_MESSAGE");
 		capabilityCodes.add("CAP_ADD_PAYMENT_METHOD");
 		capabilityCodes.add("CAP_ADD_USER");
@@ -5799,7 +5798,8 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_UPDATE_USER");
 		capabilityCodes.add("CAP_ACCEPT_QUOTE");
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
-
+		capabilityCodes.add("CAP_MARK_DELIVERY");
+		
 		/* if the user is a buyer */
 		if(this.isUserBuyer(user)) {
 
@@ -5807,6 +5807,7 @@ public void makePayment(QDataAnswerMessage m) {
 			capabilityCodes.add("CAP_ADD_ITEM");
 			capabilityCodes.add("CAP_DELETE_ITEM");
 			capabilityCodes.add("CAP_READ_QUOTE");
+			capabilityCodes.add("CAP_LOCATE_USER");
 		}
 		/* if the user is a seller */
 		else if(this.isUserSeller(user)) {
@@ -5814,9 +5815,8 @@ public void makePayment(QDataAnswerMessage m) {
 			/* seller specific capabilities */
 			capabilityCodes.add("CAP_ADD_QUOTE");
 			capabilityCodes.add("CAP_DELETE_QUOTE");
-			capabilityCodes.add("CAP_LOCATE_USER");
-			capabilityCodes.add("CAP_MARK_DELIVERY");
 			capabilityCodes.add("CAP_MARK_PICKUP");
+			capabilityCodes.add("CAP_MARK_ARRIVAL");
 			capabilityCodes.add("CAP_READ_NEW_ITEMS");
 		}
 
@@ -5881,6 +5881,7 @@ public void makePayment(QDataAnswerMessage m) {
 		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Allowed to delete payment methods",token);
 		addCapability(capabilityManifest,"MARK_PICKUP", "Allowed to mark jobs as picked up",token);
 		addCapability(capabilityManifest,"MARK_DELIVERY", "Allowed to mark jobs as delivered",token);
+		addCapability(capabilityManifest,"MARK_ARRIVAL", "Allowed to mark jobs as arrived",token);
 
 		/* Remove any capabilities not in this forced list from roles */
 		existingCapability.removeAll(capabilityManifest);

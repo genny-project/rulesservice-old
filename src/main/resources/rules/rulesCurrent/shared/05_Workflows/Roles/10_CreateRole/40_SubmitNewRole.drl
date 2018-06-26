@@ -42,8 +42,11 @@ rule "Create New Role - Step 4 - Submit"
         				/* we add the capabilities to the role */
         				rules.baseEntity.setupNewRole(newRoleBe, roleName, capabilitiesArray);
 
-                /* we add the role to the company */
-                rules.baseEntity.setRole(company, newRoleBe);
+        				/* we add the role to the company */
+        				rules.baseEntity.setRole(company, newRoleBe);
+        				
+        				/* we resend the company roles */
+        				rules.setState("SEND_ROLES");
         			}
         		}
         }

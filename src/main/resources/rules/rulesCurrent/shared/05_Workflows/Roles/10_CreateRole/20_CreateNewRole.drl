@@ -24,8 +24,6 @@ rule "Create New Role - Step 2"
 			roleCode = rules.getUser().getCode();
 		}
 		
-		rules.println(roleCode);
-		
         BaseEntity newRole = rules.baseEntity.create(roleCode, "ROL", "New Role");
         if(newRole != null) {
         		
