@@ -23,7 +23,7 @@ rule "TV_SELECT Chat Messages"
 	         if(grpCode != null && !grpCode.isEmpty()){
 			     rules.sendAllChats(0,1000);
 			     rules.sendCmdSplitView(grpCode, null);
-			     rules.navigateTo("/messages");
+			     rules.navigateTo("/chat");
 		     }
 		 }
 		 
