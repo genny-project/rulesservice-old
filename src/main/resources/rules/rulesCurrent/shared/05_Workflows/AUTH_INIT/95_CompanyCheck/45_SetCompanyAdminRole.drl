@@ -25,7 +25,11 @@ rule "Check user company - Step 3.5"
 			String initials = companyBe.getCode().substring(3, 5);
 			
 			/* we give all these capabilities to the admin */
-			BaseEntity adminRole = rules.baseEntity.createRole(initials + "+COMPANY_ADMIN", "Company Admin", capabilityCodes);
+			BaseEntity adminRole = rules.baseEntity.createRole(initials + "_COMPANY_ADMIN", "Company Admin", capabilityCodes);
+			
+			rules.println("=========================");
+			rules.println("creating base entity role with code: ");
+			rules.println(initials + "_COMPANY_ADMIN");
 
 			/* we attach the role to the company */
 			rules.baseEntity.setRole(companyBe, adminRole);
