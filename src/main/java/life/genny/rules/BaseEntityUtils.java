@@ -87,14 +87,21 @@ public class BaseEntityUtils {
 
 	public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
 
-		String uniqueId = "IS_" + uniqueCode.toUpperCase();
-		String code = "ROL_" + uniqueId;
+		String initials = "";
+		if(uniqueCode.length() >= 2) {
+			initials = uniqueCode.substring(0, 2);
+		}
+		else {
+			initials = "RO";
+		}
+		
+		String code = QwandaUtils.getUniqueId("ROL_", initials);
 
 		log.info("Creating Role "+code+":"+name);
 
 		BaseEntity role = this.getBaseEntityByCode(code);
 		if (role == null) {
-			role = this.create(uniqueId, "ROL", name, code);
+			role = this.create(initials, "ROL", name, code);
 		}
 
 		return this.setupNewRole(role, name, capabilityCodes);
