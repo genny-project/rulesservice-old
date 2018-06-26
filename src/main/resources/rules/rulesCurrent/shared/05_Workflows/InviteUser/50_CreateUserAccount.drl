@@ -40,12 +40,11 @@ rule "Invite New User - Step 5 - Create User Account"
 				attributes.put("PRI_IS_SELLER", "FALSE");
 			}
 			else if(rules.isUserSeller()) {
-				attributes.put("PRI_IS_SELLER", "FALSE");
-				attributes.put("PRI_IS_BUYER", "TRUE");
+				attributes.put("PRI_IS_BUYER", "FALSE");
+				attributes.put("PRI_IS_SELLER", "TRUE");
 			}
 			
 			/* links */
-			
 			Link[] links = new Link[1];
 			
 			/* we setup the link to the role */
