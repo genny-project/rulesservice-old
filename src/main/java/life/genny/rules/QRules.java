@@ -2751,7 +2751,7 @@ public void makePayment(QDataAnswerMessage m) {
                         }
                         println("rejected driver list ::"+rejectedDriver.toString());
                         String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
-                        sendMessage("", rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                        sendMessage( rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
                     }
 
                 }
