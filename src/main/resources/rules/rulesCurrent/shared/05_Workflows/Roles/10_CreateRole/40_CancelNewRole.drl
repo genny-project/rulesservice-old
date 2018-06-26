@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.attribute.Attribute;
+
+rule "Create New Role - Step 4 - Cancel"
+    when
+        rules: QRules( 	isState("EVENT_FORM_SUBMIT")  &&
+        					isState("QUE_ROLE_GRP") &&
+        					isState("CANCEL") &&
+                        !isState("DID_CANCEL_NEW_ROLE") )
+     then
+
+        rules.header();
+
+        rules.setState("DID_CANCEL_NEW_ROLE");
+        rules.setState("SHOW_COMPANY_ROLES");
+
+	    rules.footer();
+end

@@ -8,13 +8,14 @@ rule "Create New Role - Step 4 - Submit"
     when
         rules: QRules( 	isState("EVENT_FORM_SUBMIT")  &&
         					isState("QUE_ROLE_GRP") &&
+        					isState("SUBMIT") &&
                         !isState("DID_SUBMIT_NEW_ROLE") )
      then
 
         rules.header();
 
         rules.setState("DID_SUBMIT_NEW_ROLE");
-
+        
         /* we show a loading */
         rules.showLoading("", true);
 
