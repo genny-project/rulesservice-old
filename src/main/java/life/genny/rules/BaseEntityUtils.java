@@ -160,9 +160,6 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 
-		/* Now link the role to the GRP_ROLES */
-		this.createLink("GRP_ROLES", role.getCode(), "LNK_CORE", "role", 1.0);
-
 		return role;
 	 }
 
