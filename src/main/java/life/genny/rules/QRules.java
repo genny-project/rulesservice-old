@@ -8885,93 +8885,15 @@ public class QRules {
 
 	}
 
+	public void sendTableViewWithHeadersAndNoteCode(final String parentCode, JsonArray columnHeaders, String rootNotes) {
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
 
-	public void sendIntern() throws IOException {
-		
-		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		String[] recipient = { getUser().getCode() };
-
-		/* SEND ROOT BaseEntity */
-		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
-		publishBaseEntityByCode("GRP_APPLICATIONS", null, null, recipient);
-
-		List<BaseEntity> begList = new ArrayList<BaseEntity>();
-		List<BaseEntity> begKidList = new ArrayList<BaseEntity>();
-
-		SearchEntity buckets = new SearchEntity(drools.getRule().getName(), "BUCKETS")
-		.setSourceCode("GRP_APPLICATIONS")
-		.setPageStart(0)
-		.setPageSize(10000);
-
-		try {
-			this.sendSearchResults(buckets);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		SearchEntity begs = new SearchEntity(drools.getRule().getName(), "BEGs")
-		.setSourceCode("GRP_NEW_ITEMS")
-		.setPageStart(0)
-		.setPageSize(10000);
-
-		if (begs != null) {
-
-			QDataBaseEntityMessage begMsg = QwandaUtils.fetchResults(begs, serviceToken);
-			if (begMsg != null && begMsg.getItems().length != 0) {
-
-				/* send begs from GRP_NEW_ITEMS */
-				begMsg.setLinkValue("LINK");
-				this.publishCmd(begMsg);
-
-				BaseEntity[] begArray = begMsg.getItems();
-				for (BaseEntity be : begArray) {
-					begList.add(be);
-				}
-				for(BaseEntity beg : begList){
-
-					/* get other begKids of beg */
-					SearchEntity begKids = new SearchEntity(drools.getRule().getName(), "begKids")
-					.setSourceCode(beg.getCode())
-					.setPageStart(0)
-					.setPageSize(10000);
-
-					if(begKids != null){
-						
-						QDataBaseEntityMessage begKidsMsg = QwandaUtils.fetchResults(begKids, serviceToken);
-						if (begKidsMsg != null && begKidsMsg.getItems().length != 0) {
-
-							BaseEntity[] begKidsArray = begKidsMsg.getItems();
-							for (BaseEntity begKid : begKidsArray) {
-								if(!begKid.getCode().startsWith("APP_")){
-									begKidList.add(begKid);
-								}
-							}
-						}
-					}
-
-					/* get intern's application */
-					SearchEntity application = new SearchEntity(drools.getRule().getName(), "Application")
-					.addFilter("PRI_APPLICATION_CODE", SearchEntity.StringFilter.LIKE, "APP_%")
-					.setStakeholder(this.getUser().getCode())
-					.setPageStart(0)
-					.setPageSize(10000);
-
-					if(application != null){
-						begKidList.add(application);
-					}
-
-					/* send begKids for a particular beg */
-					this.publishCmd(begKidList, beg.getCode(), "LNK_BEG");
-				}
-
-			}else {
-				this.println("begMsg is null");
-			}
-		}else {
-			this.println("begs is null");
-		}
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", parentCode);
+		cmdViewJson.put("rootNotes", rootNotes);
+		cmdViewJson.put("token", getToken());
+		cmdViewJson.put("columns", columnHeaders);
+		publish("cmds", cmdViewJson);
 	}
 
 }
