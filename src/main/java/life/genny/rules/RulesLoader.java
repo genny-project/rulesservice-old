@@ -72,10 +72,12 @@ public class RulesLoader {
 			List<Tuple3<String, String, String>> rules = processFileRealms("genny", rulesDir);
 
 			realms = getRealms(rules);
+			realms.stream().forEach(System.out::println);
 			realms.remove("genny");
 			setupKieRules("genny", rules); // run genny rules first
 			for (String realm : realms) {
 				setupKieRules(realm, rules);
+				System.out.println("Loaded "+rules);
 			}
 
 			fut.complete();
@@ -101,16 +103,19 @@ public class RulesLoader {
 			// CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
 			//
 			// } else {
-			EBCHandlers.initMsg("Event:INIT_STARTUP", "genny", new QEventMessage("EVT_MSG", "INIT_STARTUP"),
-					CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-			// }
-
-			for (String realm : realms) {
-
-				// Trigger Startup Rules
-				System.out.println("---- Realm:" + realm + " Startup Rules ----------");
-				EBCHandlers.initMsg("Event:INIT_STARTUP", realm, new QEventMessage("EVT_MSG", "INIT_STARTUP"),
+			if (realms.isEmpty()) {
+				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny", new QEventMessage("EVT_MSG", "INIT_STARTUP"),
 						CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			}
+			// }
+			else {
+				for (String realm : realms) {
+
+					// Trigger Startup Rules
+					System.out.println("---- Realm:" + realm + " Startup Rules ----------");
+					EBCHandlers.initMsg("Event:INIT_STARTUP", realm, new QEventMessage("EVT_MSG", "INIT_STARTUP"),
+							CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+				}
 			}
 			System.out.println("Startup Rules Triggered");
 			try {
@@ -191,7 +196,6 @@ public class RulesLoader {
 			File file = new File(inputFileStr);
 			String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
 			String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
-			System.out.println("fileName=" + fileName);
 			if (!file.isFile()) { // DIRECTORY
 				if (!fileName.startsWith("XX")) {
 					String localRealm = realm;
@@ -221,7 +225,7 @@ public class RulesLoader {
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-						System.out.println("Loading in Rule:" + rule._1 + " of " + filerule);
+						System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + filerule);
 						rules.add(rule);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																											// that
@@ -261,8 +265,8 @@ public class RulesLoader {
 		return realms;
 	}
 
-	public static void setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
-
+	public static Integer setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
+		Integer count = 0;
 		try {
 			// load up the knowledge base
 			final KieFileSystem kfs = ks.newKieFileSystem();
@@ -275,7 +279,9 @@ public class RulesLoader {
 
 			// Write each rule into it's realm cache
 			for (final Tuple3<String, String, String> rule : rules) {
-				writeRulesIntoKieFileSystem(realm, rules, kfs, rule);
+				if (writeRulesIntoKieFileSystem(realm, rules, kfs, rule) ) {
+					count++;
+				}
 			}
 
 			final KieBuilder kieBuilder = ks.newKieBuilder(kfs).buildAll();
@@ -293,11 +299,12 @@ public class RulesLoader {
 				System.out.println(realm + " removed");
 			}
 			getKieBaseCache().put(realm, kbase);
-			System.out.println(realm + " rules installed");
+			System.out.println(realm + " rules installed\n");
 
 		} catch (final Throwable t) {
 			t.printStackTrace();
 		}
+		return count;
 	}
 
 	/**
@@ -306,14 +313,11 @@ public class RulesLoader {
 	 * @param kfs
 	 * @param rule
 	 */
-	private static void writeRulesIntoKieFileSystem(final String realm,
+	private static boolean writeRulesIntoKieFileSystem(final String realm,
 			final List<Tuple3<String, String, String>> rules, final KieFileSystem kfs,
 			final Tuple3<String, String, String> rule) {
-		// if
-		// ((rule._2().startsWith("10_SBE_AVAILABLE_JOBS"))&&("channel40".equalsIgnoreCase(realm)))
-		// {
-		// System.out.println(realm+" test "+rule._2);
-		// }
+		boolean ret =  false;
+		
 		if (rule._1.equalsIgnoreCase("genny") || rule._1.equalsIgnoreCase(realm)) {
 			// if a realm rule with same name exists as the same name as a genny rule then
 			// ignore the genny rule
@@ -332,11 +336,9 @@ public class RulesLoader {
 
 						String filenameCheck = ruleCheck._2;
 						if (filenameCheck.equalsIgnoreCase(filename)) {
-							if (("channel40".equalsIgnoreCase(realm))) {
 								System.out.println("Ditching the genny rule because higher rule overrides:" + rule._1
 										+ " : " + rule._2);
-							}
-							return; // do not save this genny rule as there is a proper realm rule with same name
+							return false; // do not save this genny rule as there is a proper realm rule with same name
 						}
 					}
 
@@ -363,7 +365,9 @@ public class RulesLoader {
 				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))
 						.setResourceType(ResourceType.DRL));
 			}
+			return true;
 		}
+		return ret;
 	}
 
 	// fact = gson.fromJson(msg.toString(), QEventMessage.class)
