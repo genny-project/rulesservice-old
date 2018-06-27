@@ -247,7 +247,7 @@ public class QRules {
 	 */
 	public String realm() {
 
-		String str = devMode?"genny":getAsString("realm");
+		String str = getAsString("realm");
 		// if(str == null) {
 		// str = "genny";
 		// }
@@ -4603,13 +4603,7 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
-			try {
-				String str = JsonUtils.toJson(newBulkMsg);
-				JsonObject bulkJson = new JsonObject(str);
-				this.publishData(bulkJson);
-			} catch (Exception e) {
-				System.out.println("Error in JSON conversion");
-			}
+			this.publishCmd(newBulkMsg);
 
 		}
 	}
