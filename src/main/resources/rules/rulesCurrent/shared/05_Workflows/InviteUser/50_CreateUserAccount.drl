@@ -45,7 +45,7 @@ rule "Invite New User - Step 5 - Create User Account"
 			}
 			
 			/* links */
-			List<Link> links = new ArrayList<List>();
+			List<Link> links = new ArrayList<Link>();
 			
 			/* we setup the link to the role */
 			String selectedRole = newUser.getValue("LNK_ASSIGNED_CPY_ROLE", "");
