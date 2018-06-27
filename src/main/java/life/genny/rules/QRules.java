@@ -4880,7 +4880,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4912,7 +4912,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -5011,7 +5011,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* send toast to user */
 				/*
 				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
-				 * String[] recipientArr = { userBe.getCode() }; sendDirectToast(recipientArr,
+				 * String[] recipientArr = { userBe.getCode() }; this.sendToastNotification(recipientArr,
 				 * toastMessage, "warning");
 				 */
 				sendSlackNotification(message);
@@ -5046,7 +5046,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
-	public void sendDirectToast(String[] recipientArr, String toastMsg, String priority) {
+	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {
 
 		/* create toast */
 		/* priority can be "info" or "error or "warning" */
@@ -5225,7 +5225,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5325,7 +5325,7 @@ public void makePayment(QDataAnswerMessage m) {
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 			}
 
@@ -5379,7 +5379,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5517,7 +5517,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				if (userBe != null) {
 					String[] recipientArr = { userBe.getCode() };
-					sendDirectToast(recipientArr, toastMessage, "warning");
+					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 
 				/* Send slack notification */
@@ -5607,7 +5607,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String[] recipientArr = { buyerBe.getCode() };
 				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
 						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
-				sendDirectToast(recipientArr, toastMessage, "warning");
+				this.sendToastNotification(recipientArr, toastMessage, "warning");
 				sendSlackNotification(
 						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
 			}
@@ -5723,7 +5723,7 @@ public void makePayment(QDataAnswerMessage m) {
 					+ " has failed." + e.getMessage();
 
 			/* send error toast message */
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack notification */
 			sendSlackNotification(toastMessage + ". Job code : " + begBe.getCode());
