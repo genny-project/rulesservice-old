@@ -397,9 +397,14 @@ public class CacheUtils {
 		else if(this.isUserBuyer(stakeholder)) {
 
 			/* we send BEGs only the buyer created */
-			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
+			
+			/* if the baseEntity has a company code */
 			String companyCode = baseEntity.getValue("PRI_COMPANY_CODE", "");
-			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || companyCode.equals(stakeholder.getCode());
+			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
+			
+			/* we try to see if the stakeholder is associated with a company */
+			BaseEntity company = this.baseEntityUtils.getParent(stakeholder.getCode(), "LNK_STAFF");
+			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || companyCode.equals(company.getCode());
 		}
 
 		return isUserAssociatedToBaseEntity;
