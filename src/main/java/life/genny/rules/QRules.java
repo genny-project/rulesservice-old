@@ -3380,6 +3380,10 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public boolean hasRole(final String role) {
+		
+		if (getDecodedTokenMap() == null) {
+			return false;
+		}
 
 		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
 		if (rolesMap != null) {
