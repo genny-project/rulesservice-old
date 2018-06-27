@@ -134,7 +134,7 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
+	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -247,7 +247,7 @@ public class QRules {
 	 */
 	public String realm() {
 
-		String str = getAsString("realm");
+		String str = devMode?"genny":getAsString("realm");
 		// if(str == null) {
 		// str = "genny";
 		// }
