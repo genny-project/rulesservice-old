@@ -45,7 +45,7 @@ rule "Invite New User - Step 5 - Create User Account"
 			}
 			
 			/* links */
-			Link[] links = new Link[1];
+			List<Link> links = new ArrayList<List>();
 			
 			/* we setup the link to the role */
 			String selectedRole = newUser.getValue("LNK_ASSIGNED_CPY_ROLE", "");
@@ -53,11 +53,20 @@ rule "Invite New User - Step 5 - Create User Account"
 				
 				/* we create the link from the user to the role */
 				Link newLink = new Link(null, selectedRole, "LNK_ROLE", "ROLE", 1.0);
-				links[0] = newLink;
+				links.add(newLink);
+			}
+			
+			/* we setup the link from the company */
+			BaseEntity company = rules.getUserCompany();
+			if(company != null) {
+				
+				/* we create the link to the user from the company */
+				Link newLink = new Link(company.getCode(), null, "LNK_STAFF", "STAFF", 1.0);
+				links.add(newLink);
 			}
 			
 			/* we set up the new user on keycloak + generate the final baseEntity */
-			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email, attributes, links);
+			BaseEntity createdUser = rules.createUser(firstname, lastname, name, username, email, attributes, links.toArray(new Link[0]));
 			if(createdUser != null) {
 			    
 				rules.set("createdUser", createdUser);
