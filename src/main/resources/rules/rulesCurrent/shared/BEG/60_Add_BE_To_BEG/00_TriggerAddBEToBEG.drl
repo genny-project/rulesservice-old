@@ -1,0 +1,30 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Create Application BaseEntity */
+rule "Trigger Add BE to BEG"
+	when
+	    rules: QRules(  isState("BTN_ADD_BE_TO_BEG") && 
+						isState("EVENT_BTN_CLICK") && 
+						!isState("LOOP_TRIGGER_ADD_BE_TO_BEG")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_TRIGGER_ADD_BE_TO_BEG");
+
+		/* GET begCode from itemCode */		
+		String begCode = rules.getAsString("itemCode");
+		rules.println("begCode ::"+begCode);
+		if(begCode != null){
+			BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);
+			rules.println("beg ::"+beg);
+			if(beg!= null){
+				rules.set("begBe", beg);
+				rules.setState("CREATE_BE_TO_BEG");	
+			}
+		}
+	 	rules.footer();      
+end
+
+
+        
+        
