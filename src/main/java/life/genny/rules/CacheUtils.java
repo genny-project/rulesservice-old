@@ -404,7 +404,12 @@ public class CacheUtils {
 			
 			/* we try to see if the stakeholder is associated with a company */
 			BaseEntity company = this.baseEntityUtils.getParent(stakeholder.getCode(), "LNK_STAFF");
-			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || companyCode.equals(company.getCode());
+			Boolean isAssociatedWithCompany = false;
+			if(company != null) {
+				isAssociatedWithCompany = company.getCode().equals(companyCode);
+			}
+			
+			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || isAssociatedWithCompany;
 		}
 
 		return isUserAssociatedToBaseEntity;
