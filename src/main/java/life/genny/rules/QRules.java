@@ -4847,7 +4847,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendDirectToast(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
