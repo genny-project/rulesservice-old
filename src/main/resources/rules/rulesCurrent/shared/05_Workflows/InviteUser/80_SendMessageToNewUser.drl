@@ -19,7 +19,8 @@ rule "Invite New User - Step 8 - Send Message to User"
 		
 		if(newUser != null && createdUser != null) {
 			
-			
+			rules.sendToastNotification("User was added to your company. An email was sent to them so they can join the platform.", "info");
+			rules.reloadCache();
 		}
 	
 		rules.setState("RETURN_TO_HOMEPAGE");

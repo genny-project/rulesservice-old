@@ -15,8 +15,6 @@ rule "Invite New User - Step 9 - Return to homepage"
 		rules.setState("LOOP_DID_RETURN_TO_HOMEPAGE");
 		
 		rules.redirectToHomePage();
-		rules.sendToastNotification("User was added to your company. An email was sent to them so they can join the platform.", "info");
-		rules.reloadCache();
 		
 		rules.footer();
 end
