@@ -12,10 +12,10 @@ rule "Trigger Send Note"
 	   	BaseEntity context = rules.getAsBaseEntity("contextBe");
 		
 		if(context != null){
-			rules.println("context is null");
-		}else{
 			rules.sendNotes(context);
 			rules.setState("SENT_NOTE");
+		}else{
+			rules.println("context is null");
 		}
 	 	rules.footer();      
 end

@@ -2448,121 +2448,121 @@ public class QRules {
 		publishData(m);
 	}
 
-	public void processChat(QEventMessage m) {
+	// public void processChat(QEventMessage m) {
 
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
+	// 	String data = m.getData().getValue();
+	// 	JsonObject dataJson = new JsonObject(data);
+	// 	String text = dataJson.getString("value");
+	// 	String chatCode = dataJson.getString("itemCode");
 
-		if (text != null && chatCode != null) {
+	// 	if (text != null && chatCode != null) {
 
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
+	// 		/* creating new message */
+	// 		BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
+	// 				QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+	// 				getQwandaServiceUrl(), getToken());
+	// 		if (newMessage != null) {
 
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
-				/* List of receivers except current user */
-				String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					if (!stakeholder.getCode().equals(getUser().getCode())) {
-						msgReceiversCodeArray[counter] = stakeholder.getCode();
-						counter += 1;
-					}
-				}
-				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
-				answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
-				saveAnswers(answers);
-				/* Add current date-time to char as */
-				saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE",
-						QwandaUtils.getZonedCurrentLocalDateTime()));
+	// 			List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
+	// 			String[] recipientCodeArray = new String[stakeholders.size()];
+	// 			/* List of receivers except current user */
+	// 			String[] msgReceiversCodeArray = new String[stakeholders.size() - 1];
+	// 			int counter = 0;
+	// 			for (BaseEntity stakeholder : stakeholders) {
+	// 				recipientCodeArray[counter] = stakeholder.getCode();
+	// 				if (!stakeholder.getCode().equals(getUser().getCode())) {
+	// 					msgReceiversCodeArray[counter] = stakeholder.getCode();
+	// 					counter += 1;
+	// 				}
+	// 			}
+	// 			List<Answer> answers = new ArrayList<Answer>();
+	// 			answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
+	// 			answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
+	// 			saveAnswers(answers);
+	// 			/* Add current date-time to char as */
+	// 			saveAnswer(new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE",
+	// 					QwandaUtils.getZonedCurrentLocalDateTime()));
 
-				System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
-				/* Publish chat to Receiver */
-				publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray);
-				/* Publish message to Receiver */
-				publishData(getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had to use getCode()
-				// to get data from DB,
-				// it was missing
-				// attribute
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
-				// link
-				// after sending both chat
-				// and msg BE as front-end wants
-				// BE's before linkChange event message
+	// 			System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
+	// 			/* Publish chat to Receiver */
+	// 			publishData(getBaseEntityByCode(chatCode), msgReceiversCodeArray);
+	// 			/* Publish message to Receiver */
+	// 			publishData(getBaseEntityByCode(newMessage.getCode()), msgReceiversCodeArray); // Had to use getCode()
+	// 			// to get data from DB,
+	// 			// it was missing
+	// 			// attribute
+	// 			QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());// Creating
+	// 			// link
+	// 			// after sending both chat
+	// 			// and msg BE as front-end wants
+	// 			// BE's before linkChange event message
 
-				/* Sending Messages */
-				HashMap<String, String> contextMap = new HashMap<String, String>();
-				contextMap.put("SENDER", getUser().getCode());
-				contextMap.put("CONVERSATION", newMessage.getCode());
+	// 			/* Sending Messages */
+	// 			HashMap<String, String> contextMap = new HashMap<String, String>();
+	// 			contextMap.put("SENDER", getUser().getCode());
+	// 			contextMap.put("CONVERSATION", newMessage.getCode());
 
-				/* Sending toast message to all the beg frontends */
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
-				// TOAST
-				// needs
-				// to be
-				// removed
-				// when
-				// notification
-				// is
-				// implemented
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO: SMS
-				// needs to
-				// be
-				// removed
-				// when push
-				// notification
-				// in mobile
-				// is
-				// implemented
-				sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
-			}
-		}
-	}
+	// 			/* Sending toast message to all the beg frontends */
+	// 			sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "TOAST");// TODO:
+	// 			// TOAST
+	// 			// needs
+	// 			// to be
+	// 			// removed
+	// 			// when
+	// 			// notification
+	// 			// is
+	// 			// implemented
+	// 			sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");// TODO: SMS
+	// 			// needs to
+	// 			// be
+	// 			// removed
+	// 			// when push
+	// 			// notification
+	// 			// in mobile
+	// 			// is
+	// 			// implemented
+	// 			sendMessage("", msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
+	// 		}
+	// 	}
+	// }
 
-	public void processChat2(QEventMessage m) {
+	// public void processChat2(QEventMessage m) {
 
-		String data = m.getData().getValue();
-		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
-		String chatCode = dataJson.getString("itemCode");
+	// 	String data = m.getData().getValue();
+	// 	JsonObject dataJson = new JsonObject(data);
+	// 	String text = dataJson.getString("value");
+	// 	String chatCode = dataJson.getString("itemCode");
 
-		if (text != null && chatCode != null) {
+	// 	if (text != null && chatCode != null) {
 
-			/* creating new message */
-			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
-					getQwandaServiceUrl(), getToken());
-			if (newMessage != null) {
+	// 		/* creating new message */
+	// 		BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
+	// 				QwandaUtils.getUniqueId(getUser().getCode(), null, "MSG", getToken()), "message",
+	// 				getQwandaServiceUrl(), getToken());
+	// 		if (newMessage != null) {
 
-				List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
-				String[] recipientCodeArray = new String[stakeholders.size()];
+	// 			List<BaseEntity> stakeholders = getBaseEntitysByParentAndLinkCode(chatCode, "LNK_USER");
+	// 			String[] recipientCodeArray = new String[stakeholders.size()];
 
-				int counter = 0;
-				for (BaseEntity stakeholder : stakeholders) {
-					recipientCodeArray[counter] = stakeholder.getCode();
-					counter += 1;
-				}
+	// 			int counter = 0;
+	// 			for (BaseEntity stakeholder : stakeholders) {
+	// 				recipientCodeArray[counter] = stakeholder.getCode();
+	// 				counter += 1;
+	// 			}
 
-				/*
-				 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
-				 * recipientCodeArray);
-				 */
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
-				this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
-						getUser().getCode());
-				QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
-				BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
-				publishBE(chatBE);
-			}
-		}
-	}
+	// 			/*
+	// 			 * publishBaseEntityByCode(newMessage.getCode(), chatCode, "LNK_MESSAGES",
+	// 			 * recipientCodeArray);
+	// 			 */
+	// 			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text);
+	// 			this.updateBaseEntityAttribute(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR",
+	// 					getUser().getCode());
+	// 			QwandaUtils.createLink(chatCode, newMessage.getCode(), "LNK_MESSAGES", "message", 1.0, getToken());
+	// 			BaseEntity chatBE = getBaseEntityByCode(newMessage.getCode());
+	// 			publishBE(chatBE);
+	// 		}
+	// 	}
+	// }
 
 	public void processImageUpload(QDataAnswerMessage m, final String finalAttributeCode) {
 
@@ -3176,7 +3176,8 @@ public class QRules {
 
 	public BaseEntity createBaseEntityByCode(final String userCode, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken());
+		//String uniqueId = QwandaUtils.getUniqueId(userCode, null, bePrefix, getToken());
+		String uniqueId = QwandaUtils.getUniqueId(bePrefix, userCode);
 		if (uniqueId != null) {
 			BaseEntity beg = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, getToken());
 			addAttributes(beg);
@@ -8882,6 +8883,17 @@ public class QRules {
 
 		publish("data", toastJson);
 
+	}
+
+	public void sendTableViewWithHeadersAndNoteCode(final String parentCode, JsonArray columnHeaders, String rootNotes) {
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
+
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		cmdViewJson.put("root", parentCode);
+		cmdViewJson.put("rootNotes", rootNotes);
+		cmdViewJson.put("token", getToken());
+		cmdViewJson.put("columns", columnHeaders);
+		publish("cmds", cmdViewJson);
 	}
 
 }
