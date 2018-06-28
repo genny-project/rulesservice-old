@@ -37,8 +37,8 @@ import life.genny.rules.RulesLoader;
 
 public class EBCHandlers {
 
-//	protected static final Logger log = org.apache.logging.log4j.LogManager
-//			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+	//	protected static final Logger log = org.apache.logging.log4j.LogManager
+	//			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	static Logger log = LoggerFactory.getLogger(EBCHandlers.class);
 
@@ -91,7 +91,7 @@ public class EBCHandlers {
 			JsonObject payload = processMessage("Data", arg);
 
 			if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) { // should always be data if coming through
-																				// this channel
+				// this channel
 				QDataAnswerMessage dataMsg = null;
 
 				// Is it a Rule?
@@ -163,20 +163,14 @@ public class EBCHandlers {
 	}
 
 	private static JsonObject processMessage(String messageType, io.vertx.rxjava.core.eventbus.Message<Object> arg) {
-	//	log.info("EVENT-BUS >> " + messageType.toUpperCase() );
-
-		final JsonObject payload = new JsonObject(arg.body().toString());
-		return payload;
+		return new JsonObject(arg.body().toString());
 	}
 
 	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
-			
-			
+
+
 			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
-			// check for token expiry
-			
-			
 			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
 			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
 
@@ -189,10 +183,10 @@ public class EBCHandlers {
 			qRules.set("realm", realm);
 
 
-			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>();
+			List<Tuple2<String, Object>> globals = new ArrayList<>();
 			RulesLoader.getStandardGlobals();
 
-			List<Object> facts = new ArrayList<Object>();
+			List<Object> facts = new ArrayList<>();
 			facts.add(qRules);
 			facts.add(msg);
 			facts.add(adecodedTokenMap);
@@ -200,7 +194,7 @@ public class EBCHandlers {
 			if(userInSession!=null)
 				facts.add(usersSession.get(preferredUName));
 			else {
-	            User currentUser = new User(preferredUName, fullName, realm, accessRoles);
+				User currentUser = new User(preferredUName, fullName, realm, accessRoles);
 				usersSession.put(adecodedTokenMap.get("preferred_username").toString(), currentUser);
 				facts.add(currentUser);
 			}
@@ -211,19 +205,17 @@ public class EBCHandlers {
 
 			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+realm+") "+msgType); }
 
-		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
+			//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {
 				RulesLoader.executeStatefull(realm, eventBus, globals, facts, keyvalue);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} 
+			catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
 
 			future.complete();
 		}, res -> {
-			if (res.succeeded()) {
-				//System.out.println("Processed "+msgType+" Msg");
-			}
+
 		});
 
 	}
@@ -245,18 +237,13 @@ public class EBCHandlers {
 			facts.add(msg);
 			facts.add(adecodedTokenMap);
 			facts.add(auserRoles);
-	            User currentUser = new User("service", "Service", ruleGroup, "admin");
-				usersSession.put("user", currentUser);
-				facts.add(currentUser);
-
-
+			User currentUser = new User("service", "Service", ruleGroup, "admin");
+			usersSession.put("user", currentUser);
+			facts.add(currentUser);
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			keyvalue.put("token", token);
 
-		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }
-
-		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
 			try {
 				RulesLoader.executeStatefull(ruleGroup, eventBus, globals, facts, keyvalue);
 			} catch (Exception e) {
@@ -270,35 +257,34 @@ public class EBCHandlers {
 				//System.out.println("Processed "+msgType+" Msg");
 			}
 		});
-
 	}
 
-	  public static class Message {
+	public static class Message {
 
-	        public static final int HELLO = 0;
-	        public static final int GOODBYE = 1;
-	        public static final int SEEYA = 2;
+		public static final int HELLO = 0;
+		public static final int GOODBYE = 1;
+		public static final int SEEYA = 2;
 
-	        private String message;
+		private String message;
 
-	        private int status;
+		private int status;
 
-	        public String getMessage() {
-	            return this.message;
-	        }
+		public String getMessage() {
+			return this.message;
+		}
 
-	        public void setMessage(String message) {
-	            this.message = message;
-	        }
+		public void setMessage(String message) {
+			this.message = message;
+		}
 
-	        public int getStatus() {
-	            return this.status;
-	        }
+		public int getStatus() {
+			return this.status;
+		}
 
-	        public void setStatus(int status) {
-	            this.status = status;
-	        }
+		public void setStatus(int status) {
+			this.status = status;
+		}
 
-	    }
+	}
 
 }

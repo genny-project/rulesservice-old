@@ -35,11 +35,9 @@ import life.genny.qwandautils.SecurityUtils;
 import life.genny.security.SecureResources;
 import life.genny.utils.VertxUtils;
 
-
 public class RulesUtils {
 
-	protected static final Logger log = org.apache.logging.log4j.LogManager
-			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
+    protected static final Logger log = org.apache.logging.log4j.LogManager.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	static public AsyncMap<String, BaseEntity> baseEntityMap;
 

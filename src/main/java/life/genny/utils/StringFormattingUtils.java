@@ -1,7 +1,10 @@
 package life.genny.utils;
 
 public class StringFormattingUtils {
-
+	
+	private StringFormattingUtils() {
+		
+	}
 	
 	/**
 	 * 
@@ -16,11 +19,17 @@ public class StringFormattingUtils {
 	public static String maskWithRange(String str, int start, int end, String maskCharacter, Character[] ignoreCharacterArrayForMask) {
 		
 		/* we check if we are not out of range or if the passed str is null */
-		if(str == null || str.length() == 0) return null; 
-		if(end - start < 0) return null;
+		if(str == null || str.length() == 0) {
+			return null; 
+		}
+		if(end - start < 0) {
+			return null;
+		}
 		
 		int maskLength = end - start;
-		if(maskLength > str.length()) return null;
+		if(maskLength > str.length()) {
+			return null;
+		}
 		
 		StringBuilder newStr = new StringBuilder();
 		
@@ -35,18 +44,19 @@ public class StringFormattingUtils {
 				/* iterating through each ignoreMaskCharacter */
 				for(Character ignoreCharacterForMask : ignoreCharacterArrayForMask) {
 					if(c == ignoreCharacterForMask) {
+						
 						/* If a character of word matched character to be ignored, then the character will not be masked */
 						newStr.append(c);
-					} else {
+					} 
+					else {
 						newStr.append(maskCharacter);
 					}
 				}
 				
-			} else {
+			} 
+			else {
 				newStr.append(maskCharacter);
 			}
-			
-			
 		}
 		
 		/* we return: originalString until start of mask + mask + originalString from end of mask */
@@ -60,6 +70,4 @@ public class StringFormattingUtils {
 		
 		return str.substring(0, start) + newStr + str.substring(end, str.length());
 	}
-
-
 }

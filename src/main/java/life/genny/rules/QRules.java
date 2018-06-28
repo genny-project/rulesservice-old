@@ -134,10 +134,10 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
+	public static final Boolean devMode = System.getenv("GENNY_DEV") != null;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
-	final static String DEFAULT_STATE = "NEW";
+	static final String DEFAULT_STATE = "NEW";
 
 	private String token;
 	private EventBus eventBus;
@@ -191,9 +191,9 @@ public class QRules {
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 
-			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-		} catch (Exception e) {
-
+		} 
+		catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
 
@@ -246,12 +246,7 @@ public class QRules {
 	 * @return current realm
 	 */
 	public String realm() {
-
 		String str = getAsString("realm");
-		// if(str == null) {
-		// str = "genny";
-		// }
-
 		return str.toLowerCase();
 	}
 
@@ -279,7 +274,6 @@ public class QRules {
 	 */
 	public void setState(String key) {
 		stateMap.put(key.toUpperCase(), true);
-		// println("STATE " + key + " SET", RulesUtils.ANSI_RED);
 		update();
 	}
 
@@ -290,7 +284,6 @@ public class QRules {
 	/* added by anish */
 	public void setState(Boolean key) {
 		stateMap.put(key.toString().toUpperCase(), true);
-		// println("STATE " + key + " SET", RulesUtils.ANSI_RED);
 		update();
 	}
 
@@ -369,14 +362,15 @@ public class QRules {
 	}
 
 	public Boolean isNull(final String key) {
-		if (is(key)) {
-			if (get(key) == null) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
+		
+		if (is(key) && get(key) == null) {
 			return true;
+		} 
+		else if(is(key) == null) {
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 
@@ -498,17 +492,12 @@ public class QRules {
 				return true;
 
 			}
-		} catch (Exception e) {
-
+		} 
+		catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 
 		return false;
-
-		// if (isNull("USER")) {
-		// return false;
-		// } else {
-		// return true;
-		// }
 	}
 
 	/*
@@ -523,14 +512,15 @@ public class QRules {
 		return status;
 	}
 
-	// Check if Mobile Verification has been completed
 	public Boolean isMobileVerificationCompleted() {
+		
 		Boolean status = true;
 		Boolean value = null;
 		try {
 			value = getUser().getValue("PRI_MOBILE_VERIFICATION_COMPLETED", null);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 
 		if (value == null || !value) {
@@ -541,8 +531,6 @@ public class QRules {
 	}
 
 	public void publishBaseEntityByCode(final String be) {
-		//String[] recipientArray = new String[1];
-		//recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, null);
 	}
 
@@ -668,12 +656,13 @@ public class QRules {
 		/* we get the list of products marked as "PAID" */
 
 		/* we generate a service token */
-		String proj_realm = System.getenv("PROJECT_REALM");
-		String token = RulesUtils.generateServiceToken(proj_realm);
-		if (token != null) {
-
+		String projectRealm = System.getenv("PROJECT_REALM");
+		String serviceToken = RulesUtils.generateServiceToken(projectRealm);
+		if (serviceToken != null) {
+			
+			int pageSize = 1000;
 			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
-					getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
+					getDecodedTokenMap(), serviceToken, "GRP_PAID", "LNK_CORE", 0, pageSize);
 
 			if (paidProducts != null) {
 
@@ -701,8 +690,8 @@ public class QRules {
 
 			this.println("Archiving done.");
 			this.reloadCache();
-
-		} else {
+		} 
+		else {
 			this.println("Could not get token.");
 		}
 	}
@@ -710,8 +699,6 @@ public class QRules {
 	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
 		try {
-
-			// String payload = "payload=" + message.toString();
 
 			final HttpClient client = HttpClientBuilder.create().build();
 
@@ -721,18 +708,9 @@ public class QRules {
 			input.setContentType("application/json");
 			post.setEntity(input);
 
-			final HttpResponse response = client.execute(post);
-
-			String retJson = "";
-			final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				retJson += line;
-				;
-			}
-
-			int responseCode = response.getStatusLine().getStatusCode();
-		} catch (IOException e) {
+			client.execute(post);
+		} 
+		catch (IOException e) {
 			this.println(e);
 		}
 	}
@@ -797,10 +775,10 @@ public class QRules {
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 					recipientArray, getToken());
 			publish("messages", message);
-		} else {
+		} 
+		else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
-
 	}
 
 	public BaseEntity createUser() {
@@ -824,11 +802,12 @@ public class QRules {
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
-      /* send notification for new registration */
-      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
-      this.sendSlackNotification(message);
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
 
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
 		return be;
@@ -968,13 +947,10 @@ public class QRules {
 			final JsonObject json = RulesUtils.toJsonObject(msg);
 			json.put("items", latestLinks);
 			publishData(json);
-			// publish("cmds",json);
-			// Send to all
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			this.println(e.getMessage());
 		}
-
 	}
 
 	/**
@@ -3465,22 +3441,22 @@ public void makePayment(QDataAnswerMessage m) {
 		// Adding selectedItem info to make this chat selected
 		if (chatCode == null || chatCode.isEmpty()) {
 			codeListView.put("selectedItem", "null");
-		} else
+		} else {
 			codeListView.put("selectedItem", chatCode);
+		}
 		JsonObject convListView = new JsonObject();
 		convListView.put("code", "CONVERSATION_VIEW");
 		if (chatCode == null || chatCode.isEmpty()) {
 			convListView.put("root", "null");
-		} else
+		} else {
 			convListView.put("root", chatCode);
+		}
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
 
 		publishCmd(cmdViewJson);
 	}
@@ -3489,8 +3465,6 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Publish all the messages that belongs to the given chat
 	 */
 	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
-		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
-		// 0, 100, true);
 
 		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
 				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
@@ -3501,11 +3475,8 @@ public void makePayment(QDataAnswerMessage m) {
 		try {
 			sendSearchResults(sendAllMsgs);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Error! Unable to get Search Rsults");
-			e.printStackTrace();
 		}
-
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
@@ -3521,6 +3492,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* Search the text value in all jobs */
 	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
+		
 		println("Get All Users - The search BE is  :: " + searchBeCode);
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users");
 		JsonArray columnsArray = new JsonArray();
@@ -3567,14 +3539,11 @@ public void makePayment(QDataAnswerMessage m) {
 			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (BadDataException e) {
+			System.out.println(e.getMessage());
 		}
 
-		// }else {
-		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-		// }
 		println("The search BE is  :: " + searchBE);
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
@@ -3582,16 +3551,13 @@ public void makePayment(QDataAnswerMessage m) {
 		System.out.println("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
-		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-		// publishCmd(result, grpCode, "LNK_CORE");
-
 	}
 
 	/* Get All the jobs */
 	public void sendAllLoads(String searchBeCode) throws ClientProtocolException, IOException {
-		// println("Get all Loads - The search BE is :: "+searchBeCode );
+
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Loads");
-		// BaseEntity searchBE;
+
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
 		// Creating attributes
@@ -3627,22 +3593,17 @@ public void makePayment(QDataAnswerMessage m) {
 			searchBE.addAttribute(attributeTextName, 9.0);
 			searchBE.addAttribute(attributeTextJobId, 8.0);
 			searchBE.addAttribute(attributeTextPickupAddress, 7.0);
-			// searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
 			searchBE.addAttribute(attributeDescription, 5.0);
-			// searchBE.addAttribute(attributeDriverPrice, 4.0);
 			searchBE.addAttribute(attributeTextSortName, 3.0, "ASC");
 			searchBE.addAttribute(attributePageStart, 2.0, "0");
 			searchBE.addAttribute(attributePageSize, 1.0, "500");
 
 		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
-		// println("The search BE is :: "+JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		// System.out.println("The result :: "+loadsList);
 		publishData(new JsonObject(loadsList));
 		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
 	}
@@ -3653,7 +3614,6 @@ public void makePayment(QDataAnswerMessage m) {
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers");
 
 		JsonArray columnsArray = new JsonArray();
-		JsonObject columns = new JsonObject();
 		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
 		JsonObject image = new JsonObject();
 		image.put("code", "PRI_IMAGE_URL");
@@ -3678,11 +3638,9 @@ public void makePayment(QDataAnswerMessage m) {
 		JsonObject email = new JsonObject();
 		email.put("code", "PRI_EMAIL");
 		columnsArray.add(email);
-		println("The columnsArray is ::" + columnsArray);
-		// Sort Attribute
+
 		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
 		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_IS_SELLER", "=");
-		// Pagination Attribute
 		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
 		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
 
@@ -3697,24 +3655,16 @@ public void makePayment(QDataAnswerMessage m) {
 			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
 			searchBE.addAttribute(attributePageStart, 3.0, "0");
 			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (BadDataException e) {
+			this.println(e.getMessage());
 		}
 
-		// }else {
-		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-		// }
-		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
-		publishData(new JsonObject(result));
-		sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
-		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-		// publishCmd(result, grpCode, "LNK_CORE");
-
+		this.publishData(new JsonObject(result));
+		this.sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
 	}
 
 	// Search and send all the Owners

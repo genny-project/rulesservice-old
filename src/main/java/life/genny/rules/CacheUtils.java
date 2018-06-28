@@ -217,11 +217,13 @@ public class CacheUtils {
 		/* we grabbed the cached items */
 		QBulkMessage source = VertxUtils.getObject(realm, "CACHE", sourceCode, QBulkMessage.class);
 		
-		if(source == null) return false;
+		if(source == null) {
+			return false;
+		}
 		
 		/* we calculate the new source messages */
 		List<QDataBaseEntityMessage> sourceMessages = Arrays.asList(source.getMessages());
-		List<QDataBaseEntityMessage> newSourceMessages = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> newSourceMessages = new ArrayList<>();
 		
 		/* we loop through all the messages currently sitting in the source */
 		for(QDataBaseEntityMessage message: sourceMessages) {
@@ -238,7 +240,7 @@ public class CacheUtils {
 			}
 			
 			/* if we have not found the message in the list of deleted messages, we can keep it */
-			if(found == false) {
+			if(!found) {
 				newSourceMessages.add(message);
 			}
 		}
@@ -255,7 +257,7 @@ public class CacheUtils {
 		
 		 /* we try to fetch the message from the source */
 		List<QDataBaseEntityMessage> messagesToMove = this.getMessages(baseEntity.getCode(), sourceCode);
-		if(messagesToMove != null && messagesToMove.size() > 0) {
+		if(messagesToMove != null && !messagesToMove.isEmpty()) {
 			
 			/* we remove the messages for the BE and the linked baseEntities */
 			this.removeMessages(messagesToMove, sourceCode);
