@@ -12,19 +12,20 @@ public class PaymentEndpoint {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	public static final String paymentServiceUrl = System.getenv("PAYMENT_SERVICE_API_URL");
-	public static final String paymentProvider = System.getenv("PAYMENT_PROVIDER");
+	public static final String PAYMENT_SERVICE_URL = System.getenv("PAYMENT_SERVICE_API_URL");
+	public static final String PAYMENT_PROVIDER = System.getenv("PAYMENT_PROVIDER");
 
 	public static String createPaymentsUser(final String entityString, final String authToken) throws PaymentException {
 
 		String newpaymentsUserResponse = null;
 		try {
+			
 			System.out.println("Request entity ::"+entityString);
 			newpaymentsUserResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/users", entityString, authToken);
-
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/users", entityString, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 
 		return newpaymentsUserResponse;
@@ -35,9 +36,10 @@ public class PaymentEndpoint {
 		String userResponse = null;
 		try {
 			userResponse = PaymentUtils.apiGetPaymentResponse(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/users/" + paymentsUserId, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		} 
 		return userResponse;
 	}
@@ -48,11 +50,11 @@ public class PaymentEndpoint {
 		String editPaymentResponse = null;
 		try {
 			
-			System.out.println("Request Entity ::"+entityString);
 			editPaymentResponse = PaymentUtils.apiPutPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId, entityString, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/users/" + paymentsUserId, entityString, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 		return editPaymentResponse;
 	}
@@ -62,11 +64,11 @@ public class PaymentEndpoint {
 		String createCompanyResponse = null;
 
 		try {
-			System.out.println("Request Entity ::"+companyEntityString);
 			createCompanyResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/companies", companyEntityString, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/companies", companyEntityString, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 		
 		return createCompanyResponse;
@@ -77,11 +79,11 @@ public class PaymentEndpoint {
 		String updateCompanyResponse = null;
 
 		try {
-			System.out.println("Request Entity ::"+companyEntityString);
 			updateCompanyResponse = PaymentUtils.apiPutPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/companies/" + companyId, companyEntityString, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/companies/" + companyId, companyEntityString, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 		
 		return updateCompanyResponse;
@@ -95,13 +97,13 @@ public class PaymentEndpoint {
 		try {
 			System.out.println("Request Entity ::"+itemEntity);
 			createItemResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/items",  itemEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/items",  itemEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		} 	
 		return createItemResponse;
 	}
-	
 	
 	public static String authenticatePaymentProvider(String paymentProviderEntity, String authToken) throws PaymentException {
 		String authenticateResponse = null;
@@ -109,24 +111,26 @@ public class PaymentEndpoint {
 		try {
 			System.out.println("Request Entity ::"+paymentProviderEntity);
 			authenticateResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/tokens",  paymentProviderEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/tokens",  paymentProviderEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
-				
-		return authenticateResponse;
 		
+		return authenticateResponse;
 	}
 	
 	public static String createFees(String feeEntity, String authToken) throws PaymentException {
+		
 		String feeResponse = null;
 		
 		try {
 			System.out.println("Request Entity ::"+feeEntity);
 			feeResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/fees",  feeEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/fees",  feeEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return feeResponse;
@@ -137,11 +141,11 @@ public class PaymentEndpoint {
 		String makePaymentResponse = null;
 		
 		try {
-			System.out.println("Request Entity ::"+paymentEntity);
 			makePaymentResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/items/" + paymentItemId + "/payment",  paymentEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/items/" + paymentItemId + "/payment",  paymentEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return makePaymentResponse;
@@ -154,9 +158,10 @@ public class PaymentEndpoint {
 		try {
 			System.out.println("Release Payment entity ::"+releaseEntity);
 			releasePaymentResponse = PaymentUtils.apiPostPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/items/" + paymentItemId + "/release-payment", releaseEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/items/" + paymentItemId + "/release-payment", releaseEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		} 
 				
 		return releasePaymentResponse;
@@ -169,9 +174,10 @@ public class PaymentEndpoint {
 		try {
 			System.out.println("Request Entity ::"+disburseEntity);
 			disbursementResponse = PaymentUtils.apiPutPaymentEntity(
-					paymentServiceUrl + "/" + paymentProvider + "/users/" + paymentsUserId + "/disbursement-account", disburseEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/users/" + paymentsUserId + "/disbursement-account", disburseEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return disbursementResponse;
@@ -184,9 +190,10 @@ public class PaymentEndpoint {
 		
 		try {
 			searchUserResponse = PaymentUtils.apiGetPaymentResponse(
-					paymentServiceUrl + "/" + paymentProvider + "/users?search=" + emailId + "&limit=500", authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/users?search=" + emailId + "&limit=500", authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return searchUserResponse;
@@ -199,13 +206,13 @@ public class PaymentEndpoint {
 		
 		try {
 			System.out.println("Request Entity ::"+debitEntity);
-			searchUserResponse = PaymentUtils.apiPostPaymentEntity(paymentServiceUrl + "/" + paymentProvider + "/payment-authority", debitEntity, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+			searchUserResponse = PaymentUtils.apiPostPaymentEntity(PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/payment-authority", debitEntity, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return searchUserResponse;
-		
 	}
 	
 	public static String deleteBankAccount(String bankAccountId, String authToken) throws PaymentException {
@@ -213,13 +220,13 @@ public class PaymentEndpoint {
 		String deleteAccountResponse = null;
 		
 		try {
-			deleteAccountResponse = PaymentUtils.apiDeletePaymentEntity(paymentServiceUrl + "/" + paymentProvider + "/bank-accounts/" + bankAccountId, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+			deleteAccountResponse = PaymentUtils.apiDeletePaymentEntity(PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/bank-accounts/" + bankAccountId, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return deleteAccountResponse;
-		
 	}
 	
 	public static String deleteCardAccount(String cardAccountId, String authToken) throws PaymentException {
@@ -227,9 +234,10 @@ public class PaymentEndpoint {
 		String deleteAccountResponse = null;
 		
 		try {
-			deleteAccountResponse = PaymentUtils.apiDeletePaymentEntity(paymentServiceUrl + "/" + paymentProvider + "/card-accounts/" + cardAccountId, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+			deleteAccountResponse = PaymentUtils.apiDeletePaymentEntity(PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/card-accounts/" + cardAccountId, authToken);
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 				
 		return deleteAccountResponse;
@@ -241,11 +249,12 @@ public class PaymentEndpoint {
 		String itemResponse = null;
 		try {
 			itemResponse = PaymentUtils.apiGetPaymentResponse(
-					paymentServiceUrl + "/" + paymentProvider + "/items/" + itemId, authToken);
-		} catch (IOException e) {
-			e.printStackTrace();
+					PAYMENT_SERVICE_URL + "/" + PAYMENT_PROVIDER + "/items/" + itemId, authToken);
 		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
+		} 
+		
 		return itemResponse;
 	}
-
 }

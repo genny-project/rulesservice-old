@@ -179,7 +179,8 @@ public class BaseEntityUtils {
 				answer.setChangeEvent(false);
 			}
 		}
-		Answer items[] = new Answer[answers.size()];
+		
+		Answer[] items = new Answer[answers.size()];
 		items = answers.toArray(items);
 
 		QDataAnswerMessage msg = new QDataAnswerMessage(items);
@@ -191,7 +192,8 @@ public class BaseEntityUtils {
 
 		try {
 			QwandaUtils.apiPostEntity(this.qwandaServiceUrl + "/qwanda/answers/bulk2", jsonAnswer, token);
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			// log.error("Socket error trying to post answer");
 		}
 	}
@@ -253,10 +255,12 @@ public class BaseEntityUtils {
 			be = VertxUtils.readFromDDT(code, withAttributes, this.token);
 			if (be == null) {
 				System.out.println("ERROR - be (" + code + ") fetched is NULL ");
-			} else {
+			} 
+			else {
 				this.addAttributes(be);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			System.out.println("Failed to read cache for " + code);
 		}
 
@@ -289,13 +293,17 @@ public class BaseEntityUtils {
 
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
-		cache = false;
-		List<BaseEntity> bes = new ArrayList<BaseEntity>();
+		
+		Boolean useCache = false;
+		List<BaseEntity> bes = new ArrayList<>();
 		String key = parentCode + linkCode + "-" + pageStart + "-" + pageSize;
-		if (cache) {
-			Type listType = new TypeToken<List<BaseEntity>>() {
-			}.getType();
+		
+		if (useCache) {
+			
+			Type listType = new TypeToken<List<BaseEntity>>() {}.getType();
+			
 			List<String> beCodes = VertxUtils.getObject(this.realm, "LIST", key, (Class) listType);
+			
 			if (beCodes == null) {
 				bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, this.decodedMapToken,
 						this.token, parentCode, linkCode, pageStart, pageSize);
@@ -305,13 +313,15 @@ public class BaseEntityUtils {
 					beCodes.add(be.getCode());
 				}
 				VertxUtils.putObject(this.realm, "LIST", key, beCodes);
-			} else {
+			} 
+			else {
 				for (String beCode : beCodes) {
 					BaseEntity be = getBaseEntityByCode(beCode);
 					bes.add(be);
 				}
 			}
-		} else {
+		} 
+		else {
 
 			bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl, this.decodedMapToken,
 					this.token, parentCode, linkCode, pageStart, pageSize);
@@ -326,8 +336,6 @@ public class BaseEntityUtils {
 
 		List<BaseEntity> bes = null;
 
-		// if (isNull("BES_" + parentCode.toUpperCase() + "_" + linkCode)) {
-
 		bes = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes2(qwandaServiceUrl, this.decodedMapToken,
 				this.token, parentCode, linkCode, pageStart, pageSize);
 
@@ -341,7 +349,7 @@ public class BaseEntityUtils {
 	// Adam's speedup
 	public List<BaseEntity> getBaseEntitysByParentAndLinkCode3(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
-		cache = false;
+		
 		List<BaseEntity> bes = new ArrayList<BaseEntity>();
 
 		BaseEntity parent = getBaseEntityByCode(parentCode);
@@ -825,9 +833,8 @@ public class BaseEntityUtils {
 	}
 
 	public List<Link> getLinks(final String parentCode, final String linkCode) {
-		List<Link> links = RulesUtils.getLinks(this.qwandaServiceUrl, this.decodedMapToken, this.token, parentCode,
+		return RulesUtils.getLinks(this.qwandaServiceUrl, this.decodedMapToken, this.token, parentCode,
 				linkCode);
-		return links;
 	}
 
 	public String updateBaseEntity(BaseEntity be) {
@@ -835,57 +842,61 @@ public class BaseEntityUtils {
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			return QwandaUtils.apiPutEntity(this.qwandaServiceUrl + "/qwanda/baseentitys", JsonUtils.toJson(be),
 					this.token);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
 		}
 		return null;
 	}
 
 	public BaseEntity updateCachedBaseEntity(final Answer answer) {
+		
 		BaseEntity cachedBe = this.getBaseEntityByCode(answer.getTargetCode());
+		
 		// Add an attribute if not already there
 		try {
 			answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
 			if (answer.getAttribute() == null) {
 				System.out.println("Null Attribute");
-			} else
+			} 
+			else {
 				cachedBe.addAnswer(answer);
+			}
+				
 			VertxUtils.writeCachedJson(answer.getTargetCode(), JsonUtils.toJson(cachedBe));
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (BadDataException e) {
+			System.out.println(e.getMessage());
 		}
+		
 		return cachedBe;
 	}
 
 	public BaseEntity updateCachedBaseEntity(final List<Answer> answers) {
+		
 		Answer firstanswer = null;
-		if (answers != null) {
-			if (!answers.isEmpty()) {
-				firstanswer = answers.get(0);
-			}
+		if (answers != null && !answers.isEmpty()) {
+			firstanswer = answers.get(0);
 		}
+		
 		BaseEntity cachedBe = null;
 
 		if (firstanswer != null) {
 			cachedBe = this.getBaseEntityByCode(firstanswer.getTargetCode());
-		} else {
+		} 
+		else {
 			return null;
 		}
 
 		for (Answer answer : answers) {
 
-			// Add an attribute if not already there
 			try {
 				answer.setAttribute(RulesUtils.attributeMap.get(answer.getAttributeCode()));
-				if (answer.getAttribute() == null) {
-					// log.error("Null Attribute");
-				} else
+				if (answer.getAttribute() != null) {
 					cachedBe.addAnswer(answer);
-
-			} catch (BadDataException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				} 
+			} 
+			catch (BadDataException e) {
+				System.out.println(e.getMessage());
 			}
 		}
 		VertxUtils.writeCachedJson(cachedBe.getCode(), JsonUtils.toJson(cachedBe));
@@ -914,8 +925,9 @@ public class BaseEntityUtils {
 		link.setWeight(weight);
 		try {
 			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 		return link;
 	}
@@ -927,8 +939,8 @@ public class BaseEntityUtils {
 		link.setWeight(weight);
 		try {
 			QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(link), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
 		}
 		return link;
 	}
@@ -936,7 +948,7 @@ public class BaseEntityUtils {
 	public Link[] getUpdatedLink(String parentCode, String linkCode) {
 		List<Link> links = this.getLinks(parentCode, linkCode);
 		Link[] items = new Link[links.size()];
-		items = (Link[]) links.toArray(items);
+		items = links.toArray(items);
 		return items;
 	}
 
@@ -960,21 +972,21 @@ public class BaseEntityUtils {
 		return attributeValueMap;
 	}
 
-	public List getLinkList(String groupCode, String linkCode, String linkValue, String token) {
+	public List<Link> getLinkList(String groupCode, String linkCode, String linkValue, String token) {
 
 		// String qwandaServiceUrl = "http://localhost:8280";
 		String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-		List linkList = null;
+		List<Link> linkList = null;
 
 		try {
+			
 			String attributeString = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/entityentitys/" + groupCode
 					+ "/linkcodes/" + linkCode + "/children/" + linkValue, token);
 			if (attributeString != null) {
 				linkList = JsonUtils.fromJson(attributeString, List.class);
 			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
 		}
 
 		return linkList;
@@ -993,13 +1005,15 @@ public class BaseEntityUtils {
 				@Override
 				public int compare(EntityAttribute ea1, EntityAttribute ea2) {
 					if (ea1.getWeight() != null && ea2.getWeight() != null) {
-						if (sortOrder.equalsIgnoreCase("ASC"))
+						if ("ASC".equalsIgnoreCase(sortOrder))
 							return (ea1.getWeight()).compareTo(ea2.getWeight());
-						else
+						else {
 							return (ea2.getWeight()).compareTo(ea1.getWeight());
-
-					} else
+						}
+					} 
+					else {
 						return 0;
+					}
 				}
 			});
 		}
@@ -1024,9 +1038,6 @@ public class BaseEntityUtils {
 			BaseEntity beLayout = null;
 
 			/* we check if the baseentity for this layout already exists */
-			// beLayout =
-			// RulesUtils.getBaseEntityByAttributeAndValue(RulesUtils.qwandaServiceUrl,
-			// this.decodedTokenMap, this.token, "PRI_LAYOUT_URI", layout.getPath());
 			String precode = layout.getPath().replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
 			String layoutCode = ("LAY_" + realm + "_" + precode).toUpperCase();
 
@@ -1041,58 +1052,55 @@ public class BaseEntityUtils {
 				VertxUtils.writeCachedJson(beLayout.getCode(), JsonUtils.toJson(beLayout));
 			}
 
-			if (beLayout != null) {
+			this.addAttributes(beLayout);
 
-				this.addAttributes(beLayout);
+			/*
+			 * we get the modified time stored in the BE and we compare it to the layout one
+			 */
+			String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
 
-				/*
-				 * we get the modified time stored in the BE and we compare it to the layout one
-				 */
-				String beModifiedTime = beLayout.getValue("PRI_LAYOUT_MODIFIED_DATE", null);
+			if (beModifiedTime == null || layout.getModifiedDate() == null
+					|| !beModifiedTime.equals(layout.getModifiedDate())) {
 
-				if (beModifiedTime == null || layout.getModifiedDate() == null
-						|| !beModifiedTime.equals(layout.getModifiedDate())) {
+				System.out.println("Reloading layout: " + layoutCode);
 
-					System.out.println("Reloading layout: " + layoutCode);
+				/* if the modified time is not the same, we update the layout BE */
 
-					/* if the modified time is not the same, we update the layout BE */
+				/* setting layout attributes */
+				List<Answer> answers = new ArrayList<Answer>();
 
-					/* setting layout attributes */
-					List<Answer> answers = new ArrayList<Answer>();
+				/* download the content of the layout */
+				String content = LayoutUtils.downloadLayoutContent(layout);
 
-					/* download the content of the layout */
-					String content = LayoutUtils.downloadLayoutContent(layout);
+				Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
+						content);
+				newAnswerContent.setChangeEvent(true);
+				answers.add(newAnswerContent);
 
-					Answer newAnswerContent = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_DATA",
-							content);
-					newAnswerContent.setChangeEvent(true);
-					answers.add(newAnswerContent);
+				Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
+						layout.getPath());
+				newAnswer.setChangeEvent(false);
+				answers.add(newAnswer);
 
-					Answer newAnswer = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URI",
-							layout.getPath());
-					newAnswer.setChangeEvent(false);
-					answers.add(newAnswer);
+				Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
+						layout.getDownloadUrl());
+				newAnswer2.setChangeEvent(false);
+				answers.add(newAnswer2);
 
-					Answer newAnswer2 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_URL",
-							layout.getDownloadUrl());
-					newAnswer2.setChangeEvent(false);
-					answers.add(newAnswer2);
+				Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
+						layout.getName());
+				newAnswer3.setChangeEvent(false);
+				answers.add(newAnswer3);
 
-					Answer newAnswer3 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_NAME",
-							layout.getName());
-					newAnswer3.setChangeEvent(false);
-					answers.add(newAnswer3);
+				Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
+						layout.getModifiedDate());
+				newAnswer4.setChangeEvent(false);
+				answers.add(newAnswer4);
 
-					Answer newAnswer4 = new Answer(beLayout.getCode(), beLayout.getCode(), "PRI_LAYOUT_MODIFIED_DATE",
-							layout.getModifiedDate());
-					newAnswer4.setChangeEvent(false);
-					answers.add(newAnswer4);
+				this.saveAnswers(answers);
 
-					this.saveAnswers(answers);
-
-					/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
-					this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
-				}
+				/* create link between GRP_LAYOUTS and this new LAY_XX base entity */
+				this.createLink("GRP_LAYOUTS", beLayout.getCode(), "LNK_CORE", "LAYOUT", 1.0);
 			}
 
 			return this.getBaseEntityByCode(beLayout.getCode());
@@ -1108,18 +1116,18 @@ public class BaseEntityUtils {
 	 */
 	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
 		
-		Map<String, String> map = new HashMap<>();
-		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
+		Map<String, String> map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
 		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
 
-		List<Answer> answers = new ArrayList<Answer>();
+		List<Answer> answers = new ArrayList<>();
 		try{
 			for (Map.Entry<String, String> entry : map.entrySet()){	
 				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
 				answers.add(answerObj);
 			}   
 			saveAnswers(answers);              
-		} catch (Exception e) {}
+		} 
+		catch (Exception e) {}
 
 		return getBaseEntityByCode(targetBe.getCode());
 	}
@@ -1128,8 +1136,8 @@ public class BaseEntityUtils {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
 			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
 		}
 		return null;
 

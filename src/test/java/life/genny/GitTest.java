@@ -14,20 +14,10 @@ public class GitTest {
       final String layout = QwandaUtils
           .apiGet(RulesUtils.getLayoutCacheURL("README.md"), null);
       System.out.println(layout);
-    } catch (final IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    } 
+    catch (final IOException e) {
+    		System.out.println(e.getMessage());
     }
-
-
-    // try {
-    // final String layout = GitUtils.gitGet("master", "genny-project", "layouts", "README.md");
-    // System.out.println(layout);
-    // } catch (IOException | GitAPIException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-
   }
 
 }
