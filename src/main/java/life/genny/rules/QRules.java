@@ -5057,7 +5057,19 @@ public void makePayment(QDataAnswerMessage m) {
 		String toastJson = JsonUtils.toJson(toast);
 
 		publish("data", toastJson);
+	}
+	
+	/* To send direct toast messages to the front end without templates */
+	public void sendToastNotification(String toastMsg, String priority) {
 
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		this.sendToastNotification(recipients, toastMsg, priority);
+	}
+	
+	/* To send direct toast messages to the front end without templates */
+	public void sendToastNotification(String toastMsg) {
+		this.sendToastNotification(toastMsg, "info");
 	}
 
 	public QDataBaseEntityMessage getMappedBEs(final String parentCode) {
@@ -5071,7 +5083,7 @@ public void makePayment(QDataAnswerMessage m) {
 		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),
 				parentCode, "LNK_CORE");
 
-		return ret;
+		return ret; 
 	}
 
 	public void selectReport(String data) {

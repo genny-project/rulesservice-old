@@ -4,9 +4,7 @@ import life.genny.rules.QRules;
 /* Create BEG BaseEntity */
 rule "Add Product - Step 2"
 	when
-		rules: QRules(	isState("CREATE_PRODUCT_BASEENTITY") &&
-						isState("CREATED_BASE_ENTITY") &&
-						isState("BEG") &&
+		rules: QRules(	isState("CREATE_BEG_PRODUCT") &&
 						!isState("LOOP_CREATE_PRODUCT_BASEENTITY") ) 
 	 then
 	 	rules.header();
@@ -14,39 +12,28 @@ rule "Add Product - Step 2"
 
 		rules.clearState("CREATED_BASE_ENTITY");	
 
-		BaseEntity beg = rules.getAsBaseEntity("baseEntity");	
-		if(beg != null){
+		BaseEntity beg = rules.getAsBaseEntity("begBe");	
+		if(beg != null) {
 		
-			/* we link the creator */
-			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode());
-			rules.set("begBe", beg);
-		}else{
-			rules.println("beg is null");
-			return;
+			BaseEntity project = rules.getProject();
+			
+			/* we grab the product code */
+			String productCode = project.getValue("PRI_PRODUCT_CODE", "PRD");
+
+			/* we create the PRODUCT base entity */
+			rules.set("beCode", rules.getUser().getCode());
+			rules.set("bePrefix", productCode);
+			rules.set("beName", productCode);
+
+			rules.setState("CREATE_BASE_ENTITY");	
+			rules.setState("LINK_GRP_DRAFTS_TO_BEG");	
+		}
+		else {
+			
+			rules.setState("FAILED_CREATE_BEG");
+			rules.setState("FAILED_CREATE_PRODUCT");
 		}
 
-		BaseEntity project = rules.getProject();
-		if(project != null){
-			String productCode = project.getValue("PRI_PRODUCT_CODE", null);
-			rules.println("productCode   ::   " + productCode);
-
-			if(productCode != null){
-				/* Create PRODUCT BaseEntity*/
-				rules.set("beCode", rules.getUser().getCode());
-				rules.set("bePrefix", productCode);
-				rules.set("beName", productCode);
-
-				rules.setState("CREATE_BASE_ENTITY");	
-
-				rules.setState("LINK_GRP_DRAFTS_TO_BEG");	
-			}else{
-				rules.println("productCode is null");
-				return;
-			}
-		}else{
-			rules.println("project is null");
-			return;
-		}
 
 	 	rules.footer();      
 end
