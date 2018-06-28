@@ -2717,6 +2717,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* Generate 4 digit random passcode */
 	public String generateVerificationCode() {
+		if ( this.hasRole("tester")  ) {
+			return String.format("%04d", 0000);
+		}
 		return String.format("%04d", (new Random()).nextInt(10000));
 	}
 
@@ -3259,6 +3262,10 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public boolean hasRole(final String role) {
+
+		if (getDecodedTokenMap() == null) {
+			return false;
+		}
 
 		LinkedHashMap rolesMap = (LinkedHashMap) getDecodedTokenMap().get("realm_access");
 		if (rolesMap != null) {
@@ -4759,7 +4766,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4792,7 +4799,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4824,7 +4831,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack message */
 			sendSlackNotification(message);
@@ -4923,7 +4930,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* send toast to user */
 				/*
 				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
-				 * String[] recipientArr = { userBe.getCode() }; sendToastNotification(recipientArr,
+				 * String[] recipientArr = { userBe.getCode() }; this.sendToastNotification(recipientArr,
 				 * toastMessage, "warning");
 				 */
 				sendSlackNotification(message);
@@ -5141,7 +5148,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5241,7 +5248,7 @@ public void makePayment(QDataAnswerMessage m) {
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
-					sendToastNotification(recipientArr, toastMessage, "warning");
+					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 			}
 
@@ -5295,7 +5302,7 @@ public void makePayment(QDataAnswerMessage m) {
 			 */
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
 	}
 
@@ -5433,7 +5440,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				if (userBe != null) {
 					String[] recipientArr = { userBe.getCode() };
-					sendToastNotification(recipientArr, toastMessage, "warning");
+					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 
 				/* Send slack notification */
@@ -5523,7 +5530,7 @@ public void makePayment(QDataAnswerMessage m) {
 				String[] recipientArr = { buyerBe.getCode() };
 				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
 						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
-				sendToastNotification(recipientArr, toastMessage, "warning");
+				this.sendToastNotification(recipientArr, toastMessage, "warning");
 				sendSlackNotification(
 						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
 			}
@@ -5639,7 +5646,7 @@ public void makePayment(QDataAnswerMessage m) {
 					+ " has failed." + e.getMessage();
 
 			/* send error toast message */
-			sendToastNotification(recipientArr, toastMessage, "warning");
+			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
 			/* send slack notification */
 			sendSlackNotification(toastMessage + ". Job code : " + begBe.getCode());
@@ -5799,7 +5806,7 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_ACCEPT_QUOTE");
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
 		capabilityCodes.add("CAP_MARK_DELIVERY");
-		
+
 		/* if the user is a buyer */
 		if(this.isUserBuyer(user)) {
 
