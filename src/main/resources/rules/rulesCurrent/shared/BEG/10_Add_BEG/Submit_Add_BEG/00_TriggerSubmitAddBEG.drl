@@ -14,38 +14,35 @@ rule "Trigger Submit Add BEG"
 		rules.showLoading("", true);
 		
 		String begCode = rules.getAsString("quesTargetCode");
-		if(begCode != null){
-			
-			BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);			
-			if(beg != null){
-				rules.set("begBe", beg);
-
-                BaseEntity product = rules.baseEntity.getLinkedBaseEntity(beg.getCode(), "LNK_BEG", "PRODUCT"); 
-                if(product != null){
-				    rules.set("productBe", product);
-                }else{
-                    rules.println("product is null");
-                    return;
-                }
-
-			}else{
-				rules.println("beg is null");
-				return;
-			}
-			
-			BaseEntity company = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
-			if(company != null){
-				rules.set("companyBe", company);
-			}else{
-				rules.println("company is null");
-				return;
-			}
-            rules.setState("COPY_PRODUCT_ATTRIBUTES_TO_BEG");
-
-		}else{
-			rules.println("begCode is null");
+		if(begCode == null) {
+			rules.setState("FAILED_CREATE_BEG");
 			return;
 		}
+		
+		
+		BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);			
+		if(beg == null) {
+			rules.setState("FAILED_CREATE_BEG");
+			return;
+		}
+		
+		rules.set("begBe", beg);
+
+        BaseEntity product = rules.baseEntity.getLinkedBaseEntity(beg.getCode(), "LNK_BEG", "PRODUCT"); 
+        if(product == null) {
+        		rules.setState("FAILED_CREATE_BEG");
+        		return;
+        }
+        
+        rules.set("productBe", product);
+		
+		BaseEntity company = rules.baseEntity.getLinkedBaseEntity(rules.getUser().getCode(), "LNK_STAFF", "STAFF");
+		if(company != null) {
+			rules.set("companyBe", company);
+		}
+		
+        rules.setState("COPY_PRODUCT_ATTRIBUTES_TO_BEG");
+        
 		rules.footer();      
 end
 		

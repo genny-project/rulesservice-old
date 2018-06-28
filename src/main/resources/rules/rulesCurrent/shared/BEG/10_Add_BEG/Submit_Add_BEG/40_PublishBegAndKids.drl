@@ -15,33 +15,22 @@ rule "Submit Add BEG - Step 4"
 		BaseEntity product = rules.getAsBaseEntity("productBe");
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
 
-		if(beg == null){
-			rules.println("beg is null");			
-		}else if(product == null){
-			rules.println("product is null");
-		}else if(company == null){
-			rules.println("company is null");
-		}else{
-
-			String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
-			rules.println("BEG Recipients   ::   " + Arrays.toString(recipients));
+		String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
+		
+		List<BaseEntity> begKids = rules.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 400, false);
+		if(begKids != null){
 			
-			List<BaseEntity> begKids = rules.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 400, false);
-			if(begKids != null){
-				rules.printList("begKids", begKids);
-				
-				/* Send BEG BE */
-				rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipients);
-				
-				/* Send BEG KIDS */
-				rules.publishCmd(begKids, beg.getCode(), "LNK_BEG", recipients);
-
-				/* Go To Homepage */
-				rules.setState("TRIGGER_HOMEPAGE");
-			}else{
-				rules.println("begKids is null");
-				return;
-			}
+			rules.printList("begKids", begKids);
+			
+			/* Send BEG BE */
+			rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipients);
+			
+			/* Send BEG KIDS */
+			rules.publishCmd(begKids, beg.getCode(), "LNK_BEG", recipients);
 		}
+		
+		/* Go To Homepage */
+		rules.setState("TRIGGER_HOMEPAGE");
+		
 	 	rules.footer();      
 end

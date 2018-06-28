@@ -12,19 +12,15 @@ rule "Submit Add BEG - Step 1"
 
         BaseEntity beg = rules.getAsBaseEntity("begBe");
 
-		if(beg != null){
-			/* link BEG to USER */
-			rules.set("linkSourceCode",  beg.getCode());
-			rules.set("linkTargetCode", rules.getUser().getCode());
-			rules.set("linkCode", "LNK_BEG");
-			rules.set("linkValue", "CREATOR");
-			rules.set("linkWeight", 1.0);
-			rules.setState("CREATE_LINK");
+        /* link BEG to USER */
+		rules.set("linkSourceCode",  beg.getCode());
+		rules.set("linkTargetCode", rules.getUser().getCode());
+		rules.set("linkCode", "LNK_BEG");
+		rules.set("linkValue", "CREATOR");
+		rules.set("linkWeight", 1.0);
+		rules.setState("CREATE_LINK");
 
-			rules.setState("LINK_BEG_AND_COMPANY");
-		}else{
-			rules.println("beg is null");			
-		}
+		rules.setState("LINK_BEG_AND_COMPANY");
 
 	 	rules.footer();      
 end

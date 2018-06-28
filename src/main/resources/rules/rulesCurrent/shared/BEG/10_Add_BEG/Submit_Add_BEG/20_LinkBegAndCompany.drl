@@ -14,14 +14,9 @@ rule "Submit Add BEG - Step 2"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		BaseEntity company = rules.getAsBaseEntity("companyBe");
-
-		if(beg == null){
-			rules.println("beg not found");			
-		}
-		else if(company == null){
-			rules.println("Company not found");
-		}
-		else{
+		
+		if(company != null) {
+			
 			/* link BEG to CPY */
 			rules.set("linkSourceCode", beg.getCode());
 			rules.set("linkTargetCode", company.getCode());
@@ -29,8 +24,9 @@ rule "Submit Add BEG - Step 2"
 			rules.set("linkValue", "COMPANY");
 			rules.set("linkWeight", 1.0);
 			rules.setState("CREATE_LINK");
-			
-			rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
 		}
+		
+		rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
+		
 		rules.footer();
 end
