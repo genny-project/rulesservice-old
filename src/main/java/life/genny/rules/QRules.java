@@ -82,7 +82,10 @@ import life.genny.qwanda.message.QCmdLayoutMessage;
 import life.genny.qwanda.message.QCmdMessage;
 import life.genny.qwanda.message.QCmdNavigateMessage;
 import life.genny.qwanda.message.QCmdReloadMessage;
+import life.genny.qwanda.message.QCmdTableMessage;
 import life.genny.qwanda.message.QCmdViewMessage;
+import life.genny.qwanda.message.QCmdViewMessageAction;
+import life.genny.qwanda.message.QCmdViewTableMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
@@ -1398,6 +1401,7 @@ public class QRules {
 		publish("cmds", json);
 		return msg;
 	}
+	
 
 	public QMessage publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
@@ -1536,9 +1540,14 @@ public class QRules {
 		return items;
 	}
 
+//	public void publishCmd(final QCmdMessage cmdMsg) {
+//		cmdMsg.setToken(getToken());
+//		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
+//	}
+	
 	public void publishCmd(final QCmdMessage cmdMsg) {
 		cmdMsg.setToken(getToken());
-		publish("cmds", RulesUtils.toJsonObject(cmdMsg));
+		publish("cmds", JsonUtils.toJson(cmdMsg));
 	}
 
 	public void publishCmd(final QEventLinkChangeMessage cmdMsg, final String[] recipientsCode) {
@@ -4778,285 +4787,6 @@ public class QRules {
 
 	}
 
-	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
-		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
-		// JsonArray columnsArray = new JsonArray();
-
-		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-		cmdViewJson.put("root", parentCode);
-		cmdViewJson.put("token", getToken());
-		cmdViewJson.put("columns", columnHeaders);
-		publish("cmds", cmdViewJson);
-	}
-
-	/* Search the text value in all jobs */
-	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get All Users - The search BE is  :: " + searchBeCode);
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users"); // createBaseEntityByCode2(searchBeCode,
-		// "Get All Users");
-		JsonArray columnsArray = new JsonArray();
-		JsonObject columns = new JsonObject();
-		// if( getBaseEntityByCode(searchBeCode) == null ) {
-		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
-		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
-		JsonObject image = new JsonObject();
-		image.put("code", "PRI_IMAGE_URL");
-		columnsArray.add(image);
-		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
-		JsonObject userName = new JsonObject();
-		userName.put("code", "PRI_USERNAME");
-		columnsArray.add(userName);
-		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
-		JsonObject firstName = new JsonObject();
-		firstName.put("code", "PRI_FIRSTNAME");
-		columnsArray.add(firstName);
-		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
-		JsonObject lastName = new JsonObject();
-		lastName.put("code", "PRI_LASTNAME");
-		columnsArray.add(lastName);
-		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
-		JsonObject mobile = new JsonObject();
-		mobile.put("code", "PRI_MOBILE");
-		columnsArray.add(mobile);
-		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
-		JsonObject email = new JsonObject();
-		email.put("code", "PRI_EMAIL");
-		columnsArray.add(email);
-		println("The columnsArray is ::" + columnsArray);
-		// Sort Attribute
-		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-
-		// Pagination Attribute
-		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
-
-		try {
-			searchBE.addAttribute(attributeTextImage, 10.0);
-			searchBE.addAttribute(attributeTextUserName, 9.0);
-			searchBE.addAttribute(attributeTextFirstName, 8.0);
-			searchBE.addAttribute(attributeTextLastName, 7.0);
-			searchBE.addAttribute(attributeTextMobile, 6.0);
-			searchBE.addAttribute(attributeTextEmail, 5.0);
-			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
-			searchBE.addAttribute(attributePageStart, 3.0, "0");
-			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// }else {
-		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-		// }
-		println("The search BE is  :: " + searchBE);
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		System.out.println("The result   ::  " + result);
-		publishData(new JsonObject(result));
-		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
-		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-		// publishCmd(result, grpCode, "LNK_CORE");
-
-	}
-
-	/* Get All the jobs */
-	public void sendAllLoads(String searchBeCode) throws ClientProtocolException, IOException {
-		// println("Get all Loads - The search BE is :: "+searchBeCode );
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Loads");
-		// BaseEntity searchBE;
-		JsonArray columnsArray = new JsonArray();
-		JsonObject columns = new JsonObject();
-		// Creating attributes
-		AttributeText attributeBECode = new AttributeText("PRI_CODE", "LIKE");
-		JsonObject beCode = new JsonObject();
-		beCode.put("code", "PRI_CODE");
-		AttributeText attributeTextName = new AttributeText("COL_PRI_NAME", "Load Name");
-		JsonObject name = new JsonObject();
-		name.put("code", "PRI_NAME");
-		columnsArray.add(name);
-		AttributeText attributeTextJobId = new AttributeText("COL_PRI_JOB_ID", "Job ID");
-		JsonObject description = new JsonObject();
-		description.put("code", "PRI_JOB_ID");
-		columnsArray.add(description);
-		AttributeText attributeTextPickupAddress = new AttributeText("COL_PRI_PICKUP_ADDRESS_FULL", "Pickup Address");
-		JsonObject pickUpAddress = new JsonObject();
-		pickUpAddress.put("code", "PRI_PICKUP_ADDRESS_FULL");
-		columnsArray.add(pickUpAddress);
-		AttributeMoney attributeDescription = new AttributeMoney("COL_PRI_DESCRIPTION", "Description");
-		JsonObject ownerPrice = new JsonObject();
-		ownerPrice.put("code", "PRI_DESCRIPTION");
-		columnsArray.add(ownerPrice);
-
-		// Sort Attribute
-		AttributeText attributeTextSortName = new AttributeText("SRT_PRI_NAME", "Sort By Name");
-
-		// Pagination Attribute
-		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
-
-		try {
-			searchBE.addAttribute(attributeBECode, 10.0, "BEG_%%");
-			searchBE.addAttribute(attributeTextName, 9.0);
-			searchBE.addAttribute(attributeTextJobId, 8.0);
-			searchBE.addAttribute(attributeTextPickupAddress, 7.0);
-			// searchBE.addAttribute(attributeTextDropOffAddress, 6.0);
-			searchBE.addAttribute(attributeDescription, 5.0);
-			// searchBE.addAttribute(attributeDriverPrice, 4.0);
-			searchBE.addAttribute(attributeTextSortName, 3.0, "ASC");
-			searchBE.addAttribute(attributePageStart, 2.0, "0");
-			searchBE.addAttribute(attributePageSize, 1.0, "500");
-
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// println("The search BE is :: "+JsonUtils.toJson(searchBE));
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		// System.out.println("The result :: "+loadsList);
-		publishData(new JsonObject(loadsList));
-		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
-	}
-
-	// Search and send all the Drivers
-	public void sendAllDrivers(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get All Drivers - The search BE is  :: " + searchBeCode);
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Drivers"); // createBaseEntityByCode2(searchBeCode,
-		// "Get All Users");
-
-		JsonArray columnsArray = new JsonArray();
-		JsonObject columns = new JsonObject();
-		// if( getBaseEntityByCode(searchBeCode) == null ) {
-		// searchBE = createBaseEntityByCode2(searchBeCode, "Get All Users");
-		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
-		JsonObject image = new JsonObject();
-		image.put("code", "PRI_IMAGE_URL");
-		columnsArray.add(image);
-		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
-		JsonObject userName = new JsonObject();
-		userName.put("code", "PRI_USERNAME");
-		columnsArray.add(userName);
-		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
-		JsonObject firstName = new JsonObject();
-		firstName.put("code", "PRI_FIRSTNAME");
-		columnsArray.add(firstName);
-		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
-		JsonObject lastName = new JsonObject();
-		lastName.put("code", "PRI_LASTNAME");
-		columnsArray.add(lastName);
-		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
-		JsonObject mobile = new JsonObject();
-		mobile.put("code", "PRI_MOBILE");
-		columnsArray.add(mobile);
-		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
-		JsonObject email = new JsonObject();
-		email.put("code", "PRI_EMAIL");
-		columnsArray.add(email);
-		println("The columnsArray is ::" + columnsArray);
-		// Sort Attribute
-		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_IS_SELLER", "=");
-		// Pagination Attribute
-		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
-
-		try {
-			searchBE.addAttribute(attributeTextImage, 10.0);
-			searchBE.addAttribute(attributeTextUserName, 9.0);
-			searchBE.addAttribute(attributeTextFirstName, 8.0);
-			searchBE.addAttribute(attributeTextLastName, 7.0);
-			searchBE.addAttribute(attributeTextMobile, 6.0);
-			searchBE.addAttribute(attributeTextEmail, 5.0);
-			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
-			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
-			searchBE.addAttribute(attributePageStart, 3.0, "0");
-			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// }else {
-		// searchBE = getBaseEntityByCodeWithAttributes(searchBeCode);
-		// }
-		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		System.out.println("The result   ::  " + result);
-		publishData(new JsonObject(result));
-		sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
-		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
-		// publishCmd(result, grpCode, "LNK_CORE");
-
-	}
-
-	// Search and send all the Owners
-	public void sendAllOwners(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get All Drivers - The search BE is  :: " + searchBeCode);
-		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Owners");
-		JsonArray columnsArray = new JsonArray();
-		JsonObject columns = new JsonObject();
-		AttributeText attributeTextImage = new AttributeText("COL_PRI_IMAGE_URL", "Image");
-		JsonObject image = new JsonObject();
-		image.put("code", "PRI_IMAGE_URL");
-		columnsArray.add(image);
-		AttributeText attributeTextUserName = new AttributeText("COL_PRI_USERNAME", "User Name");
-		JsonObject userName = new JsonObject();
-		userName.put("code", "PRI_USERNAME");
-		columnsArray.add(userName);
-		AttributeText attributeTextFirstName = new AttributeText("COL_PRI_FIRSTNAME", "First Name");
-		JsonObject firstName = new JsonObject();
-		firstName.put("code", "PRI_FIRSTNAME");
-		columnsArray.add(firstName);
-		AttributeText attributeTextLastName = new AttributeText("COL_PRI_LASTNAME", "Last Name");
-		JsonObject lastName = new JsonObject();
-		lastName.put("code", "PRI_LASTNAME");
-		columnsArray.add(lastName);
-		AttributeText attributeTextMobile = new AttributeText("COL_PRI_MOBILE", "Mobile Number");
-		JsonObject mobile = new JsonObject();
-		mobile.put("code", "PRI_MOBILE");
-		columnsArray.add(mobile);
-		AttributeText attributeTextEmail = new AttributeText("COL_PRI_EMAIL", "Email");
-		JsonObject email = new JsonObject();
-		email.put("code", "PRI_EMAIL");
-		columnsArray.add(email);
-		println("The columnsArray is ::" + columnsArray);
-		// Sort Attribute
-		AttributeText attributeTextSortFirstName = new AttributeText("SRT_PRI_FIRSTNAME", "Sort By FirstName");
-		AttributeBoolean attributeIsDriver = new AttributeBoolean("PRI_OWNER", "=");
-		// Pagination Attribute
-		AttributeInteger attributePageStart = new AttributeInteger("SCH_PAGE_START", "PageStart");
-		AttributeInteger attributePageSize = new AttributeInteger("SCH_PAGE_SIZE", "PageSize");
-
-		try {
-			searchBE.addAttribute(attributeTextImage, 10.0);
-			searchBE.addAttribute(attributeTextUserName, 9.0);
-			searchBE.addAttribute(attributeTextFirstName, 8.0);
-			searchBE.addAttribute(attributeTextLastName, 7.0);
-			searchBE.addAttribute(attributeTextMobile, 6.0);
-			searchBE.addAttribute(attributeTextEmail, 5.0);
-			searchBE.addAttribute(attributeTextSortFirstName, 4.0, "ASC");
-			searchBE.addAttribute(attributeIsDriver, 3.0, "TRUE");
-			searchBE.addAttribute(attributePageStart, 3.0, "0");
-			searchBE.addAttribute(attributePageSize, 2.0, "20");
-		} catch (BadDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		System.out.println("The result   ::  " + result);
-		publishData(new JsonObject(result));
-		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
-
-	}
-
 	public void setLastLayout(final String layoutViewCode, final String layoutViewGroupBECode) {
 		String sessionId = getAsString("session_state");
 		String[] layoutArray = { layoutViewCode, layoutViewGroupBECode };
@@ -5297,73 +5027,6 @@ public class QRules {
 		gennyButton.put("GennyButton", ret);
 
 		return gennyButton;
-	}
-
-	/*
-	 * Send Report based on the SearchBE
-	 */
-	public void sendReport(String reportCode) throws IOException {
-
-		System.out.println("The report code is :: " + reportCode);
-		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
-
-		String jsonSearchBE = null;
-
-		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
-			// srchBE.setStakeholder(getUser().getCode());
-			SearchEntity srchBE = new SearchEntity(reportCode, "List of all My Loads")
-					.addColumn("PRI_NAME", "Load Name").addColumn("PRI_JOB_ID", "Job ID")
-					.addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address").addColumn("PRI_DESCRIPTION", "Description")
-
-					.setStakeholder(getUser().getCode())
-
-					.addSort("PRI_NAME", "Name", SearchEntity.Sort.ASC)
-
-					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-
-					.setPageStart(0).setPageSize(10000);
-
-			jsonSearchBE = JsonUtils.toJson(srchBE);
-
-		} else {
-			BaseEntity searchBE = getBaseEntityByCode(reportCode);
-			jsonSearchBE = JsonUtils.toJson(searchBE);
-		}
-
-		System.out.println("The search BE is :: " + jsonSearchBE);
-		// String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-
-		this.println(resultJson);
-
-		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		try {
-
-			JsonObject dt = new JsonObject(resultJson);
-			if (dt != null) {
-				publishData(dt);
-			}
-		} catch (Exception e) {
-
-		}
-
-		// JsonArray columnHeaders = new JsonArray();
-		// List<EntityAttribute> columnAttributes = new ArrayList<EntityAttribute>();
-		//
-		// for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
-		// if (ea.getAttributeCode().startsWith("COL_")) {
-		// columnAttributes.add(ea);
-		// }
-		// }
-		//
-		// columnAttributes.sort(Comparator.comparing(EntityAttribute::getWeight));
-		// for (EntityAttribute ea : columnAttributes) {
-		// columnHeaders.add(ea.getAttributeCode().substring("COL_".length()));
-		// }
-
-		// sendTableViewWithHeaders(reportCode, columnHeaders);
-
 	}
 
 	/*
@@ -8885,15 +8548,37 @@ public class QRules {
 
 	}
 
-	public void sendTableViewWithHeadersAndNoteCode(final String parentCode, JsonArray columnHeaders, String rootNotes) {
-		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
-
-		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-		cmdViewJson.put("root", parentCode);
-		cmdViewJson.put("rootNotes", rootNotes);
-		cmdViewJson.put("token", getToken());
-		cmdViewJson.put("columns", columnHeaders);
-		publish("cmds", cmdViewJson);
+	
+	public void sendTableView(final String parentCode) {
+		
+		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
+		publishCmd(tableView);
 	}
+	
+	public void sendTableView(final String parentCode, QCmdTableMessage[] columns) {
+		
+		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
+		tableView.setColumns(columns);
+		publishCmd(tableView);
+	}
+	
+	public void sendTableView(final String parentCode, QCmdTableMessage[] columns, QCmdViewMessageAction[] actions) {
+		
+		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
+		tableView.setColumns(columns);
+		tableView.setActions(actions);
+		publishCmd(tableView);
+	}
+	
+	public void sendTableView(final String parentCode, QCmdTableMessage[] columns, QCmdViewMessageAction[] actions, String contextRoot) {
+		
+		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
+		tableView.setContextRoot(contextRoot);
+		tableView.setColumns(columns);
+		tableView.setActions(actions);
+		publishCmd(tableView);
+	}
+	
+	
 
 }
