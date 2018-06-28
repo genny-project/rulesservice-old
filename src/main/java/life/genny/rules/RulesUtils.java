@@ -54,7 +54,7 @@ public class RulesUtils {
 	public static final String ANSI_BOLD = "\u001b[1m";
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("DEV_MODE") == null ? false : true;
+	public static final Boolean devMode = ((System.getenv("DEV_MODE") == null)&&(System.getenv("GENNYDEV") == null)) ? false : true;
 
 	static public Map<String, Attribute> attributeMap = new ConcurrentHashMap<String, Attribute>();
 	static public QDataAttributeMessage attributesMsg = null;
@@ -235,12 +235,12 @@ public class RulesUtils {
 		println(keycloakurl);
 
 		try {
-			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
-					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
-					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+//			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+//					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
+//					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
 
 			String token = KeycloakUtils.getToken(keycloakurl, realm, realm, secret, "service", password);
-			println("token = " + token);
+//			println("token = " + token);
 			return token;
 
 		} catch (Exception e) {

@@ -137,7 +137,7 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
+	public static final Boolean devMode = ((System.getenv("GENNYDEV") == null)&&(System.getenv("GENNY_DEV") == null)) ? false : true;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -767,7 +767,7 @@ public class QRules {
 			String realm = null;
 
 			/* if you are running in dev mode on your local machine, the only available realm is genny */
-			if(System.getenv("GENNY_DEV").equals("TRUE")) {
+			if(devMode) {
 				realm = "genny";
 			}
 			else {
