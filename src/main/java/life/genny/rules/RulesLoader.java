@@ -96,20 +96,23 @@ public class RulesLoader {
 		System.out.println("Triggering Startup Rules for all realms");
 		final Future<Void> fut = Future.future();
 		Vertx.currentContext().owner().executeBlocking(exec -> {//Force Genny first
-			System.out.println("---- Realm:genny Startup Rules ----------");
 			
 //			if (devMode) {
 //				EBCHandlers.initMsg("Event:INIT_STARTUP", mainrealm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
 //
 //			} else {
+			if (realms.isEmpty())  {
+				System.out.println("---- Realm:genny Startup Rules ----------");
+
 				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny",new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-//			}
-			
+			}
+			else {
 			for (String realm : realms) {
 
 		        // Trigger Startup Rules
 				System.out.println("---- Realm:"+realm+" Startup Rules ----------");
 		        EBCHandlers.initMsg("Event:INIT_STARTUP", realm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			}
 			}
 			 System.out.println("Startup Rules Triggered");
 			 try {
@@ -251,8 +254,9 @@ public class RulesLoader {
 		return realms;
 	}
 
-	public static void setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
-
+	public static Integer setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
+		System.out.println("Setup KIE Rules - "+realm);
+		Integer count = 0;
 		try {
 			// load up the knowledge base
 			final KieFileSystem kfs = ks.newKieFileSystem();
@@ -266,7 +270,10 @@ public class RulesLoader {
 			
 			// Write each rule into it's realm cache
 			for (final Tuple3<String, String, String> rule : rules) {
-				writeRulesIntoKieFileSystem(realm, rules, kfs, rule);
+				if (writeRulesIntoKieFileSystem(realm, rules, kfs, rule))
+				{
+					count++;
+				}
 			}
 
 			final KieBuilder kieBuilder = ks.newKieBuilder(kfs).buildAll();
@@ -289,6 +296,7 @@ public class RulesLoader {
 		} catch (final Throwable t) {
 			t.printStackTrace();
 		}
+		return count;
 	}
 
 	/**
@@ -297,9 +305,10 @@ public class RulesLoader {
 	 * @param kfs
 	 * @param rule
 	 */
-	private static void writeRulesIntoKieFileSystem(final String realm,
+	private static boolean writeRulesIntoKieFileSystem(final String realm,
 			final List<Tuple3<String, String, String>> rules, final KieFileSystem kfs,
 			final Tuple3<String, String, String> rule) {
+		boolean ret = false;
 //		if ((rule._2().startsWith("10_SBE_AVAILABLE_JOBS"))&&("channel40".equalsIgnoreCase(realm))) {
 //			System.out.println(realm+" test "+rule._2);
 //		}
@@ -322,7 +331,7 @@ public class RulesLoader {
 							if (("channel40".equalsIgnoreCase(realm))) {
 								System.out.println("Ditching the genny rule because higher rule overrides:"+rule._1+" : "+rule._2);
 							}
-							return ; // do not save this genny rule as there is a proper realm rule with same name
+							return false; // do not save this genny rule as there is a proper realm rule with same name
 						}
 					}
 	
@@ -350,7 +359,9 @@ public class RulesLoader {
 				kfs.write(inMemoryDrlFileName, ks.getResources().newReaderResource(new StringReader(rule._3))
 						.setResourceType(ResourceType.DRL));
 			}
+			return true;
 		}
+		return ret;
 	}
 
 	// fact = gson.fromJson(msg.toString(), QEventMessage.class)
