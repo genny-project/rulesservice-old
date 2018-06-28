@@ -702,7 +702,8 @@ public class QRules {
 			this.println("Archiving done.");
 			this.reloadCache();
 
-		} else {
+		} 
+		else {
 			this.println("Could not get token.");
 		}
 	}
@@ -710,8 +711,6 @@ public class QRules {
 	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
 		try {
-
-			// String payload = "payload=" + message.toString();
 
 			final HttpClient client = HttpClientBuilder.create().build();
 
@@ -721,17 +720,7 @@ public class QRules {
 			input.setContentType("application/json");
 			post.setEntity(input);
 
-			final HttpResponse response = client.execute(post);
-
-			String retJson = "";
-			final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				retJson += line;
-				;
-			}
-
-			int responseCode = response.getStatusLine().getStatusCode();
+			client.execute(post);
 		} catch (IOException e) {
 			this.println(e);
 		}
@@ -797,7 +786,8 @@ public class QRules {
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 					recipientArray, getToken());
 			publish("messages", message);
-		} else {
+		} 
+		else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
 
@@ -824,11 +814,12 @@ public class QRules {
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
-      /* send notification for new registration */
-      String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
-      this.sendSlackNotification(message);
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
 
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
 		return be;
@@ -961,20 +952,16 @@ public class QRules {
 					getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
 					getToken()));
 
-			// Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
 
 			msg.setToken(getToken());
 			final JsonObject json = RulesUtils.toJsonObject(msg);
 			json.put("items", latestLinks);
 			publishData(json);
-			// publish("cmds",json);
-			// Send to all
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			this.println(e.getMessage());
 		}
-
 	}
 
 	/**
