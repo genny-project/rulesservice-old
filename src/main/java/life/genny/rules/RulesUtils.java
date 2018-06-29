@@ -882,6 +882,15 @@ public class RulesUtils {
 	}
 
 
+	public static Attribute getAttribute(final String attributeCode, final String token) {
+		Attribute ret = attributeMap.get(attributeCode);
+		if (ret == null) {
+			loadAllAttributesIntoCache(token);
+			ret = attributeMap.get(attributeCode);
+		}
+		return ret;
+	}
+	
 	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
 
 		try {

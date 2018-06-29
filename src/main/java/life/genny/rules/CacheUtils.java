@@ -5,14 +5,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.Tuple;
 import life.genny.utils.VertxUtils;
 
 public class CacheUtils {
@@ -515,6 +514,40 @@ public class CacheUtils {
 		});
 
 		return ret;
+	}
+
+	public static List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level, String token) {
+
+		if (level == 0) {
+			return null; // exit point;
+		}
+
+		List<BaseEntity> result = new ArrayList<BaseEntity>();
+		
+		BaseEntity parent = VertxUtils.readFromDDT(beCode, token);
+		result.add(parent);
+		
+		for (EntityEntity ee : parent.getLinks()) {
+			String childCode = ee.getLink().getTargetCode();
+			BaseEntity child = VertxUtils.readFromDDT(childCode, token);
+			result.add(child);
+		}
+		
+//		Type listType = new TypeToken<List<BaseEntity>>() {}.getType();
+//		String key = beCode+":"+level;
+//		
+//		List<BaseEntity> result = VertxUtils.getObject("cache", "LIST_BE_KIDS", key, listType);
+//		
+//		if (result==null) {
+//			// find using api and save
+//			result = QwandaUtils.getBaseEntityWithChildren(beCode, level, token);
+//			// Add attributes
+//			VertxUtils.putObject("cache", "LIST_BE_KIDS", key, result);
+//		}
+		
+		return result;
+		
+
 	}
 
 }

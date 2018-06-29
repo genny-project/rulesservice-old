@@ -48,14 +48,13 @@ public class RulesLoader {
 	final static String mainrealm = System.getenv("PROJECT_REALM");
 	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 
-
 	private static Map<String, KieBase> kieBaseCache = null;
 	static {
 		setKieBaseCache(new HashMap<String, KieBase>());
 	}
 
 	static KieServices ks = KieServices.Factory.get();
-	
+
 	public static Set<String> realms = new HashSet<String>();
 
 	/**
@@ -71,12 +70,13 @@ public class RulesLoader {
 			// setupKieRules("rules", rules);
 
 			List<Tuple3<String, String, String>> rules = processFileRealms("genny", rulesDir);
-
+			realms.stream().forEach(System.out::println);
 			realms = getRealms(rules);
 			realms.remove("genny");
-			setupKieRules("genny", rules);  // run genny rules first
+			setupKieRules("genny", rules); // run genny rules first
 			for (String realm : realms) {
 				setupKieRules(realm, rules);
+				System.out.println("Loaded " + rules);
 			}
 
 			fut.complete();
@@ -85,9 +85,7 @@ public class RulesLoader {
 
 		return fut;
 	}
-	
 
-	
 	/**
 	 * @param vertx
 	 * @return
@@ -95,29 +93,32 @@ public class RulesLoader {
 	public static Future<Void> triggerStartupRules(final String rulesDir) {
 		System.out.println("Triggering Startup Rules for all realms");
 		final Future<Void> fut = Future.future();
-		Vertx.currentContext().owner().executeBlocking(exec -> {//Force Genny first
-			
-//			if (devMode) {
-//				EBCHandlers.initMsg("Event:INIT_STARTUP", mainrealm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-//
-//			} else {
-			if (realms.isEmpty())  {
+		Vertx.currentContext().owner().executeBlocking(exec -> {// Force Genny first
+
+			// if (devMode) {
+			// EBCHandlers.initMsg("Event:INIT_STARTUP", mainrealm,new
+			// QEventMessage("EVT_MSG","INIT_STARTUP"),
+			// CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			//
+			// } else {
+			if (realms.isEmpty()) {
 				System.out.println("---- Realm:genny Startup Rules ----------");
 
-				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny",new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
-			}
-			else {
-			for (String realm : realms) {
+				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny", new QEventMessage("EVT_MSG", "INIT_STARTUP"),
+						CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+			} else {
+				for (String realm : realms) {
 
-		        // Trigger Startup Rules
-				System.out.println("---- Realm:"+realm+" Startup Rules ----------");
-		        EBCHandlers.initMsg("Event:INIT_STARTUP", realm,new QEventMessage("EVT_MSG","INIT_STARTUP"), CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+					// Trigger Startup Rules
+					System.out.println("---- Realm:" + realm + " Startup Rules ----------");
+					EBCHandlers.initMsg("Event:INIT_STARTUP", realm, new QEventMessage("EVT_MSG", "INIT_STARTUP"),
+							CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+				}
 			}
-			}
-			 System.out.println("Startup Rules Triggered");
-			 try {
-				 
-				//FileUtils.touch(new File("/tmp/ready"));
+			System.out.println("Startup Rules Triggered");
+			try {
+
+				// FileUtils.touch(new File("/tmp/ready"));
 				Files.touch(new File("/tmp/ready"));
 			} catch (IOException e) {
 				System.out.println("Could not save readiness file");
@@ -129,119 +130,135 @@ public class RulesLoader {
 		return fut;
 	}
 
-	private static List<Tuple2<String, String>> processFile(String inputFileStr) {
-		File file = new File(inputFileStr);
-		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
-		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
-		List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
+	private static List<Tuple2<String, String>> processFile(String inputFileStrs) {
+		String[] inputFileStrArray = inputFileStrs.split(";"); // allow multiple rules dirs
+		for (String inputFileStr : inputFileStrArray) {
+			File file = new File(inputFileStr);
+			String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
+			String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
+			List<Tuple2<String, String>> rules = new ArrayList<Tuple2<String, String>>();
 
-		if (!file.isFile()) {
-			if (!fileName.startsWith("XX")) {
-				final List<String> filesList = Vertx.currentContext().owner().fileSystem()
-						.readDirBlocking(inputFileStr);
+			if (!file.isFile()) {
+				if (!fileName.startsWith("XX")) {
+					final List<String> filesList = Vertx.currentContext().owner().fileSystem()
+							.readDirBlocking(inputFileStr);
 
-				for (final String dirFileStr : filesList) {
-					List<Tuple2<String, String>> childRules = processFile(dirFileStr); // use directory name as
-																						// rulegroup
-					rules.addAll(childRules);
+					for (final String dirFileStr : filesList) {
+						List<Tuple2<String, String>> childRules = processFile(dirFileStr); // use directory name as
+																							// rulegroup
+						rules.addAll(childRules);
+					}
+				}
+
+			} else {
+				Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
+				try {
+					if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that
+																									// start
+																									// with XX
+						final String ruleText = buf.toString();
+
+						Tuple2<String, String> rule = (Tuple.of(fileName + "." + fileNameExt, ruleText));
+						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
+						System.out.println("Loading in Rule:" + rule._1 + " of " + filerule);
+						rules.add(rule);
+					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
+																											// that
+																											// start
+																											// with XX
+						final String bpmnText = buf.toString();
+
+						Tuple2<String, String> bpmn = (Tuple.of(fileName + "." + fileNameExt, bpmnText));
+						System.out.println("Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+						rules.add(bpmn);
+					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files
+																										// that
+																										// start with XX
+						final String xlsText = buf.toString();
+
+						Tuple2<String, String> xls = (Tuple.of(fileName + "." + fileNameExt, xlsText));
+						System.out.println("Loading in XLS:" + xls._1 + " of " + inputFileStr);
+						rules.add(xls);
+					}
+
+				} catch (final DecodeException dE) {
+
 				}
 			}
 			return rules;
-		} else {
-			Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
-			try {
-				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that start
-																								// with XX
-					final String ruleText = buf.toString();
-
-					Tuple2<String, String> rule = (Tuple.of(fileName + "." + fileNameExt, ruleText));
-					String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-					System.out.println("Loading in Rule:" + rule._1 + " of " +filerule);
-					rules.add(rule);
-				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
-																										// that start
-																										// with XX
-					final String bpmnText = buf.toString();
-
-					Tuple2<String, String> bpmn = (Tuple.of(fileName + "." + fileNameExt, bpmnText));
-					System.out.println("Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
-					rules.add(bpmn);
-				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files that
-																									// start with XX
-					final String xlsText = buf.toString();
-
-					Tuple2<String, String> xls = (Tuple.of(fileName + "." + fileNameExt, xlsText));
-					System.out.println("Loading in XLS:" + xls._1 + " of " + inputFileStr);
-					rules.add(xls);
-				}
-				return rules;
-			} catch (final DecodeException dE) {
-
-			}
-
 		}
 		return null;
 	}
 
-	private static List<Tuple3<String, String, String>> processFileRealms(final String realm, String inputFileStr) {
-		File file = new File(inputFileStr);
-		String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
-		String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
+	private static List<Tuple3<String, String, String>> processFileRealms(final String realm, String inputFileStrs) {
 		List<Tuple3<String, String, String>> rules = new ArrayList<Tuple3<String, String, String>>();
 
-		if (!file.isFile()) { // DIRECTORY
-			if (!fileName.startsWith("XX")) {
-				String localRealm = realm;
-				if (fileName.startsWith("prj_") || fileName.startsWith("PRJ_")) {
-					localRealm = fileName.substring("prj_".length()).toLowerCase(); // extract realm name
-				}
-				final List<String> filesList = Vertx.currentContext().owner().fileSystem()
-						.readDirBlocking(inputFileStr);
+		String[] inputFileStrArray = inputFileStrs.split(";"); // allow multiple rules dirs
 
-				for (final String dirFileStr : filesList) {
-					List<Tuple3<String, String, String>> childRules = processFileRealms(localRealm, dirFileStr); // use
-																													// directory
-																													// name
-																													// as
-					// rulegroup
-					rules.addAll(childRules);
+		for (String inputFileStr : inputFileStrArray) {
+			System.out.println("InputFileStr=" + inputFileStr);
+			File file = new File(inputFileStr);
+			String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
+			String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
+
+			if (!file.isFile()) { // DIRECTORY
+				if (!fileName.startsWith("XX")) {
+					String localRealm = realm;
+					if (fileName.startsWith("prj_") || fileName.startsWith("PRJ_")) {
+						localRealm = fileName.substring("prj_".length()).toLowerCase(); // extract realm name
+					}
+					final List<String> filesList = Vertx.currentContext().owner().fileSystem()
+							.readDirBlocking(inputFileStr);
+
+					for (final String dirFileStr : filesList) {
+						List<Tuple3<String, String, String>> childRules = processFileRealms(localRealm, dirFileStr); // use
+																														// directory
+																														// name
+																														// as
+						// rulegroup
+						rules.addAll(childRules);
+					}
 				}
+
+			} else {
+				Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
+				try {
+					if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that
+																									// start
+																									// with XX
+						final String ruleText = buf.toString();
+
+						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
+						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
+						System.out.println("Loading in Rule:" + rule._1 + " of " + filerule);
+						rules.add(rule);
+					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
+																											// that
+																											// start
+																											// with XX
+						final String bpmnText = buf.toString();
+
+						Tuple3<String, String, String> bpmn = (Tuple.of(realm, fileName + "." + fileNameExt, bpmnText));
+						System.out.println(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+						rules.add(bpmn);
+					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files
+																										// that
+																										// start with XX
+						final String xlsText = buf.toString();
+
+						Tuple3<String, String, String> xls = (Tuple.of(realm, fileName + "." + fileNameExt, xlsText));
+						System.out.println(realm + " Loading in XLS:" + xls._1 + " of " + inputFileStr);
+						rules.add(xls);
+					}
+
+				} catch (final DecodeException dE) {
+
+				}
+
 			}
-			return rules;
-		} else {
-			Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
-			try {
-				if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that start
-																								// with XX
-					final String ruleText = buf.toString();
-
-					Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
-					String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-					System.out.println("Loading in Rule:" + rule._1 + " of " +filerule);
-					rules.add(rule);
-				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
-																										// that start
-																										// with XX
-					final String bpmnText = buf.toString();
-
-					Tuple3<String, String, String> bpmn = (Tuple.of(realm, fileName + "." + fileNameExt, bpmnText));
-					System.out.println(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
-					rules.add(bpmn);
-				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files that
-																									// start with XX
-					final String xlsText = buf.toString();
-
-					Tuple3<String, String, String> xls = (Tuple.of(realm, fileName + "." + fileNameExt, xlsText));
-					System.out.println(realm + " Loading in XLS:" + xls._1 + " of " + inputFileStr);
-					rules.add(xls);
-				}
-				return rules;
-			} catch (final DecodeException dE) {
-
-			}
-
+			
 		}
-		return null;
+		return rules;
 	}
 
 	public static Set<String> getRealms(final List<Tuple3<String, String, String>> rules) {
@@ -255,7 +272,7 @@ public class RulesLoader {
 	}
 
 	public static Integer setupKieRules(final String realm, final List<Tuple3<String, String, String>> rules) {
-		System.out.println("Setup KIE Rules - "+realm);
+		System.out.println("Setup KIE Rules - " + realm);
 		Integer count = 0;
 		try {
 			// load up the knowledge base
@@ -267,11 +284,9 @@ public class RulesLoader {
 			// Charset.forName("UTF-8"));
 			// System.out.println("Read New Rules set from File");
 
-			
 			// Write each rule into it's realm cache
 			for (final Tuple3<String, String, String> rule : rules) {
-				if (writeRulesIntoKieFileSystem(realm, rules, kfs, rule))
-				{
+				if (writeRulesIntoKieFileSystem(realm, rules, kfs, rule)) {
 					count++;
 				}
 			}
@@ -309,33 +324,37 @@ public class RulesLoader {
 			final List<Tuple3<String, String, String>> rules, final KieFileSystem kfs,
 			final Tuple3<String, String, String> rule) {
 		boolean ret = false;
-//		if ((rule._2().startsWith("10_SBE_AVAILABLE_JOBS"))&&("channel40".equalsIgnoreCase(realm))) {
-//			System.out.println(realm+" test "+rule._2);
-//		}
+		// if
+		// ((rule._2().startsWith("10_SBE_AVAILABLE_JOBS"))&&("channel40".equalsIgnoreCase(realm)))
+		// {
+		// System.out.println(realm+" test "+rule._2);
+		// }
 		if (rule._1.equalsIgnoreCase("genny") || rule._1.equalsIgnoreCase(realm)) {
-			// if a realm rule with same name exists as the same name as a genny rule then ignore the genny rule
-			if ((rule._1.equalsIgnoreCase("genny"))&&(!"genny".equalsIgnoreCase(realm))) {
+			// if a realm rule with same name exists as the same name as a genny rule then
+			// ignore the genny rule
+			if ((rule._1.equalsIgnoreCase("genny")) && (!"genny".equalsIgnoreCase(realm))) {
 				String filename = rule._2;
 				// check if realm rule exists, if so then continue
-//				if (rules.stream().anyMatch(item -> ((!realm.equals("genny")) && realm.equals(item._1()) && filename.equals(item._2()))))
-//				{
-//					System.out.println(realm+" - Overriding genny rule "+rule._2);
-//					return;
-//				} 
+				// if (rules.stream().anyMatch(item -> ((!realm.equals("genny")) &&
+				// realm.equals(item._1()) && filename.equals(item._2()))))
+				// {
+				// System.out.println(realm+" - Overriding genny rule "+rule._2);
+				// return;
+				// }
 				for (Tuple3<String, String, String> ruleCheck : rules) { // look for rules that are not genny rules
 					String realmCheck = ruleCheck._1;
 					if (realmCheck.equals(realm)) {
-		
+
 						String filenameCheck = ruleCheck._2;
 						if (filenameCheck.equalsIgnoreCase(filename)) {
 							if (("channel40".equalsIgnoreCase(realm))) {
-								System.out.println("Ditching the genny rule because higher rule overrides:"+rule._1+" : "+rule._2);
+								System.out.println("Ditching the genny rule because higher rule overrides:" + rule._1
+										+ " : " + rule._2);
 							}
 							return false; // do not save this genny rule as there is a proper realm rule with same name
 						}
 					}
-	
-					
+
 				}
 			}
 			if (rule._2.endsWith(".drl")) {
@@ -369,12 +388,10 @@ public class RulesLoader {
 			final List<Tuple2<String, Object>> globals, final List<Object> facts,
 			final Map<String, String> keyValueMap) {
 
-		
-		
 		try {
 			KieSession kieSession = null;
 			if (getKieBaseCache().get(rulesGroup) == null) {
-				log.error("The rulesGroup kieBaseCache is null, not loaded "+rulesGroup);
+				log.error("The rulesGroup kieBaseCache is null, not loaded " + rulesGroup);
 				return;
 			}
 			kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
@@ -441,7 +458,7 @@ public class RulesLoader {
 				// Adding realm name to the decoded token
 				decodedToken.put("realm", realm);
 			}
-			//log.info("######  The realm name is:  #####  " + decodedToken.get("realm"));
+			// log.info("###### The realm name is: ##### " + decodedToken.get("realm"));
 			// Printing Decoded Token values
 			// for (final Map.Entry entry : decodedToken.entrySet()) {
 			// log.info(entry.getKey() + ", " + entry.getValue());
@@ -472,8 +489,8 @@ public class RulesLoader {
 		globals.add(Tuple.of("LOG_WHITE", WHITE));
 		globals.add(Tuple.of("LOG_BOLD", BOLD));
 		globals.add(Tuple.of("REACT_APP_QWANDA_API_URL", qwandaApiUrl));
-//		globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
-//		globals.add(Tuple.of("KEYCLOAKIP", hostIp));
+		// globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
+		// globals.add(Tuple.of("KEYCLOAKIP", hostIp));
 		return globals;
 	}
 }

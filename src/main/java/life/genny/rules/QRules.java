@@ -47,7 +47,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import com.hazelcast.util.collection.ArrayUtils;
-import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -66,7 +65,6 @@ import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
-import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
@@ -77,8 +75,6 @@ import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
 import life.genny.qwanda.message.QCmdMessage;
-import life.genny.qwanda.message.QCmdReloadMessage;
-import life.genny.qwanda.message.QCmdViewFormMessage;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
@@ -764,21 +760,13 @@ public class QRules {
 			firstname = StringUtils.capitalize(firstname);
 			lastname = StringUtils.capitalize(lastname);
 			name = StringUtils.capitalize(name);
-			String realm = null;
 
-			/* if you are running in dev mode on your local machine, the only available realm is genny */
-			if(devMode) {
-				realm = "genny";
-			}
-			else {
-				realm = this.realm();
-			}
 
-			String token = RulesUtils.generateServiceToken(realm);
+			String token = RulesUtils.generateServiceToken(realm());
 
 			/* if the keycloak id, we need to create a keycloak account for this user */
 			if(keycloakId == null) {
-				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
+				keycloakId = KeycloakUtils.createUser(token, realm(), username, firstname, lastname, email);
 			}
 
 			/* we create the user in the system */
@@ -1273,7 +1261,7 @@ public class QRules {
 	}
 
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
-		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
+		return QuestionUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -1290,8 +1278,14 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelection) {
 
-	QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
-    if(questions != null) {
+	long startTime = System.nanoTime();
+
+	QwandaMessage questions = QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
+	long endTime = System.nanoTime();
+	double difference = (endTime - startTime) / 1e6; // get ms
+	println("AskQuestions fetch Time = "+difference+" ms");
+	
+	if(questions != null) {
 
 			this.publishCmd(questions);
 			return true;
@@ -1305,7 +1299,7 @@ public class QRules {
 	}
 
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
+		return QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -3057,7 +3051,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* we send the questions */
 				try {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
-					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
+					QwandaMessage message = QuestionUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
 					this.publishCmd(message);
 
 				} catch (Exception e) {
@@ -4382,9 +4376,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
 
-					String dev = System.getenv("GENNYDEV");
+		
 					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
+					if (devMode) {
 						this.set("realm", proj_realm);
 					} else {
 						this.set("realm", realm);
