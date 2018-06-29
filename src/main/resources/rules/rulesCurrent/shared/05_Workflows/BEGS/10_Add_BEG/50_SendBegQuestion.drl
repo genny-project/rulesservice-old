@@ -12,7 +12,8 @@ rule "Add Internship - Step 5"
 		rules.setState("LOOP_SEND_BEG_QUESTION");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		if(beg != null){
+		if(beg != null) {
+			
 			rules.set("questionSourceCode", rules.getUser().getCode());
 			rules.set("questionTargetCode", beg.getCode());
 			rules.set("questionGroupCode", "QUE_ADD_BEG_GRP");
@@ -20,8 +21,12 @@ rule "Add Internship - Step 5"
 			
 			rules.setState("SEND_QUESTION");
 			rules.setState("SEND_PRODUCT_QUESTION");
-		}else{
-			rules.println("beg is null");
 		}
+		else {
+			
+			rules.setState("FAILED_CREATE_BEG");
+			rules.setState("FAILED_SEND_QUESTIONS_BEG");
+		}
+		
  		rules.footer();
 end

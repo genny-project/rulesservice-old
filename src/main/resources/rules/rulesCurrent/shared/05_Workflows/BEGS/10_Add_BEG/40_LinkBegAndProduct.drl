@@ -14,12 +14,8 @@ rule "Add Product - Step 4"
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		BaseEntity product = rules.getAsBaseEntity("productBe");
 
-		if(beg == null){
-			rules.println("beg is null");
-		}else if (product == null){
-			rules.println("product s null");
-		}else{
-
+		if(beg != null && product != null) {
+			
 			/* link BEG to PRODUCT */
 			rules.set("linkSourceCode", beg.getCode());
 			rules.set("linkTargetCode", product.getCode());
@@ -28,10 +24,14 @@ rule "Add Product - Step 4"
 			rules.set("linkWeight", 1.0);
 
 			rules.clearState("CREATED_LINK");
-
 			rules.setState("CREATE_LINK");
-
 			rules.setState("SEND_BEG_QUESTION");
 		}
+		else {
+			
+			rules.setState("FAILED_CREATE_BEG");
+			rules.setState("FAILED_CREATE_LINK_PRODUCT");
+		}
+		
 	 	rules.footer();      
 end

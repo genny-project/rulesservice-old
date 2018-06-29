@@ -9,12 +9,14 @@ rule "Trigger View BEG"
 	 then
 			rules.header();
 			rules.setState("LOOP_TRIGGER_VIEW_BEG");
+			
 			String begCode = rules.getAsString("itemCode");
 			if(begCode != null){
 				BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);
 				if(beg !=null){
 					/*rules.sendNotes(beg); */
 					rules.set("begBe", beg);
+					rules.setState("TRIGGER_VIEW_LINKS");
 					rules.setState("TRIGGER_VIEW_BEG");
 				}else{
 					rules.println("beg is null");
