@@ -437,8 +437,16 @@ public class QRules {
 	}
 
 	public String getFullName(final BaseEntity be) {
+		
 		String fullName = be.getLoopValue("PRI_FIRSTNAME", "") + " " + be.getLoopValue("PRI_LASTNAME", "");
+
+		if(be.getLoopValue("PRI_MIDDLENAME", "") != null ){
+			fullName = 	be.getLoopValue("PRI_FIRSTNAME", "") + " " + 
+						be.getLoopValue("PRI_MIDDLENAME", "") + " " + 
+						be.getLoopValue("PRI_LASTNAME", "");
+		}
 		fullName = fullName.trim();
+		println("fullName" + fullName);
 		return fullName;
 	}
 
@@ -802,6 +810,18 @@ public class QRules {
 		}
 
 		return attributeVal;
+	}
+
+	/* Publish an list of base entities using their code 
+	* @param List<String> codes
+	*/
+	public void publishBaseEntities(List<String> baseEntityCodes, String parentCode, String linkCode) {
+
+		/* we map the list and, per item, grab the code and publish it */
+		 List<BaseEntity> bes = baseEntityCodes.stream().map(code -> this.getBaseEntityByCode(code)).collect(Collectors.toList());
+		 if(bes != null && bes.size() > 0) {
+			 this.publishCmd(bes, parentCode, linkCode);
+		 }
 	}
 
 	/* Get array String value from an attribute of the BE  */
@@ -8549,9 +8569,13 @@ public class QRules {
 	}
 
 	
+	public void sendTableView(QCmdViewTableMessage tableView) {
+		publishCmd(tableView);
+	}
 	public void sendTableView(final String parentCode) {
 		
 		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
+		setLastView(tableView);
 		publishCmd(tableView);
 	}
 	
@@ -8559,6 +8583,7 @@ public class QRules {
 		
 		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
 		tableView.setColumns(columns);
+		setLastView(tableView);
 		publishCmd(tableView);
 	}
 	
@@ -8567,6 +8592,7 @@ public class QRules {
 		QCmdViewTableMessage tableView = new QCmdViewTableMessage(parentCode);
 		tableView.setColumns(columns);
 		tableView.setActions(actions);
+		setLastView(tableView);
 		publishCmd(tableView);
 	}
 	
@@ -8576,9 +8602,39 @@ public class QRules {
 		tableView.setContextRoot(contextRoot);
 		tableView.setColumns(columns);
 		tableView.setActions(actions);
+		setLastView(tableView);
 		publishCmd(tableView);
 	}
-	
-	
 
+	public void setLastView(QCmdViewTableMessage tableView) {
+		String sessionId = getAsString("session_state");
+		if(sessionId != null) {			
+			this.println("sessionId" + sessionId);
+			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, tableView);
+		}
+	}
+	
+	public void setLastView(QCmdViewMessage cmdView) {
+		String sessionId = getAsString("session_state");
+		if(sessionId != null) {			
+			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, cmdView);
+		}
+	}
+	public QCmdViewTableMessage getLastTableView() {
+		String sessionId = getAsString("session_state");
+		this.println("sessionId" + sessionId);
+		if(sessionId != null) {
+			return VertxUtils.getObject(realm(), "PreviousLayout", sessionId, QCmdViewTableMessage.class);
+		}else {
+			return null;
+		}
+	}
+	public QCmdViewMessage getLastCmdView() {
+		String sessionId = getAsString("session_state");
+		if(sessionId != null) {
+			return VertxUtils.getObject(realm(), "PreviousLayout", sessionId, QCmdViewMessage.class);
+		}else {
+			return null;
+		}
+	}
 }
