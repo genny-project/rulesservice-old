@@ -1,4 +1,4 @@
-BEG_PE9564FF3098514C28B5D6CEACB2239AA50package life.genny.rules;
+package life.genny.rules;
 import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
