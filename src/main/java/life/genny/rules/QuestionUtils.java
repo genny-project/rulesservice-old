@@ -66,9 +66,7 @@ public class QuestionUtils {
 
 			json = QwandaUtils.apiGet(QwandaUtils.getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 					+ questionCode + "/" + targetCode, token);
-			QDataAskMessage msg = JsonUtils.fromJson(json, QDataAskMessage.class);
-			return msg;
-
+			return JsonUtils.fromJson(json, QDataAskMessage.class);
 		} 
 		catch (ClientProtocolException e) {
 			System.out.println(e.getMessage());
@@ -104,7 +102,7 @@ public class QuestionUtils {
 			 */
 			long startTime = System.nanoTime();
 			Ask[] asks = questions.getItems();
-			if (asks != null && pushSelection == true) {
+			if (asks != null && pushSelection) {
 				QBulkMessage askData = sendAsksRequiredData(asks, token, stakeholderCode);
 				for(QDataBaseEntityMessage message: askData.getMessages()) {
 					bulk.add(message);
