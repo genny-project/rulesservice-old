@@ -7,7 +7,7 @@ rule "Add BE To BEG - Step 2"
 	when
 	    rules: QRules(  isState("SAVE_BE_TO_BEG_CODE_AS_ATTRIBUTE") && 
 	                    isState("CREATED_BASE_ENTITY") && 
-	                    isState("SBE") && 
+	                    isState("APL") && 
 						!isState("LOOP_ADD_BE_TO_BEG_STEP2") ) 
 	 then
 	 	rules.header();

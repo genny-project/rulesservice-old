@@ -12,7 +12,7 @@ rule "Add BE to BEG - Step 1"
 
         /* Create BEG BaseEntity*/
 		rules.set("beCode", rules.getUser().getCode());
-		rules.set("bePrefix", "SBE");
+		rules.set("bePrefix", "APL");
 		rules.set("beName", "APPLICATION");		
 		rules.setState("CREATE_BASE_ENTITY");	
 

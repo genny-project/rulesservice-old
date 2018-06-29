@@ -2486,6 +2486,7 @@ public class QRules {
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
+		
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
@@ -4048,7 +4049,7 @@ public void makePayment(QDataAnswerMessage m) {
 				getToken());
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + msg);
-		publishData(new JsonObject(resultJson));
+		publishCmd(new JsonObject(resultJson));
 	}
 
 	/*
@@ -4059,10 +4060,13 @@ public void makePayment(QDataAnswerMessage m) {
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
+		
+		println("result json ::"+resultJson);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
-		System.out.println("The result   ::  " + msg);
-		publishData(new JsonObject(resultJson));
+		System.out.println("The result with parent code  ::  " + msg);
+		System.out.println("message ::"+JsonUtils.toJson(msg));
+		publishCmd(msg);
 	}
 
 	/*
