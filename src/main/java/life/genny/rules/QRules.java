@@ -1297,7 +1297,7 @@ public class QRules {
 	}
 
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
-		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
+		return QuestionUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -1314,7 +1314,7 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelection) {
 
-	QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
+	QwandaMessage questions = QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
     if(questions != null) {
 
 			this.publishCmd(questions);
@@ -1329,7 +1329,7 @@ public class QRules {
 	}
 
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
+		return QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -1350,7 +1350,7 @@ public class QRules {
 			/* QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
 			this.publishCmd(formCmd); */
 
-      this.navigateTo("/questions/" + questionGroupCode);
+			this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 

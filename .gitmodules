@@ -10,6 +10,9 @@
 [submodule "src/main/resources/rules/rulesCurrent/prj_capstone"]
 	path = src/main/resources/rules/rulesCurrent/prj_capstone
 	url = https://gitlab.outcome-hub.com/gada/prj_capstone
+[submodule "src/main/resources/rules/rulesCurrent/prj_pcss"]
+	path = src/main/resources/rules/rulesCurrent/prj_pcss
+	url = https://gitlab.outcome-hub.com/gada/prj_pcss
 [submodule "src/main/resources/rules/rulesCurrent/prj_mentormatch"]
-	path = src/main/resources/rules/rulesCurrent/prj_mentormatch
-	url = https://gitlab.outcome-hub.com/gada/prj_mentormatch
+        path = src/main/resources/rules/rulesCurrent/prj_mentormatch
+        url = https://gitlab.outcome-hub.com/gada/prj_mentormatch

@@ -5,30 +5,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.qwandautils.Tuple;
 import life.genny.utils.VertxUtils;
 
 public class CacheUtils {
 
-	private Map<String, Object> decodedMapToken;
-	private String token;
 	private String realm;
-	private String qwandaServiceUrl;
 
 	private BaseEntityUtils baseEntityUtils;
 
 	public CacheUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
-
-		this.decodedMapToken = decodedMapToken;
-		this.qwandaServiceUrl = qwandaServiceUrl;
-		this.token = token;
 		this.realm = realm;		
 	}
 	
@@ -397,8 +389,19 @@ public class CacheUtils {
 		else if(this.isUserBuyer(stakeholder)) {
 
 			/* we send BEGs only the buyer created */
+			
+			/* if the baseEntity has a company code */
+			String companyCode = baseEntity.getValue("PRI_COMPANY_CODE", "");
 			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
-			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode());
+			
+			/* we try to see if the stakeholder is associated with a company */
+			BaseEntity company = this.baseEntityUtils.getParent(stakeholder.getCode(), "LNK_STAFF");
+			Boolean isAssociatedWithCompany = false;
+			if(company != null) {
+				isAssociatedWithCompany = company.getCode().equals(companyCode);
+			}
+			
+			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || isAssociatedWithCompany;
 		}
 
 		return isUserAssociatedToBaseEntity;
@@ -506,4 +509,23 @@ public class CacheUtils {
 		return ret;
 	}
 
+	public static List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level, String token) {
+
+		if (level == 0) {
+			return null; // exit point;
+		}
+
+		List<BaseEntity> result = new ArrayList<BaseEntity>();
+		
+		BaseEntity parent = VertxUtils.readFromDDT(beCode, token);
+		result.add(parent);
+		
+		for (EntityEntity ee : parent.getLinks()) {
+			String childCode = ee.getLink().getTargetCode();
+			BaseEntity child = VertxUtils.readFromDDT(childCode, token);
+			result.add(child);
+		}
+		
+		return result;
+	}
 }
