@@ -3,7 +3,7 @@ import life.genny.rules.QRules;
 import life.genny.utils.VertxUtils;
 
 /* Publish BEG AND KIDS */
-rule "Submit Add BEG - Step 5 - Exit"
+rule "Submit Add BEG - Step 6 - Exit"
 	when
 		rules: QRules( 	isState("EXIT_ADD_BEG_SUCCESS") && 
 						!isState("LOOP_EXIT_ADD_BEG_SUCCESS") ) 

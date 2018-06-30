@@ -12,17 +12,20 @@ rule "View BEG Details"
 
 		/* get begCode (itemCode) from state */
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		if(beg != null){
+		if(beg != null) {
+			
 			rules.set("subLayoutCode", "BEG_DETAILS");
 			rules.set("subLayoutPath", "beg/beg_details.json");
 			rules.set("subLayoutRootCode", beg.getCode());
 			rules.set("subLayoutIsPopup", false);
 
 			rules.setState("SEND_SUBLAYOUT"); 
-      		rules.setState("VIEWED_BEG_DETAILS");	
-				
-		}else{
+      		rules.setState("VIEWED_BEG_DETAILS");
+      		rules.sendNotes(beg.getCode());
+		}
+		else {
 			rules.println("begCode is null");
 		}
+		
 	 	rules.footer();      
 end
