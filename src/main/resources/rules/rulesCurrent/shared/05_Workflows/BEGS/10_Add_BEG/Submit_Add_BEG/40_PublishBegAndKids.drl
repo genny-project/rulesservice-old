@@ -11,25 +11,7 @@ rule "Submit Add BEG - Step 4"
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_ADD_BEG_STEP4");
 
-		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		BaseEntity product = rules.getAsBaseEntity("productBe");
-		BaseEntity company = rules.getAsBaseEntity("companyBe");
-
-		String[] recipients = VertxUtils.getSubscribers(rules.realm(), "GRP_NEW_ITEMS");
-		
-		List<BaseEntity> begKids = rules.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 400, false);
-		if(begKids != null){
-			
-			rules.printList("begKids", begKids);
-			
-			/* Send BEG BE */
-			rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipients);
-			
-			/* Send BEG KIDS */
-			rules.publishCmd(begKids, beg.getCode(), "LNK_BEG", recipients);
-		}
-		
-		rules.setState("EXIT_ADD_BEG_SUCCESS");
+		rules.setState("RELOAD_CACHE_BEG");
 		
 	 	rules.footer();      
 end

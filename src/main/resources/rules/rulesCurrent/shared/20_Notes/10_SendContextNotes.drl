@@ -1,0 +1,21 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send Context Notes */
+rule "Send Context Notes"
+	when
+		rules: QRules(  isState("SEND_CONTEXT_NOTES") && 
+						!isState("LOOP_SEND_CONTEXT_NOTES") ) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_SEND_CONTEXT_NOTES");
+		
+		/* get context from state */
+		BaseEntity context = rules.getAsBaseEntity("contextBe");
+		if(context != null){
+			/* Send Notes of CONTEXT */
+			rules.sendNotes(context);
+		}
+
+	 	rules.footer();      
+end
