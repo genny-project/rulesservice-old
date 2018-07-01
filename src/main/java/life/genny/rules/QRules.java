@@ -4168,10 +4168,11 @@ public void makePayment(QDataAnswerMessage m) {
 		if (searchBECode == null || searchBECode.isEmpty()) {
 			reportListView.put("data", "null");
 			reportListView.put("root", "null");
-		} else {
+		} 
+		else {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(searchBECode);
-			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();
+			List<EntityAttribute> eaList = new ArrayList<>();
 
 			for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 				if (ea.getAttributeCode().startsWith("COL_")) {
@@ -4185,8 +4186,12 @@ public void makePayment(QDataAnswerMessage m) {
 			JsonArray tColumns = new JsonArray();
 			JsonArray colHeaderArr = new JsonArray();
 			for (int i = 0; i < beArr.length; i++) {
+				
 				String colS = beArr[i];
-				colHeaderArr.add(colS);
+				JsonObject colObject = new JsonObject();
+				colObject.put("code", colS);
+				
+				colHeaderArr.add(colObject);
 				JsonObject obj = new JsonObject();
 				obj.put("code", colS);
 				tColumns.add(obj);
