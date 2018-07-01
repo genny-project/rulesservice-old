@@ -3174,7 +3174,7 @@ public void makePayment(QDataAnswerMessage m) {
 				/* we send the questions */
 				try {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
-					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
+					QwandaMessage message = QuestionUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
 					this.publishCmd(message);
 
 				} catch (Exception e) {
