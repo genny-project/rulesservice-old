@@ -3,30 +3,25 @@ import life.genny.rules.QRules;
 
 rule "Add Internship - Step 5"
 	when
-        rules: QRules(  isState("SEND_BEG_QUESTION") && 
+        rules: QRules(  isState("SEND_BEG_QUESTION") &&
                         isState("CREATED_LINK") &&
                         isState("PRODUCT") &&
                         !isState("LOOP_SEND_BEG_QUESTION")  )
-     then 
+     then
  		rules.header();
 		rules.setState("LOOP_SEND_BEG_QUESTION");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		if(beg != null) {
-			
-			rules.set("questionSourceCode", rules.getUser().getCode());
-			rules.set("questionTargetCode", beg.getCode());
-			rules.set("questionGroupCode", "QUE_ADD_BEG_GRP");
-			rules.set("questionIsPopup", true);
-			
-			rules.setState("SEND_QUESTION");
-			rules.setState("SEND_PRODUCT_QUESTION");
+
+      rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_ADD_BEG_GRP");
+      rules.setState("SEND_PRODUCT_QUESTIONS");
 		}
 		else {
-			
+
 			rules.setState("FAILED_CREATE_BEG");
 			rules.setState("FAILED_SEND_QUESTIONS_BEG");
 		}
-		
+
  		rules.footer();
 end
