@@ -702,7 +702,7 @@ public class QRules {
 			this.println("Archiving done.");
 			this.reloadCache();
 
-		} 
+		}
 		else {
 			this.println("Could not get token.");
 		}
@@ -786,7 +786,7 @@ public class QRules {
 			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 					recipientArray, getToken());
 			publish("messages", message);
-		} 
+		}
 		else {
 			log.error("Recipient array is null and so message cant be sent");
 		}
@@ -818,7 +818,7 @@ public class QRules {
 			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
 			this.sendSlackNotification(message);
 
-		} 
+		}
 		catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -958,7 +958,7 @@ public class QRules {
 			final JsonObject json = RulesUtils.toJsonObject(msg);
 			json.put("items", latestLinks);
 			publishData(json);
-		} 
+		}
 		catch (IOException e) {
 			this.println(e.getMessage());
 		}
@@ -2486,7 +2486,7 @@ public class QRules {
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
-		
+
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
@@ -2824,7 +2824,7 @@ public void makePayment(QDataAnswerMessage m) {
 	/* Generate 4 digit random passcode */
 	public String generateVerificationCode() {
 		if ( this.hasRole("tester")  ) {
-			return String.format("%04d", 0000);			
+			return String.format("%04d", 0000);
 		}
 		return String.format("%04d", (new Random()).nextInt(10000));
 	}
@@ -2902,10 +2902,10 @@ public void makePayment(QDataAnswerMessage m) {
 		System.out.println("The result   ::  " + result);
 
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
-		
+
 		String[] recipients = { this.getUser().getCode() };
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
@@ -3379,7 +3379,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public boolean hasRole(final String role) {
-		
+
 		if (getDecodedTokenMap() == null) {
 			return false;
 		}
@@ -3969,23 +3969,21 @@ public void makePayment(QDataAnswerMessage m) {
 		String jsonSearchBE = null;
 		SearchEntity srchBE = null;
 
-		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
-			// srchBE.setStakeholder(getUser().getCode());
+		if ((reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) && this.realm().equals("PRJ_CHANNEL40")) {
+
+      // srchBE.setStakeholder(getUser().getCode());
 			srchBE = new SearchEntity(reportCode, "List of all My Loads").addColumn("PRI_NAME", "Load Name")
 					.addColumn("PRI_JOB_ID", "Job ID").addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address")
 					.addColumn("PRI_DESCRIPTION", "Description")
-
 					.setStakeholder(getUser().getCode())
-
 					.addSort("PRI_NAME", "Name", SearchEntity.Sort.ASC)
-
 					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-
 					.setPageStart(0).setPageSize(10000);
 
-			jsonSearchBE = JsonUtils.toJson(srchBE);
+			    jsonSearchBE = JsonUtils.toJson(srchBE);
 
-		} else {
+		}
+    else {
 			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(reportCode);
 			jsonSearchBE = JsonUtils.toJson(searchBE);
 		}
@@ -4053,7 +4051,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Publish Search BE results
 	 */
 	public void sendSearchResults(SearchEntity searchBE) throws IOException {
-		
+
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
@@ -4069,7 +4067,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
-		
+
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
 		publishCmd(msg);
@@ -4168,7 +4166,7 @@ public void makePayment(QDataAnswerMessage m) {
 		if (searchBECode == null || searchBECode.isEmpty()) {
 			reportListView.put("data", "null");
 			reportListView.put("root", "null");
-		} 
+		}
 		else {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(searchBECode);
@@ -4186,11 +4184,11 @@ public void makePayment(QDataAnswerMessage m) {
 			JsonArray tColumns = new JsonArray();
 			JsonArray colHeaderArr = new JsonArray();
 			for (int i = 0; i < beArr.length; i++) {
-				
+
 				String colS = beArr[i];
 				JsonObject colObject = new JsonObject();
 				colObject.put("code", colS);
-				
+
 				colHeaderArr.add(colObject);
 				JsonObject obj = new JsonObject();
 				obj.put("code", colS);
@@ -5060,7 +5058,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		publish("data", toastJson);
 	}
-	
+
 	/* To send direct toast messages to the front end without templates */
 	public void sendToastNotification(String toastMsg, String priority) {
 
@@ -5068,7 +5066,7 @@ public void makePayment(QDataAnswerMessage m) {
 		recipients[0] = this.getUser().getCode();
 		this.sendToastNotification(recipients, toastMsg, priority);
 	}
-	
+
 	/* To send direct toast messages to the front end without templates */
 	public void sendToastNotification(String toastMsg) {
 		this.sendToastNotification(toastMsg, "info");
@@ -5085,7 +5083,7 @@ public void makePayment(QDataAnswerMessage m) {
 		QDataBaseEntityMessage ret = new QDataBaseEntityMessage(searches.toArray(new BaseEntity[searches.size()]),
 				parentCode, "LNK_CORE");
 
-		return ret; 
+		return ret;
 	}
 
 	public void selectReport(String data) {
@@ -5871,7 +5869,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void generateCapabilities() {
-		
+
 		/* get all capabilities existing */
 		List<Attribute> existingCapability = new ArrayList<Attribute>();
 		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
@@ -6010,20 +6008,20 @@ public void makePayment(QDataAnswerMessage m) {
 	public QBaseMSGMessageTemplate getMessageTemplate(String templateCode) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
-	
+
 	public BaseEntity createNote(String contextCode, String content) {
 		return this.createNote(contextCode, content, "SYSTEM");
 	}
-	
+
 	public BaseEntity createNote(BaseEntity context, String content) {
 		return this.createNote(context.getCode(), content, "SYSTEM");
 	}
-	
+
 	public BaseEntity createNote(String contextCode, String content, String noteType) {
-		
+
 		/* we create the note baseEntity */
 		BaseEntity note = this.baseEntity.create(this.getUser().getCode(), "NOT", "NOTE");
-		
+
 		/* we save the note attributes */
 		List<Answer> answers = new ArrayList<>();
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", getCurrentLocalDateTime()));
@@ -6032,10 +6030,10 @@ public void makePayment(QDataAnswerMessage m) {
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", noteType));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT", content));
 		this.baseEntity.saveAnswers(answers);
-		
+
 		/* we link the note to GRP_NOTES */
 		this.baseEntity.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
-		
+
 		/* we link the context and the note */
 		this.linkNoteAndContext(note.getCode(), contextCode);
 		return note;
@@ -6050,13 +6048,13 @@ public void makePayment(QDataAnswerMessage m) {
 	public void linkNoteAndContext(BaseEntity note, BaseEntity context) {
 		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
 	}
-	
+
 	public void linkNoteAndContext(String noteCode, String contextCode) {
 		this.baseEntity.createLink(noteCode, contextCode, "LNK_NOTE", "CONTEXT", 1.0);
 	}
-	
+
 	public void sendNotes(String contextCode) {
-		
+
 		String[] recipient = { getUser().getCode() };
 
 		this.clearBaseEntityAndChildren("GRP_NOTES");
@@ -6070,12 +6068,12 @@ public void makePayment(QDataAnswerMessage m) {
 			/* Send search result */
 			try {
 				this.sendSearchResults(searchBE, "GRP_NOTES");
-			} 
+			}
 			catch (IOException e) {
 			}
 		}
 	}
-	
+
 	public void sendNotes(BaseEntity context) {
 		this.sendNotes(context.getCode());
 	}
