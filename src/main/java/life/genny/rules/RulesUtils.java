@@ -54,7 +54,7 @@ public class RulesUtils {
 	public static final String ANSI_BOLD = "\u001b[1m";
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("DEV_MODE") == null ? false : true;
+	public static final Boolean devMode = ((System.getenv("DEV_MODE") == null)&&(System.getenv("GENNYDEV") == null)) ? false : true;
 
 	static public Map<String, Attribute> attributeMap = new ConcurrentHashMap<String, Attribute>();
 	static public QDataAttributeMessage attributesMsg = null;
@@ -73,7 +73,7 @@ public class RulesUtils {
 	}
 
 	public static String headerRuleLogger(String module) {
-		return 
+		return
 				 executeRuleLogger(">>>>>>>>>> START RULE", module, ANSI_RED, ANSI_GREEN)  + (devMode ? "" : ANSI_RED)
 				+ (devMode ? "" : ANSI_RESET);
 	}
@@ -235,12 +235,12 @@ public class RulesUtils {
 		println(keycloakurl);
 
 		try {
-			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
-					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
-					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+//			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+//					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
+//					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
 
 			String token = KeycloakUtils.getToken(keycloakurl, realm, realm, secret, "service", password);
-			println("token = " + token);
+//			println("token = " + token);
 			return token;
 
 		} catch (Exception e) {
@@ -882,6 +882,15 @@ public class RulesUtils {
 	}
 
 
+	public static Attribute getAttribute(final String attributeCode, final String token) {
+		Attribute ret = attributeMap.get(attributeCode);
+		if (ret == null) {
+			loadAllAttributesIntoCache(token);
+			ret = attributeMap.get(attributeCode);
+		}
+		return ret;
+	}
+	
 	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
 
 		try {
@@ -902,6 +911,7 @@ public class RulesUtils {
 	}
 
 	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
+		
 		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(prefix, oldBe.getCode()), name);
 
 		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
