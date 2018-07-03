@@ -1,0 +1,33 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAskMessage;
+import life.genny.qwanda.QuestionSourceTarget;
+import life.genny.qwanda.message.QDataQSTMessage;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import life.genny.qwandautils.MergeUtil;
+
+rule "Has user answered mandatory profile questions - step 1 - COMPANY"
+    when
+	    rules: QRules( isState("CHECK_USER_PROFILE_COMPLETED") && 
+				   	   isState("PRI_IS_COMPANY") && 
+	    				   !isState("LOOP_CHECK_USER_PROFILE_COMPLETED") )
+     then
+     	rules.header();
+
+		rules.setState("LOOP_CHECK_USER_PROFILE_COMPLETED");
+   	    
+		
+		/* we check if the user has answered the mandatory questions */
+		Boolean hasAnsweredProfileQuestions = rules.isMandatoryFieldsEntered(rules.getUser().getCode(), "QUE_COMPANY_GRP");
+		if(hasAnsweredProfileQuestions) {
+			rules.setState("USER_PROFILE_ANSWERED");
+		}
+		else {
+			rules.setState("USER_DID_NOT_COMPLETE_PROFILE");
+			rules.setState("PROFILE_NOT_COMPLETED");
+		}
+	    rules.footer();
+end

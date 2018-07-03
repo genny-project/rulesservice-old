@@ -699,7 +699,8 @@ public class QRules {
 			this.println("Archiving done.");
 			this.reloadCache();
 
-		} else {
+		}
+		else {
 			this.println("Could not get token.");
 		}
 	}
@@ -707,8 +708,6 @@ public class QRules {
 	public void postSlackNotification(String webhookURL, JsonObject message) throws IOException {
 
 		try {
-
-			// String payload = "payload=" + message.toString();
 
 			final HttpClient client = HttpClientBuilder.create().build();
 
@@ -718,17 +717,7 @@ public class QRules {
 			input.setContentType("application/json");
 			post.setEntity(input);
 
-			final HttpResponse response = client.execute(post);
-
-			String retJson = "";
-			final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				retJson += line;
-				;
-			}
-
-			int responseCode = response.getStatusLine().getStatusCode();
+			client.execute(post);
 		} catch (IOException e) {
 			this.println(e);
 		}
@@ -758,7 +747,11 @@ public class QRules {
 
 		BaseEntity be = null;
 
-		try {
+    try {
+
+			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
+					recipientArray, getToken());
+			publish("messages", message);
 
 			/* we capitalise the variables */
 			firstname = StringUtils.capitalize(firstname);
@@ -924,20 +917,16 @@ public class QRules {
 					getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
 					getToken()));
 
-			// Creating a data msg
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
 
 			msg.setToken(getToken());
 			final JsonObject json = RulesUtils.toJsonObject(msg);
 			json.put("items", latestLinks);
 			publishData(json);
-			// publish("cmds",json);
-			// Send to all
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-
+		catch (IOException e) {
+			this.println(e.getMessage());
+		}
 	}
 
 	/**
@@ -1272,8 +1261,110 @@ public class QRules {
 		}
 	}
 
+  /*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+
+  	   Long categoryTypeInBits = 0L;
+       BaseEntity user = this.baseEntity.getBaseEntityByCode(userCode);
+      if(user != null) {
+
+        /* get the list of category types user has  */
+        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(user, sourceAttributeCode);
+        if(productCategoryList != null){
+
+           for(String loadTypeCode : productCategoryList ){
+
+                BaseEntity loadCat = this.baseEntity.getBaseEntityByCode(loadTypeCode);
+
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
+                if(bitValueStr != null){
+
+                   /* Combine all the bit values to the users category type attribute using or operator */
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }else {
+        	   println("Error!! The productCategoryList is null");
+        }
+
+        this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+       }
+	}
+
+  /*
+	 * Returns the default Bit Mapped tag of all the category tags
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+
+		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+
+              if(bitValue != null){
+                 /* Combine all the bit values to the default BitMap Tag using or operator */
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+
+	}
+
+	/*
+	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
+	 */
+	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
+		BaseEntity selBE = this.baseEntity.getBaseEntityByCode(tagCode);
+		if (selBE != null) {
+			Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
+			// String realm = realm();
+			String serviceToken = RulesUtils.generateServiceToken(realm());
+			QDataBaseEntityMessage msg = null;
+			List<BaseEntity> beList = new ArrayList<BaseEntity>();
+			if (bitMaskValue != null) {
+				SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+						.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
+						.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE,
+								bitMaskValue)
+						.setPageStart(0).setPageSize(10000);
+				try {
+					System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+					// msg = getSearchResults(searchBE);
+					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
+					System.out.println("the msg is :: " + msg);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				if (msg != null && msg.getItems().length != 0) {
+					BaseEntity[] beArray = msg.getItems();
+					for (BaseEntity be : beArray) {
+						beList.add(be);
+					}
+				} else
+					System.out.println("Error! The search result is null.");
+			} else {
+				System.out.println("Error! The bitmask value of the tagCode is null.");
+
+			}
+			return beList;
+		}
+		return null;
+	}
+
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
-		return QwandaUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
+		return QuestionUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
 	}
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -1290,7 +1381,7 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode, Boolean pushSelection) {
 
-	QwandaMessage questions = QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
+	QwandaMessage questions = QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, pushSelection);
     if(questions != null) {
 
 			this.publishCmd(questions);
@@ -1305,7 +1396,7 @@ public class QRules {
 	}
 
 	private QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode) {
-		return QwandaUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
+		return QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token, stakeholderCode, true);
 	}
 
 	public void askQuestions(String sourceCode, String targetCode, String questionGroupCode) {
@@ -2381,6 +2472,7 @@ public class QRules {
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
+
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
@@ -2797,11 +2889,46 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+  public void clearBaseEntity(String baseEntityCode) {
+
+    //String[] recipients = new String[1];
+    //recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, null);
+  }
+
+   /* clears baseEntity and all its children linked  */
+   public void clearBaseEntity(String baseEntityCode, boolean deleteAllChildren) {
+	    this.clearBaseEntity(baseEntityCode, null, deleteAllChildren);
+    }
+
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntityAndChildren(String baseEntityCode) {
+
+		String[] recipients = { this.getUser().getCode() };
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		beMsg.setShouldDeleteLinkedBaseEntities(true);
+		publishData(beMsg, recipients);
+	}
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
+		publishData(beMsg, recipients);
+
+	}
+
+	/* sets delete field and deleteLinkedBaseEntities to true so that FE removes the BE and all its child from their store */
+	public void clearBaseEntity(String baseEntityCode, String[] recipients, boolean deleteAllChild) {
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		if(deleteAllChild) {
+			beMsg.setShouldDeleteLinkedBaseEntities(true);
+		}
 		publishData(beMsg, recipients);
 
 	}
@@ -3095,124 +3222,135 @@ public void makePayment(QDataAnswerMessage m) {
 		this.showLoading("Creating job...");
 
 		String jobCode = job.getCode();
+		if (jobCode != null && !jobCode.isEmpty()) {
+			/* link newly created Job to GRP_LOADS */
+			BaseEntity load = this.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
+			BaseEntity user = getUser();
+			if (load != null && user != null) {
 
-		/*
-		 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
-		 * triggered in another rule
-		 */
-		Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE", 0.0);
-		Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE", 0.0);
-		Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);
-		Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE", 0.0);
+				String loadCode = load.getCode();
+				String userCode = user.getCode();
+				if (loadCode != null && !loadCode.isEmpty() && userCode != null && !userCode.isEmpty()) {
+					/*
+					 * We create a new attribute "PRI_TOTAL_DISTANCE" for this BEG. TODO: should be
+					 * triggered in another rule
+					 */
+					Double pickupLatitude = job.getValue("PRI_PICKUP_ADDRESS_LATITUDE", 0.0);
+					Double pickupLongitude = job.getValue("PRI_PICKUP_ADDRESS_LONGITUDE", 0.0);
+					Double deliveryLatitude = job.getValue("PRI_DROPOFF_ADDRESS_LATITUDE", 0.0);
+					Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE", 0.0);
 
-		/* Add author to the load */
-		List<Answer> answers = new ArrayList<Answer>();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
+					/* Add author to the load */
+					List<Answer> answers = new ArrayList<Answer>();
+					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
+					answers.add(
+							new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
 
-		Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
-				deliveryLongitude);
-		if (totalDistance > 0) {
-			Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M", totalDistance + "");
-			answers.add(totalDistanceAnswer);
-		}
+					Double totalDistance = GPSUtils.getDistance(pickupLatitude, pickupLongitude, deliveryLatitude,
+							deliveryLongitude);
+					if (totalDistance > 0) {
+						Answer totalDistanceAnswer = new Answer(jobCode, jobCode, "PRI_TOTAL_DISTANCE_M",
+								totalDistance + "");
+						answers.add(totalDistanceAnswer);
+					}
 
-		/* Adding Offer Count to 0 */
-		Answer offerCountAns = new Answer(getUser().getCode(), jobCode, "PRI_OFFER_COUNT", "0");
-		/* Publish Answer */
-		answers.add(offerCountAns);
+					/* Get Product Category tag from load and save it to the BEG/Job */
+					String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null);
+					if (loadType != null) {
+						answers.add(new Answer(userCode, jobCode, "LNK_PRODUCT_CATEGORY_TAG", loadType));
+					}
 
-		/* set Status of the job */
-		answers.add(new Answer(getUser().getCode(), jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
-		// Setting color to green for new jobs for both driver and owner
-		/*
-		 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
-		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
-		 */
+					/* Adding Offer Count to 0 */
+					Answer offerCountAns = new Answer(userCode, jobCode, "PRI_OFFER_COUNT", "0");
+					/* Publish Answer */
+					answers.add(offerCountAns);
 
-		BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
-		Long jobId = updatedJob.getId();
-		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
-		this.baseEntity.saveAnswers(answers);
+					/* set Status of the job */
+					answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
+					// Setting color to green for new jobs for both driver and owner
+					/*
+					 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
+					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
+					 */
 
-		/* Determine the recipient code */
-		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-		println("Recipients for Job/Load " + Arrays.toString(recipientCodes));
+					BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
+					Long jobId = updatedJob.getId();
+					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
+					this.baseEntity.saveAnswers(answers);
 
-		/*
-		 * Send newly created job with its attributes to all drivers so that it exists
-		 * before link change
-		 */
-		BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
-		println("The newly submitted Job details     ::     " + newJobDetails.toString());
-		publishData(newJobDetails, recipientCodes);
-		/* publishing to Owner */
-		publishBE(newJobDetails);
+					/* Get all the sellers who have opted for this product category tag */
+					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
+							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+					int i = 0;
+					String[] recipientCodes = new String[sellersBe.size()];
+					for (BaseEntity taggedSellerBe : sellersBe) {
+						recipientCodes[i] = taggedSellerBe.getCode();
+						i++;
+					}
+					println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
 
-		/* Moving the BEG to GRP_NEW_ITEMS */
-		/*
-		 * The moveBaseEntity without linkValue sets the linkValue to default value,
-		 * "LINK". So using moveBaseEntitySetLinkValue()
-		 */
-		this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
+					/*
+					 * Send newly created job with its attributes to all drivers so that it exists
+					 * before link change
+					 */
+					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
+					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+					publishData(newJobDetails, recipientCodes);
+					/* publishing to Owner */
+					publishBE(newJobDetails);
 
-		/* Get the sourceCode(Company code) for this User */
-		BaseEntity company = this.baseEntity.getParent(getUser().getCode(), "LNK_STAFF");
+					/* Moving the BEG to GRP_NEW_ITEMS */
+					/*
+					 * The moveBaseEntity without linkValue sets the linkValue to default value,
+					 * "LINK". So using moveBaseEntitySetLinkValue()
+					 */
+					this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE",
+							"BEG");
 
-		/* link newly created Job to GRP_LOADS */
-		BaseEntity load = this.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
-		String loadCode = load.getCode();
-		Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD", company.getCode(),
-				(double) 1, getToken());
-		println("The load has been added to the GRP_LOADS ");
+					/* Get the sourceCode(Company code) for this User */
+					BaseEntity company = this.baseEntity.getParent(userCode, "LNK_STAFF");
 
-		/* we link the load to the user */
-		this.baseEntity.createLink(this.getUser().getCode(), loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
+					Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD",
+							company.getCode(), (double) 1, getToken());
+					println("The load has been added to the GRP_LOADS ");
 
-//		QEventLinkChangeMessage msgLnkBegLoad = new QEventLinkChangeMessage(
-//				new Link(jobCode, load.getCode(), "LNK_BEG"), null, getToken());
-//		publishData(msgLnkBegLoad, recipientCodes);
-
+					/* we link the load to the user */
+					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
 	    /* we push the job to the creator */
 	    String[] creatorRecipient = { getUser().getCode() };
 	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
-			/* SEND LOAD BE */
-	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
-	    publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+					/* SEND LOAD BE */
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
-		/* publishing to Owner */
-		// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
-		// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
+					/* publishing to Owner */
+					// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
+					// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
 
-		if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
+					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
-			/* Sending Messages */
+						/* Sending Messages */
 
-			HashMap<String, String> contextMap = new HashMap<String, String>();
-			contextMap.put("JOB", jobCode);
-			contextMap.put("OWNER", getUser().getCode());
+						HashMap<String, String> contextMap = new HashMap<String, String>();
+						contextMap.put("JOB", jobCode);
+						contextMap.put("OWNER", getUser().getCode());
 
-			println("The String Array is ::" + Arrays.toString(recipientCodes));
+						println("The String Array is ::" + Arrays.toString(recipientCodes));
 
-			/* Getting all people */
-			List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
-			System.out.println("size ::" + people.size());
-			List<BaseEntity> sellersBe = new ArrayList<>();
+						/* Sending toast message to owner frontend */
+						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
-			/* Getting all driver BEs */
-			for (BaseEntity stakeholderBe : people) {
+						/* Sending message to BEG OWNER */
+						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
-				try {
-
-					if (this.isUserSeller(stakeholderBe)) {
-						sellersBe.add(stakeholderBe);
 					}
 
-				} catch (Exception e) {
-
+					this.redirectToHomePage();
+					this.reloadCache();
+					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
 
@@ -3771,7 +3909,6 @@ public void makePayment(QDataAnswerMessage m) {
 				sendMessage(recipientArr, contextMap, "MSG_CH40_JOB_EDITED", "EMAIL");
 			}
 		}
-
 	}
 
 	public void setSessionState(final String key, final Object value) {
@@ -3857,23 +3994,21 @@ public void makePayment(QDataAnswerMessage m) {
 		String jsonSearchBE = null;
 		SearchEntity srchBE = null;
 
-		if (reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) {
-			// srchBE.setStakeholder(getUser().getCode());
+		if ((reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) && this.realm().equals("PRJ_CHANNEL40")) {
+
+      // srchBE.setStakeholder(getUser().getCode());
 			srchBE = new SearchEntity(reportCode, "List of all My Loads").addColumn("PRI_NAME", "Load Name")
 					.addColumn("PRI_JOB_ID", "Job ID").addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address")
 					.addColumn("PRI_DESCRIPTION", "Description")
-
 					.setStakeholder(getUser().getCode())
-
 					.addSort("PRI_NAME", "Name", SearchEntity.Sort.ASC)
-
 					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-
 					.setPageStart(0).setPageSize(10000);
 
-			jsonSearchBE = JsonUtils.toJson(srchBE);
+			    jsonSearchBE = JsonUtils.toJson(srchBE);
 
-		} else {
+		}
+    else {
 			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(reportCode);
 			jsonSearchBE = JsonUtils.toJson(searchBE);
 		}
@@ -3941,27 +4076,26 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Publish Search BE results
 	 */
 	public void sendSearchResults(SearchEntity searchBE) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+
+		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + msg);
-		publishData(new JsonObject(resultJson));
+		publishCmd(new JsonObject(resultJson));
 	}
 
 	/*
 	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+
+		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
-		System.out.println("The result   ::  " + msg);
-		publishData(new JsonObject(resultJson));
+		publishCmd(msg);
 	}
 
 	/*
@@ -4059,10 +4193,11 @@ public void makePayment(QDataAnswerMessage m) {
 		if (searchBECode == null || searchBECode.isEmpty()) {
 			reportListView.put("data", "null");
 			reportListView.put("root", "null");
-		} else {
+		}
+		else {
 			JsonObject columns = new JsonObject();
 			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(searchBECode);
-			List<EntityAttribute> eaList = new ArrayList<EntityAttribute>();
+			List<EntityAttribute> eaList = new ArrayList<>();
 
 			for (EntityAttribute ea : searchBE.getBaseEntityAttributes()) {
 				if (ea.getAttributeCode().startsWith("COL_")) {
@@ -4076,8 +4211,12 @@ public void makePayment(QDataAnswerMessage m) {
 			JsonArray tColumns = new JsonArray();
 			JsonArray colHeaderArr = new JsonArray();
 			for (int i = 0; i < beArr.length; i++) {
+
 				String colS = beArr[i];
-				colHeaderArr.add(colS);
+				JsonObject colObject = new JsonObject();
+				colObject.put("code", colS);
+
+				colHeaderArr.add(colObject);
 				JsonObject obj = new JsonObject();
 				obj.put("code", colS);
 				tColumns.add(obj);
@@ -4573,9 +4712,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
+		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
 
 		/* no need to send data again if the user is not logging in or registering */
-		if (!isLogin && !isRegistration) {
+		if (!isLogin && !isRegistration && !isProductTypeTagUpdated) {
 			this.setState("DATA_SENT_FINISHED");
 			return;
 		}
@@ -4980,7 +5120,19 @@ public void makePayment(QDataAnswerMessage m) {
 		String toastJson = JsonUtils.toJson(toast);
 
 		publish("data", toastJson);
+	}
 
+	/* To send direct toast messages to the front end without templates */
+	public void sendToastNotification(String toastMsg, String priority) {
+
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		this.sendToastNotification(recipients, toastMsg, priority);
+	}
+
+	/* To send direct toast messages to the front end without templates */
+	public void sendToastNotification(String toastMsg) {
+		this.sendToastNotification(toastMsg, "info");
 	}
 
 	public QDataBaseEntityMessage getMappedBEs(final String parentCode) {
@@ -6010,375 +6162,72 @@ public void makePayment(QDataAnswerMessage m) {
 		return QwandaUtils.getTemplate(templateCode, getToken());
 	}
 
+	public BaseEntity createNote(String contextCode, String content) {
+		return this.createNote(contextCode, content, "SYSTEM");
+	}
 
-	/* TO DELETE */
-	public void sendHostCompanyData() {
+	public BaseEntity createNote(BaseEntity context, String content) {
+		return this.createNote(context.getCode(), content, "SYSTEM");
+	}
 
-		String[] recipient = { getUser().getCode() };
-		BaseEntity company = this.baseEntity.getParent(getUser().getCode(), "LNK_STAFF");
-		if (company == null) {
-			println("company is null");
-			return;
-		}
+	public BaseEntity createNote(String contextCode, String content, String noteType) {
 
-		/* SEND ROOT BaseEntity */
-		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
-		publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
-		List<BaseEntity> rootKids = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
+		/* we create the note baseEntity */
+		BaseEntity note = this.baseEntity.create(this.getUser().getCode(), "NOT", "NOTE");
 
-		if (rootKids != null) {
-			printList("rootKids", rootKids);
+		/* we save the note attributes */
+		List<Answer> answers = new ArrayList<>();
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", getCurrentLocalDateTime()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", noteType));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT", content));
+		this.baseEntity.saveAnswers(answers);
 
-			for (BaseEntity rootKid : rootKids) {
+		/* we link the note to GRP_NOTES */
+		this.baseEntity.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
 
-				/* FOR GRP_APPLICATIONS BEGS */
-				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
-					rootKidsToSend.add(rootKid);
-				}
-			}
-			printList("rootKidsToSend", rootKidsToSend);
+		/* we link the context and the note */
+		this.linkNoteAndContext(note.getCode(), contextCode);
+		return note;
+	}
 
-			/* subscribe to all the rootKids */
-			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
-			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
-
-			for (BaseEntity rootKid : rootKids) {
-
-				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
-					List<BaseEntity> begGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20,
-							false);
-					if (begGroups != null) {
-						printList("begGroups", begGroups);
-
-						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), begGroups);
-						publishCmd(begGroups, rootKid.getCode(), "LNK_CORE");
-
-						for (BaseEntity begGroup : begGroups) {
-
-							List<BaseEntity> begs = this.baseEntity.getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0,
-									500, false, company.getCode());
-							if (begs != null) {
-								printList("begs", begs);
-
-								/* subscribe to all the begs of the company */
-								subscribeUserToBaseEntities(getUser().getCode(), begs);
-								publishCmd(begs, begGroup.getCode(), "LNK_CORE");
-
-								for (BaseEntity beg : begs) {
-									List<BaseEntity> begKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(),
-											"LNK_BEG", 0, 500, false);
-
-									if (begKids != null) {
-										printList("begKids", begKids);
-
-										/* subscribe to all the begKids of the company */
-										subscribeUserToBaseEntities(getUser().getCode(), begKids);
-										publishCmd(begKids, beg.getCode(), "LNK_BEG");
-
-										/* Send Applicants */
-										for (BaseEntity begKid : begKids) {
-
-											if (begKid.getName().equals("APPLICATION")) {
-												subscribeUserToBaseEntity(getUser().getCode(), begKid);
-
-												List<BaseEntity> applicationKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(
-														begKid.getCode(), "LNK_APP", 0, 500, false);
-
-												if (applicationKids != null) {
-													printList("applicationKids", applicationKids);
-
-													/* subscribe to all the applicationKids */
-													subscribeUserToBaseEntities(getUser().getCode(), applicationKids);
-													publishCmd(applicationKids, begKid.getCode(), "LNK_BEG");
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					} else {
-						println("GRP_BEG begs is null");
-					}
-				}
-
-				if (rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
-					List<BaseEntity> applicationGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(),
-							"LNK_CORE", 0, 20, false);
-					if (applicationGroups != null) {
-						printList("applicationGroups", applicationGroups);
-
-						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
-						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-
-						/* subscribe to all the applicationGroups */
-						subscribeUserToBaseEntities(getUser().getCode(), applicationGroups);
-						publishCmd(applicationGroups, rootKid.getCode(), "LNK_CORE");
-					}
-				}
-
-				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					if (contactGroups != null) {
-						printList("contactGroups", contactGroups);
-
-						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
-						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
-
-						for (BaseEntity contactGroup : contactGroups) {
-
-							List<BaseEntity> contacts = this.baseEntity.getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false, company.getCode());
-							if (contacts != null) {
-								printList("contacts", contacts);
-
-								/* subscribe to all the contacts of the company */
-								subscribeUserToBaseEntities(getUser().getCode(), contacts);
-								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
-
-							}
-						}
-					} else {
-						println("GRP_CONTACTS kids is null");
-					}
-				}
-			}
+	public void linkNoteAndContexts(BaseEntity note, final List<BaseEntity> contextList) {
+		for (BaseEntity context : contextList) {
+			this.linkNoteAndContext(note, context);
 		}
 	}
 
-	public void sendInternData() {
+	public void linkNoteAndContext(BaseEntity note, BaseEntity context) {
+		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
+	}
+
+	public void linkNoteAndContext(String noteCode, String contextCode) {
+		this.baseEntity.createLink(noteCode, contextCode, "LNK_NOTE", "CONTEXT", 1.0);
+	}
+
+	public void sendNotes(String contextCode) {
 
 		String[] recipient = { getUser().getCode() };
 
-		/* SEND ROOT BaseEntity */
-		publishBaseEntityByCode("GRP_ROOT", null, null, recipient);
-		List<BaseEntity> rootKids = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> rootKidsToSend = new ArrayList<BaseEntity>();
+		this.clearBaseEntityAndChildren("GRP_NOTES");
+		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
-		if (rootKids != null) {
-			printList("rootKids", rootKids);
+		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes")
+				.setSourceCode("GRP_NOTES")
+				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);
 
-			for (BaseEntity rootKid : rootKids) {
-
-				/* FOR GRP_APPLICATIONS BEGS */
-				if (!rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")) {
-					rootKidsToSend.add(rootKid);
-				}
+		if (searchBE != null) {
+			/* Send search result */
+			try {
+				this.sendSearchResults(searchBE, "GRP_NOTES");
 			}
-			printList("rootKidsToSend", rootKidsToSend);
-
-			/* subscribe to all the rootKids */
-			subscribeUserToBaseEntities(getUser().getCode(), rootKidsToSend);
-			publishCmd(rootKidsToSend, "GRP_ROOT", "LNK_CORE");
-
-			for (BaseEntity rootKid : rootKids) {
-
-				if (rootKid.getCode().equalsIgnoreCase("GRP_BEGS")) {
-					List<BaseEntity> begGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					List<BaseEntity> begGroupsToSend = new ArrayList<BaseEntity>();
-
-					if (begGroups != null) {
-						printList("begGroups", begGroups);
-
-						for (BaseEntity begGroup : begGroups) {
-
-							/* FOR GRP_APPLICATIONS BEGS */
-							if (!begGroup.getCode().equalsIgnoreCase("GRP_DRAFTS") ||
-								!begGroup.getCode().equalsIgnoreCase("GRP_FILLED") ||
-								!begGroup.getCode().equalsIgnoreCase("GRP_BIN")) {
-								begGroupsToSend.add(begGroup);
-							}
-						}
-						printList("begGroupsToSend", begGroupsToSend);
-
-
-						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), begGroupsToSend);
-						publishCmd(begGroupsToSend, rootKid.getCode(), "LNK_CORE");
-
-						BaseEntity begApplication = null;
-						List<BaseEntity> begKids = new ArrayList<BaseEntity>();
-						for (BaseEntity begGroup : begGroups) {
-
-							if(begGroup.getCode().equalsIgnoreCase("GRP_NEW_ITEMS")){
-								List<BaseEntity> begs = this.baseEntity.getBaseEntitysByParentAndLinkCode(begGroup.getCode(), "LNK_CORE", 0, 500, false);
-								if (begs != null) {
-									printList("begs", begs);
-
-									/* subscribe to all the begs of the company */
-									subscribeUserToBaseEntities(getUser().getCode(), begs);
-									publishCmd(begs, begGroup.getCode(), "LNK_CORE");
-
-									for (BaseEntity beg : begs) {
-										List<BaseEntity> applications = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false, this.getUser().getCode());
-										subscribeUserToBaseEntities(getUser().getCode(), applications);
-
-										if(applications.size() > 0){
-											println("application size :: "+applications.size());
-
-											/* i have an application */
-											for(BaseEntity application : applications) {
-												begApplication =  application;
-											}
-
-											println("application that is found :: "+begApplication.getCode());
-											begKids.add(begApplication);
-
-
-										}
-										List<BaseEntity> otherBegKids = this.baseEntity.getBaseEntitysByParentAndLinkCode(beg.getCode(), "LNK_BEG", 0, 500, false);
-										for (BaseEntity begKid : otherBegKids) {
-
-											if (!begKid.getName().equals("APPLICATION")) {
-												println("Baseentity kid :: "+begKid.getCode());
-												begKids.add(begKid);
-											}
-										}
-										/* subscribe to all the applications of the company */
-										subscribeUserToBaseEntities(getUser().getCode(), begKids);
-										publishCmd(begKids, beg.getCode(), "LNK_BEG");
-									}
-								}else{
-									println("begs is null");
-								}
-							}
-						}
-
-					}
-				}
-
-				if(rootKid.getCode().equalsIgnoreCase("GRP_APPLICATIONS")){
-					List<BaseEntity> buckets = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					if (buckets != null) {
-						printList("buckets", buckets);
-
-						subscribeUserToBaseEntity(this.getUser().getCode(), rootKid.getCode());
-						publishBaseEntityByCode(rootKid.getCode(), null, null, recipient);
-
-						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), buckets);
-						publishCmd(buckets, rootKid.getCode(), "LNK_CORE");
-					}
-				}
-
-				if (rootKid.getCode().equalsIgnoreCase("GRP_CONTACTS")) {
-					List<BaseEntity> contactGroups = this.baseEntity.getBaseEntitysByParentAndLinkCode(rootKid.getCode(), "LNK_CORE", 0, 20, false);
-					if (contactGroups != null) {
-						printList("contactGroups", contactGroups);
-
-						/* subscribe to all the begs of the company */
-						subscribeUserToBaseEntities(getUser().getCode(), contactGroups);
-						publishCmd(contactGroups, rootKid.getCode(), "LNK_CORE");
-
-						for (BaseEntity contactGroup : contactGroups) {
-
-							List<BaseEntity> contacts = this.baseEntity.getBaseEntitysByParentAndLinkCode(contactGroup.getCode(), "LNK_CORE", 0, 500, false);
-							if (contacts != null) {
-								printList("contacts", contacts);
-
-								/* subscribe to all the contacts of the company */
-								subscribeUserToBaseEntities(getUser().getCode(), contacts);
-								publishCmd(contacts, contactGroup.getCode(), "LNK_CORE");
-
-							}
-						}
-					} else {
-						println("GRP_CONTACTS kids is null");
-					}
-				}
+			catch (IOException e) {
 			}
-
-
 		}
 	}
 
-	public void sendListTabView(final String listCode, final String bucketCode, final String begCode) {
-
-		JsonObject listView = new JsonObject();
-		listView.put("code", "LIST_VIEW");
-		listView.put("root", listCode);
-
-		JsonObject bucketView = new JsonObject();
-		bucketView.put("code", "BUCKET_VIEW");
-		bucketView.put("root", bucketCode);
-
-		JsonObject detailView = new JsonObject();
-		detailView.put("code", "DETAIL_VIEW");
-		detailView.put("root", begCode);
-		detailView.put("layoutCode", "detail-view");
-		detailView.put("parentCode", listCode);
-
-		JsonArray dataArray = new JsonArray();
-		dataArray.add(bucketView);
-		dataArray.add(detailView);
-
-		JsonObject layout1 = new JsonObject();
-		layout1.put("code", "BUCKET_VIEW");
-		layout1.put("root", bucketCode);
-
-		JsonObject layout2 = new JsonObject();
-		layout2.put("code", "DETAIL_VIEW");
-		layout2.put("root", begCode);
-		layout2.put("layoutCode", "detail-view");
-		layout2.put("parentCode", listCode);
-
-		JsonObject tabObject1 = new JsonObject();
-		tabObject1.put("name", "Process Card");
-		tabObject1.put("icon", "table_chart");
-		tabObject1.put("layout", layout1);
-
-		JsonObject tabObject2 = new JsonObject();
-		tabObject2.put("name", "Internship Details");
-		tabObject2.put("icon", "reorder");
-		tabObject2.put("layout", layout2);
-
-
-		JsonArray tabArray = new JsonArray();
-		tabArray.add(tabObject1);
-		tabArray.add(tabObject2);
-
-		JsonObject tabView = new JsonObject();
-		tabView.put("code", "TAB_VIEW");
-		tabView.put("root", dataArray);
-		tabView.put("tabs", tabArray);
-
-		JsonArray msgCodes = new JsonArray();
-		msgCodes.add(listView);
-		msgCodes.add(tabView);
-
-		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
-		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-		cmdViewJson.put("root", begCode);
-		cmdViewJson.put("data", msgCodes);
-
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
-
-		publishCmd(cmdViewJson);
+	public void sendNotes(BaseEntity context) {
+		this.sendNotes(context.getCode());
 	}
-
-	public void sendSplitView2(final String parentCode, final String bucketCode) {
-
-		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
-		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
-
-		JsonObject codeListView = new JsonObject();
-		codeListView.put("code", "LIST_VIEW");
-		codeListView.put("root", parentCode);
-
-		JsonObject bucketListView = new JsonObject();
-		bucketListView.put("code", "BUCKET_VIEW");
-		bucketListView.put("root", bucketCode);
-
-		JsonArray msgCodes = new JsonArray();
-		msgCodes.add(codeListView);
-		msgCodes.add(bucketListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
-		cmdViewJson.put("data", msgCodes);
-		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
-		publishCmd(cmdViewJson);
-	}
-
 }

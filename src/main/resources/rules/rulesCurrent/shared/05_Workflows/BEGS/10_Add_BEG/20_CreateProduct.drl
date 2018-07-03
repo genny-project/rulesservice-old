@@ -1,0 +1,39 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Create BEG BaseEntity */
+rule "Add Product - Step 2"
+	when
+		rules: QRules(	isState("CREATE_BEG_PRODUCT") &&
+						!isState("LOOP_CREATE_PRODUCT_BASEENTITY") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_CREATE_PRODUCT_BASEENTITY");
+
+		rules.clearState("CREATED_BASE_ENTITY");	
+
+		BaseEntity beg = rules.getAsBaseEntity("begBe");	
+		if(beg != null) {
+		
+			BaseEntity project = rules.getProject();
+			
+			/* we grab the product code */
+			String productCode = project.getValue("PRI_PRODUCT_CODE", "PRD");
+
+			/* we create the PRODUCT base entity */
+			rules.set("beCode", rules.getUser().getCode());
+			rules.set("bePrefix", productCode);
+			rules.set("beName", productCode);
+
+			rules.setState("CREATE_BASE_ENTITY");	
+			rules.setState("LINK_GRP_DRAFTS_TO_BEG");	
+		}
+		else {
+			
+			rules.setState("FAILED_CREATE_BEG");
+			rules.setState("FAILED_CREATE_PRODUCT");
+		}
+
+
+	 	rules.footer();      
+end

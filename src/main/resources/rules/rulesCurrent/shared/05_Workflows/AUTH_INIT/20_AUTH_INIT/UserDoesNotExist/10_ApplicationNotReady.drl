@@ -1,6 +1,5 @@
 package life.genny.rules;
 
-import life.genny.qwanda.entity.BaseEntity;
 import life.genny.rules.QRules;
 
 rule "Application Not Ready"
@@ -12,17 +11,7 @@ rule "Application Not Ready"
 		rules.header();
 		rules.setState("LOOP_APPLICATION_NOT_READY");
 		
-		/* we grab keycloak info */
-		String username = rules.getAsString("preferred_username").toLowerCase();
-		String firstname = rules.getAsString("given_name").toLowerCase();
-		String lastname = rules.getAsString("family_name").toLowerCase();
-		String name = rules.getAsString("name").toLowerCase();
-		String email = rules.getAsString("email").toLowerCase();
-		String keycloakId = rules.getAsString("sub").toLowerCase();
-		
-		/* we create the user be */
-		BaseEntity be = rules.createUser(firstname, lastname, name, username, email, keycloakId);
-			
+		BaseEntity be = rules.createUser();
 		rules.setState("APPLICATION_NOT_READY");
 
 		rules.footer();
