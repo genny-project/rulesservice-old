@@ -2841,7 +2841,7 @@ public void makePayment(QDataAnswerMessage m) {
                         }
                         println("rejected driver list ::"+rejectedDriver.toString());
                         String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
-                        sendMessage( rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
                     }
 
                 }
@@ -3931,12 +3931,25 @@ public void makePayment(QDataAnswerMessage m) {
 		return previousLayout;
 	}
 
-	/* Sorting Offers of a beg as per the price, lowest price being on top */
+	/* Sorting Offers with linkWeight greater then 0 of a beg as per the price,
+	 * lowest price being on top
+	 *
+	 */
 	public void sortOffersInBeg(final String begCode) {
 
-		List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-		// println("All the Offers for the load " + begCode + " are: " +
-		// offers.toString());
+		//List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+		/* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
+		List<BaseEntity> offers = new ArrayList<BaseEntity>();
+		List<EntityEntity> allLinks = this.baseEntity.getLinks(begCode);
+		for(EntityEntity link : allLinks ) {
+			if(link.getWeight() != 0) {
+				Link beLink = link.getLink();
+				if(beLink.getTargetCode().startsWith("OFR")) {
+					offers.add( this.baseEntity.getBaseEntityByCode(beLink.getTargetCode()) );
+				}
+			}
+		}
+
 		if (offers.size() > 1) {
 			Collections.sort(offers, new Comparator<BaseEntity>() {
 				@Override
