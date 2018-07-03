@@ -1,0 +1,42 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send View Application Details Layout */
+rule "Submit Add Note - STEP 2"
+	when
+		rules: QRules( 	isState("SEND_VIEW_APPLICATION_DETAILS_LAYOUT") &&
+						isState("CREATED_LINK") &&
+						isState("NOTE") &&
+						!isState("LOOP_SEND_VIEW_APPLICATION_DETAILS_LAYOUT"))
+	 then
+	 	rules.header();
+        rules.setState("LOOP_SEND_VIEW_APPLICATION_DETAILS_LAYOUT");
+		
+		String[] recipient= { rules.getUser().getCode() };
+
+		BaseEntity note = rules.getAsBaseEntity("noteBe");
+		BaseEntity application = rules.getAsBaseEntity("applicationBe");
+
+		if(application == null){
+			rules.println("application is null");
+			return;
+
+		}else if(note == null){
+			rules.println("note is null");
+			return;
+
+		}else{
+			rules.publishBaseEntityByCode(note.getCode(), application.getCode(), "LNK_APP", recipient);
+			rules.setState("VIEW_APPLICATION_DETAILS");
+			rules.baseEntity.saveAnswer(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATED_DATE", rules.getCurrentLocalDateTime()));
+			rules.baseEntity.saveAnswer(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", rules.getUser().getName()));
+			rules.baseEntity.saveAnswer(new Answer(rules.getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", rules.getUser().getCode()));
+		}
+		rules.footer();
+end
+
+
+        
+        
+
+        

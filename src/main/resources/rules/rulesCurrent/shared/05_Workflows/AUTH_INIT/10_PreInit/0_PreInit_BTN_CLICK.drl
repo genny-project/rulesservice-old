@@ -1,0 +1,73 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Btn Click"
+	no-loop true
+	ruleflow-group 'Init'
+    when
+	  m : QEventMessage( event_type == "BTN_CLICK" )
+	  rules: QRules(!isState("STARTED"))
+     then
+        rules.setDrools(drools);
+        rules.println("RULE INIT BTN_CLICK: "+m);
+       
+        String btnCode = m.getData().getCode();
+        String dataString = m.getData().getValue();
+        
+        try {
+        
+            JsonObject dataJson = new JsonObject(dataString);
+
+            /* Get targetCode */
+            String targetCode = dataJson.getString("targetCode");
+            rules.println("targetCode   ::   " + targetCode);
+
+            /* Get itemCode */
+            String itemCode = dataJson.getString("itemCode");
+            rules.println("itemCode   ::   " + itemCode);
+
+            /* Get itemCode */
+            String hintCode = dataJson.getString("hint");
+            if(hintCode == null) {
+            		hintCode = dataJson.getString("hintCode");
+            }
+            
+            rules.println("hintCode   ::   " + hintCode);
+
+            /* Get actionCode */
+            String actionCode = dataJson.getString("action");
+            rules.println("actionCode   ::   " + actionCode);
+            
+            /* Get message */
+            String message = dataJson.getString("message");
+            rules.println("message   ::   " + message);
+
+          if(targetCode != null) {
+            rules.set("quesTargetCode", targetCode);
+          }
+          
+          if(itemCode != null) {
+            rules.set("itemCode", itemCode);
+          }
+          
+          if(hintCode != null) {
+            rules.set("hintCode", hintCode);
+          }
+          
+          if(message != null) {
+              rules.set("message", message);
+            }
+        }
+        catch( Exception e) {}
+
+        if(btnCode != null) {
+          rules.setState(btnCode);
+        }
+        
+        rules.setState("STARTED");
+        rules.setState("EVENT_BTN_CLICK");
+
+end

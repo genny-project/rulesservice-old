@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Add Product - Step 6"
+	when
+        rules: QRules(  isState("SEND_PRODUCT_QUESTIONS") &&
+                        !isState("LOOP_SEND_PRODUCT_QUESTION")  )
+     then
+ 		rules.header();
+		rules.setState("LOOP_SEND_PRODUCT_QUESTION");
+
+		BaseEntity product = rules.getAsBaseEntity("productBe");
+		if(product != null) {
+
+			rules.sendQuestions(rules.getUser().getCode(), product.getCode(), "QUE_ADD_PRODUCT_GRP");
+			rules.setState("SEND_ADD_PRODUCT_QUESTION_LAYOUT");
+		}
+		else {
+
+			rules.setState("FAILED_CREATE_BEG");
+			rules.setState("FAILED_SEND_QUESTIONS_PRODUCT");
+		}
+
+ 		rules.footer();
+end

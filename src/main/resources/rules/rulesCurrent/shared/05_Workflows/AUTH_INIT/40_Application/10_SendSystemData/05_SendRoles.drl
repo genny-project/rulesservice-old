@@ -1,0 +1,24 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.utils.VertxUtils;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+
+rule "Send Roles"
+    when
+         rules: QRules( isState("SENT_ALL_ATTRIBUTES") && !isState("SEND_ROLES") )
+     then
+     	rules.header();
+        rules.setState("SEND_ROLES");
+
+     	QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(rules.realm(), "ROLES", rules.realm(), QDataBaseEntityMessage.class);
+
+        if(rolesMsg != null) {
+        rules.println("Sending "+rolesMsg.getItems().length +" Roles  ");
+            rules.publishCmd(rolesMsg);
+        }
+
+	    rules.footer();      		      
+end

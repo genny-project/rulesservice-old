@@ -15,8 +15,8 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.39</qwanda-utils.version>
-		<genny-verticle.version>1.0.39</genny-verticle.version>
+		<qwanda-utils.version>1.0.41</qwanda-utils.version>
+		<genny-verticle.version>1.0.41</genny-verticle.version>
 
                 <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
@@ -198,7 +198,15 @@
 
 	</dependencies>
 
-	<build>
+  <build>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>rules/rulesCurrent/prj_*/**</exclude>
+            </excludes>
+        </resource>
+    </resources>
 		<plugins>
 
 			<plugin>

@@ -1,0 +1,41 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "Pre Init Startup"
+	no-loop true
+	ruleflow-group 'Init'
+    when
+       m : QEventMessage( event_type == "EVT_MSG" && "INIT_STARTUP" == data.code)
+       rules: QRules( !isState("STARTED") )
+     then
+         
+     rules.setDrools(drools);
+         rules.println("********* RULE INIT STARTUP: Realms "+rules.realm()+" ***************");
+
+        rules.setState("GENERATE_STARTUP");
+        rules.setState("STARTED");
+
+			/* set up a service user for each realm */
+			if (rules.loadRealmData() ) {
+
+                rules.createServiceUser();
+                
+                /* Note: it looks like the setFocus operates in reverse order. A stack perhaps? */
+			    drools.setFocus("GenerateRoles");
+			    drools.setFocus("GenerateTestRoles");
+			    drools.setFocus("GenerateCapabilities");
+			   
+			    drools.setFocus("GenerateReports");
+
+	            drools.setFocus("GenerateTree");
+	            drools.setFocus("GenerateLayouts");
+	            drools.setFocus("GenerateCaches");
+	            drools.setFocus("GenerateLayouts");
+	            drools.setFocus("GenerateBucketCaches");
+	            drools.setFocus("GenerateArchiveCaches");
+	            drools.setFocus("GenerateSearches");
+
+	       }
+
+end

@@ -1,0 +1,29 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "Delete BEG - Step 2"
+	when
+		rules: QRules( isState("HIDE_BEG_FROM_USERS") && !isState("DID_HIDE_BEG") )
+	then
+	
+		rules.header();
+
+		rules.setState("DID_HIDE_BEG");
+
+		String begCode = rules.getAsString("itemCode");
+		String groupCode = rules.getAsString("hintCode");
+
+         if(begCode != null && begCode != null ){
+        	 
+        	 		/* we get the current subscribers of the BEG */
+                String[] allBegRecipients = VertxUtils.getSubscribers(rules.realm(), begCode);
+				
+                /* we hide the BEG from them */
+                rules.clearBaseEntity(begCode, groupCode, allBegRecipients);
+                
+                rules.setState("MOVE_BEG_TO_BIN");
+         }     
+
+	    rules.footer();
+end

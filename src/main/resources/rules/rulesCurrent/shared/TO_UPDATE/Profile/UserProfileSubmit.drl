@@ -26,7 +26,7 @@ rule "User-Profile Submit"
            String[] recipients  = {userCode};    */ 
           // rules.sendNotification("success", recipientCodes, "Profile Updated!");
           /* Sending toast message */
-      /*      rules.sendMessage("", recipients, contextMap, "TST_PROFILE_UPDATED", "TOAST");  */
+      /*      rules.sendMessage(recipients, contextMap, "TST_PROFILE_UPDATED", "TOAST");  */
            
        //  }
 
