@@ -22,7 +22,7 @@ rule "LoadToBeg"
      then
 	 rules.setDrools(drools);
      rules.header();
-        rules.setState("PLOAD_TO_BEG");
+        rules.setState("LOAD_TO_BEG");
 		rules.println("Processing LOAD TO BEG for "+rules.realm());
 
         SearchEntity searchBE = new SearchEntity("SBE_GET_ALL_BEGS","All Jobs")
@@ -44,13 +44,14 @@ rule "LoadToBeg"
 			BaseEntity load = null;
 			for (EntityEntity ee : be.getLinks()) {
 				if (ee.getLink().getTargetCode().startsWith("LOD_")) {
-					load = rules.baseEntity.getBaseEntityByCode(ee.getLink().getSourceCode());
+					load = rules.baseEntity.getBaseEntityByCode(ee.getLink().getTargetCode());
 					break;
 				}
 			}
 			if (load != null) {
 			rules.println("LOAD FOUND FOR "+be.getCode()+" = "+load.getCode());
 			String loadValue = load.getValue("LNK_LOAD_CATEGORY_LISTS",null);
+			rules.println("The value is :: "+loadValue);
 			Answer ans1 = new Answer(be.getCode(),be.getCode(),"LNK_PRODUCT_CATEGORY_TAG",loadValue);
 			List<Answer> answers = new ArrayList<Answer>();
 			answers.add(ans1);
