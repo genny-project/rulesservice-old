@@ -45,19 +45,24 @@ public class BaseEntityUtils {
 	private String realm;
 	private String qwandaServiceUrl;
 
+	private CacheUtils cacheUtil;
+
 	public BaseEntityUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
 
 		this.decodedMapToken = decodedMapToken;
 		this.qwandaServiceUrl = qwandaServiceUrl;
 		this.token = token;
 		this.realm = realm;
+
+		this.cacheUtil = new CacheUtils(qwandaServiceUrl, token, decodedMapToken, realm);
+		this.cacheUtil.setBaseEntityUtils(this);
 	}
 
 	/* =============== refactoring =============== */
 
 	public BaseEntity create(final String uniqueCode, final String bePrefix, final String name) {
 
-		String uniqueId = QwandaUtils.getUniqueId(uniqueCode, null, bePrefix, this.token);
+		String uniqueId = QwandaUtils.getUniqueId(bePrefix, uniqueCode);
 		if (uniqueId != null) {
 
 			BaseEntity newBaseEntity = QwandaUtils.createBaseEntityByCode(uniqueId, name, qwandaServiceUrl, this.token);
@@ -373,27 +378,22 @@ public class BaseEntityUtils {
 		return bes;
 	}
 
-	public String moveBaseEntity(final String baseEntityCode, final String sourceCode, final String targetCode,
-			final String linkCode) {
-		Link link = new Link(sourceCode, baseEntityCode, linkCode);
-		try {
-			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
-					JsonUtils.toJson(link), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public String moveBaseEntity(String baseEntityCode, String sourceCode, String targetCode, String linkCode) {
+		return this.moveBaseEntitySetLinkValue(baseEntityCode, sourceCode, targetCode, linkCode, "LINK");
 	}
 
-	public String moveBaseEntitySetLinkValue(final String baseEntityCode, final String sourceCode,
-			final String targetCode, final String linkCode, final String linkValue) {
+	public String moveBaseEntitySetLinkValue(String baseEntityCode, String sourceCode, String targetCode, String linkCode, final String linkValue) {
 
 		Link link = new Link(sourceCode, baseEntityCode, linkCode, linkValue);
 
 		try {
 
+			/* we call the api */
 			QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/move/" + targetCode,
 					JsonUtils.toJson(link), this.token);
+
+			/* we refresh the cache */
+			this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -488,7 +488,7 @@ public class BaseEntityUtils {
 			String beJson = QwandaUtils.apiGet(this.qwandaServiceUrl + "/qwanda/entityentitys/" + targetCode
 					+ "/linkcodes/" + linkCode + "/parents", this.token);
 			Link[] linkArray = JsonUtils.fromJson(beJson, Link[].class);
-			if (linkArray.length > 0) {
+			if (linkArray != null && linkArray.length > 0) {
 
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				parents = new ArrayList<BaseEntity>();
@@ -1101,6 +1101,50 @@ public class BaseEntityUtils {
 		return null;
 	}
 
+	/*
+	 * copy all the attributes from one BE to another BE
+	 * sourceBe : FROM
+	 * targetBe : TO
+	 */
+	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
+
+		Map<String, String> map = new HashMap<>();
+		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
+		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
+
+		List<Answer> answers = new ArrayList<Answer>();
+		try{
+			for (Map.Entry<String, String> entry : map.entrySet()){
+				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
+				answers.add(answerObj);
+			}
+			saveAnswers(answers);
+		} catch (Exception e) {}
+
+		return getBaseEntityByCode(targetBe.getCode());
+	}
+
+	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
+		Link link = new Link(parentCode, childCode, linkCode);
+		try {
+			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+	/* Remove link with specific link Value */
+	public String removeLink(final String parentCode, final String childCode, final String linkCode, final String linkValue) {
+		Link link = new Link(parentCode, childCode, linkCode, linkValue);
+		try {
+			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+
   /*
 	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
 	 */
@@ -1118,12 +1162,12 @@ public class BaseEntityUtils {
 
 		return childs;
 	}
-	
+
 	/* Get array String value from an attribute of the BE  */
 	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
-		
+
 		String myLoadTypes = be.getValue(attributeCode, null);
-															
+
 		if (myLoadTypes != null) {
 			List<String> loadTypesList = new ArrayList<String>();
 			/* Removing brackets "[]" and double quotes from the strings */
