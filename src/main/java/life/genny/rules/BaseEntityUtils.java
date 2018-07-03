@@ -1165,7 +1165,7 @@ public class BaseEntityUtils {
 		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
 		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
 
-		List<Answer> answers = new ArrayList<Answer>();
+		List<Answer> answers = new ArrayList<>();
 		try{
 			for (Map.Entry<String, String> entry : map.entrySet()){
 				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
@@ -1178,11 +1178,13 @@ public class BaseEntityUtils {
 	}
 
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
+		
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
 			return QwandaUtils.apiDelete(this.qwandaServiceUrl + "/qwanda/entityentitys", JsonUtils.toJson(link), this.token);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 		return null;
 
@@ -1196,7 +1198,7 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 		return null;
-
+	}
 
   /*
 	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode

@@ -722,6 +722,38 @@ public class QRules {
 			this.println(e);
 		}
 	}
+	
+	public BaseEntity createUser() {
+
+		BaseEntity be = null;
+
+		String username = getAsString("preferred_username").toLowerCase();
+		String firstname = StringUtils.capitaliseAllWords(getAsString("given_name").toLowerCase());
+		String lastname = StringUtils.capitaliseAllWords(getAsString("family_name").toLowerCase());
+		String realm = StringUtils.capitaliseAllWords(getAsString("realm").toLowerCase());
+		String name = StringUtils.capitaliseAllWords(getAsString("name").toLowerCase());
+		String email = getAsString("email").toLowerCase();
+		String keycloakId = getAsString("sub").toLowerCase();
+
+		try {
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+					keycloakId);
+			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
+			be = getUser();
+			set("USER", be);
+			println("New User Created " + be);
+			this.setState("DID_CREATE_NEW_USER");
+
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
+
+		} 
+		catch (IOException e) {
+			log.error("Error in Creating User ");
+		}
+		return be;
+	}
 
 	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email, HashMap<String, String> attributes) {
 		return this.createUser(firstname, lastname, name, username, email, null, attributes, null);
@@ -748,10 +780,6 @@ public class QRules {
 		BaseEntity be = null;
 
     try {
-
-			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
-					recipientArray, getToken());
-			publish("messages", message);
 
 			/* we capitalise the variables */
 			firstname = StringUtils.capitalize(firstname);
@@ -2891,9 +2919,9 @@ public void makePayment(QDataAnswerMessage m) {
 
   public void clearBaseEntity(String baseEntityCode) {
 
-    //String[] recipients = new String[1];
-    //recipients[0] = this.getUser().getCode();
-    this.clearBaseEntity(baseEntityCode, null);
+    String[] recipients = new String[1];
+    recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, recipients);
   }
 
    /* clears baseEntity and all its children linked  */
@@ -2911,7 +2939,7 @@ public void makePayment(QDataAnswerMessage m) {
 		beMsg.setShouldDeleteLinkedBaseEntities(true);
 		publishData(beMsg, recipients);
 	}
-
+	
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -3316,11 +3344,11 @@ public void makePayment(QDataAnswerMessage m) {
 
 					/* we link the load to the user */
 					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
-
-	    /* we push the job to the creator */
-	    String[] creatorRecipient = { getUser().getCode() };
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+			
+				    /* we push the job to the creator */
+				    String[] creatorRecipient = { getUser().getCode() };
+				    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+				    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
 					/* SEND LOAD BE */
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
@@ -3353,23 +3381,6 @@ public void makePayment(QDataAnswerMessage m) {
 					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
-
 		}
 
 		this.redirectToHomePage();
@@ -5107,6 +5118,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String[] recipients = { this.getUser().getCode() };
 		this.sendToastNotification(recipients, message, priority);
 	}
+	
 	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
 	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {
@@ -5120,14 +5132,6 @@ public void makePayment(QDataAnswerMessage m) {
 		String toastJson = JsonUtils.toJson(toast);
 
 		publish("data", toastJson);
-	}
-
-	/* To send direct toast messages to the front end without templates */
-	public void sendToastNotification(String toastMsg, String priority) {
-
-		String[] recipients = new String[1];
-		recipients[0] = this.getUser().getCode();
-		this.sendToastNotification(recipients, toastMsg, priority);
 	}
 
 	/* To send direct toast messages to the front end without templates */

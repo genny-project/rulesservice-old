@@ -27,6 +27,7 @@ rule "Setup New User"
 	   				    );
 
         rules.setState("DID_SETUP_NEW_USER");
+        rules.setState("FORCE_CHECK_USER_ROLE");
 
         rules.clearState("PROFILE_CHECK_COMPLETED");
         rules.footer();
