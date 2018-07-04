@@ -5952,8 +5952,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 		if(user == null) return null;
 
-		List<BaseEntity> capabilities = new ArrayList<BaseEntity>();
-		List<String> capabilityCodes = new ArrayList<String>();
+		List<BaseEntity> capabilities = new ArrayList<>();
+		List<String> capabilityCodes = new ArrayList<>();
 
 		/* shared capabilities */
 		capabilityCodes.add("CAP_ADD_CALL");
@@ -5975,6 +5975,7 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_ACCEPT_QUOTE");
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
 		capabilityCodes.add("CAP_MARK_DELIVERY");
+		capabilityCodes.add("CAP_READ_NOTES");
 
 		/* if the user is a buyer */
 		if(this.isUserBuyer(user)) {
@@ -6014,10 +6015,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public List<BaseEntity> generateCapabilities() {
 
-		List<BaseEntity> virtualCapabilityBEs = new ArrayList<BaseEntity>();
+		List<BaseEntity> virtualCapabilityBEs = new ArrayList<>();
 
 		/* get all capabilities existing */
-		List<Attribute> existingCapability = new ArrayList<Attribute>();
+		List<Attribute> existingCapability = new ArrayList<>();
 		for (String existingAttributeCode : RulesUtils.attributeMap.keySet()) {
 			if (existingAttributeCode.startsWith("CAP_")) {
 				existingCapability.add(RulesUtils.attributeMap.get(existingAttributeCode));
@@ -6025,39 +6026,40 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 
 		/* Force these capabilities to exist */
-		List<Attribute> capabilityManifest = new ArrayList<Attribute>();
+		List<Attribute> capabilityManifest = new ArrayList<>();
 
 		String proj_realm = System.getenv("PROJECT_REALM");
 		String token = RulesUtils.generateServiceToken(proj_realm);
 
-		addCapability(capabilityManifest,"READ_ROLES", "Allowed to manage company roles",token);
-		addCapability(capabilityManifest,"ADD_USER", "Allowed to add users to the company",token);
-		addCapability(capabilityManifest,"ADD_QUOTE", "Allowed to post a quote",token);
-		addCapability(capabilityManifest,"READ_QUOTE", "Allowed to see quotes",token);
-		addCapability(capabilityManifest,"DELETE_QUOTE", "Allowed to delete a quote",token);
-		addCapability(capabilityManifest,"UPDATE_QUOTE", "Allowed to update a quote",token);
-		addCapability(capabilityManifest,"ACCEPT_QUOTE", "Allowed to accept a quote",token);
-		addCapability(capabilityManifest,"ADD_CHAT_MESSAGE", "Allowed to send chat messages",token);
-		addCapability(capabilityManifest,"READ_CHAT_MESSAGE", "Allowed to see chat messages",token);
-		addCapability(capabilityManifest,"DELETE_MESSAGE", "Allowed to delete a chat message",token);
-		addCapability(capabilityManifest,"ADD_CALL", "Allowed to make voice calls",token);
-		addCapability(capabilityManifest,"READ_NEW_ITEMS", "Allowed to see available jobs",token);
-		addCapability(capabilityManifest,"READ_PAID_ITEMS", "Allowed to see paid jobs",token);
-		addCapability(capabilityManifest,"READ_ARCHIVE", "Allowed to see archived jobs",token);
-		addCapability(capabilityManifest,"DELETE_ARCHIVE", "Allowed to delete an archived job",token);
-		addCapability(capabilityManifest,"LOCATE_USER", "Allowed to locate a user",token);
-		addCapability(capabilityManifest,"ADD_ITEM", "Allowed to create a new job",token);
-		addCapability(capabilityManifest,"DELETE_ITEM", "Allowed to delete jobs",token);
-		addCapability(capabilityManifest,"UPDATE_ITEM", "Allowed to update a job",token);
-		addCapability(capabilityManifest,"UPDATE_USER", "Allowed to update a user",token);
-		addCapability(capabilityManifest,"DELETE_USER", "Allowed to delete a user",token);
-		addCapability(capabilityManifest,"ADD_PAYMENT_METHOD", "Allowed to add payment methods",token);
-		addCapability(capabilityManifest,"UPDATE_PAYMENT_METHOD", "Allowed to update a payment method",token);
-		addCapability(capabilityManifest,"READ_PAYMENT_METHOD", "Allowed to see payment methods",token);
-		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Allowed to delete payment methods",token);
-		addCapability(capabilityManifest,"MARK_PICKUP", "Allowed to mark jobs as picked up",token);
-		addCapability(capabilityManifest,"MARK_DELIVERY", "Allowed to mark jobs as delivered",token);
-		addCapability(capabilityManifest,"MARK_ARRIVAL", "Allowed to mark jobs as arrived",token);
+		addCapability(capabilityManifest,"READ_ROLES", "Manage company roles",token);
+		addCapability(capabilityManifest,"READ_NOTES", "See company notes",token);
+		addCapability(capabilityManifest,"ADD_USER", "Add users to the company",token);
+		addCapability(capabilityManifest,"ADD_QUOTE", "Post a quote",token);
+		addCapability(capabilityManifest,"READ_QUOTE", "See quotes",token);
+		addCapability(capabilityManifest,"DELETE_QUOTE", "Delete a quote",token);
+		addCapability(capabilityManifest,"UPDATE_QUOTE", "Update a quote",token);
+		addCapability(capabilityManifest,"ACCEPT_QUOTE", "Accept a quote",token);
+		addCapability(capabilityManifest,"ADD_CHAT_MESSAGE", "Send chat messages",token);
+		addCapability(capabilityManifest,"READ_CHAT_MESSAGE", "See chat messages",token);
+		addCapability(capabilityManifest,"DELETE_MESSAGE", "Delete a chat message",token);
+		addCapability(capabilityManifest,"ADD_CALL", "Make voice calls",token);
+		addCapability(capabilityManifest,"READ_NEW_ITEMS", "See available jobs",token);
+		addCapability(capabilityManifest,"READ_PAID_ITEMS", "See paid jobs",token);
+		addCapability(capabilityManifest,"READ_ARCHIVE", "See archived jobs",token);
+		addCapability(capabilityManifest,"DELETE_ARCHIVE", "Delete an archived job",token);
+		addCapability(capabilityManifest,"LOCATE_USER", "Locate a user",token);
+		addCapability(capabilityManifest,"ADD_ITEM", "Create a new job",token);
+		addCapability(capabilityManifest,"DELETE_ITEM", "Delete jobs",token);
+		addCapability(capabilityManifest,"UPDATE_ITEM", "Update a job",token);
+		addCapability(capabilityManifest,"UPDATE_USER", "Update a user",token);
+		addCapability(capabilityManifest,"DELETE_USER", "Delete a user",token);
+		addCapability(capabilityManifest,"ADD_PAYMENT_METHOD", "Payment methods",token);
+		addCapability(capabilityManifest,"UPDATE_PAYMENT_METHOD", "Update a payment method",token);
+		addCapability(capabilityManifest,"READ_PAYMENT_METHOD", "Payment methods",token);
+		addCapability(capabilityManifest,"DELETE_PAYMENT_METHOD", "Delete payment methods",token);
+		addCapability(capabilityManifest,"MARK_PICKUP", "Mark jobs as picked up",token);
+		addCapability(capabilityManifest,"MARK_DELIVERY", "Mark jobs as delivered",token);
+		addCapability(capabilityManifest,"MARK_ARRIVAL", "Mark jobs as arrived",token);
 
 		/* Remove any capabilities not in this forced list from roles */
 		existingCapability.removeAll(capabilityManifest);
