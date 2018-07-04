@@ -3226,22 +3226,22 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void fireAttributeChanges(QEventAttributeValueChangeMessage m) {
+		
 		Answer a = m.getAnswer();
 		BaseEntity be = m.getBe();
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
+			
 			Answer pojo = new Answer(a.getSourceCode(), a.getTargetCode(), ea.getAttributeCode(), ea.getAsLoopString());
 			pojo.setWeight(ea.getWeight());
 			pojo.setInferred(ea.getInferred());
 			pojo.setExpired(a.getExpired());
 			pojo.setRefused(a.getRefused());
-			// pojo.setAskId(answer.getAskId());
 
-			QEventAttributeValueChangeMessage msg = new QEventAttributeValueChangeMessage(pojo, m.getOldValue(),
-					m.getToken());
+			QEventAttributeValueChangeMessage msg = new QEventAttributeValueChangeMessage(pojo, m.getOldValue(), m.getToken());
 			msg.getData().setCode(ea.getAttributeCode());
 			msg.getData().setId(-1L);
 			msg.setBe(be);
-			publish("events", JsonUtils.toJson(msg));
+			this.publish("events", JsonUtils.toJson(msg));
 		}
 	}
 
@@ -3389,25 +3389,16 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
-		// if ((m.getData() != null)&&(m.getData().getCode()!=null)) {
-		// println(m.getData().getCode());
-		// }
+			
+		String[] recipientCodes = getRecipientCodes(m);
+		this.println(m);
+		this.baseEntity.addAttributes(m.getBe());
+		this.publishBE(m.getBe(), recipientCodes);
+		this.setState("ATTRIBUTE_CHANGE2");
+		
 		if ((m.getData() != null) && ("MULTI_EVENT".equals(m.getData().getCode()))) {
-			/* rules.publishData(new QDataAnswerMessage($m.getAnswer())); */
-			String[] recipientCodes = getRecipientCodes(m);
-			println(m);
-			this.baseEntity.addAttributes(m.getBe());
-			publishBE(m.getBe(), recipientCodes);
-			setState("ATTRIBUTE_CHANGE2");
-			fireAttributeChanges(m);
-		} else if ((m.getData() != null) && (m.getData().getCode() != null)) {
-			/* publishData(new QDataAnswerMessage(m.getAnswer())); */
-			String[] recipientCodes = getRecipientCodes(m);
-			println(m);
-			this.baseEntity.addAttributes(m.getBe());
-			publishBE(m.getBe(), recipientCodes);
-			setState("ATTRIBUTE_CHANGE2");
-		}
+			this.fireAttributeChanges(m);
+		} 
 	}
 
 	public boolean hasRole(final String role) {
