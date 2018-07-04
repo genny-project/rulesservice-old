@@ -259,7 +259,7 @@ public class BaseEntityUtils {
 
 	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
 
-     /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
+    /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
 		List linkList = this.getLinkList(groupCode, linkCode, linkValue, this.token);
 		String quoterCodeForOffer = null;
 
