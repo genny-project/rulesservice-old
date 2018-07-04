@@ -253,23 +253,31 @@ public class BaseEntityUtils {
 		this.saveAnswers(answers, true);
 	}
 
+	
 	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
-			String token) {
-
+											Boolean includeHidden, String token) {
+	    /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
 		List linkList = this.getLinkList(groupCode, linkCode, linkValue, token);
 		String quoterCodeForOffer = null;
 
 		if (linkList != null) {
 
 			try {
-
 				for (Object linkObj : linkList) {
 
 					Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
+					BaseEntity offerBe = null;
+					if(!includeHidden) {
+						if(link.getWeight() != 0) {
+							offerBe = this.getBaseEntityByCode(link.getTargetCode());
+						}
+					}else {
+						offerBe = this.getBaseEntityByCode(link.getTargetCode());
+					}
 
-					BaseEntity offerBe = this.getBaseEntityByCode(link.getTargetCode());
+					//BaseEntity offerBe = this.getBaseEntityByCode(link.getTargetCode());
 
-					if (offerBe != null) {
+					if (offerBe != null && offerBe.getCode().startsWith("OFR_")) {
 
 						quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
 
@@ -736,9 +744,9 @@ public class BaseEntityUtils {
 			for (Link link : links) {
 				String linkVal = link.getLinkValue();
 
-				if (linkVal != null && linkVal.equals(linkValue)) {
+				if (linkVal != null && linkVal.equals(linkValue) && link.getTargetCode().equalsIgnoreCase(childCode)) {
 					Double linkWeight = link.getWeight();
-					if (linkWeight == 1.0) {
+					if (linkWeight >= 1.0) {
 						isLinkExists = true;
 						return isLinkExists;
 					}
@@ -1030,6 +1038,36 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 
+		return linkList;
+
+	}
+	
+	/* Returns only non-hidden links or all the links based on the includeHidden value */
+	public List getLinkList(String groupCode, String linkCode, String linkValue, Boolean includeHidden) {
+
+		// String qwandaServiceUrl = "http://localhost:8280";
+		BaseEntity be = getBaseEntityByCode(groupCode);
+		List<Link> links= getLinks(groupCode, linkCode);
+		
+		List linkList = null;
+		
+		if (links != null) {
+            for (Link link : links) {
+                String linkVal = link.getLinkValue();
+
+                if (linkVal != null && linkVal.equals(linkValue)) {
+                    Double linkWeight = link.getWeight();
+                    if(!includeHidden) {
+                     if (linkWeight >= 1.0) {  
+                    	   linkList.add(link);
+        
+                      }
+                    }else {
+                       linkList.add(link);
+                    }
+                }
+            }
+		}
 		return linkList;
 
 	}
