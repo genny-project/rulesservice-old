@@ -8639,4 +8639,9 @@ public class QRules {
 			return null;
 		}
 	}
+
+	public String transformToFileName(String inputName) {
+		return inputName.trim().toLowerCase().replaceAll("\\s+","-");
+	}
+
 }
