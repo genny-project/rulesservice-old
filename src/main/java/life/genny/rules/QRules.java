@@ -5059,8 +5059,9 @@ public class QRules {
 				getToken());
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		System.out.println("The result   ::  " + JsonUtils.toJson(msg));
-		publishData(new JsonObject(resultJson));
+		publishCmd(msg);
 	}
+	
 
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
 		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
@@ -5070,7 +5071,8 @@ public class QRules {
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
 		System.out.println("The result   ::  " + msg);
-		publishData(new JsonObject(resultJson));
+		publishCmd(msg);
+
 	}
 
 	/*
