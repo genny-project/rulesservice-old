@@ -200,11 +200,14 @@ public class BaseEntityUtils {
 		this.saveAnswers(answers, true);
 	}
 
-	
-	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
-											Boolean includeHidden, String token) {
-	    /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
-		List linkList = this.getLinkList(groupCode, linkCode, linkValue, token);
+  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+    return this.getOfferBaseEntity(groupCode, linkCode, linkValue, quoterCode, true);
+  }
+
+	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+
+    /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
+		List linkList = this.getLinkList(groupCode, linkCode, linkValue, this.token);
 		String quoterCodeForOffer = null;
 
 		if (linkList != null) {
@@ -988,16 +991,16 @@ public class BaseEntityUtils {
 		return linkList;
 
 	}
-	
+
 	/* Returns only non-hidden links or all the links based on the includeHidden value */
 	public List getLinkList(String groupCode, String linkCode, String linkValue, Boolean includeHidden) {
 
 		// String qwandaServiceUrl = "http://localhost:8280";
 		BaseEntity be = getBaseEntityByCode(groupCode);
 		List<Link> links= getLinks(groupCode, linkCode);
-		
+
 		List linkList = null;
-		
+
 		if (links != null) {
             for (Link link : links) {
                 String linkVal = link.getLinkValue();
@@ -1005,9 +1008,9 @@ public class BaseEntityUtils {
                 if (linkVal != null && linkVal.equals(linkValue)) {
                     Double linkWeight = link.getWeight();
                     if(!includeHidden) {
-                     if (linkWeight >= 1.0) {  
+                     if (linkWeight >= 1.0) {
                     	   linkList.add(link);
-        
+
                       }
                     }else {
                        linkList.add(link);
