@@ -200,7 +200,7 @@ public class BaseEntityUtils {
 		this.saveAnswers(answers, true);
 	}
 
-  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode) {
     return this.getOfferBaseEntity(groupCode, linkCode, linkValue, quoterCode, true);
   }
 
@@ -1184,6 +1184,7 @@ public class BaseEntityUtils {
 			e.printStackTrace();
 		}
 		return null;
+	}
 
 
   /*
