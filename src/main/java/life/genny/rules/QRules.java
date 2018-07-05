@@ -134,7 +134,7 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNY_DEV") == null ? false : true;
+	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -4745,13 +4745,7 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
-			try {
-				String str = JsonUtils.toJson(newBulkMsg);
-				JsonObject bulkJson = new JsonObject(str);
-				this.publishData(bulkJson);
-			} catch (Exception e) {
-				System.out.println("Error in JSON conversion");
-			}
+			this.publishCmd(newBulkMsg);
 
 		}
 	}
