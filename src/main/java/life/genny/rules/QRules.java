@@ -2751,7 +2751,7 @@ public void makePayment(QDataAnswerMessage m) {
                         }
                         println("rejected driver list ::"+rejectedDriver.toString());
                         String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
-                        sendMessage("", rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
                     }
 
                 }
@@ -3351,7 +3351,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		this.redirectToHomePage();
 //		this.reloadCache();
-		drools.setFocus("ispayments");  /* NOW Set up Payments */
+		//drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -3788,12 +3788,25 @@ public void makePayment(QDataAnswerMessage m) {
 		return previousLayout;
 	}
 
-	/* Sorting Offers of a beg as per the price, lowest price being on top */
+	/* Sorting Offers with linkWeight greater then 0 of a beg as per the price,
+	 * lowest price being on top
+	 *
+	 */
 	public void sortOffersInBeg(final String begCode) {
 
-		List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-		// println("All the Offers for the load " + begCode + " are: " +
-		// offers.toString());
+		//List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+		/* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
+		List<BaseEntity> offers = new ArrayList<BaseEntity>();
+		List<EntityEntity> allLinks = this.baseEntity.getLinks(begCode);
+		for(EntityEntity link : allLinks ) {
+			if(link.getWeight() != 0) {
+				Link beLink = link.getLink();
+				if(beLink.getTargetCode().startsWith("OFR")) {
+					offers.add( this.baseEntity.getBaseEntityByCode(beLink.getTargetCode()) );
+				}
+			}
+		}
+
 		if (offers.size() > 1) {
 			Collections.sort(offers, new Comparator<BaseEntity>() {
 				@Override
@@ -5524,6 +5537,103 @@ public void makePayment(QDataAnswerMessage m) {
 
 		return itemId;
 	}
+	
+	/*
+	 *  Creation of insurance payment item
+	 *  @param srcBe- has attribute which has amount for the transaction
+	 *         buyerBe & sellerBe - are the buyer and seller
+	 *         amountIncludingGSTAttributeCode - is the attribute code that has the amount including GST for payment
+	 *         paymentsToken - is the assembly payments token
+	 */
+	public String createPaymentItem(BaseEntity srcBe, BaseEntity buyerBe, BaseEntity sellerBe, 
+										String amountIncludingGSTAttributeCode, String paymentsToken) {
+		
+		String itemId = null;
+		BaseEntity begBe = null;
+		BaseEntity loadBe = null;
+		if ( srcBe != null && amountIncludingGSTAttributeCode != null) {
+			try {
+				
+				if(srcBe.getCode().startsWith("BEG_")) {
+					begBe = srcBe;					
+				} else if (srcBe.getCode().startsWith("OFR_")) {
+					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+				}
+				
+				loadBe =	 this.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);
+				//Money insuranceFeeIncludingGST = srcBe.getValue("PRI_INSURANCE_FEE_INC_GST", null);
+				Money amountIncludingGST = srcBe.getValue(amountIncludingGSTAttributeCode, null); 
+				/* If pricing calculation fails */
+				if (amountIncludingGST == null) {
+					throw new IllegalArgumentException(
+							"Something went wrong during pricing calculations. Price for item cannot be empty");
+				}
+
+				/* Convert dollars into cents */
+				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(amountIncludingGST);
+				/* Owner => Buyer */
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe);
+
+				/* Ch40 => Seller */
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe);
+
+				/* get item name */
+				String paymentsItemName = "Insurance Fee for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				println("payments item name ::" + paymentsItemName);
+
+				/* Not mandatory */
+				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+
+				try {
+					
+					/* bundling all the info into Item object */
+					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
+							PaymentTransactionType.express, roundedItemPriceInCents.getNumber().doubleValue(),
+							amountIncludingGST.getCurrency(), null, buyer, seller);
+					/* Hitting payments item creation API */
+					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
+							paymentsToken);
+
+					if (itemCreationResponse != null) {
+						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse,
+								QPaymentsAssemblyItemResponse.class);
+						itemId = itemResponsePojo.getId();
+					}
+
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);
+				}
+
+			} catch (IllegalArgumentException e) {
+
+				/* Redirect to home if item creation fails */
+				redirectToHomePage();
+
+				String jobId = begBe.getValue("PRI_JOB_ID", null);
+				BaseEntity userBe = getUser();
+
+				/* Send toast */
+				String toastMessage = "Insurance Payment item creation failed for the job with ID : #" + jobId + ", "
+						+ e.getMessage();
+
+				if (userBe != null) {
+					String[] recipientArr = { userBe.getCode() };
+					sendDirectToast(recipientArr, toastMessage, "warning");
+				}
+
+				/* Send slack notification */
+				sendSlackNotification(toastMessage);
+			}
+		} else {
+			String slackMessage = "Insurance Payment item creation would fail since begCode is null. BEG CODE : "
+					+ begBe.getCode();
+			sendSlackNotification(slackMessage);
+		}
+
+		return itemId;
+	}
+	
 
 	/* Creates a new fee in external payments-service from a offer baseEntity */
 	private String createPaymentFee(BaseEntity offerBe, String paymentsToken) throws IllegalArgumentException {
@@ -5613,6 +5723,87 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return isMakePaymentSuccess;
 	}
+	
+	/*
+	 *  @param: buyerBe - is the buyer BE, sellerBe - is the seller BE, srcBe - is the BaseEntity that has paymentAmount, 
+	 *          paymentItemIdAttributeCode - is the Assembly item code and
+	 *          paymentAmountAttributeCode - is the attribute code that holds the paymentAmount
+	 *          authToken - assembly token string
+	 */
+	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity srcBe, String paymentItemIdAttributeCode,
+			String paymentAmountAttributeCode, String authToken) {
+
+		Boolean isMakePaymentSuccess = false;
+		if (srcBe != null && buyerBe != null && sellerBe != null && paymentItemIdAttributeCode != null && 
+				paymentAmountAttributeCode != null ) {
+			String itemId = null;
+			BaseEntity begBe = null;
+			try {
+				if(srcBe.getCode().startsWith("BEG_")) {
+					begBe = srcBe;					
+				 } else if (srcBe.getCode().startsWith("OFR_")) {
+					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+				 }
+				
+				itemId = srcBe.getValue(paymentItemIdAttributeCode, null);
+				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe, paymentItemIdAttributeCode);
+
+				/* To get the type of payment (Bank account / card) */
+				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe,
+						makePaymentObj.getAccount().getId());
+
+				/*
+				 * if the payment type is bank account, there is another step of debit
+				 * authorization
+				 */
+				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
+				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
+					//debitAuthorityForBankAccount(srcBe, makePaymentObj, authToken);
+					debitAuthorityForBankAccount(srcBe, makePaymentObj, paymentAmountAttributeCode, authToken);
+				}
+
+				/* Step 2 for bankaccount : Make payment API call */
+				/* Step 1 for card : Make payment API call */
+				try {
+
+					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj),
+							authToken);
+					isMakePaymentSuccess = true;
+					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
+							QPaymentsAssemblyItemResponse.class);
+					
+					String paymentTitleIncomplete = paymentItemIdAttributeCode.replace("PRI_", "");					
+					String paymentTitleComplete = paymentTitleIncomplete.replace("_ITEM_ID", "");
+					System.out.println("The payment title is  :: "+paymentTitleComplete);
+
+					/* save deposit reference as an attribute to beg */
+					Answer depositReferenceAnswer = new Answer(srcBe.getCode(), srcBe.getCode(), "PRI_"+paymentTitleComplete+"_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
+					this.baseEntity.saveAnswer(depositReferenceAnswer);
+
+				} catch (PaymentException e) {
+					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+					throw new IllegalArgumentException(getFormattedErrorMessage);
+				}
+
+			} catch (IllegalArgumentException e) {
+				redirectToHomePage();
+				String begTitle = srcBe.getValue("PRI_TITLE", null);
+				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
+				String[] recipientArr = { buyerBe.getCode() };
+				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
+						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
+				sendDirectToast(recipientArr, toastMessage, "warning");
+				sendSlackNotification(
+						toastMessage + ". Job code : " + srcBe.getCode());
+			}
+		} else {
+			redirectToHomePage();
+			String slackMessage = "Processing payment for the job - " + srcBe.getCode()
+					+ " has failed. UserBE/BegBE is null. User code :" + buyerBe.getCode();
+			sendSlackNotification(slackMessage);
+		}
+		return isMakePaymentSuccess;
+	}
 
 	/*
 	 * bank account payments needs to go through one more API call - Debit authority
@@ -5631,6 +5822,37 @@ public void makePayment(QDataAnswerMessage m) {
 		try {
 			/* Get the rounded money in cents */
 			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
+
+			/* bundling the debit-authority object */
+			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
+					makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
+
+			/* API call for debit authorization for bank-account */
+			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
+
+		} catch (PaymentException e) {
+			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+			throw new IllegalArgumentException(getFormattedErrorMessage);
+		}
+	}
+	
+	/*
+	 * bank account payments needs to go through one more API call - Debit authority
+	 */
+	private void debitAuthorityForBankAccount(BaseEntity srcBe, QMakePayment makePaymentObj, String priceAttributeCode, String authToken)
+			throws IllegalArgumentException {
+
+		Money buyerPriceString = srcBe.getValue(priceAttributeCode, null);
+
+		/* if price calculation fails, we handle it */
+		if (buyerPriceString == null) {
+			throw new IllegalArgumentException(
+					"Something went wrong during pricing calculation. Item price cannot be empty");
+		}
+
+		try {
+			/* Get the rounded money in cents */
+			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(buyerPriceString);
 
 			/* bundling the debit-authority object */
 			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
@@ -6359,6 +6581,21 @@ public void makePayment(QDataAnswerMessage m) {
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
 		publishCmd(cmdViewJson);
+	}
+	
+	
+	public void setKeyValue(final String key, final String value) {
+		String sessionId = getAsString("session_state");
+		println("The Session Id is ::" + sessionId);
+		println("The key is :: " + key + " and value is::  " + value);
+		//Object obj = value;
+		VertxUtils.putObject(realm(), key, sessionId, value);
+	}
+
+	public String getKeyValue(final String key) {
+		String sessionId = getAsString("session_state");
+		String value = VertxUtils.getObject(realm(), key, sessionId, String.class);
+		return value;
 	}
 
 }
