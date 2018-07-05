@@ -200,23 +200,34 @@ public class BaseEntityUtils {
 		this.saveAnswers(answers, true);
 	}
 
-	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode,
-			String token) {
+  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+    return this.getOfferBaseEntity(groupCode, linkCode, linkValue, quoterCode, true);
+  }
 
-		List linkList = this.getLinkList(groupCode, linkCode, linkValue, token);
+	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+
+    /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
+		List linkList = this.getLinkList(groupCode, linkCode, linkValue, this.token);
 		String quoterCodeForOffer = null;
 
 		if (linkList != null) {
 
 			try {
-
 				for (Object linkObj : linkList) {
 
 					Link link = JsonUtils.fromJson(linkObj.toString(), Link.class);
+					BaseEntity offerBe = null;
+					if(!includeHidden) {
+						if(link.getWeight() != 0) {
+							offerBe = this.getBaseEntityByCode(link.getTargetCode());
+						}
+					}else {
+						offerBe = this.getBaseEntityByCode(link.getTargetCode());
+					}
 
-					BaseEntity offerBe = this.getBaseEntityByCode(link.getTargetCode());
+					//BaseEntity offerBe = this.getBaseEntityByCode(link.getTargetCode());
 
-					if (offerBe != null) {
+					if (offerBe != null && offerBe.getCode().startsWith("OFR_")) {
 
 						quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
 
@@ -683,9 +694,9 @@ public class BaseEntityUtils {
 			for (Link link : links) {
 				String linkVal = link.getLinkValue();
 
-				if (linkVal != null && linkVal.equals(linkValue)) {
+				if (linkVal != null && linkVal.equals(linkValue) && link.getTargetCode().equalsIgnoreCase(childCode)) {
 					Double linkWeight = link.getWeight();
-					if (linkWeight == 1.0) {
+					if (linkWeight >= 1.0) {
 						isLinkExists = true;
 						return isLinkExists;
 					}
@@ -981,6 +992,36 @@ public class BaseEntityUtils {
 
 	}
 
+	/* Returns only non-hidden links or all the links based on the includeHidden value */
+	public List getLinkList(String groupCode, String linkCode, String linkValue, Boolean includeHidden) {
+
+		// String qwandaServiceUrl = "http://localhost:8280";
+		BaseEntity be = getBaseEntityByCode(groupCode);
+		List<Link> links= getLinks(groupCode, linkCode);
+
+		List linkList = null;
+
+		if (links != null) {
+            for (Link link : links) {
+                String linkVal = link.getLinkValue();
+
+                if (linkVal != null && linkVal.equals(linkValue)) {
+                    Double linkWeight = link.getWeight();
+                    if(!includeHidden) {
+                     if (linkWeight >= 1.0) {
+                    	   linkList.add(link);
+
+                      }
+                    }else {
+                       linkList.add(link);
+                    }
+                }
+            }
+		}
+		return linkList;
+
+	}
+
 	/*
 	 * Sorting Columns of a SearchEntity as per the weight in either Ascening or
 	 * descending order
@@ -1100,30 +1141,30 @@ public class BaseEntityUtils {
 
 		return null;
 	}
-	
+
 	/*
-	 * copy all the attributes from one BE to another BE 
-	 * sourceBe : FROM 
+	 * copy all the attributes from one BE to another BE
+	 * sourceBe : FROM
 	 * targetBe : TO
 	 */
 	public BaseEntity copyAttributes(final BaseEntity sourceBe, final BaseEntity targetBe) {
-		
+
 		Map<String, String> map = new HashMap<>();
 		map = getMapOfAllAttributesValuesForBaseEntity(sourceBe.getCode());
 		RulesUtils.ruleLogger("MAP DATA   ::   ", map);
 
 		List<Answer> answers = new ArrayList<Answer>();
 		try{
-			for (Map.Entry<String, String> entry : map.entrySet()){	
+			for (Map.Entry<String, String> entry : map.entrySet()){
 				Answer answerObj = new Answer(sourceBe.getCode(), targetBe.getCode(), entry.getKey(), entry.getValue() );
 				answers.add(answerObj);
-			}   
-			saveAnswers(answers);              
+			}
+			saveAnswers(answers);
 		} catch (Exception e) {}
 
 		return getBaseEntityByCode(targetBe.getCode());
 	}
-	
+
 	public String removeLink(final String parentCode, final String childCode, final String linkCode) {
 		Link link = new Link(parentCode, childCode, linkCode);
 		try {
@@ -1144,5 +1185,41 @@ public class BaseEntityUtils {
 		}
 		return null;
 
+
+  /*
+	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
+	 */
+	public String getAllChildCodes(final String parentCode, final String linkCode) {
+		String childs = null;
+		List<String> childBECodeList = new ArrayList<String>();
+		List<BaseEntity> childBE = this.getLinkedBaseEntities( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  childBECodeList.add(be.getCode());
+		  }
+		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childs = "["+childs+"]";
+		}
+
+		return childs;
+	}
+
+	/* Get array String value from an attribute of the BE  */
+	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+
+		String myLoadTypes = be.getValue(attributeCode, null);
+
+		if (myLoadTypes != null) {
+			List<String> loadTypesList = new ArrayList<String>();
+			/* Removing brackets "[]" and double quotes from the strings */
+			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
+			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+			    loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			    return loadTypesList;
+			}else {
+				return null;
+			}
+		} else
+			return null;
 	}
 }
