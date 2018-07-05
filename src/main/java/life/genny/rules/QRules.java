@@ -8440,7 +8440,7 @@ public class QRules {
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", "SYSTEM"));
 		
-		Double longitudeDouble = this.getUser().getValue("PRI_POSITION_LONGITUDE", null);
+		/* Double longitudeDouble = this.getUser().getValue("PRI_POSITION_LONGITUDE", null);
 		Double latitudeDouble = this.getUser().getValue("PRI_POSITION_LATITUDE", null);
 		
 		String longitude = String.valueOf(longitudeDouble);
@@ -8454,7 +8454,7 @@ public class QRules {
 		if (latitude != null) {
 			println("longitude" +latitude);
 			answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_POSITION_LATITUDE", latitude));
-		}
+		} */
 		saveAnswers(answers);
 
 		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
