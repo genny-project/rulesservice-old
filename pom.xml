@@ -15,8 +15,7 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.41</qwanda-utils.version>
-		<genny-verticle.version>1.0.41</genny-verticle.version>
+		<genny-verticle.version>1.0.42</genny-verticle.version>
 
                 <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
@@ -60,11 +59,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>life.genny</groupId>
-			<artifactId>qwanda-utils</artifactId>
-			<version>${qwanda-utils.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
