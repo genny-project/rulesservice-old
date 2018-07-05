@@ -3300,11 +3300,12 @@ public void makePayment(QDataAnswerMessage m) {
 				/* we send the questions */
 				try {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
-					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
+					QwandaMessage message = this.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
 					this.publishCmd(message);
 
-				} catch (Exception e) {
-//					e.printStackTrace();
+				} 
+				catch (Exception e) {
+					this.println(e.getMessage());
 				}
 
 				/* we send the layout */
