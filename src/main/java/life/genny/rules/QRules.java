@@ -166,8 +166,8 @@ public class QRules {
 	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
 
-	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
-			String state) {
+	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap, String state) {
+		
 		super();
 		this.eventBus = eventBus;
 		this.token = token;
@@ -537,14 +537,15 @@ public class QRules {
 		return status;
 	}
 
-	// Check if Mobile Verification has been completed
 	public Boolean isMobileVerificationCompleted() {
+		
 		Boolean status = true;
 		Boolean value = null;
 		try {
 			value = getUser().getValue("PRI_MOBILE_VERIFICATION_COMPLETED", null);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
+			this.println(e.getMessage());
 		}
 
 		if (value == null || !value) {
@@ -555,8 +556,6 @@ public class QRules {
 	}
 
 	public void publishBaseEntityByCode(final String be) {
-		//String[] recipientArray = new String[1];
-		//recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, null);
 	}
 
@@ -698,7 +697,6 @@ public class QRules {
 
 			this.println("Archiving done.");
 			this.reloadCache();
-
 		}
 		else {
 			this.println("Could not get token.");
@@ -718,7 +716,8 @@ public class QRules {
 			post.setEntity(input);
 
 			client.execute(post);
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			this.println(e);
 		}
 	}
@@ -815,7 +814,8 @@ public class QRules {
 			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
 			this.sendSlackNotification(message);
 
-		} catch (IOException e) {
+		} 
+    		catch (IOException e) {
 			this.sendToastNotification(e.getMessage(), "error");
 		}
 
