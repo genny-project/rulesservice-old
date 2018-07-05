@@ -8429,6 +8429,8 @@ public class QRules {
 	public BaseEntity createNote() {
 
 		BaseEntity note = this.createBaseEntityByCode(this.getUser().getCode(), "NOT", "NOTE");
+		
+		
 
 		List<Answer> answers = new ArrayList<Answer>();
 		// answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT",
@@ -8437,6 +8439,22 @@ public class QRules {
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", "SYSTEM"));
+		
+		Double longitudeDouble = this.getUser().getValue("PRI_POSITION_LONGITUDE", null);
+		Double latitudeDouble = this.getUser().getValue("PRI_POSITION_LATITUDE", null);
+		
+		String longitude = String.valueOf(longitudeDouble);
+		String latitude = String.valueOf(latitudeDouble);
+		
+		if (longitude != null) {
+			println("longitude" +longitude);
+			answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_POSITION_LONGITUDE", longitude));
+		}
+
+		if (latitude != null) {
+			println("longitude" +latitude);
+			answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_POSITION_LATITUDE", latitude));
+		}
 		saveAnswers(answers);
 
 		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
