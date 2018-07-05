@@ -35,9 +35,10 @@ rule "Create New Role - Step 4 - Submit"
         			BaseEntity company = rules.getUserCompany();
 
         			if(roleName != null && capabilities != null && company != null) {
-
+        				
         				/* we get an array of capabilities */
         				capabilities = capabilities.replaceAll("[\\[\\](){}]", "").replaceAll("\"", "");
+        				
         				String[] capabilitiesArray = capabilities.split(",");
 
         				/* we add the capabilities to the role */

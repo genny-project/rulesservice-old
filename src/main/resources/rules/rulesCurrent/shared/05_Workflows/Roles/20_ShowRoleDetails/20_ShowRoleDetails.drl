@@ -17,7 +17,7 @@ rule "Show Role Details - Step 2"
         if(selectedRole != null) {
         		
         		/* we send the questions */
-    			rules.sendQuestions(rules.getUser().getCode(), selectedRole.getCode(), "QUE_ROLE_GRP", false);
+    			rules.sendQuestions(rules.getUser().getCode(), selectedRole.getCode(), "QUE_ROLE_DETAILS_GRP", false);
         	
         		/* we show the layout with the updated root code */
             rules.sendSublayout("company_role_sublayout", "/company/company_settings.json", selectedRole.getCode());
