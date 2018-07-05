@@ -3007,9 +3007,9 @@ public void makePayment(QDataAnswerMessage m) {
 
   public void clearBaseEntity(String baseEntityCode) {
 
-    //String[] recipients = new String[1];
-    //recipients[0] = this.getUser().getCode();
-    this.clearBaseEntity(baseEntityCode, null);
+    String[] recipients = new String[1];
+    recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, recipients);
   }
 
    /* clears baseEntity and all its children linked  */
@@ -3433,10 +3433,10 @@ public void makePayment(QDataAnswerMessage m) {
 					/* we link the load to the user */
 					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-	    /* we push the job to the creator */
-	    String[] creatorRecipient = { getUser().getCode() };
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+					/* we push the job to the creator */
+					String[] creatorRecipient = { getUser().getCode() };
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
 					/* SEND LOAD BE */
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
@@ -3469,22 +3469,6 @@ public void makePayment(QDataAnswerMessage m) {
 					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
 
