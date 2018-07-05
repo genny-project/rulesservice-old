@@ -26,8 +26,6 @@ ruleflow-group 'Answer'
 			if(attributeCode.contains("ADDRESS_JSON")) {
 				answersToSave.addAll(rules.processAddressAnswers($m));
 			}
-
-			/* === TODO: this is channel40 specific code. should be moved to ch40 folder === */
 			else if(attributeCode.contains("PRI_RATING")) {
 				rules.processAnswerRating($m, "PRI_DRIVER_RATING");
 			}
