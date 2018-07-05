@@ -11,12 +11,12 @@ rule "Send Roles"
          rules: QRules( isState("SEND_ROLES") && !isState("SENT_ROLES") )
      then
      	rules.header();
-      rules.setState("SENT_ROLES");
+		rules.setState("SENT_ROLES");
 
      	QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(rules.realm(), "ROLES", rules.realm(), QDataBaseEntityMessage.class);
 
         if(rolesMsg != null) {
-        rules.println("Sending "+rolesMsg.getItems().length +" Roles  ");
+        		rules.println("Sending "+rolesMsg.getItems().length +" Roles  ");
             rules.publishCmd(rolesMsg);
         }
 

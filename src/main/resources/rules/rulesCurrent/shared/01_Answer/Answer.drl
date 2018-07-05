@@ -44,6 +44,10 @@ ruleflow-group 'Answer'
 			else if(attributeCode.equals("PRI_MESSAGE")) {
 				rules.processAnswerMessage($m);
 			}
+			/* TODO: remove this. patch to fix this issue where cache is not up to date when receiving this answer */
+			else if(attributeCode.equals("LNK_SELECT_CAPABILITY")) {
+				rules.reloadCache();
+			}
 			else if(attributeCode.contains("PRI_PAYMENT_METHOD") && !rules.isState("PAYMENT_ANSWER")) {
 				rules.setState("PAYMENT_ANSWER");
 				drools.setFocus("makepayment");

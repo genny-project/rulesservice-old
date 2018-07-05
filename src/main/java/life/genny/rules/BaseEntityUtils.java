@@ -318,10 +318,12 @@ public class BaseEntityUtils {
 			be = VertxUtils.readFromDDT(code, withAttributes, this.token);
 			if (be == null) {
 				System.out.println("ERROR - be (" + code + ") fetched is NULL ");
-			} else {
+			} 
+			else {
 				this.addAttributes(be);
 			}
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			System.out.println("Failed to read cache for " + code);
 		}
 
@@ -580,7 +582,7 @@ public class BaseEntityUtils {
 
 	public List<EntityEntity> getLinks(String beCode) {
 
-		List<EntityEntity> links = new ArrayList<EntityEntity>();
+		List<EntityEntity> links = new ArrayList<>();
 		BaseEntity be = this.getBaseEntityByCode(beCode);
 		if (be != null) {
 
@@ -594,7 +596,7 @@ public class BaseEntityUtils {
 	public BaseEntity getLinkedBaseEntity(String beCode, String linkCode, String linkValue) {
 
 		List<BaseEntity> bes = this.getLinkedBaseEntities(beCode, linkCode, linkValue);
-		if (bes != null && bes.size() > 0) {
+		if (bes != null && !bes.isEmpty()) {
 			return bes.get(0);
 		}
 
@@ -623,7 +625,7 @@ public class BaseEntityUtils {
 
 	public List<BaseEntity> getLinkedBaseEntities(String beCode, String linkCode, String linkValue) {
 
-		List<BaseEntity> linkedBaseEntities = new ArrayList<BaseEntity>();
+		List<BaseEntity> linkedBaseEntities = new ArrayList<>();
 		try {
 
 			/* We grab all the links from the node passed as a parameter "beCode" */
@@ -655,13 +657,15 @@ public class BaseEntityUtils {
 												&& entityLink.getLinkValue().equals(linkValue)) {
 											linkedBaseEntities.add(targetBe);
 										}
-									} else {
+									} 
+									else {
 
 										/* If no link value was provided we just pass the base entity */
 										linkedBaseEntities.add(targetBe);
 									}
 								}
-							} else {
+							} 
+							else {
 
 								/* If not linkCode was provided we just pass the base entity */
 								linkedBaseEntities.add(targetBe);
@@ -671,8 +675,9 @@ public class BaseEntityUtils {
 				}
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		} 
+		catch (Exception e) {
+			System.out.println(e.getMessage());
 			return null;
 		}
 
@@ -682,7 +687,7 @@ public class BaseEntityUtils {
 	public List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level) {
 
 		if (level == 0) {
-			return null; // exit point;
+			return null; 
 		}
 
 		level--;
