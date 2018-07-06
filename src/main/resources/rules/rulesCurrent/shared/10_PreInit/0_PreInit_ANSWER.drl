@@ -29,12 +29,13 @@ rule "Pre Init Answer"
 		 	    rules.set("value", value);
 		 	    
 		 	    rules.setState(attributeCode);
-		 	}
-		 		 	
+		 	    rules.set(attributeCode, firstAnswer);
+		 	}	 	
 		 }
        
         rules.setState("DATA_ANSWER");
         rules.setState("STARTED");
+        rules.setState("ANSWER");
         
         drools.setFocus("Answer");
 end
