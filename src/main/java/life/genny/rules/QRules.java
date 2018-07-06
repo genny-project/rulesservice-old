@@ -3492,11 +3492,7 @@ public void makePayment(QDataAnswerMessage m) {
 		this.baseEntity.addAttributes(m.getBe());
 		publishBE(m.getBe(), recipientCodes);
 		setState("ATTRIBUTE_CHANGE2");
-		
-		/* if the base entity being moved is a BE we reload the cache */
-		if(m.getBe().getCode().startsWith("BEG")) {
-			this.reloadCache();
-		}
+
 		if ((m.getData() != null) && ("MULTI_EVENT".equals(m.getData().getCode()))) {
 			fireAttributeChanges(m);
 		} 
