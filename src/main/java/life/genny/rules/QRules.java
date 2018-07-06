@@ -3475,38 +3475,27 @@ public void makePayment(QDataAnswerMessage m) {
 
 					}
 
-					this.reloadCache();
-					drools.setFocus("ispayments"); /* NOW Set up Payments */
+					//drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
 
 		}
 
 		this.redirectToHomePage();
-//		this.reloadCache();
 		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
-		// if ((m.getData() != null)&&(m.getData().getCode()!=null)) {
-		// println(m.getData().getCode());
-		// }
+		
+		String[] recipientCodes = getRecipientCodes(m);
+		println(m);
+		this.baseEntity.addAttributes(m.getBe());
+		publishBE(m.getBe(), recipientCodes);
+		setState("ATTRIBUTE_CHANGE2");
+
 		if ((m.getData() != null) && ("MULTI_EVENT".equals(m.getData().getCode()))) {
-			/* rules.publishData(new QDataAnswerMessage($m.getAnswer())); */
-			String[] recipientCodes = getRecipientCodes(m);
-			println(m);
-			this.baseEntity.addAttributes(m.getBe());
-			publishBE(m.getBe(), recipientCodes);
-			setState("ATTRIBUTE_CHANGE2");
 			fireAttributeChanges(m);
-		} else if ((m.getData() != null) && (m.getData().getCode() != null)) {
-			/* publishData(new QDataAnswerMessage(m.getAnswer())); */
-			String[] recipientCodes = getRecipientCodes(m);
-			println(m);
-			this.baseEntity.addAttributes(m.getBe());
-			publishBE(m.getBe(), recipientCodes);
-			setState("ATTRIBUTE_CHANGE2");
-		}
+		} 
 	}
 
 	public boolean hasRole(final String role) {
