@@ -437,6 +437,12 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getUserCompany() {
+
+		BaseEntity company = this.baseEntity.getParent(this.getUser().getCode(), "LNK_STAFF");
+		return company;
+	}
+
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
 
@@ -3300,10 +3306,11 @@ public void makePayment(QDataAnswerMessage m) {
 				/* we send the questions */
 				try {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
-					QwandaMessage message = this.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
+
+          QwandaMessage message = this.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
 					this.publishCmd(message);
 
-				} 
+				}
 				catch (Exception e) {
 					this.println(e.getMessage());
 				}
@@ -3412,9 +3419,12 @@ public void makePayment(QDataAnswerMessage m) {
 					 */
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+
 					publishData(newJobDetails, recipientCodes);
+
 					/* publishing to Owner */
-					publishBE(newJobDetails);
+					//publishBE(newJobDetails);
+					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
@@ -3465,7 +3475,6 @@ public void makePayment(QDataAnswerMessage m) {
 
 					}
 
-					this.redirectToHomePage();
 					this.reloadCache();
 					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
@@ -6060,12 +6069,15 @@ public void makePayment(QDataAnswerMessage m) {
 						token);
 				// update all the roles that use this attribute by reloading them into cache
 				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
-				for (BaseEntity role : rolesMsg.getItems()) {
-					role.removeAttribute(toBeRemovedCapability.getCode());
-					// Now update the db role to only have the attributes we want left
-					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+        if(rolesMsg != null) {
 
-				}
+          for (BaseEntity role : rolesMsg.getItems()) {
+  					role.removeAttribute(toBeRemovedCapability.getCode());
+  					// Now update the db role to only have the attributes we want left
+  					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+
+  				}
+        }
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
