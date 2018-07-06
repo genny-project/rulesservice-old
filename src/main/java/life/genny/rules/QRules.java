@@ -692,8 +692,8 @@ public class QRules {
 					LocalDateTime lastWeek = now.minusWeeks(1);
 
 					/* we grab the paid date */
-					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_IS_RELEASE_PAYMENT_DONE");
-					if (paidDate.isPresent()) {
+					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_PAYMENT_STATUS");
+					if (paidDate.isPresent() && paidDate.get().getValueString() != null && paidDate.get().getValueString().equals("ITEM_PAYMENT_COMPLETED")) {
 
 						LocalDateTime created = paidDate.get().getCreated();
 						if (created.isBefore(lastWeek)) {
