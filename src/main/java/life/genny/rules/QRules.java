@@ -437,6 +437,12 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity getUserCompany() {
+
+		BaseEntity company = this.baseEntity.getParent(this.getUser().getCode(), "LNK_STAFF");
+		return company;
+	}
+
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
 
@@ -3007,9 +3013,9 @@ public void makePayment(QDataAnswerMessage m) {
 
   public void clearBaseEntity(String baseEntityCode) {
 
-    //String[] recipients = new String[1];
-    //recipients[0] = this.getUser().getCode();
-    this.clearBaseEntity(baseEntityCode, null);
+    String[] recipients = new String[1];
+    recipients[0] = this.getUser().getCode();
+    this.clearBaseEntity(baseEntityCode, recipients);
   }
 
    /* clears baseEntity and all its children linked  */
@@ -3300,11 +3306,12 @@ public void makePayment(QDataAnswerMessage m) {
 				/* we send the questions */
 				try {
 					/*sendQuestions(userCode, driverCode, "QUE_USER_RATING_GRP"); */
-					QwandaMessage message = QwandaUtils.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP", this.token);
+					QwandaMessage message = this.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
 					this.publishCmd(message);
 
-				} catch (Exception e) {
-//					e.printStackTrace();
+				}
+				catch (Exception e) {
+					this.println(e.getMessage());
 				}
 
 				/* we send the layout */
@@ -3411,9 +3418,12 @@ public void makePayment(QDataAnswerMessage m) {
 					 */
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+
 					publishData(newJobDetails, recipientCodes);
+
 					/* publishing to Owner */
-					publishBE(newJobDetails);
+					//publishBE(newJobDetails);
+					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
@@ -3433,10 +3443,10 @@ public void makePayment(QDataAnswerMessage m) {
 					/* we link the load to the user */
 					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
 
-	    /* we push the job to the creator */
-	    String[] creatorRecipient = { getUser().getCode() };
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
-	    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
+					/* we push the job to the creator */
+					String[] creatorRecipient = { getUser().getCode() };
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
 					/* SEND LOAD BE */
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
@@ -3464,27 +3474,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 					}
 
-					this.redirectToHomePage();
 					this.reloadCache();
 					drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
-
-			int i = 0;
-			String[] stakeholderArr = new String[sellersBe.size()];
-			for (BaseEntity stakeholderBe : sellersBe) {
-				stakeholderArr[i] = stakeholderBe.getCode();
-				i++;
-			}
-
-			println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-
-			/* Sending toast message to owner frontend */
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
-
-			/* Sending message to BEG OWNER */
-
-			sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 		}
 
@@ -6075,12 +6068,15 @@ public void makePayment(QDataAnswerMessage m) {
 						token);
 				// update all the roles that use this attribute by reloading them into cache
 				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
-				for (BaseEntity role : rolesMsg.getItems()) {
-					role.removeAttribute(toBeRemovedCapability.getCode());
-					// Now update the db role to only have the attributes we want left
-					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+        if(rolesMsg != null) {
 
-				}
+          for (BaseEntity role : rolesMsg.getItems()) {
+  					role.removeAttribute(toBeRemovedCapability.getCode());
+  					// Now update the db role to only have the attributes we want left
+  					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+
+  				}
+        }
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
