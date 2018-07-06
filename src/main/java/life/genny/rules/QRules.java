@@ -3245,10 +3245,11 @@ public void makePayment(QDataAnswerMessage m) {
 		 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 		 */
 
-		BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
+	/*	BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
 		Long jobId = updatedJob.getId();
 		answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
-		this.baseEntity.saveAnswers(answers);
+		this.baseEntity.saveAnswers(answers); 
+		---->>> Moved to CreateJob.drl   */
 
 		/* Determine the recipient code */
 		String[] recipientCodes = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
@@ -5546,11 +5547,12 @@ public void makePayment(QDataAnswerMessage m) {
 	 *         paymentsToken - is the assembly payments token
 	 */
 	public String createPaymentItem(BaseEntity srcBe, BaseEntity buyerBe, BaseEntity sellerBe, 
-										String amountIncludingGSTAttributeCode, String paymentsToken) {
+										String amountIncludingGSTAttributeCode, String paymentTitle, String paymentsToken) {
 		
 		String itemId = null;
 		BaseEntity begBe = null;
 		BaseEntity loadBe = null;
+		Boolean isThereFee = false;
 		if ( srcBe != null && amountIncludingGSTAttributeCode != null) {
 			try {
 				
@@ -5558,10 +5560,11 @@ public void makePayment(QDataAnswerMessage m) {
 					begBe = srcBe;					
 				} else if (srcBe.getCode().startsWith("OFR_")) {
 					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+					isThereFee = true;
 				}
 				
 				loadBe =	 this.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);
-				//Money insuranceFeeIncludingGST = srcBe.getValue("PRI_INSURANCE_FEE_INC_GST", null);
+				
 				Money amountIncludingGST = srcBe.getValue(amountIncludingGSTAttributeCode, null); 
 				/* If pricing calculation fails */
 				if (amountIncludingGST == null) {
@@ -5578,8 +5581,14 @@ public void makePayment(QDataAnswerMessage m) {
 				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe);
 
 				/* get item name */
-				String paymentsItemName = "Insurance Fee for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				String paymentsItemName = null;
+				if(paymentTitle.equalsIgnoreCase("JOB_OFFER")) {
+					paymentsItemName ="Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				}else {
+					paymentsItemName = paymentTitle+" Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);					
+				}
 				println("payments item name ::" + paymentsItemName);
+				 
 
 				/* Not mandatory */
 				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
@@ -5587,9 +5596,22 @@ public void makePayment(QDataAnswerMessage m) {
 				try {
 					
 					/* bundling all the info into Item object */
-					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
-							PaymentTransactionType.express, roundedItemPriceInCents.getNumber().doubleValue(),
-							amountIncludingGST.getCurrency(), null, buyer, seller);
+					QPaymentsItem item = null;
+					if(isThereFee) {
+						/* get fee */
+						String paymentFeeId = createPaymentFee(srcBe, paymentsToken);
+						System.out.println("payment fee Id ::" + paymentFeeId);
+						String[] feeArr = { paymentFeeId };
+						
+					    item = new QPaymentsItem(paymentsItemName, begDescription,
+								PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
+								amountIncludingGST.getCurrency(), feeArr, buyer, seller);
+					}else {					
+					
+						 item = new QPaymentsItem(paymentsItemName, begDescription,
+								PaymentTransactionType.express, roundedItemPriceInCents.getNumber().doubleValue(),
+								amountIncludingGST.getCurrency(), null, buyer, seller);
+					}
 					/* Hitting payments item creation API */
 					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
 							paymentsToken);
@@ -5614,7 +5636,7 @@ public void makePayment(QDataAnswerMessage m) {
 				BaseEntity userBe = getUser();
 
 				/* Send toast */
-				String toastMessage = "Insurance Payment item creation failed for the job with ID : #" + jobId + ", "
+				String toastMessage = paymentTitle+" Payment item creation failed for the job with ID : #" + jobId + ", "
 						+ e.getMessage();
 
 				if (userBe != null) {
@@ -5626,7 +5648,7 @@ public void makePayment(QDataAnswerMessage m) {
 				sendSlackNotification(toastMessage);
 			}
 		} else {
-			String slackMessage = "Insurance Payment item creation would fail since begCode is null. BEG CODE : "
+			String slackMessage = paymentTitle+" Payment item creation would fail since begCode is null. BEG CODE : "
 					+ begBe.getCode();
 			sendSlackNotification(slackMessage);
 		}
@@ -5731,18 +5753,23 @@ public void makePayment(QDataAnswerMessage m) {
 	 *          authToken - assembly token string
 	 */
 	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity srcBe, String paymentItemIdAttributeCode,
-			String paymentAmountAttributeCode, String authToken) {
+			String paymentAmountAttributeCode, String paymentTitle,  String authToken) {
 
 		Boolean isMakePaymentSuccess = false;
 		if (srcBe != null && buyerBe != null && sellerBe != null && paymentItemIdAttributeCode != null && 
 				paymentAmountAttributeCode != null ) {
 			String itemId = null;
+			//String paymentTitleComplete = null;
 			BaseEntity begBe = null;
 			try {
 				if(srcBe.getCode().startsWith("BEG_")) {
-					begBe = srcBe;					
+					begBe = srcBe;	
+					//String paymentTitleIncomplete = paymentItemIdAttributeCode.replace("PRI_", "");					
+					//paymentTitleComplete = paymentTitleIncomplete.replace("_ITEM_ID", "");
+					//System.out.println("The payment title is  :: "+paymentTitleComplete);
 				 } else if (srcBe.getCode().startsWith("OFR_")) {
 					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+					//paymentTitleComplete = "JOB PRICE";
 				 }
 				
 				itemId = srcBe.getValue(paymentItemIdAttributeCode, null);
@@ -5771,13 +5798,14 @@ public void makePayment(QDataAnswerMessage m) {
 					isMakePaymentSuccess = true;
 					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
 							QPaymentsAssemblyItemResponse.class);
-					
-					String paymentTitleIncomplete = paymentItemIdAttributeCode.replace("PRI_", "");					
-					String paymentTitleComplete = paymentTitleIncomplete.replace("_ITEM_ID", "");
-					System.out.println("The payment title is  :: "+paymentTitleComplete);
-
+					String paymentDepositRefIdAttribute = null;
+                      if(!paymentTitle.equalsIgnoreCase("JOB_OFFER")) {
+                    	  	paymentDepositRefIdAttribute = "PRI_"+paymentTitle+"_DEPOSIT_REFERENCE_ID";
+                      }else {
+                    	  paymentDepositRefIdAttribute = "PRI_DEPOSIT_REFERENCE_ID";
+                      }
 					/* save deposit reference as an attribute to beg */
-					Answer depositReferenceAnswer = new Answer(srcBe.getCode(), srcBe.getCode(), "PRI_"+paymentTitleComplete+"_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
+					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), paymentDepositRefIdAttribute, makePaymentResponseObj.getDepositReference());
 					this.baseEntity.saveAnswer(depositReferenceAnswer);
 
 				} catch (PaymentException e) {
@@ -5786,7 +5814,7 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 
 			} catch (IllegalArgumentException e) {
-				redirectToHomePage();
+				//redirectToHomePage();
 				String begTitle = srcBe.getValue("PRI_TITLE", null);
 				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
 				String[] recipientArr = { buyerBe.getCode() };
@@ -5797,7 +5825,7 @@ public void makePayment(QDataAnswerMessage m) {
 						toastMessage + ". Job code : " + srcBe.getCode());
 			}
 		} else {
-			redirectToHomePage();
+			//redirectToHomePage();
 			String slackMessage = "Processing payment for the job - " + srcBe.getCode()
 					+ " has failed. UserBE/BegBE is null. User code :" + buyerBe.getCode();
 			sendSlackNotification(slackMessage);
@@ -6597,5 +6625,9 @@ public void makePayment(QDataAnswerMessage m) {
 		String value = VertxUtils.getObject(realm(), key, sessionId, String.class);
 		return value;
 	}
+	
+	
+	
+
 
 }
