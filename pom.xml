@@ -25,6 +25,7 @@
 		<version.resteasy>3.0.10.Final</version.resteasy>
 		<resteasy.version>3.0.9.Final</resteasy.version>
 		<hazelcast.version>3.9.3</hazelcast.version>
+		<apache-httpclient.version>4.5.5</apache-httpclient.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -41,6 +42,12 @@
 		</repository>
 	</repositories>
 	<dependencies>
+	<dependency>
+    		<groupId>org.apache.httpcomponents</groupId>
+    		<artifactId>httpclient</artifactId>
+    		<version>${apache-httpclient.version}</version>
+	</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

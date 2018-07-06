@@ -13,12 +13,12 @@ rule "Pre Init Btn Click"
      then
         rules.setDrools(drools);
         rules.println("RULE INIT BTN_CLICK: "+m);
-       
+
         String btnCode = m.getData().getCode();
         String dataString = m.getData().getValue();
-        
+
         try {
-        
+
             JsonObject dataJson = new JsonObject(dataString);
 
             /* Get targetCode */
@@ -29,44 +29,48 @@ rule "Pre Init Btn Click"
             String itemCode = dataJson.getString("itemCode");
             rules.println("itemCode   ::   " + itemCode);
 
-            /* Get itemCode */
+            /* Get hint */
             String hintCode = dataJson.getString("hint");
             if(hintCode == null) {
             		hintCode = dataJson.getString("hintCode");
             }
-            
+
             rules.println("hintCode   ::   " + hintCode);
 
             /* Get actionCode */
             String actionCode = dataJson.getString("action");
             rules.println("actionCode   ::   " + actionCode);
-            
+
             /* Get message */
             String message = dataJson.getString("message");
             rules.println("message   ::   " + message);
 
+           /* Get userCode */
+           String userCode = dataJson.getString("userCode");
+           rules.println("userCode  ::  " + userCode);
+
           if(targetCode != null) {
             rules.set("quesTargetCode", targetCode);
           }
-          
+
           if(itemCode != null) {
             rules.set("itemCode", itemCode);
           }
-          
+
           if(hintCode != null) {
             rules.set("hintCode", hintCode);
           }
-          
+
           if(message != null) {
               rules.set("message", message);
-            }
+          }
         }
         catch( Exception e) {}
 
         if(btnCode != null) {
           rules.setState(btnCode);
         }
-        
+
         rules.setState("STARTED");
         rules.setState("EVENT_BTN_CLICK");
 

@@ -7,6 +7,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -168,6 +170,13 @@ public class FeeCalculationTest {
 
 		System.out.println("masked account 1 ::"+maskedAccount1);
 		System.out.println("masked account 1 ::"+maskedAccount3);
+	}
+	
+	@Test
+	public void generateUTCDateTimeTest() {
+		ZonedDateTime now = ZonedDateTime.now( ZoneOffset.UTC );
+		String dateTimeString = now.toString();
+		System.out.println("UTC datetime is ::" + dateTimeString);
 	}
 
 }
