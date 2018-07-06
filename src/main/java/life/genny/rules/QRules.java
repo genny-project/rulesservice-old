@@ -3475,15 +3475,14 @@ public void makePayment(QDataAnswerMessage m) {
 
 					}
 
-					this.reloadCache();
-					drools.setFocus("ispayments"); /* NOW Set up Payments */
+					//drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
 
 		}
 
 		this.redirectToHomePage();
-//		this.reloadCache();
+		this.reloadCache();
 		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
