@@ -9,8 +9,8 @@ rule "Send Tree Data"
 
         rules.header();
         rules.setState("LOOP_SEND_TREE_DATA");
-  		  rules.sendTreeData();
+  		rules.sendTreeData();
         rules.setState("SEND_BUCKET_DATA");
 
-	      rules.footer();
+	    rules.footer();
 end

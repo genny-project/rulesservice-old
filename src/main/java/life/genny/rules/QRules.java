@@ -167,7 +167,7 @@ public class QRules {
 	public PaymentUtils paymentUtils;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap, String state) {
-		
+
 		super();
 		this.eventBus = eventBus;
 		this.token = token;
@@ -538,12 +538,12 @@ public class QRules {
 	}
 
 	public Boolean isMobileVerificationCompleted() {
-		
+
 		Boolean status = true;
 		Boolean value = null;
 		try {
 			value = getUser().getValue("PRI_MOBILE_VERIFICATION_COMPLETED", null);
-		} 
+		}
 		catch (Exception e) {
 			this.println(e.getMessage());
 		}
@@ -682,8 +682,8 @@ public class QRules {
 					LocalDateTime lastWeek = now.minusWeeks(1);
 
 					/* we grab the paid date */
-					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_IS_RELEASE_PAYMENT_DONE");
-					if (paidDate.isPresent()) {
+					Optional<EntityAttribute> paidDate = be.findEntityAttribute("PRI_PAYMENT_STATUS");
+					if (paidDate.isPresent() && paidDate.get().getValueString() != null && paidDate.get().getValueString().equals("ITEM_PAYMENT_COMPLETED")) {
 
 						LocalDateTime created = paidDate.get().getCreated();
 						if (created.isBefore(lastWeek)) {
@@ -716,12 +716,12 @@ public class QRules {
 			post.setEntity(input);
 
 			client.execute(post);
-		} 
+		}
 		catch (IOException e) {
 			this.println(e);
 		}
 	}
-	
+
 	public BaseEntity createUser() {
 
 		BaseEntity be = null;
@@ -747,7 +747,7 @@ public class QRules {
 			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
 			this.sendSlackNotification(message);
 
-		} 
+		}
 		catch (IOException e) {
 			log.error("Error in Creating User ");
 		}
@@ -814,7 +814,7 @@ public class QRules {
 			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
 			this.sendSlackNotification(message);
 
-		} 
+		}
     		catch (IOException e) {
 			this.sendToastNotification(e.getMessage(), "error");
 		}
@@ -2939,7 +2939,7 @@ public void makePayment(QDataAnswerMessage m) {
 		beMsg.setShouldDeleteLinkedBaseEntities(true);
 		publishData(beMsg, recipients);
 	}
-	
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -3215,7 +3215,7 @@ public void makePayment(QDataAnswerMessage m) {
 					QwandaMessage message = this.getQuestions(userCode, driverCode, "QUE_USER_RATING_GRP");
 					this.publishCmd(message);
 
-				} 
+				}
 				catch (Exception e) {
 					System.out.println(e.getMessage());
 				}
@@ -3227,11 +3227,11 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void fireAttributeChanges(QEventAttributeValueChangeMessage m) {
-		
+
 		Answer a = m.getAnswer();
 		BaseEntity be = m.getBe();
 		for (EntityAttribute ea : be.getBaseEntityAttributes()) {
-			
+
 			Answer pojo = new Answer(a.getSourceCode(), a.getTargetCode(), ea.getAttributeCode(), ea.getAsLoopString());
 			pojo.setWeight(ea.getWeight());
 			pojo.setInferred(ea.getInferred());
@@ -3324,9 +3324,12 @@ public void makePayment(QDataAnswerMessage m) {
 					 */
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+
 					publishData(newJobDetails, recipientCodes);
+
 					/* publishing to Owner */
-					publishBE(newJobDetails);
+					//publishBE(newJobDetails);
+					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
@@ -3345,7 +3348,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 					/* we link the load to the user */
 					this.baseEntity.createLink(userCode, loadCode, "LNK_CORE", "LOAD_TEMPLTE", 1.0);
-			
+
 				    /* we push the job to the creator */
 				    String[] creatorRecipient = { getUser().getCode() };
 				    publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
@@ -3377,29 +3380,26 @@ public void makePayment(QDataAnswerMessage m) {
 
 					}
 
-					this.redirectToHomePage();
-					this.reloadCache();
-					drools.setFocus("ispayments"); /* NOW Set up Payments */
+					//drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
 		}
 
 		this.redirectToHomePage();
-//		this.reloadCache();
 		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
-			
+
 		String[] recipientCodes = getRecipientCodes(m);
 		this.println(m);
 		this.baseEntity.addAttributes(m.getBe());
 		this.publishBE(m.getBe(), recipientCodes);
 		this.setState("ATTRIBUTE_CHANGE2");
-		
+
 		if ((m.getData() != null) && ("MULTI_EVENT".equals(m.getData().getCode()))) {
 			this.fireAttributeChanges(m);
-		} 
+		}
 	}
 
 	public boolean hasRole(final String role) {
@@ -4686,13 +4686,7 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
-			try {
-				String str = JsonUtils.toJson(newBulkMsg);
-				JsonObject bulkJson = new JsonObject(str);
-				this.publishData(bulkJson);
-			} catch (Exception e) {
-				System.out.println("Error in JSON conversion");
-			}
+			this.publishCmd(newBulkMsg);
 
 		}
 	}
@@ -5123,7 +5117,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String[] recipients = { this.getUser().getCode() };
 		this.sendToastNotification(recipients, message, priority);
 	}
-	
+
 	// TODO Priority field needs to be made as enum : error,info, warning
 	/* To send direct toast messages to the front end without templates */
 	public void sendToastNotification(String[] recipientArr, String toastMsg, String priority) {

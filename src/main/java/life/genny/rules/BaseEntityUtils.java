@@ -318,11 +318,11 @@ public class BaseEntityUtils {
 			be = VertxUtils.readFromDDT(code, withAttributes, this.token);
 			if (be == null) {
 				System.out.println("ERROR - be (" + code + ") fetched is NULL ");
-			} 
+			}
 			else {
 				this.addAttributes(be);
 			}
-		} 
+		}
 		catch (Exception e) {
 			System.out.println("Failed to read cache for " + code);
 		}
@@ -460,7 +460,7 @@ public class BaseEntityUtils {
 					JsonUtils.toJson(link), this.token);
 
 			/* we refresh the cache */
-			this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
+			//this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -657,14 +657,14 @@ public class BaseEntityUtils {
 												&& entityLink.getLinkValue().equals(linkValue)) {
 											linkedBaseEntities.add(targetBe);
 										}
-									} 
+									}
 									else {
 
 										/* If no link value was provided we just pass the base entity */
 										linkedBaseEntities.add(targetBe);
 									}
 								}
-							} 
+							}
 							else {
 
 								/* If not linkCode was provided we just pass the base entity */
@@ -675,7 +675,7 @@ public class BaseEntityUtils {
 				}
 			}
 
-		} 
+		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
 			return null;
@@ -687,7 +687,7 @@ public class BaseEntityUtils {
 	public List<BaseEntity> getBaseEntityWithChildren(String beCode, Integer level) {
 
 		if (level == 0) {
-			return null; 
+			return null;
 		}
 
 		level--;

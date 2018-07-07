@@ -25,8 +25,13 @@ ruleflow-group 'LinkChange'
 		rules.println(Arrays.toString(recipientCodes));
  		rules.println("Link "+link);
 
- 
 		rules.publishData($m,recipientCodes);
+
+		/* if the base entity being moved is a BE we reload the cache */
+		if(link.getTargetCode().startsWith("BEG")) {
+      rules.println("====== BEG LINK CHANGE =========");
+			rules.cacheUtils.refresh(rules.realm(), "BUCKETS");
+		}
 
    	    rules.footer();
 
