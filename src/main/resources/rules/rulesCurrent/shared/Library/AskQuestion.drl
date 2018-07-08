@@ -25,7 +25,6 @@ rule "Ask Question"
             rules.askQuestions( questionSourceCode,
                                 questionTargetCode,
                                 questionGroupCode,
-                                false,
                                 questionIsPopup );
  		    rules.setState("ASKED_QUESTION");
         }

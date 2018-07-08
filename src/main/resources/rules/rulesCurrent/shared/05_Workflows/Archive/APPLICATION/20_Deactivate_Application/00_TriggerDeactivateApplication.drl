@@ -1,0 +1,23 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Deactivate Application"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("BTN_DEACTIVATE_APPLICATION") && 
+						!isState("LOOP_TRIGGER_DEACTIVATE_APPLICATION")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_DEACTIVATE_APPLICATION");
+		
+		String applicationCode = rules.getAsString("itemCode");
+		if(applicationCode != null){
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_DEACTIVATED", "TRUE" ) );
+            rules.baseEntity.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "grey");
+			
+			rules.setState("APPLICATION_IS_DEACTIVATED");
+		}else{
+			rules.println("applicationCode is null");
+		}
+	 	rules.footer();      
+end

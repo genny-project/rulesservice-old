@@ -1,0 +1,61 @@
+package life.genny.rules;
+
+import life.genny.qwanda.message.QCmdMessage;
+import life.genny.qwanda.message.QBulkMessage;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+import life.genny.qwanda.message.QEventMessage;
+import life.genny.rules.QRules;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.ArrayList;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.utils.VertxUtils;
+
+rule "Generate Base Tree"
+
+    ruleflow-group 'GenerateTree'
+    salience 700
+
+     when
+       rules: QRules(isState("GENERATE_STARTUP") && !isState("GENERATE_TREE"))
+     then
+
+    rules.header();
+
+    rules.setState("GENERATE_TREE");
+		rules.println("Generating Base Tree for "+rules.realm());
+
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+
+		List<BaseEntity> root = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50, false);
+	  bulkmsg.add(new QDataBaseEntityMessage(root.toArray(new BaseEntity[0]),"GRP_ROOT", "LNK_CORE"));
+		rules.println("Generated Root Base Tree for "+rules.realm()+" num items="+root.size());
+		
+		List<BaseEntity> reportsHeader = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 50, false);
+	  bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]),"GRP_REPORTS", "LNK_CORE"));
+		rules.println("Generated Reports Base Tree for "+rules.realm()+" num items="+reportsHeader.size());
+
+		List<BaseEntity> admin = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 30, false);
+	  bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]),"GRP_ADMIN", "LNK_CORE"));
+		rules.println("Generated Admin Base Tree for "+rules.realm()+" num items="+admin.size());
+
+		List<BaseEntity> buckets = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
+		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
+		rules.println("Generated Dashboard (Buckets) Base Tree for "+rules.realm()+" num items="+buckets.size());
+
+		// Save the buckets for future use
+		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "BUCKETS", rules.realm(), bucketMsg);
+
+    List<BaseEntity> archivedProducts = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
+    QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "ARCHIVED_PRODUCTS", rules.realm(), archivedProductsMessage);
+		rules.println("Generated Archived Products Base Tree for "+rules.realm()+" num items="+archivedProducts.size());
+
+		QBulkMessage bulk = new QBulkMessage(bulkmsg);
+
+		VertxUtils.putObject(rules.realm(), "BASE_TREE", rules.realm(), bulk);
+
+    rules.footer();
+
+end

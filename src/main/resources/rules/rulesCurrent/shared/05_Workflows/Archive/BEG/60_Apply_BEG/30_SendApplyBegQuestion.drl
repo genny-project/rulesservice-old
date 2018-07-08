@@ -1,0 +1,31 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Send QUE_APPLY_BEG_GRP Question */
+rule "Apply for BEG - Step 3"
+	when
+	    rules: QRules(  isState("SEND_APPLY_BEG_QUESTIONS") && 
+						!isState("LOOP_APPLY_BEG_STEP3")) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_APPLY_BEG_STEP3");
+
+        /* GET APPLICATION BE from state */
+		BaseEntity application = rules.getAsBaseEntity("baseEntity");
+        
+        if(application != null){
+            rules.set("questionSourceCode", rules.getUser().getCode());
+            rules.set("questionTargetCode", application.getCode());
+            rules.set("questionGroupCode", "QUE_APPLY_BEG_GRP");
+		    rules.setState("SEND_QUESTION");
+
+		    rules.setState("SEND_APPLY_BEG_LAYOUT");
+        }else{
+            rules.println("application is null");
+        }
+	 	rules.footer();      
+end
+
+
+        
+        

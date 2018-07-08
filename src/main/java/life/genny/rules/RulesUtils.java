@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.reflect.TypeToken;
@@ -28,7 +29,10 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.SecurityUtils;
+import life.genny.security.SecureResources;
 import life.genny.utils.VertxUtils;
 
 
@@ -50,28 +54,27 @@ public class RulesUtils {
 	public static final String ANSI_BOLD = "\u001b[1m";
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("DEV_MODE") == null ? false : true;
+	public static final Boolean devMode = ((System.getenv("DEV_MODE") == null)&&(System.getenv("GENNYDEV") == null)) ? false : true;
 
 	static public Map<String, Attribute> attributeMap = new ConcurrentHashMap<String, Attribute>();
 	static public QDataAttributeMessage attributesMsg = null;
 
 	public static String executeRuleLogger(final String status, final String module, final String topColour,
 			final String bottomColour) {
-		String moduleLogger = "\n" + (devMode ? "" : bottomColour) + status + " ::  " + module
+		String moduleLogger =  (devMode ? "" : bottomColour) + status + " ::  " + module
 				+ (devMode ? "" : ANSI_RESET);
 		return moduleLogger;
 	}
 
 	public static String terminateRuleLogger(String module) {
-		return executeRuleLogger("END RULE", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
-				+ "======================================================================================================="
-				+ (devMode ? "" : ANSI_RESET);
+		return executeRuleLogger("<<<<<<<<<< END RULE", module, ANSI_YELLOW, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_YELLOW)
+					+ (devMode ? "" : ANSI_RESET);
 
 	}
 
 	public static String headerRuleLogger(String module) {
-		return "======================================================================================================="
-				+ executeRuleLogger("START RULE", module, ANSI_RED, ANSI_GREEN) + "\n" + (devMode ? "" : ANSI_RED)
+		return
+				 executeRuleLogger(">>>>>>>>>> START RULE", module, ANSI_RED, ANSI_GREEN)  + (devMode ? "" : ANSI_RED)
 				+ (devMode ? "" : ANSI_RESET);
 	}
 
@@ -129,18 +132,52 @@ public class RulesUtils {
 		return dateFormatter.format(date);
 	}
 
-	public static String getLayout(final String path) {
-		String jsonStr = "";
-		try {
-			String url = getLayoutCacheURL(path);
-			println("Trying to load url.....");
-			println(url);
-			jsonStr = QwandaUtils.apiGet(url, null);
-		} catch (Exception e) {
-//			e.printStackTrace();
-			println(path + " not found.");
-		}
-		return jsonStr;
+	public static String getLayout(String realm, String path) {
+
+  	String jsonStr = "";
+  	String finalPath = "";
+  	try {
+
+  		if(path.startsWith("/") == false && realm.endsWith("/") == false) {
+  			finalPath = realm + "/" + path;
+  		}
+  		else {
+  			finalPath = realm + path;
+  		}
+
+  		String url = getLayoutCacheURL(finalPath);
+  		println("Trying to load url.....");
+  		println(url);
+
+  		/* we make a GET request */
+  		jsonStr = QwandaUtils.apiGet(url, null);
+
+  		if(jsonStr != null) {
+
+  			/* we serialise the layout into a JsonObject */
+  			JsonObject layoutObject = new JsonObject(jsonStr);
+  			if(layoutObject != null) {
+
+  				/* we check if an error happened when grabbing the layout */
+  				if((layoutObject.containsKey("Error") || layoutObject.containsKey("error")) && realm.equals("genny") == false) {
+
+  					/* we try to grab the layout using the genny realm */
+  					return RulesUtils.getLayout("genny", path);
+  				}
+  				else {
+
+  					/* otherwise we return the layout */
+  					return jsonStr;
+  				}
+  			}
+  		}
+  	}
+  	catch(Exception e) {
+  		System.out.println(jsonStr);
+  		return jsonStr;
+  	}
+
+  	return null;
 	}
 
 	public static JsonObject createDataAnswerObj(Answer answer, String token) {
@@ -149,6 +186,68 @@ public class RulesUtils {
 		msg.setToken(token);
 
 		return toJsonObject(msg);
+	}
+
+	public static String generateServiceToken(String realm) {
+
+		if (System.getenv("GENNYDEV") != null) {
+			realm = "genny";
+		}
+
+		String jsonFile = realm + ".json";
+
+		String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
+		if (keycloakJson == null) {
+			System.out.println("No keycloakMap for " + realm);
+			return null;
+		}
+		JsonObject realmJson = new JsonObject(keycloakJson);
+		JsonObject secretJson = realmJson.getJsonObject("credentials");
+		String secret = secretJson.getString("secret");
+
+		// fetch token from keycloak
+		String key = null;
+		String initVector = "PRJ_" + realm.toUpperCase();
+		initVector = StringUtils.rightPad(initVector, 16, '*');
+		String encryptedPassword = null;
+		if (System.getenv("GENNYDEV") != null) {
+			initVector = "PRJ_GENNY*******";
+		}
+
+		try {
+			key = System.getenv("ENV_SECURITY_KEY"); // TODO , Add each realm as a prefix
+		} catch (Exception e) {
+			println("PRJ_" + realm.toUpperCase() + " ENV ENV_SECURITY_KEY  is missing!");
+		}
+
+		try {
+			encryptedPassword = System.getenv("ENV_SERVICE_PASSWORD");
+		} catch (Exception e) {
+			println("PRJ_" + realm.toUpperCase() + " attribute ENV_SECURITY_KEY  is missing!");
+		}
+
+		String password = SecurityUtils.decrypt(key, initVector, encryptedPassword);
+
+		// Now ask the bridge for the keycloak to use
+		String keycloakurl = realmJson.getString("auth-server-url").substring(0,
+				realmJson.getString("auth-server-url").length() - ("/auth".length()));
+
+		println(keycloakurl);
+
+		try {
+//			println("realm() : " + realm + "\n" + "realm : " + realm + "\n" + "secret : " + secret + "\n"
+//					+ "keycloakurl: " + keycloakurl + "\n" + "key : " + key + "\n" + "initVector : " + initVector + "\n"
+//					+ "enc pw : " + encryptedPassword + "\n" + "password : " + password + "\n");
+
+			String token = KeycloakUtils.getToken(keycloakurl, realm, realm, secret, "service", password);
+//			println("token = " + token);
+			return token;
+
+		} catch (Exception e) {
+			println(e);
+		}
+
+		return null;
 	}
 
 	/**
@@ -168,36 +267,7 @@ public class RulesUtils {
 		String code = "PER_" + uname.toUpperCase();
 		// CHEAT TODO
 		BaseEntity be = VertxUtils.readFromDDT(code, token);
-		// beJson = QwandaUtils.apiGet(qwandaServiceUrl + "/qwanda/baseentitys/"+code,
-		// token);
-		// BaseEntity be = JsonUtils.fromJson(beJson, BaseEntity.class);
-
-		// if (username != null) {
-		// beJson = QwandaUtils.apiGet(qwandaServiceUrl +
-		// "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_USERNAME=" +
-		// username+"&pageSize=1", token);
-		// } else {
-		// String keycloakId = (String) decodedToken.get("sed");
-		// beJson = QwandaUtils.apiGet(qwandaServiceUrl +
-		// "/qwanda/baseentitys/GRP_USERS/linkcodes/LNK_CORE/attributes?PRI_KEYCLOAKID="
-		// + keycloakId+"&pageSize=1",
-		// token);
-		//
-		// }
-		// QDataBaseEntityMessage msg = JsonUtils.fromJson(beJson,
-		// QDataBaseEntityMessage.class);
-		// BaseEntity be = msg.getItems()[0];
-		//// List<BaseEntity> bes = Arrays.asList(JsonUtils.fromJson(beJson,
-		// BaseEntity[].class));
-		// BaseEntity be = bes.get(0);
-
 		return be;
-
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// return null;
-
 	}
 
 	/**
@@ -315,7 +385,7 @@ public class RulesUtils {
 		List<BaseEntity> items = getBaseEntitysByAttributeAndValue(qwandaServiceUrl, decodedToken, token, attributeCode,
 				value);
 
-		if (items != null) {
+		if (items.size() > 0 && items != null) {
 			if (!items.isEmpty())
 				return items.get(0);
 		}
@@ -760,7 +830,7 @@ public class RulesUtils {
 			linkJson = QwandaUtils.apiGet(
 					qwandaServiceUrl + "/qwanda/entityentitys/" + parentCode + "/linkcodes/" + linkCode + "/children",
 					token);
-			return JsonUtils.gson.fromJson(linkJson, new TypeToken<List<Link>>() {
+			return JsonUtils.fromJson(linkJson, new TypeToken<List<Link>>() {
 			}.getType());
 
 		} catch (IOException e) {
@@ -812,6 +882,15 @@ public class RulesUtils {
 	}
 
 
+	public static Attribute getAttribute(final String attributeCode, final String token) {
+		Attribute ret = attributeMap.get(attributeCode);
+		if (ret == null) {
+			loadAllAttributesIntoCache(token);
+			ret = attributeMap.get(attributeCode);
+		}
+		return ret;
+	}
+	
 	public static String getChildren(final String sourceCode, final String linkCode, final String linkValue, String token) {
 
 		try {
@@ -832,7 +911,8 @@ public class RulesUtils {
 	}
 
 	public static BaseEntity duplicateBaseEntity(BaseEntity oldBe, String prefix, String name, String qwandaUrl, String token) {
-		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(oldBe.getCode(), null, prefix, token), name);
+		
+		BaseEntity newBe = new BaseEntity(QwandaUtils.getUniqueId(prefix, oldBe.getCode()), name);
 
 		println("Size of oldBe Links   ::   "+oldBe.getLinks().size());
 		println("Size of oldBe Attributes   ::   "+oldBe.getBaseEntityAttributes().size());

@@ -3,8 +3,10 @@ target/
 .project
 .settings
 .vertx
+.DS_Store
 /.DS_Store
 logs
+bin
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -21,5 +23,5 @@ src/main/resources/rebel.xml
 !/.mvn/wrapper/maven-wrapper.jar
 /bin/
 /site/
-
+target
 

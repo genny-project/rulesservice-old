@@ -1,0 +1,18 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import life.genny.utils.VertxUtils;
+
+/* Publish BEG AND KIDS */
+rule "Submit Add BEG - Step 5 - Reload Cache"
+	when
+		rules: QRules( 	isState("RELOAD_CACHE_BEG") && 
+						!isState("LOOP_RELOAD_CACHE") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_RELOAD_CACHE");
+
+		rules.reloadCache();
+		rules.setState("EXIT_ADD_BEG_SUCCESS");
+		
+	 	rules.footer();      
+end

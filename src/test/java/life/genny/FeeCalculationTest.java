@@ -7,6 +7,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -169,10 +171,10 @@ public class FeeCalculationTest {
 		System.out.println("masked account 1 ::"+maskedAccount1);
 		System.out.println("masked account 1 ::"+maskedAccount3);
 	}
-	
+
 	@Test
 	public void testBitMasking() {
-		
+
 		final int SEL_GEN = 1;  // Binary 00001
 		final int SEL_GENL = 2;  // Binary 00010
 		final int SEL_SCT = 4;  // Binary 00100
@@ -180,10 +182,10 @@ public class FeeCalculationTest {
 		//Setting Flag
 		long categoryTag = 0;
 		categoryTag = categoryTag | SEL_GENL;
-		
+
 		long categoryTag2 = 0;
 	     categoryTag2 = categoryTag2 | SEL_GENL | SEL_GEN;
-		
+
 		boolean lFlagCSet = ((categoryTag & SEL_GENL) == SEL_GENL);
 		System.out.println("The flag set is :: "+lFlagCSet);
 		System.out.println("The tag value is :: "+categoryTag);
@@ -192,7 +194,12 @@ public class FeeCalculationTest {
 			System.out.println("Contains11");
 		}
 		System.out.println("The 2 tag value is  :: "+categoryTag2);
-		
+  }
+
+	public void generateUTCDateTimeTest() {
+		ZonedDateTime now = ZonedDateTime.now( ZoneOffset.UTC );
+		String dateTimeString = now.toString();
+		System.out.println("UTC datetime is ::" + dateTimeString);
 	}
 
 }

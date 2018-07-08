@@ -14,12 +14,10 @@ rule "User Logout"
     no-loop true
 	ruleflow-group 'UserLogout'
     when
-        m : QEventMessage(  event_type == "LOGOUT" && 
-                            data.code == "LOGOUT" )
- 		rules: QRules( isState("STARTED") ) 
+ 		rules: QRules( isState("EVENT_USER_LOGOUT") ) 
     then
         rules.header();
-        rules.logout();
-        
+         rules.logout(); 
+        rules.logoutCleanup();
 		rules.footer();      
 end 

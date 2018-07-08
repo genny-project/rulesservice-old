@@ -15,8 +15,8 @@
 	</licenses>
 
 	<properties>
-		<qwanda-utils.version>1.0.37</qwanda-utils.version>
-		<genny-verticle.version>1.0.37</genny-verticle.version>
+    <genny-verticle.version>1.0.42</genny-verticle.version>
+		<qwanda-utils.version>1.0.42</qwanda-utils.version>
 
                 <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
@@ -42,6 +42,7 @@
 		</repository>
 	</repositories>
 	<dependencies>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -60,11 +61,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+    <dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>qwanda-utils</artifactId>
 			<version>${qwanda-utils.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -198,7 +200,15 @@
 
 	</dependencies>
 
-	<build>
+  <build>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>rules/rulesCurrent/prj_*/**</exclude>
+            </excludes>
+        </resource>
+    </resources>
 		<plugins>
 
 			<plugin>
