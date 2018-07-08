@@ -77,7 +77,7 @@ public class RulesLoader {
 			setupKieRules("genny", rules); // run genny rules first
 			for (String realm : realms) {
 				setupKieRules(realm, rules);
-				System.out.println("Loaded "+rules);
+				//System.out.println("Loaded "+rules);
 			}
 
 			fut.complete();
@@ -151,7 +151,7 @@ public class RulesLoader {
 
 					Tuple2<String, String> rule = (Tuple.of(fileName + "." + fileNameExt, ruleText));
 					String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-					System.out.println("Loading in Rule:" + rule._1 + " of " + filerule);
+					//System.out.println("Loading in Rule:" + rule._1 + " of " + filerule);
 					rules.add(rule);
 				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																										// that start
@@ -159,7 +159,7 @@ public class RulesLoader {
 					final String bpmnText = buf.toString();
 
 					Tuple2<String, String> bpmn = (Tuple.of(fileName + "." + fileNameExt, bpmnText));
-					System.out.println("Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+					//System.out.println("Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
 					rules.add(bpmn);
 				} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files that
 																									// start with XX
@@ -217,7 +217,7 @@ public class RulesLoader {
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-						System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + filerule);
+						//System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + filerule);
 						rules.add(rule);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																											// that
@@ -226,7 +226,7 @@ public class RulesLoader {
 						final String bpmnText = buf.toString();
 
 						Tuple3<String, String, String> bpmn = (Tuple.of(realm, fileName + "." + fileNameExt, bpmnText));
-						System.out.println(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
+						//System.out.println(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
 						rules.add(bpmn);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files
 																										// that
