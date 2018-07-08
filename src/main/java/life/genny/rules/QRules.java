@@ -5981,11 +5981,9 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		return ret;
 	}
-
-	public List<BaseEntity> getAvailableCapabilities(BaseEntity user) {
-
-		if(user == null) return null;
-
+	
+	public List<BaseEntity> getAvailableCapabilities(String role) {
+	
 		List<BaseEntity> capabilities = new ArrayList<>();
 		List<String> capabilityCodes = new ArrayList<>();
 
@@ -6012,7 +6010,7 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_READ_NOTES");
 
 		/* if the user is a buyer */
-		if(this.isUserBuyer(user)) {
+		if("BUYER".equals(role)) {
 
 			/* buyer specific capabilities */
 			capabilityCodes.add("CAP_ADD_ITEM");
@@ -6021,7 +6019,7 @@ public void makePayment(QDataAnswerMessage m) {
 			capabilityCodes.add("CAP_LOCATE_USER");
 		}
 		/* if the user is a seller */
-		else if(this.isUserSeller(user)) {
+		else if("SELLER".equals(role)) {
 
 			/* seller specific capabilities */
 			capabilityCodes.add("CAP_ADD_QUOTE");
@@ -6045,6 +6043,23 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 
 		return capabilities;
+	}
+	
+	public List<BaseEntity> getAvailableCapabilities(BaseEntity user) {
+
+		if(user == null) {
+			return new ArrayList<>();
+		}
+
+		if(this.isUserBuyer(user)) {
+			return this.getAvailableCapabilities("BUYER");
+		}
+		
+		if(this.isUserSeller(user)) {
+			return this.getAvailableCapabilities("SELLER");
+		}
+		
+		return new ArrayList<>(); 
 	}
 
 	public List<BaseEntity> generateCapabilities() {

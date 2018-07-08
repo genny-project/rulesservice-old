@@ -14,6 +14,6 @@ rule "Check user company - User is NOT a company"
 		/* we set the company role as FALSE */
 		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_COMPANY", "FALSE");
 
-		rules.setState("COMPANY_IS_READY");
+		rules.setState("SET_USER_CAPABILITIES");
 	    rules.footer();
 end

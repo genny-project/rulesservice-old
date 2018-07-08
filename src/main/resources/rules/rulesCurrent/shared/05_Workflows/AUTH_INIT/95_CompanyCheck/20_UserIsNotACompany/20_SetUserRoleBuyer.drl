@@ -1,0 +1,25 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - User is NOT a company - BUYER"
+	when
+		 rules: QRules( 	isState("SET_USER_CAPABILITIES") && isState("PRI_IS_BUYER") && !isState("LOOP_SET_USER_CAPABILITIES") )
+	 then
+	    rules.header();
+
+		rules.setState("LOOP_SET_USER_CAPABILITIES");
+
+		/* we grab the buyer role */
+		BaseEntity buyerRole = rules.baseEntity.getRole("BUYER");
+		
+		if(buyerRole != null) {
+			
+			/* we assign this role to the current user */
+			rules.baseEntity.setRole(rules.getUser(), buyerRole);
+		}
+		
+		rules.setState("COMPANY_IS_READY");
+	    rules.footer();
+end
