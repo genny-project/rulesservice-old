@@ -1289,107 +1289,6 @@ public class QRules {
 		}
 	}
 
-  /*
-	 * Gets all the tags from the source attribute and sets the bit value of all the tags
-	 *  in the new targetAttributeCode for the same userCode passed
-	 */
-	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
-
-  	   Long categoryTypeInBits = 0L;
-       BaseEntity user = this.baseEntity.getBaseEntityByCode(userCode);
-      if(user != null) {
-
-        /* get the list of category types user has  */
-        List<String> productCategoryList =  this.baseEntity.getBaseEntityAttrValueList(user, sourceAttributeCode);
-        if(productCategoryList != null){
-
-           for(String loadTypeCode : productCategoryList ){
-
-                BaseEntity loadCat = this.baseEntity.getBaseEntityByCode(loadTypeCode);
-
-                /* get the bit value for the SEL BE  */
-                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
-                if(bitValueStr != null){
-
-                   /* Combine all the bit values to the users category type attribute using or operator */
-                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
-                }
-           }
-        }else {
-        	   println("Error!! The productCategoryList is null");
-        }
-
-        this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
-       }
-	}
-
-  /*
-	 * Returns the default Bit Mapped tag of all the category tags
-	 */
-	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
-		Long defaultBitMappedTag = 0L;
-
-		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
-		if(childBE != null) {
-		  for(BaseEntity be : childBE) {
-			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
-
-              if(bitValue != null){
-                 /* Combine all the bit values to the default BitMap Tag using or operator */
-            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
-              }
-		  }
-
-		}else{
-			System.out.println("Error! The Tag list is empty");
-		}
-		return defaultBitMappedTag;
-
-	}
-
-	/*
-	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
-	 */
-	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
-		BaseEntity selBE = this.baseEntity.getBaseEntityByCode(tagCode);
-		if (selBE != null) {
-			Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
-			// String realm = realm();
-			String serviceToken = RulesUtils.generateServiceToken(realm());
-			QDataBaseEntityMessage msg = null;
-			List<BaseEntity> beList = new ArrayList<BaseEntity>();
-			if (bitMaskValue != null) {
-				SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
-						.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
-						.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE,
-								bitMaskValue)
-						.setPageStart(0).setPageSize(10000);
-				try {
-					System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
-					// msg = getSearchResults(searchBE);
-					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
-					System.out.println("the msg is :: " + msg);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				if (msg != null && msg.getItems().length != 0) {
-					BaseEntity[] beArray = msg.getItems();
-					for (BaseEntity be : beArray) {
-						beList.add(be);
-					}
-				} else
-					System.out.println("Error! The search result is null.");
-			} else {
-				System.out.println("Error! The bitmask value of the tagCode is null.");
-
-			}
-			return beList;
-		}
-		return null;
-	}
 
 	public Boolean doesQuestionGroupExist(String questionGroupCode) {
 		return QuestionUtils.doesQuestionGroupExist(this.getUser().getCode(), this.getUser().getCode(), questionGroupCode, this.token);
@@ -2917,12 +2816,6 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
-  public void clearBaseEntity(String baseEntityCode) {
-
-    String[] recipients = new String[1];
-    recipients[0] = this.getUser().getCode();
-    this.clearBaseEntity(baseEntityCode, recipients);
-  }
 
    /* clears baseEntity and all its children linked  */
    public void clearBaseEntity(String baseEntityCode, boolean deleteAllChildren) {
@@ -2951,11 +2844,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntity(String baseEntityCode) {
-		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
 		publishData(beMsg);
-
 	}
 
 
@@ -5581,10 +5473,10 @@ public void makePayment(QDataAnswerMessage m) {
 	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
 		Long categoryTypeInBits = 0L;
         /* get the list of category types user has  */
-        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        List<String> productCategoryList = getBaseEntityAttrValueList(this.baseEntity.getBaseEntityByCode(userCode), sourceAttributeCode);
         if(productCategoryList != null){
            for(String loadTypeCode : productCategoryList ){
-                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+                BaseEntity loadCat = this.baseEntity.getBaseEntityByCode(loadTypeCode);
                 /* get the bit value for the SEL BE  */
                 Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
                 println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
@@ -5596,17 +5488,17 @@ public void makePayment(QDataAnswerMessage m) {
         }
 
         println("The final bit value is :: "+categoryTypeInBits);
-        saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+        this.baseEntity.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
 	}
 
 	/*
 	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
 	 */
 	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
-		BaseEntity selBE = getBaseEntityByCode(tagCode);
+		BaseEntity selBE = this.baseEntity.getBaseEntityByCode(tagCode);
 		Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
 		String realm = realm();
-		String serviceToken = generateServiceToken(realm());
+		String serviceToken = RulesUtils.generateServiceToken(realm());
 		QDataBaseEntityMessage msg = null;
 		List<BaseEntity> beList = new ArrayList<BaseEntity>();
 		if (bitMaskValue != null) {
@@ -5645,7 +5537,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public String getAllChildCodes(final String parentCode, final String linkCode) {
 		String childs = null;
 		List<String> childBECodeList = new ArrayList<String>();
-		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  childBECodeList.add(be.getCode());
@@ -5663,7 +5555,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
 		Long defaultBitMappedTag = 0L;
 
-		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
 		if(childBE != null) {
 		  for(BaseEntity be : childBE) {
 			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
