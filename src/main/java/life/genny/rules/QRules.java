@@ -2949,6 +2949,16 @@ public void makePayment(QDataAnswerMessage m) {
 
 	}
 
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(String baseEntityCode) {
+		BaseEntity be = getBaseEntityByCode(baseEntityCode);
+		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
+		beMsg.setDelete(true);
+		publishData(beMsg);
+
+	}
+
+
 	/* sets delete field and deleteLinkedBaseEntities to true so that FE removes the BE and all its child from their store */
 	public void clearBaseEntity(String baseEntityCode, String[] recipients, boolean deleteAllChild) {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
@@ -3302,6 +3312,7 @@ public void makePayment(QDataAnswerMessage m) {
 					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 					 */
 
+
 					BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
 					Long jobId = updatedJob.getId();
 					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
@@ -3324,6 +3335,7 @@ public void makePayment(QDataAnswerMessage m) {
 					 */
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
+
 
 					publishData(newJobDetails, recipientCodes);
 
@@ -5523,6 +5535,150 @@ public void makePayment(QDataAnswerMessage m) {
 		cmdViewMessageJson.put("root", rootCode);
 		publishCmd(cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
+	}
+
+	/*
+	 * Checks if load is in the user's load type preference
+	 */
+	public boolean ifUserContainsLoadTypes(BaseEntity user, BaseEntity load) {
+		List<String> prefLoadType = getBaseEntityAttrValueList(user, "LNK_LOAD_MUTLI_CATEGORY_LISTS");
+		String loadType = load.getValue("LNK_LOAD_CATEGORY_LISTS", null); //getBaseEntityValueAsString(load.getCode(), "LNK_LOAD_CATEGORY_LISTS");
+
+		if(!prefLoadType.isEmpty() && !loadType.equals("null"))
+		{
+			if(prefLoadType.contains(loadType)) {
+				return true;
+			}else
+				return false;
+
+		}else
+		return false;
+	}
+
+	/* Get array String value from an attribute of the BE  */
+	public List<String> getBaseEntityAttrValueList(BaseEntity be, String attributeCode) {
+
+		String myLoadTypes = be.getValue(attributeCode, null);
+
+		if (myLoadTypes != null) {
+			List<String> loadTypesList = new ArrayList<String>();
+			/* Removing brackets "[]" and double quotes from the strings */
+			String trimmedStr = myLoadTypes.substring(1, myLoadTypes.length() - 1).toString().replaceAll("\"", "");
+			if(trimmedStr != null && !trimmedStr.isEmpty()) {
+			    loadTypesList = Arrays.asList(trimmedStr.split("\\s*,\\s*"));
+			    return loadTypesList;
+			}else {
+				return null;
+			}
+		} else
+			return null;
+	}
+
+	/*
+	 * Gets all the tags from the source attribute and sets the bit value of all the tags
+	 *  in the new targetAttributeCode for the same userCode passed
+	 */
+	public void setBitMaskValueForTag(final String userCode, final String sourceAttributeCode, final String targetAttributeCode) {
+		Long categoryTypeInBits = 0L;
+        /* get the list of category types user has  */
+        List<String> productCategoryList = getBaseEntityAttrValueList(getBaseEntityByCode(userCode), sourceAttributeCode);
+        if(productCategoryList != null){
+           for(String loadTypeCode : productCategoryList ){
+                BaseEntity loadCat = getBaseEntityByCode(loadTypeCode);
+                /* get the bit value for the SEL BE  */
+                Long bitValueStr = loadCat.getValue("PRI_BITMASK_VALUE", null);
+                println("The bit value for "+loadCat.getCode()+" is "+bitValueStr);
+                if(bitValueStr != null){
+                   /* Combine all the bit values to the users category type attribute using or operator */
+                   categoryTypeInBits = categoryTypeInBits | bitValueStr; //Long.parseLong(bitValueStr);
+                }
+           }
+        }
+
+        println("The final bit value is :: "+categoryTypeInBits);
+        saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()) );
+	}
+
+	/*
+	 * Get all Base Entities based on search Prefix (BE prefix) and the product type code
+	 */
+	public List<BaseEntity> getAllBaseEntitiesBasedOnTag(final String searchPrefix, final String tagCode) {
+		BaseEntity selBE = getBaseEntityByCode(tagCode);
+		Long bitMaskValue = selBE.getValue("PRI_BITMASK_VALUE", null);
+		String realm = realm();
+		String serviceToken = generateServiceToken(realm());
+		QDataBaseEntityMessage msg = null;
+		List<BaseEntity> beList = new ArrayList<BaseEntity>();
+		if (bitMaskValue != null) {
+			SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Get all BE")
+					.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, searchPrefix + "_%")
+					.addFilter("PRI_PRODUCT_CATEGORY_TAG_BITMASKED", SearchEntity.Filter.BIT_MASK_POSITIVE, bitMaskValue)
+					.setPageStart(0).setPageSize(10000);
+			try {
+				System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+				// msg = getSearchResults(searchBE);
+				msg = QwandaUtils.fetchResults(searchBE, serviceToken);
+				System.out.println("the msg is :: " + msg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (msg != null && msg.getItems().length != 0) {
+				BaseEntity[] beArray = msg.getItems();
+				for (BaseEntity be : beArray) {
+					beList.add(be);
+				}
+			} else
+				System.out.println("Error! The search result is null.");
+		} else {
+			System.out.println("Error! The bitmask value of the tagCode is null.");
+
+		}
+		return beList;
+	}
+
+	/*
+	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
+	 */
+	public String getAllChildCodes(final String parentCode, final String linkCode) {
+		String childs = null;
+		List<String> childBECodeList = new ArrayList<String>();
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  childBECodeList.add(be.getCode());
+		  }
+		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
+		  childs = "["+childs+"]";
+		}
+
+		return childs;
+	}
+
+	/*
+	 * Returns the default Bit Mapped tag
+	 */
+	public Long getDefaultBitMaskedTag(final String parentCode, final String linkCode) {
+		Long defaultBitMappedTag = 0L;
+
+		List<BaseEntity> childBE =  getAllChildrens( parentCode, linkCode);
+		if(childBE != null) {
+		  for(BaseEntity be : childBE) {
+			  Long bitValue = be.getValue("PRI_BITMASK_VALUE", null);
+              println("The bit value for "+be.getCode()+" is "+bitValue);
+              if(bitValue != null){
+                 /* Combine all the bit values to the default BitMap Tag using or operator */
+            	  defaultBitMappedTag = defaultBitMappedTag | bitValue;
+              }
+		  }
+
+		}else{
+			System.out.println("Error! The Tag list is empty");
+		}
+		return defaultBitMappedTag;
+
 	}
 
 	/* Creation of payment item */
