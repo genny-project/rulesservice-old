@@ -10,13 +10,13 @@ rule "Setting user role"
      when
         rules: QRules(  isState("STARTED") &&
                         isUserPresent() == true &&
-						            !isState("LOOP_CHECK_ROLE") )
+                        !isState("LOOP_CHECK_ROLE") )
      then
         rules.header();
 
 		rules.setState("LOOP_CHECK_ROLE");
 
-    	  	rules.loadUserRole();
+        rules.loadUserRole();
       	rules.setState("ROLE_CHECKED");
       	rules.footer();
 end
