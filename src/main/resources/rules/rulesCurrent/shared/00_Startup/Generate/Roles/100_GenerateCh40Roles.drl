@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.utils.VertxUtils;
 
-rule "GenerateCh40Roles"
+rule "GenerateRoles"
 
-    ruleflow-group 'GenerateCh40Roles'
+    ruleflow-group 'GenerateRoles'
     salience 200
 
      when
@@ -30,10 +30,10 @@ rule "GenerateCh40Roles"
 	if(capabilitiesBuyer != null) {
 		
 		/* we create an array of capability codes */
-		String[] capabilityCodes = capabilitiesBuyer.stream().map(capability -> capability.getCode()).collect(Collectors.toList()).toArray(new String[0]);
+		String[] capabilityCodes = capabilitiesBuyer.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("READ_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
 		
 		/* we create the freight owner role */
-		rules.baseEntity.createRole("BUYER", "Freight Owner", capabilityCodes); 
+		rules.baseEntity.createRole("BUYER", capabilityCodes); 
 	}
 	
 	/* we grab the capabilities for the seller role */
@@ -41,10 +41,10 @@ rule "GenerateCh40Roles"
 	if(capabilitiesSeller != null) {
 		
 		/* we create an array of capability codes */
-		String[] capabilityCodes = capabilitiesSeller.stream().map(capability -> capability.getCode()).collect(Collectors.toList()).toArray(new String[0]);
-		
+		String[] capabilityCodes = capabilitiesSeller.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("CAP_READ_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
+
 		/* we create the transport operator role */
-		rules.baseEntity.createRole("SELLER", "Transport Operator", capabilityCodes); 
+		rules.baseEntity.createRole("SELLER", capabilityCodes); 
 	}
 	 
     rules.footer();

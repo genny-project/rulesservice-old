@@ -22,7 +22,7 @@ rule "Send Capabilities"
 			rules.publishCmd(capabilities, "GRP_CAPABILITIES", "LNK_CORE");
 		}
         
-        rules.setState("SEND_ROLES");
+        rules.setState("SEND_PROJECT");
 
 	    rules.footer();      		      
 end

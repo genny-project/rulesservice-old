@@ -137,7 +137,7 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = (("TRUE".equalsIgnoreCase(System.getenv("GENNYDEV")))&&("TRUE".equalsIgnoreCase(System.getenv("GENNY_DEV")))) ? false : true;
+	public static final Boolean devMode = "TRUE".equalsIgnoreCase(System.getenv("GENNYDEV")) || "TRUE".equalsIgnoreCase(System.getenv("GENNY_DEV")) ? false : true;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -4997,24 +4997,26 @@ public void makePayment(QDataAnswerMessage m) {
 	/* To send critical slack message to slack channel */
 	public void sendSlackNotification(String message) {
 
-		/* send critical slack notifications only for production mode */
-		System.out.println("dev mode ::" + devMode);
-		BaseEntity project = getProject();
-		if (project != null && !devMode) {
-			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
-			if (webhookURL != null) {
+		if(!devMode) {
+			
+			/* send critical slack notifications only for production mode */
+			System.out.println("dev mode ::" + devMode);
+			BaseEntity project = getProject();
+			if (project != null && !devMode) {
+				String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
+				if (webhookURL != null) {
 
-				JsonObject payload = new JsonObject();
-				payload.put("text", message);
+					JsonObject payload = new JsonObject();
+					payload.put("text", message);
 
-				try {
-					postSlackNotification(webhookURL, payload);
-				} catch (IOException io) {
-					io.printStackTrace();
+					try {
+						postSlackNotification(webhookURL, payload);
+					} catch (IOException io) {
+						io.printStackTrace();
+					}
 				}
 			}
 		}
-
 	}
 
 	public void sendToastNotification(String message, String priority) {
@@ -6008,7 +6010,7 @@ public void makePayment(QDataAnswerMessage m) {
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
 		capabilityCodes.add("CAP_MARK_DELIVERY");
 		capabilityCodes.add("CAP_READ_NOTES");
-
+		
 		/* if the user is a buyer */
 		if("BUYER".equals(role)) {
 
@@ -6054,7 +6056,7 @@ public void makePayment(QDataAnswerMessage m) {
 		if(this.isUserBuyer(user)) {
 			return this.getAvailableCapabilities("BUYER");
 		}
-		
+	
 		if(this.isUserSeller(user)) {
 			return this.getAvailableCapabilities("SELLER");
 		}

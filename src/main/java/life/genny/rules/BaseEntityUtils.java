@@ -86,7 +86,7 @@ public class BaseEntityUtils {
 	/* old code */
 
 	public BaseEntity createRole(final String uniqueCode, final String name, String ... capabilityCodes) {
-
+		
 		String initials = "";
 		if(uniqueCode.length() >= 2) {
 			initials = uniqueCode.substring(0, 2);
@@ -105,6 +105,24 @@ public class BaseEntityUtils {
 		}
 
 		return this.setupNewRole(role, name, capabilityCodes);
+	}
+	
+	public BaseEntity createRole(String roleName, String ... capabilityCodes) {
+		
+		String beCode = "ROL_IS_" + roleName;
+		
+		/* we check if a BE with this name already exists */
+		BaseEntity newRoleBe = this.getBaseEntityByCode(beCode);
+		if(newRoleBe == null) {
+			newRoleBe = QwandaUtils.createBaseEntityByCode(beCode, roleName, qwandaServiceUrl, this.token);
+			this.addAttributes(newRoleBe);
+			VertxUtils.writeCachedJson(newRoleBe.getCode(), JsonUtils.toJson(newRoleBe));
+		}
+		
+		this.setupNewRole(newRoleBe, roleName, capabilityCodes);
+		
+		System.out.println(JsonUtils.toJson(newRoleBe));
+		return newRoleBe;
 	}
 
 	public BaseEntity getRole(String name) {
@@ -127,7 +145,7 @@ public class BaseEntityUtils {
 		/* we set the role name */
 		role.setName(roleName);
 
-		List<Answer> answers = new ArrayList<Answer>();
+		List<Answer> answers = new ArrayList<>();
 
 		/* we add the realm as an attribute */
 		Answer realmAnswer = new Answer(role.getCode(), role.getCode(), "PRI_REALM", this.realm);
@@ -145,6 +163,7 @@ public class BaseEntityUtils {
 			/* we add the capabilities */
 			Answer capabilitiesAnswer = new Answer(role.getCode(), role.getCode(), "LNK_SELECT_CAPABILITY", capabilitiesString);
 			answers.add(capabilitiesAnswer);
+
 		}
 		catch(Exception e) {
 
@@ -152,13 +171,6 @@ public class BaseEntityUtils {
 
 		/* we save the answers */
 		this.saveAnswers(answers);
-
-		/* Now force the role to only have these capabilitys */
-		try {
-			String result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), this.token);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 		return role;
 	 }
