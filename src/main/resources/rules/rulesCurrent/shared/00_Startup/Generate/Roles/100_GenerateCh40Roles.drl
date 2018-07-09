@@ -30,7 +30,7 @@ rule "GenerateRoles"
 	if(capabilitiesBuyer != null) {
 		
 		/* we create an array of capability codes */
-		String[] capabilityCodes = capabilitiesBuyer.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("READ_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
+		String[] capabilityCodes = capabilitiesBuyer.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("CAP_UPDATE_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
 		
 		/* we create the freight owner role */
 		rules.baseEntity.createRole("BUYER", capabilityCodes); 
@@ -41,7 +41,7 @@ rule "GenerateRoles"
 	if(capabilitiesSeller != null) {
 		
 		/* we create an array of capability codes */
-		String[] capabilityCodes = capabilitiesSeller.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("CAP_READ_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
+		String[] capabilityCodes = capabilitiesSeller.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_READ_NOTES") && !capability.equals("CAP_UPDATE_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
 
 		/* we create the transport operator role */
 		rules.baseEntity.createRole("SELLER", capabilityCodes); 
