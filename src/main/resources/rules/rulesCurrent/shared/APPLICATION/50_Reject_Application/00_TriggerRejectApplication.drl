@@ -15,6 +15,20 @@ rule "Trigger Reject Application"
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			if(application != null){
             	String applicantCode = application.getLoopValue("PRI_APPLICANT_CODE" , null);
+
+				BaseEntity applicant = rules.getChildren(applicationCode, "LNK_APP", "APPLICANT");
+				BaseEntity beg = rules.getParent(applicationCode, "LNK_BEG");
+				BaseEntity hostCompany = rules.getChildren(beg.getCode(), "LNK_BEG", "COMPANY");
+				//BaseEntity eduProvider = rules.getChildren(beg.getCode(), "LNK_BEG", "EDUPROVIDER");
+				BaseEntity internship = rules.getChildren(beg.getCode(), "LNK_BEG", "PRODUCT");
+
+				rules.println("ApplicationCode     :: " + application.getCode());
+				rules.println("ApplicantCode     :: " + applicant.getCode());
+				rules.println("BaseEntityCode     :: " + beg.getCode());
+				rules.println("HostCompanyCode     :: " + hostCompany.getCode());
+				//rules.println("eduProviderCode     :: " + eduProvider.getCode());
+				rules.println("InternshipCode     :: " + internship.getCode());
+
 				if(applicantCode != null){
 					
 					List<String> userCodes = new ArrayList<String>();
@@ -25,6 +39,16 @@ rule "Trigger Reject Application"
 					rules.updateBaseEntityStatus(applicationCode, userCodes, "red");            
 
 					rules.setState("APPLICATION_IS_REJECTED");
+
+					rules.set("hostBeg", hostCompany);
+                    //rules.set("eduProviderBeg", eduProvider);
+                    rules.set("begBe", beg);
+			        rules.set("internshipBe", internship);
+			        rules.set("internBe", applicant );
+
+					rules.setState("SEND_REJECTED_MESSAGE_TO_INTERN");
+					rules.setState("SEND_REJECTED_MESSAGE_TO_HOST_COMPANY");
+                    //rules.setState("SEND_REJECTED_MESSAGE_TO_EDU_PROVIDER");
 				}else{
 					rules.println("applicantCode is null");
 				}
