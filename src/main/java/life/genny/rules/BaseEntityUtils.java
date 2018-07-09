@@ -404,7 +404,7 @@ public class BaseEntityUtils {
 					JsonUtils.toJson(link), this.token);
 
 			/* we refresh the cache */
-			//this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
+			this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();
