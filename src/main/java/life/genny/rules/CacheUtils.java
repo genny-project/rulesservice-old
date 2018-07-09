@@ -19,15 +19,16 @@ public class CacheUtils {
 	private String realm;
 
 	private BaseEntityUtils baseEntityUtils;
+  private Boolean isReloadingCache = false;
 
 	public CacheUtils(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm) {
-		this.realm = realm;		
+		this.realm = realm;
 	}
-	
+
 	public void setBaseEntityUtils(BaseEntityUtils baseEntityUtils) {
 		this.baseEntityUtils = baseEntityUtils;
 	}
-	
+
 	/* TODO: to remove */
 	public Boolean isUserRole(BaseEntity user, String role) {
 
@@ -55,6 +56,10 @@ public class CacheUtils {
 	/*     */
 
 	public void refresh(String realm, String cachedItemKey) {
+
+    if(this.isReloadingCache == true) return;
+
+    this.isReloadingCache = true;
 
 		/* we generate a service token */
 		String token = RulesUtils.generateServiceToken(realm);
@@ -125,35 +130,37 @@ public class CacheUtils {
 				}
 			}
 		}
+
+    this.isReloadingCache = false;
 	}
-	
+
 	private List<QDataBaseEntityMessage> getMessages(String messageCode, String cachedItemKey) {
-		
+
 		/* we need to find the parent cached item and get the message using the messageCode.
 		 * however, there might be some other cached items related to the message we are going to grab,
 		 * so we need to recursively loop through from the message to its last kids cached in the same parent.
-		 * first step is then to grab the first message, get the linked items, and per each one of these items recursively 
+		 * first step is then to grab the first message, get the linked items, and per each one of these items recursively
 		 * call the same method and do the same until we have no kids.
 		 */
-		
+
 		QBulkMessage cachedItem = VertxUtils.getObject(realm, "CACHE", cachedItemKey, QBulkMessage.class);
 		if(cachedItem != null) {
-			
+
 			List<QDataBaseEntityMessage> sourceMessages = Arrays.asList(cachedItem.getMessages());
 			List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
-			
+
 			for(QDataBaseEntityMessage message: sourceMessages) {
-				
+
 				/* we find all the related messages */
 				if(message.getItems() != null && message.getItems().length > 0) {
-					
+
 					/* if the parentCode is the messageCode */
 					if(message.getParentCode().equals(messageCode)) {
-						
+
 						/* we recursively get the children */
 						List<BaseEntity> bes = Arrays.asList(message.getItems());
 						for(BaseEntity be: bes) {
-							
+
 							List<QDataBaseEntityMessage> kidMessages = this.getMessages(be.getCode(), cachedItemKey);
 							if(kidMessages != null) {
 								messages.addAll(kidMessages);
@@ -162,7 +169,7 @@ public class CacheUtils {
 					}
 					/* if the parentCode is the parent */
 					else if(message.getParentCode().equals(cachedItemKey)) {
-						
+
 						/* we loop through the messages to find the messageCode */
 						for(BaseEntity be: message.getItems()) {
 							if(be.getCode().equals(messageCode)) {
@@ -172,108 +179,108 @@ public class CacheUtils {
 					}
 				}
 			}
-			
+
 			if(messages.size() > 0) return messages;
 		}
-		
+
 		return null;
 	}
-	
+
 	private void addMessages(List<QDataBaseEntityMessage> messages, String targetCode) {
-		
+
 		for(QDataBaseEntityMessage message: messages) {
 			this.addMessage(message, targetCode);
 		}
 	}
-	
+
 	private Boolean addMessage(QDataBaseEntityMessage message, String targetCode) {
-		
+
 		QBulkMessage target = VertxUtils.getObject(realm, "CACHE", targetCode, QBulkMessage.class);
-		
+
 		if(target == null) {
 			target = new QBulkMessage();
 		}
-		
+
 		/* we calculate the new target messages */
 		List<QDataBaseEntityMessage> targetMessages = new ArrayList<QDataBaseEntityMessage>(Arrays.asList(target.getMessages()));
 		targetMessages.add(message);
 		target.setMessages(targetMessages.toArray(new QDataBaseEntityMessage[0]));
-		
+
 		/* we write it all to vertx*/
 		VertxUtils.putObject(this.realm, "CACHE", targetCode, target);
 		return true;
 	}
-	
+
 	private Boolean removeMessages(List<QDataBaseEntityMessage> messages, String sourceCode) {
-		
+
 		/* we grabbed the cached items */
 		QBulkMessage source = VertxUtils.getObject(realm, "CACHE", sourceCode, QBulkMessage.class);
-		
+
 		if(source == null) return false;
-		
+
 		/* we calculate the new source messages */
 		List<QDataBaseEntityMessage> sourceMessages = Arrays.asList(source.getMessages());
 		List<QDataBaseEntityMessage> newSourceMessages = new ArrayList<QDataBaseEntityMessage>();
-		
+
 		/* we loop through all the messages currently sitting in the source */
 		for(QDataBaseEntityMessage message: sourceMessages) {
-			
+
 			Boolean found = false;
-			
+
 			/* we loop through all the messages we want to delete */
 			for(QDataBaseEntityMessage toDeleteMessage: messages) {
-				
+
 				/* if the messages are not the same we can keep it */
 				if(toDeleteMessage.compareTo(message) == 1) {
 					found = true;
 				}
 			}
-			
+
 			/* if we have not found the message in the list of deleted messages, we can keep it */
 			if(found == false) {
 				newSourceMessages.add(message);
 			}
 		}
-		
+
 		source.setMessages(newSourceMessages.toArray(new QDataBaseEntityMessage[0]));
-		
+
 		/* we write to the cache */
 		VertxUtils.putObject(this.realm, "CACHE", sourceCode, source);
-		
+
 		return true;
 	}
-	
+
 	public void moveBaseEntity(BaseEntity baseEntity, String sourceCode, String targetCode) {
-		
+
 		 /* we try to fetch the message from the source */
 		List<QDataBaseEntityMessage> messagesToMove = this.getMessages(baseEntity.getCode(), sourceCode);
 		if(messagesToMove != null && messagesToMove.size() > 0) {
-			
+
 			/* we remove the messages for the BE and the linked baseEntities */
 			this.removeMessages(messagesToMove, sourceCode);
-			
+
 			/* we regenerate a message for the BE */
 			List<QDataBaseEntityMessage> newMessages = this.generateItemCacheHandleBaseEntity(targetCode, baseEntity);
-			
+
 			/* we add the new messages to the target */
 			this.addMessages(newMessages, targetCode);
 		}
 		else {
-			
+
 			/* if we could not get it from the source, we generate a new one and add it to the target */
-			List<QDataBaseEntityMessage> messages = this.generateItemCacheHandleBaseEntity(targetCode, baseEntity); 
+			List<QDataBaseEntityMessage> messages = this.generateItemCacheHandleBaseEntity(targetCode, baseEntity);
 			this.addMessages(messages, targetCode);
 		}
 	}
 
 	public void moveBaseEntity(String beCode, String sourceCode, String targetCode) {
-		
+
 		BaseEntity baseEntity = this.baseEntityUtils.getBaseEntityByCode(beCode);
 		if(baseEntity != null) {
 			this.moveBaseEntity(baseEntity, sourceCode, targetCode);
 		}
 	}
-	
+
 	private List<QDataBaseEntityMessage> generateItemCacheHandleBaseEntity(String parentCode, BaseEntity cachedItem) {
 
 		/* 1. we add the cached item to the message "items" */
@@ -345,7 +352,7 @@ public class CacheUtils {
 				if (currentItemMessages != null) {
 
 					QDataBaseEntityMessage[] messages = currentItemMessages.getMessages();
-					
+
 					/* we add it to the list of items to send */
 					bulk.add(messages);
 
@@ -389,18 +396,18 @@ public class CacheUtils {
 		else if(this.isUserBuyer(stakeholder)) {
 
 			/* we send BEGs only the buyer created */
-			
+
 			/* if the baseEntity has a company code */
 			String companyCode = baseEntity.getValue("PRI_COMPANY_CODE", "");
 			String authorCode = baseEntity.getValue("PRI_AUTHOR", "");
-			
+
 			/* we try to see if the stakeholder is associated with a company */
 			BaseEntity company = this.baseEntityUtils.getParent(stakeholder.getCode(), "LNK_STAFF");
 			Boolean isAssociatedWithCompany = false;
 			if(company != null) {
 				isAssociatedWithCompany = company.getCode().equals(companyCode);
 			}
-			
+
 			isUserAssociatedToBaseEntity = authorCode.equals(stakeholder.getCode()) || isAssociatedWithCompany;
 		}
 
@@ -534,16 +541,16 @@ public class CacheUtils {
 		}
 
 		List<BaseEntity> result = new ArrayList<BaseEntity>();
-		
+
 		BaseEntity parent = VertxUtils.readFromDDT(beCode, token);
 		result.add(parent);
-		
+
 		for (EntityEntity ee : parent.getLinks()) {
 			String childCode = ee.getLink().getTargetCode();
 			BaseEntity child = VertxUtils.readFromDDT(childCode, token);
 			result.add(child);
 		}
-		
+
 		return result;
 	}
 }
