@@ -1652,14 +1652,18 @@ public class QRules {
 
 		String data = m.getData().getValue();
 		JsonObject dataJson = new JsonObject(data);
-		String text = dataJson.getString("value");
+		String text = dataJson.getString("message");
 		String chatCode = dataJson.getString("itemCode");
+		String userCode = dataJson.getString("userCode");
+		println("Message  :: "+text);
+		println("chatCode  :: "+chatCode);
+		println("userCode  :: "+userCode);
 
-		if (text != null && chatCode != null) {
+		if (text != null && chatCode != null && userCode != null) {
 
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
-					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
+					QwandaUtils.getUniqueId("MSG", userCode), "message",
 					getQwandaServiceUrl(), getToken());
 			if (newMessage != null) {
 
@@ -1671,7 +1675,7 @@ public class QRules {
 					int counter = 0;
 					for (BaseEntity stakeholder : stakeholders) {
 						recipientCodeArray[counter] = stakeholder.getCode();
-						if (!stakeholder.getCode().equals(getUser().getCode())) {
+						if (!stakeholder.getCode().equals(userCode)) {
 							msgReceiversCodeArray[counter] = stakeholder.getCode();
 							counter += 1;
 						}
@@ -1679,7 +1683,7 @@ public class QRules {
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 					answers.add(
-							new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", getUser().getCode()));
+							new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", userCode));
 					this.baseEntity.saveAnswers(answers);
 					/* Add current date-time to char as */
 					this.baseEntity.saveAnswer(
@@ -1695,7 +1699,7 @@ public class QRules {
 
 					/* Sending Messages */
 					HashMap<String, String> contextMap = new HashMap<String, String>();
-					contextMap.put("SENDER", getUser().getCode());
+					contextMap.put("SENDER", userCode);
 					contextMap.put("CONVERSATION", newMessage.getCode());
 
 
