@@ -1655,9 +1655,6 @@ public class QRules {
 		String text = dataJson.getString("message");
 		String chatCode = dataJson.getString("itemCode");
 		String userCode = dataJson.getString("userCode");
-		println("Message  :: "+text);
-		println("chatCode  :: "+chatCode);
-		println("userCode  :: "+userCode);
 
 		if (text != null && chatCode != null && userCode != null) {
 
