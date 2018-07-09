@@ -3401,18 +3401,36 @@ public void makePayment(QDataAnswerMessage m) {
 					Long jobId = updatedJob.getId();
 					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
 					this.baseEntity.saveAnswers(answers);
+					
+					/* Getting all people */
+					List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
+					List<BaseEntity> sellersBe = new ArrayList<>();
 
-					/* Get all the sellers who have opted for this product category tag */
-					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
-							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+					/* Getting all driver BEs */
+					if (people != null && people.size() > 0) {
+
+						for (BaseEntity stakeholderBe : people) {
+
+							try {
+								if (this.isUserSeller(stakeholderBe)) {
+									sellersBe.add(stakeholderBe);
+								}
+
+							} catch (Exception e) {
+
+							}
+						}
+					}
+					
 					int i = 0;
-					String[] recipientCodes = new String[sellersBe.size()];
-					for (BaseEntity taggedSellerBe : sellersBe) {
-						recipientCodes[i] = taggedSellerBe.getCode();
+					String[] stakeholderArr = new String[sellersBe.size()]; 
+					for (BaseEntity stakeholderBe : sellersBe) {
+						stakeholderArr[i] = stakeholderBe.getCode();
 						i++;
 					}
-					println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
-
+					
+					println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
+					
 					/*
 					 * Send newly created job with its attributes to all drivers so that it exists
 					 * before link change
@@ -3420,11 +3438,11 @@ public void makePayment(QDataAnswerMessage m) {
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
 
-					publishData(newJobDetails, recipientCodes);
+					publishData(newJobDetails, stakeholderArr);			
 
 					/* publishing to Owner */
 					//publishBE(newJobDetails);
-					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", stakeholderArr);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
@@ -3446,16 +3464,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 					/* we push the job to the creator */
 					String[] creatorRecipient = { getUser().getCode() };
-					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", stakeholderArr);
 					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
 					/* SEND LOAD BE */
-					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", stakeholderArr);
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
-
-					/* publishing to Owner */
-					// publishBE(this.baseEntity.getBaseEntityByCode(jobCode));
-					// publishBE(this.baseEntity.getBaseEntityByCode(loadCode));
 
 					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
@@ -3465,17 +3479,13 @@ public void makePayment(QDataAnswerMessage m) {
 						contextMap.put("JOB", jobCode);
 						contextMap.put("OWNER", getUser().getCode());
 
-						println("The String Array is ::" + Arrays.toString(recipientCodes));
-
 						/* Sending toast message to owner frontend */
-						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 					}
-
-					//drools.setFocus("ispayments"); /* NOW Set up Payments */
 				}
 			}
 
