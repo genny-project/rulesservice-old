@@ -20,7 +20,7 @@ rule "Add Note - STEP 6"
 
 		}else{
 			String[] recipient = { rules.getUser().getCode() };
-			rules.publishBaseEntityByCode(note.getCode(), "GRP_NOTES", "LNK_CORE", recipient);
+			rules.publishBaseEntityByCode(note.getCode(), "GRP_NOTES", "LNK_MESSAGES", recipient);
 		}
 		rules.footer();
 end

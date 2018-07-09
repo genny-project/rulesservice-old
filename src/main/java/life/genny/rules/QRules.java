@@ -8457,7 +8457,7 @@ public class QRules {
 		} */
 		saveAnswers(answers);
 
-		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
+		this.createLink("GRP_NOTES", note.getCode(), "LNK_MESSAGES", "NOTE", 1.0);
 		return note;
 	}
 
