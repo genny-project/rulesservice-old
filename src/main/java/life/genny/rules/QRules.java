@@ -3159,12 +3159,14 @@ public class QRules {
 	}
 
 	public String getCurrentLocalDateTime() {
-		LocalDateTime date = LocalDateTime.now();
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
-		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
-		String dateString = df.format(datetime);
+		// LocalDateTime date = LocalDateTime.now();
+		// DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+		// Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+		// String dateString = df.format(datetime);
 
-		return dateString;
+		// return dateString;
+
+		return QwandaUtils.getCurrentUTCDateTime();
 
 	}
 
