@@ -8360,6 +8360,7 @@ public class QRules {
 		msgCodes.add(bucketListView);
 		System.out.println("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("data", msgCodes);
+		cmdViewJson.put("root", parentCode); /* root needs to be there */
 		cmdViewJson.put("token", getToken());
 		System.out.println(" The cmd msg is :: " + cmdViewJson);
 		publishCmd(cmdViewJson);
@@ -8492,6 +8493,39 @@ public class QRules {
 			}
 		} else {
 			println("notes not found for the context");
+		}
+	}
+
+	public void sendNotes(String contextCode) {
+		
+		if(contextCode != null){
+			BaseEntity context = this.getBaseEntityByCode(contextCode);
+			if(context != null){
+
+				String[] recipient = { getUser().getCode() };
+		
+				clearBaseEntityAndChildren("GRP_NOTES");
+				publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
+		
+				SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
+						.setStakeholder(context.getCode()).setPageStart(0).setPageSize(10000);
+		
+				if (searchBE != null) {
+					/* Send search result */
+					try {
+						this.sendSearchResults(searchBE, "GRP_NOTES");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					println("notes not found for the context");
+				}
+			}else{
+				this.println("context baseEntity is null");
+			}
+		}else{
+			this.println("contextCode is null");
 		}
 	}
 
