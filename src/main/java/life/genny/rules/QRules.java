@@ -3201,7 +3201,8 @@ public void makePayment(QDataAnswerMessage m) {
 					/* set Status of the job */
 					answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 					// Setting color to green for new jobs for both driver and owner
-					/*
+
+        	/*
 					 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
 					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 					 */
@@ -3280,6 +3281,8 @@ public void makePayment(QDataAnswerMessage m) {
 					/* SEND LOAD BE */
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", stakeholderArr);
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
+
+          rules.createNote(jobCode, "Job was created.");
 
 					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
