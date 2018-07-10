@@ -3282,7 +3282,7 @@ public void makePayment(QDataAnswerMessage m) {
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", stakeholderArr);
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
-          rules.createNote(jobCode, "Job was created.");
+          this.createNote(jobCode, "Job was created.");
 
 					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
