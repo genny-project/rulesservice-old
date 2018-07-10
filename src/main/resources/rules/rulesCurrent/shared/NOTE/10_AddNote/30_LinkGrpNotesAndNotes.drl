@@ -17,10 +17,10 @@ rule "Add Note - STEP 3"
 			return;
 
 		}else{
-			/* link GRP_DRAFTS to BEG */
+			/* link GRP_NOTES to NOTE */
 			rules.set("linkSourceCode", "GRP_NOTES");
 			rules.set("linkTargetCode", note.getCode());
-			rules.set("linkCode", "LNK_CORE");
+			rules.set("linkCode", "LNK_MESSAGES");
 			rules.set("linkValue", "NOTE");
 			rules.set("linkWeight", 1.0);
 

@@ -3159,12 +3159,14 @@ public class QRules {
 	}
 
 	public String getCurrentLocalDateTime() {
-		LocalDateTime date = LocalDateTime.now();
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
-		Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
-		String dateString = df.format(datetime);
+		// LocalDateTime date = LocalDateTime.now();
+		// DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+		// Date datetime = Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+		// String dateString = df.format(datetime);
 
-		return dateString;
+		// return dateString;
+
+		return QwandaUtils.getCurrentUTCDateTime();
 
 	}
 
@@ -8457,7 +8459,7 @@ public class QRules {
 		} */
 		saveAnswers(answers);
 
-		this.createLink("GRP_NOTES", note.getCode(), "LNK_CORE", "NOTE", 1.0);
+		this.createLink("GRP_NOTES", note.getCode(), "LNK_MESSAGES", "NOTE", 1.0);
 		return note;
 	}
 
