@@ -4785,19 +4785,15 @@ public void makePayment(QDataAnswerMessage m) {
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
+					
 					if (isAdmin == null || !isAdmin) {
 						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
 						isAdminAnswer.setWeight(1.0);
 						this.baseEntity.saveAnswer(isAdminAnswer);
 						setState("USER_ROLE_ADMIN_SET");
 					}
-				} 
-				else if (!hasRole("admin") && isAdmin != null && isAdmin) {
 					
-					isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
-					isAdminAnswer.setWeight(1.0);
-					this.baseEntity.saveAnswer(isAdminAnswer);
-					
+
 					/* we link the user to the admin role */
 					BaseEntity adminRole = this.baseEntity.getRole("ADMIN");
 					
@@ -4806,6 +4802,12 @@ public void makePayment(QDataAnswerMessage m) {
 						/* we assign this role to the current user */
 						this.baseEntity.setRole(this.getUser(), adminRole);
 					}
+				} 
+				else if (!hasRole("admin") && isAdmin != null && isAdmin) {
+					
+					isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+					isAdminAnswer.setWeight(1.0);
+					this.baseEntity.saveAnswer(isAdminAnswer);
 				}
 
 			} 
