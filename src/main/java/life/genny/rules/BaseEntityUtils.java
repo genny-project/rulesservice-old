@@ -481,19 +481,29 @@ public class BaseEntityUtils {
 			return null;
 		}
 	}
-
+	
 	public BaseEntity getParent(final String targetCode, final String linkCode) {
-		List<BaseEntity> parents = this.getParents(targetCode, linkCode);
+		return this.getParent(targetCode, linkCode, null);
+	}
+
+	public BaseEntity getParent(final String targetCode, final String linkCode, final String linkValue) {
+		List<BaseEntity> parents = this.getParents(targetCode, linkCode, linkValue);
 		if (parents != null && parents.size() > 0) {
 			return parents.get(0);
 		}
 
 		return null;
 	}
-
+	
 	public List<BaseEntity> getParents(final String targetCode, final String linkCode) {
+		return this.getParents(targetCode, linkCode, null);
+	}
+
+	public List<BaseEntity> getParents(String targetCode, String linkCode, String linkValue) {
+		
 		List<BaseEntity> parents = null;
 		long sTime = System.nanoTime();
+		
 		try {
 
 			String beJson = QwandaUtils.apiGet(this.qwandaServiceUrl + "/qwanda/entityentitys/" + targetCode
@@ -504,10 +514,13 @@ public class BaseEntityUtils {
 				ArrayList<Link> arrayList = new ArrayList<Link>(Arrays.asList(linkArray));
 				parents = new ArrayList<BaseEntity>();
 				for (Link lnk : arrayList) {
-
-					BaseEntity linkedBe = getBaseEntityByCode(lnk.getSourceCode());
-					if (linkedBe != null) {
-						parents.add(linkedBe);
+					
+					if( (linkValue != null && lnk.getLinkValue().equals(linkValue) ) || linkValue == null) {
+						
+						BaseEntity linkedBe = getBaseEntityByCode(lnk.getSourceCode());
+						if (linkedBe != null) {
+							parents.add(linkedBe);
+						}
 					}
 				}
 
@@ -516,6 +529,7 @@ public class BaseEntityUtils {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		double difference = (System.nanoTime() - sTime) / 1e6; // get ms
 		return parents;
 	}
