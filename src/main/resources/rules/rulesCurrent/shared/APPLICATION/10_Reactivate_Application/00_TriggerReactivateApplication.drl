@@ -9,23 +9,27 @@ rule "Trigger Reactivate Application"
 	 then
 	 	rules.header();
 		rules.setState("LOOP_TRIGGER_ACTIVATE_APPLICATION");
-		
+
 	   	String applicationCode = rules.getAsString("itemCode");
+		rules.println("applicationCode    :: " + applicationCode);
+
 		if(applicationCode != null){
 
 			BaseEntity application = rules.getBaseEntityByCode(applicationCode);
 			if(application != null){
-
 				if(	application.getLoopValue("PRI_IS_DEACTIVATED", false) != null &&
-					application.getLoopValue("PRI_IS_DEACTIVATED", false).
-					equals("TRUE") ){
-
+					application.getLoopValue("PRI_IS_DEACTIVATED", false) == true ){
+	
 					rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_REJECTED", "FALSE" ) );
             		rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "green");            
 				}
+
+				Boolean thisistemp = application.getLoopValue("PRI_IS_REJECTED", false);
+				String thisistemp_string = Boolean.toString(thisistemp); 
+
+				rules.println("thisistemp    :: " + thisistemp_string);
 				if(	application.getLoopValue("PRI_IS_REJECTED", false) != null &&
-					application.getLoopValue("PRI_IS_REJECTED", false).
-					equals("TRUE") ){
+					application.getLoopValue("PRI_IS_REJECTED", false) == true ){
 
 					rules.saveAnswer( new Answer( rules.getUser().getCode(), applicationCode, "PRI_IS_REJECTED", "FALSE" ) );
             		rules.updateBaseEntityStatus(applicationCode, rules.getUser().getCode(), "green");            
