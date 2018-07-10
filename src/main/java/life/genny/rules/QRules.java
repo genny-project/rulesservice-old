@@ -2660,6 +2660,7 @@ public void makePayment(QDataAnswerMessage m) {
             }
         }
 
+        this.reloadCache();
         this.redirectToHomePage();
     }
 
