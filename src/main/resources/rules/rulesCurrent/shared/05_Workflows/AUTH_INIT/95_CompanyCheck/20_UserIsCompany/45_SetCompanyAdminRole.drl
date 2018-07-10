@@ -6,38 +6,32 @@ import java.util.stream.Collectors;
 
 rule "Check user company - Step 3.5"
      when
-     	rules: QRules( 	isState("SET_COMPANY_ADMIN_ROLE") && !isState("DID_SET_COMPANY_ADMIN_ROLE") ) 
-     then      
-        rules.header();     
+     	rules: QRules( 	isState("SET_COMPANY_ADMIN_ROLE") && !isState("DID_SET_COMPANY_ADMIN_ROLE") )
+     then
+        rules.header();
 
 		rules.setState("DID_SET_COMPANY_ADMIN_ROLE");
-		
-		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
-		
+
+		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");
+
 		/* we fetch the allowed capabilities */
 		List<BaseEntity> capabilities = rules.getAvailableCapabilities(rules.getUser());
 		if(capabilities != null) {
-			
+
 			/* we create an array of capability codes */
 			String[] capabilityCodes = capabilities.stream().map(capability -> capability.getCode()).collect(Collectors.toList()).toArray(new String[0]);
-			
+
 			/* we give all these capabilities to the admin */
 			BaseEntity adminRole = rules.baseEntity.createRole("COMPANY_ADMIN", "Company Admin", capabilityCodes);
 
 			/* we attach the role to the company */
 			rules.baseEntity.setRole(companyBe, adminRole);
-			
+
 			/* we attach the role to the user */
 			rules.baseEntity.setRole(rules.getUser(), adminRole);
-			
-			/* we push the company roles */
-			rules.clearState("SENT_ROLES");
-			rules.setState("LOOP_SEND_PROJECT");
-			rules.setState("SEND_ROLES");
 		}
-		
+
 		rules.setState("COMPANY_EXISTS");
-		
-		rules.footer();     		      
+
+		rules.footer();
 end
-     	

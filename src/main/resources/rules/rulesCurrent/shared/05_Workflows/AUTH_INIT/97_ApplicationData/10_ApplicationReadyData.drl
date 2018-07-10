@@ -12,5 +12,10 @@ rule "Application Ready - send data"
 		    rules.setState("LOOP_APP_READY_SEND_DATA");
         rules.setState("SEND_TREE_DATA");
 
+        /* we push the user roles */
+        rules.clearState("LOOP_SEND_USER_ROLES");
+        rules.setState("LOOP_SEND_SUB_LAYOUTS");
+        rules.setState("SEND_USER_ROLES");
+
         rules.footer();
 end
