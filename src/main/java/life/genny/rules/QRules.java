@@ -2855,6 +2855,7 @@ public void makePayment(QDataAnswerMessage m) {
             }
         }
 
+        this.reloadCache();
         this.redirectToHomePage();
     }
 
@@ -3402,7 +3403,7 @@ public void makePayment(QDataAnswerMessage m) {
 					Long jobId = updatedJob.getId();
 					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
 					this.baseEntity.saveAnswers(answers);
-					
+
 					/* Getting all people */
 					List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
 					List<BaseEntity> sellersBe = new ArrayList<>();
@@ -3422,16 +3423,16 @@ public void makePayment(QDataAnswerMessage m) {
 							}
 						}
 					}
-					
+
 					int i = 0;
-					String[] stakeholderArr = new String[sellersBe.size()]; 
+					String[] stakeholderArr = new String[sellersBe.size()];
 					for (BaseEntity stakeholderBe : sellersBe) {
 						stakeholderArr[i] = stakeholderBe.getCode();
 						i++;
 					}
-					
+
 					println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
-					
+
 					/*
 					 * Send newly created job with its attributes to all drivers so that it exists
 					 * before link change
@@ -3439,7 +3440,7 @@ public void makePayment(QDataAnswerMessage m) {
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
 
-					publishData(newJobDetails, stakeholderArr);			
+					publishData(newJobDetails, stakeholderArr);
 
 					/* publishing to Owner */
 					//publishBE(newJobDetails);
@@ -3497,7 +3498,7 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
-		
+
 		String[] recipientCodes = getRecipientCodes(m);
 		println(m);
 		this.baseEntity.addAttributes(m.getBe());
@@ -3506,7 +3507,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		if ((m.getData() != null) && ("MULTI_EVENT".equals(m.getData().getCode()))) {
 			fireAttributeChanges(m);
-		} 
+		}
 	}
 
 	public boolean hasRole(final String role) {
