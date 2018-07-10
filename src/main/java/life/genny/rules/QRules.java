@@ -4775,10 +4775,13 @@ public void makePayment(QDataAnswerMessage m) {
 	 * been removed from keycloak.
 	 */
 	public void setAdminRoleIfAdmin() {
+		
 		String attributeCode = "PRI_IS_ADMIN";
 		BaseEntity user = getUser();
+		
 		if (user != null) {
 			try {
+				
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
@@ -4788,20 +4791,28 @@ public void makePayment(QDataAnswerMessage m) {
 						this.baseEntity.saveAnswer(isAdminAnswer);
 						setState("USER_ROLE_ADMIN_SET");
 					}
-				} else if (!hasRole("admin")) {
-					if (isAdmin != null && isAdmin) {
-						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
-						isAdminAnswer.setWeight(1.0);
-						this.baseEntity.saveAnswer(isAdminAnswer);
+				} 
+				else if (!hasRole("admin") && isAdmin != null && isAdmin) {
+					
+					isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
+					isAdminAnswer.setWeight(1.0);
+					this.baseEntity.saveAnswer(isAdminAnswer);
+					
+					/* we link the user to the admin role */
+					BaseEntity adminRole = this.baseEntity.getRole("ADMIN");
+					
+					if(adminRole != null) {
+						
+						/* we assign this role to the current user */
+						this.baseEntity.setRole(this.getUser(), adminRole);
 					}
 				}
 
-			} catch (Exception e) {
+			} 
+			catch (Exception e) {
 				System.out.println("Error!! while updating " + attributeCode + " attribute value");
 			}
-		} else {
-			System.out.println("Error!! User BaseEntity is null");
-		}
+		} 
 	}
 
 	/*

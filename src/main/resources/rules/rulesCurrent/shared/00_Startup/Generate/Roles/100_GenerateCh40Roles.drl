@@ -46,6 +46,17 @@ rule "GenerateRoles"
 		/* we create the transport operator role */
 		rules.baseEntity.createRole("SELLER", capabilityCodes); 
 	}
+	
+	/* we grab the capabilities for the admin role */
+	List<BaseEntity> capabilitiesBuyer = rules.getAvailableCapabilities("BUYER");
+	if(capabilitiesBuyer != null) {
+		
+		/* we create an array of capability codes */
+		String[] capabilityCodes = capabilitiesBuyer.stream().map(capability -> capability.getCode()).filter(capability -> !capability.equals("CAP_UPDATE_ROLES") && !capability.equals("CAP_ADD_USER")).collect(Collectors.toList()).toArray(new String[0]);
+		
+		/* we create the admin role */
+		rules.baseEntity.createRole("ADMIN", capabilityCodes); 
+	}
 	 
     rules.footer();
 
