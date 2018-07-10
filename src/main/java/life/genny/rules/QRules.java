@@ -5054,22 +5054,24 @@ public class QRules {
 	/*
 	 * Publish Search BE results
 	 */
-	public void sendSearchResults(SearchEntity searchBE) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
-		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + JsonUtils.toJson(msg));
-		publishCmd(msg);
-	}
 	
+	
+	public void sendSearchResults(SearchEntity searchBE) throws IOException {
+
+        String serviceToken = RulesUtils.generateServiceToken(this.realm());
+        String jsonSearchBE = JsonUtils.toJson(searchBE);
+        String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+        QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+        publishCmd(msg);
+    }
 
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
+		
+		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+				serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
 		System.out.println("The result   ::  " + msg);
