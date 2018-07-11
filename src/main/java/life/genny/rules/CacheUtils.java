@@ -147,7 +147,7 @@ public class CacheUtils {
 		if(cachedItem != null) {
 
 			List<QDataBaseEntityMessage> sourceMessages = Arrays.asList(cachedItem.getMessages());
-			List<QDataBaseEntityMessage> messages = new ArrayList<QDataBaseEntityMessage>();
+			List<QDataBaseEntityMessage> messages = new ArrayList<>();
 
 			for(QDataBaseEntityMessage message: sourceMessages) {
 
@@ -162,20 +162,29 @@ public class CacheUtils {
 						for(BaseEntity be: bes) {
 
 							List<QDataBaseEntityMessage> kidMessages = this.getMessages(be.getCode(), cachedItemKey);
-							if(kidMessages != null) {
+							if(kidMessages != null && !kidMessages.isEmpty()) {
 								messages.addAll(kidMessages);
 							}
  						}
+						
+						/* and we add the current message */
+						messages.add(message);
 					}
 					/* if the parentCode is the parent */
 					else if(message.getParentCode().equals(cachedItemKey)) {
 
 						/* we loop through the messages to find the messageCode */
+						List<BaseEntity> fetchedBaseEntities = new ArrayList<>();
 						for(BaseEntity be: message.getItems()) {
 							if(be.getCode().equals(messageCode)) {
-								messages.add(message);
+								fetchedBaseEntities.add(be);
 							}
 						}
+						
+						/* we create the base entity message */ 
+						QDataBaseEntityMessage fetchMessage = new QDataBaseEntityMessage(fetchedBaseEntities);
+						fetchMessage.setParentCode(cachedItemKey);
+						messages.add(fetchMessage);
 					}
 				}
 			}
@@ -220,7 +229,7 @@ public class CacheUtils {
 
 		/* we calculate the new source messages */
 		List<QDataBaseEntityMessage> sourceMessages = Arrays.asList(source.getMessages());
-		List<QDataBaseEntityMessage> newSourceMessages = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> newSourceMessages = new ArrayList<>();
 
 		/* we loop through all the messages currently sitting in the source */
 		for(QDataBaseEntityMessage message: sourceMessages) {
@@ -229,10 +238,13 @@ public class CacheUtils {
 
 			/* we loop through all the messages we want to delete */
 			for(QDataBaseEntityMessage toDeleteMessage: messages) {
-
-				/* if the messages are not the same we can keep it */
-				if(toDeleteMessage.compareTo(message) == 1) {
-					found = true;
+				
+				if(found == false && toDeleteMessage.getItems().length > 0) {
+					
+					/* if the messages are not the same we can keep it */
+					if(toDeleteMessage.compareTo(message) == 1) {
+						found = true;
+					}
 				}
 			}
 
@@ -293,7 +305,7 @@ public class CacheUtils {
 		cachedItemMessage.setParentCode(parentCode);
 
 		/* 3. we add it to the bulk message */
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
+		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<>();
 		bulkmsg.add(cachedItemMessage);
 
 		/* 4. we cache all the kids of the baseEntity */
@@ -418,8 +430,8 @@ public class CacheUtils {
 
 		/* variables */
 		QBulkMessage ret = new QBulkMessage();
-		HashMap<String, List<BaseEntity>> baseEntityMap = new HashMap<String, List<BaseEntity>>();
-		HashMap<String, Boolean> excludedBes = new HashMap<String, Boolean>();
+		HashMap<String, List<BaseEntity>> baseEntityMap = new HashMap<>();
+		HashMap<String, Boolean> excludedBes = new HashMap<>();
 
 		/* we loop through every single messages in the bulk message */
 		for (QDataBaseEntityMessage message : newItems.getMessages()) {
@@ -428,7 +440,7 @@ public class CacheUtils {
 			if (message.getParentCode() != null) {
 
 				String parentCode = message.getParentCode();
-				List<BaseEntity> baseEntityKids = new ArrayList<BaseEntity>();
+				List<BaseEntity> baseEntityKids = new ArrayList<>();
 
 				if (excludedBes.containsKey(parentCode) == false) {
 
@@ -511,7 +523,7 @@ public class CacheUtils {
 
 					/* (if the list of kids for the parentCode does not exist, we create it) */
 					if (existingKids == null) {
-						existingKids = new ArrayList<BaseEntity>();
+						existingKids = new ArrayList<>();
 					}
 
 					existingKids.addAll(baseEntityKids);
@@ -540,7 +552,7 @@ public class CacheUtils {
 			return null; // exit point;
 		}
 
-		List<BaseEntity> result = new ArrayList<BaseEntity>();
+		List<BaseEntity> result = new ArrayList<>();
 
 		BaseEntity parent = VertxUtils.readFromDDT(beCode, token);
 		result.add(parent);

@@ -137,7 +137,7 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = "TRUE".equalsIgnoreCase(System.getenv("GENNYDEV")) || "TRUE".equalsIgnoreCase(System.getenv("GENNY_DEV")) ? false : true;
+	public static final Boolean devMode = "TRUE".equalsIgnoreCase(System.getenv("GENNYDEV")) || "TRUE".equalsIgnoreCase(System.getenv("GENNY_DEV")) ? true : false;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -3015,9 +3015,7 @@ public void makePayment(QDataAnswerMessage m) {
 		/* set Status of the job */
 		/* get Owner of the job */
 		BaseEntity owner = this.baseEntity.getLinkedBaseEntities(beg.getCode(), "LNK_BEG", "OWNER").get(0);
-		// updateBaseEntityAttribute(getUser().getCode(), beg.getCode(), "STA_STATUS",
-		// "#FFA500");
-		answerList = new ArrayList<Answer>();
+		answerList = new ArrayList<>();
 		answerList.add(new Answer(getUser().getCode(), beg.getCode(), "STA_" + getUser().getCode(),
 				Status.NEEDS_ACTION.value()));
 		answerList.add(
@@ -3047,7 +3045,7 @@ public void makePayment(QDataAnswerMessage m) {
 		sendMessage(recipientArr, contextMap, "MSG_CH40_ACCEPT_QUOTE_OWNER", "TOAST");
 
 		/* QUOTER config */
-		HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+		HashMap<String, String> contextMapForDriver = new HashMap<>();
 		contextMapForDriver.put("JOB", beg.getCode());
 		contextMapForDriver.put("OWNER", ownerCode);
 		contextMapForDriver.put("OFFER", offer.getCode());
@@ -3174,7 +3172,7 @@ public void makePayment(QDataAnswerMessage m) {
 					Double deliveryLongitude = job.getValue("PRI_DROPOFF_ADDRESS_LONGITUDE", 0.0);
 
 					/* Add author to the load */
-					List<Answer> answers = new ArrayList<Answer>();
+					List<Answer> answers = new ArrayList<>();
 					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LATITUDE", pickupLatitude + ""));
 					answers.add(
 							new Answer(getUser().getCode(), jobCode, "PRI_POSITION_LONGITUDE", pickupLongitude + ""));
@@ -3252,7 +3250,6 @@ public void makePayment(QDataAnswerMessage m) {
 					publishData(newJobDetails, stakeholderArr);
 
 					/* publishing to Owner */
-					//publishBE(newJobDetails);
 					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", stakeholderArr);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
@@ -3266,7 +3263,7 @@ public void makePayment(QDataAnswerMessage m) {
 					/* Get the sourceCode(Company code) for this User */
 					BaseEntity company = this.baseEntity.getParent(userCode, "LNK_STAFF");
 
-					Link newLoadLinkToLoadList = QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD",
+					QwandaUtils.createLink("GRP_LOADS", loadCode, "LNK_LOAD",
 							company.getCode(), (double) 1, getToken());
 					println("The load has been added to the GRP_LOADS ");
 
@@ -3282,7 +3279,7 @@ public void makePayment(QDataAnswerMessage m) {
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", stakeholderArr);
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
-          this.createNote(jobCode, "Job was created.");
+					this.createNote(jobCode, "Job was created.");
 
 					if (!newJobDetails.getValue("PRI_JOB_IS_SUBMITTED", false)) {
 
@@ -3366,7 +3363,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		LocalDateTime ldt = LocalDateTime.now();
 		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault());
-		String iso8601DateString = ldt.toString(); // zdt.toString(); MUST USE UMT!!!!
+		String iso8601DateString = ldt.toString();
 
 		System.out.println("datetime ::" + iso8601DateString);
 
@@ -3395,17 +3392,23 @@ public void makePayment(QDataAnswerMessage m) {
 		JsonObject codeListView = new JsonObject();
 		codeListView.put("code", "MESSAGE_VIEW");
 		codeListView.put("root", parentCode);
-		// Adding selectedItem info to make this chat selected
+
 		if (chatCode == null || chatCode.isEmpty()) {
 			codeListView.put("selectedItem", "null");
-		} else
+		} 
+		else {
 			codeListView.put("selectedItem", chatCode);
+		}
+			
 		JsonObject convListView = new JsonObject();
 		convListView.put("code", "CONVERSATION_VIEW");
 		if (chatCode == null || chatCode.isEmpty()) {
 			convListView.put("root", "null");
-		} else
+		} 
+		else {
 			convListView.put("root", chatCode);
+		}
+			
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
@@ -3422,9 +3425,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Publish all the messages that belongs to the given chat
 	 */
 	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
-		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
-		// 0, 100, true);
-
+		
 		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
 				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
 				.setSourceStakeholder(getUser().getCode()).addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
@@ -3433,12 +3434,10 @@ public void makePayment(QDataAnswerMessage m) {
 
 		try {
 			sendSearchResults(sendAllMsgs);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (IOException e) {
 			System.out.println("Error! Unable to get Search Rsults");
-			e.printStackTrace();
 		}
-
 	}
 
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
