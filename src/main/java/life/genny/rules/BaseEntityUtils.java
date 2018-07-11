@@ -473,9 +473,25 @@ public class BaseEntityUtils {
 
 			/* we refresh the cache */
 			this.cacheUtil.moveBaseEntity(baseEntityCode, sourceCode, targetCode);
-
-		} catch (IOException e) {
-			e.printStackTrace();
+			
+			/* we check if the source is a bucket */
+			if(sourceCode.startsWith("GRP_")) {
+				
+				BaseEntity parentBe = this.getParent(sourceCode, "LNK_CORE");
+				if(parentBe.getCode().equals("GRP_DASHBOARD") || parentBe.getCode().equals("GRP_BEGS")) {
+					
+					/* it is indeed a bucket */
+					/* we reload the buckets so we remove the existing link in the source */
+					List<QDataBaseEntityMessage> bulk = new ArrayList<>();
+					List<BaseEntity> buckets = this.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
+					bulk.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
+					QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+					VertxUtils.putObject(this.realm, "BUCKETS", this.realm, bucketMsg);
+				}
+			}
+		} 
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 
 		return null;

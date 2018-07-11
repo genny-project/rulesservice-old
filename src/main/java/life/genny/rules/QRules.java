@@ -3395,20 +3395,20 @@ public void makePayment(QDataAnswerMessage m) {
 
 		if (chatCode == null || chatCode.isEmpty()) {
 			codeListView.put("selectedItem", "null");
-		} 
+		}
 		else {
 			codeListView.put("selectedItem", chatCode);
 		}
-			
+
 		JsonObject convListView = new JsonObject();
 		convListView.put("code", "CONVERSATION_VIEW");
 		if (chatCode == null || chatCode.isEmpty()) {
 			convListView.put("root", "null");
-		} 
+		}
 		else {
 			convListView.put("root", chatCode);
 		}
-			
+
 
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
@@ -3425,7 +3425,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Publish all the messages that belongs to the given chat
 	 */
 	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
-		
+
 		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
 				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
 				.setSourceStakeholder(getUser().getCode()).addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
@@ -3434,7 +3434,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		try {
 			sendSearchResults(sendAllMsgs);
-		} 
+		}
 		catch (IOException e) {
 			System.out.println("Error! Unable to get Search Rsults");
 		}
