@@ -5,7 +5,7 @@ import life.genny.rules.QRules;
 
 rule "Send User Company"
     when
-        rules: QRules( isState("SENT_USER")  && !isState("LOOP_SEND_USER_COMPANY") )
+        rules: QRules( isState("SEND_USER_COMPANY")  && !isState("LOOP_SEND_USER_COMPANY") )
      then
      	rules.header();
      	rules.setState("LOOP_SEND_USER_COMPANY");
@@ -17,8 +17,8 @@ rule "Send User Company"
             String companyCode = company.getCode();
             rules.publishCmd(company, "USER_COMPANY");
         }
-        
-        rules.setState("SEND_USER_ROLES");
+
+        rules.setState("SEND_COMPANY_ROLES");
         rules.setState("SENT_USER_COMPANY");
 	    rules.footer();
 end
