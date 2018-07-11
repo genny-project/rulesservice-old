@@ -43,6 +43,8 @@ rule "Trigger Submit Apply BEG"
 					rules.set("applicantBe", rules.getUser());
 
 					rules.setState("LINK_BEG_AND_APPLICATION");
+					rules.setState("SUBMIT_APPLY_BEG_TRIGGERED");
+
 				}
 			}else{
 				rules.println("begCode is null");
