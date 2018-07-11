@@ -5753,7 +5753,10 @@ public void makePayment(QDataAnswerMessage m) {
 				sendSlackNotification(
 						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
 			}
-		} else {
+		}
+    else {
+
+      this.navigateBack();
 			redirectToHomePage();
 			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
 					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
