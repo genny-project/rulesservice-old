@@ -11,6 +11,7 @@ rule "Send Company Roles"
 
      	/* we grab the current user's company */
      	BaseEntity company = rules.getUserCompany();
+
       if(company != null && rules.hasCapability(rules.getUser(), "CAP_UPDATE_ROLES")) {
 
         /* we grab all the linked roles */

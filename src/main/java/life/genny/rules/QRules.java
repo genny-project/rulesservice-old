@@ -3347,30 +3347,18 @@ public void makePayment(QDataAnswerMessage m) {
 
 	public boolean hasCapability(BaseEntity baseEntity, String capability) {
 
-		// Fetch the roles and check the capability attributes of each role
+    /* we grab all the roles attached to the baseEntity */
+		List<BaseEntity> baseEntityRoles = this.baseEntity.getLinkedBaseEntities(baseEntity, "LNK_ROLE");
 
-		List<EntityAttribute> roles = baseEntity.findPrefixEntityAttributes("PRI_IS_");
-		for (EntityAttribute role : roles) { // should store in cached map
+		for (BaseEntity role : baseEntityRoles) {
 
-			Boolean value = role.getValue();
-			if (value) {
+      /* we grab the attached capabilities */
+      String capabilities = role.getValue("LNK_SELECT_CAPABILITY", "");
 
-				String roleBeCode = "ROL_" + role.getAttributeCode().substring("PRI_".length());
-				BaseEntity roleBE = VertxUtils.readFromDDT(roleBeCode, getToken());
-				if (roleBE == null) {
-					continue;
-				}
-
-				Optional<EntityAttribute> optEaCap = roleBE.findEntityAttribute("CAP_"+capability);
-				if (optEaCap.isPresent()) {
-
-					EntityAttribute eaCap = optEaCap.get();
-					if ((eaCap.getValueBoolean() != null) && (eaCap.getValueBoolean())) {
-						return true;
-					}
-				}
-			}
+      /* we check if the role holds the capability */
+      return capabilities.indexOf(capability) > -1;
 		}
+
 		return false;
 	}
 
@@ -4775,46 +4763,46 @@ public void makePayment(QDataAnswerMessage m) {
 	 * been removed from keycloak.
 	 */
 	public void setAdminRoleIfAdmin() {
-		
+
 		String attributeCode = "PRI_IS_ADMIN";
 		BaseEntity user = getUser();
-		
+
 		if (user != null) {
 			try {
-				
+
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
-					
+
 					if (isAdmin == null || !isAdmin) {
 						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
 						isAdminAnswer.setWeight(1.0);
 						this.baseEntity.saveAnswer(isAdminAnswer);
 						setState("USER_ROLE_ADMIN_SET");
 					}
-					
+
 
 					/* we link the user to the admin role */
 					BaseEntity adminRole = this.baseEntity.getRole("ADMIN");
-					
+
 					if(adminRole != null) {
-						
+
 						/* we assign this role to the current user */
 						this.baseEntity.setRole(this.getUser(), adminRole);
 					}
-				} 
+				}
 				else if (!hasRole("admin") && isAdmin != null && isAdmin) {
-					
+
 					isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "FALSE");
 					isAdminAnswer.setWeight(1.0);
 					this.baseEntity.saveAnswer(isAdminAnswer);
 				}
 
-			} 
+			}
 			catch (Exception e) {
 				System.out.println("Error!! while updating " + attributeCode + " attribute value");
 			}
-		} 
+		}
 	}
 
 	/*
@@ -6109,7 +6097,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String proj_realm = System.getenv("PROJECT_REALM");
 		String token = RulesUtils.generateServiceToken(proj_realm);
 
-		addCapability(capabilityManifest,"READ_ROLES", "Manage company roles",token);
+		addCapability(capabilityManifest,"UPDATE_ROLES", "Manage company roles",token);
 		addCapability(capabilityManifest,"READ_NOTES", "See company notes",token);
 		addCapability(capabilityManifest,"ADD_USER", "Add users to the company",token);
 		addCapability(capabilityManifest,"ADD_QUOTE", "Post a quote",token);
