@@ -1,0 +1,43 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+
+rule "Assembly Payment item callback - Check if product payment call back"
+	when
+		rules: QRules( isState("STARTED") && isState("ITEM_CALLBACK_RECEIVED") 
+										 && !isState("DID_PRODUCT_PAYMENT_CALLBACKS_SAVED") )
+	then
+		rules.header();
+			rules.setState("DID_PRODUCT_PAYMENT_CALLBACKS_SAVED");
+			
+			/* Get item callback information */
+			String paymentItemId = rules.getAsString("paymentItemId");
+			String paymentItemStatus = rules.getAsString("paymentItemStatus");
+		    String paymentItemMessage = rules.getAsString("paymentItemMessage");
+
+			rules.println("item id fr callback ::"+paymentItemId);
+			rules.println("item object status ::"+paymentItemStatus);
+			rules.println("item callback status ::"+paymentItemMessage);
+			BaseEntity begBe = null;
+
+			if(paymentItemId != null && paymentItemStatus != null && paymentItemMessage !=null){
+				begBe = rules.baseEntity.getBaseEntityByAttributeAndValue("PRI_ITEM_ID", paymentItemId);
+				if(begBe != null) {
+					rules.println("Call back for Product Payment Received");
+					rules.setState("PRI_ITEM_ID");
+					rules.set("paymentItemIdAttribute", "PRI_ITEM_ID");
+					rules.setState("PRODUCT_PAYMENT_CALLBACK_RECEIVED");
+					
+					rules.set("begCode", begBe.getCode());
+					//rules.set("paymentItemId", paymentItemId);
+					//rules.set("paymentItemStatus", paymentItemStatus);
+					//rules.set("paymentItemMessage", paymentItemMessage);
+				}else{
+					rules.println("This is not the Product Payment Callback");
+				}
+
+		     }
+
+	  rules.footer();
+end

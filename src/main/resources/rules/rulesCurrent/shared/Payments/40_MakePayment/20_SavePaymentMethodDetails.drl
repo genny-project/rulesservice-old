@@ -15,7 +15,7 @@ rule "Make Payment - Step 1 Save Payment Method Details"
 		rules.header();
 			rules.setState("DID_PAYMENT_METHOD_DETAILS_SAVED");
 	        rules.println("Make Payment started");
-		    //rules.showLoading("Processing payment...");
+		    rules.showLoading("Processing payment...");
 
 	        String userCode = rules.getUser().getCode();
 	        String begCode = null;

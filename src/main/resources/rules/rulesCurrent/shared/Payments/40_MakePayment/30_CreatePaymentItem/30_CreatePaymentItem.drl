@@ -44,36 +44,36 @@ rule "Make Payment - Step 2 Create PaymentItem"
 			    
 	            if( srcBe != null && buyerBe != null && sellerBe != null && assemblyToken != null ){
 	                String paymentItemID = null;
-	                if( !paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
-	                    paymentItemID = srcBe.getValue("PRI_"+paymentTitle+"PAYMENT_ITEM_ID", null);
-	                }else{
-	                    paymentItemID = srcBe.getValue("PRI_ITEM_ID", null);
-	                }
-	                
-	                if(paymentItemID == null){                   
-	        					paymentItemID = rules.createPaymentItem(srcBe, buyerBe, sellerBe, amountAttributeCode, paymentTitle, 
-	        											hasFee, assemblyToken);
-	        				rules.println(" The payment item ID is  :: "+paymentItemID); 
-	        			}
-	        			
-	        			BaseEntity begBe = null;
+	                BaseEntity begBe = null;
 	        			if(srcBe.getCode().startsWith("BEG_")) {
 						begBe = srcBe;					
 					}else if (srcBe.getCode().startsWith("OFR_")) {
 						begBe = rules.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
 					}
-	        			      
+					        			
 	        			if(begBe != null) {
+	        				/* Check If Payment Item ID for this transaction already exists */	
+		                if( !paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
+		                    paymentItemID = begBe.getValue("PRI_"+paymentTitle+"PAYMENT_ITEM_ID", null);
+		                }else{
+		                    paymentItemID = begBe.getValue("PRI_ITEM_ID", null);
+		                }	                
+		                if(paymentItemID == null){                   
+		        					paymentItemID = rules.createPaymentItem(srcBe, buyerBe, sellerBe, amountAttributeCode, paymentTitle, 
+		        											hasFee, assemblyToken);
+		        				rules.println("The payment item ID is  :: "+paymentItemID); 
+		        			}
+	        			
 	        			    /* Setting begCode for future user */ 
 	        			    rules.set("begCode", begBe.getCode());
-		        			if(paymentItemID != null && !paymentTitle.isEmpty()){
+		        			if(paymentItemID != null && !paymentTitle.isEmpty() && !paymentTitle.equalsIgnoreCase("JOB_OFFER")){
 			        		   rules.println("Saving Answer");
 					    	   Answer paymentItemIdAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_"+paymentTitle+"_PAYMENT_ITEM_ID", paymentItemID);
 				    		   rules.baseEntity.saveAnswer(paymentItemIdAnswer);
 				    		   rules.set("paymentItemIDAttributeCode", "PRI_"+paymentTitle+"_PAYMENT_ITEM_ID");
 				    		   rules.setState("PAYMENT_ITEM_AVAILABLE");
 				    		   rules.setState("MAKE_PAYMENT");
-		    	     		}else if(paymentItemID != null && paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
+		    	     		}else if(paymentItemID != null  && !paymentTitle.isEmpty() && paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
 		    	     		   rules.println("Saving Answer");
 					    	   Answer paymentItemIdAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_ITEM_ID", paymentItemID);
 				    		   rules.baseEntity.saveAnswer(paymentItemIdAnswer);
@@ -81,9 +81,8 @@ rule "Make Payment - Step 2 Create PaymentItem"
 				    		   rules.setState("PAYMENT_ITEM_AVAILABLE");
 				    		   rules.setState("MAKE_PAYMENT");
 		    	     		}else{
-			    			    rules.println("Error while creating "+ " payment item id");
-			    			    rules.setState("ITEM_CREATION_FAILED");
-			    			    
+			    			    rules.println("Error while creating payment item id");
+			    			    rules.setState("ITEM_CREATION_FAILED");			    			    
 			    			    rules.set("begCode", begBe.getCode());
 			 				rules.set("userCode", rules.getUser().getCode());
 		    		  		}

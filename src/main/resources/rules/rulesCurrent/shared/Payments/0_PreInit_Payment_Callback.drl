@@ -11,10 +11,25 @@ rule "Pre-init Assembly Callback"
         
      then    
         rules.setDrools(drools);
-        rules.println("RULE INIT DATATYPE_ASSEMBLY_CALLBACK: "+m);
-        rules.setState("STARTED");
-
-  		drools.setFocus("payment-callback");
+        		rules.println("RULE INIT DATATYPE_ASSEMBLY_CALLBACK: "+m);
+        		rules.setState("STARTED");
         
+        		/* m has all item callback information, this is coming from Assembly */
+			String paymentItemId = m.getObjectId().toString();
+			String paymentItemStatus = m.getObject_status().toString();
+			String paymentItemMessage = m.getObject_message().toString();
+
+			rules.println("item id fr callback ::"+paymentItemId);
+			rules.println("item object status ::"+paymentItemStatus);
+			rules.println("item callback status ::"+paymentItemMessage);
+			if(paymentItemId != null && paymentItemStatus != null && paymentItemMessage != null){
+				rules.set("paymentItemId", paymentItemId);
+			    rules.set("paymentItemStatus", paymentItemStatus);
+			    rules.set("paymentItemMessage", paymentItemMessage);
+			    
+			    rules.setState("ITEM_CALLBACK_RECEIVED");
+			}
+  			      
+        rules.footer();
       		      
 end

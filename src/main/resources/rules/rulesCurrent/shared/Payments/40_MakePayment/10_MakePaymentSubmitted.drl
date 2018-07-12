@@ -7,7 +7,7 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.Answer;
 
 
-rule " Handle Make Payment"
+rule "Handle Make Payment"
 	when
 		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
 	    rules: QRules( (isState("PAYMENT_ANSWER") && !isState("DID_PAYMENT_HANDLED")) )
