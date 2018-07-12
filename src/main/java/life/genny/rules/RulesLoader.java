@@ -74,11 +74,11 @@ public class RulesLoader {
 			realms = getRealms(rules);
 			realms.stream().forEach(System.out::println);
 			realms.remove("genny");
-			setupKieRules("genny", rules); // run genny rules first
-			for (String realm : realms) {
-				setupKieRules(realm, rules);
+		//	setupKieRules("genny", rules); // run genny rules first
+		//	for (String realm : realms) {
+				setupKieRules(mainrealm, rules);
 				System.out.println("Loaded "+rules);
-			}
+		//	}
 
 			fut.complete();
 		}, failed -> {

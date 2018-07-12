@@ -134,9 +134,10 @@ public class QRules {
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
 	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
+	public static final Boolean devMode = ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))||"TRUE".equalsIgnoreCase(System.getenv("GENNYDEV"))) ? true : false;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
-
+	final static String mainrealm = System.getenv("PROJECT_REALM"); // UGLY
+	
 	final static String DEFAULT_STATE = "NEW";
 
 	private String token;
@@ -248,9 +249,9 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		// if(str == null) {
-		// str = "genny";
-		// }
+		 if(devMode) {
+			 str = 	mainrealm;
+		 }
 
 		return str.toLowerCase();
 	}
