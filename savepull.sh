@@ -5,5 +5,5 @@ git checkout -b ${branch}
 git stash pop
 git add .
 git commit -m "Merge in changes needed for ${branch}"
-git push
+git push --set-upstream origin ${branch} 
 
