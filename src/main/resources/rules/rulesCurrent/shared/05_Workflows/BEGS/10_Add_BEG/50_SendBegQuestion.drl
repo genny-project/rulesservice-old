@@ -18,7 +18,6 @@ rule "Add Internship - Step 5"
       rules.setState("SEND_PRODUCT_QUESTIONS");
 		}
 		else {
-
 			rules.setState("FAILED_CREATE_BEG");
 			rules.setState("FAILED_SEND_QUESTIONS_BEG");
 		}

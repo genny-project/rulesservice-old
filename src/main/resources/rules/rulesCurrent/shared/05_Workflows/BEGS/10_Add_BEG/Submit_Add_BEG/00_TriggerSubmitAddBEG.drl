@@ -28,21 +28,21 @@ rule "Trigger Submit Add BEG"
 		
 		rules.set("begBe", beg);
 
-        BaseEntity product = rules.baseEntity.getLinkedBaseEntity(beg.getCode(), "LNK_BEG", "PRODUCT"); 
-        if(product == null) {
-        		rules.setState("FAILED_CREATE_BEG");
-        		return;
-        }
+        //BaseEntity product = rules.baseEntity.getLinkedBaseEntity(beg.getCode(), "LNK_BEG", "PRODUCT"); 
+       // if(product == null) {
+        //		rules.setState("FAILED_CREATE_BEG");
+        //		return;
+       // }
         
-        rules.set("productBe", product);
+      //  rules.set("productBe", product);
 		
 		BaseEntity company = rules.baseEntity.getLinkedBaseEntity(rules.getUser().getCode(), "LNK_STAFF", "STAFF");
 		if(company != null) {
 			rules.set("companyBe", company);
 		}
 		
-        rules.setState("COPY_PRODUCT_ATTRIBUTES_TO_BEG");
-        
+      //  rules.setState("COPY_PRODUCT_ATTRIBUTES_TO_BEG");
+        rules.setState("LINK_BEG_AND_CREATOR"); 
 		rules.footer();      
 end
 		
