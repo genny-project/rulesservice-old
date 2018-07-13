@@ -10,23 +10,23 @@ import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPayme
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwandautils.JsonUtils;
 
-rule "Delete new payment method - user"
-	agenda-group "payment-method"
+rule "PAYMENT_METHOD_SUBMIT - Delete payment method"
 	when
-		rules: QRules( isState("STARTED") && !isState("DELETED_PAYMENT_METHOD") )
-		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_DELETE_NEW_PAYMENT_METHOD" )
-
+		rules: QRules( isState("STARTED") && isState("USER_DELETE_NEW_PAYMENT_METHOD")
+							 && !isState("LOOP_NEW_PAYMENT_METHOD_ADDED") )
 	then
-
 		rules.header();
+		
+		rules.setState("LOOP_NEW_PAYMENT_METHOD_ADDED");
 
-		String deletedPaymentMethodId = $m.getData().getValue();
+		//String deletedPaymentMethodId = $m.getData().getValue();		
+		String deletedPaymentMethodId =  rules.getAsString("paymentMethodDataString");
 
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
 
        	/* Save tokens */
-       	if(assemblyId != null) {
+       	if(assemblyId != null && deletedPaymentMethodId != null) {
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;

@@ -12,25 +12,24 @@ import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.utils.StringFormattingUtils;
 
-rule "Create new payment method - user"
-	agenda-group "payment-method"
+rule "PAYMENT_METHOD_SUBMIT - Create new payment method"
 	when
-		rules: QRules(  isState("STARTED") && !isState("CREATED_PAYMENT_METHOD") )
-		$m : QEventMessage( event_type == "PAYMENT_SUBMIT" && data.code == "USER_ADD_NEW_PAYMENT_METHOD" )
-
+		rules: QRules( isState("STARTED") && isState("USER_ADD_NEW_PAYMENT_METHOD")
+							 && !isState("LOOP_NEW_PAYMENT_METHOD_ADDED") )
 	then
 
 		rules.header();
 
-		String paymentMethodDataString = $m.getData().getValue();
+		rules.setState("LOOP_NEW_PAYMENT_METHOD_ADDED");
+		//String paymentMethodDataString = $m.getData().getValue();
+		String paymentMethodDataString = rules.getAsString("paymentMethodDataString");
 
 		BaseEntity userBe = rules.getUser();
 		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 
-
        	/* Save tokens */
-       	if(assemblyId != null) {
+       	if(assemblyId != null && paymentMethodDataString != null) {
 
        		rules.println("Refreshing tokens");
 
