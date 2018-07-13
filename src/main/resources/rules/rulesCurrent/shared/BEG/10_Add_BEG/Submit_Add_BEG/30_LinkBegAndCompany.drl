@@ -33,7 +33,7 @@ rule "Submit Add BEG - Step 3"
 			/* project specific state to link beg with host-company representative */
 			rules.setState("LINK_BEG_AND_COMPANY_REP");
 			
-			rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
+			// rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
 		}
 		rules.footer();
 end

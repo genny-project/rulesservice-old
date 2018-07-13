@@ -6,6 +6,7 @@ rule "Submit Add BEG - Step 4"
 	when
 		rules: QRules( 	isState("MOVE_BEG_TO_GRP_NEW_ITEMS") && 
 						isState("CREATED_LINK") && 
+						isState("HOST_COMPANY_REPRESENTATIVE") && 
 						!isState("LOOP_SUBMIT_ADD_BEG_STEP4")) 
 	 then
 	 	rules.header();
