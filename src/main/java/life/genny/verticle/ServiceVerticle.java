@@ -3,8 +3,8 @@ package life.genny.verticle;
 
 import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
+import life.genny.channel.Routers;
 import life.genny.channels.EBCHandlers;
-import life.genny.channels.Routers;
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.rules.RulesLoader;
