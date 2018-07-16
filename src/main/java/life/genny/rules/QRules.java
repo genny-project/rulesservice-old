@@ -5619,10 +5619,11 @@ public void makePayment(QDataAnswerMessage m) {
 				/* Convert dollars into cents */
 				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
 				/* Owner => Buyer */
-				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe);
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode()); 
+				 //Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
 
 				/* Driver => Seller */
-				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe);
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
 
 				/* get item name */
 				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
@@ -5719,10 +5720,10 @@ public void makePayment(QDataAnswerMessage m) {
 				/* Convert dollars into cents */
 				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(amountIncludingGST);
 				/* Owner => Buyer */
-				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe);
-
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode());
+				//Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
 				/* Ch40 => Seller */
-				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe);
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
 
 				/* get item name */
 				String paymentsItemName = null;

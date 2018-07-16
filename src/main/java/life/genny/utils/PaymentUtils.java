@@ -568,10 +568,28 @@ public class PaymentUtils {
 		return company;
 	}
 
-	/* To get payments user with the paymentsId field */
-	public static QPaymentsUser getPaymentsUser(BaseEntity userBe) throws IllegalArgumentException{
-
-		String paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+	/* To get payments user with the paymentsId field 
+	 * If the userBe is prj, like in insurance fee payment than it can have two different assembly user id: one for dev and another for prod.
+	 * Therefore putting that check when getting payment user.
+	 *  */
+	public static QPaymentsUser getPaymentsUser(BaseEntity userBe, Boolean devMode) throws IllegalArgumentException{
+		//QPaymentsUser user = null;
+		String paymentsUserId  = null;
+		//Check if userBe is Project
+		if(userBe.getCode().startsWith("PRJ_")) {
+			Boolean isAssembly = userBe.getValue("PRI_IS_PAYMENTS_ASSEMBLY", null);
+			if(isAssembly) {	 //Check if project uses assembly			
+				if(devMode) { //Check if it is running currently in dev mode
+					// Get dev assembly user id for this project BE
+					paymentsUserId  = userBe.getValue("PRI_DEV_ASSEMBLY_USER_ID", null);
+				}else if(!devMode) {
+					// Get production assembly user id for this project BE
+					paymentsUserId  = userBe.getValue("PRI_PROD_ASSEMBLY_USER_ID", null);
+				}
+			}
+		}else {
+			paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+		}		
 		QPaymentsUser user = new QPaymentsUser(paymentsUserId);
 		return user;
 	}
