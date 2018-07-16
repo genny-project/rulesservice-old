@@ -996,17 +996,17 @@ public class PaymentUtils {
 		return paymentsUserId;
 	}
 
-	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
-		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
-		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
-		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
-
-		QPaymentMethod account = new QPaymentMethod(accountId);
-		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
-
-		return makePaymentObj;
-	}
+//	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
+//		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
+//		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
+//		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+//		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
+//
+//		QPaymentMethod account = new QPaymentMethod(accountId);
+//		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
+//
+//		return makePaymentObj;
+//	}
 
 	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe, String paymentIdAttributeCode) throws IllegalArgumentException {
 		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);

@@ -2650,214 +2650,214 @@ public class QRules {
 
 	}
 
-public void makePayment(QDataAnswerMessage m) {
-
-        showLoading("Processing payment...");
-
-        String userCode = getUser().getCode();
-        String begCode = null;
-        Answer[] dataAnswers = m.getItems();
-        for (Answer answer : dataAnswers) {
-            String targetCode = answer.getTargetCode();
-            String sourceCode = answer.getSourceCode();
-            String attributeCode = answer.getAttributeCode();
-            String value = answer.getValue();
-            begCode = targetCode;
-            println("Payments value ::" + value + "attribute code ::" + attributeCode);
-            /* if this answer is actually an Payment_method, this rule will be triggered */
-            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
-                JsonObject paymentValues = new JsonObject(value);
-                /* { ipAddress, deviceID, accountID } */
-                String ipAddress = paymentValues.getString("ipAddress");
-                String accountId = paymentValues.getString("accountID");
-                String deviceId = paymentValues.getString("deviceID");
-                List<Answer> userSpecificAnswers = new ArrayList<>();
-                if (ipAddress != null) {
-                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
-                    userSpecificAnswers.add(ipAnswer);
-                    this.baseEntity.saveAnswer(ipAnswer);
-                }
-                if (accountId != null) {
-                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
-                    userSpecificAnswers.add(accountIdAnswer);
-                    this.baseEntity.saveAnswer(accountIdAnswer);
-                }
-                if (deviceId != null) {
-                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
-                    userSpecificAnswers.add(deviceIdAnswer);
-                    this.baseEntity.saveAnswer(deviceIdAnswer);
-                }
-                /* bulk answer not working currently, so using individual answers */
-                // saveAnswers(userSpecificAnswers);
-            }
-        }
-        String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-        BaseEntity userBe = getUser();
-        String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
-        if (begCode != null && assemblyId != null) {
-            /* GET beg Base Entity */
-            BaseEntity beg =this.baseEntity.getBaseEntityByCode(begCode);
-            String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
-            if (offerCode != null) {
-                /* Make payment */
-
-                BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
-                String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
-                BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
-
-                /* make payment API */
-                Boolean isMakePaymentSuccess = makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
-
-                /* if make payment succeeds, move bucket and send notifications */
-                if(isMakePaymentSuccess) {
-                		/* GET attributes of OFFER BE */
-                    Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
-                    Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
-                    Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-                    Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
-                    Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-                    Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
-                    Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
-                    List<Answer> answers = new ArrayList<Answer>();
-                    answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
-                    answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
-                    answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
-                    /* Update BEG to have DRIVER_CODE as an attribute */
-                    answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
-                    answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
-                    this.baseEntity.saveAnswers(answers);
-
-                    BaseEntity loadBe = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
-
-                    /* Allocate QUOTER as Driver */
-                    this.baseEntity.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-                    /* Update link between BEG and Accepted OFFER to weight = 100 */
-                    this.baseEntity.updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
-
-                    /* Set PRI_NEXT_ACTION to Disabled for all other Offers */
-                    // get all offers
-                    List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-                    if (offers != null) {
-                        for (BaseEntity be : offers) {
-                            if (!(be.getCode().equals(offerCode))) {
-                                println("The BE is : " + be.getCode());
-                                /* Update PRI_NEXT_ACTION to Disabled */
-                                this.baseEntity.updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
-                            }
-                        }
-                    }
-                    answers = new ArrayList<Answer>();
-                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
-                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-                            Status.NEEDS_NO_ACTION.value()));
-                    /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
-                    String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
-                    println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
-                    publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
-                    publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
-                    publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-                    /* Set progression of LOAD delivery to 0 */
-                    Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-                    answers.add(updateProgressAnswer);
-                    this.baseEntity.saveAnswers(answers);
-                    /* We ask FE to monitor GPS */
-                    geofenceJob(begCode, getUser().getCode(), 10.0);
-                    /* GET all the driver subsribers */
-                    String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-                    if (begRecipients != null) {
-                        println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
-                        println("quoter code ::" + quoterCode);
-                        Set<String> unsubscribeSet = new HashSet<>();
-                        for (String begRecipient : begRecipients) {
-                            if (!begRecipient.equals(quoterCode)) {
-                                unsubscribeSet.add(begRecipient);
-                            }
-                        }
-                        println("unsubscribe set ::" + unsubscribeSet);
-                        String[] unsubscribeArr = new String[unsubscribeSet.size()];
-                        int i = 0;
-                        for (String code : unsubscribeSet) {
-                            unsubscribeArr[i++] = code;
-                        }
-                        /* sending cmd BUCKETVIEW */
-                        // this.redirectToHomePage();
-
-                          /* we hide the job from them */
-
-                        println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
-                        VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
-                    }
-
-                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
-                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
-
-                    // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-                    this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
-                    publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
-
-                    /* Update PRI_NEXT_ACTION = OWNER */
-                    Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
-                    this.baseEntity.saveAnswer(begNextAction);
-                    /* sending cmd BUCKETVIEW */
-                    // this.setState("TRIGGER_HOMEPAGE");
-
-                    //this.reloadCache();
-
-                    /* TOAST :: SUCCESS */
-                    println("Sending success toast since make payment succeeded");
-                    HashMap<String, String> contextMap = new HashMap<String, String>();
-                    contextMap.put("DRIVER", quoterCode);
-                    contextMap.put("JOB", begCode);
-                    contextMap.put("QUOTER", quoterCode);
-                    contextMap.put("OFFER", offer.getCode());
-                    contextMap.put("LOAD", loadBe.getCode());
-
-
-                    String[] recipientArr = { userCode };
-                    /* TOAST :: PAYMENT SUCCESS */
-                    sendMessage(recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-                    sendMessage(recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
-                    /* QUOTER config */
-                    HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-                    contextMapForDriver.put("JOB", begCode);
-                    contextMapForDriver.put("OWNER", userCode);
-                    contextMapForDriver.put("OFFER", offer.getCode());
-                    contextMapForDriver.put("LOAD", loadBe.getCode());
-
-                    String[] recipientArrForDriver = { quoterCode };
-                    /* Sending messages to DRIVER - Email and sms enabled */
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-
-                    /* emails to rejected drivers */
-                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-                    List<String> rejectedDriver = new ArrayList<>();
-                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
-                        for(BaseEntity rejectedBe : rejectedOffers) {
-                            String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
-                            rejectedDriver.add(offerQuoterCode);
-                        }
-                        println("rejected driver list ::"+rejectedDriver.toString());
-                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
-                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
-                    }
-
-                }
-            }
-        }
-
-        this.redirectToHomePage();
-    }
+//public void makePayment(QDataAnswerMessage m) {
+//
+//        showLoading("Processing payment...");
+//
+//        String userCode = getUser().getCode();
+//        String begCode = null;
+//        Answer[] dataAnswers = m.getItems();
+//        for (Answer answer : dataAnswers) {
+//            String targetCode = answer.getTargetCode();
+//            String sourceCode = answer.getSourceCode();
+//            String attributeCode = answer.getAttributeCode();
+//            String value = answer.getValue();
+//            begCode = targetCode;
+//            println("Payments value ::" + value + "attribute code ::" + attributeCode);
+//            /* if this answer is actually an Payment_method, this rule will be triggered */
+//            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
+//                JsonObject paymentValues = new JsonObject(value);
+//                /* { ipAddress, deviceID, accountID } */
+//                String ipAddress = paymentValues.getString("ipAddress");
+//                String accountId = paymentValues.getString("accountID");
+//                String deviceId = paymentValues.getString("deviceID");
+//                List<Answer> userSpecificAnswers = new ArrayList<>();
+//                if (ipAddress != null) {
+//                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
+//                    userSpecificAnswers.add(ipAnswer);
+//                    this.baseEntity.saveAnswer(ipAnswer);
+//                }
+//                if (accountId != null) {
+//                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
+//                    userSpecificAnswers.add(accountIdAnswer);
+//                    this.baseEntity.saveAnswer(accountIdAnswer);
+//                }
+//                if (deviceId != null) {
+//                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
+//                    userSpecificAnswers.add(deviceIdAnswer);
+//                    this.baseEntity.saveAnswer(deviceIdAnswer);
+//                }
+//                /* bulk answer not working currently, so using individual answers */
+//                // saveAnswers(userSpecificAnswers);
+//            }
+//        }
+//        String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+//        BaseEntity userBe = getUser();
+//        String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+//        if (begCode != null && assemblyId != null) {
+//            /* GET beg Base Entity */
+//            BaseEntity beg =this.baseEntity.getBaseEntityByCode(begCode);
+//            String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
+//            if (offerCode != null) {
+//                /* Make payment */
+//
+//                BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
+//                String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
+//                BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
+//
+//                /* make payment API */
+//                Boolean isMakePaymentSuccess = makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
+//
+//                /* if make payment succeeds, move bucket and send notifications */
+//                if(isMakePaymentSuccess) {
+//                		/* GET attributes of OFFER BE */
+//                    Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
+//                    Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
+//                    Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+//                    Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
+//                    Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//                    Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
+//                    Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
+//                    List<Answer> answers = new ArrayList<Answer>();
+//                    answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
+//                    answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
+//                    answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
+//                    /* Update BEG to have DRIVER_CODE as an attribute */
+//                    answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+//                    answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
+//                    this.baseEntity.saveAnswers(answers);
+//
+//                    BaseEntity loadBe = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
+//
+//                    /* Allocate QUOTER as Driver */
+//                    this.baseEntity.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+//
+//                    /* Update link between BEG and Accepted OFFER to weight = 100 */
+//                    this.baseEntity.updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
+//
+//                    /* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+//                    // get all offers
+//                    List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+//                    if (offers != null) {
+//                        for (BaseEntity be : offers) {
+//                            if (!(be.getCode().equals(offerCode))) {
+//                                println("The BE is : " + be.getCode());
+//                                /* Update PRI_NEXT_ACTION to Disabled */
+//                                this.baseEntity.updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+//                            }
+//                        }
+//                    }
+//                    answers = new ArrayList<Answer>();
+//                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
+//                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+//                            Status.NEEDS_NO_ACTION.value()));
+//                    /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
+//                    String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
+//                    println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
+//                    publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
+//                    publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
+//                    publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
+//                    /* Set progression of LOAD delivery to 0 */
+//                    Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+//                    answers.add(updateProgressAnswer);
+//                    this.baseEntity.saveAnswers(answers);
+//                    /* We ask FE to monitor GPS */
+//                    geofenceJob(begCode, getUser().getCode(), 10.0);
+//                    /* GET all the driver subsribers */
+//                    String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+//                    if (begRecipients != null) {
+//                        println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
+//                        println("quoter code ::" + quoterCode);
+//                        Set<String> unsubscribeSet = new HashSet<>();
+//                        for (String begRecipient : begRecipients) {
+//                            if (!begRecipient.equals(quoterCode)) {
+//                                unsubscribeSet.add(begRecipient);
+//                            }
+//                        }
+//                        println("unsubscribe set ::" + unsubscribeSet);
+//                        String[] unsubscribeArr = new String[unsubscribeSet.size()];
+//                        int i = 0;
+//                        for (String code : unsubscribeSet) {
+//                            unsubscribeArr[i++] = code;
+//                        }
+//                        /* sending cmd BUCKETVIEW */
+//                        // this.redirectToHomePage();
+//
+//                          /* we hide the job from them */
+//
+//                        println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
+//                        VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
+//                    }
+//
+//                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
+//                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
+//
+//                    // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+//                    this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
+//                    publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
+//
+//                    /* Update PRI_NEXT_ACTION = OWNER */
+//                    Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
+//                    this.baseEntity.saveAnswer(begNextAction);
+//                    /* sending cmd BUCKETVIEW */
+//                    // this.setState("TRIGGER_HOMEPAGE");
+//
+//                    //this.reloadCache();
+//
+//                    /* TOAST :: SUCCESS */
+//                    println("Sending success toast since make payment succeeded");
+//                    HashMap<String, String> contextMap = new HashMap<String, String>();
+//                    contextMap.put("DRIVER", quoterCode);
+//                    contextMap.put("JOB", begCode);
+//                    contextMap.put("QUOTER", quoterCode);
+//                    contextMap.put("OFFER", offer.getCode());
+//                    contextMap.put("LOAD", loadBe.getCode());
+//
+//
+//                    String[] recipientArr = { userCode };
+//                    /* TOAST :: PAYMENT SUCCESS */
+//                    sendMessage(recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+//                    sendMessage(recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+//                    /* QUOTER config */
+//                    HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+//                    contextMapForDriver.put("JOB", begCode);
+//                    contextMapForDriver.put("OWNER", userCode);
+//                    contextMapForDriver.put("OFFER", offer.getCode());
+//                    contextMapForDriver.put("LOAD", loadBe.getCode());
+//
+//                    String[] recipientArrForDriver = { quoterCode };
+//                    /* Sending messages to DRIVER - Email and sms enabled */
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+//
+//                    /* emails to rejected drivers */
+//                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+//                    List<String> rejectedDriver = new ArrayList<>();
+//                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
+//                        for(BaseEntity rejectedBe : rejectedOffers) {
+//                            String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
+//                            rejectedDriver.add(offerQuoterCode);
+//                        }
+//                        println("rejected driver list ::"+rejectedDriver.toString());
+//                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
+//                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+//                    }
+//
+//                }
+//            }
+//        }
+//
+//        this.redirectToHomePage();
+//    }
 
 	public void updateGPS(QDataGPSMessage m) {
 
@@ -5601,90 +5601,90 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	/* Creation of payment item */
-	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity buyerBe,
-			BaseEntity sellerBe, String paymentsToken) {
-		String itemId = null;
-
-		if (offerBe != null && begBe != null) {
-			try {
-
-				/* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
-				Money buyerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-				/* If pricing calculation fails */
-				if (buyerAmountWithoutFee == null) {
-					throw new IllegalArgumentException(
-							"Something went wrong during pricing calculations. Price for item cannot be empty");
-				}
-
-				/* Convert dollars into cents */
-				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
-				/* Owner => Buyer */
-				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode()); 
-				 //Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
-
-				/* Driver => Seller */
-				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
-
-				/* get item name */
-				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
-				println("payments item name ::" + paymentsItemName);
-
-				/* Not mandatory */
-				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
-
-				try {
-					/* get fee */
-					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
-					System.out.println("payment fee Id ::" + paymentFeeId);
-					String[] feeArr = { paymentFeeId };
-
-					/* bundling all the info into Item object */
-					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
-							PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
-							buyerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
-					/* Hitting payments item creation API */
-					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
-							paymentsToken);
-
-					if (itemCreationResponse != null) {
-						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse,
-								QPaymentsAssemblyItemResponse.class);
-						itemId = itemResponsePojo.getId();
-					}
-
-				} catch (PaymentException e) {
-					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);
-				}
-
-			} catch (IllegalArgumentException e) {
-
-				/* Redirect to home if item creation fails */
-				redirectToHomePage();
-
-				String jobId = begBe.getValue("PRI_JOB_ID", null);
-				BaseEntity userBe = getUser();
-
-				/* Send toast */
-				String toastMessage = "Payments item creation failed for the job with ID : #" + jobId + ", "
-						+ e.getMessage();
-
-				if (userBe != null) {
-					String[] recipientArr = { userBe.getCode() };
-					this.sendToastNotification(recipientArr, toastMessage, "warning");
-				}
-
-				/* Send slack notification */
-				sendSlackNotification(toastMessage);
-			}
-		} else {
-			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "
-					+ begBe.getCode() + ", OFFER CODE :" + offerBe.getCode();
-			sendSlackNotification(slackMessage);
-		}
-
-		return itemId;
-	}
+//	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity buyerBe,
+//			BaseEntity sellerBe, String paymentsToken) {
+//		String itemId = null;
+//
+//		if (offerBe != null && begBe != null) {
+//			try {
+//
+//				/* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
+//				Money buyerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//				/* If pricing calculation fails */
+//				if (buyerAmountWithoutFee == null) {
+//					throw new IllegalArgumentException(
+//							"Something went wrong during pricing calculations. Price for item cannot be empty");
+//				}
+//
+//				/* Convert dollars into cents */
+//				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
+//				/* Owner => Buyer */
+//				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode()); 
+//				 //Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
+//
+//				/* Driver => Seller */
+//				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
+//
+//				/* get item name */
+//				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
+//				println("payments item name ::" + paymentsItemName);
+//
+//				/* Not mandatory */
+//				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+//
+//				try {
+//					/* get fee */
+//					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
+//					System.out.println("payment fee Id ::" + paymentFeeId);
+//					String[] feeArr = { paymentFeeId };
+//
+//					/* bundling all the info into Item object */
+//					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
+//							PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
+//							buyerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
+//					/* Hitting payments item creation API */
+//					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
+//							paymentsToken);
+//
+//					if (itemCreationResponse != null) {
+//						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse,
+//								QPaymentsAssemblyItemResponse.class);
+//						itemId = itemResponsePojo.getId();
+//					}
+//
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//
+//			} catch (IllegalArgumentException e) {
+//
+//				/* Redirect to home if item creation fails */
+//				redirectToHomePage();
+//
+//				String jobId = begBe.getValue("PRI_JOB_ID", null);
+//				BaseEntity userBe = getUser();
+//
+//				/* Send toast */
+//				String toastMessage = "Payments item creation failed for the job with ID : #" + jobId + ", "
+//						+ e.getMessage();
+//
+//				if (userBe != null) {
+//					String[] recipientArr = { userBe.getCode() };
+//					this.sendToastNotification(recipientArr, toastMessage, "warning");
+//				}
+//
+//				/* Send slack notification */
+//				sendSlackNotification(toastMessage);
+//			}
+//		} else {
+//			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "
+//					+ begBe.getCode() + ", OFFER CODE :" + offerBe.getCode();
+//			sendSlackNotification(slackMessage);
+//		}
+//
+//		return itemId;
+//	}
 
 	/*
 	 *  Creation of insurance payment item
@@ -5815,30 +5815,30 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 	
 	/* Creates a new fee in external payments-service from a offer baseEntity */
-	private String createPaymentFee(BaseEntity offerBe, String paymentsToken) throws IllegalArgumentException {
-
-		String paymentFeeId = null;
-		try {
-			/* get fee object with all fee-info */
-			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
-			if (feeObj != null) {
-				try {
-					/* Hit the fee creation API */
-					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
-					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
-
-					/* Get the fee ID */
-					paymentFeeId = feePojo.getId();
-				} catch (PaymentException e) {
-					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e.getMessage());
-		}
-		return paymentFeeId;
-	}
+//	private String createPaymentFee(BaseEntity offerBe, String paymentsToken) throws IllegalArgumentException {
+//
+//		String paymentFeeId = null;
+//		try {
+//			/* get fee object with all fee-info */
+//			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
+//			if (feeObj != null) {
+//				try {
+//					/* Hit the fee creation API */
+//					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
+//					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+//
+//					/* Get the fee ID */
+//					paymentFeeId = feePojo.getId();
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//			}
+//		} catch (IllegalArgumentException e) {
+//			throw new IllegalArgumentException(e.getMessage());
+//		}
+//		return paymentFeeId;
+//	}
 
 	/* Creates a new fee in external payments-service from a payment source baseEntity */
 	private List<String> createPaymentFee(BaseEntity srcBe, BaseEntity projectBe, String paymentsToken) throws IllegalArgumentException {
@@ -5888,68 +5888,68 @@ public void makePayment(QDataAnswerMessage m) {
 		return paymentFeeIds;
 	}
 	
-	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
-			String authToken) {
-
-		Boolean isMakePaymentSuccess = false;
-		if (begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
-
-			try {
-				String itemId = begBe.getValue("PRI_ITEM_ID", null);
-				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
-
-				/* To get the type of payment (Bank account / card) */
-				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe,
-						makePaymentObj.getAccount().getId());
-
-				/*
-				 * if the payment type is bank account, there is another step of debit
-				 * authorization
-				 */
-				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
-				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
-					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);
-				}
-
-				/* Step 2 for bankaccount : Make payment API call */
-				/* Step 1 for card : Make payment API call */
-				try {
-
-					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj),
-							authToken);
-					isMakePaymentSuccess = true;
-					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
-							QPaymentsAssemblyItemResponse.class);
-
-					/* save deposit reference as an attribute to beg */
-					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
-					this.baseEntity.saveAnswer(depositReferenceAnswer);
-
-				} catch (PaymentException e) {
-					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);
-				}
-
-			} catch (IllegalArgumentException e) {
-				redirectToHomePage();
-				String begTitle = begBe.getValue("PRI_TITLE", null);
-				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
-				String[] recipientArr = { buyerBe.getCode() };
-				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
-						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
-				this.sendToastNotification(recipientArr, toastMessage, "warning");
-				sendSlackNotification(
-						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
-			}
-		} else {
-			redirectToHomePage();
-			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
-					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
-					+ offerBe.getCode();
-			sendSlackNotification(slackMessage);
-		}
-		return isMakePaymentSuccess;
-	}
+//	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
+//			String authToken) {
+//
+//		Boolean isMakePaymentSuccess = false;
+//		if (begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
+//
+//			try {
+//				String itemId = begBe.getValue("PRI_ITEM_ID", null);
+//				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
+//
+//				/* To get the type of payment (Bank account / card) */
+//				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe,
+//						makePaymentObj.getAccount().getId());
+//
+//				/*
+//				 * if the payment type is bank account, there is another step of debit
+//				 * authorization
+//				 */
+//				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
+//				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
+//					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);
+//				}
+//
+//				/* Step 2 for bankaccount : Make payment API call */
+//				/* Step 1 for card : Make payment API call */
+//				try {
+//
+//					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj),
+//							authToken);
+//					isMakePaymentSuccess = true;
+//					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
+//							QPaymentsAssemblyItemResponse.class);
+//
+//					/* save deposit reference as an attribute to beg */
+//					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
+//					this.baseEntity.saveAnswer(depositReferenceAnswer);
+//
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//
+//			} catch (IllegalArgumentException e) {
+//				redirectToHomePage();
+//				String begTitle = begBe.getValue("PRI_TITLE", null);
+//				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
+//				String[] recipientArr = { buyerBe.getCode() };
+//				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
+//						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
+//				this.sendToastNotification(recipientArr, toastMessage, "warning");
+//				sendSlackNotification(
+//						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
+//			}
+//		} else {
+//			redirectToHomePage();
+//			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
+//					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
+//					+ offerBe.getCode();
+//			sendSlackNotification(slackMessage);
+//		}
+//		return isMakePaymentSuccess;
+//	}
 	
 	/*
 	 *  @param: buyerBe - is the buyer BE, sellerBe - is the seller BE, srcBe - is the BaseEntity that has paymentAmount, 
@@ -6038,36 +6038,36 @@ public void makePayment(QDataAnswerMessage m) {
 		return isMakePaymentSuccess;
 	}
 
-	/*
-	 * bank account payments needs to go through one more API call - Debit authority
-	 */
-	private void debitAuthorityForBankAccount(BaseEntity offerBe, QMakePayment makePaymentObj, String authToken)
-			throws IllegalArgumentException {
-
-		Money offerBuyerPriceString = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-
-		/* if price calculation fails, we handle it */
-		if (offerBuyerPriceString == null) {
-			throw new IllegalArgumentException(
-					"Something went wrong during pricing calculation. Item price cannot be empty");
-		}
-
-		try {
-			/* Get the rounded money in cents */
-			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
-
-			/* bundling the debit-authority object */
-			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
-					makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
-
-			/* API call for debit authorization for bank-account */
-			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
-
-		} catch (PaymentException e) {
-			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-			throw new IllegalArgumentException(getFormattedErrorMessage);
-		}
-	}
+//	/*
+//	 * bank account payments needs to go through one more API call - Debit authority
+//	 */
+//	private void debitAuthorityForBankAccount(BaseEntity offerBe, QMakePayment makePaymentObj, String authToken)
+//			throws IllegalArgumentException {
+//
+//		Money offerBuyerPriceString = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//
+//		/* if price calculation fails, we handle it */
+//		if (offerBuyerPriceString == null) {
+//			throw new IllegalArgumentException(
+//					"Something went wrong during pricing calculation. Item price cannot be empty");
+//		}
+//
+//		try {
+//			/* Get the rounded money in cents */
+//			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
+//
+//			/* bundling the debit-authority object */
+//			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
+//					makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
+//
+//			/* API call for debit authorization for bank-account */
+//			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
+//
+//		} catch (PaymentException e) {
+//			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//			throw new IllegalArgumentException(getFormattedErrorMessage);
+//		}
+//	}
 	
 	
 	/*
