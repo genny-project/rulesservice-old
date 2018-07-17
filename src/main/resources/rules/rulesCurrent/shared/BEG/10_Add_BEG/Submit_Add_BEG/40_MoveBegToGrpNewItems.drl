@@ -4,9 +4,9 @@ import life.genny.rules.QRules;
 /* Move BEG from GRP_DRAFTS >>> GRP_NEW_ITEMS  */
 rule "Submit Add BEG - Step 4"
 	when
-		rules: QRules( 	isState("MOVE_BEG_TO_GRP_NEW_ITEMS") && 
+		rules: QRules( 	isState("LINK_BEG_AND_COMPANY_REP") && 
 						isState("CREATED_LINK") && 
-						isState("HOST_COMPANY_REPRESENTATIVE") && 
+						isState("COMPANY") && 
 						!isState("LOOP_SUBMIT_ADD_BEG_STEP4")) 
 	 then
 	 	rules.header();
