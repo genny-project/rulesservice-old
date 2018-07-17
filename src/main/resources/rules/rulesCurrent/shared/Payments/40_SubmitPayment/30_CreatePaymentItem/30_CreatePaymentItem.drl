@@ -1,10 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import org.javamoney.moneta.Money;
-import life.genny.utils.MoneyHelper;
-import life.genny.utils.PaymentUtils;
-
+import life.genny.payments.QPaymentsProvider;
 
 rule "Make Payment - Step 2 Create PaymentItem"
 	when
@@ -32,17 +29,20 @@ rule "Make Payment - Step 2 Create PaymentItem"
 	        
 	        if(paymentTitle != null && sourceEntityCode != null && amountAttributeCode != null &&
 	                    sellerCode != null && buyerCode != null ){
+	                    
+	            QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+				String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
+			
 	            rules.setState(paymentTitle+"_PAYMENT");
 	            BaseEntity srcBe =  rules.baseEntity.getBaseEntityByCode(sourceEntityCode);
 	            BaseEntity buyerBe =  rules.baseEntity.getBaseEntityByCode(buyerCode);  
 	            BaseEntity sellerBe =  rules.baseEntity.getBaseEntityByCode(sellerCode);
-	            String assemblyToken = PaymentUtils.getAssemblyAuthKey();
+	            
 	            
 			    rules.println(" The buyer be is  :: "+buyerBe.getCode());
 				rules.println(" The seller be is  :: "+sellerBe.getCode());
-			    rules.println(" The payments token is :: "+assemblyToken);
 			    
-	            if( srcBe != null && buyerBe != null && sellerBe != null && assemblyToken != null ){
+	            if( srcBe != null && buyerBe != null && sellerBe != null && assemblyAuthToken != null ){
 	                String paymentItemID = null;
 	                BaseEntity begBe = null;
 	        			if(srcBe.getCode().startsWith("BEG_")) {
@@ -59,8 +59,8 @@ rule "Make Payment - Step 2 Create PaymentItem"
 		                    paymentItemID = begBe.getValue("PRI_ITEM_ID", null);
 		                }	                
 		                if(paymentItemID == null){                   
-		        					paymentItemID = rules.createPaymentItem(srcBe, buyerBe, sellerBe, amountAttributeCode, paymentTitle, 
-		        											hasFee, assemblyToken);
+		        					paymentItemID = paymentsProvider.createPaymentItem(srcBe, buyerBe, sellerBe, amountAttributeCode, paymentTitle, 
+		        											hasFee, assemblyAuthToken);
 		        				rules.println("The payment item ID is  :: "+paymentItemID); 
 		        			}
 	        			
