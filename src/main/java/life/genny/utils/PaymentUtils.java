@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
+import life.genny.payments.QPaymentsProvider;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
@@ -64,26 +65,6 @@ public class PaymentUtils {
 	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
 	public static final String PROVIDER_TYPE_BANK = "bank";
 
-	/**
-	* Returns the authentication key for the payments service - key is generated as per documentation here
-	* https://github.com/genny-project/payments/blob/master/docs/auth-tokens.md
-	*/
-	@SuppressWarnings("unchecked")
-	public static String getAssemblyAuthKey() {
-		/* Fetch marketplace information from environmnt variables */
-		String paymentMarketPlace = System.getenv("PAYMENT_MARKETPLACE_NAME");
-		String paymentToken = System.getenv("PAYMENT_TOKEN");
-		String paymentSecret = System.getenv("PAYMENT_SECRET");
-
-		/* Create the data for the authentication token */
-		JSONObject authObj = new JSONObject();
-		authObj.put("tenant", paymentMarketPlace);
-		authObj.put("token", paymentToken);
-		authObj.put("secret", paymentSecret);
-
-		/* Return the base 64 encoded authentication token */
-		return base64Encoder(authObj.toJSONString());
-	}
 
 	/* Encoded a UTF8 string in Base64 */
 	public static String base64Encoder(String plainString) {
@@ -252,13 +233,14 @@ public class PaymentUtils {
 	}
 
 	/* Checks whether a Assembly user with the provided ID exists already */
-	public static Boolean checkIfAssemblyUserExists(String assemblyUserId) {
+	public static Boolean checkIfAssemblyUserExists(String assemblyUserId, QPaymentsProvider paymentsProvider) {
 		Boolean isExists = false;
 
 		/* If a user ID was provided then... */
 		if(assemblyUserId != null) {
 			/* Get an authentication token for the API */
-			String authToken = getAssemblyAuthKey();
+			
+			String authToken = paymentsProvider.getPaymentsAuthKey();
 			String assemblyUserString = null;
 
 			/* Attempt to get the user with the specified ID, if it returns an error we know the user doesn't exist */

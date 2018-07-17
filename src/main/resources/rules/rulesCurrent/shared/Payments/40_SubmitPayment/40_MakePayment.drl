@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import life.genny.payments.QPaymentsProvider;
 
 rule "Make Payment - Step 3 Make Payment"
 	when
@@ -17,6 +18,8 @@ rule "Make Payment - Step 3 Make Payment"
 			String amountAttributeCode = rules.getKeyValue("PaymentAmountAttributeCode");
 			String sellerCode = rules.getKeyValue("PaymentSeller");
 			String buyerCode = rules.getKeyValue("PaymentBuyer");
+			QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+			String assemblyToken = paymentsProvider.getPaymentsAuthKey();
 						
 			rules.println("paymentTitle :: "+paymentTitle);
 			rules.println("srcEntityCode :: "+sourceEntityCode);
@@ -30,13 +33,11 @@ rule "Make Payment - Step 3 Make Payment"
 	            BaseEntity srcBe =  rules.baseEntity.getBaseEntityByCode(sourceEntityCode);
 	            BaseEntity buyerBe =  rules.baseEntity.getBaseEntityByCode(buyerCode);  
 	            BaseEntity sellerBe =  rules.baseEntity.getBaseEntityByCode(sellerCode);
-	            String assemblyToken = PaymentUtils.getAssemblyAuthKey();
 	            
 			    rules.println(" The buyer be is  :: "+buyerBe.getCode());
 				rules.println(" The seller be is  :: "+sellerBe.getCode());
-			    rules.println(" The payments token is :: "+assemblyToken);
 			    
-	        	 	Boolean paymentDone = rules.makePayment(buyerBe, sellerBe, srcBe, paymentItemIdAttributeCode,
+	        	 	Boolean paymentDone = paymentsProvider.makePayment(buyerBe, sellerBe, srcBe, paymentItemIdAttributeCode,
 														amountAttributeCode, paymentTitle, assemblyToken);
 				
 			    rules.setState("PAYMENT_DONE"); 

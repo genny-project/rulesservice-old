@@ -3,8 +3,7 @@ package life.genny.rules;
 import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
-import life.genny.utils.PaymentUtils;
-
+import life.genny.payments.QPaymentsProvider;
 
 
 rule "Payment creation failure - Check for existing payment user in payments-service"
@@ -19,10 +18,11 @@ rule "Payment creation failure - Check for existing payment user in payments-ser
 	     rules.setState("LOOP_CHECK_PAYMENTS_USER_EXISTS");
 	     	     
 	     /* get assembly authKey   */
-	     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+	     QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+		String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
 	
 		/* Creation of assembly user will fail if user-email already exists in assembly! So fetching the existing assembly user ID here */     	
-	     String existingAssemblyId = rules.findExistingPaymentsUserAndSetAttribute(assemblyAuthToken);
+	     String existingAssemblyId = paymentsProvider.findExistingPaymentsUserAndSetAttribute(assemblyAuthToken);
 	  		
 	  	if(existingAssemblyId != null) {
 	  		Answer assemblyIdAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_USER_ID", existingAssemblyId);

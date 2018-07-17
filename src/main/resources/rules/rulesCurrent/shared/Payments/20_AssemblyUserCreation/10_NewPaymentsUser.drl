@@ -4,7 +4,7 @@ import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.utils.PaymentUtils;
-
+import life.genny.payments.QPaymentsProvider;
 
 
 rule "New Payments User"
@@ -18,15 +18,16 @@ rule "New Payments User"
 
 	     rules.setState("LOOP_ASSEMBLY_USER_CREATION");
 	
-	     /* get assembly authKey   */
-	     String assemblyAuthToken = PaymentUtils.getAssemblyAuthKey();
+	    /* get assembly authKey   */
+	    QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+		String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
 	
 	     /*  Creates assembly userId */
 	     String assemblyId = PaymentUtils.getAssemblyId(rules.getToken());
 	
 	
 	     /* logic to create assembly user & set the payments userProfileExists flag  */
-	     assemblyId = rules.paymentUserCreation(assemblyId, assemblyAuthToken);
+	     assemblyId = paymentsProvider.paymentUserCreation(assemblyId, assemblyAuthToken);
 	
 	     if(assemblyId != null) {
 	      /* Creates a new attribute for assembly user ID */

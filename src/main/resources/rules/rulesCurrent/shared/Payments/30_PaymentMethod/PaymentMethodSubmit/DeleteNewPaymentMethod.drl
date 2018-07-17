@@ -9,6 +9,7 @@ import java.util.List;
 import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwandautils.JsonUtils;
+import life.genny.payments.QPaymentsProvider;
 
 rule "PAYMENT_METHOD_SUBMIT - Delete payment method"
 	when
@@ -22,16 +23,18 @@ rule "PAYMENT_METHOD_SUBMIT - Delete payment method"
 		//String deletedPaymentMethodId = $m.getData().getValue();		
 		String deletedPaymentMethodId =  rules.getAsString("paymentMethodDataString");
 
-		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
        	String assemblyId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
+       	
+       	QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+		String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
 
        	/* Save tokens */
        	if(assemblyId != null && deletedPaymentMethodId != null) {
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
-       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
+       		oneTimeTransactionCardToken = paymentsProvider.fetchOneTimePaymentsToken(assemblyId, assemblyAuthToken, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = paymentsProvider.fetchOneTimePaymentsToken(assemblyId, assemblyAuthToken, AuthorizationPaymentType.bank);
 
 			Answer cardTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
@@ -64,9 +67,9 @@ rule "PAYMENT_METHOD_SUBMIT - Delete payment method"
 						} else {
 							if(PaymentUtils.isBankAccount(paymentMethodObject)) {
 
-								isDeleted = rules.deleteBankAccount(deletedPaymentMethodId, assemblyAuthKey);
+								isDeleted = paymentsProvider.deleteBankAccount(deletedPaymentMethodId, assemblyAuthToken);
 							} else {
-								isDeleted = rules.deleteCard(deletedPaymentMethodId, assemblyAuthKey);
+								isDeleted = paymentsProvider.deleteCard(deletedPaymentMethodId, assemblyAuthToken);
 							}
 						}
 					}

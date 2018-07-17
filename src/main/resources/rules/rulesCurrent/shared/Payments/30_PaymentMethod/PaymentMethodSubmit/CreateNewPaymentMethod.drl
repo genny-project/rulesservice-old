@@ -6,11 +6,12 @@ import life.genny.qwanda.Answer;
 /* Sorry Adam if you read this */
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import life.genny.utils.PaymentUtils;
 import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.utils.StringFormattingUtils;
+import life.genny.utils.PaymentUtils;
+import life.genny.payments.QPaymentsProvider;
 
 rule "PAYMENT_METHOD_SUBMIT - Create new payment method"
 	when
@@ -25,8 +26,9 @@ rule "PAYMENT_METHOD_SUBMIT - Create new payment method"
 		String paymentMethodDataString = rules.getAsString("paymentMethodDataString");
 
 		BaseEntity userBe = rules.getUser();
-		String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
 		String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+		QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+		String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
 
        	/* Save tokens */
        	if(assemblyId != null && paymentMethodDataString != null) {
@@ -35,8 +37,8 @@ rule "PAYMENT_METHOD_SUBMIT - Create new payment method"
 
   			String oneTimeTransactionCardToken = null;
   			String oneTimeTransactionBankToken = null;
-       		oneTimeTransactionCardToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.card);
-       		oneTimeTransactionBankToken = rules.fetchOneTimePaymentsToken(assemblyId, assemblyAuthKey, AuthorizationPaymentType.bank);
+       		oneTimeTransactionCardToken = paymentsProvider.fetchOneTimePaymentsToken(assemblyId, assemblyAuthToken, AuthorizationPaymentType.card);
+       		oneTimeTransactionBankToken = paymentsProvider.fetchOneTimePaymentsToken(assemblyId, assemblyAuthToken, AuthorizationPaymentType.bank);
 
 			Answer cardTokenAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_ASSEMBLY_CARD_TOKEN", oneTimeTransactionCardToken);
 			Answer bankTokenAnswer = new Answer(userBe.getCode(), userBe.getCode(), "PRI_ASSEMBLY_BANK_TOKEN", oneTimeTransactionBankToken);
@@ -66,7 +68,7 @@ rule "PAYMENT_METHOD_SUBMIT - Create new payment method"
 			 /* check if the payment method is a bank account */
 			 if(isBankAccount) {
 			 	rules.println("The payment method is BANK ACCOUNT, and hence disbursing it to Assembly");
-			 	isDisbursementSuccess = rules.disburseAccount(assemblyId, paymentMethod, assemblyAuthKey);
+			 	isDisbursementSuccess = paymentsProvider.disburseAccount(assemblyId, paymentMethod, assemblyAuthToken);
 			 }
 
 			String userCurrentPaymentMethods = userBe.getValue("PRI_USER_PAYMENT_METHODS", null);

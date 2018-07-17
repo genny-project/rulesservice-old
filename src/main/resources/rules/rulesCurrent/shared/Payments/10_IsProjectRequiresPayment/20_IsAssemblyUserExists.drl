@@ -3,6 +3,7 @@ package life.genny.rules;
 import life.genny.rules.RulesUtils;
 import life.genny.rules.QRules;
 import life.genny.utils.PaymentUtils;
+import life.genny.payments.QPaymentsProvider;
 
 rule "Check if Payments User Exists"
 	agenda-group "ispayments"
@@ -14,11 +15,13 @@ rule "Check if Payments User Exists"
      	rules.header();
  
  		rules.setState("DID_ASSEMBLY_USER_CHECKED");
-	    String assemblyUserId = rules.getUser().getValue("PRI_ASSEMBLY_USER_ID", null);
+ 		BaseEntity userBe = rules.getUser();
+	    String assemblyUserId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
 	     
 	     if(assemblyUserId != null) {
-	     
-	     	 Boolean isExists = PaymentUtils.checkIfAssemblyUserExists(assemblyUserId);
+	     	 
+	     	 QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+	     	 Boolean isExists = PaymentUtils.checkIfAssemblyUserExists(assemblyUserId, paymentsProvider);
 	     	 if(!isExists) {
 	     	 	rules.println("Invalid assembly ID for this tenant...creating new assembly user");
 	     	 	rules.setState("NEW_ASSEMBLY_USER_CREATION");
