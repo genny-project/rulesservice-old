@@ -178,7 +178,7 @@ public class QRules {
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 			
-			this.paymentsFactory = new QPaymentsFactory(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm(), this.eventBus);
+			this.paymentsFactory = new QPaymentsFactory(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm(), this.eventBus, this.drools);
 
 		} catch (Exception e) {
 
@@ -6527,6 +6527,16 @@ public class QRules {
 			return paymentsFactory.getMessageProvider(serviceProvider);
 		}
 		return null;
+	}
+
+	public void existingUserWorkflow() {
+		/*
+		 * Payments creation will fail if user already exists. In this case we check if
+		 * the user is already available for the email ID, and fetch the userId
+		 */
+		setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
+		drools.setFocus("payments");
+		
 	}
 	
 }

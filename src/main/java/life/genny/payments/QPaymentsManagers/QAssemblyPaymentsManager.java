@@ -59,11 +59,12 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 	KnowledgeHelper drools;
 
 
-	public QAssemblyPaymentsManager(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm, EventBus eventBus) {
+	public QAssemblyPaymentsManager(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm, EventBus eventBus, KnowledgeHelper drools) {
 
 		this.decodedMapToken = decodedMapToken;
 		this.token = token;
 		this.eventBus = eventBus;
+		this.drools = drools;
 		this.rules = new QRules(this.eventBus, this.token, this.decodedMapToken);
 	}
 	
@@ -71,6 +72,7 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 	* Returns the authentication key for the payments service - key is generated as per documentation here
 	* https://github.com/genny-project/payments/blob/master/docs/auth-tokens.md
 	*/
+	@SuppressWarnings("unchecked")
 	@Override
 	public String getPaymentsAuthKey() {
 		/* Fetch marketplace information from environmnt variables */
@@ -233,7 +235,7 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 				 * the user is already available for the email ID, and fetch the userId
 				 */
 				rules.setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
-				drools.setFocus("payments");
+				this.drools.setFocus("payments");
 
 			}
 
