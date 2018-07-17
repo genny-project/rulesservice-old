@@ -48,8 +48,8 @@ rule "Create New Role - Step 4 - Submit"
         				rules.baseEntity.setRole(company, newRoleBe);
         				
         				/* we resend the company roles */
-        				rules.setState("LOOP_SEND_PROJECT");
-        				rules.setState("SEND_ROLES");
+        				rules.setState("LOOP_SEND_COMPANY_STAFF");
+        				rules.setState("SEND_COMPANY_ROLES");
         			}
         		}
         }
