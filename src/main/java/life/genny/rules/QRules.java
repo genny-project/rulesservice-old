@@ -3300,6 +3300,7 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 		}
 
+		this.reloadCache();
 		this.redirectToHomePage();
 		drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
