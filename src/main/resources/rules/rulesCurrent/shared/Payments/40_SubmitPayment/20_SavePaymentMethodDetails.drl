@@ -1,0 +1,60 @@
+
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.Answer;
+
+
+rule "Make Payment - Step 1 Save Payment Method Details"
+	when
+	    m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+	    rules: QRules( (isState("START_PAYMENT_PROCESS") && !isState("DID_PAYMENT_METHOD_DETAILS_SAVED")) )
+	then
+		rules.header();
+			rules.setState("DID_PAYMENT_METHOD_DETAILS_SAVED");
+	        rules.println("Make Payment started");
+		    rules.showLoading("Processing payment...");
+
+	        String userCode = rules.getUser().getCode();
+	        String begCode = null;
+	        Answer[] dataAnswers = m.getItems();
+	        for (Answer answer : dataAnswers) {
+	            String targetCode = answer.getTargetCode();
+	            String sourceCode = answer.getSourceCode();
+	            String attributeCode = answer.getAttributeCode();
+	            String value = answer.getValue();
+	            begCode = targetCode;
+	            rules.println("Payments value ::" + value + "attribute code ::" + attributeCode);
+	            /* if this answer is actually an Payment_method, this rule will be triggered */
+	            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
+	                JsonObject paymentValues = new JsonObject(value);
+	                /* { ipAddress, deviceID, accountID } */
+	                String ipAddress = paymentValues.getString("ipAddress");
+	                String accountId = paymentValues.getString("accountID");
+	                String deviceId = paymentValues.getString("deviceID");
+	                List<Answer> userSpecificAnswers = new ArrayList<>();
+	                if (ipAddress != null) {
+	                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
+	                    userSpecificAnswers.add(ipAnswer);
+	                    rules.baseEntity.saveAnswer(ipAnswer);
+	                }
+	                if (accountId != null) {
+	                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
+	                    userSpecificAnswers.add(accountIdAnswer);
+	                    rules.baseEntity.saveAnswer(accountIdAnswer);
+	                }
+	                if (deviceId != null) {
+	                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
+	                    userSpecificAnswers.add(deviceIdAnswer);
+	                    rules.baseEntity.saveAnswer(deviceIdAnswer);
+	                }
+	                rules.setState("PAYMENT_METHOD_DETAILS_SAVED");
+	                rules.setState("CREATE_PAYMENT_ITEM");
+	             }
+	          }
+			
+
+		rules.footer();
+end

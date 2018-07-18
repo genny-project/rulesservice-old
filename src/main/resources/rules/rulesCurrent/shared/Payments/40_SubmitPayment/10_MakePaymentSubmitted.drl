@@ -1,0 +1,24 @@
+
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QDataAnswerMessage;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.Answer;
+
+
+rule "Handle Make Payment"
+	when
+		m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
+	    rules: QRules( (isState("PAYMENT_ANSWER") && !isState("DID_PAYMENT_HANDLED")) )
+	then
+		rules.header();
+		
+			rules.setState("DID_PAYMENT_HANDLED");
+	        rules.println("Make Payment started");
+	        String paymentTitle = rules.getKeyValue("PaymentTitle");
+	        rules.setState(paymentTitle);
+			rules.setState("START_PAYMENT_PROCESS");
+
+		rules.footer();
+end

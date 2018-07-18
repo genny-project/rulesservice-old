@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 
+import life.genny.payments.QPaymentsProvider;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.exception.PaymentException;
@@ -64,26 +65,6 @@ public class PaymentUtils {
 	public static final String DEFAULT_PAYMENT_TYPE = "escrow";
 	public static final String PROVIDER_TYPE_BANK = "bank";
 
-	/**
-	* Returns the authentication key for the payments service - key is generated as per documentation here
-	* https://github.com/genny-project/payments/blob/master/docs/auth-tokens.md
-	*/
-	@SuppressWarnings("unchecked")
-	public static String getAssemblyAuthKey() {
-		/* Fetch marketplace information from environmnt variables */
-		String paymentMarketPlace = System.getenv("PAYMENT_MARKETPLACE_NAME");
-		String paymentToken = System.getenv("PAYMENT_TOKEN");
-		String paymentSecret = System.getenv("PAYMENT_SECRET");
-
-		/* Create the data for the authentication token */
-		JSONObject authObj = new JSONObject();
-		authObj.put("tenant", paymentMarketPlace);
-		authObj.put("token", paymentToken);
-		authObj.put("secret", paymentSecret);
-
-		/* Return the base 64 encoded authentication token */
-		return base64Encoder(authObj.toJSONString());
-	}
 
 	/* Encoded a UTF8 string in Base64 */
 	public static String base64Encoder(String plainString) {
@@ -252,13 +233,14 @@ public class PaymentUtils {
 	}
 
 	/* Checks whether a Assembly user with the provided ID exists already */
-	public static Boolean checkIfAssemblyUserExists(String assemblyUserId) {
+	public static Boolean checkIfAssemblyUserExists(String assemblyUserId, QPaymentsProvider paymentsProvider) {
 		Boolean isExists = false;
 
 		/* If a user ID was provided then... */
 		if(assemblyUserId != null) {
 			/* Get an authentication token for the API */
-			String authToken = getAssemblyAuthKey();
+			
+			String authToken = paymentsProvider.getPaymentsAuthKey();
 			String assemblyUserString = null;
 
 			/* Attempt to get the user with the specified ID, if it returns an error we know the user doesn't exist */
@@ -568,10 +550,28 @@ public class PaymentUtils {
 		return company;
 	}
 
-	/* To get payments user with the paymentsId field */
-	public static QPaymentsUser getPaymentsUser(BaseEntity userBe) throws IllegalArgumentException{
-
-		String paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+	/* To get payments user with the paymentsId field 
+	 * If the userBe is prj, like in insurance fee payment than it can have two different assembly user id: one for dev and another for prod.
+	 * Therefore putting that check when getting payment user.
+	 *  */
+	public static QPaymentsUser getPaymentsUser(BaseEntity userBe, Boolean devMode) throws IllegalArgumentException{
+		//QPaymentsUser user = null;
+		String paymentsUserId  = null;
+		//Check if userBe is Project
+		if(userBe.getCode().startsWith("PRJ_")) {
+			Boolean isAssembly = userBe.getValue("PRI_IS_PAYMENTS_ASSEMBLY", null);
+			if(isAssembly) {	 //Check if project uses assembly			
+				if(devMode) { //Check if it is running currently in dev mode
+					// Get dev assembly user id for this project BE
+					paymentsUserId  = userBe.getValue("PRI_DEV_ASSEMBLY_USER_ID", null);
+				}else if(!devMode) {
+					// Get production assembly user id for this project BE
+					paymentsUserId  = userBe.getValue("PRI_PROD_ASSEMBLY_USER_ID", null);
+				}
+			}
+		}else {
+			paymentsUserId  = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+		}		
 		QPaymentsUser user = new QPaymentsUser(paymentsUserId);
 		return user;
 	}
@@ -642,6 +642,49 @@ public class PaymentUtils {
 			}
 
 			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
+		}
+		return feeObj;
+
+	}
+	
+	
+	/* Set all the known information in the fee object */
+	public static QPaymentsFee getFeeObject(BaseEntity srcBe, String feeAttributeCode) throws IllegalArgumentException {
+
+		Money begFee = srcBe.getValue(feeAttributeCode, null);
+		QPaymentsFee feeObj = null;
+
+		if(begFee != null) {
+
+			Money feeInCents = getRoundedMoneyInCents(begFee);
+			System.out.println("money in in cents ::"+feeInCents);
+
+			if(feeInCents == null) {
+				throw new IllegalArgumentException("Something went wrong during pricing calculations. Fee for item cannot be empty");
+			}
+
+			feeObj = new QPaymentsFee("Channel40 fee", FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
+		}
+		return feeObj;
+
+	}
+	
+	/* Set all the known information in the fee object */
+	public static QPaymentsFee getFeeObject(BaseEntity srcBe, String feeAttributeCode, String attributeName) throws IllegalArgumentException {
+
+		Money begFee = srcBe.getValue(feeAttributeCode, null);
+		QPaymentsFee feeObj = null;
+
+		if(begFee != null) {
+
+			Money feeInCents = getRoundedMoneyInCents(begFee);
+			System.out.println("money in in cents ::"+feeInCents);
+
+			if(feeInCents == null) {
+				throw new IllegalArgumentException("Something went wrong during pricing calculations. Fee for item cannot be empty");
+			}
+
+			feeObj = new QPaymentsFee(attributeName, FEETYPE.FIXED, feeInCents.getNumber().doubleValue(), PAYMENT_TO.buyer);
 		}
 		return feeObj;
 
@@ -935,10 +978,22 @@ public class PaymentUtils {
 		return paymentsUserId;
 	}
 
-	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
+//	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe) throws IllegalArgumentException {
+//		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
+//		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
+//		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+//		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
+//
+//		QPaymentMethod account = new QPaymentMethod(accountId);
+//		QMakePayment makePaymentObj = new QMakePayment(itemId, account, ipAddress, deviceId);
+//
+//		return makePaymentObj;
+//	}
+
+	public static QMakePayment getMakePaymentObj(BaseEntity userBe, BaseEntity begBe, String paymentIdAttributeCode) throws IllegalArgumentException {
 		String ipAddress = userBe.getValue("PRI_IP_ADDRESS", null);
 		String deviceId = userBe.getValue("PRI_DEVICE_ID", null);
-		String itemId = begBe.getValue("PRI_ITEM_ID", null);
+		String itemId = begBe.getValue(paymentIdAttributeCode, null);
 		String accountId = begBe.getValue("PRI_ACCOUNT_ID", null);
 
 		QPaymentMethod account = new QPaymentMethod(accountId);
@@ -946,7 +1001,7 @@ public class PaymentUtils {
 
 		return makePaymentObj;
 	}
-
+	
 	public static QPaymentMethod getMaskedPaymentMethod(QPaymentMethod paymentMethod) {
 
 		Character[] toBeIgnoreCharacterArr = { '-' };

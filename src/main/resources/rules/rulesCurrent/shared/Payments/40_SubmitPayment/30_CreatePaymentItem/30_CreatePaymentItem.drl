@@ -1,0 +1,100 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.payments.QPaymentsProvider;
+
+rule "Make Payment - Step 2 Create PaymentItem"
+	when
+		rules: QRules( isState("CREATE_PAYMENT_ITEM") && !isState("DID_PAYMENT_ITEM_CREATED") )		
+	then
+	   rules.header();
+	   
+		 rules.setState("DID_PAYMENT_ITEM_CREATED");
+		 
+			String paymentTitle = rules.getKeyValue("PaymentTitle");
+			String sourceEntityCode = rules.getKeyValue("PaymentSourceEntityCode");
+			String amountAttributeCode = rules.getKeyValue("PaymentAmountAttributeCode");
+			String sellerCode = rules.getKeyValue("PaymentSeller");
+			String buyerCode = rules.getKeyValue("PaymentBuyer");
+			Boolean hasFee = Boolean.valueOf(rules.getKeyValue("HasFee"));
+			//String feesAttributeCode = rules.getKeyValue("FeesAttributeCode");
+		
+			rules.println("paymentTitle :: "+paymentTitle);
+			rules.println("srcEntityCode :: "+sourceEntityCode);
+			rules.println("amountAttributeCode :: "+amountAttributeCode);
+		    rules.println("sellerCode :: "+sellerCode);
+	        rules.println("buyerCode :: "+buyerCode);
+	        rules.println("hasFee :: "+hasFee);
+	        //rules.println("feesAttributeCode :: "+feesAttributeCode);
+	        
+	        if(paymentTitle != null && sourceEntityCode != null && amountAttributeCode != null &&
+	                    sellerCode != null && buyerCode != null ){
+	                    
+	            QPaymentsProvider paymentsProvider = rules.getPaymentsServiceProvider();
+				String assemblyAuthToken = paymentsProvider.getPaymentsAuthKey();
+			
+	            rules.setState(paymentTitle+"_PAYMENT");
+	            BaseEntity srcBe =  rules.baseEntity.getBaseEntityByCode(sourceEntityCode);
+	            BaseEntity buyerBe =  rules.baseEntity.getBaseEntityByCode(buyerCode);  
+	            BaseEntity sellerBe =  rules.baseEntity.getBaseEntityByCode(sellerCode);
+	            
+	            
+			    rules.println(" The buyer be is  :: "+buyerBe.getCode());
+				rules.println(" The seller be is  :: "+sellerBe.getCode());
+			    
+	            if( srcBe != null && buyerBe != null && sellerBe != null && assemblyAuthToken != null ){
+	                String paymentItemID = null;
+	                BaseEntity begBe = null;
+	        			if(srcBe.getCode().startsWith("BEG_")) {
+						begBe = srcBe;					
+					}else if (srcBe.getCode().startsWith("OFR_")) {
+						begBe = rules.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+					}
+					        			
+	        			if(begBe != null) {
+	        				/* Check If Payment Item ID for this transaction already exists */	
+		                if( !paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
+		                    paymentItemID = begBe.getValue("PRI_"+paymentTitle+"PAYMENT_ITEM_ID", null);
+		                }else{
+		                    paymentItemID = begBe.getValue("PRI_ITEM_ID", null);
+		                }	                
+		                if(paymentItemID == null){                   
+		        					paymentItemID = paymentsProvider.createPaymentItem(srcBe, buyerBe, sellerBe, amountAttributeCode, paymentTitle, 
+		        											hasFee, assemblyAuthToken);
+		        				rules.println("The payment item ID is  :: "+paymentItemID); 
+		        			}
+	        			
+	        			    /* Setting begCode for future user */ 
+	        			    rules.set("begCode", begBe.getCode());
+		        			if(paymentItemID != null && !paymentTitle.isEmpty() && !paymentTitle.equalsIgnoreCase("JOB_OFFER")){
+			        		   rules.println("Saving Answer");
+					    	   Answer paymentItemIdAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_"+paymentTitle+"_PAYMENT_ITEM_ID", paymentItemID);
+				    		   rules.baseEntity.saveAnswer(paymentItemIdAnswer);
+				    		   rules.set("paymentItemIDAttributeCode", "PRI_"+paymentTitle+"_PAYMENT_ITEM_ID");
+				    		   rules.setState("PAYMENT_ITEM_AVAILABLE");
+				    		   rules.setState("MAKE_PAYMENT");
+		    	     		}else if(paymentItemID != null  && !paymentTitle.isEmpty() && paymentTitle.equalsIgnoreCase("JOB_OFFER") ){
+		    	     		   rules.println("Saving Answer");
+					    	   Answer paymentItemIdAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_ITEM_ID", paymentItemID);
+				    		   rules.baseEntity.saveAnswer(paymentItemIdAnswer);
+				    		   rules.set("paymentItemIDAttributeCode","PRI_ITEM_ID");
+				    		   rules.setState("PAYMENT_ITEM_AVAILABLE");
+				    		   rules.setState("MAKE_PAYMENT");
+		    	     		}else{
+			    			    rules.println("Error while creating payment item id");
+			    			    rules.setState("ITEM_CREATION_FAILED");			    			    
+			    			    rules.set("begCode", begBe.getCode());
+			 				rules.set("userCode", rules.getUser().getCode());
+		    		  		}
+	    		        }	 
+	    		      }        
+	     	    }else{
+	     	        rules.println("Error while creating payment item id!! Some of the items required for the item creation is null");
+			        rules.setState("ITEM_CREATION_FAILED"); 
+			        
+			       // rules.set("begCode", begBe.getCode());
+			 		//rules.set("userCode", rules.getUser().getCode()); 		
+	     	    }    
+	      
+	   rules.footer();
+end

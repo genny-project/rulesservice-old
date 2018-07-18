@@ -1,0 +1,23 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "PaymentMethod - Ask Payment Method"
+	when
+		rules: QRules( isState("ASK_AVAILABLE_PAYMENT_METHODS") && !isState("DID_ASK_PAYMENT_METHOD") )
+	then
+	
+		rules.header();
+
+		rules.setState("DID_ASK_PAYMENT_METHOD");	
+			String begCode = rules.getAsString("begCode");
+			String userCode = rules.getAsString("userCode");
+			
+			rules.println(userCode);
+		    if( userCode != null && begCode != null ){
+		        rules.askQuestions(userCode, begCode, "QUE_PAYMENT_METHOD_GRP", true);	                
+		        rules.setState("PAYMENT_METHOD_ASKED");
+	        }
+
+	    rules.footer();
+end

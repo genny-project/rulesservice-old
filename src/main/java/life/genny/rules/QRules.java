@@ -53,6 +53,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Producer;
+import life.genny.payments.QPaymentsFactory;
+import life.genny.payments.QPaymentsProvider;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -69,7 +71,6 @@ import life.genny.qwanda.entity.EntityEntity;
 import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
-import life.genny.qwanda.exception.PaymentException;
 // import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.message.QBaseMSGAttachment;
 import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
@@ -93,33 +94,16 @@ import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.message.QMSGMessage;
 import life.genny.qwanda.message.QMessage;
-import life.genny.qwanda.payments.QMakePayment;
-import life.genny.qwanda.payments.QPaymentAuthorityForBankAccount;
 import life.genny.qwanda.payments.QPaymentMethod;
 import life.genny.qwanda.payments.QPaymentMethod.PaymentType;
-import life.genny.qwanda.payments.QPaymentsAuthorizationToken;
-import life.genny.qwanda.payments.QPaymentsAuthorizationToken.AuthorizationPaymentType;
-import life.genny.qwanda.payments.QPaymentsCompany;
-import life.genny.qwanda.payments.QPaymentsCompanyContactInfo;
-import life.genny.qwanda.payments.QPaymentsDisbursement;
-import life.genny.qwanda.payments.QPaymentsErrorResponse;
-import life.genny.qwanda.payments.QPaymentsFee;
-import life.genny.qwanda.payments.QPaymentsItem;
-import life.genny.qwanda.payments.QPaymentsItem.PaymentTransactionType;
-import life.genny.qwanda.payments.QPaymentsLocationInfo;
-import life.genny.qwanda.payments.QPaymentsUser;
-import life.genny.qwanda.payments.QPaymentsUserContactInfo;
-import life.genny.qwanda.payments.QPaymentsUserInfo;
-import life.genny.qwanda.payments.QReleasePayment;
-import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
-import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
-import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
+import life.genny.qwanda.payments.QPaymentsServiceProvider;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.qwandautils.StringFormattingUtils;
 import life.genny.rules.Layout.LayoutUtils;
 import life.genny.rules.Layout.LayoutViewData;
 import life.genny.rules.Layout.ViewType;
@@ -128,7 +112,6 @@ import life.genny.utils.DateUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
-import life.genny.utils.StringFormattingUtils;
 import life.genny.utils.VertxUtils;
 
 public class QRules {
@@ -165,6 +148,10 @@ public class QRules {
 	public LayoutUtils layoutUtils;
 	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
+	public StringFormattingUtils stringUtils;
+
+	/* Payments Service Factory */
+	public QPaymentsFactory paymentsFactory;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap, String state) {
 
@@ -194,7 +181,8 @@ public class QRules {
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 
-			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.paymentsFactory = new QPaymentsFactory(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm(), this.eventBus, this.drools);
+
 		} catch (Exception e) {
 
 		}
@@ -2454,215 +2442,214 @@ public class QRules {
 
 	}
 
-public void makePayment(QDataAnswerMessage m) {
-
-        showLoading("Processing payment...");
-
-        String userCode = getUser().getCode();
-        String begCode = null;
-        Answer[] dataAnswers = m.getItems();
-        for (Answer answer : dataAnswers) {
-            String targetCode = answer.getTargetCode();
-            String sourceCode = answer.getSourceCode();
-            String attributeCode = answer.getAttributeCode();
-            String value = answer.getValue();
-            begCode = targetCode;
-            println("Payments value ::" + value + "attribute code ::" + attributeCode);
-            /* if this answer is actually an Payment_method, this rule will be triggered */
-            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
-                JsonObject paymentValues = new JsonObject(value);
-                /* { ipAddress, deviceID, accountID } */
-                String ipAddress = paymentValues.getString("ipAddress");
-                String accountId = paymentValues.getString("accountID");
-                String deviceId = paymentValues.getString("deviceID");
-                List<Answer> userSpecificAnswers = new ArrayList<>();
-                if (ipAddress != null) {
-                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
-                    userSpecificAnswers.add(ipAnswer);
-                    this.baseEntity.saveAnswer(ipAnswer);
-                }
-                if (accountId != null) {
-                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
-                    userSpecificAnswers.add(accountIdAnswer);
-                    this.baseEntity.saveAnswer(accountIdAnswer);
-                }
-                if (deviceId != null) {
-                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
-                    userSpecificAnswers.add(deviceIdAnswer);
-                    this.baseEntity.saveAnswer(deviceIdAnswer);
-                }
-                /* bulk answer not working currently, so using individual answers */
-                // saveAnswers(userSpecificAnswers);
-            }
-        }
-        String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
-        BaseEntity userBe = getUser();
-        String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
-        if (begCode != null && assemblyId != null) {
-            /* GET beg Base Entity */
-            BaseEntity beg =this.baseEntity.getBaseEntityByCode(begCode);
-            String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
-            if (offerCode != null) {
-                /* Make payment */
-
-                BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
-                String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
-                BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
-
-                /* make payment API */
-                Boolean isMakePaymentSuccess = makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
-
-                /* if make payment succeeds, move bucket and send notifications */
-                if(isMakePaymentSuccess) {
-                		/* GET attributes of OFFER BE */
-                    Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
-                    Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
-                    Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
-                    Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
-                    Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-                    Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
-                    Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
-                    List<Answer> answers = new ArrayList<Answer>();
-                    answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
-                    answers.add(
-                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
-                    answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
-                    answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
-                    /* Update BEG to have DRIVER_CODE as an attribute */
-                    answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
-                    answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
-                    this.baseEntity.saveAnswers(answers);
-
-                    BaseEntity loadBe = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
-
-                    /* Allocate QUOTER as Driver */
-                    this.baseEntity.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
-
-                    /* Update link between BEG and Accepted OFFER to weight = 100 */
-                    this.baseEntity.updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
-
-                    /* Set PRI_NEXT_ACTION to Disabled for all other Offers */
-                    // get all offers
-                    List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-                    if (offers != null) {
-                        for (BaseEntity be : offers) {
-                            if (!(be.getCode().equals(offerCode))) {
-                                println("The BE is : " + be.getCode());
-                                /* Update PRI_NEXT_ACTION to Disabled */
-                                this.baseEntity.updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
-                            }
-                        }
-                    }
-                    answers = new ArrayList<Answer>();
-                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
-                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
-                            Status.NEEDS_NO_ACTION.value()));
-                    /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
-                    String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
-                    println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
-                    publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
-                    publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
-                    publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
-                    /* Set progression of LOAD delivery to 0 */
-                    Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
-                    answers.add(updateProgressAnswer);
-                    this.baseEntity.saveAnswers(answers);
-                    /* We ask FE to monitor GPS */
-                    geofenceJob(begCode, getUser().getCode(), 10.0);
-                    /* GET all the driver subsribers */
-                    String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
-                    if (begRecipients != null) {
-                        println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
-                        println("quoter code ::" + quoterCode);
-                        Set<String> unsubscribeSet = new HashSet<>();
-                        for (String begRecipient : begRecipients) {
-                            if (!begRecipient.equals(quoterCode)) {
-                                unsubscribeSet.add(begRecipient);
-                            }
-                        }
-                        println("unsubscribe set ::" + unsubscribeSet);
-                        String[] unsubscribeArr = new String[unsubscribeSet.size()];
-                        int i = 0;
-                        for (String code : unsubscribeSet) {
-                            unsubscribeArr[i++] = code;
-                        }
-                        /* sending cmd BUCKETVIEW */
-                        // this.redirectToHomePage();
-
-                          /* we hide the job from them */
-
-                        println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
-                        VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
-                    }
-
-                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
-                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
-
-                    // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-                    this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
-                    publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
-
-                    /* Update PRI_NEXT_ACTION = OWNER */
-                    Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
-                    this.baseEntity.saveAnswer(begNextAction);
-                    /* sending cmd BUCKETVIEW */
-                    // this.setState("TRIGGER_HOMEPAGE");
-
-                    //this.reloadCache();
-
-                    /* TOAST :: SUCCESS */
-                    println("Sending success toast since make payment succeeded");
-                    HashMap<String, String> contextMap = new HashMap<String, String>();
-                    contextMap.put("DRIVER", quoterCode);
-                    contextMap.put("JOB", begCode);
-                    contextMap.put("QUOTER", quoterCode);
-                    contextMap.put("OFFER", offer.getCode());
-                    contextMap.put("LOAD", loadBe.getCode());
-
-
-                    String[] recipientArr = { userCode };
-                    /* TOAST :: PAYMENT SUCCESS */
-                    sendMessage(recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
-                    sendMessage(recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
-                    /* QUOTER config */
-                    HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
-                    contextMapForDriver.put("JOB", begCode);
-                    contextMapForDriver.put("OWNER", userCode);
-                    contextMapForDriver.put("OFFER", offer.getCode());
-                    contextMapForDriver.put("LOAD", loadBe.getCode());
-
-                    String[] recipientArrForDriver = { quoterCode };
-                    /* Sending messages to DRIVER - Email and sms enabled */
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
-                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
-
-                    /* emails to rejected drivers */
-                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
-                    List<String> rejectedDriver = new ArrayList<>();
-                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
-                        for(BaseEntity rejectedBe : rejectedOffers) {
-                        		String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
-                        		rejectedDriver.add(offerQuoterCode);
-                        }
-                        println("rejected driver list ::"+rejectedDriver.toString());
-                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
-                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
-                    }
-
-                }
-            }
-        }
-
-        this.reloadCache();
-        this.redirectToHomePage();
-    }
+//public void makePayment(QDataAnswerMessage m) {
+//
+//        showLoading("Processing payment...");
+//
+//        String userCode = getUser().getCode();
+//        String begCode = null;
+//        Answer[] dataAnswers = m.getItems();
+//        for (Answer answer : dataAnswers) {
+//            String targetCode = answer.getTargetCode();
+//            String sourceCode = answer.getSourceCode();
+//            String attributeCode = answer.getAttributeCode();
+//            String value = answer.getValue();
+//            begCode = targetCode;
+//            println("Payments value ::" + value + "attribute code ::" + attributeCode);
+//            /* if this answer is actually an Payment_method, this rule will be triggered */
+//            if (attributeCode.contains("PRI_PAYMENT_METHOD")) {
+//                JsonObject paymentValues = new JsonObject(value);
+//                /* { ipAddress, deviceID, accountID } */
+//                String ipAddress = paymentValues.getString("ipAddress");
+//                String accountId = paymentValues.getString("accountID");
+//                String deviceId = paymentValues.getString("deviceID");
+//                List<Answer> userSpecificAnswers = new ArrayList<>();
+//                if (ipAddress != null) {
+//                    Answer ipAnswer = new Answer(sourceCode, userCode, "PRI_IP_ADDRESS", ipAddress);
+//                    userSpecificAnswers.add(ipAnswer);
+//                    this.baseEntity.saveAnswer(ipAnswer);
+//                }
+//                if (accountId != null) {
+//                    Answer accountIdAnswer = new Answer(sourceCode, begCode, "PRI_ACCOUNT_ID", accountId);
+//                    userSpecificAnswers.add(accountIdAnswer);
+//                    this.baseEntity.saveAnswer(accountIdAnswer);
+//                }
+//                if (deviceId != null) {
+//                    Answer deviceIdAnswer = new Answer(sourceCode, userCode, "PRI_DEVICE_ID", deviceId);
+//                    userSpecificAnswers.add(deviceIdAnswer);
+//                    this.baseEntity.saveAnswer(deviceIdAnswer);
+//                }
+//                /* bulk answer not working currently, so using individual answers */
+//                // saveAnswers(userSpecificAnswers);
+//            }
+//        }
+//        String assemblyAuthKey = PaymentUtils.getAssemblyAuthKey();
+//        BaseEntity userBe = getUser();
+//        String assemblyId = userBe.getValue("PRI_ASSEMBLY_USER_ID", null);
+//        if (begCode != null && assemblyId != null) {
+//            /* GET beg Base Entity */
+//            BaseEntity beg =this.baseEntity.getBaseEntityByCode(begCode);
+//            String offerCode = beg.getLoopValue("STT_HOT_OFFER", null);
+//            if (offerCode != null) {
+//                /* Make payment */
+//
+//                BaseEntity offer = this.baseEntity.getBaseEntityByCode(offerCode);
+//                String quoterCode = offer.getLoopValue("PRI_QUOTER_CODE", null);
+//                BaseEntity driverBe = this.baseEntity.getBaseEntityByCode(quoterCode);
+//
+//                /* make payment API */
+//                Boolean isMakePaymentSuccess = makePayment(userBe, driverBe, offer, beg, assemblyAuthKey);
+//
+//                /* if make payment succeeds, move bucket and send notifications */
+//                if(isMakePaymentSuccess) {
+//                		/* GET attributes of OFFER BE */
+//                    Money offerPrice = offer.getLoopValue("PRI_OFFER_PRICE", null);
+//                    Money ownerPriceExcGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_EXC_GST", null);
+//                    Money ownerPriceIncGST = offer.getLoopValue("PRI_OFFER_OWNER_PRICE_INC_GST", null);
+//                    Money driverPriceExcGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_EXC_GST", null);
+//                    Money driverPriceIncGST = offer.getLoopValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//                    Money feePriceExcGST = offer.getLoopValue("PRI_OFFER_FEE_EXC_GST", null);
+//                    Money feePriceIncGST = offer.getLoopValue("PRI_OFFER_FEE_INC_GST", null);
+//                    List<Answer> answers = new ArrayList<Answer>();
+//                    answers.add(new Answer(begCode, begCode, "PRI_PRICE", JsonUtils.toJson(offerPrice)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_OWNER_PRICE_INC_GST", JsonUtils.toJson(ownerPriceIncGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_EXC_GST", JsonUtils.toJson(driverPriceExcGST)));
+//                    answers.add(
+//                            new Answer(begCode, begCode, "PRI_DRIVER_PRICE_INC_GST", JsonUtils.toJson(driverPriceIncGST)));
+//                    answers.add(new Answer(begCode, begCode, "PRI_FEE_EXC_GST", JsonUtils.toJson(feePriceExcGST)));
+//                    answers.add(new Answer(begCode, begCode, "PRI_FEE_INC_GST", JsonUtils.toJson(feePriceIncGST)));
+//                    /* Update BEG to have DRIVER_CODE as an attribute */
+//                    answers.add(new Answer(begCode, begCode, "STT_IN_TRANSIT", quoterCode));
+//                    answers.add(new Answer(begCode, begCode, "PRI_SELLER_CODE", quoterCode));
+//                    this.baseEntity.saveAnswers(answers);
+//
+//                    BaseEntity loadBe = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "LOAD").get(0);
+//
+//                    /* Allocate QUOTER as Driver */
+//                    this.baseEntity.createLink(begCode, quoterCode, "LNK_BEG", "DRIVER", 1.0);
+//
+//                    /* Update link between BEG and Accepted OFFER to weight = 100 */
+//                    this.baseEntity.updateLink(begCode, offerCode, "LNK_BEG", "ACCEPTED_OFFER", 100.0);
+//
+//                    /* Set PRI_NEXT_ACTION to Disabled for all other Offers */
+//                    // get all offers
+//                    List<BaseEntity> offers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+//                    if (offers != null) {
+//                        for (BaseEntity be : offers) {
+//                            if (!(be.getCode().equals(offerCode))) {
+//                                println("The BE is : " + be.getCode());
+//                                /* Update PRI_NEXT_ACTION to Disabled */
+//                                this.baseEntity.updateBaseEntityAttribute(getUser().getCode(), be.getCode(), "PRI_NEXT_ACTION", "DISABLED");
+//                            }
+//                        }
+//                    }
+//                    answers = new ArrayList<Answer>();
+//                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + quoterCode, Status.NEEDS_ACTION.value()));
+//                    answers.add(new Answer(getUser().getCode(), begCode, "STA_" + getUser().getCode(),
+//                            Status.NEEDS_NO_ACTION.value()));
+//                    /* SEND (OFFER, QUOTER, BEG) BaseEntitys to recipients */
+//                    String[] offerRecipients = VertxUtils.getSubscribers(realm(), offer.getCode());
+//                    println("OFFER subscribers   ::   " + Arrays.toString(offerRecipients));
+//                    publishBaseEntityByCode(userCode, begCode, "LNK_BEG", offerRecipients); /* OWNER */
+//                    publishBaseEntityByCode(quoterCode, begCode, "LNK_BEG", offerRecipients);
+//                    publishBaseEntityByCode(offerCode, begCode, "LNK_BEG", offerRecipients);
+//                    /* Set progression of LOAD delivery to 0 */
+//                    Answer updateProgressAnswer = new Answer(begCode, begCode, "PRI_PROGRESS", Double.toString(0.0));
+//                    answers.add(updateProgressAnswer);
+//                    this.baseEntity.saveAnswers(answers);
+//                    /* We ask FE to monitor GPS */
+//                    geofenceJob(begCode, getUser().getCode(), 10.0);
+//                    /* GET all the driver subsribers */
+//                    String[] begRecipients = VertxUtils.getSubscribers(realm(), "GRP_NEW_ITEMS");
+//                    if (begRecipients != null) {
+//                        println("ALL BEG subscribers   ::   " + Arrays.toString(begRecipients));
+//                        println("quoter code ::" + quoterCode);
+//                        Set<String> unsubscribeSet = new HashSet<>();
+//                        for (String begRecipient : begRecipients) {
+//                            if (!begRecipient.equals(quoterCode)) {
+//                                unsubscribeSet.add(begRecipient);
+//                            }
+//                        }
+//                        println("unsubscribe set ::" + unsubscribeSet);
+//                        String[] unsubscribeArr = new String[unsubscribeSet.size()];
+//                        int i = 0;
+//                        for (String code : unsubscribeSet) {
+//                            unsubscribeArr[i++] = code;
+//                        }
+//                        /* sending cmd BUCKETVIEW */
+//                        // this.redirectToHomePage();
+//
+//                          /* we hide the job from them */
+//
+//                        println("unsubscribe arr ::" + Arrays.toString(unsubscribeArr));
+//                        VertxUtils.unsubscribe(realm(), "GRP_NEW_ITEMS", unsubscribeSet);
+//                    }
+//
+//                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", quoterCode);
+//                    this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
+//
+//                    // moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
+//                    this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
+//                    publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
+//
+//                    /* Update PRI_NEXT_ACTION = OWNER */
+//                    Answer begNextAction = new Answer(userCode, offerCode, "PRI_NEXT_ACTION", "NONE");
+//                    this.baseEntity.saveAnswer(begNextAction);
+//                    /* sending cmd BUCKETVIEW */
+//                    // this.setState("TRIGGER_HOMEPAGE");
+//
+//                    //this.reloadCache();
+//
+//                    /* TOAST :: SUCCESS */
+//                    println("Sending success toast since make payment succeeded");
+//                    HashMap<String, String> contextMap = new HashMap<String, String>();
+//                    contextMap.put("DRIVER", quoterCode);
+//                    contextMap.put("JOB", begCode);
+//                    contextMap.put("QUOTER", quoterCode);
+//                    contextMap.put("OFFER", offer.getCode());
+//                    contextMap.put("LOAD", loadBe.getCode());
+//
+//
+//                    String[] recipientArr = { userCode };
+//                    /* TOAST :: PAYMENT SUCCESS */
+//                    sendMessage(recipientArr, contextMap, "MSG_CH40_MAKE_PAYMENT_SUCCESS", "TOAST");
+//                    sendMessage(recipientArr, contextMap, "MSG_CH40_CONFIRM_QUOTE_OWNER", "EMAIL");
+//                    /* QUOTER config */
+//                    HashMap<String, String> contextMapForDriver = new HashMap<String, String>();
+//                    contextMapForDriver.put("JOB", begCode);
+//                    contextMapForDriver.put("OWNER", userCode);
+//                    contextMapForDriver.put("OFFER", offer.getCode());
+//                    contextMapForDriver.put("LOAD", loadBe.getCode());
+//
+//                    String[] recipientArrForDriver = { quoterCode };
+//                    /* Sending messages to DRIVER - Email and sms enabled */
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "TOAST");
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "SMS");
+//                    sendMessage(recipientArrForDriver, contextMapForDriver, "MSG_CH40_CONFIRM_QUOTE_DRIVER", "EMAIL");
+//
+//                    /* emails to rejected drivers */
+//                    List<BaseEntity> rejectedOffers = this.baseEntity.getLinkedBaseEntities(begCode, "LNK_BEG", "OFFER");
+//                    List<String> rejectedDriver = new ArrayList<>();
+//                    if(rejectedOffers != null && rejectedOffers.size() > 0) {
+//                        for(BaseEntity rejectedBe : rejectedOffers) {
+//                            String offerQuoterCode = rejectedBe.getValue("PRI_QUOTER_CODE", null);
+//                            rejectedDriver.add(offerQuoterCode);
+//                        }
+//                        println("rejected driver list ::"+rejectedDriver.toString());
+//                        String[] rejectedDriverRecipientArr = rejectedDriver.toArray(new String[rejectedDriver.size()]);
+//                        sendMessage(rejectedDriverRecipientArr, contextMapForDriver, "MSG_CH40_CANCEL_OFFER_DRIVER", "EMAIL");
+//                    }
+//
+//                }
+//            }
+//        }
+//
+//        this.redirectToHomePage();
+//    }
 
 	public void updateGPS(QDataGPSMessage m) {
 
@@ -3205,11 +3192,11 @@ public void makePayment(QDataAnswerMessage m) {
 					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
 					 */
 
-
-					BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
+				/*	BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
 					Long jobId = updatedJob.getId();
 					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
 					this.baseEntity.saveAnswers(answers);
+					---->>> Moved to CreateJob.drl         */
 
 					/* Getting all people */
 					List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
@@ -3301,7 +3288,7 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 
 		this.redirectToHomePage();
-		drools.setFocus("ispayments");  /* NOW Set up Payments */
+		//drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
 
 	public void listenAttributeChange(QEventAttributeValueChangeMessage m) {
@@ -4808,18 +4795,18 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Get payments user details - firstname, lastname, DOB ; set in PaymentUserInfo
 	 * POJO
 	 */
-	public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe) {
+	/*public QPaymentsUserInfo getPaymentsUserInfo(BaseEntity projectBe, BaseEntity userBe) {
 
 		QPaymentsUserInfo userInfo = null;
 
-		/* Getting userInfo POJO -> handling errors with slack webhook reporting */
+		 Getting userInfo POJO -> handling errors with slack webhook reporting
 		// TODO display user-info related question group
 		try {
 
-			/* Fetch data from BE and set in POJO */
+			 Fetch data from BE and set in POJO
 			userInfo = PaymentUtils.getPaymentsUserInfo(userBe);
 
-			/* If instance creation fails, throw exception */
+			 If instance creation fails, throw exception
 			if (userInfo == null) {
 				throw new IllegalArgumentException("QPaymentsUserInfo instance creation failed");
 			}
@@ -4830,26 +4817,26 @@ public void makePayment(QDataAnswerMessage m) {
 			String message = "Payments user creation would fail, since user information during registration is incomplete :"
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-			/* send toast to user */
+			 send toast to user
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
-			/* send slack message */
+			 send slack message
 			sendSlackNotification(message);
 
 		}
 		return userInfo;
-	}
+	}*/
 
 	/* Get payments user email details, set in PaymentUserContact POJO */
-	public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe) {
+	/*public QPaymentsUserContactInfo getPaymentsUserContactInfo(BaseEntity projectBe, BaseEntity userBe) {
 
 		QPaymentsUserContactInfo userContactInfo = null;
 
 		// TODO display user-email related question group
-		/* Getting userContactInfo -> handling errors with slack webhook reporting */
+		 Getting userContactInfo -> handling errors with slack webhook reporting
 		try {
 			userContactInfo = PaymentUtils.getPaymentsUserContactInfo(userBe);
 
@@ -4863,25 +4850,25 @@ public void makePayment(QDataAnswerMessage m) {
 			String message = "Payments user creation would fail, since user email is missing or null : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-			/* send toast to user */
+			 send toast to user
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
-			/* send slack message */
+			 send slack message
 			sendSlackNotification(message);
 		}
 		return userContactInfo;
 
-	}
+	}*/
 
-	public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe) {
+	/*public QPaymentsLocationInfo getPaymentsUserLocationInfo(BaseEntity projectBe, BaseEntity userBe) {
 
 		QPaymentsLocationInfo userLocationInfo = null;
 
 		// TODO display user-email related question group
-		/* Getting userLocationInfo -> handling errors with slack webhook reporting */
+		 Getting userLocationInfo -> handling errors with slack webhook reporting
 		try {
 			userLocationInfo = PaymentUtils.getPaymentsLocationInfo(userBe);
 
@@ -4895,31 +4882,31 @@ public void makePayment(QDataAnswerMessage m) {
 			String message = "Payments user creation would fail, since user address info is missing or null : "
 					+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-			/* send toast to user */
+			 send toast to user
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
 					+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
-			/* send slack message */
+			 send slack message
 			sendSlackNotification(message);
 		}
 		return userLocationInfo;
 
-	}
+	}*/
 
-	public String paymentUserCreation(String paymentsUserId, String assemblyAuthToken) {
+	/*public String paymentUserCreation(String paymentsUserId, String assemblyAuthToken) {
 
 		BaseEntity userBe = getUser();
 		BaseEntity project = getProject();
 
-		/* user - firstname, lastname, dob info */
+		 user - firstname, lastname, dob info
 		QPaymentsUserInfo userInfo = getPaymentsUserInfo(project, userBe);
 
-		/* user email info */
+		 user email info
 		QPaymentsUserContactInfo userContactInfo = getPaymentsUserContactInfo(project, userBe);
 
-		/* user address info */
+		 user address info
 		QPaymentsLocationInfo userLocationInfo = getPaymentsUserLocationInfo(project, userBe);
 
 		String paymentUserCreationResponse = null;
@@ -4927,18 +4914,18 @@ public void makePayment(QDataAnswerMessage m) {
 
 		try {
 
-			/* create the entire payments-user object */
+			 create the entire payments-user object
 			QPaymentsUser paymentsUser = new QPaymentsUser(paymentsUserId, userInfo, userContactInfo, userLocationInfo);
 
 			try {
 
-				/* converting user object into stringifies json and hitting create user API */
+				 converting user object into stringifies json and hitting create user API
 				paymentUserCreationResponse = PaymentEndpoint.createPaymentsUser(JsonUtils.toJson(paymentsUser),
 						assemblyAuthToken);
 
 				if (!paymentUserCreationResponse.contains("error") && paymentUserCreationResponse != null) {
 
-					/* response string converted to user response object */
+					 response string converted to user response object
 					QPaymentsAssemblyUserResponse responseUserPojo = JsonUtils.fromJson(paymentUserCreationResponse,
 							QPaymentsAssemblyUserResponse.class);
 					System.out.println("response user pojo ::" + responseUserPojo);
@@ -4948,10 +4935,10 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 			} catch (PaymentException e) {
 
-				/*
+
 				 * Payments creation will fail if user already exists. In this case we check if
 				 * the user is already available for the email ID, and fetch the userId
-				 */
+
 				setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
 				drools.setFocus("payments");
 
@@ -4959,17 +4946,17 @@ public void makePayment(QDataAnswerMessage m) {
 
 		} catch (IllegalArgumentException e) {
 
-			/* send slack message */
+			 send slack message
 			log.error(e.getMessage());
 			String message = "Payments user creation failed : " + e.getMessage() + ", for USER: " + userBe.getCode();
 			sendSlackNotification(message);
 
 		}
 		return paymentUserId;
-	}
+	}*/
 
 	/* Payments - user search method */
-	public String findExistingPaymentsUserAndSetAttribute(String authKey) {
+	/*public String findExistingPaymentsUserAndSetAttribute(String authKey) {
 
 		BaseEntity userBe = getUser();
 		String paymentsUserId = null;
@@ -4979,14 +4966,14 @@ public void makePayment(QDataAnswerMessage m) {
 			String email = userBe.getValue("PRI_EMAIL", null);
 			try {
 
-				/* Get all payments users for search criteria based on email */
+				 Get all payments users for search criteria based on email
 				String paymentUsersResponse = PaymentEndpoint.searchPaymentsUser(email, authKey);
 
-				/* converting response into Object */
+				 converting response into Object
 				QPaymentsAssemblyUserSearchResponse userSearchObj = JsonUtils.fromJson(paymentUsersResponse,
 						QPaymentsAssemblyUserSearchResponse.class);
 
-				/* use util to get the payments user id from search results based on email */
+				 use util to get the payments user id from search results based on email
 				paymentsUserId = PaymentUtils.getPaymentsUserIdFromSearch(userSearchObj, email);
 				return paymentsUserId;
 
@@ -4995,18 +4982,18 @@ public void makePayment(QDataAnswerMessage m) {
 				String message = "Payments user creation failed as well as existing user search has failed : "
 						+ e.getMessage() + ", for USER: " + userBe.getCode();
 
-				/* send toast to user */
-				/*
+				 send toast to user
+
 				 * String toastMessage = "Payments user creation failed : " + e.getMessage() ;
 				 * String[] recipientArr = { userBe.getCode() }; this.sendToastNotification(recipientArr,
 				 * toastMessage, "warning");
-				 */
+
 				sendSlackNotification(message);
 			}
 
 		}
 		return paymentsUserId;
-	}
+	}*/
 
 	/* To send critical slack message to slack channel */
 	public void sendSlackNotification(String message) {
@@ -5176,20 +5163,20 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	/* Payments user updation */
-	public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value,
+	/*public void updatePaymentsUserInfo(String paymentsUserId, String attributeCode, String value,
 			String paymentsAuthToken) {
 
 		try {
 
 			if (attributeCode != null && value != null) {
 
-				/* Get payments user after setting to-be-updated fields in the object */
+				 Get payments user after setting to-be-updated fields in the object
 				QPaymentsUser paymentsUser = PaymentUtils.updateUserInfo(paymentsUserId, attributeCode, value);
 
-				/* Make the request to Assembly and update */
+				 Make the request to Assembly and update
 				if (paymentsUser != null && paymentsUserId != null) {
 					try {
-						/* Hitting payments-service API for updating */
+						 Hitting payments-service API for updating
 						String userUpdateResponseString = PaymentEndpoint.updatePaymentsUser(paymentsUserId,
 								JsonUtils.toJson(paymentsUser), paymentsAuthToken);
 						QPaymentsAssemblyUserResponse userResponsePOJO = JsonUtils.fromJson(userUpdateResponseString,
@@ -5217,20 +5204,20 @@ public void makePayment(QDataAnswerMessage m) {
 
 		} catch (IllegalArgumentException e) {
 
-			/*
+
 			 * Send toast message the payments-user updation failed when the field updated
 			 * is invalid
-			 */
+
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
-	}
+	}*/
 
 	/*
 	 * Converts payments error into Object and formats into a string error message
 	 */
-	public String getPaymentsErrorResponseMessage(String paymentsErrorResponseStr) {
+	/*public String getPaymentsErrorResponseMessage(String paymentsErrorResponseStr) {
 
 		QPaymentsErrorResponse errorResponse = JsonUtils.fromJson(paymentsErrorResponseStr,
 				QPaymentsErrorResponse.class);
@@ -5240,12 +5227,12 @@ public void makePayment(QDataAnswerMessage m) {
 		errorMapList.add(errorResponse.getError());
 		errorMapList.add(errorResponse.getErrors());
 
-		/* getErrors -> errors from external payment service */
-		/* getError -> error from payments service */
-		/*
+		 getErrors -> errors from external payment service
+		 getError -> error from payments service
+
 		 * Iterating through Assembly errors and payment-service errors and formatting
 		 * them
-		 */
+
 		for (Map<String, Object> errorMap : errorMapList) {
 			if (errorMap != null && errorMap.size() > 0) {
 				for (Map.Entry<String, Object> entry : errorMap.entrySet()) {
@@ -5259,16 +5246,16 @@ public void makePayment(QDataAnswerMessage m) {
 
 					System.out.println("Error Key = " + errVar + ", Value = " + errValBuilder);
 
-					/* appending and formatting error messages */
+					 appending and formatting error messages
 					errorMessage.append(errVar + " : " + errVal.toString());
 				}
 			}
 		}
 		return errorMessage.toString();
-	}
+	}*/
 
 	/* Create payments company */
-	public String createCompany(BaseEntity companyBe, String paymentsUserId, String authtoken) {
+	/*public String createCompany(BaseEntity companyBe, String paymentsUserId, String authtoken) {
 
 		String companyId = null;
 		BaseEntity userBe = getUser();
@@ -5284,18 +5271,18 @@ public void makePayment(QDataAnswerMessage m) {
 
 			Boolean isChargeTax = companyBe.getValue("PRI_GST", false);
 
-			/* Gets basic company contact info object */
+			 Gets basic company contact info object
 			QPaymentsCompanyContactInfo companyContactObj = PaymentUtils.getPaymentsCompanyContactInfo(companyBe);
 
-			/* Get company location object */
+			 Get company location object
 			QPaymentsLocationInfo companyLocationObj = PaymentUtils.getPaymentsLocationInfo(companyBe);
 
-			/* Get assembly user ID */
+			 Get assembly user ID
 			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
 
 			try {
 
-				/* Create complete packed company object */
+				 Create complete packed company object
 				QPaymentsCompany companyObj = new QPaymentsCompany(companyName, companyName, taxNumber, isChargeTax,
 						companyLocationObj, user, companyContactObj);
 				try {
@@ -5314,12 +5301,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 			} catch (IllegalArgumentException e) {
 
-				/*
+
 				 * Send toast message if company creation misses arguments or if API call
 				 * returns error response
-				 */
+
 				if (userBe != null) {
-					/* send toast to user */
+					 send toast to user
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
 							+ ". Please complete it for payments to get through.";
@@ -5329,25 +5316,25 @@ public void makePayment(QDataAnswerMessage m) {
 
 		}
 		return companyId;
-	}
+	}*/
 
 	/* Payments company updation */
 	/* Independent attribute value update. Not bulk */
-	public void updatePaymentsCompany(String paymentsUserId, String companyId, String attributeCode, String value,
+	/*public void updatePaymentsCompany(String paymentsUserId, String companyId, String attributeCode, String value,
 			String paymentsAuthToken) {
 
 		try {
 
 			if (attributeCode != null && value != null) {
 
-				/* Get payments company after setting to-be-updated fields in the object */
+				 Get payments company after setting to-be-updated fields in the object
 				QPaymentsCompany paymentsCompany = PaymentUtils.updateCompanyInfo(paymentsUserId, companyId,
 						attributeCode, value);
 
-				/* Make the request to Assembly and update */
+				 Make the request to Assembly and update
 				if (paymentsCompany != null && paymentsUserId != null) {
 					try {
-						/* Hitting payments-service API for updating */
+						 Hitting payments-service API for updating
 						String companyUpdateResponseString = PaymentEndpoint.updateCompany(companyId,
 								JsonUtils.toJson(paymentsCompany), paymentsAuthToken);
 						QPaymentsCompany userResponsePOJO = JsonUtils.fromJson(companyUpdateResponseString,
@@ -5371,26 +5358,26 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 		} catch (IllegalArgumentException e) {
-			/*
+
 			 * Send toast message the payments-user updation failed when the field updated
 			 * is invalid
-			 */
+
 			String toastMessage = e.getMessage();
 			String[] recipientArr = { getUser().getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 		}
-	}
+	}*/
 
 	/* Bulk update of payments user info */
 	/*
 	 * If some information update is lost due to Payments-service-downtime, they
 	 * will updated with this
 	 */
-	public void bulkPaymentsUserUpdate(BaseEntity userBe, String paymentsUserId, String paymentsAuthKey) {
+	/*public void bulkPaymentsUserUpdate(BaseEntity userBe, String paymentsUserId, String paymentsAuthKey) {
 
 		try {
 			QPaymentsUser user = PaymentUtils.getCompleteUserObj(userBe, paymentsUserId);
-			/* Attempt to update the user in Assembly */
+			 Attempt to update the user in Assembly
 			if (user != null && paymentsUserId != null) {
 				try {
 					PaymentEndpoint.updatePaymentsUser(paymentsUserId, JsonUtils.toJson(user), paymentsAuthKey);
@@ -5403,23 +5390,23 @@ public void makePayment(QDataAnswerMessage m) {
 		} catch (IllegalArgumentException e) {
 			log.error("Exception occured user updation" + e.getMessage());
 		}
-	}
+	}*/
 
 	/* Bulk update for payments company info */
 	/*
 	 * If some information update is lost due to Payments-service-downtime, they
 	 * will updated with this
 	 */
-	public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String paymentsUserId,
+	/*public void bulkPaymentsCompanyUpdate(BaseEntity userBe, BaseEntity companyBe, String paymentsUserId,
 			String assemblyAuthKey) {
 
 		try {
 
-			/* Get the companies assembly ID */
+			 Get the companies assembly ID
 			String companyId = userBe.getValue("PRI_ASSEMBLY_COMPANY_ID", null);
 			QPaymentsCompany company = PaymentUtils.getCompleteCompanyObj(userBe, companyBe, paymentsUserId);
 
-			/* Attempt to update the company in Assembly */
+			 Attempt to update the company in Assembly
 			if (companyId != null && company != null) {
 				try {
 					PaymentEndpoint.updateCompany(companyId, JsonUtils.toJson(company), assemblyAuthKey);
@@ -5431,7 +5418,7 @@ public void makePayment(QDataAnswerMessage m) {
 		} catch (IllegalArgumentException e) {
 			log.error("Exception occured company updation" + e.getMessage());
 		}
-	}
+	}*/
 
 	/*
 	 * Generic method to publish CMD_VIEW Message
@@ -5590,47 +5577,176 @@ public void makePayment(QDataAnswerMessage m) {
 	}
 
 	/* Creation of payment item */
-	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity buyerBe,
-			BaseEntity sellerBe, String paymentsToken) {
-		String itemId = null;
+//	public String createPaymentItem(BaseEntity loadBe, BaseEntity offerBe, BaseEntity begBe, BaseEntity buyerBe,
+//			BaseEntity sellerBe, String paymentsToken) {
+//		String itemId = null;
+//
+//		if (offerBe != null && begBe != null) {
+//			try {
+//
+//				/* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
+//				Money buyerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//				/* If pricing calculation fails */
+//				if (buyerAmountWithoutFee == null) {
+//					throw new IllegalArgumentException(
+//							"Something went wrong during pricing calculations. Price for item cannot be empty");
+//				}
+//
+//				/* Convert dollars into cents */
+//				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
+//				/* Owner => Buyer */
+//				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode());
+//				 //Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
+//
+//				/* Driver => Seller */
+//				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
+//
+//				/* get item name */
+//				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
+//				println("payments item name ::" + paymentsItemName);
+//
+//				/* Not mandatory */
+//				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+//
+//				try {
+//					/* get fee */
+//					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
+//					System.out.println("payment fee Id ::" + paymentFeeId);
+//					String[] feeArr = { paymentFeeId };
+//
+//					/* bundling all the info into Item object */
+//					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
+//							PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
+//							buyerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
+//					/* Hitting payments item creation API */
+//					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
+//							paymentsToken);
+//
+//					if (itemCreationResponse != null) {
+//						QPaymentsAssemblyItemResponse itemResponsePojo = JsonUtils.fromJson(itemCreationResponse,
+//								QPaymentsAssemblyItemResponse.class);
+//						itemId = itemResponsePojo.getId();
+//					}
+//
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//
+//			} catch (IllegalArgumentException e) {
+//
+//				/* Redirect to home if item creation fails */
+//				redirectToHomePage();
+//
+//				String jobId = begBe.getValue("PRI_JOB_ID", null);
+//				BaseEntity userBe = getUser();
+//
+//				/* Send toast */
+//				String toastMessage = "Payments item creation failed for the job with ID : #" + jobId + ", "
+//						+ e.getMessage();
+//
+//				if (userBe != null) {
+//					String[] recipientArr = { userBe.getCode() };
+//					this.sendToastNotification(recipientArr, toastMessage, "warning");
+//				}
+//
+//				/* Send slack notification */
+//				sendSlackNotification(toastMessage);
+//			}
+//		} else {
+//			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "
+//					+ begBe.getCode() + ", OFFER CODE :" + offerBe.getCode();
+//			sendSlackNotification(slackMessage);
+//		}
+//
+//		return itemId;
+//	}
 
-		if (offerBe != null && begBe != null) {
+	/*
+	 *  Creation of insurance payment item
+	 *  @param srcBe- has attribute which has amount for the transaction
+	 *         buyerBe & sellerBe - are the buyer and seller
+	 *         amountIncludingGSTAttributeCode - is the attribute code that has the amount including GST for payment
+	 *         paymentsToken - is the assembly payments token
+	 */
+	/*public String createPaymentItem(BaseEntity srcBe, BaseEntity buyerBe, BaseEntity sellerBe, String amountIncludingGSTAttributeCode,
+						          String paymentTitle, boolean hasFee, String paymentsToken) {
+
+		String itemId = null;
+		BaseEntity begBe = null;
+		BaseEntity loadBe = null;
+		if ( srcBe != null && amountIncludingGSTAttributeCode != null ) {
 			try {
 
-				/* driverPriceIncGST = ownerPriceIncGST.subtract(feePriceIncGST) */
-				Money buyerAmountWithoutFee = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
-				/* If pricing calculation fails */
-				if (buyerAmountWithoutFee == null) {
+				if(srcBe.getCode().startsWith("BEG_")) {
+					begBe = srcBe;
+				} else if (srcBe.getCode().startsWith("OFR_")) {
+					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+				}
+
+				loadBe =	 this.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);
+
+				Money amountIncludingGST = srcBe.getValue(amountIncludingGSTAttributeCode, null);
+				 If pricing calculation fails
+				if (amountIncludingGST == null) {
 					throw new IllegalArgumentException(
 							"Something went wrong during pricing calculations. Price for item cannot be empty");
 				}
 
-				/* Convert dollars into cents */
-				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(buyerAmountWithoutFee);
-				/* Owner => Buyer */
-				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe);
+				 Convert dollars into cents
+				Money roundedItemPriceInCents = PaymentUtils.getRoundedMoneyInCents(amountIncludingGST);
+				 Owner => Buyer
+				QPaymentsUser buyer = PaymentUtils.getPaymentsUser(buyerBe, getDevmode());
+				//Passing devMode boolean as the PRJ's account have different Payment User ID for production and dev
+				 Ch40 => Seller
+				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe, getDevmode());
 
-				/* Driver => Seller */
-				QPaymentsUser seller = PaymentUtils.getPaymentsUser(sellerBe);
-
-				/* get item name */
-				String paymentsItemName = PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				 get item name
+				String paymentsItemName = null;
+				if(paymentTitle.equalsIgnoreCase("JOB_OFFER")) {
+					paymentsItemName ="Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				}else {
+					paymentsItemName = paymentTitle+" Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+				}
 				println("payments item name ::" + paymentsItemName);
 
-				/* Not mandatory */
+
+				 Not mandatory
 				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
 
 				try {
-					/* get fee */
-					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
-					System.out.println("payment fee Id ::" + paymentFeeId);
-					String[] feeArr = { paymentFeeId };
 
-					/* bundling all the info into Item object */
-					QPaymentsItem item = new QPaymentsItem(paymentsItemName, begDescription,
-							PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
-							buyerAmountWithoutFee.getCurrency(), feeArr, buyer, seller);
-					/* Hitting payments item creation API */
+					 bundling all the info into Item object
+					QPaymentsItem item = null;
+					if(hasFee) {
+						 get fees
+						BaseEntity projectBe = getProject();
+						if(projectBe != null) {
+							List<String> feesList = createPaymentFee(srcBe, projectBe, paymentsToken);
+							//String paymentFeeId = createPaymentFee(srcBe, feeAttributeCode,  paymentsToken);
+							System.out.println("payment fee Id ::" + feesList.toString());
+							if(feesList.size() != 0) {
+								//String[] feeArr = { paymentFeeId };
+								String[] feesArr = new String[feesList.size()];
+								feesArr = feesList.toArray(feesArr);
+							    item = new QPaymentsItem(paymentsItemName, begDescription,
+										PaymentTransactionType.escrow, roundedItemPriceInCents.getNumber().doubleValue(),
+										amountIncludingGST.getCurrency(), feesArr, buyer, seller);
+							}else {
+								println("Error!! Cannot create payment fee. The fees list is empty.");
+							}
+						}else {
+							println("Error!! Cannot create payment fee. The Project BaseEntity is null.");
+					    }
+					}
+
+					if(!hasFee) {
+
+						 item = new QPaymentsItem(paymentsItemName, begDescription,
+								PaymentTransactionType.express, roundedItemPriceInCents.getNumber().doubleValue(),
+								amountIncludingGST.getCurrency(), null, buyer, seller);
+					 }
+					 Hitting payments item creation API
 					String itemCreationResponse = PaymentEndpoint.createPaymentItem(JsonUtils.toJson(item),
 							paymentsToken);
 
@@ -5647,14 +5763,14 @@ public void makePayment(QDataAnswerMessage m) {
 
 			} catch (IllegalArgumentException e) {
 
-				/* Redirect to home if item creation fails */
+				 Redirect to home if item creation fails
 				redirectToHomePage();
 
 				String jobId = begBe.getValue("PRI_JOB_ID", null);
 				BaseEntity userBe = getUser();
 
-				/* Send toast */
-				String toastMessage = "Payments item creation failed for the job with ID : #" + jobId + ", "
+				 Send toast
+				String toastMessage = paymentTitle+" Payment item creation failed for the job with ID : #" + jobId + ", "
 						+ e.getMessage();
 
 				if (userBe != null) {
@@ -5662,69 +5778,199 @@ public void makePayment(QDataAnswerMessage m) {
 					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 
-				/* Send slack notification */
+				 Send slack notification
 				sendSlackNotification(toastMessage);
 			}
 		} else {
-			String slackMessage = "Payment item creation would fail since begCode or offerCode is null. BEG CODE : "
-					+ begBe.getCode() + ", OFFER CODE :" + offerBe.getCode();
+			String slackMessage = paymentTitle+" Payment item creation would fail since begCode is null. BEG CODE : "
+					+ begBe.getCode();
 			sendSlackNotification(slackMessage);
 		}
 
 		return itemId;
-	}
+	}*/
 
 	/* Creates a new fee in external payments-service from a offer baseEntity */
-	private String createPaymentFee(BaseEntity offerBe, String paymentsToken) throws IllegalArgumentException {
+//	private String createPaymentFee(BaseEntity offerBe, String paymentsToken) throws IllegalArgumentException {
+//
+//		String paymentFeeId = null;
+//		try {
+//			/* get fee object with all fee-info */
+//			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
+//			if (feeObj != null) {
+//				try {
+//					/* Hit the fee creation API */
+//					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
+//					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+//
+//					/* Get the fee ID */
+//					paymentFeeId = feePojo.getId();
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//			}
+//		} catch (IllegalArgumentException e) {
+//			throw new IllegalArgumentException(e.getMessage());
+//		}
+//		return paymentFeeId;
+//	}
 
-		String paymentFeeId = null;
-		try {
-			/* get fee object with all fee-info */
-			QPaymentsFee feeObj = PaymentUtils.getFeeObject(offerBe);
-			if (feeObj != null) {
-				try {
-					/* Hit the fee creation API */
-					String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
-					QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+	/* Creates a new fee in external payments-service from a payment source baseEntity */
+	/*private List<String> createPaymentFee(BaseEntity srcBe, BaseEntity projectBe, String paymentsToken) throws IllegalArgumentException {
 
-					/* Get the fee ID */
-					paymentFeeId = feePojo.getId();
-				} catch (PaymentException e) {
-					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
-					throw new IllegalArgumentException(getFormattedErrorMessage);
+		List<String> paymentFeeIds = new ArrayList<String>();
+		if(srcBe != null && projectBe != null && paymentsToken != null ) {
+			 This attribute is being setup in the startup of the rulesservice. It includes only then mandatory fees
+			 * to be included with the product transactions
+			String mandatoryFees = baseEntity.getBaseEntityValueAsString(projectBe.getCode(), "PRI_MANDATORY_PRODUCT_FEES");
+			if(mandatoryFees != null) {
+				List<String> feesList = StringFormattingUtils.splitCharacterSeperatedStringToList(mandatoryFees, ",");
+				if(feesList.size() > 0) {
+					for(String feeAttributeCode : feesList) {
+						Attribute attribute = RulesUtils.getAttribute(feeAttributeCode, getToken());
+						if(attribute != null) {
+							try {
+								println("The fee title is  :: "+attribute.getName());
+								 get fee object with all fee-info
+								QPaymentsFee feeObj = PaymentUtils.getFeeObject(srcBe, feeAttributeCode, attribute.getName());
+								if (feeObj != null) {
+									try {
+										 Hit the fee creation API
+										String feeResponse = PaymentEndpoint.createFees(JsonUtils.toJson(feeObj), paymentsToken);
+										QPaymentsFee feePojo = JsonUtils.fromJson(feeResponse, QPaymentsFee.class);
+
+										 Get the fee ID
+										paymentFeeIds.add(feePojo.getId());
+									} catch (PaymentException e) {
+										String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+										throw new IllegalArgumentException(getFormattedErrorMessage);
+									}
+								}
+							} catch (IllegalArgumentException e) {
+								throw new IllegalArgumentException(e.getMessage());
+							}
+						}
+					}
+				}else {
+					println("Error!! The Mandatory fees list is empty.");
 				}
+			}else {
+				println("Error!! The Mandatory fees values is not assigned to the project.");
 			}
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e.getMessage());
-		}
-		return paymentFeeId;
-	}
 
-	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
-			String authToken) {
+		}
+		return paymentFeeIds;
+	}*/
+
+//	public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity offerBe, BaseEntity begBe,
+//			String authToken) {
+//
+//		Boolean isMakePaymentSuccess = false;
+//		if (begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
+//
+//			try {
+//				String itemId = begBe.getValue("PRI_ITEM_ID", null);
+//				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
+//
+//				/* To get the type of payment (Bank account / card) */
+//				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe,
+//						makePaymentObj.getAccount().getId());
+//
+//				/*
+//				 * if the payment type is bank account, there is another step of debit
+//				 * authorization
+//				 */
+//				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
+//				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
+//					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);
+//				}
+//
+//				/* Step 2 for bankaccount : Make payment API call */
+//				/* Step 1 for card : Make payment API call */
+//				try {
+//
+//					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj),
+//							authToken);
+//					isMakePaymentSuccess = true;
+//					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
+//							QPaymentsAssemblyItemResponse.class);
+//
+//					/* save deposit reference as an attribute to beg */
+//					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
+//					this.baseEntity.saveAnswer(depositReferenceAnswer);
+//
+//				} catch (PaymentException e) {
+//					String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//					throw new IllegalArgumentException(getFormattedErrorMessage);
+//				}
+//
+//			} catch (IllegalArgumentException e) {
+//				redirectToHomePage();
+//				String begTitle = begBe.getValue("PRI_TITLE", null);
+//				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
+//				String[] recipientArr = { buyerBe.getCode() };
+//				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
+//						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
+//				this.sendToastNotification(recipientArr, toastMessage, "warning");
+//				sendSlackNotification(
+//						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
+//			}
+//		} else {
+//			redirectToHomePage();
+//			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
+//					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
+//					+ offerBe.getCode();
+//			sendSlackNotification(slackMessage);
+//		}
+//		return isMakePaymentSuccess;
+//	}
+
+	/*
+	 *  @param: buyerBe - is the buyer BE, sellerBe - is the seller BE, srcBe - is the BaseEntity that has paymentAmount,
+	 *          paymentItemIdAttributeCode - is the Assembly Payment item code and
+	 *          paymentAmountAttributeCode - is the attribute code that holds the paymentAmount in the srcBe
+	 *          authToken - assembly token string
+	 */
+	/*public Boolean makePayment(BaseEntity buyerBe, BaseEntity sellerBe, BaseEntity srcBe, String paymentItemIdAttributeCode,
+			String paymentAmountAttributeCode, String paymentTitle,  String authToken) {
 
 		Boolean isMakePaymentSuccess = false;
-		if (begBe != null && offerBe != null && buyerBe != null && sellerBe != null) {
-
+		if (srcBe != null && buyerBe != null && sellerBe != null && paymentItemIdAttributeCode != null &&
+				paymentAmountAttributeCode != null ) {
+			String itemId = null;
+			//String paymentTitleComplete = null;
+			BaseEntity begBe = null;
 			try {
-				String itemId = begBe.getValue("PRI_ITEM_ID", null);
-				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe);
+				if(srcBe.getCode().startsWith("BEG_")) {
+					begBe = srcBe;
+					//String paymentTitleIncomplete = paymentItemIdAttributeCode.replace("PRI_", "");
+					//paymentTitleComplete = paymentTitleIncomplete.replace("_ITEM_ID", "");
+					//System.out.println("The payment title is  :: "+paymentTitleComplete);
+				 } else if (srcBe.getCode().startsWith("OFR_")) {
+					begBe = this.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
+					//paymentTitleComplete = "JOB PRICE";
+				 }
 
-				/* To get the type of payment (Bank account / card) */
+				itemId = srcBe.getValue(paymentItemIdAttributeCode, null);
+				QMakePayment makePaymentObj = PaymentUtils.getMakePaymentObj(buyerBe, begBe, paymentItemIdAttributeCode);
+
+				 To get the type of payment (Bank account / card)
 				PaymentType paymentType = PaymentUtils.getPaymentMethodType(buyerBe,
 						makePaymentObj.getAccount().getId());
 
-				/*
+
 				 * if the payment type is bank account, there is another step of debit
 				 * authorization
-				 */
-				/* Step 1 for bankaccount : DEBIT AUTHORIZATION */
+
+				 Step 1 for bankaccount : DEBIT AUTHORIZATION
 				if (paymentType != null && paymentType.equals(PaymentType.BANK_ACCOUNT)) {
-					debitAuthorityForBankAccount(offerBe, makePaymentObj, authToken);
+					//debitAuthorityForBankAccount(srcBe, makePaymentObj, authToken);
+					debitAuthorityForBankAccount(srcBe, makePaymentObj, paymentAmountAttributeCode, authToken);
 				}
 
-				/* Step 2 for bankaccount : Make payment API call */
-				/* Step 1 for card : Make payment API call */
+				 Step 2 for bankaccount : Make payment API call
+				 Step 1 for card : Make payment API call
 				try {
 
 					String paymentResponse = PaymentEndpoint.makePayment(itemId, JsonUtils.toJson(makePaymentObj),
@@ -5732,9 +5978,14 @@ public void makePayment(QDataAnswerMessage m) {
 					isMakePaymentSuccess = true;
 					QPaymentsAssemblyItemResponse makePaymentResponseObj = JsonUtils.fromJson(paymentResponse,
 							QPaymentsAssemblyItemResponse.class);
-
-					/* save deposit reference as an attribute to beg */
-					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), "PRI_DEPOSIT_REFERENCE_ID", makePaymentResponseObj.getDepositReference());
+					String paymentDepositRefIdAttribute = null;
+                      if(!paymentTitle.equalsIgnoreCase("JOB_OFFER")) {
+                    	  	paymentDepositRefIdAttribute = "PRI_"+paymentTitle+"_DEPOSIT_REFERENCE_ID";
+                      }else {
+                    	  paymentDepositRefIdAttribute = "PRI_DEPOSIT_REFERENCE_ID";
+                      }
+					 save deposit reference as an attribute to beg
+					Answer depositReferenceAnswer = new Answer(begBe.getCode(), begBe.getCode(), paymentDepositRefIdAttribute, makePaymentResponseObj.getDepositReference());
 					this.baseEntity.saveAnswer(depositReferenceAnswer);
 
 				} catch (PaymentException e) {
@@ -5743,62 +5994,90 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 
 			} catch (IllegalArgumentException e) {
-				redirectToHomePage();
-				String begTitle = begBe.getValue("PRI_TITLE", null);
+				//redirectToHomePage();
+				String begTitle = srcBe.getValue("PRI_TITLE", null);
 				String sellerFirstName = sellerBe.getValue("PRI_FIRSTNAME", null);
 				String[] recipientArr = { buyerBe.getCode() };
 				String toastMessage = "Unfortunately, processing payment into " + sellerFirstName
 						+ "'s account for the job - " + begTitle + " has failed. " + e.getMessage();
 				this.sendToastNotification(recipientArr, toastMessage, "warning");
 				sendSlackNotification(
-						toastMessage + ". Job code : " + begBe.getCode() + ", offer code : " + offerBe.getCode());
+						toastMessage + ". Job code : " + srcBe.getCode());
 			}
-		}
-    else {
-
-      this.navigateBack();
-			redirectToHomePage();
-			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
-					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
-					+ offerBe.getCode();
+		} else {
+			//redirectToHomePage();
+			String slackMessage = "Processing payment for the job - " + srcBe.getCode()
+					+ " has failed. UserBE/BegBE is null. User code :" + buyerBe.getCode();
 			sendSlackNotification(slackMessage);
 		}
 		return isMakePaymentSuccess;
-	}
+	}*/
+
+//	/*
+//	 * bank account payments needs to go through one more API call - Debit authority
+//	 */
+//	private void debitAuthorityForBankAccount(BaseEntity offerBe, QMakePayment makePaymentObj, String authToken)
+//			throws IllegalArgumentException {
+//
+//		Money offerBuyerPriceString = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+//
+//		/* if price calculation fails, we handle it */
+//		if (offerBuyerPriceString == null) {
+//			throw new IllegalArgumentException(
+//					"Something went wrong during pricing calculation. Item price cannot be empty");
+//		}
+//
+//		try {
+//			/* Get the rounded money in cents */
+//			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
+//
+//			/* bundling the debit-authority object */
+//			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
+//					makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
+//
+//			/* API call for debit authorization for bank-account */
+//			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
+//
+//		} catch (PaymentException e) {
+//			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
+//			throw new IllegalArgumentException(getFormattedErrorMessage);
+//		}
+//	}
+
 
 	/*
 	 * bank account payments needs to go through one more API call - Debit authority
 	 */
-	private void debitAuthorityForBankAccount(BaseEntity offerBe, QMakePayment makePaymentObj, String authToken)
+	/*private void debitAuthorityForBankAccount(BaseEntity srcBe, QMakePayment makePaymentObj, String priceAttributeCode, String authToken)
 			throws IllegalArgumentException {
 
-		Money offerBuyerPriceString = offerBe.getValue("PRI_OFFER_DRIVER_PRICE_INC_GST", null);
+		Money buyerPriceString = srcBe.getValue(priceAttributeCode, null);
 
-		/* if price calculation fails, we handle it */
-		if (offerBuyerPriceString == null) {
+		 if price calculation fails, we handle it
+		if (buyerPriceString == null) {
 			throw new IllegalArgumentException(
 					"Something went wrong during pricing calculation. Item price cannot be empty");
 		}
 
 		try {
-			/* Get the rounded money in cents */
-			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(offerBuyerPriceString);
+			 Get the rounded money in cents
+			Money offerPriceStringInCents = PaymentUtils.getRoundedMoneyInCents(buyerPriceString);
 
-			/* bundling the debit-authority object */
+			 bundling the debit-authority object
 			QPaymentAuthorityForBankAccount paymentAuthorityObj = new QPaymentAuthorityForBankAccount(
 					makePaymentObj.getAccount(), offerPriceStringInCents.getNumber().doubleValue());
 
-			/* API call for debit authorization for bank-account */
+			 API call for debit authorization for bank-account
 			PaymentEndpoint.getdebitAuthorization(JsonUtils.toJson(paymentAuthorityObj), authToken);
 
 		} catch (PaymentException e) {
 			String getFormattedErrorMessage = getPaymentsErrorResponseMessage(e.getMessage());
 			throw new IllegalArgumentException(getFormattedErrorMessage);
 		}
-	}
+	}*/
 
 	/* Fetch the one time use Payments card and bank tokens for a user */
-	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
+	/*public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
 		String token = null;
 
 		try {
@@ -5825,10 +6104,10 @@ public void makePayment(QDataAnswerMessage m) {
 					+ ", Error message : " + e.getMessage());
 		}
 		return token;
-	}
+	}*/
 
 	/* release payment */
-	public Boolean releasePayment(BaseEntity begBe, BaseEntity buyerBe, BaseEntity sellerBe, String authToken) {
+	/*public Boolean releasePayment(BaseEntity begBe, BaseEntity buyerBe, BaseEntity sellerBe, String authToken) {
 
 		Boolean isReleasePayment = false;
 		try {
@@ -5842,12 +6121,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 				List<Answer> answers = new ArrayList<Answer>();
 
-				/* Adding Release Payment Done status */
+				 Adding Release Payment Done status
 				Answer paymentDoneAns = new Answer(buyerBe.getCode(), begBe.getCode(), "PRI_IS_RELEASE_PAYMENT_DONE",
 						"TRUE");
 				answers.add(paymentDoneAns);
 
-				/* save disbursement id as a beg attribute */
+				 save disbursement id as a beg attribute
 				Answer releasePaymentDisbursementAns = new Answer(getUser().getCode(), begBe.getCode(),
 						"PRI_PAYMENTS_DISBURSEMENT_ID", depositReferenceId);
 				answers.add(releasePaymentDisbursementAns);
@@ -5867,32 +6146,32 @@ public void makePayment(QDataAnswerMessage m) {
 			String toastMessage = "Unfortunately, payment release to " + sellerFirstName + " for the job - " + begTitle
 					+ " has failed." + e.getMessage();
 
-			/* send error toast message */
+			 send error toast message
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
-			/* send slack notification */
+			 send slack notification
 			sendSlackNotification(toastMessage + ". Job code : " + begBe.getCode());
 		}
 		return isReleasePayment;
-	}
+	}*/
 
 	/* disbursement of bank account for a user */
-	public Boolean disburseAccount(String paymentsUserId, QPaymentMethod paymentMethodObj, String authToken) {
+	/*public Boolean disburseAccount(String paymentsUserId, QPaymentMethod paymentMethodObj, String authToken) {
 
 		Boolean isDisbursementSuccess = false;
 		if (paymentsUserId != null && paymentMethodObj != null) {
 			try {
-				/* Get the ID of the payment method (that's all we'll need) */
+				 Get the ID of the payment method (that's all we'll need)
 				String paymentMethodId = paymentMethodObj.getId();
 
-				/* set the payment ID in the object */
+				 set the payment ID in the object
 				QPaymentMethod requestBodyObj = new QPaymentMethod(paymentMethodId);
 
-				/* create disbursement object */
+				 create disbursement object
 				QPaymentsDisbursement disbursementObj = new QPaymentsDisbursement(requestBodyObj);
 
 				try {
-					/* Hit the API. This API has no response string */
+					 Hit the API. This API has no response string
 					PaymentEndpoint.disburseAccount(paymentsUserId, JsonUtils.toJson(disbursementObj), authToken);
 					isDisbursementSuccess = true;
 
@@ -5907,10 +6186,10 @@ public void makePayment(QDataAnswerMessage m) {
 			log.error("Payment disbursment will not happen. payments user ID/Payment method is null.");
 		}
 		return isDisbursementSuccess;
-	}
+	}*/
 
 	/* Deletes a bank account */
-	public Boolean deleteBankAccount(String bankAccountId, String authKey) {
+	/*public Boolean deleteBankAccount(String bankAccountId, String authKey) {
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
@@ -5918,10 +6197,10 @@ public void makePayment(QDataAnswerMessage m) {
 		} catch (PaymentException e) {
 		}
 		return isDeleted;
-	}
+	}*/
 
 	/* Deletes a credit card */
-	public Boolean deleteCard(String cardAccountId, String authKey) {
+	/*public Boolean deleteCard(String cardAccountId, String authKey) {
 		Boolean isDeleted = false;
 		try {
 			PaymentEndpoint.deleteCardAccount(cardAccountId, authKey);
@@ -5929,7 +6208,7 @@ public void makePayment(QDataAnswerMessage m) {
 		} catch (PaymentException e) {
 		}
 		return isDeleted;
-	}
+	}*/
 
 	public void processAddresses(String realm) {
 		// load in all the people in the db
@@ -6317,4 +6596,30 @@ public void makePayment(QDataAnswerMessage m) {
 	public void sendNotes(BaseEntity context) {
 		this.sendNotes(context.getCode());
 	}
+
+	public void setKeyValue(final String key, final String value) {
+		String sessionId = getAsString("session_state");
+		println("The Session Id is ::" + sessionId);
+		println("The key is :: " + key + " and value is::  " + value);
+		//Object obj = value;
+		VertxUtils.putObject(realm(), key, sessionId, value);
+	}
+
+	public String getKeyValue(final String key) {
+		String sessionId = getAsString("session_state");
+		String value = VertxUtils.getObject(realm(), key, sessionId, String.class);
+		return value;
+	}
+
+	public QPaymentsProvider getPaymentsServiceProvider() {
+		BaseEntity projectBe = getProject();
+		Boolean isProjectUsesAssembly = projectBe.getValue("PRI_IS_PAYMENTS_ASSEMBLY", false);
+
+		if(isProjectUsesAssembly) {
+			QPaymentsServiceProvider serviceProvider = QPaymentsServiceProvider.ASSEMBLY;
+			return paymentsFactory.getMessageProvider(serviceProvider);
+		}
+		return null;
+	}
+
 }
