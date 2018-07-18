@@ -3198,15 +3198,16 @@ public class QRules {
 					/* Get all the sellers who have opted for this product category tag */
 					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
 							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+					String[] recipientCodes = new String[0];
 					int i = 0;
-					String[] recipientCodes = new String[sellersBe.size()];
-					for (BaseEntity taggedSellerBe : sellersBe) {
-						recipientCodes[i] = taggedSellerBe.getCode();
-						i++;
+					if(sellersBe != null) {
+						recipientCodes = new String[sellersBe.size()];
+						for (BaseEntity taggedSellerBe : sellersBe) {
+							recipientCodes[i] = taggedSellerBe.getCode();
+							i++;
+						}
 					}
 					println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
-
-					//println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
 
 					/*
 					 * Send newly created job with its attributes to all drivers so that it exists
