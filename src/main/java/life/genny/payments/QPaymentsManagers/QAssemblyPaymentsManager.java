@@ -51,21 +51,12 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 	
 	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 	
-	private Map<String, Object> decodedMapToken;
 	private String token;
-	private EventBus eventBus;
 	private QRules rules;
-	
-	KnowledgeHelper drools;
 
+	public QAssemblyPaymentsManager(QRules rules) {
 
-	public QAssemblyPaymentsManager(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm, EventBus eventBus, KnowledgeHelper drools) {
-
-		this.decodedMapToken = decodedMapToken;
-		this.token = token;
-		this.eventBus = eventBus;
-		this.drools = drools;
-		this.rules = new QRules(this.eventBus, this.token, this.decodedMapToken);
+		this.rules = rules;
 	}
 	
 	/**
@@ -234,7 +225,8 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 				 * the user is already available for the email ID, and fetch the userId
 				 */
 				this.rules.setState("PAYMENTS_CREATION_FAILURE_CHECK_USER_EXISTS");
-				this.drools.setFocus("payments");
+				KnowledgeHelper drool1 = this.rules.getDrools();
+				drool1.setFocus("payments");
 
 			}
 

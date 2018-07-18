@@ -11,22 +11,13 @@ import org.drools.core.spi.KnowledgeHelper;
 
 public class QPaymentsFactory {
 	
-	private Map<String, Object> decodedMapToken;
-	private String token;
-	private String realm;
-	private String qwandaServiceUrl;
-	private EventBus eventBus;
-	KnowledgeHelper drools;
+
+	private QRules rules;
 
 
-	public QPaymentsFactory(String qwandaServiceUrl, String token, Map<String, Object> decodedMapToken, String realm, EventBus eventBus, KnowledgeHelper drools) {
+	public QPaymentsFactory( QRules rules) {
 
-		this.decodedMapToken = decodedMapToken;
-		this.qwandaServiceUrl = qwandaServiceUrl;
-		this.token = token;
-		this.realm = realm;
-		this.eventBus = eventBus;
-		this.drools = drools;
+		this.rules = rules;
 	}
 	
 	public QPaymentsProvider getMessageProvider(QPaymentsServiceProvider paymentsServiceProvider)
@@ -36,9 +27,9 @@ public class QPaymentsFactory {
 		
 		switch (paymentsServiceProvider) {
 		case ASSEMBLY:
-			paymentsProvider = new QAssemblyPaymentsManager(this.qwandaServiceUrl, this.token, this.decodedMapToken, this.realm, this.eventBus, this.drools);
+			paymentsProvider = new QAssemblyPaymentsManager(this.rules);
 		default:
-			paymentsProvider = new QAssemblyPaymentsManager(this.qwandaServiceUrl, this.token, this.decodedMapToken, this.realm, this.eventBus, this.drools);
+			paymentsProvider = new QAssemblyPaymentsManager(this.rules);
 		}
 		return paymentsProvider;
 	}

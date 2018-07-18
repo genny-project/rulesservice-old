@@ -181,7 +181,7 @@ public class QRules {
 			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 
-			this.paymentsFactory = new QPaymentsFactory(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm(), this.eventBus, this.drools);
+			this.paymentsFactory = new QPaymentsFactory( this );
 
 		} catch (Exception e) {
 
