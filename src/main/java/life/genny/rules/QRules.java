@@ -3192,46 +3192,21 @@ public class QRules {
 					/* set Status of the job */
 					answers.add(new Answer(userCode, jobCode, "STA_STATUS", Status.NEEDS_NO_ACTION.value()));
 					// Setting color to green for new jobs for both driver and owner
-
-        	/*
-					 * answers.add(new Answer(getUser().getCode(), jobCode, "STA_" +
-					 * getUser().getCode(), Status.NEEDS_NO_ACTION.value()));
-					 */
-
-				/*	BaseEntity updatedJob = this.baseEntity.getBaseEntityByCode(job.getCode());
-					Long jobId = updatedJob.getId();
-					answers.add(new Answer(getUser().getCode(), jobCode, "PRI_JOB_ID", jobId + ""));
-					this.baseEntity.saveAnswers(answers);
-					---->>> Moved to CreateJob.drl         */
-
-					/* Getting all people */
-					List<BaseEntity> people = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_PEOPLE", "LNK_CORE", 0, 100, false);
-					List<BaseEntity> sellersBe = new ArrayList<>();
-
-					/* Getting all driver BEs */
-					if (people != null && people.size() > 0) {
-
-						for (BaseEntity stakeholderBe : people) {
-
-							try {
-								if (this.isUserSeller(stakeholderBe)) {
-									sellersBe.add(stakeholderBe);
-								}
-
-							} catch (Exception e) {
-
-							}
-						}
-					}
-
+					
+					this.baseEntity.saveAnswers(answers);	
+					
+					/* Get all the sellers who have opted for this product category tag */
+					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
+							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
 					int i = 0;
-					String[] stakeholderArr = new String[sellersBe.size()];
-					for (BaseEntity stakeholderBe : sellersBe) {
-						stakeholderArr[i] = stakeholderBe.getCode();
+					String[] recipientCodes = new String[sellersBe.size()];
+					for (BaseEntity taggedSellerBe : sellersBe) {
+						recipientCodes[i] = taggedSellerBe.getCode();
 						i++;
 					}
+					println("recipient array - drivers ::" + Arrays.toString(recipientCodes));
 
-					println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
+					//println("recipient array - drivers ::" + Arrays.toString(stakeholderArr));
 
 					/*
 					 * Send newly created job with its attributes to all drivers so that it exists
@@ -3240,10 +3215,10 @@ public class QRules {
 					BaseEntity newJobDetails = this.baseEntity.getBaseEntityByCode(jobCode);
 					println("The newly submitted Job details     ::     " + newJobDetails.toString());
 
-					publishData(newJobDetails, stakeholderArr);
+					publishData(newJobDetails, recipientCodes);
 
 					/* publishing to Owner */
-					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", stakeholderArr);
+					this.publishBaseEntityByCode(newJobDetails, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
@@ -3265,11 +3240,11 @@ public class QRules {
 
 					/* we push the job to the creator */
 					String[] creatorRecipient = { getUser().getCode() };
-					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", stakeholderArr);
+					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", recipientCodes);
 					publishBaseEntityByCode(jobCode, "GRP_NEW_ITEMS", "LNK_CORE", creatorRecipient);
 
 					/* SEND LOAD BE */
-					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", stakeholderArr);
+					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", recipientCodes);
 					publishBaseEntityByCode(loadCode, jobCode, "LNK_BEG", creatorRecipient);
 
 					this.createNote(jobCode, "Job was created.");
@@ -3283,10 +3258,10 @@ public class QRules {
 						contextMap.put("OWNER", getUser().getCode());
 
 						/* Sending toast message to owner frontend */
-						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
+						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						sendMessage(recipientCodes, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 					}
 				}
@@ -5549,23 +5524,6 @@ public class QRules {
 		return beList;
 	}
 
-	/*
-	 * Returns comma seperated list of all the childcode for the given parent code and the linkcode
-	 */
-	public String getAllChildCodes(final String parentCode, final String linkCode) {
-		String childs = null;
-		List<String> childBECodeList = new ArrayList<String>();
-		List<BaseEntity> childBE = this.baseEntity.getLinkedBaseEntities( parentCode, linkCode);
-		if(childBE != null) {
-		  for(BaseEntity be : childBE) {
-			  childBECodeList.add(be.getCode());
-		  }
-		  childs = "\"" + String.join("\", \"", childBECodeList) + "\"" ;
-		  childs = "["+childs+"]";
-		}
-
-		return childs;
-	}
 
 	/*
 	 * Returns the default Bit Mapped tag
