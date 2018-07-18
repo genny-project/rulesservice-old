@@ -989,12 +989,7 @@ public class QRules {
 		this.stateMap = state;
 	}
 
-	/**
-	 * @return the qwandaserviceurl
-	 */
-	public static String getQwandaServiceUrl() {
-		return GennySettings.qwandaServiceUrl;
-	}
+
 
 	/**
 	 * @return the devmode
