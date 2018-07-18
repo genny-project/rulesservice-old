@@ -4398,8 +4398,11 @@ public void makePayment(QDataAnswerMessage m) {
 		this.setDecodedTokenMap(serviceDecodedTokenMap);
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
-		this.set("realm", serviceDecodedTokenMap.get("azp"));
-
+		String tokenRealm = (String) serviceDecodedTokenMap.get("azp");
+		if (GennySettings.devMode || "genny".equalsIgnoreCase(tokenRealm)) {
+			tokenRealm = GennySettings.mainrealm;
+		}
+		this.set("realm", tokenRealm);
 		/* we reinit utils */
 		this.initUtils();
 	}
@@ -4417,25 +4420,25 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 			JsonObject realmJson = new JsonObject(keycloakJson);
-			JsonObject secretJson = realmJson.getJsonObject("credentials");
-			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
 
 			if (realm != null) {
 
 				String token = RulesUtils.generateServiceToken(realm);
-				this.println(token);
+				String proj_realm = System.getenv("PROJECT_REALM");
+				if (GennySettings.devMode || "genny".equalsIgnoreCase(realm)) {
+					this.set("realm", proj_realm);
+					realm = proj_realm;
+				} else {
+					this.set("realm", realm);
+				}
+
+				this.println("Service Token ("+realm+") = "+token);
 				if (token != null) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
 
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
-					} else {
-						this.set("realm", realm);
-					}
+
 
 					return true;
 				}
