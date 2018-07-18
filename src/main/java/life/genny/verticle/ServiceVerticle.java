@@ -3,8 +3,9 @@ package life.genny.verticle;
 
 import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
+import life.genny.channel.Routers;
 import life.genny.channels.EBCHandlers;
-import life.genny.channels.Routers;
+
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.rules.RulesLoader;
@@ -39,6 +40,7 @@ public class ServiceVerticle extends AbstractVerticle {
     	        
     	    }, startupfut);
           Routers.routers(vertx);
+          life.genny.channel.Routers.activate(vertx);
           rfut.complete();
         }, rfut);
         
