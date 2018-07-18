@@ -13,12 +13,15 @@ rule "Send User Roles"
      	BaseEntity user = rules.getUser();
      	
      	/* we grab all the linked roles */
-     	List<BaseEntity> roles = rules.baseEntity.getLinkedBaseEntities(user.getCode(), "LNK_ROLE");
-     	if(roles != null && roles.size() > 0) {
-     		
-     		/* we publish them */
-     		rules.publishCmd(roles, "GRP_ROLES", "LNK_CORE");
-     	}
+		SearchEntity roles = new SearchEntity("SBE_ROLES", "User Roles").setSourceCode(user.getCode())
+			.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "ROL_%")
+			.setPageStart(0)
+			.setPageSize(10000);
+	
+	    try {
+	    		rules.sendSearchResults(roles, "GRP_ROLES", "ROLE");
+	    }
+	    catch(Exception e) {}
 
         rules.setState("SEND_SUBLAYOUTS");
 	    rules.footer();

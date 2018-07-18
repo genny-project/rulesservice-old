@@ -14,15 +14,19 @@ rule "Send Company Roles"
 
       if(company != null && rules.hasCapability(rules.getUser(), "CAP_UPDATE_ROLES")) {
 
-        /* we grab all the linked roles */
-        List<BaseEntity> roles = rules.baseEntity.getLinkedBaseEntities(company.getCode(), "LNK_ROLE");
-        if(roles != null && roles.size() > 0) {
-
-          /* we publish them */
-          rules.publishCmd(roles, "GRP_ROLES", "LNK_CORE");
-        }
+    	  /* we grab all the linked roles */
+  		SearchEntity roles = new SearchEntity("SBE_CPY_ROLES", "Company Roles").setSourceCode(company.getCode())
+  			.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "ROL_%")
+  			.setPageStart(0)
+  			.setPageSize(10000);
+  	
+  	    try {
+  	    		rules.sendSearchResults(roles, "GRP_ROLES", "ROLE");
+  	    }
+  	    catch(Exception e) {}
+  	    
       }
 
-      rules.setState("SEND_USER_ROLES");
-	    rules.footer();
+      rules.setState("SEND_COMPANY_STAFF");
+	  rules.footer();
 end

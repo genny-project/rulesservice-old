@@ -552,6 +552,13 @@ public class QRules {
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
+	
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
+		
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		this.publishBaseEntityByCode(be, parentCode, linkCode, recipients);
+	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -560,6 +567,7 @@ public class QRules {
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setParentCode(parentCode);
 		msg.setRecipientCodeArray(recipientCodes);
 		publishData(msg, recipientCodes);
 
@@ -1870,8 +1878,6 @@ public class QRules {
 		try {
 
 			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
-      this.println(subLayoutMap);
-      this.println("LOG LORIS");
 
 			if (subLayoutMap != null) {
 
@@ -3287,6 +3293,7 @@ public class QRules {
 			}
 		}
 
+		this.reloadCache();
 		this.redirectToHomePage();
 		//drools.setFocus("ispayments");  /* NOW Set up Payments */
 	}
@@ -3984,25 +3991,33 @@ public class QRules {
 	 * Publish Search BE results
 	 */
 	public void sendSearchResults(SearchEntity searchBE) throws IOException {
-
-		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
-		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		publishCmd(new JsonObject(resultJson));
+		this.sendSearchResults(searchBE, null, null);
 	}
 
 	/*
 	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
+		this.sendSearchResults(searchBE, parentCode, null);
+	}
+	
+	/*
+	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkValue) throws IOException {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		msg.setParentCode(parentCode);
+		if(parentCode != null) {
+			msg.setParentCode(parentCode);
+		}
+		if(linkValue != null) {
+			msg.setLinkValue(linkValue);
+		}
+		
 		publishCmd(msg);
 	}
 
