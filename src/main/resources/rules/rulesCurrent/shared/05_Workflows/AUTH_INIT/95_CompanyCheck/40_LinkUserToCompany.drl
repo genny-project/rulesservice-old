@@ -17,7 +17,7 @@ rule "Check user company - Step 3"
        
         rules.println("UPDATING link value OF LINK BETWEEN   ::   " + companyCode + "  &  " + userCode);
         Link updateLink = new Link( companyCode, userCode, "LNK_STAFF", "DRIVER", (double) 1);
-        String result = QwandaUtils.apiPutEntity(rules.getQwandaServiceUrl() + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
+        String result = QwandaUtils.apiPutEntity(rules.GennySettings.qwandaServiceUrl + "/qwanda/links", JsonUtils.toJson(updateLink),rules.getToken());
         rules.publishBE(rules.getUser());
 
 		/* Add Driver to GRP_DRIVERS 

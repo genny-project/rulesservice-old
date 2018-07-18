@@ -115,6 +115,7 @@ import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -133,10 +134,7 @@ public class QRules {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
-	public static final String projectUrl = System.getenv("PROJECT_URL");
-
+	
 	final static String DEFAULT_STATE = "NEW";
 
 	private String token;
@@ -162,6 +160,10 @@ public class QRules {
 	public LayoutUtils layoutUtils;
 	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
+	
+	public static String getQwandaServiceUrl() {
+		return GennySettings.qwandaServiceUrl;
+	}
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
@@ -186,12 +188,12 @@ public class QRules {
 
 			/* initialising utils */
 			/* TODO: to update so it is static */
-			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.baseEntity = new BaseEntityUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.layoutUtils = new LayoutUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.cacheUtils = new CacheUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 
-			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			// this.paymentUtils = new PaymentUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 		} catch (Exception e) {
 
 		}
@@ -248,9 +250,9 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		// if(str == null) {
-		// str = "genny";
-		// }
+		 if(GennySettings.devMode) {
+			 str = 	GennySettings.mainrealm;
+		 }
 
 		return str.toLowerCase();
 	}
@@ -612,7 +614,7 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize, Boolean cache) {
 
-		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(),
+		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(GennySettings.qwandaServiceUrl, getDecodedTokenMap(),
 				getToken(), parentCode, linkCode);
 		publish("cmds", json);
 	}
@@ -620,7 +622,7 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 
-		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
@@ -635,11 +637,11 @@ public class QRules {
 
 	public void geofenceJob(final String begCode, final String driverCode, Double radius) {
 
-		BaseEntity be = RulesUtils.getBaseEntityByCode(QRules.getQwandaServiceUrl(), this.getDecodedTokenMap(),
+		BaseEntity be = RulesUtils.getBaseEntityByCode(GennySettings.qwandaServiceUrl, this.getDecodedTokenMap(),
 				this.getToken(), begCode);
 		if (be != null) {
 
-			QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, QRules.getQwandaServiceUrl(),
+			QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, GennySettings.qwandaServiceUrl,
 					this.getToken(), this.getDecodedTokenMap());
 
 			if (cmds != null) {
@@ -678,7 +680,7 @@ public class QRules {
 		String token = RulesUtils.generateServiceToken(proj_realm);
 		if (token != null) {
 
-			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
 					getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
 
 			if (paidProducts != null) {
@@ -778,7 +780,7 @@ public class QRules {
 			String templateCode, String messageType) {
 
 		/* unsubscribe link for the template */
-		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(projectUrl, templateCode);
+		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
@@ -812,7 +814,7 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+			be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -955,7 +957,7 @@ public class QRules {
 		try {
 
 			latestLinks = new JsonArray(QwandaUtils.apiGet(
-					getQwandaServiceUrl() + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
+					GennySettings.qwandaServiceUrl + "/qwanda/entityentitys/" + targetCode + "/linkcodes/" + linkCode,
 					getToken()));
 
 			QDataJsonMessage msg = new QDataJsonMessage("LINK_CHANGE", latestLinks);
@@ -985,19 +987,8 @@ public class QRules {
 		this.stateMap = state;
 	}
 
-	/**
-	 * @return the qwandaserviceurl
-	 */
-	public static String getQwandaServiceUrl() {
-		return qwandaServiceUrl;
-	}
 
-	/**
-	 * @return the devmode
-	 */
-	public static Boolean getDevmode() {
-		return devMode;
-	}
+
 
 	public void send(final String channel, final Object payload) {
 		send(channel, payload);
@@ -1010,7 +1001,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		System.out.println("Publishing Cmd " + be.getCode() + " with alias " + aliasCode);
+		log.info("Publishing Cmd " + be.getCode() + " with alias " + aliasCode);
 		publish("cmds", msg);
 	}
 
@@ -1354,7 +1345,7 @@ public class QRules {
 		  }
 
 		}else{
-			System.out.println("Error! The Tag list is empty");
+			log.info("Error! The Tag list is empty");
 		}
 		return defaultBitMappedTag;
 
@@ -1379,10 +1370,10 @@ public class QRules {
 								bitMaskValue)
 						.setPageStart(0).setPageSize(10000);
 				try {
-					System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+					log.info("The search Entity :: " + JsonUtils.toJson(searchBE));
 					// msg = getSearchResults(searchBE);
 					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
-					System.out.println("the msg is :: " + msg);
+					log.info("the msg is :: " + msg);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1394,9 +1385,9 @@ public class QRules {
 						beList.add(be);
 					}
 				} else
-					System.out.println("Error! The search result is null.");
+					log.info("Error! The search result is null.");
 			} else {
-				System.out.println("Error! The bitmask value of the tagCode is null.");
+				log.info("Error! The bitmask value of the tagCode is null.");
 
 			}
 			return beList;
@@ -1628,7 +1619,7 @@ public class QRules {
 
 					/* send new answers to api */
 					/*
-					 * QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/answers/bulk2", json,
+					 * QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/answers/bulk2", json,
 					 * getToken());
 					 */
 					// for (Answer an : newAnswers) {
@@ -1661,7 +1652,7 @@ public class QRules {
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
 					QwandaUtils.getUniqueId("MSG", userCode), "message",
-					getQwandaServiceUrl(), getToken());
+					GennySettings.qwandaServiceUrl, getToken());
 			if (newMessage != null) {
 
 				List<BaseEntity> stakeholders = this.baseEntity.getLinkedBaseEntities(chatCode, "LNK_USER");
@@ -1686,7 +1677,7 @@ public class QRules {
 					this.baseEntity.saveAnswer(
 							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
 
-					System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
+					log.info("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
 					/* Publish chat to Receiver */
 					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
 					/* Publish message to Receiver */
@@ -1723,7 +1714,7 @@ public class QRules {
 			/* creating new message */
 			BaseEntity newMessage = QwandaUtils.createBaseEntityByCode(
 					QwandaUtils.getUniqueId("MSG", getUser().getCode()), "message",
-					getQwandaServiceUrl(), getToken());
+					GennySettings.qwandaServiceUrl, getToken());
 			if (newMessage != null) {
 
 				List<BaseEntity> stakeholders = this.baseEntity.getParents(chatCode, "LNK_USER");
@@ -2599,7 +2590,7 @@ public class QRules {
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
-			System.out.println("Error! Unable to get Search Rsults");
+			log.info("Error! Unable to get Search Rsults");
 			qMsg = null;
 			e.printStackTrace();
 		}
@@ -3002,14 +2993,14 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String jsonBE = JsonUtils.toJson(be);
 		String result = null;
-		System.out.println("Forcing BE update to " + qwandaServiceUrl + "/qwanda/baseentitys/force");
+		log.info("Forcing BE update to " + GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force");
 		try {
-			result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
+			result = QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 
 	}
 
@@ -3568,7 +3559,7 @@ public void makePayment(QDataAnswerMessage m) {
 		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault());
 		String iso8601DateString = ldt.toString(); // zdt.toString(); MUST USE UMT!!!!
 
-		System.out.println("datetime ::" + iso8601DateString);
+		log.info("datetime ::" + iso8601DateString);
 
 		return iso8601DateString;
 
@@ -3609,10 +3600,10 @@ public void makePayment(QDataAnswerMessage m) {
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
+		log.info("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		log.info(" The cmd msg is :: " + cmdViewJson);
 
 		publishCmd(cmdViewJson);
 	}
@@ -3634,7 +3625,7 @@ public void makePayment(QDataAnswerMessage m) {
 			sendSearchResults(sendAllMsgs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Error! Unable to get Search Rsults");
+			log.info("Error! Unable to get Search Rsults");
 			e.printStackTrace();
 		}
 
@@ -3709,9 +3700,9 @@ public void makePayment(QDataAnswerMessage m) {
 		// }
 		println("The search BE is  :: " + searchBE);
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
 		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
@@ -3772,9 +3763,9 @@ public void makePayment(QDataAnswerMessage m) {
 		}
 		// println("The search BE is :: "+JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String loadsList = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		// System.out.println("The result :: "+loadsList);
+		// log.info("The result :: "+loadsList);
 		publishData(new JsonObject(loadsList));
 		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
 	}
@@ -3839,9 +3830,9 @@ public void makePayment(QDataAnswerMessage m) {
 		// }
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
 		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
@@ -3905,9 +3896,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 
@@ -4071,7 +4062,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be) {
 		// Add this be to the static
 		if ("GRP_REPORTS".equals(parentCode)) {
-			System.out.println("GRP_REPORTS being added to");
+			log.info("GRP_REPORTS being added to");
 		}
 		Map<String, String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
@@ -4109,7 +4100,7 @@ public void makePayment(QDataAnswerMessage m) {
 	 */
 	public void sendReport(String reportCode) throws IOException {
 
-		System.out.println("The report code is :: " + reportCode);
+		log.info("The report code is :: " + reportCode);
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 
 		String jsonSearchBE = null;
@@ -4134,9 +4125,9 @@ public void makePayment(QDataAnswerMessage m) {
 			jsonSearchBE = JsonUtils.toJson(searchBE);
 		}
 
-		System.out.println("The search BE is :: " + jsonSearchBE);
+		log.info("The search BE is :: " + jsonSearchBE);
 		// String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		this.println(resultJson);
@@ -4200,7 +4191,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		publishCmd(new JsonObject(resultJson));
 	}
@@ -4212,7 +4203,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
@@ -4230,12 +4221,12 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				token);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + msg);
+		log.info("The result   ::  " + msg);
 
 		return msg;
 	}
@@ -4244,9 +4235,9 @@ public void makePayment(QDataAnswerMessage m) {
 	 * Get search Results return String
 	 */
 	public String getSearchResultsString(SearchEntity searchBE) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		return resultJson;
@@ -4349,10 +4340,10 @@ public void makePayment(QDataAnswerMessage m) {
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(reportListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
+		log.info("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		log.info(" The cmd msg is :: " + cmdViewJson);
 
 		publishCmd(cmdViewJson);
 	}
@@ -4362,7 +4353,7 @@ public void makePayment(QDataAnswerMessage m) {
 			String messageType, List<QBaseMSGAttachment> attachmentList) {
 
 		/* unsubscribe link for the template */
-		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(projectUrl, templateCode);
+		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
@@ -4413,13 +4404,12 @@ public void makePayment(QDataAnswerMessage m) {
 
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
-				System.out.println("No keycloakMap for " + realm());
+				log.info("No keycloakMap for " + realm());
 				return false;
 			}
 
 			JsonObject realmJson = new JsonObject(keycloakJson);
 			JsonObject secretJson = realmJson.getJsonObject("credentials");
-			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
 
 			if (realm != null) {
@@ -4430,10 +4420,8 @@ public void makePayment(QDataAnswerMessage m) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
 
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
+					if (GennySettings.devMode) {
+						this.set("realm", GennySettings.mainrealm);
 					} else {
 						this.set("realm", realm);
 					}
@@ -4545,7 +4533,7 @@ public void makePayment(QDataAnswerMessage m) {
 											}
 										}
 									} catch (Exception e) {
-										System.out.println("Error!! The attribute value is not in boolean format");
+										log.info("Error!! The attribute value is not in boolean format");
 									}
 								}
 
@@ -4607,7 +4595,7 @@ public void makePayment(QDataAnswerMessage m) {
 			return;
 		}
 
-		System.out.println("Entering new send application data ");
+		log.info("Entering new send application data ");
 
 		showLoading("Loading data...");
 
@@ -4633,7 +4621,7 @@ public void makePayment(QDataAnswerMessage m) {
 				subscriptions);
 		if (items != null) {
 
-			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
+			log.info("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
 			if (items.getMessages() != null) {
 
@@ -4716,7 +4704,7 @@ public void makePayment(QDataAnswerMessage m) {
 		if (existing == null) {
 
 			try {
-				be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm,
+				be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm,
 						name, keycloakId);
 				VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 				be = getUser();
@@ -4758,10 +4746,10 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 
 			} catch (Exception e) {
-				System.out.println("Error!! while updating " + attributeCode + " attribute value");
+				log.info("Error!! while updating " + attributeCode + " attribute value");
 			}
 		} else {
-			System.out.println("Error!! User BaseEntity is null");
+			log.info("Error!! User BaseEntity is null");
 		}
 	}
 
@@ -4902,7 +4890,7 @@ public void makePayment(QDataAnswerMessage m) {
 					/* response string converted to user response object */
 					QPaymentsAssemblyUserResponse responseUserPojo = JsonUtils.fromJson(paymentUserCreationResponse,
 							QPaymentsAssemblyUserResponse.class);
-					System.out.println("response user pojo ::" + responseUserPojo);
+					log.info("response user pojo ::" + responseUserPojo);
 
 					paymentUserId = responseUserPojo.getId();
 
@@ -4973,9 +4961,9 @@ public void makePayment(QDataAnswerMessage m) {
 	public void sendSlackNotification(String message) {
 
 		/* send critical slack notifications only for production mode */
-		System.out.println("dev mode ::" + devMode);
+		log.info("dev mode ::" + GennySettings.devMode);
 		BaseEntity project = getProject();
-		if (project != null && !devMode) {
+		if (project != null && !GennySettings.devMode) {
 			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
 			if (webhookURL != null) {
 
@@ -5105,7 +5093,7 @@ public void makePayment(QDataAnswerMessage m) {
 									}
 								}
 							} catch (Exception e) {
-								System.out.println("Error!! The attribute value is not in boolean format");
+								log.info("Error!! The attribute value is not in boolean format");
 							}
 						}
 					}
@@ -5130,10 +5118,10 @@ public void makePayment(QDataAnswerMessage m) {
 				}
 				sendCmdReportsSplitView(grpCode, null);
 			} else {
-				System.out.println("Error!!The user BE is null");
+				log.info("Error!!The user BE is null");
 			}
 		} else {
-			System.out.println("Error!!The reports group code is null");
+			log.info("Error!!The reports group code is null");
 		}
 	}
 
@@ -5219,7 +5207,7 @@ public void makePayment(QDataAnswerMessage m) {
 						errValBuilder.append(err);
 					}
 
-					System.out.println("Error Key = " + errVar + ", Value = " + errValBuilder);
+					log.info("Error Key = " + errVar + ", Value = " + errValBuilder);
 
 					/* appending and formatting error messages */
 					errorMessage.append(errVar + " : " + errVal.toString());
@@ -5441,7 +5429,7 @@ public void makePayment(QDataAnswerMessage m) {
 				try {
 					/* get fee */
 					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
-					System.out.println("payment fee Id ::" + paymentFeeId);
+					log.info("payment fee Id ::" + paymentFeeId);
 					String[] feeArr = { paymentFeeId };
 
 					/* bundling all the info into Item object */
@@ -5755,15 +5743,15 @@ public void makePayment(QDataAnswerMessage m) {
 		try {
 			qMsg = getSearchResults(allPeople, token);
 		} catch (IOException e) {
-			System.out.println("Error! Unable to get Search All People");
+			log.info("Error! Unable to get Search All People");
 
 		}
 		// check their addresses
-		System.out.println("Processing " + qMsg.getReturnCount() + " people ");
+		log.info("Processing " + qMsg.getReturnCount() + " people ");
 		for (BaseEntity person : qMsg.getItems()) {
-			System.out.println(person.getCode());
+			log.info(person.getCode());
 			if (!isAddressPresent(person.getCode())) {
-				System.out.println("Bad one...");
+				log.info("Bad one...");
 			}
 		}
 
@@ -5798,7 +5786,7 @@ public void makePayment(QDataAnswerMessage m) {
 					new Answer(personCode, personCode, "PRI_ADDRESS_JSON", jsonAddress));
 			List<Answer> answers = processAddressAnswers(msg);
 			this.baseEntity.saveAnswers(answers);
-			System.out.println(person.getCode()+" fixed using existing JSON");
+			log.info(person.getCode()+" fixed using existing JSON");
 		} else {
 			String jsonFull = person.getValue("PRI_ADDRESS_FULL", null);
 			if (jsonFull != null) {
@@ -5808,7 +5796,7 @@ public void makePayment(QDataAnswerMessage m) {
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_CITY", city));
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_SUBURB", city));
 				this.baseEntity.saveAnswers(answers);
-				System.out.println(person.getCode()+" fixed using existing Full Address");
+				log.info(person.getCode()+" fixed using existing Full Address");
 			} else {
 				log.error("ERROR!! " + personCode + " does not contain Address Full");
 			}
@@ -5874,7 +5862,7 @@ public void makePayment(QDataAnswerMessage m) {
 		for (Attribute toBeRemovedCapability : existingCapability) {
 			try {
 				RulesUtils.attributeMap.remove(toBeRemovedCapability.getCode()); // remove from cache
-				QwandaUtils.apiDelete(getQwandaServiceUrl() + "/qwanda/baseentitys/attributes/" + toBeRemovedCapability.getCode() ,
+				QwandaUtils.apiDelete(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/attributes/" + toBeRemovedCapability.getCode() ,
 						token);
 				// update all the roles that use this attribute by reloading them into cache
 				QDataBaseEntityMessage rolesMsg = VertxUtils.getObject(realm(), "ROLES", realm(),QDataBaseEntityMessage.class);
@@ -5883,7 +5871,7 @@ public void makePayment(QDataAnswerMessage m) {
           for (BaseEntity role : rolesMsg.getItems()) {
   					role.removeAttribute(toBeRemovedCapability.getCode());
   					// Now update the db role to only have the attributes we want left
-  					QwandaUtils.apiPutEntity(getQwandaServiceUrl() + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
+  					QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", JsonUtils.toJson(role), token);
 
   				}
         }
