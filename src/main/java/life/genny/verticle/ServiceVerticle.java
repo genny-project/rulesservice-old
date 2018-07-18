@@ -39,7 +39,6 @@ public class ServiceVerticle extends AbstractVerticle {
     	        startupfut.complete();
     	        
     	    }, startupfut);
-
     	  if (GennySettings.isRulesManager) {
      		  Routers.routers(vertx);
     		  Routers.activate(vertx);

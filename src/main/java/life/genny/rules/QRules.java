@@ -134,7 +134,9 @@ public class QRules {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	
+
+  
+	public static final String projectUrl = System.getenv("PROJECT_URL");
 	final static String DEFAULT_STATE = "NEW";
 
 	private String token;
@@ -987,8 +989,19 @@ public class QRules {
 		this.stateMap = state;
 	}
 
+	/**
+	 * @return the qwandaserviceurl
+	 */
+	public static String getQwandaServiceUrl() {
+		return GennySettings.qwandaServiceUrl;
+	}
 
-
+	/**
+	 * @return the devmode
+	 */
+	public static Boolean getDevmode() {
+		return GennySettings.devMode;
+	}
 
 	public void send(final String channel, final Object payload) {
 		send(channel, payload);
@@ -2993,7 +3006,9 @@ public void makePayment(QDataAnswerMessage m) {
 
 		String jsonBE = JsonUtils.toJson(be);
 		String result = null;
+
 		log.info("Forcing BE update to " + GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force");
+
 		try {
 			result = QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
 		} catch (IOException e) {
@@ -4390,8 +4405,11 @@ public void makePayment(QDataAnswerMessage m) {
 		this.setDecodedTokenMap(serviceDecodedTokenMap);
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
-		this.set("realm", serviceDecodedTokenMap.get("azp"));
-
+		String tokenRealm = (String) serviceDecodedTokenMap.get("azp");
+		if (GennySettings.devMode || "genny".equalsIgnoreCase(tokenRealm)) {
+			tokenRealm = GennySettings.mainrealm;
+		}
+		this.set("realm", tokenRealm);
 		/* we reinit utils */
 		this.initUtils();
 	}
@@ -4409,23 +4427,29 @@ public void makePayment(QDataAnswerMessage m) {
 			}
 
 			JsonObject realmJson = new JsonObject(keycloakJson);
-			JsonObject secretJson = realmJson.getJsonObject("credentials");
+
 			String realm = realmJson.getString("realm");
 
 			if (realm != null) {
 
 				String token = RulesUtils.generateServiceToken(realm);
-				this.println(token);
+				String proj_realm = System.getenv("PROJECT_REALM");
+				if (GennySettings.devMode || "genny".equalsIgnoreCase(realm)) {
+					this.set("realm", proj_realm);
+					realm = proj_realm;
+				} else {
+					this.set("realm", realm);
+				}
+
+				this.println("Service Token ("+realm+") = "+token);
 				if (token != null) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
-
 					if (GennySettings.devMode) {
 						this.set("realm", GennySettings.mainrealm);
 					} else {
 						this.set("realm", realm);
 					}
-
 					return true;
 				}
 			}
@@ -4961,7 +4985,9 @@ public void makePayment(QDataAnswerMessage m) {
 	public void sendSlackNotification(String message) {
 
 		/* send critical slack notifications only for production mode */
+
 		log.info("dev mode ::" + GennySettings.devMode);
+
 		BaseEntity project = getProject();
 		if (project != null && !GennySettings.devMode) {
 			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);

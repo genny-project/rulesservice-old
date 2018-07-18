@@ -339,7 +339,7 @@ public class RulesLoader {
 										+ " : " + rule._2);
 							return false; // do not save this genny rule as there is a proper realm rule with same name
 						}
-					}
+					} 
 
 				}
 			}
