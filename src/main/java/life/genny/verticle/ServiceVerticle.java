@@ -5,9 +5,9 @@ import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
 import life.genny.channel.Routers;
 import life.genny.channels.EBCHandlers;
-
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
+import life.genny.qwandautils.GennySettings;
 import life.genny.rules.RulesLoader;
 import life.genny.security.SecureResources;
 
@@ -39,8 +39,10 @@ public class ServiceVerticle extends AbstractVerticle {
     	        startupfut.complete();
     	        
     	    }, startupfut);
-          Routers.routers(vertx);
-          life.genny.channel.Routers.activate(vertx);
+    	  if (GennySettings.isRulesManager) {
+     		  Routers.routers(vertx);
+    		  Routers.activate(vertx);
+    	  }
           rfut.complete();
         }, rfut);
         
