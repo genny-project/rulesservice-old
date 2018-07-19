@@ -76,7 +76,6 @@ public class RulesLoader {
 		//	setupKieRules("genny", rules); // run genny rules first
 		//	for (String realm : realms) {
 				setupKieRules(mainrealm, rules);
-				log.info("Loaded "+rules);
 		//	}
 
 			fut.complete();
