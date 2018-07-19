@@ -30,10 +30,12 @@ import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
+import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
+import life.genny.rules.RulesUtils;
 
 public class EBCHandlers {
 
@@ -183,6 +185,10 @@ public class EBCHandlers {
 			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
 			String fullName = adecodedTokenMap.get("name").toString();
 			String realm = adecodedTokenMap.get("realm").toString();
+			if ("genny".equalsIgnoreCase(realm)) {
+				realm = GennySettings.mainrealm;
+				adecodedTokenMap.put("realm", GennySettings.mainrealm);
+			}
 			String accessRoles = adecodedTokenMap.get("realm_access").toString();
 
 			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
@@ -235,6 +241,8 @@ public class EBCHandlers {
 			auserRoles.add("admin");
 			auserRoles.add("user");
 
+			token = RulesUtils.generateServiceToken(ruleGroup); // ruleGroup matches realm
+
 			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
 			qRules.set("realm", ruleGroup);
 
@@ -252,6 +260,8 @@ public class EBCHandlers {
 
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
+			// calculate service token for this ...
+			System.out.println("Realm:"+ruleGroup+" -> token="+token);
 			keyvalue.put("token", token);
 
 		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }

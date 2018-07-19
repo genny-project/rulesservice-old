@@ -7,6 +7,7 @@ import io.vertx.rxjava.core.http.HttpServerRequest;
 import io.vertx.rxjava.core.shareddata.AsyncMap;
 import io.vertx.rxjava.core.shareddata.SharedData;
 import io.vertx.rxjava.ext.web.RoutingContext;
+import life.genny.qwandautils.GennySettings;
 
 public class ClusterMap {
 
@@ -41,7 +42,7 @@ public class ClusterMap {
         System.out.println("CACHE KEY:" + param1);
         String param2 = wifiPayload.getString("json");
         SharedData sd = getVertxContext().sharedData();
-        if (System.getenv("GENNY_DEV") == null) {
+        if (GennySettings.devMode) {
 
           sd.getClusterWideMap("shared_data", (AsyncResult<AsyncMap<String, String>> res) -> {
             if (res.failed() || param1 == null || param2 == null) {

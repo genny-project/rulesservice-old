@@ -17,8 +17,8 @@
 	<properties>
     <genny-verticle.version>1.0.45</genny-verticle.version>
 		<qwanda-utils.version>1.0.45</qwanda-utils.version>
+	<log4j-core-version>2.5</log4j-core-version>
 
-                <log4j-core-version>2.5</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
 		<junit-version>4.12</junit-version>
 		<keycloak-core.version>3.4.0.Final</keycloak-core.version>
