@@ -731,7 +731,7 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+			be = QwandaUtils.createUser(this.getQwandaServiceUrl(), getToken(), username, firstname, lastname, email, realm, name,
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -783,7 +783,7 @@ public class QRules {
 			String realm = null;
 
 			/* if you are running in dev mode on your local machine, the only available realm is genny */
-			if(devMode) {
+			if(this.getDevmode()) {
 				realm = "genny";
 			}
 			else {
@@ -798,7 +798,7 @@ public class QRules {
 			}
 
 			/* we create the user in the system */
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, this.realm(), name,
+			be = QwandaUtils.createUser(this.getQwandaServiceUrl(), getToken(), username, firstname, lastname, email, this.realm(), name,
 					keycloakId, attributes, links);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -4565,12 +4565,11 @@ public class QRules {
 	/* To send critical slack message to slack channel */
 	public void sendSlackNotification(String message) {
 
-		if(!devMode) {
+		if(!this.getDevmode()) {
 
 			/* send critical slack notifications only for production mode */
-			System.out.println("dev mode ::" + devMode);
 			BaseEntity project = getProject();
-			if (project != null && !devMode) {
+			if (project != null && !this.getDevmode()) {
 				String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
 				if (webhookURL != null) {
 
