@@ -155,10 +155,6 @@ public class QRules {
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap, String state) {
 
-	public static String getQwandaServiceUrl() {
-		return GennySettings.qwandaServiceUrl;
-	}
-
 		super();
 		this.eventBus = eventBus;
 		this.token = token;
