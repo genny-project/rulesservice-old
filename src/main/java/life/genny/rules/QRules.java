@@ -2968,8 +2968,7 @@ public class QRules {
 					this.baseEntity.saveAnswers(answers);
 
 					/* Get all the sellers who have opted for this product category tag */
-					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER",
-							load.getValue("LNK_LOAD_CATEGORY_LISTS", null));
+					List<BaseEntity> sellersBe = getAllBaseEntitiesBasedOnTag("PER", loadType);
 					String[] recipientCodes = new String[0];
 					int i = 0;
 					if(sellersBe != null) {
@@ -4963,6 +4962,11 @@ public class QRules {
 		capabilityCodes.add("CAP_UPDATE_QUOTE");
 		capabilityCodes.add("CAP_MARK_DELIVERY");
 		capabilityCodes.add("CAP_READ_NOTES");
+		
+		/* if the user is a company rep */
+		if(this.isUserRole(this.getUser(), "PRI_IS_COMPANY")) {
+			capabilityCodes.add("CAP_UPDATE_COMPANY_DETAILS");
+		}
 
 		/* if the user is a buyer */
 		if("BUYER".equals(role)) {
@@ -5064,7 +5068,8 @@ public class QRules {
 		addCapability(capabilityManifest,"MARK_PICKUP", "Mark jobs as picked up",token);
 		addCapability(capabilityManifest,"MARK_DELIVERY", "Mark jobs as delivered",token);
 		addCapability(capabilityManifest,"MARK_ARRIVAL", "Mark jobs as arrived",token);
-
+		addCapability(capabilityManifest,"UPDATE_COMPANY_DETAILS", "Update company details",token);
+		
 		/* Remove any capabilities not in this forced list from roles */
 		existingCapability.removeAll(capabilityManifest);
 
