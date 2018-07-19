@@ -533,7 +533,7 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 			throws IllegalArgumentException {
 		String itemId = null;
 		BaseEntity begBe = null;
-		BaseEntity loadBe = null;
+		BaseEntity productBe = null;
 		if ( srcBe != null && amountIncludingGSTAttributeCode != null ) {
 			try {
 				
@@ -543,7 +543,8 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 					begBe = rules.baseEntity.getParent(srcBe.getCode(), "LNK_BEG", "OFFER");
 				}
 				
-				loadBe =	 rules.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);
+				/*productBe =	 rules.baseEntity.getLinkedBaseEntities(begBe.getCode(), "LNK_BEG", "LOAD").get(0);*/
+				productBe = rules.baseEntity.getLinkedBaseEntity(begBe.getCode(), "LNK_BEG", "LOAD");
 				
 				Money amountIncludingGST = srcBe.getValue(amountIncludingGSTAttributeCode, null); 
 				/* If pricing calculation fails */
@@ -563,15 +564,15 @@ public class QAssemblyPaymentsManager implements QPaymentsProvider {
 				/* get item name */
 				String paymentsItemName = null;
 				if(paymentTitle.equalsIgnoreCase("JOB_OFFER")) {
-					paymentsItemName ="Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);
+					paymentsItemName ="Payment for "+PaymentUtils.getPaymentsItemName(productBe, begBe);
 				}else {
-					paymentsItemName = paymentTitle+" Payment for "+PaymentUtils.getPaymentsItemName(loadBe, begBe);					
+					paymentsItemName = paymentTitle+" Payment for "+PaymentUtils.getPaymentsItemName(productBe, begBe);					
 				}
 				rules.println("payments item name ::" + paymentsItemName);
 				 
 
 				/* Not mandatory */
-				String begDescription = loadBe.getValue("PRI_DESCRIPTION", null);
+				String begDescription = productBe.getValue("PRI_DESCRIPTION", null);
 
 				try {
 					
