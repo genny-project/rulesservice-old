@@ -33,6 +33,7 @@ import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
+import life.genny.rules.Layout.LayoutUtils;
 import life.genny.utils.VertxUtils;
 
 public class BaseEntityUtils {
@@ -410,15 +411,25 @@ public class BaseEntityUtils {
 			if(sourceCode.startsWith("GRP_")) {
 				
 				BaseEntity parentBe = this.getParent(sourceCode, "LNK_CORE");
-				if(parentBe.getCode().equals("GRP_DASHBOARD") || parentBe.getCode().equals("GRP_BEGS")) {
+				if(parentBe.getCode().equals("GRP_DASHBOARD")) {
 					
 					/* it is indeed a bucket */
 					/* we reload the buckets so we remove the existing link in the source */
 					List<QDataBaseEntityMessage> bulk = new ArrayList<>();
-					List<BaseEntity> buckets = this.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
-					bulk.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
-					QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
-					VertxUtils.putObject(this.realm, "BUCKETS", this.realm, bucketMsg);
+					List<BaseEntity> dashboardBuckets = this.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0, 30, false);
+					bulk.add(new QDataBaseEntityMessage(dashboardBuckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD", "LNK_CORE"));
+					QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(dashboardBuckets.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
+					VertxUtils.putObject(this.realm, "GRP_DASHBOARD", this.realm, bucketMsg);
+				}
+				if(parentBe.getCode().equals("GRP_APPLICATIONS")) {
+					
+					/* it is indeed a bucket */
+					/* we reload the applicationBuckets so we remove the existing link in the source */
+					List<QDataBaseEntityMessage> bulk = new ArrayList<>();
+					List<BaseEntity> applicationBuckets = this.getBaseEntitysByParentAndLinkCode("GRP_APPLICATIONS", "LNK_CORE", 0, 30, false);
+					bulk.add(new QDataBaseEntityMessage(applicationBuckets.toArray(new BaseEntity[0]),"GRP_APPLICATIONS", "LNK_CORE"));
+					QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(applicationBuckets.toArray(new BaseEntity[0]),"GRP_APPLICATIONS","LNK_CORE");
+					VertxUtils.putObject(this.realm, "GRP_APPLICATIONS", this.realm, bucketMsg);
 				}
 			}
 		} 
