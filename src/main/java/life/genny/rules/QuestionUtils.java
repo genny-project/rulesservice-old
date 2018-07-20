@@ -16,6 +16,7 @@ import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QDataAskMessage;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
 import life.genny.qwanda.validation.Validation;
+import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
@@ -64,7 +65,7 @@ public class QuestionUtils {
 		String json;
 		try {
 
-			json = QwandaUtils.apiGet(GennySettings.getQwandaServiceUrl() + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
+			json = QwandaUtils.apiGet(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/" + sourceCode + "/asks2/"
 					+ questionCode + "/" + targetCode, token);
 			return JsonUtils.fromJson(json, QDataAskMessage.class);
 		} 

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
@@ -77,7 +76,6 @@ public class RulesLoader {
 			// setupKieRules("genny", rules); // run genny rules first
 			// for (String realm : realms) {
 			// 	setupKieRules(realm, rules);
-			// 	System.out.println("Loaded "+rules);
 			// }
 
 			fut.complete();
