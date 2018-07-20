@@ -73,10 +73,17 @@ public class RulesLoader {
 			realms = getRealms(rules);
 			realms.stream().forEach(System.out::println);
 			realms.remove("genny");
+<<<<<<< HEAD
 			setupKieRules("genny", rules); // run genny rules first
 			for (String realm : realms) {
 				setupKieRules(realm, rules);
 			}
+=======
+			// setupKieRules("genny", rules); // run genny rules first
+			// for (String realm : realms) {
+			// 	setupKieRules(realm, rules);
+			// }
+>>>>>>> a15e9680f1d668f3a96eb1599e5bd81d04af7a3b
 
 			fut.complete();
 		}, failed -> {
@@ -395,7 +402,7 @@ public class RulesLoader {
 				try {
 					kieSession.setGlobal(t._1, t._2);
 				} catch (java.lang.RuntimeException e) {
-					System.out.println(e.getMessage());
+					log.info(e.getMessage());
 				}
 			}
 			for (final Object fact : facts) {
