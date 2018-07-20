@@ -200,11 +200,11 @@ public class BaseEntityUtils {
 		this.saveAnswers(answers, true);
 	}
 
-  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode) {
-    return this.getOfferBaseEntity(groupCode, linkCode, linkValue, quoterCode, true);
+  public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, String prefix, String attributeCode) {
+    return this.getOfferBaseEntity(groupCode, linkCode, linkValue, quoterCode, true, prefix, attributeCode);
   }
 
-	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden) {
+	public BaseEntity getOfferBaseEntity(String groupCode, String linkCode, String linkValue, String quoterCode, Boolean includeHidden, String prefix, String attributeCode) {
 
     /* TODO : Replace with searchEntity when it will be capable of filtering based on linkWeight */
 		List linkList = this.getLinkList(groupCode, linkCode, linkValue, this.token);
@@ -227,9 +227,9 @@ public class BaseEntityUtils {
 
 					//BaseEntity offerBe = this.getBaseEntityByCode(link.getTargetCode());
 
-					if (offerBe != null && offerBe.getCode().startsWith("OFR_")) {
+					if (offerBe != null && offerBe.getCode().startsWith(prefix)) {
 
-						quoterCodeForOffer = offerBe.getValue("PRI_QUOTER_CODE", null);
+						quoterCodeForOffer = offerBe.getValue(attributeCode, null);
 
 						if (quoterCode.equals(quoterCodeForOffer)) {
 							return offerBe;
@@ -1039,7 +1039,7 @@ public class BaseEntityUtils {
 	}
 
 	/*
-	 * Sorting Columns of a SearchEntity as per the weight in either Ascening or
+	 * Sorting Columns of a SearchEntity as per the weight in either Ascending or
 	 * descending order
 	 */
 	public List<String> sortEntityAttributeBasedOnWeight(final List<EntityAttribute> ea, final String sortOrder) {
