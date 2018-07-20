@@ -14,40 +14,42 @@ rule "Pre Init Btn Click"
         rules.setDrools(drools);
         rules.println("RULE INIT BTN_CLICK: "+m);
 
-        String btnCode = m.getData().getCode();
+        String btnCode = m.getData().getCode(); /* TODO : remove this if unused */
+        String quesCode = m.getData().getCode(); /* TODO: use this, don't remove. */
+
         String dataString = m.getData().getValue();
 
         try {
 
-            JsonObject dataJson = new JsonObject(dataString);
+          JsonObject dataJson = new JsonObject(dataString);
 
-            /* Get targetCode */
-            String targetCode = dataJson.getString("targetCode");
-            rules.println("targetCode   ::   " + targetCode);
+          /* Get targetCode */
+          String targetCode = dataJson.getString("targetCode");
+          rules.println("targetCode   ::   " + targetCode);
 
-            /* Get itemCode */
-            String itemCode = dataJson.getString("itemCode");
-            rules.println("itemCode   ::   " + itemCode);
+          /* Get itemCode */
+          String itemCode = dataJson.getString("itemCode");
+          rules.println("itemCode   ::   " + itemCode);
 
-            /* Get hint */
-            String hintCode = dataJson.getString("hint");
-            if(hintCode == null) {
-            		hintCode = dataJson.getString("hintCode");
-            }
+          /* Get hintCode */
+          String hintCode = dataJson.getString("hint");
+          rules.println("hintCode   ::   " + hintCode);
+          
+          /* Get messageCode */
+          String messageCode = dataJson.getString("message");
+          rules.println("messageCode   ::   " + messageCode);
 
-            rules.println("hintCode   ::   " + hintCode);
+          /* Get actionCode */
+          String actionCode = dataJson.getString("action");
+          rules.println("actionCode   ::   " + actionCode);
 
-            /* Get actionCode */
-            String actionCode = dataJson.getString("action");
-            rules.println("actionCode   ::   " + actionCode);
+          /* Get message */
+          String message = dataJson.getString("message");
+          rules.println("message   ::   " + message);
 
-            /* Get message */
-            String message = dataJson.getString("message");
-            rules.println("message   ::   " + message);
-
-           /* Get userCode */
-           String userCode = dataJson.getString("userCode");
-           rules.println("userCode  ::  " + userCode);
+          /* Get userCode */
+          String userCode = dataJson.getString("userCode");
+          rules.println("userCode  ::  " + userCode);
 
           if(targetCode != null) {
             rules.set("quesTargetCode", targetCode);
@@ -62,13 +64,25 @@ rule "Pre Init Btn Click"
           }
 
           if(message != null) {
-              rules.set("message", message);
+              rules.set("message", message); /* if it's not being used, remove this and use the one below. */
+          }
+
+          if(messageCode != null) {
+            rules.set("messageCode", messageCode); /* anish added this, use this one */
           }
         }
-        catch( Exception e) {}
+        catch( Exception e) {
+            rules.println("button click event   ::   " +  m.getData());
+        }
 
-        if(btnCode != null) {
+        /* Remove thiis if unused */
+        if(btnCode != null) { 
           rules.setState(btnCode);
+        }
+
+        /* Use this */
+        if(quesCode != null) {
+          rules.setState(quesCode);
         }
 
         rules.setState("STARTED");
