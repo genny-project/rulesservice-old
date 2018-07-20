@@ -1,8 +1,6 @@
 package life.genny.rules;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
@@ -33,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.money.CurrencyUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -65,13 +62,11 @@ import life.genny.qwanda.attribute.EntityAttribute;
 import life.genny.qwanda.datatype.DataType;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.EntityEntity;
-import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwanda.exception.BadDataException;
 import life.genny.qwanda.exception.PaymentException;
 // import life.genny.qwanda.entity.NavigationType;
 import life.genny.qwanda.message.QBaseMSGAttachment;
-import life.genny.qwanda.message.QBaseMSGAttachment.AttachmentType;
 import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 import life.genny.qwanda.message.QBulkMessage;
 import life.genny.qwanda.message.QCmdGeofenceMessage;
@@ -122,11 +117,16 @@ import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.security.SecureResources;
+import life.genny.utils.BaseEntityUtils;
+import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
+import life.genny.utils.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
-import life.genny.utils.StringFormattingUtils;
+import life.genny.utils.QDataJsonMessage;
+import life.genny.utils.QuestionUtils;
+import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
 
 public class QRules {

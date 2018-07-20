@@ -3,7 +3,7 @@ package life.genny;
 import org.junit.Test;
 import java.io.IOException;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.rules.RulesUtils;;
+import life.genny.utils.RulesUtils;;
 
 public class GitTest {
 
