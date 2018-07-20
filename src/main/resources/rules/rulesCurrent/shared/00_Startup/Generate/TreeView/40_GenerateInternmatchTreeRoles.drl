@@ -35,10 +35,10 @@ rule "Generate internmatch Tree Roles"
 		/* Roles related to TreeView GRP_BEGS */
 		List<Answer> attributesAnsBegs = new ArrayList<>();
 
-		attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_SELLER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_SELLER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_SELLER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_SELLER"));
+		attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
+        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_BUYER"));
+        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER"));
+        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_BUYER"));
 
         attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT"));
         attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT"));
@@ -55,7 +55,7 @@ rule "Generate internmatch Tree Roles"
 		List<Answer> attributesAnsStaffs = new ArrayList<>();
 
 		attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_EDU_PROVIDER"));
-        attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_SELLER"));
+        attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER"));
         attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT"));
 
 		rules.baseEntity.saveAnswers(attributesAnsStaffs);
