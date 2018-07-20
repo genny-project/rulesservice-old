@@ -11,5 +11,6 @@ rule "Check user company - Are you a company?"
 		
 		rules.setState("ASKED_USER_COMPANY");
 		rules.sendSublayout("are-you-a-company", "/registration/company_role_selection.json", true);
+		rules.navigateTo("/questions/company_selection");
 	    rules.footer();     		      
 end
