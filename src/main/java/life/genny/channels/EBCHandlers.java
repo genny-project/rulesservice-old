@@ -35,7 +35,7 @@ import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
-import life.genny.rules.RulesUtils;
+import life.genny.utils.RulesUtils;
 
 public class EBCHandlers {
 
