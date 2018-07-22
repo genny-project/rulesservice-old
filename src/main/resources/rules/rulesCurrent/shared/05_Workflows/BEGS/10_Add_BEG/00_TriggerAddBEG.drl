@@ -10,7 +10,7 @@ rule "Trigger Add BEG"
 	 	rules.header();
 		rules.setState("LOOP_TRIGGER_ADD_BEG");
 		
-		rules.setState("TRIGGER_ADD_BEG");
+		rules.setState("TRIGGERED_ADD_BEG");
 		rules.setState("CREATE_BEG_BASEENTITY");
 	 	rules.footer();      
 end
