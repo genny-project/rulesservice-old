@@ -22,42 +22,42 @@ rule "Generate internmatch Tree Roles"
 		rules.println("Generating specific Tree Roles for "+rules.realm());
 		
 		/* Roles related to TreeView Root */
-		List<Answer> attributesAnsRoot = new ArrayList<>();
-
-        attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
-        attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
-        attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
-        attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
-        attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
-		
-		rules.baseEntity.saveAnswers(attributesAnsRoot);
+		List<Answer> grpRoot = new ArrayList<>();
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
+		rules.baseEntity.saveAnswers(grpRoot);
 
 		/* Roles related to TreeView GRP_BEGS */
-		List<Answer> attributesAnsBegs = new ArrayList<>();
+		List<Answer> grpBegs = new ArrayList<>();
+		grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_BUYER"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_BUYER"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT"));
+        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT"));
+		rules.baseEntity.saveAnswers(grpBegs);
 
-		attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_BUYER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_BUYER"));
-
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT"));
-        attributesAnsBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT"));
+		/* Roles related to TreeView GRP_INTERNSHIPS_INTERN */
+		List<Answer> grpInternshipsIntern = new ArrayList<>();
+		grpInternshipsIntern.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNSHIPS_INTERN", "PRI_IS_SELLER"));
+		rules.baseEntity.saveAnswers(grpInternshipsIntern);
 
 		/* Roles related to TreeView GRP_STUDENTS */
-		List<Answer> attributesAnsStudents = new ArrayList<>();
-
-		attributesAnsStudents.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER"));
-		rules.baseEntity.saveAnswers(attributesAnsStudents);
+		List<Answer> grpStudents = new ArrayList<>();
+		grpStudents.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER"));
+		rules.baseEntity.saveAnswers(grpStudents);
 
 		/* Roles related to TreeView GRP_STAFFS */
-		List<Answer> attributesAnsStaffs = new ArrayList<>();
+		List<Answer> grpStaffs = new ArrayList<>();
+		grpStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_EDU_PROVIDER"));
+        grpStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER"));
+        grpStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT"));
+		rules.baseEntity.saveAnswers(grpStaffs);
 
-		attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_EDU_PROVIDER"));
-        attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER"));
-        attributesAnsStaffs.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT"));
-
-		rules.baseEntity.saveAnswers(attributesAnsStaffs);
         rules.footer();
 end
