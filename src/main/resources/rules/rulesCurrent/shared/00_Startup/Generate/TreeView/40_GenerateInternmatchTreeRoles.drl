@@ -23,6 +23,8 @@ rule "Generate internmatch Tree Roles"
 		
 		/* Roles related to TreeView Root */
 		List<Answer> grpRoot = new ArrayList<>();
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_BUYER"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
