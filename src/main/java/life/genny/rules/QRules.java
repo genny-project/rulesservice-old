@@ -113,6 +113,7 @@ import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
+import life.genny.qwandautils.MergeUtil;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.qwandautils.SecurityUtils;
@@ -5062,7 +5063,12 @@ public class QRules {
         String jsonSearchBE = JsonUtils.toJson(searchBE);
         String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
         QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-        publishCmd(msg);
+		if(msg != null){
+			this.publishCmd(msg);
+
+		}else{
+			this.println("QDataBaseEntityMessage is null, not publishing the cmd");
+		}
     }
 
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
@@ -5073,9 +5079,13 @@ public class QRules {
 		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		msg.setParentCode(parentCode);
-		System.out.println("The result   ::  " + msg);
-		publishCmd(msg);
+		if(msg != null){
+			msg.setParentCode(parentCode);
+			System.out.println("The result   ::  " + msg);
+			publishCmd(msg);
+		}else{
+			this.println("QDataBaseEntityMessage is null, not publishing the cmd");
+		}
 
 	}
 
@@ -8699,5 +8709,5 @@ public class QRules {
 	public String transformToFileName(String inputName) {
 		return inputName.trim().toLowerCase().replaceAll("\\s+","-");
 	}
-
+	
 }
