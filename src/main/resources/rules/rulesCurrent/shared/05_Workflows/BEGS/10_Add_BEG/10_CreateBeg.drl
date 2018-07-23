@@ -16,6 +16,6 @@ rule "Add BEG - Step 1"
 		rules.set("beName", "BEG");		
 		rules.setState("CREATE_BASE_ENTITY");	
 
-		rules.setState("CHECK_PRJ_HAS_PRODUCT_TEMPLATE");	
+		rules.setState("SET_ATTRIBUTES_FOR_BEG");	
 	 	rules.footer();      
 end

@@ -14,6 +14,5 @@ rule "Submit Add BEG - Step 3"
 		rules.baseEntity.moveBaseEntitySetLinkValue(beg.getCode(), "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 		
 		rules.setState("PUBLISH_BEG_AND_KIDS");
-    	
 	 	rules.footer();      
 end
