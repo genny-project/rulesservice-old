@@ -1077,6 +1077,13 @@ public class QRules {
 		publish("cmds", json);
 		return msg;
 	}
+	
+	public QMessage publishCmd(final QDataAskMessage msg) {
+		msg.setToken(getToken());
+		String json = JsonUtils.toJson(msg);
+		publish("cmds", json);
+		return msg;
+	}
 
 	public void publishCmd(final QBulkMessage msg) {
 		publish("cmds", msg);
