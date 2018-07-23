@@ -1,7 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
-import life.genny.rules.QuestionUtils;
+import life.genny.utils.QuestionUtils;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.utils.VertxUtils;
 import life.genny.qwandautils.QwandaMessage;
