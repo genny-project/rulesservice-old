@@ -48,7 +48,7 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import life.genny.channel.Producer;
+
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -1020,7 +1020,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", msg);
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -1056,25 +1056,20 @@ public class QRules {
 		publish("data", msg);
 	}
 
-	public void publishCmd(final JsonObject msg) {
-		msg.put("token", getToken());
-		Producer.getToWebCmds().write(msg).end();
-	}
+
 
 	public void publishCmd(final QwandaMessage msg) {
 
 		if(msg.askData != null && msg.askData.getMessages().length > 0) {
-			this.publishCmd(msg.askData);
+			this.publish("msg",msg.askData);
 		}
 
 		if(msg.asks != null) {
- 			this.publishCmd(msg.asks);
+ 			this.publish("cmds",msg.asks);
 		}
 	}
 
-	public void publishCmd(final String jsonString) {
-		Producer.getToWebCmds().write(jsonString).end();
-	}
+
 
 	public QMessage publishCmd(final QDataMessage msg) {
 		msg.setToken(getToken());
@@ -1084,9 +1079,7 @@ public class QRules {
 	}
 
 	public void publishCmd(final QBulkMessage msg) {
-		msg.setToken(getToken());
-		String json = JsonUtils.toJson(msg);
-		publish("cmds", json);
+		publish("cmds", msg);
 	}
 
 	public QMessage publishCmd(final QDataSubLayoutMessage msg) {
@@ -1113,7 +1106,7 @@ public class QRules {
 		jsonArr.add(getUser().getCode());
 		jsonObj.put("recipientCodes", jsonArr);
 
-		publishCmd(jsonObj);
+		publish("cmds",jsonObj);
 
 	}
 
@@ -3615,7 +3608,7 @@ public void makePayment(QDataAnswerMessage m) {
 		cmdViewJson.put("token", getToken());
 		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publishCmd(cmdViewJson);
+		publish("cmds",cmdViewJson);
 	}
 
 	/*
@@ -4203,7 +4196,7 @@ public void makePayment(QDataAnswerMessage m) {
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		publishCmd(new JsonObject(resultJson));
+		publish("cmds",msg);
 	}
 
 	/*
@@ -4217,7 +4210,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
-		publishCmd(msg);
+		publish("cmds",msg);
 	}
 
 	/*
@@ -4355,7 +4348,7 @@ public void makePayment(QDataAnswerMessage m) {
 		cmdViewJson.put("token", getToken());
 		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publishCmd(cmdViewJson);
+		publish("cmds",cmdViewJson);
 	}
 
 	// send email with attachments
@@ -5412,7 +5405,7 @@ public void makePayment(QDataAnswerMessage m) {
 		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
-		publishCmd(cmdViewMessageJson);
+		publish("cmds",cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
 	}
 
