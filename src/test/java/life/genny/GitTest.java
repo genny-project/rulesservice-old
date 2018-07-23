@@ -12,7 +12,7 @@ public class GitTest {
 
     try {
       final String layout = QwandaUtils
-          .apiGet(RulesUtils.getLayoutCacheURL("README.md"), null);
+          .apiGet(RulesUtils.getLayoutCacheURL("genny", "README.md"), null);
       System.out.println(layout);
     } catch (final IOException e) {
       // TODO Auto-generated catch block
