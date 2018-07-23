@@ -1,0 +1,23 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* Create BEG BaseEntity */
+rule "Add Product - Step 1"
+	when
+		rules: QRules(  isState("CHECK_PRJ_HAS_PRODUCT_TEMPLATE") &&
+						isState("CREATED_BASEENTITY") &&
+						isState("BEG") &&
+						!isState("LOOP_CHECK_PRJ_HAS_PRODUCT_TEMPLATE") ) 
+	 then
+	 	rules.header();
+        rules.setState("LOOP_CHECK_PRJ_HAS_PRODUCT_TEMPLATE");
+
+		Boolean productTemplateRequired = rules.getValue("PRI_HAS_PRODUCT_TEMPLATE", false);
+        if(productTemplateRequired){
+            /* prj requires product template */
+            rules.setState("CREATE_PRODUCT_BASEENTITY");
+        }else{
+            rules.setState("LINK_GRP_DRAFTS_TO_BEG");
+        }
+	 	rules.footer();      
+end

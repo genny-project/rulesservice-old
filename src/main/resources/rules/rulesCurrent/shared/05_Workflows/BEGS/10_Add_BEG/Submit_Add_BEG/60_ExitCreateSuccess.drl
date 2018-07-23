@@ -13,7 +13,7 @@ rule "Submit Add BEG - Step 6 - Exit"
 		rules.setState("LOOP_EXIT_ADD_BEG_SUCCESS");
 		
 		/* Go To Homepage */
-		rules.setState("TRIGGER_HOMEPAGE");
+		rules.setState("SEND_BUCKET_LAYOUT");
 		
 	 	rules.footer();      
 end
