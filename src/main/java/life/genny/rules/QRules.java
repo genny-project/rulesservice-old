@@ -1059,7 +1059,7 @@ public class QRules {
 
 
 	public void publishCmd(final QwandaMessage msg) {
-
+		
 		if(msg.askData != null && msg.askData.getMessages().length > 0) {
 			this.publish("msg",msg.askData);
 		}
@@ -1086,6 +1086,7 @@ public class QRules {
 	}
 
 	public void publishCmd(final QBulkMessage msg) {
+		msg.setToken(getToken());
 		publish("cmds", msg);
 	}
 
