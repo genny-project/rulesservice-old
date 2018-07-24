@@ -12,18 +12,21 @@ rule "Check user company - step 1"
 		rules.setState("CHECKED_COMPANY");
 
 		String rolesInString = rules.getProject().getValue("PRI_USER_HAS_COMPANY", null);
-		rolesInString = rolesInString.replaceAll("[\\[\\](){}\"]", "");
 		Boolean roleFound = false;
-		List<String> roles = new ArrayList<String>(Arrays.asList(rolesInString.split(",")));
-		for (String role : roles) {
-			rules.println(role);
-			if(rules.isUserRole(role)){
-				rules.println("Role found is " + role);
-				roleFound = true;
-				break;
+		if(rolesInString != null){
+			rolesInString = rolesInString.replaceAll("[\\[\\](){}\"]", "");
+
+			List<String> roles = new ArrayList<String>(Arrays.asList(rolesInString.split(",")));
+			for (String role : roles) {
+				rules.println(role);
+				if(rules.isUserRole(role.trim())){
+					rules.println("Role found is " + role);
+					roleFound = true;
+					break;
+				}
 			}
 		}
-		if(roleFound == true){
+		if(roleFound){
 
 			BaseEntity userCompany = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
 			rules.set("baseEntity", userCompany);
