@@ -115,14 +115,13 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
-import life.genny.rules.Layout.LayoutUtils;
-import life.genny.rules.Layout.LayoutViewData;
-import life.genny.rules.Layout.ViewType;
+//import life.genny.rules.Layout.LayoutUtils;
+import life.genny.utils.Layout.LayoutViewData;
+import life.genny.utils.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
-import life.genny.utils.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -130,6 +129,7 @@ import life.genny.utils.QDataJsonMessage;
 import life.genny.utils.QuestionUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
+import life.genny.utils.Layout.LayoutUtils;
 
 public class QRules {
 
@@ -656,22 +656,6 @@ public class QRules {
 		}
 	}
 
-	public void showInternship(QEventBtnClickMessage m) {
-
-		/* this answer will always have 1 item */
-		String value = m.getData().getValue();
-		if (value != null) {
-
-			JsonObject data = new JsonObject(value);
-			if (data != null) {
-
-				String itemCode = data.getString("itemCode");
-				if (itemCode != null) {
-					this.sendSublayout("INTERNSHIP_DETAILS", "internships/details.json", itemCode);
-				}
-			}
-		}
-	}
 
 	public void archivePaidProducts() {
 
@@ -737,41 +721,6 @@ public class QRules {
 		}
 	}
 
-	public void sendInternMatchLayoutsAndData() {
-
-		BaseEntity user = getUser();
-
-		if (user != null) {
-
-			String internValue = this.baseEntity.getBaseEntityAttrValueAsString(user, "PRI_IS_INTERN");
-			Boolean isIntern = internValue != null && (internValue.equals("TRUE") || user.is("PRI_MENTOR"));
-
-			/* Show loading indicator */
-			showLoading("Loading your interface...");
-
-			if (isIntern) {
-
-				List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20,
-						false);
-				publishCmd(root, "GRP_ROOT", "LNK_CORE");
-
-				List<BaseEntity> dashboard = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD",
-						"LNK_CORE", 0, 20, false);
-				publishCmd(dashboard, "GRP_DASHBOARD", "LNK_CORE");
-
-				List<BaseEntity> internships = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_INTERNSHIPS",
-						"LNK_CORE", 0, 50, false);
-				publishCmd(internships, "GRP_INTERNSHIPS", "LNK_CORE");
-
-				List<BaseEntity> companies = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_COMPANYS",
-						"LNK_CORE", 0, 50, false);
-
-				publishCmd(companies, "GRP_COMPANYS", "LNK_CORE");
-
-				this.sendSublayout("intern-homepage", "homepage/dashboard_intern.json");
-			}
-		}
-	}
 
 	public void sendReloadPage() {
 
@@ -3380,7 +3329,7 @@ public class QRules {
 		String jobCode = job.getCode();
 		if (jobCode != null && !jobCode.isEmpty()) {
 			/* link newly created Job to GRP_LOADS */
-			BaseEntity load = this.baseEntity.getLinkedBaseEntities(jobCode, "LNK_BEG", "LOAD").get(0);
+			BaseEntity load = this.baseEntity.getLinkedBaseEntity(jobCode, "LNK_BEG", "LOAD");
 			BaseEntity user = getUser();
 			if (load != null && user != null) {
 
