@@ -16,6 +16,8 @@ rule "Add BEG - Step 2"
 		if(beg != null) {
 			/* we add an attribute "PRI_AUTHOR" that contains the current user code */
 			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode());
+			/* we add an attribute "PRI_CODE" that contains the current user code */
+			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_CODE", beg.getCode());
 			rules.set("begBe", beg);
 			rules.setState("CHECK_PRJ_HAS_PRODUCT_TEMPLATE");
 		}
