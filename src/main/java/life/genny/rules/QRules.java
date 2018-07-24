@@ -6055,5 +6055,29 @@ public class QRules {
 //			i++;
 //		}
 	}
+	
+	public void sendSplitView(final String parentCode, final String bucketCode) {
+
+        QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+        JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+
+        JsonObject codeListView = new JsonObject();
+        codeListView.put("code", "LIST_VIEW");
+        codeListView.put("root", parentCode);
+
+        JsonObject bucketListView = new JsonObject();
+        bucketListView.put("code", "BUCKET_VIEW");
+        bucketListView.put("root", bucketCode);
+
+        JsonArray msgCodes = new JsonArray();
+        msgCodes.add(codeListView);
+        msgCodes.add(bucketListView);
+        System.out.println("The JsonArray is :: " + msgCodes);
+        cmdViewJson.put("data", msgCodes);
+        cmdViewJson.put("root", parentCode); /* root needs to be there */
+        cmdViewJson.put("token", getToken());
+        System.out.println(" The cmd msg is :: " + cmdViewJson);
+        publishCmd(cmdViewJson);
+    }
 
 }
