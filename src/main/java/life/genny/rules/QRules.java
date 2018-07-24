@@ -1065,11 +1065,9 @@ public class QRules {
 		}
 
 		if(msg.asks != null) {
- 			this.publish("cmds",msg.asks);
+ 			this.publish("cmds", msg.asks);
 		}
 	}
-
-
 
 	public QMessage publishCmd(final QDataMessage msg) {
 		msg.setToken(getToken());
@@ -1259,6 +1257,12 @@ public class QRules {
 
 		msg.setToken(getToken());
 		publish("messages", RulesUtils.toJsonObject(msg));
+	}
+	
+	public void publish(String channel, final QDataAskMessage msg) {
+
+		msg.setToken(getToken());
+		publish("cmds", JsonUtils.toJson(msg));
 	}
 
 	public void publish(String channel, Object payload) {
