@@ -2,9 +2,9 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Create BEG BaseEntity */
-rule "Add Product - Step 2"
+rule "Add BEG - Step 3.1"
 	when
-		rules: QRules(	isState("CREATE_BEG_PRODUCT") &&
+		rules: QRules(	isState("CREATE_PRODUCT_BASEENTITY") &&
 						!isState("LOOP_CREATE_PRODUCT_BASEENTITY") ) 
 	 then
 	 	rules.header();
@@ -14,11 +14,9 @@ rule "Add Product - Step 2"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");	
 		if(beg != null) {
-		
-			BaseEntity project = rules.getProject();
 			
 			/* we grab the product code */
-			String productCode = project.getValue("PRI_PRODUCT_CODE", "PRD");
+			String productCode = rules.getProject().getValue("PRI_PRODUCT_CODE", "PRD");
 
 			/* we create the PRODUCT base entity */
 			rules.set("beCode", rules.getUser().getCode());

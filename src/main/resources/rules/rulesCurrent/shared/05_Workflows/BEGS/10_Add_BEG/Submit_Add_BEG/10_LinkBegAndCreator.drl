@@ -11,7 +11,11 @@ rule "Submit Add BEG - Step 1"
         rules.setState("LOOP_SUBMIT_ADD_BEG_STEP1");
 
         BaseEntity beg = rules.getAsBaseEntity("begBe");
-
+		if(beg == null){
+			rules.setState("FAILED_CREATE_BEG");
+			rules.println("beg is not in the state");
+			return;
+		}
         /* link BEG to USER */
 		rules.set("linkSourceCode",  beg.getCode());
 		rules.set("linkTargetCode", rules.getUser().getCode());
@@ -21,6 +25,5 @@ rule "Submit Add BEG - Step 1"
 		rules.setState("CREATE_LINK");
 
 		rules.setState("LINK_BEG_AND_COMPANY");
-
 	 	rules.footer();      
 end

@@ -2,29 +2,24 @@ package life.genny.rules;
 import life.genny.rules.QRules;
 
 /* Create BEG BaseEntity */
-rule "Add Product - Step 1.5"
+rule "Add BEG - Step 2"
 	when
-		rules: QRules(	isState("CREATE_PRODUCT_BASEENTITY") &&
+		rules: QRules(	isState("SET_ATTRIBUTES_FOR_BEG") &&
 						isState("CREATED_BASE_ENTITY") &&
 						isState("BEG") &&
-						!isState("LOOP_SET_AUTHOR") ) 
+						!isState("LOOP_SET_ATTRIBUTES_FOR_BEG") ) 
 	 then
 	 	rules.header();
-        rules.setState("LOOP_SET_AUTHOR");
-
-		rules.clearState("CREATED_BASE_ENTITY");	
+        rules.setState("LOOP_SET_ATTRIBUTES_FOR_BEG");
 
 		BaseEntity beg = rules.getAsBaseEntity("baseEntity");	
 		if(beg != null) {
-		
 			/* we add an attribute "PRI_AUTHOR" that contains the current user code */
 			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode());
 			rules.set("begBe", beg);
-			
-			rules.setState("CREATE_BEG_PRODUCT");
+			rules.setState("CHECK_PRJ_HAS_PRODUCT_TEMPLATE");
 		}
 		else {
-			
 			rules.setState("FAILED_CREATE_BEG");
 			rules.setState("FAILED_SET_AUTHOR");
 		}

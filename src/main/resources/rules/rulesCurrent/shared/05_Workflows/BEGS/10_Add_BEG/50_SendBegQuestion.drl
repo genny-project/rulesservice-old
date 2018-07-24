@@ -1,11 +1,12 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "Add Internship - Step 5"
+/* Send BEG Questions */
+rule "Add BEG - Step 5"
 	when
         rules: QRules(  isState("SEND_BEG_QUESTION") &&
                         isState("CREATED_LINK") &&
-                        isState("PRODUCT") &&
+                        isState("BEG") &&
                         !isState("LOOP_SEND_BEG_QUESTION")  )
      then
  		rules.header();
@@ -13,15 +14,13 @@ rule "Add Internship - Step 5"
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
 		if(beg != null) {
-
-      rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_ADD_BEG_GRP");
-      rules.setState("SEND_PRODUCT_QUESTIONS");
+			rules.sendQuestions(rules.getUser().getCode(), beg.getCode(), "QUE_ADD_BEG_GRP");
+			rules.setState("SEND_PRODUCT_QUESTIONS");
+			rules.setState("SEND_ADD_BEG_QUESTION_LAYOUT");
 		}
 		else {
-
 			rules.setState("FAILED_CREATE_BEG");
 			rules.setState("FAILED_SEND_QUESTIONS_BEG");
 		}
-
  		rules.footer();
 end
