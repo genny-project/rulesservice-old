@@ -4623,6 +4623,7 @@ public class QRules {
 
 		this.sendCachedItem("GRP_APPLICATIONS", subscriptions);
 		this.sendCachedItem("GRP_DASHBOARD", subscriptions);
+		this.sendCachedItem("GRP_BEGS", subscriptions);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
