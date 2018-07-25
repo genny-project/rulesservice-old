@@ -6043,15 +6043,6 @@ public class QRules {
 	/* Send View To Front End */
 	public void sendView(LayoutViewData viewData) {
 		this.publishCmd(this.layoutUtils.sendView(viewData));
-
-//		String stringValue = this.getProject().getValue("PRI_USER_HAS_COMPANY", null);
-//		this.println("stringValue" + stringValue);
-//		List<String> myList = new ArrayList<String>(Arrays.asList(stringValue.split(",")));
-//		Integer i = 1;
-//		for (String be : myList) {
-//			RulesUtils.println(i + "   ::   " + be);
-//			i++;
-//		}
 	}
 	
 	public void sendSplitView(final String parentCode, final String bucketCode) {
