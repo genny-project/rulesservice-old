@@ -122,6 +122,7 @@ import life.genny.security.SecureResources;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
+import life.genny.utils.Layout.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -1014,7 +1015,7 @@ public class QRules {
 	public void publishCmd(final QwandaMessage msg) {
 
 		if(msg.askData != null && msg.askData.getMessages().length > 0) {
-			this.publish("msg",msg.askData);
+			this.publish("cmds", msg.askData);
 		}
 
 		if(msg.asks != null) {
@@ -1212,10 +1213,16 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
+	public void publish(String channel, final QBulkMessage msg) {
+
+		msg.setToken(getToken());
+		publish(channel, JsonUtils.toJson(msg));
+	}
+
 	public void publish(String channel, final QDataAskMessage msg) {
 
 		msg.setToken(getToken());
-		publish("cmds", JsonUtils.toJson(msg));
+		publish(channel, JsonUtils.toJson(msg));
 	}
 
 	public void publish(String channel, Object payload) {
