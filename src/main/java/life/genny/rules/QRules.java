@@ -6078,7 +6078,9 @@ public class QRules {
         cmdViewJson.put("root", parentCode); /* root needs to be there */
         cmdViewJson.put("token", getToken());
         System.out.println(" The cmd msg is :: " + cmdViewJson);
-        publishCmd(cmdViewJson);
+        
+        publish("cmds", cmdViewJson);
+        //publishCmd(cmdViewJson);
     }
 
 }
