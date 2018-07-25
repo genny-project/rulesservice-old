@@ -14,20 +14,25 @@ rule "Trigger Submit Apply BEG"
 
 		/* get applicationCode from targetCode */
 		String applicationCode = rules.getAsString("quesTargetCode");
+		rules.println("application code on form submit ::"+applicationCode);
 		
 		if(applicationCode != null){
 
-			BaseEntity application = rules.baseEntity.getBaseEntityByCode(applicationCode);
-			rules.set("applicationBe", application);
+			/* BaseEntity application = rules.baseEntity.getBaseEntityByCode(applicationCode);
+			rules.set("applicationBe", application); */
 
 			/* get begCode(attribute) from application */
-			String begCode = application.getLoopValue("PRI_BEG_CODE", null);
+			BaseEntity app = rules.baseEntity.getBaseEntityByCode(applicationCode, true);
+			String begCode = app.getValue("PRI_BEG_CODE", null);
+			rules.println("begcode for application ::"+begCode);
+			
+			rules.set("applicationBe", app);
 
 			if(begCode != null) {
 
 				BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);
 				rules.set("begBe", beg);
-
+				
 				BaseEntity company = rules.baseEntity.getLinkedBaseEntity(begCode, "LNK_BEG", "COMPANY");
 				BaseEntity creator = rules.baseEntity.getLinkedBaseEntity(begCode, "LNK_BEG", "CREATOR");
 
