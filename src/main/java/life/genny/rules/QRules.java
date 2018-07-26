@@ -817,7 +817,7 @@ public class QRules {
 			}
 
 			/* we create the user in the system */
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email,
+			be = QwandaUtils.createUser(getQwandaServiceUrl(), getToken(), username, firstname, lastname, email,
 					this.realm(), name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			// be = getUser();
