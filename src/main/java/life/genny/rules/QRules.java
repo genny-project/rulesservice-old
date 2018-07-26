@@ -4587,6 +4587,7 @@ public class QRules {
 		cacheUtils.refresh(realm, "GRP_APPLICATIONS");
 		cacheUtils.refresh(realm, "GRP_DASHBOARD");
 		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+		cacheUtils.refresh(realm, "GRP_BEGS");
 	}
 
 	public void sendApplicationData() {
@@ -4690,9 +4691,17 @@ public class QRules {
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
 		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = new String[resultArray.length + resultAdmins.length];
-		ArrayUtils.concat(resultArray, resultAdmins, result);
-		return result;
+		
+		if(resultArray != null && resultAdmins != null) {
+			String[] result = new String[resultArray.length + resultAdmins.length];
+			ArrayUtils.concat(resultArray, resultAdmins, result);
+			return result;
+		} else if(resultArray != null && resultAdmins == null) {
+			return resultArray;	
+		} else {
+			return null;
+		}
+		
 	}
 
 	public void createServiceUser() {
@@ -6062,4 +6071,5 @@ public class QRules {
         //publishCmd(cmdViewJson);
     }
 
+ 
 }
