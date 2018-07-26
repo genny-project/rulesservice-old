@@ -170,7 +170,6 @@ public class QRules {
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
 		super();
-		this.eventBus = eventBus;
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
 		this.stateMap = new HashMap<String, Boolean>();
@@ -596,6 +595,11 @@ public class QRules {
 		msg.setRecipientCodeArray(recipientCodes);
 		publishData(msg, recipientCodes);
 
+	}
+	
+	public <T extends QMessage> void publishCmd(T msg) {
+		msg.setToken(getToken());
+		publish("cmds", JsonUtils.toJson(msg));
 	}
 
 	public <T extends QMessage> void publishCmd(T msg, final String[] recipientCodes) {
@@ -4202,13 +4206,19 @@ public void makePayment(QDataAnswerMessage m) {
 	/*
 	 * Publish Search BE results
 	 */
-	public void sendSearchResults(SearchEntity searchBE) throws IOException {
+	public void sendSearchResults(SearchEntity searchBE) {
 
-		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
-		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		publish("cmds",msg);
+		try {
+			
+			String serviceToken = RulesUtils.generateServiceToken(this.realm());
+			String jsonSearchBE = JsonUtils.toJson(searchBE);
+			String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+			QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+			publish("cmds",msg);
+		}
+		catch(Exception e) {
+			
+		}
 	}
 
 	/*
