@@ -29,12 +29,14 @@ rule "Submit Apply BEG - Step 5"
                
                 /* SAVE Applied Date for APPLICATION */
 		        rules.baseEntity.saveAnswer(new Answer(rules.getUser().getCode(), application.getCode(), "PRI_GRP_APPLIED_DATE", rules.getCurrentLocalDateTime()));
+		        
+		        rules.reloadCache();
                 
                 rules.publishBaseEntityByCode(beg.getCode(), "GRP_NEW_ITEMS", "LNK_CORE", recipient);
                 rules.publishBaseEntityByCode(application.getCode(), beg.getCode(), "LNK_BEG", recipient);
                 rules.publishBaseEntityByCode(application.getCode(), "GRP_APPLIED", "LNK_CORE", recipient);
                 rules.publishBaseEntityByCode(rules.getUser().getCode(), application.getCode(), "LNK_APP", recipient);
-                rules.setState("TRIGGER_HOMEPAGE");
+                rules.setState("PUBLISHED_APPLICATION_AND_KIDS");
 
                 
             }
