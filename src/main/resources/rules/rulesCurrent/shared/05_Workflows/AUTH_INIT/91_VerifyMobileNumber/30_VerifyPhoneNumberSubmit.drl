@@ -10,8 +10,6 @@ rule "User Submitted PassCode Verification"
 	 	rules.header();
         
 		rules.setState("LOOP_USER_ACCEPTED_MOBILE_VERIF");
-		rules.clearState("LOOP_VERIFY_MOBILE_PHONE_NUMBER");
-		rules.clearState("MOBILE_VERIFICATION_REQUIRED");
 		rules.setState("VERIFY_USER_PASSCODE");
 		
 	 	rules.footer();      

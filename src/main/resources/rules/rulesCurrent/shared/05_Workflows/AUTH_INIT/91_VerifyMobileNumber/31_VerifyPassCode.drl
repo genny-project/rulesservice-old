@@ -18,6 +18,7 @@ rule "Verify PassCode"
 						rules.setState("PASSCODE_VERIFICATION_FAILED");
 					}else{
 						rules.setState("PASSCODE_VERIFICATION_SUCCEEDED");
+						rules.setState("MOBILE_VERIFIED");
 					}
 				}else{
 					rules.println("Error!! The userPassCode is not available.");
