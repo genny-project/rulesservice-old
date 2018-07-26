@@ -4174,6 +4174,7 @@ public class QRules {
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		msg.setToken(getToken());
 		publish("cmds",msg);
 	}
 
@@ -4189,6 +4190,7 @@ public class QRules {
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
+		msg.setToken(getToken());
 		publish("cmds",msg);
 	}
 
