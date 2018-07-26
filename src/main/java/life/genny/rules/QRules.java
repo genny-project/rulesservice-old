@@ -3644,7 +3644,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 		try {
 			sendSearchResults(sendAllMsgs);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			log.info("Error! Unable to get Search Rsults");
 			e.printStackTrace();
