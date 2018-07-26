@@ -315,7 +315,7 @@ public class RulesLoader {
 			final List<Tuple3<String, String, String>> rules, final KieFileSystem kfs,
 			final Tuple3<String, String, String> rule) {
 		boolean ret =  false;
-		
+
 		if (rule._1.equalsIgnoreCase("genny") || rule._1.equalsIgnoreCase(realm)) {
 			// if a realm rule with same name exists as the same name as a genny rule then
 			// ignore the genny rule

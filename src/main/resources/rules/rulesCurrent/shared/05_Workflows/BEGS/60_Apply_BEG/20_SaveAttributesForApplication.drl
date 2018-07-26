@@ -31,14 +31,21 @@ rule "Apply for BEG - Step 2"
 				return;
 			}
 			
-			List<Answer> answers = new ArrayList<Answer>();
+			/* List<Answer> answers = new ArrayList<Answer>();
 
 			answers.add( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_BEG_CODE", beg.getCode() ) );
 			answers.add( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICATION_CODE", application.getCode() ) );
 			answers.add( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_CODE", rules.getUser().getCode() ) );
 			answers.add( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_USERNAME", rules.getAsString("preferred_username") ) );
 			answers.add( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_FULLNAME", applicantName ) );
-			rules.baseEntity.saveAnswers(answers);
+			rules.baseEntity.saveAnswers(answers); */
+			
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICATION_CODE", application.getCode() ) );
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_CODE", rules.getUser().getCode() ) );
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_USERNAME", rules.getAsString("preferred_username") ) );
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_USERNAME", rules.getAsString("preferred_username") ) );
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_APPLICANT_FULLNAME", applicantName ) );
+			rules.baseEntity.saveAnswer( new Answer( rules.getUser().getCode(), application.getCode(), "PRI_BEG_CODE", beg.getCode() ) );
 
 		    rules.setState("SEND_APPLY_BEG_QUESTIONS");
 		}

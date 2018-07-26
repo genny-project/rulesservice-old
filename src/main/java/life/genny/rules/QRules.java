@@ -48,7 +48,7 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
-import life.genny.channel.Producer;
+
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -110,6 +110,7 @@ import life.genny.qwanda.payments.assembly.QPaymentsAssemblyItemResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserResponse;
 import life.genny.qwanda.payments.assembly.QPaymentsAssemblyUserSearchResponse;
 import life.genny.qwandautils.GPSUtils;
+import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
@@ -122,6 +123,7 @@ import life.genny.security.SecureResources;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
+import life.genny.utils.Layout.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -129,15 +131,12 @@ import life.genny.utils.QDataJsonMessage;
 import life.genny.utils.QuestionUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
-import life.genny.utils.Layout.LayoutUtils;
 
 public class QRules {
 
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	public static final String qwandaServiceUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 	public static final String projectUrl = System.getenv("PROJECT_URL");
 
 	final static String DEFAULT_STATE = "NEW";
@@ -189,9 +188,9 @@ public class QRules {
 
 			/* initialising utils */
 			/* TODO: to update so it is static */
-			this.baseEntity = new BaseEntityUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.layoutUtils = new LayoutUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
-			this.cacheUtils = new CacheUtils(QRules.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.baseEntity = new BaseEntityUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.layoutUtils = new LayoutUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
+			this.cacheUtils = new CacheUtils(GennySettings.qwandaServiceUrl, this.token, decodedTokenMap, realm());
 			this.cacheUtils.setBaseEntityUtils(this.baseEntity);
 
 			// this.paymentUtils = new PaymentUtils(QRules.qwandaServiceUrl, this.token,
@@ -252,15 +251,15 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		// if(str == null) {
-		// str = "genny";
-		// }
+		if(GennySettings.devMode) {
+			str = 	GennySettings.mainrealm;
+		 }
 
 		return str.toLowerCase();
 	}
 
 	/**
-	 * @return the realmgetValue
+	 * @return the realm
 	 */
 	public boolean isRealm(final String realm) {
 		return this.realm().equalsIgnoreCase(realm);
@@ -616,7 +615,7 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize, Boolean cache) {
 
-		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(qwandaServiceUrl, getDecodedTokenMap(),
+		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(GennySettings.qwandaServiceUrl, getDecodedTokenMap(),
 				getToken(), parentCode, linkCode);
 		publish("cmds", json);
 	}
@@ -624,7 +623,7 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 
-		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
 				getDecodedTokenMap(), getToken(), parentCode, linkCode, pageStart, pageSize);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
@@ -639,11 +638,11 @@ public class QRules {
 
 	public void geofenceJob(final String begCode, final String driverCode, Double radius) {
 
-		BaseEntity be = RulesUtils.getBaseEntityByCode(QRules.getQwandaServiceUrl(), this.getDecodedTokenMap(),
+		BaseEntity be = RulesUtils.getBaseEntityByCode(GennySettings.qwandaServiceUrl, this.getDecodedTokenMap(),
 				this.getToken(), begCode);
 		if (be != null) {
 
-			QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, QRules.getQwandaServiceUrl(),
+			QCmdGeofenceMessage[] cmds = GPSUtils.geofenceJob(be, driverCode, radius, GennySettings.qwandaServiceUrl,
 					this.getToken(), this.getDecodedTokenMap());
 
 			if (cmds != null) {
@@ -666,7 +665,7 @@ public class QRules {
 		String token = RulesUtils.generateServiceToken(proj_realm);
 		if (token != null) {
 
-			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(qwandaServiceUrl,
+			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
 					getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
 
 			if (paidProducts != null) {
@@ -765,7 +764,7 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		try {
-			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
+			be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
 					keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
@@ -995,14 +994,14 @@ public class QRules {
 	 * @return the qwandaserviceurl
 	 */
 	public static String getQwandaServiceUrl() {
-		return qwandaServiceUrl;
+		return GennySettings.qwandaServiceUrl;
 	}
 
 	/**
 	 * @return the devmode
 	 */
 	public static Boolean getDevmode() {
-		return devMode;
+		return GennySettings.devMode;
 	}
 
 	public void send(final String channel, final Object payload) {
@@ -1027,7 +1026,7 @@ public class QRules {
 		if (recipientsCode != null) {
 			msg.setRecipientCodeArray(recipientsCode);
 		}
-		publish("cmds", RulesUtils.toJsonObject(msg));
+		publish("cmds", msg);
 	}
 
 	public void publishCmd(final BaseEntity be, final String aliasCode) {
@@ -1063,24 +1062,17 @@ public class QRules {
 		publish("data", msg);
 	}
 
-	public void publishCmd(final JsonObject msg) {
-		msg.put("token", getToken());
-		Producer.getToWebCmds().write(msg).end();
-	}
+
 
 	public void publishCmd(final QwandaMessage msg) {
 
-		if (msg.askData != null && msg.askData.getMessages().length > 0) {
-			this.publishCmd(msg.askData);
+		if(msg.askData != null && msg.askData.getMessages().length > 0) {
+			this.publish("cmds", msg.askData);
 		}
 
 		if (msg.asks != null) {
-			this.publishCmd(msg.asks);
+			this.publish("cmds", msg.asks);
 		}
-	}
-
-	public void publishCmd(final String jsonString) {
-		Producer.getToWebCmds().write(jsonString).end();
 	}
 
 	public QMessage publishCmd(final QDataMessage msg) {
@@ -1090,10 +1082,16 @@ public class QRules {
 		return msg;
 	}
 
-	public void publishCmd(final QBulkMessage msg) {
+	public QMessage publishCmd(final QDataAskMessage msg) {
 		msg.setToken(getToken());
 		String json = JsonUtils.toJson(msg);
 		publish("cmds", json);
+		return msg;
+	}
+
+	public void publishCmd(final QBulkMessage msg) {
+		msg.setToken(getToken());
+		publish("cmds", msg);
 	}
 
 	public QMessage publishCmd(final QDataSubLayoutMessage msg) {
@@ -1120,7 +1118,7 @@ public class QRules {
 		jsonArr.add(getUser().getCode());
 		jsonObj.put("recipientCodes", jsonArr);
 
-		publishCmd(jsonObj);
+		publish("cmds",jsonObj);
 
 	}
 
@@ -1267,6 +1265,18 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
+	public void publish(String channel, final QBulkMessage msg) {
+
+		msg.setToken(getToken());
+		publish(channel, JsonUtils.toJson(msg));
+	}
+
+	public void publish(String channel, final QDataAskMessage msg) {
+
+		msg.setToken(getToken());
+		publish(channel, JsonUtils.toJson(msg));
+	}
+
 	public void publish(String channel, Object payload) {
 		VertxUtils.publish(getUser(), channel, payload);
 	}
@@ -1391,10 +1401,10 @@ public class QRules {
 								bitMaskValue)
 						.setPageStart(0).setPageSize(10000);
 				try {
-					System.out.println("The search Entity :: " + JsonUtils.toJson(searchBE));
+					log.info("The search Entity :: " + JsonUtils.toJson(searchBE));
 					// msg = getSearchResults(searchBE);
 					msg = QwandaUtils.fetchResults(searchBE, serviceToken);
-					System.out.println("the msg is :: " + msg);
+					log.info("the msg is :: " + msg);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1406,9 +1416,9 @@ public class QRules {
 						beList.add(be);
 					}
 				} else
-					System.out.println("Error! The search result is null.");
+					log.info("Error! The search result is null.");
 			} else {
-				System.out.println("Error! The bitmask value of the tagCode is null.");
+				log.info("Error! The bitmask value of the tagCode is null.");
 
 			}
 			return beList;
@@ -1704,7 +1714,7 @@ public class QRules {
 					this.baseEntity.saveAnswer(
 							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
 
-					System.out.println("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
+					log.info("The recipients are :: " + Arrays.toString(msgReceiversCodeArray));
 					/* Publish chat to Receiver */
 					publishData(this.baseEntity.getBaseEntityByCode(chatCode), msgReceiversCodeArray);
 					/* Publish message to Receiver */
@@ -1722,7 +1732,7 @@ public class QRules {
 					sendMessage(msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "SMS");
 					sendMessage(msgReceiversCodeArray, contextMap, "MSG_CH40_NEW_MESSAGE_RECIEVED", "EMAIL");
 				} else {
-					println("Error! The stakeholder for given chatCode is null");
+					log.info("Error! The stakeholder for given chatCode is null");
 				}
 			}
 		}
@@ -2006,8 +2016,6 @@ public class QRules {
 		try {
 
 			String subLayoutMap = RulesUtils.getLayout(realm, "/sublayouts");
-			this.println(subLayoutMap);
-			this.println("LOG LORIS");
 
 			if (subLayoutMap != null) {
 
@@ -2621,7 +2629,7 @@ public class QRules {
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
-			System.out.println("Error! Unable to get Search Rsults");
+			log.info("Error! Unable to get Search Rsults");
 			qMsg = null;
 			e.printStackTrace();
 		}
@@ -2940,9 +2948,6 @@ public class QRules {
 
 		String[] recipients = { userCode };
 		String verificationCode = generateVerificationCode();
-		// if ("TRUE".equalsIgnoreCase(System.getenv("DEV_MODE"))) {
-		println("The verification code is ::" + RulesUtils.ANSI_PURPLE + verificationCode + RulesUtils.ANSI_RESET);
-		// }
 
 		Answer verificationCodeAns = new Answer(userCode, userCode, "PRI_VERIFICATION_CODE", verificationCode);
 		this.baseEntity.saveAnswer(verificationCodeAns);
@@ -3028,28 +3033,16 @@ public class QRules {
 
 		String jsonBE = JsonUtils.toJson(be);
 		String result = null;
-		System.out.println("Forcing BE update to " + qwandaServiceUrl + "/qwanda/baseentitys/force");
 		try {
-			result = QwandaUtils.apiPutEntity(qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
+			result = QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 
 	}
 
-	public void clearBaseEntity(String baseEntityCode) {
-
-		String[] recipients = new String[1];
-		recipients[0] = this.getUser().getCode();
-		this.clearBaseEntity(baseEntityCode, recipients);
-	}
-
-	/* clears baseEntity and all its children linked */
-	public void clearBaseEntity(String baseEntityCode, boolean deleteAllChildren) {
-		this.clearBaseEntity(baseEntityCode, null, deleteAllChildren);
-	}
 
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
@@ -3599,7 +3592,7 @@ public class QRules {
 		ZonedDateTime zdt = ldt.atZone(ZoneOffset.systemDefault());
 		String iso8601DateString = ldt.toString(); // zdt.toString(); MUST USE UMT!!!!
 
-		System.out.println("datetime ::" + iso8601DateString);
+		log.info("datetime ::" + iso8601DateString);
 
 		return iso8601DateString;
 
@@ -3640,12 +3633,12 @@ public class QRules {
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(convListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
+		log.info("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publishCmd(cmdViewJson);
+		publish("cmds",cmdViewJson);
 	}
 
 	/*
@@ -3665,7 +3658,7 @@ public class QRules {
 			sendSearchResults(sendAllMsgs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Error! Unable to get Search Rsults");
+			log.info("Error! Unable to get Search Rsults");
 			e.printStackTrace();
 		}
 
@@ -3684,7 +3677,7 @@ public class QRules {
 
 	/* Search the text value in all jobs */
 	public void sendAllUsers(String searchBeCode) throws ClientProtocolException, IOException {
-		println("Get All Users - The search BE is  :: " + searchBeCode);
+		log.info("Get All Users - The search BE is  :: " + searchBeCode);
 		BaseEntity searchBE = new BaseEntity(searchBeCode, "Get All Users");
 		JsonArray columnsArray = new JsonArray();
 		JsonObject columns = new JsonObject();
@@ -3740,9 +3733,9 @@ public class QRules {
 		// }
 		println("The search BE is  :: " + searchBE);
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
 		// sendCmdView("TABLE_VIEW", "SBE_GET_ALL_USERS" );
@@ -3801,11 +3794,9 @@ public class QRules {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// println("The search BE is :: "+JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String loadsList = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String loadsList = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		// System.out.println("The result :: "+loadsList);
 		publishData(new JsonObject(loadsList));
 		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
 	}
@@ -3870,7 +3861,7 @@ public class QRules {
 		// }
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 		System.out.println("The result   ::  " + result);
 		publishData(new JsonObject(result));
@@ -3936,9 +3927,9 @@ public class QRules {
 
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
-		System.out.println("The result   ::  " + result);
+		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
 
@@ -4107,7 +4098,7 @@ public class QRules {
 	public void add(final String keyPrefix, final String parentCode, final BaseEntity be) {
 		// Add this be to the static
 		if ("GRP_REPORTS".equals(parentCode)) {
-			System.out.println("GRP_REPORTS being added to");
+			log.info("GRP_REPORTS being added to");
 		}
 		Map<String, String> map = VertxUtils.getMap(this.realm(), keyPrefix, parentCode);
 		if (map == null) {
@@ -4145,7 +4136,7 @@ public class QRules {
 	 */
 	public void sendReport(String reportCode) throws IOException {
 
-		System.out.println("The report code is :: " + reportCode);
+		log.info("The report code is :: " + reportCode);
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 
 		String jsonSearchBE = null;
@@ -4168,9 +4159,9 @@ public class QRules {
 			jsonSearchBE = JsonUtils.toJson(searchBE);
 		}
 
-		System.out.println("The search BE is :: " + jsonSearchBE);
+		log.info("The search BE is :: " + jsonSearchBE);
 		// String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		this.println(resultJson);
@@ -4234,10 +4225,11 @@ public class QRules {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				serviceToken);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		publishCmd(new JsonObject(resultJson));
+		msg.setToken(getToken());
+		publish("cmds",msg);
 	}
 
 	/*
@@ -4247,12 +4239,13 @@ public class QRules {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		msg.setParentCode(parentCode);
-		publishCmd(msg);
+		msg.setToken(getToken());
+		publish("cmds",msg);
 	}
 
 	/*
@@ -4266,12 +4259,12 @@ public class QRules {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				token);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		System.out.println("The result   ::  " + msg);
+		log.info("The result   ::  " + msg);
 
 		return msg;
 	}
@@ -4280,9 +4273,9 @@ public class QRules {
 	 * Get search Results return String
 	 */
 	public String getSearchResultsString(SearchEntity searchBE) throws IOException {
-		System.out.println("The search BE is :: " + JsonUtils.toJson(searchBE));
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				getToken());
 
 		return resultJson;
@@ -4390,12 +4383,12 @@ public class QRules {
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(reportListView);
-		System.out.println("The JsonArray is :: " + msgCodes);
+		log.info("The JsonArray is :: " + msgCodes);
 		cmdViewJson.put("root", msgCodes);
 		cmdViewJson.put("token", getToken());
-		System.out.println(" The cmd msg is :: " + cmdViewJson);
+		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publishCmd(cmdViewJson);
+		publish("cmds",cmdViewJson);
 	}
 
 	// send email with attachments
@@ -4403,7 +4396,7 @@ public class QRules {
 			String messageType, List<QBaseMSGAttachment> attachmentList) {
 
 		/* unsubscribe link for the template */
-		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(projectUrl, templateCode);
+		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
@@ -4454,7 +4447,7 @@ public class QRules {
 
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
-				System.out.println("No keycloakMap for " + realm());
+				log.info("No keycloakMap for " + realm());
 				return false;
 			}
 
@@ -4601,7 +4594,7 @@ public class QRules {
 											}
 										}
 									} catch (Exception e) {
-										System.out.println("Error!! The attribute value is not in boolean format");
+										log.error("Error!! The attribute value is not in boolean format");
 									}
 								}
 
@@ -4650,6 +4643,7 @@ public class QRules {
 		cacheUtils.refresh(realm, "GRP_APPLICATIONS");
 		cacheUtils.refresh(realm, "GRP_DASHBOARD");
 		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
+		cacheUtils.refresh(realm, "GRP_BEGS");
 	}
 
 	public void sendApplicationData() {
@@ -4664,7 +4658,7 @@ public class QRules {
 			return;
 		}
 
-		System.out.println("Entering new send application data ");
+		log.info("Entering new send application data ");
 
 		showLoading("Loading data...");
 
@@ -4692,7 +4686,7 @@ public class QRules {
 				subscriptions);
 		if (items != null) {
 
-			System.out.println("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
+			log.info("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
 
 			if (items.getMessages() != null) {
 
@@ -4753,9 +4747,17 @@ public class QRules {
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
 		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		String[] result = new String[resultArray.length + resultAdmins.length];
-		ArrayUtils.concat(resultArray, resultAdmins, result);
-		return result;
+		
+		if(resultArray != null && resultAdmins != null) {
+			String[] result = new String[resultArray.length + resultAdmins.length];
+			ArrayUtils.concat(resultArray, resultAdmins, result);
+			return result;
+		} else if(resultArray != null && resultAdmins == null) {
+			return resultArray;	
+		} else {
+			return null;
+		}
+		
 	}
 
 	public void createServiceUser() {
@@ -4775,7 +4777,7 @@ public class QRules {
 		if (existing == null) {
 
 			try {
-				be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm,
+				be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm,
 						name, keycloakId);
 				VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 				be = getUser();
@@ -4817,10 +4819,10 @@ public class QRules {
 				}
 
 			} catch (Exception e) {
-				System.out.println("Error!! while updating " + attributeCode + " attribute value");
+				log.info("Error!! while updating " + attributeCode + " attribute value");
 			}
 		} else {
-			System.out.println("Error!! User BaseEntity is null");
+			log.info("Error!! User BaseEntity is null");
 		}
 	}
 
@@ -4961,7 +4963,7 @@ public class QRules {
 					/* response string converted to user response object */
 					QPaymentsAssemblyUserResponse responseUserPojo = JsonUtils.fromJson(paymentUserCreationResponse,
 							QPaymentsAssemblyUserResponse.class);
-					System.out.println("response user pojo ::" + responseUserPojo);
+					log.info("response user pojo ::" + responseUserPojo);
 
 					paymentUserId = responseUserPojo.getId();
 
@@ -5032,9 +5034,9 @@ public class QRules {
 	public void sendSlackNotification(String message) {
 
 		/* send critical slack notifications only for production mode */
-		System.out.println("dev mode ::" + devMode);
+		log.info("dev mode ::" + GennySettings.devMode);
 		BaseEntity project = getProject();
-		if (project != null && !devMode) {
+		if (project != null && !GennySettings.devMode) {
 			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
 			if (webhookURL != null) {
 
@@ -5164,7 +5166,7 @@ public class QRules {
 									}
 								}
 							} catch (Exception e) {
-								System.out.println("Error!! The attribute value is not in boolean format");
+								log.info("Error!! The attribute value is not in boolean format");
 							}
 						}
 					}
@@ -5189,10 +5191,10 @@ public class QRules {
 				}
 				sendCmdReportsSplitView(grpCode, null);
 			} else {
-				System.out.println("Error!!The user BE is null");
+				log.info("Error!!The user BE is null");
 			}
 		} else {
-			System.out.println("Error!!The reports group code is null");
+			log.info("Error!!The reports group code is null");
 		}
 	}
 
@@ -5278,7 +5280,7 @@ public class QRules {
 						errValBuilder.append(err);
 					}
 
-					System.out.println("Error Key = " + errVar + ", Value = " + errValBuilder);
+					log.info("Error Key = " + errVar + ", Value = " + errValBuilder);
 
 					/* appending and formatting error messages */
 					errorMessage.append(errVar + " : " + errVal.toString());
@@ -5462,7 +5464,7 @@ public class QRules {
 		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
-		publishCmd(cmdViewMessageJson);
+		publish("cmds",cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
 	}
 
@@ -5500,7 +5502,7 @@ public class QRules {
 				try {
 					/* get fee */
 					String paymentFeeId = createPaymentFee(offerBe, paymentsToken);
-					System.out.println("payment fee Id ::" + paymentFeeId);
+					log.info("payment fee Id ::" + paymentFeeId);
 					String[] feeArr = { paymentFeeId };
 
 					/* bundling all the info into Item object */
@@ -5815,15 +5817,15 @@ public class QRules {
 		try {
 			qMsg = getSearchResults(allPeople, token);
 		} catch (IOException e) {
-			System.out.println("Error! Unable to get Search All People");
+			log.info("Error! Unable to get Search All People");
 
 		}
 		// check their addresses
 		System.out.println("Processing " + qMsg.getReturnCount() + " people ");
 		for (BaseEntity person : qMsg.getItems()) {
-			System.out.println(person.getCode());
+			log.info(person.getCode());
 			if (!isAddressPresent(person.getCode())) {
-				System.out.println("Bad one...");
+				log.info("Bad one...");
 			}
 		}
 
@@ -5858,7 +5860,7 @@ public class QRules {
 					new Answer(personCode, personCode, "PRI_ADDRESS_JSON", jsonAddress));
 			List<Answer> answers = processAddressAnswers(msg);
 			this.baseEntity.saveAnswers(answers);
-			System.out.println(person.getCode() + " fixed using existing JSON");
+			log.info(person.getCode() + " fixed using existing JSON");
 		} else {
 			String jsonFull = person.getValue("PRI_ADDRESS_FULL", null);
 			if (jsonFull != null) {
@@ -5868,7 +5870,7 @@ public class QRules {
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_CITY", city));
 				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_SUBURB", city));
 				this.baseEntity.saveAnswers(answers);
-				System.out.println(person.getCode() + " fixed using existing Full Address");
+				log.info(person.getCode() + " fixed using existing Full Address");
 			} else {
 				log.error("ERROR!! " + personCode + " does not contain Address Full");
 			}
@@ -6098,7 +6100,7 @@ public class QRules {
 	public void sendView(LayoutViewData viewData) {
 		this.publishCmd(this.layoutUtils.sendView(viewData));
 	}
-	
+
 	public void sendSplitView(final String parentCode, final String bucketCode) {
 
         QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
@@ -6120,7 +6122,10 @@ public class QRules {
         cmdViewJson.put("root", parentCode); /* root needs to be there */
         cmdViewJson.put("token", getToken());
         System.out.println(" The cmd msg is :: " + cmdViewJson);
-        publishCmd(cmdViewJson);
+
+        publish("cmds", cmdViewJson);
+        //publishCmd(cmdViewJson);
     }
 
+ 
 }

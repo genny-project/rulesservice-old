@@ -15,7 +15,7 @@ rule "Check user company - step 1"
 		Boolean roleFound = false;
 		if(rolesInString != null){
 			rolesInString = rolesInString.replaceAll("[\\[\\](){}\"]", "");
-			
+
 			List<String> roles = new ArrayList<String>(Arrays.asList(rolesInString.split(",")));
 			for (String role : roles) {
 				rules.println(role);
