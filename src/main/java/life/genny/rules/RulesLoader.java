@@ -100,6 +100,7 @@ public class RulesLoader {
 			// QEventMessage("EVT_MSG","INIT_STARTUP"),
 			// CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
 			//
+			
 			// } else {
 			if (realms.isEmpty()) {
 				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny", new QEventMessage("EVT_MSG", "INIT_STARTUP"),
@@ -223,7 +224,7 @@ public class RulesLoader {
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-						log.info("("+realm+") Loading in Rule:" + rule._1 + " of " + filerule);
+						System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + inputFileStr);
 						rules.add(rule);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																											// that
