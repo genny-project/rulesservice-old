@@ -7,15 +7,44 @@ rule "Pre Init Attribute Change"
 	salience 10000
 /*	ruleflow-group 'Init' */
     when
-          m : QEventMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
-          rules: QRules(!isState("STARTED")) 
+        m : QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
+        rules: QRules(!isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT ATTRIBUTE_CHANGE: "+m);
- 
+
+        String newAnsSourceCode = m.getAnswer().getSourceCode();
+        rules.println("newAnsSourceCode   ::   " + newAnsSourceCode);
+
+        String newAnsTargetCode = m.getAnswer().getTargetCode();
+        rules.println("newAnsTargetCode   ::   " + newAnsTargetCode);
+
+        String newAnsAttributeCode = m.getAnswer().getAttributeCode();
+        rules.println("newAnsAttributeCode   ::   " + newAnsAttributeCode);
+
+        String newAnsValue = m.getAnswer().getValue();
+        rules.println("newAnsValue   ::   " + newAnsValue);
+
+        /* Boolean answerInferredValue = m.getAnswer().getInferred();
+        Boolean answerExpiredValue = m.getAnswer().getExpired();
+        Boolean answerRefusedValue = m.getAnswer().getRefused();
+        Boolean answerWeightValue = m.getAnswer().getWeight(); */
+
+        if(newAnsSourceCode != null) {
+            rules.set("newAnsSourceCode", newAnsSourceCode);
+		}
+        if(newAnsTargetCode != null) {
+            rules.set("newAnsTargetCode", newAnsTargetCode);
+		}
+		if(newAnsAttributeCode != null) {
+			rules.set("newAnsAttributeCode", newAnsAttributeCode);
+			rules.setState(newAnsAttributeCode);
+		}
+		if(newAnsValue != null) {
+			rules.set("newAnsValue", newAnsValue);
+		}
+
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");
         rules.setState("STARTED");
-		
-        	drools.setFocus("AttributeChange");
-       		      
+        drools.setFocus("AttributeChange");
 end

@@ -1,7 +1,7 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
 
-rule "User Verified Phone Number"
+rule "User Submitted PassCode Verification"
 	when
 	    rules: QRules( 	isState("QUE_MOBILE_VERIFICATION_GRP") &&
 						isState("EVENT_FORM_SUBMIT") &&
@@ -10,8 +10,7 @@ rule "User Verified Phone Number"
 	 	rules.header();
         
 		rules.setState("LOOP_USER_ACCEPTED_MOBILE_VERIF");
-		rules.clearState("LOOP_VERIFY_MOBILE_PHONE_NUMBER");
-		rules.setState("CHECK_USER_PHONE_NUMBER"); /* we check again */
+		rules.setState("VERIFY_USER_PASSCODE");
 		
 	 	rules.footer();      
 end
