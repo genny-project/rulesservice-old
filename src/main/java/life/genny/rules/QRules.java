@@ -783,6 +783,60 @@ public class QRules {
 		return be;
 	}
 
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email) {
+		return this.createUser(firstname, lastname, name, username, email, null);
+	}
+
+	public BaseEntity createUser(String firstname, String lastname, String name, String username, String email,
+			String keycloakId) {
+
+		BaseEntity be = null;
+
+		try {
+
+			/* we capitalise the variables */
+			firstname = StringUtils.capitalize(firstname);
+			lastname = StringUtils.capitalize(lastname);
+			name = StringUtils.capitalize(name);
+			String realm = null;
+
+			/*
+			 * if you are running in dev mode on your local machine, the only available
+			 * realm is genny
+			 */
+			if (System.getenv("GENNY_DEV") != null && System.getenv("GENNY_DEV").equals("TRUE")) {
+				realm = "genny";
+			} else {
+				realm = this.realm();
+			}
+
+			String token = RulesUtils.generateServiceToken(realm);
+
+			/* if the keycloak id, we need to create a keycloak account for this user */
+			if (keycloakId == null) {
+				keycloakId = KeycloakUtils.createUser(token, realm, username, firstname, lastname, email);
+			}
+
+			/* we create the user in the system */
+			be = QwandaUtils.createUser(qwandaServiceUrl, getToken(), username, firstname, lastname, email,
+					this.realm(), name, keycloakId);
+			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
+			// be = getUser();
+			set("USER", be);
+			println("New User Created " + be);
+			this.setState("DID_CREATE_NEW_USER");
+
+			/* send notification for new registration */
+			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			this.sendSlackNotification(message);
+
+		} catch (IOException e) {
+			this.sendToastNotification(e.getMessage(), "error");
+		}
+
+		return be;
+	}
+
 	public void sendLayout(final String layoutCode, final String layoutPath) {
 		this.sendLayout(layoutCode, layoutPath, realm());
 	}
