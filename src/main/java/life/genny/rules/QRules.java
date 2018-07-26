@@ -1272,7 +1272,8 @@ public class QRules {
 	}
 
 	public void publish(String channel, Object payload) {
-		VertxUtils.publish(getUser(), channel, payload);
+		String[] filterArray = VertxUtils.getRealmFilterArray(realm());
+		VertxUtils.publish(getUser(), channel, payload,filterArray);
 	}
 
 	public void loadUserRole() {
@@ -2497,95 +2498,7 @@ public class QRules {
 
 	}
 
-	/**
-	 * @param bulkmsg
-	 * @return
-	 */
-	private void sendTreeViewData(List<QDataBaseEntityMessage> bulkmsg, BaseEntity user) {
 
-		List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-		/* Removing GRP_DRAFTS be if user is a Driver */
-
-		if (this.isUserSeller()) {
-
-			for (BaseEntity be : root) {
-				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
-					toRemove.add(be);
-					println("GRP_DRAFTS & GRP_BIN has been added to remove list");
-				}
-
-			}
-			root.removeAll(toRemove);
-			// println("GRP_DRAFTS & GRP_BIN have been removed from root");
-		}
-		bulkmsg.add(publishCmd(root, "GRP_ROOT", "LNK_CORE"));
-		// println(root);
-
-		List<BaseEntity> reportsHeader = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
-		// println("User is Admin " + hasRole("admin"));
-		if (reportsHeader != null) {
-			if (isRealm("channel40")) { // Removing USER Reports for channel40
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for driver role
-
-			if (this.isUserSeller()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for owner role
-
-			else if (this.isUserBuyer()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// checking for admin role
-			if (!(hasRole("admin"))) {
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Removing reports not related to the user based on their role
-			reportsHeader.removeAll(reportsHeaderToRemove);
-		} else {
-			println("The group GRP_REPORTS doesn't have any child");
-		}
-		// println("Unrelated reports have been removed ");
-		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
-
-		List<BaseEntity> admin = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20, false);
-		bulkmsg.add(publishCmd(admin, "GRP_ADMIN", "LNK_CORE"));
-
-		/*
-		 * if(hasRole("admin")){ List<BaseEntity> reports =
-		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
-		 */
-
-		if (this.isUserBuyer()) {
-
-			List<BaseEntity> bin = this.baseEntity.getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE", user.getCode(), 0,
-					20, false);
-			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
-		}
-
-	}
 
 	static QBulkMessage cache = null;
 	static String cache2 = null;
@@ -4076,7 +3989,7 @@ public void makePayment(QDataAnswerMessage m) {
 	public void redirectToHomePage() {
 
     this.navigateTo("/home");
-		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+		sendSublayout("BUCKET_DASHBOARD", "dashboard_"+realm()+".json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
 
@@ -4124,31 +4037,18 @@ public void makePayment(QDataAnswerMessage m) {
 		log.info("The report code is :: " + reportCode);
 		// BaseEntity searchBE = getBaseEntityByCode(reportCode);
 
-		String jsonSearchBE = null;
-		SearchEntity srchBE = null;
+		SearchEntity searchBE = null;
 
-		if ((reportCode.equalsIgnoreCase("SBE_OWNERJOBS") || reportCode.equalsIgnoreCase("SBE_DRIVERJOBS")) && this.realm().equals("PRJ_CHANNEL40")) {
+ 		searchBE = new SearchEntity(this.baseEntity.getBaseEntityByCode(reportCode));		
 
-      // srchBE.setStakeholder(getUser().getCode());
-			srchBE = new SearchEntity(reportCode, "List of all My Loads").addColumn("PRI_NAME", "Load Name")
-					.addColumn("PRI_JOB_ID", "Job ID").addColumn("PRI_PICKUP_ADDRESS_FULL", "Pickup Address")
-					.addColumn("PRI_DESCRIPTION", "Description")
-					.setStakeholder(getUser().getCode())
-					.addSort("PRI_NAME", "Name", SearchEntity.Sort.ASC)
-					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "BEG_%")
-					.setPageStart(0).setPageSize(10000);
-
-			    jsonSearchBE = JsonUtils.toJson(srchBE);
-
-		}
-    else {
-			BaseEntity searchBE = this.baseEntity.getBaseEntityByCode(reportCode);
-			jsonSearchBE = JsonUtils.toJson(searchBE);
+	
+		if (!this.hasRole("admin")) {
+			searchBE.setStakeholder(getUser().getCode());
 		}
 
-		log.info("The search BE is :: " + jsonSearchBE);
+		log.info("The search BE is :: " + searchBE);
 		// String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", JsonUtils.toJson(searchBE),
 				getToken());
 
 		this.println(resultJson);
@@ -4189,7 +4089,7 @@ public void makePayment(QDataAnswerMessage m) {
 
 				// Now append a sum baseentity
 				BaseEntity sumBe = new BaseEntity("SUM_" + reportCode.substring("SBE_".length()),
-						"Summary " + srchBE.getName());
+						"Summary " + searchBE.getName());
 				for (String sumKey : sums.keySet()) {
 					Attribute sumAttribute = attributes.get(sumKey);
 					Object sum = sums.get(sumKey);
@@ -4462,6 +4362,16 @@ public void makePayment(QDataAnswerMessage m) {
 					} else {
 						this.set("realm", realm);
 					}
+					
+					// Set Project Filter Array
+					String projectCode = "PRJ_"+realm.toUpperCase();
+					BaseEntity project = this.baseEntity.getBaseEntityByCode(projectCode);
+					Optional<String> optionalAttributeFilterString = project.getValue("PRI_FILTER_ARRAY");
+					if (optionalAttributeFilterString.isPresent()) {
+						String[] attributeFilterArray = optionalAttributeFilterString.get().split(",");
+						VertxUtils.setRealmFilterArray(realm,attributeFilterArray);
+					}
+					
 					return true;
 				}
 			}
