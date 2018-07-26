@@ -5,11 +5,11 @@ import life.genny.qwanda.entity.BaseEntity;
 
 rule "Mobile verification is completed"
     when
-        rules: QRules( isState("MOBILE_VERIFIED") && !isState("LOOP_MOBILE_VERIFIED_ACCEPTED") )
+        rules: QRules( isState("PASSCODE_VERIFICATION_SUCCEEDED") && !isState("LOOP_MOBILE_VERIFICATION_SUCCESS") )
     then
         rules.header();
         
-		rules.setState("LOOP_MOBILE_VERIFIED_ACCEPTED");
+		rules.setState("LOOP_MOBILE_VERIFICATION_SUCCESS");
         rules.setState("CHECK_USER_COMPANY");
 		
         rules.footer();
