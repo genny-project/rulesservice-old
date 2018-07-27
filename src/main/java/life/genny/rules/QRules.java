@@ -1488,13 +1488,7 @@ public class QRules {
 			cmdFormView.setIsPopup(isPopup);
 			publishCmd(cmdFormView);
 
-			/* Layout V2 */
-			/*
-			 * QCmdViewFormMessage formCmd = new QCmdViewFormMessage(questionGroupCode);
-			 * this.publishCmd(formCmd);
-			 */
-
-			// this.navigateTo("/questions/" + questionGroupCode);
+			 this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
