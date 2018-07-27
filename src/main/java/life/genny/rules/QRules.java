@@ -4257,7 +4257,8 @@ public class QRules {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
-		return getSearchResults(searchBE, getToken());
+		String serviceToken = RulesUtils.generateServiceToken(this.realm());
+		return getSearchResults(searchBE, serviceToken);
 	}
 
 	/*
