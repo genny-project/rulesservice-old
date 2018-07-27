@@ -23,9 +23,10 @@ rule "Generate internmatch Tree Roles"
 		
 		/* Roles related to TreeView Root */
 		List<Answer> grpRoot = new ArrayList<>();
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT"));
+		
+        /* grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
+        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT")); 
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
@@ -33,7 +34,19 @@ rule "Generate internmatch Tree Roles"
 		grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF"));
 		grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_EDU_PROVIDER_STAFF"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT"));
-		rules.baseEntity.saveAnswers(grpRoot);
+		rules.baseEntity.saveAnswers(grpRoot); */
+		
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_INTERNSHIPS_INTERN", "PRI_IS_SELLER" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_EDU_PROVIDER_STAFF" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT" ) );
+		
 
 		/* Roles related to TreeView GRP_BEGS */
 		List<Answer> grpBegs = new ArrayList<>();
