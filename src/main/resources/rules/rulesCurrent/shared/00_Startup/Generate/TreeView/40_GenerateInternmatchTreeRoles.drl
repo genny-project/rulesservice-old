@@ -49,25 +49,38 @@ rule "Generate internmatch Tree Roles"
 		
 
 		/* Roles related to TreeView GRP_BEGS */
-		List<Answer> grpBegs = new ArrayList<>();
+		/* List<Answer> grpBegs = new ArrayList<>();
         grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT"));
         grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT"));
         grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT"));
         grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT"));
-		rules.baseEntity.saveAnswers(grpBegs);
+		rules.baseEntity.saveAnswers(grpBegs); */
+		
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT" ) );
 
         /* for some reason buyer was not being saved, so had to do this. */
-        List<Answer> grpBuyer = new ArrayList<>();
+        /* List<Answer> grpBuyer = new ArrayList<>();
         grpBuyer.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_BUYER"));
         grpBuyer.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswers(grpBuyer);
+		rules.baseEntity.saveAnswers(grpBuyer); */
+		
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_BUYER" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER" ) );
 
-        List<Answer> grpBegsBuyer = new ArrayList<>();
+        /* List<Answer> grpBegsBuyer = new ArrayList<>();
         grpBegsBuyer.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
         grpBegsBuyer.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_BUYER"));
         grpBegsBuyer.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER"));
         grpBegsBuyer.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswers(grpBegsBuyer);
+		rules.baseEntity.saveAnswers(grpBegsBuyer); */
+		
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_BUYER" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER" ) );
+		rules.baseEntity.saveAnswer( new Answer( "GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_BUYER" ) );
 
         rules.footer();
 end
