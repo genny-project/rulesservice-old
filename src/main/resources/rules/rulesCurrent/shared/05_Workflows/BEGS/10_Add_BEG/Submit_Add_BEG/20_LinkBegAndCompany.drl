@@ -20,16 +20,17 @@ rule "Submit Add BEG - Step 2"
 			rules.println("beg is not in the state");
 			return;
 		}
-		// if(company == null){
-		// 	rules.setState("FAILED_CREATE_BEG");
-		// 	rules.println("company is not in the state");
-		// 	return;
-		// }
+
+		if(company == null){
+			rules.setState("FAILED_CREATE_BEG");
+			rules.println("company is not in the state");
+			return;
+		}
 		
 		/* link BEG to CPY */
 		rules.set("linkSourceCode", beg.getCode());
-		//rules.set("linkTargetCode", company.getCode());
-		rules.set("linkTargetCode", "CPY_OUTCOME_LIFE");
+		rules.set("linkTargetCode", company.getCode());
+		// rules.set("linkTargetCode", "CPY_OUTCOME_LIFE");
 		rules.set("linkCode", "LNK_BEG");
 		rules.set("linkValue", "COMPANY");
 		rules.set("linkWeight", 1.0);
