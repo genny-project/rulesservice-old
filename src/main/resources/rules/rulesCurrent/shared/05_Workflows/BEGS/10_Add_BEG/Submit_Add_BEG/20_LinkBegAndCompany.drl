@@ -30,7 +30,6 @@ rule "Submit Add BEG - Step 2"
 		/* link BEG to CPY */
 		rules.set("linkSourceCode", beg.getCode());
 		rules.set("linkTargetCode", company.getCode());
-		// rules.set("linkTargetCode", "CPY_OUTCOME_LIFE");
 		rules.set("linkCode", "LNK_BEG");
 		rules.set("linkValue", "COMPANY");
 		rules.set("linkWeight", 1.0);

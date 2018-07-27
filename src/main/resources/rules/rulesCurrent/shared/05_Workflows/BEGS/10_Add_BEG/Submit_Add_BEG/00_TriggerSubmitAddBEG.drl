@@ -38,7 +38,8 @@ rule "Trigger Submit Add BEG"
 			rules.set("productBe", product);
 		}
 		
-		BaseEntity company = rules.baseEntity.getLinkedBaseEntity(rules.getUser().getCode(), "LNK_STAFF", "STAFF");
+		BaseEntity company = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
+		rules.println("company in trigger submit ::"+company);
 		if(company != null) {
 			rules.set("companyBe", company);
 		}
