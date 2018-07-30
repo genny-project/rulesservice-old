@@ -325,6 +325,14 @@ public class QRules {
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
 	}
+	
+	public void setPermanentObject(String key, Object obj) {
+		VertxUtils.putObject(this.realm(), "CACHE", key, obj);
+	}
+	
+	public <T> T getPermanentObject(String key, Type clazz) {
+		return VertxUtils.getObject(this.realm(), "CACHE", key, clazz);
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<Object> getAsList(final String key) {
@@ -342,6 +350,10 @@ public class QRules {
 
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
+	}
+
+	public SearchEntity getAsSearchEntity(final String key) {
+		return (SearchEntity) get(key);
 	}
 
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
@@ -586,7 +598,28 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
+	
+	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode) {
 
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		msg.setRecipientCodeArray(recipients);
+		publishData(msg, recipients);
+	}
+	
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		msg.setRecipientCodeArray(recipients);
+		publishData(msg, recipients);
+	}
+	
 	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -1488,7 +1521,7 @@ public class QRules {
 			cmdFormView.setIsPopup(isPopup);
 			publishCmd(cmdFormView);
 
-			 this.navigateTo("/questions/" + questionGroupCode);
+			this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -4257,6 +4290,18 @@ public class QRules {
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		return getSearchResults(searchBE, getToken());
+	}
+
+	/*
+	 * Get search Results returns List<BaseEntity>
+	 */
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
+		QDataBaseEntityMessage msg = getSearchResults(searchBE, getToken());
+		if(msg.getItems() != null) {
+			return Arrays.asList(msg.getItems());
+		}
+		
+		return new ArrayList<>(); 
 	}
 
 	/*
