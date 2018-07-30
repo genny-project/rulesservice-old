@@ -27,7 +27,7 @@ rule "Attribute Change - Set Title value to the BE's name"
          		//Answer baseEntityNameAnswer = new Answer(rules.getUser().getCode(), targetBeCode, "PRI_NAME", newValue);
          		//rules.baseEntity.saveAnswer(baseEntityNameAnswer);
          		
-         		rules.setState("LOOP_BASEENTITY_NAME_UPDATED");
+         		rules.setState("BASEENTITY_NAME_UPDATED");
 			}
 			
    	    rules.footer();
