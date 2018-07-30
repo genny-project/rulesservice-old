@@ -24,6 +24,8 @@ rule "Submit Add BEG - Step 1"
 		rules.set("linkWeight", 1.0);
 		rules.setState("CREATE_LINK");
 
-		rules.setState("LINK_BEG_AND_COMPANY");
+		//rules.setState("LINK_BEG_AND_COMPANY");
+		rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
+		
 	 	rules.footer();      
 end
