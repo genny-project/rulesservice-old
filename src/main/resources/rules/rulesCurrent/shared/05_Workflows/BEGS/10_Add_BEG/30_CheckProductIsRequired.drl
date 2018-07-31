@@ -17,7 +17,7 @@ rule "Add BEG - Step 3.0"
             rules.setState("PRODUCT_IS_REQUIRED");
         }
         
-        rules.setState("LINK_GRP_DRAFTS_AND_BEG");
+        //rules.setState("LINK_GRP_DRAFTS_AND_BEG");
        
 	 	rules.footer();      
 end
