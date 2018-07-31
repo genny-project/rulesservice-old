@@ -15,8 +15,9 @@ rule "Add BEG - Step 3.0"
             /* prj requires product template */
             rules.setState("CREATE_PRODUCT_BASEENTITY");
             rules.setState("PRODUCT_IS_REQUIRED");
-        }else{
-            rules.setState("LINK_GRP_DRAFTS_AND_BEG");
         }
+        
+        rules.setState("LINK_GRP_DRAFTS_AND_BEG");
+       
 	 	rules.footer();      
 end
