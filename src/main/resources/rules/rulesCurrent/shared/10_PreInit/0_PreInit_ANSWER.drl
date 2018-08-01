@@ -8,7 +8,6 @@ rule "Pre Init Answer"
         rules: QRules(!isState("STARTED"))
      then
         rules.setDrools(drools);
-    
         rules.println("RULE INIT ANSWER: "+ m + " - " + m.getItems());
 		
 		/* we grab the data associated to the answers */
@@ -17,25 +16,25 @@ rule "Pre Init Answer"
 		 	
 		 	/* TODO: update to handle multiple answers */
 		 	Answer firstAnswer = answers[0];
-		 	String attributeCode = firstAnswer.getAttributeCode();
-		 	String sourceCode = firstAnswer.getSourceCode();
-		 	String targetCode = firstAnswer.getTargetCode();
-		 	String value = firstAnswer.getValue();
+		 	String answerSourceCode = firstAnswer.getSourceCode();
+		 	String answerTargetCode = firstAnswer.getTargetCode();
+		 	String answerAttributeCode = firstAnswer.getAttributeCode();
+		 	String answerValue = firstAnswer.getValue();
 		 	
-		 	if(attributeCode != null && sourceCode != null && targetCode != null && value != null ){
-		 	    rules.set("attributeCode", attributeCode);
-		 	    rules.set("sourceCode", sourceCode);
-		 		rules.set("targetCode", targetCode);
-		 	    rules.set("value", value);
+		 	if(answerSourceCode != null && answerTargetCode != null && answerAttributeCode != null && answerValue != null ){
+		 	    rules.set("answerSourceCode", answerSourceCode);
+		 		rules.set("answerTargetCode", answerTargetCode);
+		 	    rules.set("answerAttributeCode", answerAttributeCode);
+		 	    rules.set("answerValue", answerValue);
 		 	    
-		 	    rules.setState(attributeCode);
-		 	    rules.set(attributeCode, firstAnswer);
+		 	    rules.setState(answerAttributeCode);
+		 	    rules.set(answerAttributeCode, firstAnswer);
 		 	}	 	
 		 }
        
+        rules.setState("EVENT_ANSWER"); /* other rules listening for thos state */
         rules.setState("DATA_ANSWER");
         rules.setState("STARTED");
         rules.setState("ANSWER");
-        
         drools.setFocus("Answer");
 end
