@@ -5377,6 +5377,7 @@ public class QRules {
 	 */
 	public void publishViewCmdMessage(final String viewType, final String rootCode) {
 		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+		cmdViewMessage.setToken(getToken());
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
 		publish("cmds",cmdViewMessageJson);
