@@ -17,10 +17,10 @@ rule "Pre Init Route Change"
         String route = m.getData().getCode();
         String selectedItem = m.getData().getValue();
         
-
         if(route != null) {
           rules.setState(route);
         }
+        
         if(selectedItem != null) {
             rules.setState(selectedItem);
             rules.set("selectedItem", selectedItem);
