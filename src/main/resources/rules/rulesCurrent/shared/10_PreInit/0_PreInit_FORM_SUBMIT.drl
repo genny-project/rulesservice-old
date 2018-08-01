@@ -38,6 +38,7 @@ rule "Pre Init FORM Submit"
 		}
         if(actionCode != null) {
 			rules.setState(actionCode);
+			rules.set("actionCode", actionCode);
 		}
 
 		if(targetCode != null) {

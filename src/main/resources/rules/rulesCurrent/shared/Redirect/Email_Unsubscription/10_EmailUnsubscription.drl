@@ -6,6 +6,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.utils.VertxUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwanda.message.QBaseMSGMessageTemplate;
+import life.genny.qwanda.message.QCmdViewFormMessage;
 
 	rule "Email unsubscription redirect"
 		no-loop true
@@ -43,7 +44,7 @@ import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 
 					/* temporary: save the template code into the cache for retrieval later */
 					VertxUtils.putObject(rules.realm(), "MSG_TEMPLATE", rules.getUser().getCode(), rules.getAsString("valueCode"));
-
+					rules.println("template code ::"+template.getSubject());
 					String customQuestion = "Do you want to unsubscribe from the email with the subject - "+ template.getSubject() + "?";
 
 					/* get the question that needs to be edited */
@@ -55,7 +56,10 @@ import life.genny.qwanda.message.QBaseMSGMessageTemplate;
 					if(questions != null) {
 						/* publish the custom question to user */
 						rules.publishCmd(questions);
-						rules.publishViewCmdMessage("FORM_VIEW", "QUE_EMAIL_UNSUBSCRIPTION_GRP");
+						/* rules.publishViewCmdMessage("FORM_VIEW", "QUE_EMAIL_UNSUBSCRIPTION_GRP"); */
+						QCmdViewFormMessage cmdFormView = new QCmdViewFormMessage("QUE_EMAIL_UNSUBSCRIPTION_GRP");
+						cmdFormView.setIsPopup(false);
+						rules.publishCmd(cmdFormView);
 					} else {
 						rules.redirectToHomePage();
 					}
