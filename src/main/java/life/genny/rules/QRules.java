@@ -561,6 +561,26 @@ public class QRules {
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
+	
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
+
+	public void publishBaseEntityByCode(List<BaseEntity> baseEntities, final String parentCode, final String linkCode) {
+
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(baseEntities.toArray(new BaseEntity[0]), parentCode, linkCode);
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -3509,7 +3529,7 @@ public class QRules {
 						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						//sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
 
 					}
 				}
@@ -3517,7 +3537,7 @@ public class QRules {
 
 		}
 
-		this.reloadCache();
+		//this.reloadCache();
 		this.redirectToHomePage();
 		drools.setFocus("ispayments"); /* NOW Set up Payments */
 	}
