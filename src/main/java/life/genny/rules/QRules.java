@@ -3186,14 +3186,15 @@ public class QRules {
 
 	public void processLoadTypeAnswer() {
 		/* Collect load code from answer */
-		String targetCode = getAsString("targetCode");
-		String sourceCode = getAsString("sourceCode");
-		String loadCategoryCode = getAsString("value");
-		String attributeCode = getAsString("attributeCode");
+		String targetCode = getAsString("answerTargetCode");
+		String sourceCode = getAsString("answerSourceCode");
+		String loadCategoryCode = getAsString("answerValue");
+		String attributeCode = getAsString("answerAttributeCode");
+		
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
-		println("The load type code is   ::  " + loadCategoryCode);
+		println("The product type code is   ::  " + loadCategoryCode);
 
 		if (targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null) {
 
