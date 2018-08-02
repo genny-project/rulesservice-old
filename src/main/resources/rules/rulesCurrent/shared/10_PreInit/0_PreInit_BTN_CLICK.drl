@@ -52,7 +52,7 @@ rule "Pre Init Btn Click"
           rules.println("userCode  ::  " + userCode);
 
           if(targetCode != null) {
-            rules.set("quesTargetCode", targetCode);
+            rules.set("targetCode", targetCode);
           }
 
           if(itemCode != null) {

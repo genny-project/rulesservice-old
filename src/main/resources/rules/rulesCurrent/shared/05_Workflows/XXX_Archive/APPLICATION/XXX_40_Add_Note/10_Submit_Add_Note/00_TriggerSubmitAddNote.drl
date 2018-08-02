@@ -13,7 +13,7 @@ rule "Trigger Submit ADD NOTE"
         rules.setState("LOOP_TRIGGER_SUBMIT_ADD_NOTE");
 
 		/* get noteCode from targetCode */
-		String noteCode = rules.getAsString("quesTargetCode");
+		String noteCode = rules.getAsString("targetCode");
 		
 		if(noteCode != null){
 			BaseEntity note = rules.baseEntity.getBaseEntityByCode(noteCode);

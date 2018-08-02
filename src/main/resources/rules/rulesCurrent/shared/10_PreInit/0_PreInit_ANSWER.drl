@@ -16,19 +16,19 @@ rule "Pre Init Answer"
 		 	
 		 	/* TODO: update to handle multiple answers */
 		 	Answer firstAnswer = answers[0];
-		 	String answerSourceCode = firstAnswer.getSourceCode();
-		 	String answerTargetCode = firstAnswer.getTargetCode();
-		 	String answerAttributeCode = firstAnswer.getAttributeCode();
-		 	String answerValue = firstAnswer.getValue();
+		 	String sourceCode = firstAnswer.getSourceCode();
+		 	String targetCode = firstAnswer.getTargetCode();
+		 	String attributeCode = firstAnswer.getAttributeCode();
+		 	String value = firstAnswer.getValue();
 		 	
-		 	if(answerSourceCode != null && answerTargetCode != null && answerAttributeCode != null && answerValue != null ){
-		 	    rules.set("answerSourceCode", answerSourceCode);
-		 		rules.set("answerTargetCode", answerTargetCode);
-		 	    rules.set("answerAttributeCode", answerAttributeCode);
-		 	    rules.set("answerValue", answerValue);
+		 	if(sourceCode != null && targetCode != null && attributeCode != null && value != null ){
+		 	    rules.set("sourceCode", sourceCode);
+		 		rules.set("targetCode", targetCode);
+		 	    rules.set("attributeCode", attributeCode);
+		 	    rules.set("value", value);
 		 	    
-		 	    rules.setState(answerAttributeCode);
-		 	    rules.set(answerAttributeCode, firstAnswer);
+		 	    rules.setState(attributeCode);
+		 	    rules.set(attributeCode, firstAnswer);
 		 	}	 	
 		 }
        

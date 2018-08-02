@@ -13,9 +13,9 @@ rule "Attribute Change - Set Title value to the BE's name"
      then    
       	rules.header();
       		rules.setState("LOOP_BASEENTITY_NAME_UPDATED");
-			String attributeCode = rules.getAsString("newAnsAttributeCode");
-			String targetBeCode = rules.getAsString("newAnsTargetCode");
-			String newValue = rules.getAsString("newAnsValue");
+			String attributeCode = rules.getAsString("attributeCode");
+			String targetBeCode = rules.getAsString("targetCode");
+			String newValue = rules.getAsString("value");
 			
 			if(attributeCode != null && targetBeCode != null && newValue != null ){
 				BaseEntity targetBe = rules.baseEntity.getBaseEntityByCode(targetBeCode);

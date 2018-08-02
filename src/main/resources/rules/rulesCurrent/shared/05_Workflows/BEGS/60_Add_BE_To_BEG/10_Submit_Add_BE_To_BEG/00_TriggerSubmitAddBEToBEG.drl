@@ -13,7 +13,7 @@ rule "Trigger Submit Add BE To BEG"
   		rules.setState("LOOP_SUBMIT_ADD_TO_BEG_STEP0");
 
 		/* get applicationCode from targetCode */
-		String applicationCode = rules.getAsString("quesTargetCode");
+		String applicationCode = rules.getAsString("targetCode");
 		
 		if(applicationCode != null){
 
