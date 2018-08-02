@@ -667,8 +667,8 @@ public class QRules {
 		/* we get the list of products marked as "PAID" */
 
 		/* we generate a service token */
-		String proj_realm = System.getenv("PROJECT_REALM");
-		String token = RulesUtils.generateServiceToken(proj_realm);
+
+		String token = RulesUtils.generateServiceToken(realm());
 		if (token != null) {
 
 			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
@@ -803,19 +803,13 @@ public class QRules {
 			firstname = StringUtils.capitalize(firstname);
 			lastname = StringUtils.capitalize(lastname);
 			name = StringUtils.capitalize(name);
-			String realm = null;
 
-			/*
-			 * if you are running in dev mode on your local machine, the only available
-			 * realm is genny
-			 */
-			if (System.getenv("GENNY_DEV") != null && System.getenv("GENNY_DEV").equals("TRUE")) {
+			String token = RulesUtils.generateServiceToken(realm());
+			
+			String realm = realm();
+			if (GennySettings.devMode) {
 				realm = "genny";
-			} else {
-				realm = this.realm();
 			}
-
-			String token = RulesUtils.generateServiceToken(realm);
 
 			/* if the keycloak id, we need to create a keycloak account for this user */
 			if (keycloakId == null) {
@@ -824,7 +818,7 @@ public class QRules {
 
 			/* we create the user in the system */
 			be = QwandaUtils.createUser(getQwandaServiceUrl(), getToken(), username, firstname, lastname, email,
-					this.realm(), name, keycloakId);
+					realm, name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			// be = getUser();
 			set("USER", be);
@@ -4363,30 +4357,28 @@ public class QRules {
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
 				log.info("No keycloakMap for " + realm());
-				return false;
+				if (GennySettings.devMode) {
+					System.out.println("Fudging realm so genny keycloak used");
+					// Use basic Genny json when project json not available
+					String gennyJson = SecureResources.getKeycloakJsonMap().get("genny.json");
+					SecureResources.getKeycloakJsonMap().put(jsonFile,gennyJson);
+					keycloakJson = gennyJson;
+				} else {
+					return false;
+				}
 			}
 
 			JsonObject realmJson = new JsonObject(keycloakJson);
-			JsonObject secretJson = realmJson.getJsonObject("credentials");
-			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
 
 			if (realm != null) {
 
-				String token = RulesUtils.generateServiceToken(realm);
+				String token = RulesUtils.generateServiceToken(GennySettings.dynamicRealm(realm()));
 				this.println(token);
 				if (token != null) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
-
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
-					} else {
-						this.set("realm", realm);
-					}
-
+						this.set("realm", GennySettings.dynamicRealm(realm()));
 					return true;
 				}
 			}
