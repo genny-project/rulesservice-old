@@ -13,35 +13,30 @@ rule "Pre Init Attribute Change"
         rules.setDrools(drools);
         rules.println("RULE INIT ATTRIBUTE_CHANGE: "+m);
 
-        String newAnsSourceCode = m.getAnswer().getSourceCode();
-        rules.println("newAnsSourceCode   ::   " + newAnsSourceCode);
+        String sourceCode = m.getAnswer().getSourceCode();
+        rules.println("sourceCode   ::   " + sourceCode);
 
-        String newAnsTargetCode = m.getAnswer().getTargetCode();
-        rules.println("newAnsTargetCode   ::   " + newAnsTargetCode);
+        String targetCode = m.getAnswer().getTargetCode();
+        rules.println("targetCode   ::   " + targetCode);
 
-        String newAnsAttributeCode = m.getAnswer().getAttributeCode();
-        rules.println("newAnsAttributeCode   ::   " + newAnsAttributeCode);
+        String attributeCode = m.getAnswer().getAttributeCode();
+        rules.println("attributeCode   ::   " + attributeCode);
 
-        String newAnsValue = m.getAnswer().getValue();
-        rules.println("newAnsValue   ::   " + newAnsValue);
+        String value = m.getAnswer().getValue();
+        rules.println("value   ::   " + value);
 
-        /* Boolean answerInferredValue = m.getAnswer().getInferred();
-        Boolean answerExpiredValue = m.getAnswer().getExpired();
-        Boolean answerRefusedValue = m.getAnswer().getRefused();
-        Boolean answerWeightValue = m.getAnswer().getWeight(); */
-
-        if(newAnsSourceCode != null) {
-            rules.set("newAnsSourceCode", newAnsSourceCode);
+        if(sourceCode != null) {
+            rules.set("sourceCode", sourceCode);
 		}
-        if(newAnsTargetCode != null) {
-            rules.set("newAnsTargetCode", newAnsTargetCode);
+        if(targetCode != null) {
+            rules.set("targetCode", targetCode);
 		}
-		if(newAnsAttributeCode != null) {
-			rules.set("newAnsAttributeCode", newAnsAttributeCode);
-			rules.setState(newAnsAttributeCode);
+		if(attributeCode != null) {
+			rules.set("attributeCode", attributeCode);
+			rules.setState(attributeCode);
 		}
-		if(newAnsValue != null) {
-			rules.set("newAnsValue", newAnsValue);
+		if(value != null) {
+			rules.set("value", value);
 		}
 
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");

@@ -3206,10 +3206,10 @@ public class QRules {
 
 	public void processLoadTypeAnswer() {
 		/* Collect load code from answer */
-		String targetCode = getAsString("answerTargetCode");
-		String sourceCode = getAsString("answerSourceCode");
-		String loadCategoryCode = getAsString("answerValue");
-		String attributeCode = getAsString("answerAttributeCode");
+		String targetCode = getAsString("targetCode");
+		String sourceCode = getAsString("sourceCode");
+		String loadCategoryCode = getAsString("value");
+		String attributeCode = getAsString("attributeCode");
 		
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);

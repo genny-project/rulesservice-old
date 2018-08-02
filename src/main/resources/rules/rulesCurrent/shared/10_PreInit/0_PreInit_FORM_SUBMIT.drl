@@ -42,7 +42,7 @@ rule "Pre Init FORM Submit"
 		}
 
 		if(targetCode != null) {
-			rules.set("quesTargetCode", targetCode);
+			rules.set("targetCode", targetCode);
 		}
 		if(itemCode != null) {
 			rules.set("itemCode", itemCode);

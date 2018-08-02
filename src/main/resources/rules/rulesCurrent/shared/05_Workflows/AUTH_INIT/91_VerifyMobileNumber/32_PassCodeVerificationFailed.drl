@@ -10,7 +10,7 @@ rule "Passcode Verification Failed"
 	 	rules.header();
         
 			rules.setState("LOOP_USER_PASSCODE_VERIFICATION_FAILED");
-			String userCode = rules.getAsString("quesTargetCode");
+			String userCode = rules.getAsString("targetCode");
 			if(userCode != null){
 				String[] recipients = { userCode };
 				HashMap<String, String> contextMap = new HashMap<String, String>();
