@@ -10,7 +10,7 @@ rule "Verify PassCode"
 	 	rules.header();
         
 			rules.setState("LOOP_USER_PASSCODE_VERIFIED");
-			String userCode = rules.getAsString("quesTargetCode");
+			String userCode = rules.getAsString("targetCode");
 			if(userCode != null){
 				String usersPassCode = rules.baseEntity.getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE_USER");
 				if(usersPassCode != null){

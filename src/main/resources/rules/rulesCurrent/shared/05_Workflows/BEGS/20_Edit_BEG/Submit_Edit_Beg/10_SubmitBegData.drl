@@ -10,7 +10,7 @@ rule "Submit BEG Data"
 	 	rules.header();
     rules.setState("LOOP_UPDATE_BEG_DATA");
 
-    String begCode = rules.getAsString("quesTargetCode");
+    String begCode = rules.getAsString("targetCode");
 
     if(begCode != null){
       BaseEntity beg = rules.baseEntity.getBaseEntityByCode(begCode);

@@ -573,6 +573,26 @@ public class QRules {
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
+	
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
+
+	public void publishBaseEntityByCode(List<BaseEntity> baseEntities, final String parentCode, final String linkCode) {
+
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(baseEntities.toArray(new BaseEntity[0]), parentCode, linkCode);
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -2548,97 +2568,6 @@ public class QRules {
 
 	}
 
-	/**
-	 * @param bulkmsg
-	 * @return
-	 */
-	private void sendTreeViewData(List<QDataBaseEntityMessage> bulkmsg, BaseEntity user) {
-
-		List<BaseEntity> root = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 20, false);
-		List<BaseEntity> toRemove = new ArrayList<BaseEntity>();
-		/* Removing GRP_DRAFTS be if user is a Driver */
-
-		if (this.isUserSeller()) {
-
-			for (BaseEntity be : root) {
-				if (be.getCode().equalsIgnoreCase("GRP_DRAFTS") || be.getCode().equalsIgnoreCase("GRP_BIN")) {
-					toRemove.add(be);
-					println("GRP_DRAFTS & GRP_BIN has been added to remove list");
-				}
-
-			}
-			root.removeAll(toRemove);
-			// println("GRP_DRAFTS & GRP_BIN have been removed from root");
-		}
-		bulkmsg.add(publishCmd(root, "GRP_ROOT", "LNK_CORE"));
-		// println(root);
-
-		List<BaseEntity> reportsHeader = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0,
-				20, false);
-		List<BaseEntity> reportsHeaderToRemove = new ArrayList<BaseEntity>();
-		// println("User is Admin " + hasRole("admin"));
-		if (reportsHeader != null) {
-			if (isRealm("channel40")) { // Removing USER Reports for channel40
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_USER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for driver role
-
-			if (this.isUserSeller()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_OWNER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Checking for owner role
-
-			else if (this.isUserBuyer()) {
-
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_DRIVER")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// checking for admin role
-			if (!(hasRole("admin"))) {
-				for (BaseEntity be : reportsHeader) {
-					if (be.getCode().equalsIgnoreCase("GRP_REPORTS_ADMIN")) {
-						reportsHeaderToRemove.add(be);
-					}
-				}
-			}
-			// Removing reports not related to the user based on their role
-			reportsHeader.removeAll(reportsHeaderToRemove);
-		} else {
-			println("The group GRP_REPORTS doesn't have any child");
-		}
-		// println("Unrelated reports have been removed ");
-		bulkmsg.add(publishCmd(reportsHeader, "GRP_REPORTS", "LNK_CORE"));
-
-		List<BaseEntity> admin = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20,
-				false);
-		bulkmsg.add(publishCmd(admin, "GRP_ADMIN", "LNK_CORE"));
-
-		/*
-		 * if(hasRole("admin")){ List<BaseEntity> reports =
-		 * getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0, 20, false);
-		 * publishCmd(reports, "GRP_REPORTS", "LNK_CORE"); }
-		 */
-
-		if (this.isUserBuyer()) {
-
-			List<BaseEntity> bin = this.baseEntity.getBaseEntitysByParentLinkCodeAndLinkValue("GRP_BIN", "LNK_CORE",
-					user.getCode(), 0, 20, false);
-			bulkmsg.add(publishCmd(bin, "GRP_BIN", "LNK_CORE"));
-		}
-
-	}
 
 	static QBulkMessage cache = null;
 	static String cache2 = null;
@@ -2653,7 +2582,7 @@ public class QRules {
 		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
 		QDataBaseEntityMessage qMsg;
 
-		SearchEntity sendAllChats = new SearchEntity("SBE_AllMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
+		SearchEntity sendAllChats = new SearchEntity("SBE_ALLMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On").setStakeholder(getUser().getCode())
 				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
@@ -2662,7 +2591,7 @@ public class QRules {
 		try {
 			qMsg = getSearchResults(sendAllChats);
 		} catch (IOException e) {
-			log.info("Error! Unable to get Search Rsults");
+			log.info("Error! Unable to get Search Results");
 			qMsg = null;
 			e.printStackTrace();
 		}
@@ -3314,10 +3243,11 @@ public class QRules {
 		String sourceCode = getAsString("sourceCode");
 		String loadCategoryCode = getAsString("value");
 		String attributeCode = getAsString("attributeCode");
+		
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
-		println("The load type code is   ::  " + loadCategoryCode);
+		println("The product type code is   ::  " + loadCategoryCode);
 
 		if (targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null) {
 
@@ -3542,7 +3472,7 @@ public class QRules {
 						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						/* sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL"); */
 
 					}
 				}
@@ -3550,7 +3480,7 @@ public class QRules {
 
 		}
 
-		this.reloadCache();
+		//this.reloadCache();
 		this.redirectToHomePage();
 		drools.setFocus("ispayments"); /* NOW Set up Payments */
 	}
@@ -4124,7 +4054,7 @@ public class QRules {
 	public void redirectToHomePage() {
 
 		this.navigateTo("/home");
-		sendSublayout("BUCKET_DASHBOARD", "dashboard_channel40.json", "GRP_DASHBOARD");
+		sendSublayout("BUCKET_DASHBOARD", "dashboard_"+realm().toLowerCase()+".json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
 
@@ -4262,6 +4192,7 @@ public class QRules {
 			String jsonSearchBE = JsonUtils.toJson(searchBE);
 			String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
 			QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+			msg.setToken(getToken());
 			publish("cmds",msg);
 		}
 		catch(Exception e) {
@@ -4289,7 +4220,8 @@ public class QRules {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
-		return getSearchResults(searchBE, getToken());
+		String serviceToken = RulesUtils.generateServiceToken(this.realm());
+		return getSearchResults(searchBE, serviceToken);
 	}
 
 	/*
@@ -5511,6 +5443,7 @@ public class QRules {
 	 */
 	public void publishViewCmdMessage(final String viewType, final String rootCode) {
 		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+		cmdViewMessage.setToken(getToken());
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
 		publish("cmds",cmdViewMessageJson);

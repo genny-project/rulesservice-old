@@ -5,14 +5,18 @@ import life.genny.rules.QRules;
 rule "Add BEG - Step 3.2"
 	when
 		rules: QRules(  isState("LINK_BEG_AND_PRODUCT") &&
-						isState("CREATED_LINK") &&
+						isState("CREATED_BASE_ENTITY") &&
 						!isState("LOOP_LINK_BEG_AND_PRODUCT") ) 
 	 then
 	 	rules.header();
         rules.setState("LOOP_LINK_BEG_AND_PRODUCT");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		BaseEntity product = rules.getAsBaseEntity("productBe");
+		//BaseEntity product = rules.getAsBaseEntity("productBe");
+		BaseEntity product = rules.getAsBaseEntity("baseEntity");
+		
+		rules.println(beg.getCode());
+		rules.println(product.getCode());
 
 		if(beg != null && product != null) {
 			

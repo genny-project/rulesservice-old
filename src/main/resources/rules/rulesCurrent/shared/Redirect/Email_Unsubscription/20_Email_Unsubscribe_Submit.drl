@@ -20,58 +20,77 @@ import org.apache.commons.lang3.StringUtils
 			BaseEntity userBe = rules.getUser();
 			
 			/* get answer - if template code needs to unsubscribed or not */
-			Boolean isUnsubscribed = userBe.getValue("PRI_IS_EMAIL_UNSUBSCRIBE", false);
+			/* Boolean isUnsubscribed = userBe.getValue("PRI_IS_EMAIL_UNSUBSCRIBE", false); */
+			Boolean isUnsubscribed = false;
+			/* actionCode has the anwer yes/no */
+			String actionCode = rules.getAsString("actionCode");
 			
-			/* get the temporary template value stored in cache */
-			String templateCode = VertxUtils.getObject(rules.realm(), "MSG_TEMPLATE", userBe.getCode(), String.class);
+			if(actionCode != null && actionCode.equalsIgnoreCase("yes")) {
+				isUnsubscribed = true;
+			} else {
+				isUnsubscribed = false;
+			}
 			
-			rules.println("has the user unsubscribed ::"+isUnsubscribed+ ", template code to be unsubscribed ::"+templateCode );
+			rules.println("isUnsubscribed ::"+isUnsubscribed);
+			rules.println("action code ::"+actionCode);
 			
 			/* redirect to homepage, do other stuff in background */
 			rules.redirectToHomePage();
 			
-			BaseEntity unsubscriptionBe = rules.baseEntity.getBaseEntityByCode("COM_EMAIL_UNSUBSCRIPTION");
-			
-			if(unsubscriptionBe != null) {
-			
-				/* get the template code unsubscription attribute */
-				String templateUnsubscribeAttribute = templateCode + "_UNSUBSCRIBE";
-				String unsubscriptionListForTemplateCode = unsubscriptionBe.getValue(templateUnsubscribeAttribute, null);
-				rules.println("unsubscription List For TemplateCode ::"+unsubscriptionListForTemplateCode);
+			/* if user wants to unsubscribe */
+			if(isUnsubscribed) {
+				/* get the temporary template value stored in cache */
+				String templateCode = VertxUtils.getObject(rules.realm(), "MSG_TEMPLATE", userBe.getCode(), String.class);
 				
-				if(unsubscriptionListForTemplateCode != null) {
+				rules.println("has the user unsubscribed ::"+actionCode+ ", template code to be unsubscribed ::"+templateCode );
+				
+				BaseEntity unsubscriptionBe = rules.baseEntity.getBaseEntityByCode("COM_EMAIL_UNSUBSCRIPTION");
+				
+				if(unsubscriptionBe != null) {
+				
+					/* get the template code unsubscription attribute */
+					String templateUnsubscribeAttribute = templateCode + "_UNSUBSCRIBE";
+					String unsubscriptionListForTemplateCode = unsubscriptionBe.getValue(templateUnsubscribeAttribute, null);
+					rules.println("unsubscription List For TemplateCode ::"+unsubscriptionListForTemplateCode);
 					
-					/* check if the unsubscription list already contains the userCode */
-					Boolean isUnsubscriptionAlreadyContainsUser = VertxUtils.checkIfAttributeValueContainsString(unsubscriptionBe, templateUnsubscribeAttribute, userBe.getCode());
-					
-					/* if list does not contain the user, then add it */
-					if(!isUnsubscriptionAlreadyContainsUser) {
+					if(unsubscriptionListForTemplateCode != null) {
 						
-						List<String> unsubscriptionList = new ArrayList<String>();
-						/* if the list has multiple items, it will be delimited with comma */
-						if(unsubscriptionListForTemplateCode.contains(",")) {
-							/* string array is converted to list with Array.asList, the list will have a fixed size. Hence another list is created with exisiting items and the user to be unsubscribed */
-							String [] items = unsubscriptionListForTemplateCode.split(",");
-							unsubscriptionList.addAll(Arrays.asList(items)); 
-							unsubscriptionList.add(userBe.getCode());
-						} else {
-							unsubscriptionList.add(unsubscriptionListForTemplateCode);
-							unsubscriptionList.add(userBe.getCode());
-						}
-								
-						/* save answer */
-						String finalList = StringUtils.join(unsubscriptionList, ',');
-						rules.println("final list ::"+finalList);
+						/* check if the unsubscription list already contains the userCode */
+						Boolean isUnsubscriptionAlreadyContainsUser = VertxUtils.checkIfAttributeValueContainsString(unsubscriptionBe, templateUnsubscribeAttribute, userBe.getCode());
 						
-						Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, finalList);
+						/* if list does not contain the user, then add it */
+						if(!isUnsubscriptionAlreadyContainsUser) {
+							
+							List<String> unsubscriptionList = new ArrayList<String>();
+							/* if the list has multiple items, it will be delimited with comma */
+							if(unsubscriptionListForTemplateCode.contains(",")) {
+								/* string array is converted to list with Array.asList, the list will have a fixed size. Hence another list is created with exisiting items and the user to be unsubscribed */
+								String [] items = unsubscriptionListForTemplateCode.split(",");
+								unsubscriptionList.addAll(Arrays.asList(items)); 
+								unsubscriptionList.add(userBe.getCode());
+							} else {
+								unsubscriptionList.add(unsubscriptionListForTemplateCode);
+								unsubscriptionList.add(userBe.getCode());
+							}
+									
+							/* save answer */
+							String finalList = StringUtils.join(unsubscriptionList, ',');
+							rules.println("final list ::"+finalList);
+							
+							Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, finalList);
+							rules.baseEntity.saveAnswer(answer);
+						} 
+						
+					} else {
+						Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, userBe.getCode());
 						rules.baseEntity.saveAnswer(answer);
-					} 
-					
-				} else {
-					Answer answer = new Answer(userBe.getCode(), unsubscriptionBe.getCode(), templateUnsubscribeAttribute, userBe.getCode());
-					rules.baseEntity.saveAnswer(answer);
-				}
-			}	
+					}
+				}	
+			} else {
+				rules.println("user doesnt want to unsubscribe");
+			}
+		
+			
 	     	
 			rules.footer();
 	end
