@@ -258,7 +258,7 @@ public class EBCHandlers {
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			// calculate service token for this ...
-			System.out.println("Realm:"+ruleGroup+" -> token="+token);
+			System.out.println("Realm:"+ruleGroup+" -> generated service token="+token);
 			keyvalue.put("token", token);
 
 		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }

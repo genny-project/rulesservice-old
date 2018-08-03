@@ -187,7 +187,7 @@ public class RulesLoader {
 		String[] inputFileStrArray = inputFileStrs.split(";"); // allow multiple rules dirs
 
 		for (String inputFileStr : inputFileStrArray) {
-			log.info("InputFileStr=" + inputFileStr);
+			//log.info("InputFileStr=" + inputFileStr);
 			File file = new File(inputFileStr);
 			String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
 			String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
@@ -220,7 +220,7 @@ public class RulesLoader {
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-						System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + inputFileStr);
+						log.info("("+realm+") Loading in Rule:" + rule._1 + " of " + inputFileStr);
 						rules.add(rule);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																											// that
