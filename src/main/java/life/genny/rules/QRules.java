@@ -343,6 +343,10 @@ public class QRules {
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
 	}
+	
+	public SearchEntity getAsSearchEntity(final String key) {
+		return (SearchEntity) get(key);
+	}
 
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
@@ -574,13 +578,6 @@ public class QRules {
 		publishData(msg, recipientCodes);
 	}
 
-	public void publishBaseEntityByCode(List<BaseEntity> baseEntities, final String parentCode, final String linkCode) {
-
-		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(baseEntities.toArray(new BaseEntity[0]), parentCode, linkCode);
-		String[] recipientCodes = { this.getUser().getCode() } ;
-		msg.setRecipientCodeArray(recipientCodes);
-		publishData(msg, recipientCodes);
-	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -1729,7 +1726,7 @@ public class QRules {
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", userCode));
-					this.baseEntity.saveAnswers(answers);
+					this.baseEntity.saveAnswers(answers); 
 					/* Add current date-time to char as */
 					this.baseEntity.saveAnswer(
 							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
@@ -5613,7 +5610,7 @@ public class QRules {
 
 	/* Fetch the one time use Payments card and bank tokens for a user */
 	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
-		String token = null;
+		String token = null; 
 
 		try {
 			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
