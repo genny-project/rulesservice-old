@@ -351,6 +351,10 @@ public class QRules {
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
 	}
+	
+	public SearchEntity getAsSearchEntity(final String key) {
+		return (SearchEntity) get(key);
+	}
 
 	public SearchEntity getAsSearchEntity(final String key) {
 		return (SearchEntity) get(key);
