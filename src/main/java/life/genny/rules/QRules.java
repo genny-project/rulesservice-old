@@ -356,10 +356,6 @@ public class QRules {
 		return (SearchEntity) get(key);
 	}
 
-	public SearchEntity getAsSearchEntity(final String key) {
-		return (SearchEntity) get(key);
-	}
-
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
 	}
@@ -585,14 +581,6 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		
-		String[] recipientCodes = { this.getUser().getCode() } ;
-		msg.setRecipientCodeArray(recipientCodes);
-		publishData(msg, recipientCodes);
-	}
-
-	public void publishBaseEntityByCode(List<BaseEntity> baseEntities, final String parentCode, final String linkCode) {
-
-		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(baseEntities.toArray(new BaseEntity[0]), parentCode, linkCode);
 		String[] recipientCodes = { this.getUser().getCode() } ;
 		msg.setRecipientCodeArray(recipientCodes);
 		publishData(msg, recipientCodes);

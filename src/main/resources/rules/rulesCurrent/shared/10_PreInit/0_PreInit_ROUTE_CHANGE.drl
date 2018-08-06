@@ -22,8 +22,8 @@ rule "Pre Init Route Change"
         }
         
         if(selectedItem != null) {
-            rules.setState(selectedItem);
             rules.set("selectedItem", selectedItem);
+            rules.setState(selectedItem);
         }
 
         rules.setState("STARTED");
