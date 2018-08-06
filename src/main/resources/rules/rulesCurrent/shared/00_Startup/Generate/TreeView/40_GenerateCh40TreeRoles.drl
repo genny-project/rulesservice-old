@@ -24,6 +24,7 @@ rule "Generate ch40 Tree Roles"
 		List<Answer> attributesAnsRoot = new ArrayList<>();
 		attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_DRAFTS", "PRI_IS_BUYER"));
 		attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BIN", "PRI_IS_BUYER"));
+		//attributesAnsRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_ADMIN", "PRI_IS_ADMIN"));
 		rules.baseEntity.saveAnswers(attributesAnsRoot);
 
 		/* Roles related to TreeView item Reports */

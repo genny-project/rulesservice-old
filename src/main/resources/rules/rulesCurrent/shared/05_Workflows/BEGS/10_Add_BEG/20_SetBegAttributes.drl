@@ -17,7 +17,9 @@ rule "Add BEG - Step 2"
 			/* we add an attribute "PRI_AUTHOR" that contains the current user code */
 			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_AUTHOR", rules.getUser().getCode());
 			/* we add an attribute "PRI_CODE" that contains the current user code */
-			rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_COMPANY_CODE", rules.getUserCompany().getCode());
+			if(rules.getUserCompany() != null){
+				rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), beg.getCode(), "PRI_COMPANY_CODE", rules.getUserCompany().getCode());
+			}
 			rules.set("begBe", beg);
 			rules.setState("CHECK_PRJ_HAS_PRODUCT_TEMPLATE");
 		}
@@ -26,6 +28,7 @@ rule "Add BEG - Step 2"
 			rules.setState("FAILED_SET_AUTHOR");
 		}
 
+		rules.setState("LINK_GRP_DRAFTS_AND_BEG");
 
 	 	rules.footer();      
 end

@@ -23,8 +23,8 @@ rule "Add BEG - Step 3.1"
 			rules.set("bePrefix", productCode);
 			rules.set("beName", productCode);
 
-			rules.setState("CREATE_BASE_ENTITY");	
-			rules.setState("LINK_GRP_DRAFTS_TO_BEG");	
+			rules.setState("CREATE_BASE_ENTITY");
+			rules.setState("LINK_BEG_AND_PRODUCT");	
 		}
 		else {
 			

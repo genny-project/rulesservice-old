@@ -561,6 +561,26 @@ public class QRules {
 		recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, recipientArray, delete);
 	}
+	
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
+
+	public void publishBaseEntityByCode(List<BaseEntity> baseEntities, final String parentCode, final String linkCode) {
+
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(baseEntities.toArray(new BaseEntity[0]), parentCode, linkCode);
+		String[] recipientCodes = { this.getUser().getCode() } ;
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
 
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
@@ -3184,10 +3204,11 @@ public class QRules {
 		String sourceCode = getAsString("sourceCode");
 		String loadCategoryCode = getAsString("value");
 		String attributeCode = getAsString("attributeCode");
+		
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
-		println("The load type code is   ::  " + loadCategoryCode);
+		println("The product type code is   ::  " + loadCategoryCode);
 
 		if (targetCode != null && sourceCode != null && loadCategoryCode != null && attributeCode != null) {
 
@@ -3412,7 +3433,7 @@ public class QRules {
 						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						/* sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL"); */
 
 					}
 				}
@@ -3420,7 +3441,7 @@ public class QRules {
 
 		}
 
-		this.reloadCache();
+		//this.reloadCache();
 		this.redirectToHomePage();
 		drools.setFocus("ispayments"); /* NOW Set up Payments */
 	}
@@ -5369,6 +5390,7 @@ public class QRules {
 	 */
 	public void publishViewCmdMessage(final String viewType, final String rootCode) {
 		QCmdMessage cmdViewMessage = new QCmdMessage("CMD_VIEW", viewType);
+		cmdViewMessage.setToken(getToken());
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
 		publish("cmds",cmdViewMessageJson);

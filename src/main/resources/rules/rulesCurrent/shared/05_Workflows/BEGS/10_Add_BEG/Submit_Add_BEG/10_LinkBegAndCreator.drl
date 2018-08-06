@@ -23,7 +23,11 @@ rule "Submit Add BEG - Step 1"
 		rules.set("linkValue", "CREATOR");
 		rules.set("linkWeight", 1.0);
 		rules.setState("CREATE_LINK");
-
-		rules.setState("LINK_BEG_AND_COMPANY");
+		if(rules.getUserCompany() != null){
+			rules.setState("LINK_BEG_AND_COMPANY");
+		}else{
+			rules.setState("MOVE_BEG_TO_GRP_NEW_ITEMS");
+		}
+		
 	 	rules.footer();      
 end
