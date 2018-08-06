@@ -431,6 +431,9 @@ public class QRules {
 
 		BaseEntity be = null;
 		String username = (String) getDecodedTokenMap().get("preferred_username");
+		if ("service".equalsIgnoreCase(username)) {
+			println("***** SERVICE USER *********** - getUser()");
+		}
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		try {
 			be = this.baseEntity.getBaseEntityByCode(code);
@@ -4364,7 +4367,8 @@ public class QRules {
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
-
+		
+		println("*********** setting new ("+serviceDecodedTokenMap.get("azp")+") token username -> "+serviceDecodedTokenMap.get("preferred_username"));
 		/* we reinit utils */
 		this.initUtils();
 	}
@@ -4701,7 +4705,8 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		// Check if already exists
-		BaseEntity existing = this.baseEntity.getBaseEntityByCode("PER_SERVICE");
+		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE","PER_SERVICE"); // do not check cache!
+
 		if (existing == null) {
 
 			try {
