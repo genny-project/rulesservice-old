@@ -1754,7 +1754,7 @@ public class QRules {
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", userCode));
-					this.baseEntity.saveAnswers(answers);
+					this.baseEntity.saveAnswers(answers); 
 					/* Add current date-time to char as */
 					this.baseEntity.saveAnswer(
 							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
@@ -5650,7 +5650,7 @@ public class QRules {
 
 	/* Fetch the one time use Payments card and bank tokens for a user */
 	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
-		String token = null;
+		String token = null; 
 
 		try {
 			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
