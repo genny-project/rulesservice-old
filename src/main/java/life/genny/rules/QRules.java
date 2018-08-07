@@ -250,10 +250,9 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		if(GennySettings.devMode) {
-			str = 	GennySettings.mainrealm;
-		 }
-
+		if (GennySettings.devMode||(GennySettings.defaultLocalIP.equals(GennySettings.hostIP))) {
+			str = GennySettings.mainrealm; // TODO, I don't like this, but...
+		}
 		return str.toLowerCase();
 	}
 
@@ -435,11 +434,11 @@ public class QRules {
 		} catch (Exception e) {
 
 		}
-		if ("service".equalsIgnoreCase(username)) {
-			println("***** SERVICE USER *********** - getUser()");
-		} else {
-			println("***** "+code+" USER *********** - getUser()");
-		}
+//		if ("service".equalsIgnoreCase(username)) {
+//			println("***** SERVICE USER *********** - getUser()");
+//		} else {
+//			println("***** "+code+" USER *********** - getUser()");
+//		}
 
 		return be;
 	}
@@ -4480,7 +4479,7 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
-
+			println("Tree data consists of "+bulk.getMessages().length+" messages");
 			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
@@ -4548,6 +4547,8 @@ public class QRules {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
+			println("Processed Tree data consists of "+newBulkMsg.getMessages().length+" messages");
+
 			this.publishCmd(newBulkMsg);
 
 		}
