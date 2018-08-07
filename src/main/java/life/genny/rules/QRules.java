@@ -4195,6 +4195,7 @@ public class QRules {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
+				
 		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
@@ -4452,6 +4453,7 @@ public class QRules {
 		List<BaseEntity> buckets2 = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0,
 				20, false);
 		bulkmsg.add(new QDataBaseEntityMessage(buckets2.toArray(new BaseEntity[0]), "GRP_DASHBOARD", "LNK_CORE"));
+		
 
 		// Save the GRP_APPLICATIONS buckets for future use
 		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
@@ -4589,6 +4591,7 @@ public class QRules {
 		cacheUtils.refresh(realm, "GRP_DASHBOARD");
 		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 		cacheUtils.refresh(realm, "GRP_BEGS");
+		cacheUtils.refresh(realm, "GRP_BUCKETS");
 	}
 
 	public void sendApplicationData() {
@@ -4614,6 +4617,7 @@ public class QRules {
 		this.sendCachedItem("GRP_APPLICATIONS", subscriptions);
 		this.sendCachedItem("GRP_DASHBOARD", subscriptions);
 		this.sendCachedItem("GRP_BEGS", subscriptions);
+		this.sendCachedItem("GRP_BUCKETS", subscriptions);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
@@ -6028,7 +6032,7 @@ public class QRules {
 		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
 		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
-				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);
+				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);		
 
 		if (searchBE != null) {
 			/* Send search result */
@@ -6073,6 +6077,5 @@ public class QRules {
         publish("cmds", cmdViewJson);
         //publishCmd(cmdViewJson);
     }
-
  
 }
