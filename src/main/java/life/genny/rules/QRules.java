@@ -6062,7 +6062,26 @@ public class QRules {
 
         publish("cmds", cmdViewJson);
         //publishCmd(cmdViewJson);
-    }
+	}
+	
+	public void setLastView(LayoutViewData viewData) {
+		String sessionId = getAsString("session_state");
+		if (sessionId != null) {
+			this.println("sessionId" + sessionId);
+			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, viewData);
+		}
+	}
+
+	public LayoutViewData getLastView() {
+		String sessionId = getAsString("session_state");
+		this.println("sessionId" + sessionId);
+		if (sessionId != null) {
+			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", sessionId, LayoutViewData.class);
+			return viewData;
+		} else {
+			return null;
+		}
+	}
 
  
 }
