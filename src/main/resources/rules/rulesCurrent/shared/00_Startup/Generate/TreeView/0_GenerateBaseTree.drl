@@ -50,6 +50,11 @@ rule "Generate Base Tree"
 		List<BaseEntity> buckets3 = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_BEGS", "LNK_CORE", 0, 30, false);
 		bulkmsg.add(new QDataBaseEntityMessage(buckets3.toArray(new BaseEntity[0]),"GRP_BEGS", "LNK_CORE"));
 		rules.println("Generated Dashboard (Buckets) Base Tree for "+rules.realm()+" num items="+buckets3.size());
+		
+		/* For GRP_BUCKETS */
+		List<BaseEntity> buckets4 = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_BUCKETS", "LNK_CORE", 0, 30, false);
+		bulkmsg.add(new QDataBaseEntityMessage(buckets4.toArray(new BaseEntity[0]),"GRP_BUCKETS", "LNK_CORE"));
+		rules.println("Generated Dashboard (Buckets) Base Tree for "+rules.realm()+" num items="+buckets4.size());
 
 		// Save the GRP_APPLICATIONS buckets for future use
 		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_APPLICATIONS","LNK_CORE");
@@ -62,6 +67,10 @@ rule "Generate Base Tree"
 		// Save the GRP_BEGS buckets for future use
 		QDataBaseEntityMessage bucketMsg3 = new QDataBaseEntityMessage(buckets3.toArray(new BaseEntity[0]),"GRP_BEGS","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "GRP_BEGS", rules.realm(), bucketMsg3);
+		
+		// Save the GRP_BUCKETS buckets for future use
+		QDataBaseEntityMessage bucketMsg4 = new QDataBaseEntityMessage(buckets4.toArray(new BaseEntity[0]),"GRP_BUCKETS","LNK_CORE");
+		VertxUtils.putObject(rules.realm(), "GRP_BUCKETS", rules.realm(), bucketMsg4);
 
 		List<BaseEntity> archivedProducts = rules.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_HISTORY", "LNK_CORE", 0, 1000, false);
 		QDataBaseEntityMessage archivedProductsMessage = new QDataBaseEntityMessage(archivedProducts.toArray(new BaseEntity[0]), "GRP_HISTORY","LNK_CORE");
