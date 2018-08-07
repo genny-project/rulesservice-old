@@ -48,7 +48,6 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
-
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -116,14 +115,10 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
-//import life.genny.rules.Layout.LayoutUtils;
-import life.genny.utils.Layout.LayoutViewData;
-import life.genny.utils.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
-import life.genny.utils.Layout.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -131,6 +126,9 @@ import life.genny.utils.QDataJsonMessage;
 import life.genny.utils.QuestionUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
+import life.genny.utils.Layout.LayoutUtils;
+//import life.genny.rules.Layout.LayoutUtils;
+import life.genny.utils.Layout.LayoutViewData;
 
 public class QRules {
 
@@ -431,14 +429,16 @@ public class QRules {
 
 		BaseEntity be = null;
 		String username = (String) getDecodedTokenMap().get("preferred_username");
-		if ("service".equalsIgnoreCase(username)) {
-			println("***** SERVICE USER *********** - getUser()");
-		}
 		String code = "PER_" + QwandaUtils.getNormalisedUsername(username).toUpperCase();
 		try {
 			be = this.baseEntity.getBaseEntityByCode(code);
 		} catch (Exception e) {
 
+		}
+		if ("service".equalsIgnoreCase(username)) {
+			println("***** SERVICE USER *********** - getUser()");
+		} else {
+			println("***** "+code+" USER *********** - getUser()");
 		}
 
 		return be;
@@ -4175,9 +4175,13 @@ public class QRules {
 				serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		msg.setParentCode(parentCode);
-		msg.setToken(getToken());
-		publish("cmds",msg);
+		if (msg != null) {
+			msg.setParentCode(parentCode);
+			msg.setToken(getToken());
+			publish("cmds",msg);
+		} else {
+			println("Warning: no results from search "+searchBE.getCode());
+		}
 	}
 
 	/*
@@ -4368,14 +4372,14 @@ public class QRules {
 		this.setToken(token);
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
 		
-		println("*********** setting new ("+serviceDecodedTokenMap.get("azp")+") token username -> "+serviceDecodedTokenMap.get("preferred_username"));
+		println(RulesUtils.ANSI_YELLOW+"*********** setting new ("+serviceDecodedTokenMap.get("azp")+") token username -> "+serviceDecodedTokenMap.get("preferred_username")+RulesUtils.ANSI_RESET);
 		/* we reinit utils */
 		this.initUtils();
 	}
 
 	public boolean loadRealmData() {
 
-		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
+		println(RulesUtils.ANSI_BLUE+"PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm()+RulesUtils.ANSI_RESET);
 
 		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
 
@@ -4551,12 +4555,20 @@ public class QRules {
 
 	public void startupEvent(String caller) {
 
+		// Save the existing token 
+		String token = this.token;
+		Map<String,Object> decodedToken = this.decodedTokenMap;
+		
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
 			this.generateTree();
 			this.reloadCache();
 		}
+		
+		// restore the existing token
+		this.setToken(token);
+		this.setDecodedTokenMap(decodedToken);
 	}
 
 	public void reloadCache() {
