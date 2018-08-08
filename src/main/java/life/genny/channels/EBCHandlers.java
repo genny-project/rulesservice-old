@@ -48,7 +48,7 @@ public class EBCHandlers {
 	static Set<String> userRoles = null;
 	private static Map<String, User> usersSession = new HashMap<String, User>();
 
-	static String rulesDir = System.getenv("RULES_DIR");
+	
 
 
 	static String token;
@@ -104,11 +104,8 @@ public class EBCHandlers {
 					String ruleCode = ja.getJsonObject(0).getString("code");
 					// QDataRuleMessage ruleMsg = gson3.fromJson(json, QDataRuleMessage.class);
 					System.out.println("Incoming Rule :" + ruleText);
-					if (rulesDir == null) {
-						rulesDir = "rules";
-					}
 
-					String rulesGroup = rulesDir;
+					String rulesGroup = GennySettings.rulesDir;
 					List<Tuple3<String,String, String>> rules = new ArrayList<Tuple3<String,String, String>>();
 					rules.add(Tuple.of(ruleGroup,ruleCode, ruleText));
 
@@ -261,7 +258,7 @@ public class EBCHandlers {
 
 			Map<String, String> keyvalue = new HashMap<String, String>();
 			// calculate service token for this ...
-			System.out.println("Realm:"+ruleGroup+" -> token="+token);
+			System.out.println("Realm:"+ruleGroup+" -> generated service token="+token);
 			keyvalue.put("token", token);
 
 		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }

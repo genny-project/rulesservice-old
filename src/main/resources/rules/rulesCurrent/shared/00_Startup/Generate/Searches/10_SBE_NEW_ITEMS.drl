@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
+import life.genny.utils.BaseEntityUtils;
 
 rule "SBE_NEW_ITEMS"
     ruleflow-group 'GenerateSearches'
@@ -30,5 +31,10 @@ rule "SBE_NEW_ITEMS"
   	     .setPageSize(10000);
 
   		 VertxUtils.writeCachedJson(drools.getRule().getName(), JsonUtils.toJson(searchBE));
+  		 
+  		 searchBE.setRealm(rules.realm());
+  		 rules.baseEntity.saveSearchEntity(searchBE);
+  		 
+  		 
    		 rules.footer();
 end

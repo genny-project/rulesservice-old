@@ -71,6 +71,7 @@ rule "Generate Base Tree"
 		QBulkMessage bulk = new QBulkMessage(bulkmsg);
 
 		VertxUtils.putObject(rules.realm(), "BASE_TREE", rules.realm(), bulk);
+		rules.println("Saving tree in cache: "+rules.realm()+":BASE_TREE:"+rules.realm());
 
     rules.footer();
 
