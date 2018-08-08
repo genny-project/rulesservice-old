@@ -87,5 +87,6 @@ rule "Pre Init Btn Click"
 
         rules.setState("STARTED");
         rules.setState("EVENT_BTN_CLICK");
+        rules.setState("EVENT_BUTTON_CLICK");
 
 end
