@@ -4185,14 +4185,23 @@ public class QRules {
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		return getSearchResults(searchBE, serviceToken);
+		QDataBaseEntityMessage results =  getSearchResults(searchBE, serviceToken);
+		if (results == null) {
+			results = new QDataBaseEntityMessage(new ArrayList<BaseEntity>());
+			
+		}
+		return results;
 	}
 
 	/*
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
-		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
+		if (token==null) {
+			log.error("TOKEN IS NULL!!! in getSearchResults");
+			return new QDataBaseEntityMessage(new ArrayList<BaseEntity>()); 
+		}
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE) );
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				token);
