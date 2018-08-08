@@ -6010,11 +6010,11 @@ public class QRules {
 	}
 
 	public void linkNoteAndContext(BaseEntity note, BaseEntity context) {
-		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
+		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_MESSAGES", "CONTEXT", 1.0);
 	}
 
 	public void linkNoteAndContext(String noteCode, String contextCode) {
-		this.baseEntity.createLink(noteCode, contextCode, "LNK_NOTE", "CONTEXT", 1.0);
+		this.baseEntity.createLink(noteCode, contextCode, "LNK_MESSAGES", "CONTEXT", 1.0);
 	}
 
 	public void sendNotes(String contextCode) {
@@ -6030,7 +6030,12 @@ public class QRules {
 		if (searchBE != null) {
 			/* Send search result */
 			try {
-				this.sendSearchResults(searchBE, "GRP_NOTES");
+				//this.sendSearchResults(searchBE, "GRP_NOTES");
+				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
+				search.setLinkCode("LNK_MESSAGES");
+				search.setParentCode("GRP_NOTES");
+				this.publishCmd(search);
+
 			} catch (IOException e) {
 			}
 		}
