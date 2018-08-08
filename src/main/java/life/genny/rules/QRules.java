@@ -4617,7 +4617,7 @@ public class QRules {
 		this.setState("DATA_SENT_FINISHED");
 	}
 
-	/* send application data with subscriptions */
+	/* send application data with subscriptions and allowedBuckets */
 	public void sendApplicationData(HashMap<String, List<String>> subscriptions, HashMap<String, List<String>> bucketsToBeSent) {
 		
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
