@@ -4587,8 +4587,8 @@ public class QRules {
 
 		cacheUtils.refresh(realm, "GRP_APPLICATIONS");
 		cacheUtils.refresh(realm, "GRP_DASHBOARD");
-		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 		cacheUtils.refresh(realm, "GRP_BEGS");
+		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
 
 	public void sendApplicationData() {
