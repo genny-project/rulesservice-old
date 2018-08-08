@@ -6078,9 +6078,8 @@ public class QRules {
 		if (sessionId != null) {
 			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", sessionId, LayoutViewData.class);
 			return viewData;
-		} else {
-			return null;
 		}
+		return null;
 	}
 
  
