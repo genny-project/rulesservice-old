@@ -35,17 +35,13 @@ import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channels.EBCHandlers;
 import life.genny.cluster.CurrentVtxCtx;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.KeycloakUtils;
 
 public class RulesLoader {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	final static String qwandaApiUrl = System.getenv("REACT_APP_QWANDA_API_URL");
-	final static String vertxUrl = System.getenv("REACT_APP_VERTX_URL");
-	final static String hostIp = System.getenv("HOSTIP");
-	final static String mainrealm = System.getenv("PROJECT_REALM");
-	public static final Boolean devMode = System.getenv("GENNYDEV") == null ? false : true;
 
 	private static Map<String, KieBase> kieBaseCache = null;
 	static {
@@ -191,7 +187,7 @@ public class RulesLoader {
 		String[] inputFileStrArray = inputFileStrs.split(";"); // allow multiple rules dirs
 
 		for (String inputFileStr : inputFileStrArray) {
-			log.info("InputFileStr=" + inputFileStr);
+			//log.info("InputFileStr=" + inputFileStr);
 			File file = new File(inputFileStr);
 			String fileName = inputFileStr.replaceFirst(".*/(\\w+).*", "$1");
 			String fileNameExt = inputFileStr.replaceFirst(".*/\\w+\\.(.*)", "$1");
@@ -224,7 +220,7 @@ public class RulesLoader {
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
-						System.out.println("("+realm+") Loading in Rule:" + rule._1 + " of " + inputFileStr);
+						log.info("("+realm+") Loading in Rule:" + rule._1 + " of " + inputFileStr);
 						rules.add(rule);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("bpmn"))) { // ignore files
 																											// that
@@ -474,7 +470,7 @@ public class RulesLoader {
 		globals.add(Tuple.of("LOG_CYAN", CYAN));
 		globals.add(Tuple.of("LOG_WHITE", WHITE));
 		globals.add(Tuple.of("LOG_BOLD", BOLD));
-		globals.add(Tuple.of("REACT_APP_QWANDA_API_URL", qwandaApiUrl));
+		globals.add(Tuple.of("REACT_APP_QWANDA_API_URL", GennySettings.qwandaServiceUrl));
 		// globals.add(Tuple.of("REACT_APP_VERTX_URL", vertxUrl));
 		// globals.add(Tuple.of("KEYCLOAKIP", hostIp));
 		return globals;
