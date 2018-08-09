@@ -4587,34 +4587,19 @@ public class QRules {
 		cacheUtils.refresh(realm, "GRP_BEGS");
 		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
-
+	
 	public void sendApplicationData() {
-
-		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
-		Boolean isRegistration = isState("DID_REGISTER");
-		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
-
-		/* no need to send data again if the user is not logging in or registering */
-		if (!isLogin && !isRegistration && !isProductTypeTagUpdated) {
-			this.setState("DATA_SENT_FINISHED");
-			return;
-		}
-
-		log.info("Entering new send application data ");
-
-		showLoading("Loading data...");
 
 		HashMap<String, List<String>> subscriptions = new HashMap<>();
 		List<String> bucketsForSeller = new ArrayList<>();
 		bucketsForSeller.add("GRP_NEW_ITEMS");
 		subscriptions.put("PRI_IS_SELLER", bucketsForSeller);
-
-		this.sendCachedItem("GRP_APPLICATIONS", subscriptions);
-		this.sendCachedItem("GRP_DASHBOARD", subscriptions);
-		this.sendCachedItem("GRP_BEGS", subscriptions);
-
-		/* end of process, tell rules to show layouts */
-		this.setState("DATA_SENT_FINISHED");
+		
+		this.sendApplicationData(subscriptions, new HashMap<>());
+	}
+		
+	public void sendApplicationData(HashMap<String, List<String>> subscriptions) {
+		this.sendApplicationData(subscriptions, new HashMap<>());
 	}
 
 	/* send application data with subscriptions and allowedBuckets */
