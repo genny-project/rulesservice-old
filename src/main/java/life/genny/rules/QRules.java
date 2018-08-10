@@ -2966,6 +2966,11 @@ public class QRules {
 	}
 
 
+	/* sets delete field to true so that FE removes the BE from their store || defaults the level to 1 */
+	public void clearBaseEntityAndChildren(String baseEntityCode) {
+		this.clearBaseEntityAndChildren(baseEntityCode, 1);
+	}
+
 	/* sets delete field to true so that FE removes the BE from their store */
 	public void clearBaseEntityAndChildren(String baseEntityCode, Object level) {
 
