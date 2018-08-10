@@ -48,7 +48,6 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
-
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
@@ -116,14 +115,10 @@ import life.genny.qwandautils.KeycloakUtils;
 import life.genny.qwandautils.MessageUtils;
 import life.genny.qwandautils.QwandaMessage;
 import life.genny.qwandautils.QwandaUtils;
-//import life.genny.rules.Layout.LayoutUtils;
-import life.genny.utils.Layout.LayoutViewData;
-import life.genny.utils.Layout.ViewType;
 import life.genny.security.SecureResources;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.CacheUtils;
 import life.genny.utils.DateUtils;
-import life.genny.utils.Layout.LayoutUtils;
 import life.genny.utils.MoneyHelper;
 import life.genny.utils.PaymentEndpoint;
 import life.genny.utils.PaymentUtils;
@@ -131,6 +126,9 @@ import life.genny.utils.QDataJsonMessage;
 import life.genny.utils.QuestionUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
+import life.genny.utils.Layout.LayoutUtils;
+//import life.genny.rules.Layout.LayoutUtils;
+import life.genny.utils.Layout.LayoutViewData;
 
 public class QRules {
 
@@ -252,10 +250,9 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		if(GennySettings.devMode) {
-			str = 	GennySettings.mainrealm;
-		 }
-
+		if (GennySettings.devMode||(GennySettings.defaultLocalIP.equals(GennySettings.hostIP))) {
+			str = GennySettings.mainrealm; // TODO, I don't like this, but...
+		}
 		return str.toLowerCase();
 	}
 
@@ -449,6 +446,11 @@ public class QRules {
 		} catch (Exception e) {
 
 		}
+//		if ("service".equalsIgnoreCase(username)) {
+//			println("***** SERVICE USER *********** - getUser()");
+//		} else {
+//			println("***** "+code+" USER *********** - getUser()");
+//		}
 
 		return be;
 	}
@@ -712,8 +714,8 @@ public class QRules {
 		/* we get the list of products marked as "PAID" */
 
 		/* we generate a service token */
-		String proj_realm = System.getenv("PROJECT_REALM");
-		String token = RulesUtils.generateServiceToken(proj_realm);
+
+		String token = RulesUtils.generateServiceToken(realm());
 		if (token != null) {
 
 			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
@@ -848,19 +850,13 @@ public class QRules {
 			firstname = StringUtils.capitalize(firstname);
 			lastname = StringUtils.capitalize(lastname);
 			name = StringUtils.capitalize(name);
-			String realm = null;
 
-			/*
-			 * if you are running in dev mode on your local machine, the only available
-			 * realm is genny
-			 */
-			if (System.getenv("GENNY_DEV") != null && System.getenv("GENNY_DEV").equals("TRUE")) {
+			String token = RulesUtils.generateServiceToken(realm());
+			
+			String realm = realm();
+			if (GennySettings.devMode) {
 				realm = "genny";
-			} else {
-				realm = this.realm();
 			}
-
-			String token = RulesUtils.generateServiceToken(realm);
 
 			/* if the keycloak id, we need to create a keycloak account for this user */
 			if (keycloakId == null) {
@@ -869,7 +865,7 @@ public class QRules {
 
 			/* we create the user in the system */
 			be = QwandaUtils.createUser(getQwandaServiceUrl(), getToken(), username, firstname, lastname, email,
-					this.realm(), name, keycloakId);
+					realm, name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			// be = getUser();
 			set("USER", be);
@@ -4203,9 +4199,13 @@ public class QRules {
 				serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		msg.setParentCode(parentCode);
-		msg.setToken(getToken());
-		publish("cmds",msg);
+		if (msg != null) {
+			msg.setParentCode(parentCode);
+			msg.setToken(getToken());
+			publish("cmds",msg);
+		} else {
+			println("Warning: no results from search "+searchBE.getCode());
+		}
 	}
 
 	/*
@@ -4213,7 +4213,12 @@ public class QRules {
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		return getSearchResults(searchBE, serviceToken);
+		QDataBaseEntityMessage results =  getSearchResults(searchBE, serviceToken);
+		if (results == null) {
+			results = new QDataBaseEntityMessage(new ArrayList<BaseEntity>());
+			
+		}
+		return results;
 	}
 
 	/*
@@ -4232,7 +4237,11 @@ public class QRules {
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
-		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
+		if (token==null) {
+			log.error("TOKEN IS NULL!!! in getSearchResults");
+			return new QDataBaseEntityMessage(new ArrayList<BaseEntity>()); 
+		}
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE) );
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
 				token);
@@ -4407,44 +4416,43 @@ public class QRules {
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
-
+		
+		println(RulesUtils.ANSI_YELLOW+"*********** setting new ("+serviceDecodedTokenMap.get("azp")+") token username -> "+serviceDecodedTokenMap.get("preferred_username")+RulesUtils.ANSI_RESET);
 		/* we reinit utils */
 		this.initUtils();
 	}
 
 	public boolean loadRealmData() {
 
-		println("PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm());
+		println(RulesUtils.ANSI_BLUE+"PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm()+RulesUtils.ANSI_RESET);
 
 		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
 
 			String keycloakJson = SecureResources.getKeycloakJsonMap().get(jsonFile);
 			if (keycloakJson == null) {
 				log.info("No keycloakMap for " + realm());
-				return false;
+				if (GennySettings.devMode) {
+					System.out.println("Fudging realm so genny keycloak used");
+					// Use basic Genny json when project json not available
+					String gennyJson = SecureResources.getKeycloakJsonMap().get("genny.json");
+					SecureResources.getKeycloakJsonMap().put(jsonFile,gennyJson);
+					keycloakJson = gennyJson;
+				} else {
+					return false;
+				}
 			}
 
 			JsonObject realmJson = new JsonObject(keycloakJson);
-			JsonObject secretJson = realmJson.getJsonObject("credentials");
-			String secret = secretJson.getString("secret");
 			String realm = realmJson.getString("realm");
 
 			if (realm != null) {
 
-				String token = RulesUtils.generateServiceToken(realm);
+				String token = RulesUtils.generateServiceToken(GennySettings.dynamicRealm(realm()));
 				this.println(token);
 				if (token != null) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
-
-					String dev = System.getenv("GENNYDEV");
-					String proj_realm = System.getenv("PROJECT_REALM");
-					if ((dev != null) && ("TRUE".equalsIgnoreCase(dev))) {
-						this.set("realm", proj_realm);
-					} else {
-						this.set("realm", realm);
-					}
-
+						this.set("realm", GennySettings.dynamicRealm(realm()));
 					return true;
 				}
 			}
@@ -4517,7 +4525,7 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
-
+			println("Tree data consists of "+bulk.getMessages().length+" messages");
 			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
@@ -4585,6 +4593,8 @@ public class QRules {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
+			println("Processed Tree data consists of "+newBulkMsg.getMessages().length+" messages");
+
 			this.publishCmd(newBulkMsg);
 
 		}
@@ -4592,12 +4602,20 @@ public class QRules {
 
 	public void startupEvent(String caller) {
 
+		// Save the existing token 
+		String token = this.token;
+		Map<String,Object> decodedToken = this.decodedTokenMap;
+		
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
 			this.generateTree();
 			this.reloadCache();
 		}
+		
+		// restore the existing token
+		this.setToken(token);
+		this.setDecodedTokenMap(decodedToken);
 	}
 
 	public void reloadCache() {
@@ -4615,12 +4633,27 @@ public class QRules {
 
 		cacheUtils.refresh(realm, "GRP_APPLICATIONS");
 		cacheUtils.refresh(realm, "GRP_DASHBOARD");
-		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 		cacheUtils.refresh(realm, "GRP_BEGS");
+		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
-
+	
 	public void sendApplicationData() {
 
+		HashMap<String, List<String>> subscriptions = new HashMap<>();
+		List<String> bucketsForSeller = new ArrayList<>();
+		bucketsForSeller.add("GRP_NEW_ITEMS");
+		subscriptions.put("PRI_IS_SELLER", bucketsForSeller);
+		
+		this.sendApplicationData(subscriptions, new HashMap<>());
+	}
+		
+	public void sendApplicationData(HashMap<String, List<String>> subscriptions) {
+		this.sendApplicationData(subscriptions, new HashMap<>());
+	}
+
+	/* send application data with subscriptions and allowedBuckets */
+	public void sendApplicationData(HashMap<String, List<String>> subscriptions, HashMap<String, List<String>> bucketsToBeSent) {
+		
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
 		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
@@ -4634,29 +4667,30 @@ public class QRules {
 		log.info("Entering new send application data ");
 
 		showLoading("Loading data...");
-
-		/* we set all the buckets we would like user to subscribe to */
-		HashMap<String, String> subscriptions = new HashMap<String, String>();
-		subscriptions.put("PRI_IS_SELLER", "GRP_NEW_ITEMS");
-
-		this.sendCachedItem("GRP_APPLICATIONS", subscriptions);
-		this.sendCachedItem("GRP_DASHBOARD", subscriptions);
-		this.sendCachedItem("GRP_BEGS", subscriptions);
+		
+		this.sendCachedItem("GRP_APPLICATIONS", subscriptions, bucketsToBeSent);
+		this.sendCachedItem("GRP_DASHBOARD", subscriptions, bucketsToBeSent);
+		this.sendCachedItem("GRP_BEGS", subscriptions, bucketsToBeSent);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
+		
+	}
+	
+	public void sendCachedItem(String string, HashMap<String, List<String>> subscriptions) {
+		this.sendCachedItem(string, subscriptions, null);
 	}
 
 	public void sendCachedItem(final String cachedItemKey) {
-		this.sendCachedItem(cachedItemKey, null);
+		this.sendCachedItem(cachedItemKey, null, null);
 	}
 
-	public void sendCachedItem(final String cachedItemKey, final HashMap<String, String> subscriptions) {
+	public void sendCachedItem(final String cachedItemKey, final HashMap<String, List<String>> subscriptions, HashMap<String, List<String>> bucketsToBeSent) {
 
 		long startTime = System.nanoTime();
 		BaseEntity user = this.getUser();
 		QBulkMessage items = this.cacheUtils.fetchAndSubscribeCachedItemsForStakeholder(realm(), cachedItemKey, user,
-				subscriptions);
+				subscriptions, bucketsToBeSent);
 		if (items != null) {
 
 			log.info("Number of items found in " + cachedItemKey + ": " + items.getMessages().length);
@@ -4746,7 +4780,8 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		// Check if already exists
-		BaseEntity existing = this.baseEntity.getBaseEntityByCode("PER_SERVICE");
+		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE","PER_SERVICE"); // do not check cache!
+
 		if (existing == null) {
 
 			try {
@@ -6040,11 +6075,11 @@ public class QRules {
 	}
 
 	public void linkNoteAndContext(BaseEntity note, BaseEntity context) {
-		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_NOTE", "CONTEXT", 1.0);
+		this.baseEntity.createLink(note.getCode(), context.getCode(), "LNK_MESSAGES", "CONTEXT", 1.0);
 	}
 
 	public void linkNoteAndContext(String noteCode, String contextCode) {
-		this.baseEntity.createLink(noteCode, contextCode, "LNK_NOTE", "CONTEXT", 1.0);
+		this.baseEntity.createLink(noteCode, contextCode, "LNK_MESSAGES", "CONTEXT", 1.0);
 	}
 
 	public void sendNotes(String contextCode) {
@@ -6060,7 +6095,12 @@ public class QRules {
 		if (searchBE != null) {
 			/* Send search result */
 			try {
-				this.sendSearchResults(searchBE, "GRP_NOTES");
+				//this.sendSearchResults(searchBE, "GRP_NOTES");
+				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
+				search.setLinkCode("LNK_MESSAGES");
+				search.setParentCode("GRP_NOTES");
+				this.publishCmd(search);
+
 			} catch (IOException e) {
 			}
 		}
@@ -6099,7 +6139,25 @@ public class QRules {
 
         publish("cmds", cmdViewJson);
         //publishCmd(cmdViewJson);
-    }
+	}
+	
+	public void setLastView(LayoutViewData viewData) {
+		String sessionId = getAsString("session_state");
+		if (sessionId != null) {
+			this.println("sessionId" + sessionId);
+			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, viewData);
+		}
+	}
+
+	public LayoutViewData getLastView() {
+		String sessionId = getAsString("session_state");
+		this.println("sessionId" + sessionId);
+		if (sessionId != null) {
+			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", sessionId, LayoutViewData.class);
+			return viewData;
+		}
+		return null;
+	}
 
  
 }

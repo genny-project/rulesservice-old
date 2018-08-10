@@ -10,6 +10,6 @@
 			<AppenderRef ref="CONSOLE" />
 		</Root>
 		<logger name="life.genny" level="TRACE" />
-
+		<logger name="io.vertx.core.impl.BlockedThreadChecker" level="OFF" />
 	</Loggers>
 </Configuration>

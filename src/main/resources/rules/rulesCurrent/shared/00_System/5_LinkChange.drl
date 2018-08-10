@@ -43,7 +43,6 @@ ruleflow-group 'LinkChange'
     			}
 
     			rules.cacheUtils.moveBaseEntity(link.getTargetCode(), sourceCode, targetCode);
-    			
     		}
 
    	    rules.footer();
