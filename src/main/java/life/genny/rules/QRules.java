@@ -2987,6 +2987,7 @@ public class QRules {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
+		beMsg.setRecipientCodeArray(recipients);
 		publishData(beMsg, recipients);
 
 	}
