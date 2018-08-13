@@ -49,6 +49,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
@@ -165,7 +166,7 @@ public class QRules {
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
-		super();
+		super(); 
 		
 		this.eventBus = eventBus;
 		this.token = token;
@@ -1504,6 +1505,16 @@ public class QRules {
 		}
 
 		return false;
+	}
+
+	public Ask getQuestion(String sourceCode, String targetCode, String questionCode) {
+		
+		QDataAskMessage askMessage = QuestionUtils.getAsks(sourceCode, targetCode, questionCode, this.token);
+		if(askMessage != null && askMessage.getItems().length > 0) {
+			return askMessage.getItems()[0];
+		}
+		
+		return null;
 	}
 
 	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
