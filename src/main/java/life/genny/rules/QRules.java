@@ -2966,14 +2966,19 @@ public class QRules {
 	}
 
 
-	/* sets delete field to true so that FE removes the BE from their store */
+	/* sets delete field to true so that FE removes the BE from their store || defaults the level to 1 */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
+		this.clearBaseEntityAndChildren(baseEntityCode, 1);
+	}
+
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntityAndChildren(String baseEntityCode, Object level) {
 
 		String[] recipients = { this.getUser().getCode() };
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
-		beMsg.setShouldDeleteLinkedBaseEntities(true);
+		beMsg.setShouldDeleteLinkedBaseEntities(level);
 		publishData(beMsg, recipients);
 	}
 
@@ -2982,6 +2987,7 @@ public class QRules {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
+		beMsg.setRecipientCodeArray(recipients);
 		publishData(beMsg, recipients);
 
 	}
@@ -2994,9 +3000,7 @@ public class QRules {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
-		if (deleteAllChild) {
-			beMsg.setShouldDeleteLinkedBaseEntities(true);
-		}
+		beMsg.setShouldDeleteLinkedBaseEntities(deleteAllChild);
 		publishData(beMsg, recipients);
 
 	}
@@ -6046,7 +6050,7 @@ public class QRules {
 
 		String[] recipient = { getUser().getCode() };
 
-		this.clearBaseEntityAndChildren("GRP_NOTES");
+		this.clearBaseEntityAndChildren("GRP_NOTES" , 1);
 		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
 		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
@@ -6105,7 +6109,7 @@ public class QRules {
 		String sessionId = getAsString("session_state");
 		if (sessionId != null) {
 			this.println("sessionId" + sessionId);
-			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, viewData);
+			VertxUtils.putObject(realm(), "PreviousLayout", "key", viewData);
 		}
 	}
 
@@ -6113,7 +6117,7 @@ public class QRules {
 		String sessionId = getAsString("session_state");
 		this.println("sessionId" + sessionId);
 		if (sessionId != null) {
-			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", sessionId, LayoutViewData.class);
+			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", "key", LayoutViewData.class);
 			return viewData;
 		}
 		return null;
