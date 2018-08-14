@@ -10,8 +10,10 @@ rule "Submit Add BEG - Step 4"
 	 then
 	 	rules.header();
         rules.setState("LOOP_SUBMIT_ADD_BEG_STEP4");
+        
+        rules.setState("RELOAD_CACHE_BEG");
 
-		rules.setState("EXIT_ADD_BEG_SUCCESS");
+		//rules.setState("EXIT_ADD_BEG_SUCCESS");
 		
 	 	rules.footer();      
 end
