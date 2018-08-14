@@ -19,6 +19,7 @@ rule "Pre Init Route Change"
         
         if(route != null) {
           rules.setState(route);
+          rules.set("routeValue", route);
         }
         
         if(selectedItem != null) {
