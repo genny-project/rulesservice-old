@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -828,7 +829,13 @@ public class QRules {
 
 			/* send notification for new registration */
 			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+			
+			/* default slack channel */
 			this.sendSlackNotification(message);
+			
+			/* custom slack channel */
+			/* the first parameter is the attribute code of the custom slack notification channel */
+			this.sendSlackNotification("PRI_CUSTOM_SLACK_NOTIFICATION_URL", message);
 
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
@@ -3005,14 +3012,19 @@ public class QRules {
 	}
 
 
-	/* sets delete field to true so that FE removes the BE from their store */
+	/* sets delete field to true so that FE removes the BE from their store || defaults the level to 1 */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
+		this.clearBaseEntityAndChildren(baseEntityCode, 1);
+	}
+
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntityAndChildren(String baseEntityCode, Object level) {
 
 		String[] recipients = { this.getUser().getCode() };
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
-		beMsg.setShouldDeleteLinkedBaseEntities(true);
+		beMsg.setShouldDeleteLinkedBaseEntities(level);
 		publishData(beMsg, recipients);
 	}
 
@@ -3021,6 +3033,7 @@ public class QRules {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
+		beMsg.setRecipientCodeArray(recipients);
 		publishData(beMsg, recipients);
 
 	}
@@ -3033,9 +3046,7 @@ public class QRules {
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		QDataBaseEntityMessage beMsg = new QDataBaseEntityMessage(be);
 		beMsg.setDelete(true);
-		if (deleteAllChild) {
-			beMsg.setShouldDeleteLinkedBaseEntities(true);
-		}
+		beMsg.setShouldDeleteLinkedBaseEntities(deleteAllChild);
 		publishData(beMsg, recipients);
 
 	}
@@ -4210,6 +4221,7 @@ public class QRules {
 				serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
+		println("msg items size ::"+msg.getItems().length);
 		if (msg != null) {
 			msg.setParentCode(parentCode);
 			msg.setToken(getToken());
@@ -5048,15 +5060,18 @@ public class QRules {
 		}
 		return paymentsUserId;
 	}
-
-	/* To send critical slack message to slack channel */
-	public void sendSlackNotification(String message) {
-
+	
+	/**
+	 * 
+	 * @param attributeCode of the slack-notification-channel
+	 * @param message to be sent to the webhook
+	 */
+	public void sendSlackNotification(String attributeCode, String message) {
 		/* send critical slack notifications only for production mode */
 		log.info("dev mode ::" + GennySettings.devMode);
 		BaseEntity project = getProject();
 		if (project != null && !GennySettings.devMode) {
-			String webhookURL = project.getLoopValue("PRI_SLACK_NOTIFICATION_URL", null);
+			String webhookURL = project.getLoopValue(attributeCode, null);
 			if (webhookURL != null) {
 
 				JsonObject payload = new JsonObject();
@@ -5069,7 +5084,11 @@ public class QRules {
 				}
 			}
 		}
+	}
 
+	/* To send critical slack message to slack channel */
+	public void sendSlackNotification(String message) {
+		this.sendSlackNotification("PRI_SLACK_NOTIFICATION_URL", message);
 	}
 
 	// TODO Priority field needs to be made as enum : error,info, warning
@@ -6097,7 +6116,7 @@ public class QRules {
 
 		String[] recipient = { getUser().getCode() };
 
-		this.clearBaseEntityAndChildren("GRP_NOTES");
+		this.clearBaseEntityAndChildren("GRP_NOTES" , 1);
 		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
 		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
@@ -6156,7 +6175,7 @@ public class QRules {
 		String sessionId = getAsString("session_state");
 		if (sessionId != null) {
 			this.println("sessionId" + sessionId);
-			VertxUtils.putObject(realm(), "PreviousLayout", sessionId, viewData);
+			VertxUtils.putObject(realm(), "PreviousLayout", "key", viewData);
 		}
 	}
 
@@ -6164,11 +6183,10 @@ public class QRules {
 		String sessionId = getAsString("session_state");
 		this.println("sessionId" + sessionId);
 		if (sessionId != null) {
-			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", sessionId, LayoutViewData.class);
+			LayoutViewData viewData = VertxUtils.getObject(realm(), "PreviousLayout", "key", LayoutViewData.class);
 			return viewData;
 		}
 		return null;
 	}
-
  
 }
