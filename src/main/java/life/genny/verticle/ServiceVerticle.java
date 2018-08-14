@@ -1,6 +1,10 @@
 package life.genny.verticle;
 
 
+import java.lang.invoke.MethodHandles;
+
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
 import life.genny.channel.Routers;
@@ -12,30 +16,27 @@ import life.genny.rules.RulesLoader;
 import life.genny.security.SecureResources;
 
 public class ServiceVerticle extends AbstractVerticle {
+	
+	protected static final Logger log = org.apache.logging.log4j.LogManager
+			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-  static String rulesDir = System.getenv("RULES_DIR");
-
+	
 
   @Override
   public void start() {
+
     System.out.println("Loading initial Rules");
     final Future<Void> startFuture = Future.future();
     Cluster.joinCluster().compose(res -> {
       final Future<Void> fut = Future.future();
-      if (rulesDir == null) {
-        rulesDir = "rules";
-      }
-       RulesLoader.loadInitialRules(rulesDir).compose(p -> {
+       RulesLoader.loadInitialRules(GennySettings.rulesDir).compose(p -> {
   //      Routers.routers(vertx);
         
         // Load in realm data
         final Future<Void> rfut = Future.future();
         SecureResources.setKeycloakJsonMap().compose(r -> {
      	    final Future<Void> startupfut = Future.future();
-    	    if (rulesDir == null) {
-    	      rulesDir = "rules";
-    	    }
-    	     RulesLoader.triggerStartupRules(rulesDir).compose(q -> {
+    	     RulesLoader.triggerStartupRules(GennySettings.rulesDir).compose(q -> {
     	        startupfut.complete();
     	        
     	    }, startupfut);
