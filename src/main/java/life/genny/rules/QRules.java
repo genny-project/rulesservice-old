@@ -4176,6 +4176,22 @@ public class QRules {
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
 
+		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
+	}
+	
+	
+	/*
+	 * Publish Search BE results setting the parentCode, linkValue in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode) throws IOException {
+
+		this.sendSearchResults(searchBE, parentCode, linkCode, "LINK");
+	}
+	/*
+	 * Publish Search BE results setting the parentCode, linkCode, linkValue in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue) throws IOException {
+
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
 		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
@@ -4186,6 +4202,8 @@ public class QRules {
 		if (msg != null) {
 			msg.setParentCode(parentCode);
 			msg.setToken(getToken());
+			msg.setLinkCode(linkCode);
+			msg.setLinkValue(linkValue);
 			publish("cmds",msg);
 		} else {
 			println("Warning: no results from search "+searchBE.getCode());
