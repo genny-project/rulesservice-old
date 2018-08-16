@@ -50,6 +50,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Answer;
+import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.Layout;
 import life.genny.qwanda.Link;
@@ -166,7 +167,7 @@ public class QRules {
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
-		super();
+		super(); 
 		
 		this.eventBus = eventBus;
 		this.token = token;
@@ -322,6 +323,14 @@ public class QRules {
 
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
+	}
+	
+	public void setPermanentObject(String key, Object obj) {
+		VertxUtils.putObject(this.realm(), "CACHE", key, obj);
+	}
+	
+	public <T> T getPermanentObject(String key, Type clazz) {
+		return VertxUtils.getObject(this.realm(), "CACHE", key, clazz);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -581,7 +590,6 @@ public class QRules {
 		publishData(msg, recipientCodes);
 	}
 
-
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -606,7 +614,28 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
+	
+	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode) {
 
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		msg.setRecipientCodeArray(recipients);
+		publishData(msg, recipients);
+	}
+	
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		msg.setRecipientCodeArray(recipients);
+		publishData(msg, recipients);
+	}
+	
 	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -1485,6 +1514,16 @@ public class QRules {
 		return false;
 	}
 
+	public Ask getQuestion(String sourceCode, String targetCode, String questionCode) {
+		
+		QDataAskMessage askMessage = QuestionUtils.getAsks(sourceCode, targetCode, questionCode, this.token);
+		if(askMessage != null && askMessage.getItems().length > 0) {
+			return askMessage.getItems()[0];
+		}
+		
+		return null;
+	}
+
 	public QwandaMessage getQuestions(String sourceCode, String targetCode, String questionGroupCode) {
 		return this.getQuestions(sourceCode, targetCode, questionGroupCode, null);
 	}
@@ -1508,7 +1547,7 @@ public class QRules {
 			cmdFormView.setIsPopup(isPopup);
 			publishCmd(cmdFormView);
 
-			 this.navigateTo("/questions/" + questionGroupCode);
+			this.navigateTo("/questions/" + questionGroupCode);
 		}
 	}
 
@@ -4221,6 +4260,18 @@ public class QRules {
 			
 		}
 		return results;
+	}
+
+	/*
+	 * Get search Results returns List<BaseEntity>
+	 */
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
+		QDataBaseEntityMessage msg = getSearchResults(searchBE, getToken());
+		if(msg.getItems() != null) {
+			return Arrays.asList(msg.getItems());
+		}
+		
+		return new ArrayList<>(); 
 	}
 
 	/*
