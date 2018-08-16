@@ -6155,5 +6155,25 @@ public class QRules {
 		}
 		return null;
 	}
+
+	public String updateBucketCount(String baseEntityCode, String sourceCode, String targetCode){
+		
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+
+		Integer sourceGrpCount = be.getValue("PRI_COUNT_"+sourceCode, 0);
+		Integer targetGrpCount = be.getValue("PRI_COUNT_"+targetCode, 0);
+		try {
+
+			if(sourceGrpCount > 0 ){
+				sourceGrpCount = sourceGrpCount - 1;
+				targetGrpCount = targetGrpCount + 1;
+	
+				this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(), "PRI_COUNT_"+sourceCode, sourceGrpCount.toString());
+				this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(), "PRI_COUNT_"+targetCode, targetGrpCount.toString());
+			}
+		}catch (Exception e) {
+		}
+		return null;
+	}
  
 }
