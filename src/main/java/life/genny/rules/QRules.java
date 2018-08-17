@@ -6211,7 +6211,11 @@ public class QRules {
 		
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		if(be != null){
+<<<<<<< HEAD
 
+=======
+			
+>>>>>>> 10eb7f72626f1386ba1e0026e7909dc371937523
 			Integer sourceGrpCount = be.getValue("PRI_COUNT_"+sourceCode, 0);
 			Integer targetGrpCount = be.getValue("PRI_COUNT_"+targetCode, 0);
 			try {
