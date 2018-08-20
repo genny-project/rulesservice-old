@@ -639,12 +639,17 @@ public class QRules {
 	}
 	
 	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode) {
+           this.publishBaseEntityByCode(items, parentCode, linkCode, false);
+	}
+	
+        public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode, Boolean replace) {
 
 		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		String[] recipients = new String[1];
 		recipients[0] = this.getUser().getCode();
 		msg.setRecipientCodeArray(recipients);
+		msg.setReplace(replace);
 		publishData(msg, recipients);
 	}
 	
