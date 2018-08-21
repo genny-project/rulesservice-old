@@ -1320,11 +1320,7 @@ public class QRules {
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
 
-	public void publish(String channel, final QBulkMessage msg) {
 
-		msg.setToken(getToken());
-		publish(channel, JsonUtils.toJson(msg));
-	}
 
 	public void publish(String channel, final QDataAskMessage msg) {
 
