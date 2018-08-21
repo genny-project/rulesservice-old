@@ -1319,8 +1319,11 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
-
-
+	
+	public void publish(String channel, final QBulkMessage msg) {
+		msg.setToken(getToken());
+		VertxUtils.publish(getUser(),channel, msg);
+	}
 
 	public void publish(String channel, final QDataAskMessage msg) {
 
