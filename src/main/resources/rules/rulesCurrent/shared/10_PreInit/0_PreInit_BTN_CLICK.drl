@@ -50,6 +50,10 @@ rule "Pre Init Btn Click"
           /* Get userCode */
           String userCode = dataJson.getString("userCode");
           rules.println("userCode  ::  " + userCode);
+          
+          /* Get rootCode */
+          String rootCode = dataJson.getString("root");
+          rules.println("rootCode  ::  " + rootCode);
 
           if(targetCode != null) {
             rules.set("targetCode", targetCode);
@@ -69,6 +73,10 @@ rule "Pre Init Btn Click"
 
           if(messageCode != null) {
             rules.set("messageCode", messageCode); /* anish added this, use this one */
+          }
+         
+          if(rootCode != null) {
+            rules.set("rootCode", rootCode);
           }
         }
         catch( Exception e) {
