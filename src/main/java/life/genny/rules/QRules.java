@@ -6230,7 +6230,7 @@ public class QRules {
 		
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		if(be != null){
-			
+
 			Integer sourceGrpCount = be.getValue("PRI_COUNT_"+sourceCode, 0);
 			Integer targetGrpCount = be.getValue("PRI_COUNT_"+targetCode, 0);
 			try {
@@ -6245,6 +6245,7 @@ public class QRules {
 			}catch (Exception e) {
 			}
 		}
+
 		return null;
 	}
  
