@@ -6252,19 +6252,7 @@ public class QRules {
 	}
 	
 	
-	public ArrayList<String> convertToStringArray(String stringifiedJSONArray) {
-		println(stringifiedJSONArray);
-		if(stringifiedJSONArray != null) {
-			JSONArray arr = JsonUtils.fromJson(stringifiedJSONArray, JSONArray.class);
-			println("arr ::"+arr);
-			
-			if(arr.size() > 0) {
-				return arr;
-			}
-			return null;
-		}
-		return null;
-	}
+	
 	
  
 }

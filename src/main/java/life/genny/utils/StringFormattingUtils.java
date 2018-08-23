@@ -1,5 +1,11 @@
 package life.genny.utils;
 
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
+
+import life.genny.qwandautils.JsonUtils;
+
 public class StringFormattingUtils {
 
 	
@@ -85,5 +91,16 @@ public class StringFormattingUtils {
         }
         return costs[b.length()];
     }
+	
+	public static ArrayList<String> convertToStringArray(String stringifiedJSONArray) {
+		if(stringifiedJSONArray != null) {
+			JSONArray arr = JsonUtils.fromJson(stringifiedJSONArray, JSONArray.class);
+			if(arr.size() > 0) {
+				return arr;
+			}
+			return null;
+		}
+		return null;
+	}
 
 }
