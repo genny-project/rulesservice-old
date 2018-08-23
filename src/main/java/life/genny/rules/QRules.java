@@ -40,10 +40,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.drools.core.spi.KnowledgeHelper;
 import org.javamoney.moneta.Money;
+import org.json.simple.JSONArray;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+import com.hazelcast.util.JsonUtil;
 import com.hazelcast.util.collection.ArrayUtils;
 
 import io.vertx.core.json.JsonArray;
@@ -6248,5 +6250,21 @@ public class QRules {
 
 		return null;
 	}
+	
+	
+	public ArrayList<String> convertToStringArray(String stringifiedJSONArray) {
+		println(stringifiedJSONArray);
+		if(stringifiedJSONArray != null) {
+			JSONArray arr = JsonUtils.fromJson(stringifiedJSONArray, JSONArray.class);
+			println("arr ::"+arr);
+			
+			if(arr.size() > 0) {
+				return arr;
+			}
+			return null;
+		}
+		return null;
+	}
+	
  
 }
