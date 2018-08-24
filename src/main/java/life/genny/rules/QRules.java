@@ -4872,12 +4872,12 @@ public class QRules {
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
-					VertxUtils.subscribeAdmin(realm(), user.getCode());
+					
 					if (isAdmin == null || !isAdmin) {
 						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
 						isAdminAnswer.setWeight(1.0);
 						this.baseEntity.saveAnswer(isAdminAnswer);
-						
+						VertxUtils.subscribeAdmin(realm(), user.getCode());
 						setState("USER_ROLE_ADMIN_SET");
 					}
 				} else if (!hasRole("admin")) {
