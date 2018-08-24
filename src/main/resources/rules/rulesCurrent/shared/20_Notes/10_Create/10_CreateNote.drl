@@ -14,6 +14,7 @@ rule "Trigger Create Note - Step 1"
 		String message = rules.getAsString("message");
 		
 		rules.createNote(contextCode, message, "USER");
-	   	
+		
+		rules.sendNotes(contextCode);
 	 	rules.footer();      
 end
