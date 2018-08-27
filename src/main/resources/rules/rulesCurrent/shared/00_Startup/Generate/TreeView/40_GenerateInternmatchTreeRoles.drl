@@ -29,7 +29,6 @@ rule "Generate internmatch Tree Roles"
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
-		grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNSHIPS_INTERN", "PRI_IS_SELLER"));
 		grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF"));
         grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
 		rules.baseEntity.saveAnswers(grpRoot);
