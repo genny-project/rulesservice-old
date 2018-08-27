@@ -2559,6 +2559,10 @@ public class QRules {
 	public void subscribeUserToBaseEntity(String userCode, BaseEntity be) {
 		VertxUtils.subscribe(realm(), be, userCode);
 	}
+	
+	public void subscribeUsersToBaseEntity(final String[] users, BaseEntity be) {
+		VertxUtils.subscribe(realm(), be, users);
+	}
 
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
 		VertxUtils.subscribe(realm(), bes, userCode);
