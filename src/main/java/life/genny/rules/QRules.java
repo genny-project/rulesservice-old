@@ -6252,5 +6252,10 @@ public class QRules {
 
 		return null;
 	}
+	
+	public String getUniqueCode(int numberOfDigitsForUniqueCode) {
+		String uniqueCode = QwandaUtils.getUniqueCode(numberOfDigitsForUniqueCode);
+		return uniqueCode;
+	}
  
 }
