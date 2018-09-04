@@ -27,6 +27,9 @@ rule "Check user company - Step 3"
 		/* we get the BE that was just created, which should be the company */
 		BaseEntity companyBe = rules.getAsBaseEntity("baseEntity");	
 		if(companyBe != null) {
+
+			/* Projects listening for this state */
+			rules.set("companyBe", companyBe);
 			
 			/* link SELLER to COMPANY */
 			rules.set("linkSourceCode", companyBe.getCode());
