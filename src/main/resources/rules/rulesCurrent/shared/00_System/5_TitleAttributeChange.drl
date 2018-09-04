@@ -6,8 +6,9 @@ import life.genny.qwanda.Answer;
 rule "Attribute Change - Set Title value to the BE's name"
     when
         rules : QRules( isState("EVENT_ANSWER")  && 
-                        (isState("PRI_TITLE") ||
-                        isState("PRI_NAME") ) &&
+						(isState("PRI_TITLE") ||
+						isState("PRI_NAME") ||
+						isState("PRI_CPY_NAME") ) &&
                         !isState("LOOP_BASEENTITY_NAME_UPDATED") )
      then    
       	rules.header();
