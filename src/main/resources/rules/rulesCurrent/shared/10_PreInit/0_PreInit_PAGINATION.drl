@@ -1,0 +1,53 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Pagination"
+	no-loop true
+	ruleflow-group 'Init'
+    when
+	  m : QEventMessage( event_type == "PAGINATION" )
+	  rules: QRules(!isState("STARTED"))
+     then
+        rules.setDrools(drools);
+        rules.println("RULE INIT TABLE_SELECT: "+m);
+
+        String dataString = m.getData().getValue();
+
+        try {
+
+          JsonObject dataJson = new JsonObject(dataString);
+
+          /* Get root code */
+          String rootCode = dataJson.getString("rootCode");
+          if(rootCode != null) {
+        	  	rules.set("rootCode", rootCode);
+          }
+          
+          /* get current page index */
+          Integer currentPageStart = dataJson.getInteger("pageStart");
+          if(currentPageStart != null) {
+        	  	rules.set("pageStart", currentPageStart);
+          }
+          
+          /* get current page size */
+          Integer currentPageSize = dataJson.getInteger("pageSize");
+          if(currentPageSize != null) {
+        	  	rules.set("pageSize", currentPageSize);
+          }
+          
+          /* Get baseEntity prefix code */
+          String beCode = dataJson.getString("beCode");
+          if(beCode != null) {
+        	  	rules.set("beCode", beCode);
+          }
+        }
+        catch(Exception e) {
+        	
+        }
+        
+        rules.setState("EVENT_PAGINATION");
+        rules.setState("STARTED");
+end

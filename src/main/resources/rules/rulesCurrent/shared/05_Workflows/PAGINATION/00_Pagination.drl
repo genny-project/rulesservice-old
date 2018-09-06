@@ -1,0 +1,45 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+
+rule "Pagination"
+    when
+        rules: QRules( isState("EVENT_PAGINATION") && !isState("DID_PAGINATION") )
+     then
+     
+     	rules.header();
+		
+		rules.setState("DID_PAGINATION");
+		
+		rules.println("======= PAGINATING =========");
+		
+		String rootCode = rules.getAsString("rootCode");
+		String beCode = rules.getAsString("beCode");
+		Integer pageStart = rules.getAsInteger("pageStart");
+		Integer pageSize = rules.getAsInteger("pageSize");
+		
+		rules.println(rootCode);
+		rules.println(beCode);
+		rules.println(pageStart);
+		rules.println(pageSize);
+		
+		/* we fetch the next page for the given root code */
+		if(rootCode != null && pageStart != null && pageSize != null) {
+			
+			String searchEntityCode = rootCode;
+			if(beCode != null) {
+				searchEntityCode = rootCode + "_" + beCode;
+			}
+						
+			/* first we grab the associated search */
+			SearchEntity searchEntity = rules.baseEntity.getSearchEntityByCode(searchEntityCode);
+			if(searchEntity != null) {
+				
+				searchEntity.setPageStart(pageStart + pageSize);
+				searchEntity.setPageSize(pageSize);
+				rules.sendSearchResults(searchEntity, rootCode);				 
+			}
+		}
+		
+		rules.footer();
+end
