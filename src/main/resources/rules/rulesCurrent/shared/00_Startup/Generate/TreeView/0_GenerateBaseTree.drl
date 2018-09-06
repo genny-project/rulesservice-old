@@ -51,15 +51,15 @@ rule "Generate Base Tree"
 		bulkmsg.add(new QDataBaseEntityMessage(buckets3.toArray(new BaseEntity[0]),"GRP_BEGS", "LNK_CORE"));
 		rules.println("Generated Dashboard (Buckets) Base Tree for "+rules.realm()+" num items="+buckets3.size());
 
-		// Save the GRP_APPLICATIONS buckets for future use
+		/* Save the GRP_APPLICATIONS buckets for future use */
 		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),"GRP_APPLICATIONS","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "GRP_APPLICATIONS", rules.realm(), bucketMsg);
 
-		// Save the GRP_DASHBOARD buckets for future use
+		/* Save the GRP_DASHBOARD buckets for future use */
 		QDataBaseEntityMessage bucketMsg2 = new QDataBaseEntityMessage(buckets2.toArray(new BaseEntity[0]),"GRP_DASHBOARD","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "GRP_DASHBOARD", rules.realm(), bucketMsg2);
 		
-		// Save the GRP_BEGS buckets for future use
+		/* Save the GRP_BEGS buckets for future use */
 		QDataBaseEntityMessage bucketMsg3 = new QDataBaseEntityMessage(buckets3.toArray(new BaseEntity[0]),"GRP_BEGS","LNK_CORE");
 		VertxUtils.putObject(rules.realm(), "GRP_BEGS", rules.realm(), bucketMsg3);
 

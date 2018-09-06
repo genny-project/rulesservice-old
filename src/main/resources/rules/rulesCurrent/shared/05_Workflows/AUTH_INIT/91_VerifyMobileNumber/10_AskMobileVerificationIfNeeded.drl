@@ -12,7 +12,7 @@ rule "Ask Mobile verification if needeed"
 
 		rules.setState("LOO_ASK_MOBILE_VERIF");
 
-		if(true) { //rules.didUserVerifyPhoneNumber()
+		if(true) { /* rules.didUserVerifyPhoneNumber()  */
         		rules.setState("MOBILE_VERIFIED");
         }
         else {

@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
 
 
 rule "Report: Send Result Data"
@@ -15,7 +16,7 @@ rule "Report: Send Result Data"
          rules.header();
          
          rules.setState("REPORT_SENT");
-         //rules.sendAllUsers("SBE_GET_ALL_USERS");
+         /* rules.sendAllUsers("SBE_GET_ALL_USERS"); */
          rules.sendReport(m.getData().getCode());
          
 		 rules.footer();

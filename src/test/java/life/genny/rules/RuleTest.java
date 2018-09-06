@@ -12,10 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.builder.Message;
 import org.kie.api.builder.Results;
@@ -26,9 +28,11 @@ import org.kie.internal.utils.KieHelper;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vertx.core.json.DecodeException;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
+import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.qwanda.Link;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 
@@ -42,9 +46,33 @@ public class RuleTest {
 
 	@Before
 	public void init() {
-		kContainer = ks.getKieClasspathContainer();
-		kSession = kContainer.newKieSession("ksession-rules");
+		
+		if (checkAllRules()) {
+		
+		RulesLoader.setKieBaseCache(new HashMap<String, KieBase>()); // clear
 
+
+		List<Tuple3<String, String, String>> rules = RulesLoader.processFileRealms("genny", "src/main/resources/rules");
+
+		Set<String> realms = RulesLoader.getRealms(rules);
+		realms.stream().forEach(System.out::println);
+		RulesLoader.setupKieRules("genny", rules); // run genny rules first
+		} else {
+			System.out.println("Errors in rules");
+		}
+
+	}
+	
+	@Test
+	public void fireRulesTest()
+	{
+		final List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>();
+		final List<Object> facts = new ArrayList<Object>();
+		final Map<String, String> keyValueMap = new HashMap<String, String>();
+		
+		RulesLoader.executeStatefull("genny", null,
+				globals, facts,keyValueMap
+				);
 	}
 
 	// @Test
@@ -80,13 +108,14 @@ public class RuleTest {
 
 	}
 
-	@Test
-	public void checkAllRules() {
+
+	public Boolean checkAllRules() {
 		Boolean allCompiled = readFilenamesFromDirectory("src/main/resources/rules");
 		if (!allCompiled) {
 			// This forces us to fix Rules!
 			assertTrue("Drools Compile Error!", false);
-		}
+		} 
+		return allCompiled;
 	}
 
 	private Boolean readFilenamesFromDirectory(String rootFilePath) {

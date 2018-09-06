@@ -1,6 +1,8 @@
 package life.genny.rules;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
@@ -18,6 +20,7 @@ import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.Message;
+import org.kie.api.builder.ReleaseId;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -181,7 +184,7 @@ public class RulesLoader {
 	// 	return null;
 	// }
 
-	private static List<Tuple3<String, String, String>> processFileRealms(final String realm, String inputFileStrs) {
+	static List<Tuple3<String, String, String>> processFileRealms(final String realm, String inputFileStrs) {
 		List<Tuple3<String, String, String>> rules = new ArrayList<Tuple3<String, String, String>>();
 
 		String[] inputFileStrArray = inputFileStrs.split(";"); // allow multiple rules dirs
@@ -197,8 +200,19 @@ public class RulesLoader {
 					if (fileName.startsWith("prj_") || fileName.startsWith("PRJ_")) {
 						localRealm = fileName.substring("prj_".length()).toLowerCase(); // extract realm name
 					}
-					final List<String> filesList = Vertx.currentContext().owner().fileSystem()
+					List<String> filesList = null;
+					
+					if (Vertx.currentContext() != null) {
+					filesList = Vertx.currentContext().owner().fileSystem()
 							.readDirBlocking(inputFileStr);
+					} else {
+						final File folder = new File(inputFileStr);
+						final File[] listOfFiles = folder.listFiles();
+						filesList = new ArrayList<String>();
+						for (File f : listOfFiles) {
+							filesList.add(f.getAbsolutePath());
+						}
+					}
 
 					for (final String dirFileStr : filesList) {
 						List<Tuple3<String, String, String>> childRules = processFileRealms(localRealm, dirFileStr); // use
@@ -211,12 +225,28 @@ public class RulesLoader {
 				}
 
 			} else {
-				Buffer buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
+				String nonVertxFileText = null;
+				Buffer buf = null;
+				if (Vertx.currentContext()!=null) {
+					buf = Vertx.currentContext().owner().fileSystem().readFileBlocking(inputFileStr);
+				} else {
+					try {
+						nonVertxFileText = getFileAsText(inputFileStr);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 				try {
 					if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("drl"))) { // ignore files that
 																									// start
 																									// with XX
-						final String ruleText = buf.toString();
+						String ruleText = null;
+						if (Vertx.currentContext()!=null) {
+							ruleText = buf.toString();
+						} else {
+							ruleText = nonVertxFileText;
+						}
 
 						Tuple3<String, String, String> rule = (Tuple.of(realm, fileName + "." + fileNameExt, ruleText));
 						String filerule = inputFileStr.substring(inputFileStr.indexOf("/rules/"));
@@ -226,15 +256,25 @@ public class RulesLoader {
 																											// that
 																											// start
 																											// with XX
-						final String bpmnText = buf.toString();
-
+						String bpmnText = null;
+						if (Vertx.currentContext()!=null) {
+							bpmnText = buf.toString();
+						} else {
+							bpmnText = nonVertxFileText;
+						}
+						
 						Tuple3<String, String, String> bpmn = (Tuple.of(realm, fileName + "." + fileNameExt, bpmnText));
 						log.info(realm + " Loading in BPMN:" + bpmn._1 + " of " + inputFileStr);
 						rules.add(bpmn);
 					} else if ((!fileName.startsWith("XX")) && (fileNameExt.equalsIgnoreCase("xls"))) { // ignore files
 																										// that
 																										// start with XX
-						final String xlsText = buf.toString();
+						String xlsText = null;
+						if (Vertx.currentContext()!=null) {
+							xlsText = buf.toString();
+						} else {
+							xlsText = nonVertxFileText;
+						}
 
 						Tuple3<String, String, String> xls = (Tuple.of(realm, fileName + "." + fileNameExt, xlsText));
 						log.info(realm + " Loading in XLS:" + xls._1 + " of " + inputFileStr);
@@ -250,6 +290,20 @@ public class RulesLoader {
 		return rules;
 	}
 
+	
+	private static String getFileAsText(final String inputFilePath) throws IOException {
+		File file = new File(inputFilePath);
+		final BufferedReader in = new BufferedReader(new FileReader(file));
+		String ret = "";
+		String line = null;
+		while ((line = in.readLine()) != null) {
+			ret += line;
+		}
+		in.close();
+
+		return ret;
+	}
+	
 	public static Set<String> getRealms(final List<Tuple3<String, String, String>> rules) {
 		Set<String> realms = new HashSet<String>();
 
@@ -283,8 +337,10 @@ public class RulesLoader {
 			if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
 				log.info(kieBuilder.getResults().toString());
 			}
+			
+			ReleaseId releaseId = kieBuilder.getKieModule().getReleaseId();
 
-			final KieContainer kContainer = ks.newKieContainer(kieBuilder.getKieModule().getReleaseId());
+			final KieContainer kContainer = ks.newKieContainer(releaseId);
 			final KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
 			final KieBase kbase = kContainer.newKieBase(kbconf);
 

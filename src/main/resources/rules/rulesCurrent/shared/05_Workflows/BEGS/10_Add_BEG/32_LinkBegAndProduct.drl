@@ -12,7 +12,7 @@ rule "Add BEG - Step 3.2"
         rules.setState("LOOP_LINK_BEG_AND_PRODUCT");
 
 		BaseEntity beg = rules.getAsBaseEntity("begBe");
-		//BaseEntity product = rules.getAsBaseEntity("productBe");
+		/* BaseEntity product = rules.getAsBaseEntity("productBe"); */
 		BaseEntity product = rules.getAsBaseEntity("baseEntity");
 		
 		rules.println(beg.getCode());
