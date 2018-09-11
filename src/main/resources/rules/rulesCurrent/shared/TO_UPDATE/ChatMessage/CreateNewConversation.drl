@@ -103,6 +103,7 @@ then
         rules.publishData(rules.baseEntity.getBaseEntityByCode("GRP_MESSAGES"), receiverCodeInArray );
         /* rules.sendSublayout("messages-layout", "messages-layout.json", chatCode);  */
         rules.sendCmdSplitView("GRP_MESSAGES", chatCode);
+        rules.navigateTo("/chat/" + chatCode);
       }
 
     }
