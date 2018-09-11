@@ -92,7 +92,7 @@ public class RuleTest {
 
 	}
 	
-	@Test
+	/*@Test
 	public void jwtTest()
 	{
 		Map<String,Object> adecodedTokenMap = new HashMap<String,Object>();
@@ -105,7 +105,7 @@ public class RuleTest {
 
 			jwtToken = SecurityUtils.createJwt("ABBCD", "Genny Project", "Test JWT", 100000, "IamASecret",adecodedTokenMap);
 			System.out.println("jwtToken = "+jwtToken);
-	}
+	}*/
 	
 	@Test
 	public void calendarTest()
@@ -131,7 +131,7 @@ public class RuleTest {
 //		end
 	}
 	
-	@Test
+	/*@Test
 	public void fireTimerTest()
 	{
 		System.out.println("Firing Timer Test");
@@ -281,7 +281,7 @@ public class RuleTest {
 			}
 
 
-	}
+	}*/
 
 	// @Test
 	public void msgTest() {
