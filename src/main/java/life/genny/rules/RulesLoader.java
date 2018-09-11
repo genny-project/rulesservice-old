@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.drools.model.Rule;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
@@ -24,6 +25,11 @@ import org.kie.api.builder.ReleaseId;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.KieSessionConfiguration;
+import org.kie.api.runtime.conf.TimedRuleExecutionFilter;
+import org.kie.api.runtime.conf.TimedRuleExecutionOption;
+import org.kie.api.runtime.conf.TimerJobFactoryOption;
+import org.kie.internal.runtime.StatefulKnowledgeSession;
 
 import com.google.common.io.Files;
 
@@ -427,12 +433,25 @@ public class RulesLoader {
 			final Map<String, String> keyValueMap) {
 
 		try {
-			KieSession kieSession = null;
+			 KieSession  kieSession = null;
 			if (getKieBaseCache().get(rulesGroup) == null) {
 				log.error("The rulesGroup kieBaseCache is null, not loaded " + rulesGroup);
 				return;
 			}
-			kieSession = getKieBaseCache().get(rulesGroup).newKieSession();
+			
+			KieSessionConfiguration ksconf = KieServices.Factory.get().newKieSessionConfiguration();
+			ksconf.setOption( TimedRuleExecutionOption.YES );
+//			ksconf.setOption( new TimedRuleExecutionOption.FILTERED(new TimedRuleExecutionFilter() {
+//				@Override
+//				public boolean accept(org.kie.api.definition.rule.Rule[] rules) {
+//					 return rules[0].getName().startsWith("Timer");
+//				}
+//			}) );
+			
+		//	KieSessionConfiguration ksconf = KieServices.Factory.get().newKieSessionConfiguration();
+		//	ksconf.setOption(TimerJobFactoryOption.get("trackable"));
+
+			kieSession = getKieBaseCache().get(rulesGroup).newKieSession(ksconf, null);
 
 			/*
 			 * kSession.addEventListener(new DebugAgendaEventListener());
@@ -460,8 +479,17 @@ public class RulesLoader {
 			// Set the focus on the Init agenda group to force proper startup
 			kieSession.getAgenda().getAgendaGroup("Init").setFocus();
 
-			kieSession.fireAllRules();
-
+			int rulesFired = kieSession.fireAllRules();
+			
+//			final KieSession threadSession = kieSession;
+//			 new Thread(new Runnable() {
+//		            public void run() {
+//		                threadSession.fireUntilHalt();
+//		            }
+//		        }).start();
+			
+			System.out.println("Fired "+rulesFired+" rules");
+			 System.out.println("finished rules");
 			kieSession.dispose();
 		} catch (final Throwable t) {
 			t.printStackTrace();
