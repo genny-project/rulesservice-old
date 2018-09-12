@@ -26,7 +26,7 @@
 		<version.resteasy>3.0.10.Final</version.resteasy>
 		<resteasy.version>3.0.9.Final</resteasy.version>
 		<hazelcast.version>3.8.2</hazelcast.version>
-		<kie.version>7.10.0.Final</kie.version>
+		<kie.version>7.1.0.Final</kie.version>
 	</properties>
 	<repositories>
 		<repository>
