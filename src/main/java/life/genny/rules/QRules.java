@@ -616,6 +616,20 @@ public class QRules {
 
 	}
 
+	/* Publish BaseEntity with LinkValue Set */
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
+		publishData(msg, recipientCodes);
+
+	}
+
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
 			final String[] recipientCodes, final Boolean delete) {
 
