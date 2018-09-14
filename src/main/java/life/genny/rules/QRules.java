@@ -572,10 +572,24 @@ public class QRules {
 		publishBaseEntityByCode(be, null, null, null);
 	}
 
-	public void publishBaseEntityByCode(final String be, final Boolean delete) {
-		String[] recipientArray = new String[1];
-		recipientArray[0] = be;
-		publishBaseEntityByCode(be, null, null, recipientArray, delete);
+//	public void publishBaseEntityByCode(final String be, final Boolean delete) {
+//		String[] recipientArray = new String[1];
+//		recipientArray[0] = be;
+//		publishBaseEntityByCode(be, null, null, recipientArray, delete);
+//	} 
+//   removing this method and set it for replace instead below, as there is another method clearBaseEntity which does set delete true. 
+	
+	/* Publishes BaseEntity with replace true/false */
+	public void publishBaseEntityByCode(final String be, final Boolean replace) {
+
+        BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+        BaseEntity[] itemArray = new BaseEntity[1];
+        itemArray[0] = item;
+        String[] recipientCodes = { this.getUser().getCode() } ;
+        QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray);
+        msg.setRecipientCodeArray(recipientCodes);
+        msg.setReplace(replace);
+        publishData(msg, recipientCodes);
 	}
 	
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
@@ -598,6 +612,20 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+
+	}
+
+	/* Publish BaseEntity with LinkValue Set */
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
 		publishData(msg, recipientCodes);
 
 	}
@@ -627,12 +655,18 @@ public class QRules {
 	}
 	
 	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode) {
+           this.publishBaseEntityByCode(items, parentCode, linkCode, false);
+	}
+	
+	/* Publishes  baseEntity with replace TRUE */
+    public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode, Boolean replace) {
 
 		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		String[] recipients = new String[1];
 		recipients[0] = this.getUser().getCode();
 		msg.setRecipientCodeArray(recipients);
+		msg.setReplace(replace);
 		publishData(msg, recipients);
 	}
 	
@@ -1319,11 +1353,10 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
-
+	
 	public void publish(String channel, final QBulkMessage msg) {
-
 		msg.setToken(getToken());
-		publish(channel, JsonUtils.toJson(msg));
+		VertxUtils.publish(getUser(),channel, msg);
 	}
 
 	public void publish(String channel, final QDataAskMessage msg) {
@@ -2539,6 +2572,10 @@ public class QRules {
 
 	public void subscribeUserToBaseEntity(String userCode, BaseEntity be) {
 		VertxUtils.subscribe(realm(), be, userCode);
+	}
+	
+	public void subscribeUsersToBaseEntity(final String[] users, BaseEntity be) {
+		VertxUtils.subscribe(realm(), be, users);
 	}
 
 	public void subscribeUserToBaseEntities(String userCode, List<BaseEntity> bes) {
@@ -6211,7 +6248,7 @@ public class QRules {
 		
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
 		if(be != null){
-			
+
 			Integer sourceGrpCount = be.getValue("PRI_COUNT_"+sourceCode, 0);
 			Integer targetGrpCount = be.getValue("PRI_COUNT_"+targetCode, 0);
 			try {
@@ -6226,7 +6263,13 @@ public class QRules {
 			}catch (Exception e) {
 			}
 		}
+
 		return null;
+	}
+	
+	public String getUniqueCode(int numberOfDigitsForUniqueCode) {
+		String uniqueCode = QwandaUtils.getUniqueCode(numberOfDigitsForUniqueCode);
+		return uniqueCode;
 	}
  
 }

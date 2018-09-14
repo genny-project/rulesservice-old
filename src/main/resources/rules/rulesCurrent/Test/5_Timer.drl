@@ -11,12 +11,17 @@ import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 
 
 rule "Timer test"
-  timer (cron:* 0/1 * * * ?)
+ /* timer (cron:* 0/1 * * * ?) */
+ /* timer (int:5s)  */
+/*  timer (int: 30s 10s; start=3-JAN-2010, end=5-JAN-2010) */
+ timer ( int: 5s 10s ) 
+     
     when
-        rules : QRules( )
+    rules : QRules()
+	eval(true)
      then    
- 
- 		System.out.println("TIMER!!!");
+ 		rules.setDrools(drools);
+ 		System.out.println("TIMER!!!"+rules.realm());
    
   
 end

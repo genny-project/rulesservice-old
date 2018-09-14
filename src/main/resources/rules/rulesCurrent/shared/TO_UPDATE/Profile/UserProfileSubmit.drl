@@ -16,7 +16,7 @@ rule "User-Profile Submit"
       /*   String jobCode = dataJson.getString("targetCode");
          String actionCode = dataJson.getString("action");  */
         
-  	   //  if(actionCode.equalsIgnoreCase("submit")) { 
+  	   /*  if(actionCode.equalsIgnoreCase("submit")) {  */
 
            /* rules.set("IS_USER_PROFILE_COMPLETE",(QwandaUtils.isMandatoryFieldsEntered(userCode, userCode, "QUE_USER_PROFILE_GRP", rules.getToken()));   */
            rules.setState("USER_PROFILE_UPDATED"); 
@@ -24,11 +24,11 @@ rule "User-Profile Submit"
            rules.redirectToHomePage();
       /*     HashMap<String,String> contextMap = new HashMap<String, String>();
            String[] recipients  = {userCode};    */ 
-          // rules.sendNotification("success", recipientCodes, "Profile Updated!");
+          /* rules.sendNotification("success", recipientCodes, "Profile Updated!"); */
           /* Sending toast message */
       /*      rules.sendMessage(recipients, contextMap, "TST_PROFILE_UPDATED", "TOAST");  */
            
-       //  }
+       /*  }  */
 
         rules.footer();
   end
