@@ -45,7 +45,7 @@ rule "Generate internmatch Tree Roles"
 		rules.baseEntity.saveAnswers(grpBegs);
 		
 		List<Answer> grpApplications = new ArrayList<>();
-        grpApplications.add(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF"));
+        grpApplications.add(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT"));
         rules.baseEntity.saveAnswers(grpApplications);
 
 
