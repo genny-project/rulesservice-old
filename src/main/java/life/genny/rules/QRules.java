@@ -3448,7 +3448,7 @@ public class QRules {
 						for (BaseEntity stakeholderBe : people) {
 
 							try {
-								if (this.isUserSeller(stakeholderBe)) {
+								if (this.isUserSeller(stakeholderBe) || this.isUserRole(stakeholderBe, "PRI_IS_ADMIN") ) {
 									sellersBe.add(stakeholderBe);
 								}
 
@@ -4890,10 +4890,12 @@ public class QRules {
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
+					
 					if (isAdmin == null || !isAdmin) {
 						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
 						isAdminAnswer.setWeight(1.0);
 						this.baseEntity.saveAnswer(isAdminAnswer);
+						VertxUtils.subscribeAdmin(realm(), user.getCode());
 						setState("USER_ROLE_ADMIN_SET");
 					}
 				} else if (!hasRole("admin")) {
