@@ -5927,18 +5927,18 @@ public class QRules {
 
 	}
 
-	public boolean isAddressPresent(final String personCode) {
+	public boolean isAddressPresent(final String beCode) {
 		boolean ret = false;
 
-		BaseEntity person = this.baseEntity.getBaseEntityByCode(personCode);
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(beCode);
 
-		if (person.containsEntityAttribute("PRI_ADDRESS_ADDRESS1")) {
-			if (person.containsEntityAttribute("PRI_ADDRESS_COUNTRY")) {
-				if (person.containsEntityAttribute("PRI_ADDRESS_FULL")) {
-					if (person.containsEntityAttribute("PRI_ADDRESS_LATITUDE")) {
-						if (person.containsEntityAttribute("PRI_ADDRESS_LONGITUDE")) {
-							if (person.containsEntityAttribute("PRI_ADDRESS_POSTCODE")) {
-								if (person.containsEntityAttribute("PRI_ADDRESS_SUBURB")) {
+		if (be.containsEntityAttribute("PRI_ADDRESS_ADDRESS1")) {
+			if (be.containsEntityAttribute("PRI_ADDRESS_COUNTRY")) {
+				if (be.containsEntityAttribute("PRI_ADDRESS_FULL")) {
+					if (be.containsEntityAttribute("PRI_ADDRESS_LATITUDE")) {
+						if (be.containsEntityAttribute("PRI_ADDRESS_LONGITUDE")) {
+							if (be.containsEntityAttribute("PRI_ADDRESS_POSTCODE")) {
+								if (be.containsEntityAttribute("PRI_ADDRESS_SUBURB")) {
 									return true;
 								}
 							}
@@ -5949,26 +5949,26 @@ public class QRules {
 		}
 
 		// okay, need to regenerate address attributes
-		String jsonAddress = person.getValue("PRI_ADDRESS_JSON", null);
+		String jsonAddress = be.getValue("PRI_ADDRESS_JSON", null);
 		if (jsonAddress != null) {
 
 			QDataAnswerMessage msg = new QDataAnswerMessage(
-					new Answer(personCode, personCode, "PRI_ADDRESS_JSON", jsonAddress));
+					new Answer(beCode, beCode, "PRI_ADDRESS_JSON", jsonAddress));
 			List<Answer> answers = processAddressAnswers(msg);
 			this.baseEntity.saveAnswers(answers);
-			log.info(person.getCode() + " fixed using existing JSON");
+			log.info(be.getCode() + " fixed using existing JSON");
 		} else {
-			String jsonFull = person.getValue("PRI_ADDRESS_FULL", null);
+			String jsonFull = be.getValue("PRI_ADDRESS_FULL", null);
 			if (jsonFull != null) {
 				String[] fullAddress = jsonFull.split(",");
 				String city = fullAddress[1];
 				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_CITY", city));
-				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_SUBURB", city));
+				answers.add(new Answer(beCode, beCode, "PRI_ADDRESS_CITY", city));
+				answers.add(new Answer(beCode, beCode, "PRI_ADDRESS_SUBURB", city));
 				this.baseEntity.saveAnswers(answers);
-				log.info(person.getCode() + " fixed using existing Full Address");
+				log.info(be.getCode() + " fixed using existing Full Address");
 			} else {
-				log.error("ERROR!! " + personCode + " does not contain Address Full");
+				log.error("ERROR!! " + beCode + " does not contain Address Full");
 			}
 		}
 		return ret;
@@ -6269,9 +6269,35 @@ public class QRules {
 		return null;
 	}
 	
+	// TODO: What is the point of this function? ACC
 	public String getUniqueCode(int numberOfDigitsForUniqueCode) {
 		String uniqueCode = QwandaUtils.getUniqueCode(numberOfDigitsForUniqueCode);
 		return uniqueCode;
 	}
+
+	public void processAnswers(final Answer[] answers)
+	{
+		Arrays.stream(answers).forEach(x -> {drools.insert(x); });
+		drools.setFocus("AnswerProcessing");
+	}
+	public void processAnswers(final List<Answer> answers)
+	{
+		answers.stream().forEach(x -> {drools.insert(x); });
+		drools.setFocus("AnswerProcessing");
+	}
+	
+	public void processAnswers(final Answer answer)
+	{
+		drools.insert(answer);
+		drools.setFocus("AnswerProcessing");
+	}
  
+	public void processJsonAddress(final String sourceCode, final String targetCode, final String jsonAddressLine) {
+		QDataAnswerMessage msg = new QDataAnswerMessage(
+				new Answer(sourceCode, targetCode, "PRI_ADDRESS_JSON", jsonAddressLine));
+		List<Answer> answers = processAddressAnswers(msg);
+		this.baseEntity.saveAnswers(answers);
+
+	}
+	
 }
