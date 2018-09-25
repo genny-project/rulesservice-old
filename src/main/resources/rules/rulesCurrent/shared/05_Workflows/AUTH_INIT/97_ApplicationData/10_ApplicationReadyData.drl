@@ -12,5 +12,7 @@ rule "Application Ready - send data"
 		    rules.setState("LOOP_APP_READY_SEND_DATA");
         rules.setState("SEND_TREE_DATA");
 
+         rules.sendAllChats(0,1000);
+
         rules.footer();
 end
