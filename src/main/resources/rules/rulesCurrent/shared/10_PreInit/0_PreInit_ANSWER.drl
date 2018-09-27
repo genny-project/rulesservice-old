@@ -37,4 +37,5 @@ rule "Pre Init Answer"
         rules.setState("STARTED");
         rules.setState("ANSWER");
         drools.setFocus("Answer");
+        rules.processAnswers(answers);
 end
