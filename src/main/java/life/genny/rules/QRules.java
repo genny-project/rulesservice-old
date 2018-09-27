@@ -1001,6 +1001,26 @@ public class QRules {
 		cmdJobSublayoutJson.put("root", root != null ? root : "test");
 
 		publish("cmds", cmdJobSublayoutJson);
+	}	
+
+	public void navigateBack() {
+		this.navigate("ROUTE_BACK");
+	}
+
+	public void navigateTo(String newRoute) {
+		this.navigateTo(newRoute, null, false);
+	}
+
+	public void navigateTo(String newRoute, Boolean isModal) {
+		this.navigateTo(newRoute, null, isModal);
+	}
+
+	public void navigateTo(String newRoute, JsonObject params) {
+		this.navigateTo(newRoute, params, false);
+	}
+
+	public void navigateTo(String newRoute, JsonObject params, Boolean isModal) {
+		this.navigate("ROUTE_CHANGE", newRoute, params, isModal);
 	}
 
 	private void navigate(String navigationType) {
@@ -1008,21 +1028,30 @@ public class QRules {
 	}
 
 	private void navigate(String navigationType, String newRoute) {
+		this.navigate(navigationType, newRoute, null);
+	}
+
+	private void navigate(String navigationType, String newRoute, JsonObject params) {
+		this.navigate(navigationType, newRoute, null, false);
+	}
+
+	private void navigate(String navigationType, String newRoute, JsonObject params, Boolean isModal) {
 
 		this.println("NAVIGATION: " + navigationType);
 		this.println("Navigating to: " + newRoute);
 		QCmdMessage cmdNavigate = new QCmdMessage(navigationType, newRoute);
 		JsonObject json = JsonObject.mapFrom(cmdNavigate);
 		json.put("token", getToken());
+
+		if(params != null) {
+			json.put("params", params);
+		}
+
+		if(isModal != null && isModal == true) {
+			json.put("modal", true);
+		}
+
 		publish("cmds", json);
-	}
-
-	public void navigateTo(String newRoute) {
-		this.navigate("ROUTE_CHANGE", newRoute);
-	}
-
-	public void navigateBack() {
-		this.navigate("ROUTE_BACK");
 	}
 
 	public void showLoading(String text, boolean isPopup) {

@@ -71,6 +71,10 @@ rule "Pre Init Btn Click"
               rules.set("message", message); /* if it's not being used, remove this and use the one below. */
           }
 
+           if(userCode != null) {
+              rules.set("userCode", userCode); 
+          }
+
           if(messageCode != null) {
             rules.set("messageCode", messageCode); /* anish added this, use this one */
           }

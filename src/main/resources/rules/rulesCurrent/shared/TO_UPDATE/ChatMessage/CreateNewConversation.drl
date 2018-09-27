@@ -38,8 +38,10 @@ then
           receiverCode = itemCode;
         }
         else {
-          BaseEntity receiver = rules.baseEntity.getLinkedBaseEntities(itemCode, "LNK_OFR", "CREATOR").get(0);
-          receiverCode = receiver.getCode();
+          BaseEntity receiver = rules.baseEntity.getLinkedBaseEntity(itemCode, "LNK_USER", "receiver");
+          if(receiver != null) {
+            receiverCode = receiver.getCode();
+          }
         }
 
         String[] recipientCodeArray = new String[2];
