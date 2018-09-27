@@ -6205,14 +6205,18 @@ public class QRules {
 		this.clearBaseEntityAndChildren("GRP_NOTES" , 1);
 		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
-		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
-				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);
+		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes")
+		.setSourceCode("GRP_NOTES")
+		.setStakeholder(contextCode)
+		.setPageStart(0)
+		.setPageSize(10000);
 
 		if (searchBE != null) {
 			/* Send search result */
 			try {
 				//this.sendSearchResults(searchBE, "GRP_NOTES");
 				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
+				this.println(JsonUtils.toJson(search));
 				search.setLinkCode("LNK_MESSAGES");
 				search.setParentCode("GRP_NOTES");
 				this.publishCmd(search);
