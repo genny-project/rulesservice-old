@@ -15,7 +15,7 @@ ruleflow-group 'AnswerProcessing'
         rules.header();
 
 		rules.println("RAW_SURNAME!");
-		rules.set("RAW_SURNAME");
+		rules.setState("RAW_SURNAME");
 		
 		List<Answer> answersToSave = new ArrayList<Answer>();
 		
