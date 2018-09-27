@@ -4323,8 +4323,8 @@ public class QRules {
 		QDataBaseEntityMessage results =  getSearchResults(searchBE, serviceToken);
 		if (results == null) {
 			results = new QDataBaseEntityMessage(new ArrayList<BaseEntity>());
-			
 		}
+
 		return results;
 	}
 
@@ -6217,6 +6217,8 @@ public class QRules {
 				//this.sendSearchResults(searchBE, "GRP_NOTES");
 				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
 				this.println(JsonUtils.toJson(search));
+				this.println("=========================================================");
+				this.println(JsonUtils.toJson(searchBE));
 				search.setLinkCode("LNK_MESSAGES");
 				search.setParentCode("GRP_NOTES");
 				this.publishCmd(search);
