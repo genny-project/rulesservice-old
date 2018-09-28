@@ -6,7 +6,7 @@ import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.utils.RulesUtils;
 
-rule "Answer RAW_SURNAME"
+rule "RAW_SURNAME"
 ruleflow-group 'AnswerProcessing'
     when
         answer : Answer( attributeCode == "RAW_SURNAME")
@@ -21,20 +21,20 @@ ruleflow-group 'AnswerProcessing'
 		
 		String value = answer.getValue();
 		
-		// Map to new attribute
-//		Answer pojo = new Answer(answer.getSourceCode(), answer.getTargetCode(), "PRI_LASTNAME", ea.getAsLoopString());
-//					pojo.setWeight(0.0);
-//					pojo.setInferred(true);
-//					pojo.setExpired(false);
-//					pojo.setRefused(false);
-//					pojo.setChangeEvent(true);
-//					
-//					answersToSave.add(pojo);  
-//		
-//		if (!answersToSave.isEmpty()) {
-//	   		rules.baseEntity.saveAnswers(answersToSave);
-//		}
-
+		/* Map to new attribute
+		Answer pojo = new Answer(answer.getSourceCode(), answer.getTargetCode(), "PRI_LASTNAME", ea.getAsLoopString());
+					pojo.setWeight(0.0);
+					pojo.setInferred(true);
+					pojo.setExpired(false);
+					pojo.setRefused(false);
+					pojo.setChangeEvent(true);
+					
+					answersToSave.add(pojo);  
+		
+		if (!answersToSave.isEmpty()) {
+	   		rules.baseEntity.saveAnswers(answersToSave);
+		}
+*/
 
        rules.footer();
 
