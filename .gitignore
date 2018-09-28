@@ -13,6 +13,7 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+src/main/resources/rulesservice-git.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
