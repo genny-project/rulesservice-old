@@ -4333,7 +4333,7 @@ public class QRules {
 	 */
 	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, String token) throws IOException {
 
-		QDataBaseEntityMessage msg = getSearchResults(searchBE, getToken());
+		QDataBaseEntityMessage msg = getSearchResults(searchBE, token);
 		if(msg.getItems() != null) {
 			return Arrays.asList(msg.getItems());
 		}
@@ -4345,7 +4345,7 @@ public class QRules {
 	 * Get search Results returns List<BaseEntity>
 	 */
 	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
-		return  getSearchResultsAsList(searchBE);
+		return  getSearchResultsAsList(searchBE, getToken());
 	}
 
 	/*
