@@ -4331,13 +4331,21 @@ public class QRules {
 	/*
 	 * Get search Results returns List<BaseEntity>
 	 */
-	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, String token) throws IOException {
+
 		QDataBaseEntityMessage msg = getSearchResults(searchBE, getToken());
 		if(msg.getItems() != null) {
 			return Arrays.asList(msg.getItems());
 		}
 		
 		return new ArrayList<>(); 
+	}
+
+	/*
+	 * Get search Results returns List<BaseEntity>
+	 */
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
+		return  getSearchResultsAsList(searchBE);
 	}
 
 	/*
@@ -4468,7 +4476,6 @@ public class QRules {
 			reportListView.put("data", columns);
 			reportListView.put("root", searchBECode);
 		}
-
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(reportListView);
