@@ -78,6 +78,9 @@ rule "Pre Init Btn Click"
           if(rootCode != null) {
             rules.set("rootCode", rootCode);
           }
+	      if(hintCode != null) {
+	      	rules.setState(hintCode);
+          }
         }
         catch( Exception e) {
             rules.println("button click event   ::   " +  m.getData());
@@ -92,6 +95,7 @@ rule "Pre Init Btn Click"
         if(quesCode != null) {
           rules.setState(quesCode);
         }
+        
 
         rules.setState("STARTED");
         rules.setState("EVENT_BTN_CLICK");
