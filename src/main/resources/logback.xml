@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+    
+    <logger category="com.hazelcast.nio.serialization.HazelcastSerializationException">
+    		<level name="ERROR"/>
+    </logger>
+    
+    <logger category="com.hazelcast.internal.diagnostics.HealthMonitor">
+    	<level name="ERROR"/>
+    </logger>
+	
+    <logger name="io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder" level="WARN"/>
+    <logger name="com.hazelcast.internal.diagnostics.HealthMonitor" level="ERROR" />
+    <logger name="io.vertx.core.VertxException  level="ERROR" />
+</configuration>
+

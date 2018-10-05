@@ -4,7 +4,7 @@ RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.7/main > /etc/apk/repositorie
 
 RUN apk update \
  && apk add --no-cache 
-RUN apk update && apk add jq && apk add bash
+RUN apk update && apk add jq && apk add bash && apk add curl
 
 #ADD cluster.xml /cluster.xml
 
