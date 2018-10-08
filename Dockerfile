@@ -4,7 +4,7 @@ RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.7/main > /etc/apk/repositorie
 
 RUN apk update \
  && apk add --no-cache 
-RUN apk update && apk add jq && apk add bash
+RUN apk update && apk add jq && apk add bash && apk add curl
 
 #ADD cluster.xml /cluster.xml
 
@@ -25,7 +25,7 @@ EXPOSE 15701
 EXPOSE 15702
 #CMD ["java"]
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=10 CMD curl -f / http://localhost:8080/version || exit 1 
+#HEALTHCHECK --interval=10s --timeout=5s --retries=10 CMD curl -f / http://localhost:8080/version || exit 1 
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 
