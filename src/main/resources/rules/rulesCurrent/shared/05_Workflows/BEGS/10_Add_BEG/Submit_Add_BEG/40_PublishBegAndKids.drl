@@ -13,7 +13,7 @@ rule "Submit Add BEG - Step 4"
         
         rules.setState("RELOAD_CACHE_BEG");
 
-		//rules.setState("EXIT_ADD_BEG_SUCCESS");
+		/* rules.setState("EXIT_ADD_BEG_SUCCESS");  */
 		
 	 	rules.footer();      
 end

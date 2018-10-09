@@ -167,8 +167,8 @@ public class QRules {
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
-		super(); 
-		
+		super();
+
 		this.eventBus = eventBus;
 		this.token = token;
 		this.decodedTokenMap = decodedTokenMap;
@@ -209,8 +209,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param token
-	 *            the token to set
+	 * @param token the token to set
 	 */
 	public void setToken(String token) {
 		this.token = token;
@@ -224,8 +223,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param eventBus
-	 *            the eventBus to set
+	 * @param eventBus the eventBus to set
 	 */
 	public void setEventBus(EventBus eventBus) {
 		this.eventBus = eventBus;
@@ -239,8 +237,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param decodedTokenMap
-	 *            the decodedTokenMap to set
+	 * @param decodedTokenMap the decodedTokenMap to set
 	 */
 	public void setDecodedTokenMap(Map<String, Object> decodedTokenMap) {
 		this.decodedTokenMap = decodedTokenMap;
@@ -252,7 +249,7 @@ public class QRules {
 	public String realm() {
 
 		String str = getAsString("realm");
-		if (GennySettings.devMode||(GennySettings.defaultLocalIP.equals(GennySettings.hostIP))) {
+		if (GennySettings.devMode || (GennySettings.defaultLocalIP.equals(GennySettings.hostIP))) {
 			str = GennySettings.mainrealm; // TODO, I don't like this, but...
 		}
 		return str.toLowerCase();
@@ -277,8 +274,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param state
-	 *            the state to set
+	 * @param state the state to set
 	 */
 	public void setState(String key) {
 		stateMap.put(key.toUpperCase(), true);
@@ -287,8 +283,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param state
-	 *            the state to set
+	 * @param state the state to set
 	 */
 	/* added by anish */
 	public void setState(Boolean key) {
@@ -298,8 +293,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param state
-	 *            the state to clear
+	 * @param state the state to clear
 	 */
 	public void clearState(String key) {
 		stateMap.remove(key);
@@ -324,11 +318,11 @@ public class QRules {
 	public Boolean is(final String key) {
 		return decodedTokenMap.containsKey(key);
 	}
-	
+
 	public void setPermanentObject(String key, Object obj) {
 		VertxUtils.putObject(this.realm(), "CACHE", key, obj);
 	}
-	
+
 	public <T> T getPermanentObject(String key, Type clazz) {
 		return VertxUtils.getObject(this.realm(), "CACHE", key, clazz);
 	}
@@ -350,7 +344,7 @@ public class QRules {
 	public BaseEntity getAsBaseEntity(final String key) {
 		return (BaseEntity) get(key);
 	}
-	
+
 	public SearchEntity getAsSearchEntity(final String key) {
 		return (SearchEntity) get(key);
 	}
@@ -448,11 +442,11 @@ public class QRules {
 		} catch (Exception e) {
 
 		}
-//		if ("service".equalsIgnoreCase(username)) {
-//			println("***** SERVICE USER *********** - getUser()");
-//		} else {
-//			println("***** "+code+" USER *********** - getUser()");
-//		}
+		// if ("service".equalsIgnoreCase(username)) {
+		// println("***** SERVICE USER *********** - getUser()");
+		// } else {
+		// println("***** "+code+" USER *********** - getUser()");
+		// }
 
 		return be;
 	}
@@ -572,34 +566,35 @@ public class QRules {
 		publishBaseEntityByCode(be, null, null, null);
 	}
 
-//	public void publishBaseEntityByCode(final String be, final Boolean delete) {
-//		String[] recipientArray = new String[1];
-//		recipientArray[0] = be;
-//		publishBaseEntityByCode(be, null, null, recipientArray, delete);
-//	} 
-//   removing this method and set it for replace instead below, as there is another method clearBaseEntity which does set delete true. 
-	
+	// public void publishBaseEntityByCode(final String be, final Boolean delete) {
+	// String[] recipientArray = new String[1];
+	// recipientArray[0] = be;
+	// publishBaseEntityByCode(be, null, null, recipientArray, delete);
+	// }
+	// removing this method and set it for replace instead below, as there is
+	// another method clearBaseEntity which does set delete true.
+
 	/* Publishes BaseEntity with replace true/false */
 	public void publishBaseEntityByCode(final String be, final Boolean replace) {
 
-        BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
-        BaseEntity[] itemArray = new BaseEntity[1];
-        itemArray[0] = item;
-        String[] recipientCodes = { this.getUser().getCode() } ;
-        QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray);
-        msg.setRecipientCodeArray(recipientCodes);
-        msg.setReplace(replace);
-        publishData(msg, recipientCodes);
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		String[] recipientCodes = { this.getUser().getCode() };
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setReplace(replace);
+		publishData(msg, recipientCodes);
 	}
-	
+
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
 
 		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
-		
-		String[] recipientCodes = { this.getUser().getCode() } ;
+
+		String[] recipientCodes = { this.getUser().getCode() };
 		msg.setRecipientCodeArray(recipientCodes);
 		publishData(msg, recipientCodes);
 	}
@@ -612,6 +607,32 @@ public class QRules {
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+
+	}
+
+	/* Publish BaseEntity with LinkValue Set */
+	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
+		publishData(msg, recipientCodes);
+
+	}
+
+	/* Publish BaseEntityList with LinkValue Set */
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
 		publishData(msg, recipientCodes);
 
 	}
@@ -628,7 +649,7 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
-	
+
 	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode) {
 
 		BaseEntity[] itemArray = new BaseEntity[1];
@@ -639,13 +660,14 @@ public class QRules {
 		msg.setRecipientCodeArray(recipients);
 		publishData(msg, recipients);
 	}
-	
+
 	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode) {
-           this.publishBaseEntityByCode(items, parentCode, linkCode, false);
+		this.publishBaseEntityByCode(items, parentCode, linkCode, false);
 	}
-	
-	/* Publishes  baseEntity with replace TRUE */
-    public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode, Boolean replace) {
+
+	/* Publishes baseEntity with replace TRUE */
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
+			Boolean replace) {
 
 		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
@@ -655,7 +677,7 @@ public class QRules {
 		msg.setReplace(replace);
 		publishData(msg, recipients);
 	}
-	
+
 	public void publishBaseEntityByCode(final BaseEntity item, final String parentCode, final String linkCode,
 			final String[] recipientCodes) {
 
@@ -666,7 +688,7 @@ public class QRules {
 		publishData(msg, recipientCodes);
 
 	}
-	
+
 	public <T extends QMessage> void publishCmd(T msg) {
 		msg.setToken(getToken());
 		publish("cmds", JsonUtils.toJson(msg));
@@ -690,16 +712,17 @@ public class QRules {
 	public void publishBaseEntitysByParentAndLinkCode(final String parentCode, final String linkCode, Integer pageStart,
 			Integer pageSize, Boolean cache) {
 
-		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(GennySettings.qwandaServiceUrl, getDecodedTokenMap(),
-				getToken(), parentCode, linkCode);
+		String json = RulesUtils.getBaseEntitysJsonByParentAndLinkCode(GennySettings.qwandaServiceUrl,
+				getDecodedTokenMap(), getToken(), parentCode, linkCode);
 		publish("cmds", json);
 	}
 
 	public void publishBaseEntitysByParentAndLinkCodeWithAttributes(final String parentCode, final String linkCode,
 			Integer pageStart, Integer pageSize, Boolean cache) {
 
-		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
-				getDecodedTokenMap(), getToken(), parentCode, linkCode, pageStart, pageSize);
+		BaseEntity[] beArray = RulesUtils.getBaseEntitysArrayByParentAndLinkCodeWithAttributes(
+				GennySettings.qwandaServiceUrl, getDecodedTokenMap(), getToken(), parentCode, linkCode, pageStart,
+				pageSize);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(beArray, parentCode, linkCode);
 		msg.setToken(getToken());
 
@@ -730,7 +753,6 @@ public class QRules {
 		}
 	}
 
-
 	public void archivePaidProducts() {
 
 		/* we get the list of products marked as "PAID" */
@@ -740,8 +762,8 @@ public class QRules {
 		String token = RulesUtils.generateServiceToken(realm());
 		if (token != null) {
 
-			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(GennySettings.qwandaServiceUrl,
-					getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
+			List<BaseEntity> paidProducts = RulesUtils.getBaseEntitysByParentAndLinkCodeWithAttributes(
+					GennySettings.qwandaServiceUrl, getDecodedTokenMap(), token, "GRP_PAID", "LNK_CORE", 0, 1000);
 
 			if (paidProducts != null) {
 
@@ -795,36 +817,110 @@ public class QRules {
 		}
 	}
 
-
 	public void sendReloadPage() {
 
 		QCmdReloadMessage cmdReload = new QCmdReloadMessage();
 		this.publishCmd(cmdReload);
 	}
 
+	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with recipientArr, NOT direct list of emailIds */
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType) {
+		
+		/* setting attachmentList as null, to reuse sendMessageMethod and reduce code */
+		sendMessage(recipientArray, contextMap, templateCode, messageType, null);
+
+	}
+	
+	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with attachments and with recipientArr, NOT direct list of emailIds */
+	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
+			String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+		/* setting "to" as null, to reuse sendMessageMethod and reduce code */
+		sendMessage(recipientArray, contextMap, templateCode, messageType, attachmentList, null);
+
+	}
+	
+	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and no attachments */
+	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
+			String messageType) {
+
+		/* setting attachmentList and recipientArr as null, to reuse sendMessageMethod and reduce code */
+		sendMessage(null, contextMap, templateCode, messageType, null, to);
+
+	}
+	
+	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and having attachments */
+	/**
+	 * @param to
+	 * @param templateCode
+	 * @param contextMap : key-value map for merging
+	 * @param messageType : Can be "EMAIL","SMS"
+	 * @param attachmentList : Incase of email attachments
+	 * @example
+	 * userBe is a user BaseEntity <br>
+	 * String userEmailId = userBe.getValue("PRI_USER_EMAIL", null);	//Can use any appropriate userEmailId AttributeCode <br>
+		String[] directRecipientEmailIds = { userEmailId }; <br>
+		
+		HashMap<String, String> contextMap = new HashMap<>(); <br>
+		contextMap.put("USER", userBe); <br>
+		
+		 rules.sendMessage(directRecipientEmailIds, "MSG_USER_CONTACTED", contextMap, "EMAIL"); 
+	 */
+	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
+			String messageType, List<QBaseMSGAttachment> attachmentList) {
+
+		/* setting recipientArr as null, to reuse sendMessageMethod and reduce code */
+		sendMessage(null, contextMap, templateCode, messageType, attachmentList, to);
+
+	}
+
+	// MAIN METHOD FOR SENDMESSAGES
+	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
+			String messageType, List<QBaseMSGAttachment> attachmentList, String[] to) {
 
 		/* unsubscribe link for the template */
-		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(projectUrl, templateCode);
+		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
+		JsonObject message = null;
+		
+		/* Adding project code to context */
+		String projectCode = "PRJ_" + GennySettings.mainrealm.toUpperCase();
+		this.println("project code for messages ::"+projectCode);
+		contextMap.put("PROJECT", projectCode);
+		
+		/* adding unsubscribe url */
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
 
 		if (recipientArray != null && recipientArray.length > 0) {
+				
+			if(attachmentList == null) {
+				message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
+						recipientArray, getToken());
+			} else {
+				message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType,
+						contextMap, recipientArray, attachmentList, getToken());
+			}
 
-			/* Adding project code to context */
-			String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-			contextMap.put("PROJECT", projectCode);
-
-			JsonObject message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
-					recipientArray, getToken());
-			publish("messages", message);
 		} else {
-			log.error("Recipient array is null and so message cant be sent");
+			log.error("Recipient array is null");
 		}
+		
+		if(to != null && to.length > 0) {
+			
+			if(attachmentList == null) {
+				message = MessageUtils.prepareMessageTemplateForDirectRecipients(templateCode, messageType, contextMap, to, getToken());
+			} else {
+				message = MessageUtils.prepareMessageTemplateWithAttachmentForDirectRecipients(templateCode, messageType, contextMap, to, attachmentList, getToken());
+			}
+			
+		}
+		
+		publish("messages", message);
 
 	}
+	
 
 	public BaseEntity createUser() {
 
@@ -839,23 +935,28 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		try {
-			be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm, name,
-					keycloakId);
+			be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname,
+					email, realm, name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
 			this.setState("DID_CREATE_NEW_USER");
 
-			/* send notification for new registration */
-			String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
-			
-			/* default slack channel */
-			this.sendSlackNotification(message);
-			
-			/* custom slack channel */
-			/* the first parameter is the attribute code of the custom slack notification channel */
-			this.sendSlackNotification("PRI_CUSTOM_SLACK_NOTIFICATION_URL", message);
+			/*
+			 * we check if project requires to send slack notification on user registrtaion
+			 */
+			Boolean sendSlackNotification = this.getProject().getValue("PRI_SEND_SLACK_NOTIFICATION_ON_REGISTRATION",
+					true);
+
+			if (sendSlackNotification == true) {
+
+				/* slack notification message for new registration */
+				String message = "New registration: " + firstname + " " + lastname + ". Email: " + email;
+
+				/* send registration notification on slack */
+				this.sendSlackNotification(message);
+			}
 
 		} catch (IOException e) {
 			log.error("Error in Creating User ");
@@ -880,7 +981,7 @@ public class QRules {
 			name = StringUtils.capitalize(name);
 
 			String token = RulesUtils.generateServiceToken(realm());
-			
+
 			String realm = realm();
 			if (GennySettings.devMode) {
 				realm = "genny";
@@ -892,8 +993,8 @@ public class QRules {
 			}
 
 			/* we create the user in the system */
-			be = QwandaUtils.createUser(getQwandaServiceUrl(), getToken(), username, firstname, lastname, email,
-					realm, name, keycloakId);
+			be = QwandaUtils.createUser(getQwandaServiceUrl(), getToken(), username, firstname, lastname, email, realm,
+					name, keycloakId);
 			VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 			// be = getUser();
 			set("USER", be);
@@ -989,26 +1090,55 @@ public class QRules {
 		publish("cmds", cmdJobSublayoutJson);
 	}
 
+	public void navigateBack() {
+		this.navigate("ROUTE_BACK");
+	}
+
+	public void navigateTo(String newRoute) {
+		this.navigateTo(newRoute, null, false);
+	}
+
+	public void navigateTo(String newRoute, Boolean isModal) {
+		this.navigateTo(newRoute, null, isModal);
+	}
+
+	public void navigateTo(String newRoute, JsonObject params) {
+		this.navigateTo(newRoute, params, false);
+	}
+
+	public void navigateTo(String newRoute, JsonObject params, Boolean isModal) {
+		this.navigate("ROUTE_CHANGE", newRoute, params, isModal);
+	}
+
 	private void navigate(String navigationType) {
 		this.navigate(navigationType, null);
 	}
 
 	private void navigate(String navigationType, String newRoute) {
+		this.navigate(navigationType, newRoute, null);
+	}
+
+	private void navigate(String navigationType, String newRoute, JsonObject params) {
+		this.navigate(navigationType, newRoute, null, false);
+	}
+
+	private void navigate(String navigationType, String newRoute, JsonObject params, Boolean isModal) {
 
 		this.println("NAVIGATION: " + navigationType);
 		this.println("Navigating to: " + newRoute);
 		QCmdMessage cmdNavigate = new QCmdMessage(navigationType, newRoute);
 		JsonObject json = JsonObject.mapFrom(cmdNavigate);
 		json.put("token", getToken());
+
+		if (params != null) {
+			json.put("params", params);
+		}
+
+		if (isModal != null && isModal == true) {
+			json.put("modal", true);
+		}
+
 		publish("cmds", json);
-	}
-
-	public void navigateTo(String newRoute) {
-		this.navigate("ROUTE_CHANGE", newRoute);
-	}
-
-	public void navigateBack() {
-		this.navigate("ROUTE_BACK");
 	}
 
 	public void showLoading(String text, boolean isPopup) {
@@ -1058,8 +1188,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param state
-	 *            the state to set
+	 * @param state the state to set
 	 */
 	public void setState(Map<String, Boolean> state) {
 		this.stateMap = state;
@@ -1137,11 +1266,9 @@ public class QRules {
 		publish("data", msg);
 	}
 
-
-
 	public void publishCmd(final QwandaMessage msg) {
 
-		if(msg.askData != null && msg.askData.getMessages().length > 0) {
+		if (msg.askData != null && msg.askData.getMessages().length > 0) {
 			this.publish("cmds", msg.askData);
 		}
 
@@ -1193,7 +1320,7 @@ public class QRules {
 		jsonArr.add(getUser().getCode());
 		jsonObj.put("recipientCodes", jsonArr);
 
-		publish("cmds",jsonObj);
+		publish("cmds", jsonObj);
 
 	}
 
@@ -1339,10 +1466,10 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("messages", RulesUtils.toJsonObject(msg));
 	}
-	
+
 	public void publish(String channel, final QBulkMessage msg) {
 		msg.setToken(getToken());
-		VertxUtils.publish(getUser(),channel, msg);
+		VertxUtils.publish(getUser(), channel, msg);
 	}
 
 	public void publish(String channel, final QDataAskMessage msg) {
@@ -1534,12 +1661,12 @@ public class QRules {
 	}
 
 	public Ask getQuestion(String sourceCode, String targetCode, String questionCode) {
-		
+
 		QDataAskMessage askMessage = QuestionUtils.getAsks(sourceCode, targetCode, questionCode, this.token);
-		if(askMessage != null && askMessage.getItems().length > 0) {
+		if (askMessage != null && askMessage.getItems().length > 0) {
 			return askMessage.getItems()[0];
 		}
-		
+
 		return null;
 	}
 
@@ -1787,7 +1914,7 @@ public class QRules {
 					List<Answer> answers = new ArrayList<Answer>();
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_MESSAGE", text));
 					answers.add(new Answer(newMessage.getCode(), newMessage.getCode(), "PRI_CREATOR", userCode));
-					this.baseEntity.saveAnswers(answers); 
+					this.baseEntity.saveAnswers(answers);
 					/* Add current date-time to char as */
 					this.baseEntity.saveAnswer(
 							new Answer(chatCode, chatCode, "PRI_DATE_LAST_MESSAGE", DateUtils.getCurrentUTCDateTime()));
@@ -1998,8 +2125,7 @@ public class QRules {
 	}
 
 	/**
-	 * @param started
-	 *            the started to set
+	 * @param started the started to set
 	 */
 	public void setStarted(Boolean started) {
 		this.started = started;
@@ -2559,7 +2685,7 @@ public class QRules {
 	public void subscribeUserToBaseEntity(String userCode, BaseEntity be) {
 		VertxUtils.subscribe(realm(), be, userCode);
 	}
-	
+
 	public void subscribeUsersToBaseEntity(final String[] users, BaseEntity be) {
 		VertxUtils.subscribe(realm(), be, users);
 	}
@@ -2596,7 +2722,6 @@ public class QRules {
 		VertxUtils.putSetString(realm(), SUB, beCode, subscriberSet);
 
 	}
-
 
 	static QBulkMessage cache = null;
 	static String cache2 = null;
@@ -3025,7 +3150,8 @@ public class QRules {
 		String jsonBE = JsonUtils.toJson(be);
 		String result = null;
 		try {
-			result = QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE, getToken());
+			result = QwandaUtils.apiPutEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/force", jsonBE,
+					getToken());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -3034,8 +3160,10 @@ public class QRules {
 
 	}
 
-
-	/* sets delete field to true so that FE removes the BE from their store || defaults the level to 1 */
+	/*
+	 * sets delete field to true so that FE removes the BE from their store ||
+	 * defaults the level to 1
+	 */
 	public void clearBaseEntityAndChildren(String baseEntityCode) {
 		this.clearBaseEntityAndChildren(baseEntityCode, 1);
 	}
@@ -3276,7 +3404,7 @@ public class QRules {
 		String sourceCode = getAsString("sourceCode");
 		String loadCategoryCode = getAsString("value");
 		String attributeCode = getAsString("attributeCode");
-		
+
 		println("The target BE code is   ::  " + targetCode);
 		println("The source BE code is   ::  " + sourceCode);
 		println("The attribute code is   ::  " + attributeCode);
@@ -3434,7 +3562,8 @@ public class QRules {
 						for (BaseEntity stakeholderBe : people) {
 
 							try {
-								if (this.isUserSeller(stakeholderBe)) {
+								if (this.isUserSeller(stakeholderBe)
+										|| this.isUserRole(stakeholderBe, "PRI_IS_ADMIN")) {
 									sellersBe.add(stakeholderBe);
 								}
 
@@ -3505,7 +3634,9 @@ public class QRules {
 						sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "TOAST");
 
 						/* Sending message to BEG OWNER */
-						/* sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL"); */
+						/*
+						 * sendMessage(stakeholderArr, contextMap, "MSG_CH40_NEW_JOB_POSTED", "EMAIL");
+						 */
 
 					}
 				}
@@ -3513,7 +3644,7 @@ public class QRules {
 
 		}
 
-		//this.reloadCache();
+		// this.reloadCache();
 		this.redirectToHomePage();
 		drools.setFocus("ispayments"); /* NOW Set up Payments */
 	}
@@ -3634,7 +3765,7 @@ public class QRules {
 		cmdViewJson.put("token", getToken());
 		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publish("cmds",cmdViewJson);
+		publish("cmds", cmdViewJson);
 	}
 
 	/*
@@ -3729,8 +3860,8 @@ public class QRules {
 		// }
 		println("The search BE is  :: " + searchBE);
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_USERS", columnsArray);
@@ -3791,8 +3922,8 @@ public class QRules {
 			e.printStackTrace();
 		}
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String loadsList = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String loadsList = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 		publishData(new JsonObject(loadsList));
 		sendTableViewWithHeaders("SBE_GET_ALL_LOADS", columnsArray);
 	}
@@ -3857,8 +3988,8 @@ public class QRules {
 		// }
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 		System.out.println("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_DRIVERS", columnsArray);
@@ -3923,8 +4054,8 @@ public class QRules {
 
 		// println("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String result = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 		log.info("The result   ::  " + result);
 		publishData(new JsonObject(result));
 		sendTableViewWithHeaders("SBE_GET_ALL_OWNERS", columnsArray);
@@ -4087,7 +4218,7 @@ public class QRules {
 	public void redirectToHomePage() {
 
 		this.navigateTo("/home");
-		sendSublayout("BUCKET_DASHBOARD", "dashboard_"+realm().toLowerCase()+".json", "GRP_DASHBOARD");
+		sendSublayout("BUCKET_DASHBOARD", "dashboard_" + realm().toLowerCase() + ".json", "GRP_DASHBOARD");
 		setLastLayout("BUCKET_DASHBOARD", "GRP_DASHBOARD");
 	}
 
@@ -4157,8 +4288,8 @@ public class QRules {
 
 		log.info("The search BE is :: " + jsonSearchBE);
 		// String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 
 		this.println(resultJson);
 
@@ -4220,16 +4351,16 @@ public class QRules {
 	public void sendSearchResults(SearchEntity searchBE) {
 
 		try {
-			
+
 			String serviceToken = RulesUtils.generateServiceToken(this.realm());
 			String jsonSearchBE = JsonUtils.toJson(searchBE);
-			String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE, serviceToken);
+			String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+					jsonSearchBE, serviceToken);
 			QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 			msg.setToken(getToken());
-			publish("cmds",msg);
-		}
-		catch(Exception e) {
-			
+			publish("cmds", msg);
+		} catch (Exception e) {
+
 		}
 	}
 
@@ -4240,35 +4371,38 @@ public class QRules {
 
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
 	}
-	
-	
+
 	/*
-	 * Publish Search BE results setting the parentCode, linkValue in QDataBaseEntityMessage
+	 * Publish Search BE results setting the parentCode, linkValue in
+	 * QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode) throws IOException {
 
 		this.sendSearchResults(searchBE, parentCode, linkCode, "LINK");
 	}
+
 	/*
-	 * Publish Search BE results setting the parentCode, linkCode, linkValue in QDataBaseEntityMessage
+	 * Publish Search BE results setting the parentCode, linkCode, linkValue in
+	 * QDataBaseEntityMessage
 	 */
-	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue) throws IOException {
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue)
+			throws IOException {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				serviceToken);
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		println("msg items size ::"+msg.getItems().length);
+		println("msg items size ::" + msg.getItems().length);
 		if (msg != null) {
 			msg.setParentCode(parentCode);
 			msg.setToken(getToken());
 			msg.setLinkCode(linkCode);
 			msg.setLinkValue(linkValue);
-			publish("cmds",msg);
+			publish("cmds", msg);
 		} else {
-			println("Warning: no results from search "+searchBE.getCode());
+			println("Warning: no results from search " + searchBE.getCode());
 		}
 	}
 
@@ -4277,10 +4411,10 @@ public class QRules {
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE) throws IOException {
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
-		QDataBaseEntityMessage results =  getSearchResults(searchBE, serviceToken);
+		QDataBaseEntityMessage results = getSearchResults(searchBE, serviceToken);
 		if (results == null) {
 			results = new QDataBaseEntityMessage(new ArrayList<BaseEntity>());
-			
+
 		}
 		return results;
 	}
@@ -4288,27 +4422,35 @@ public class QRules {
 	/*
 	 * Get search Results returns List<BaseEntity>
 	 */
-	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
-		QDataBaseEntityMessage msg = getSearchResults(searchBE, getToken());
-		if(msg.getItems() != null) {
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, String token) throws IOException {
+
+		QDataBaseEntityMessage msg = getSearchResults(searchBE, token);
+		if (msg.getItems() != null) {
 			return Arrays.asList(msg.getItems());
 		}
-		
-		return new ArrayList<>(); 
+
+		return new ArrayList<>();
+	}
+
+	/*
+	 * Get search Results returns List<BaseEntity>
+	 */
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
+		return getSearchResultsAsList(searchBE, getToken());
 	}
 
 	/*
 	 * Get search Results returns QDataBaseEntityMessage
 	 */
 	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, final String token) throws IOException {
-		if (token==null) {
+		if (token == null) {
 			log.error("TOKEN IS NULL!!! in getSearchResults");
-			return new QDataBaseEntityMessage(new ArrayList<BaseEntity>()); 
+			return new QDataBaseEntityMessage(new ArrayList<BaseEntity>());
 		}
-		log.info("The search BE is :: " + JsonUtils.toJson(searchBE) );
+		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				token);
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, token);
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
 		log.info("The result   ::  " + msg);
 
@@ -4321,8 +4463,8 @@ public class QRules {
 	public String getSearchResultsString(SearchEntity searchBE) throws IOException {
 		log.info("The search BE is :: " + JsonUtils.toJson(searchBE));
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
-		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search", jsonSearchBE,
-				getToken());
+		String resultJson = QwandaUtils.apiPostEntity(GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/search",
+				jsonSearchBE, getToken());
 
 		return resultJson;
 	}
@@ -4425,7 +4567,6 @@ public class QRules {
 			reportListView.put("data", columns);
 			reportListView.put("root", searchBECode);
 		}
-
 		JsonArray msgCodes = new JsonArray();
 		msgCodes.add(codeListView);
 		msgCodes.add(reportListView);
@@ -4434,32 +4575,7 @@ public class QRules {
 		cmdViewJson.put("token", getToken());
 		log.info(" The cmd msg is :: " + cmdViewJson);
 
-		publish("cmds",cmdViewJson);
-	}
-
-	// send email with attachments
-	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
-			String messageType, List<QBaseMSGAttachment> attachmentList) {
-
-		/* unsubscribe link for the template */
-		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
-		if (unsubscribeUrl != null) {
-			contextMap.put("URL", unsubscribeUrl);
-		}
-
-		if (recipientArray != null && recipientArray.length > 0) {
-
-			/* Adding project code to context */
-			String projectCode = "PRJ_" + getAsString("realm").toUpperCase();
-			contextMap.put("PROJECT", projectCode);
-
-			JsonObject message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType,
-					contextMap, recipientArray, attachmentList, getToken());
-			publish("messages", message);
-		} else {
-			log.error("Recipient array is null and so message cant be sent");
-		}
-
+		publish("cmds", cmdViewJson);
 	}
 
 	/* format date in format 10 May 2010 */
@@ -4480,15 +4596,17 @@ public class QRules {
 		this.println(serviceDecodedTokenMap);
 		this.setToken(token);
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
-		
-		println(RulesUtils.ANSI_YELLOW+"*********** setting new ("+serviceDecodedTokenMap.get("azp")+") token username -> "+serviceDecodedTokenMap.get("preferred_username")+RulesUtils.ANSI_RESET);
+
+		println(RulesUtils.ANSI_YELLOW + "*********** setting new (" + serviceDecodedTokenMap.get("azp")
+				+ ") token username -> " + serviceDecodedTokenMap.get("preferred_username") + RulesUtils.ANSI_RESET);
 		/* we reinit utils */
 		this.initUtils();
 	}
 
 	public boolean loadRealmData() {
 
-		println(RulesUtils.ANSI_BLUE+"PRE_INIT_STARTUP Loading in keycloak data and setting up service token for " + realm()+RulesUtils.ANSI_RESET);
+		println(RulesUtils.ANSI_BLUE + "PRE_INIT_STARTUP Loading in keycloak data and setting up service token for "
+				+ realm() + RulesUtils.ANSI_RESET);
 
 		for (String jsonFile : SecureResources.getKeycloakJsonMap().keySet()) {
 
@@ -4499,7 +4617,7 @@ public class QRules {
 					System.out.println("Fudging realm so genny keycloak used");
 					// Use basic Genny json when project json not available
 					String gennyJson = SecureResources.getKeycloakJsonMap().get("genny.json");
-					SecureResources.getKeycloakJsonMap().put(jsonFile,gennyJson);
+					SecureResources.getKeycloakJsonMap().put(jsonFile, gennyJson);
 					keycloakJson = gennyJson;
 				} else {
 					return false;
@@ -4516,7 +4634,7 @@ public class QRules {
 				if (token != null) {
 
 					this.setNewTokenAndDecodedTokenMap(token);
-						this.set("realm", GennySettings.dynamicRealm(realm()));
+					this.set("realm", GennySettings.dynamicRealm(realm()));
 					return true;
 				}
 			}
@@ -4589,7 +4707,7 @@ public class QRules {
 			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
 		}
 		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
-			println("Tree data consists of "+bulk.getMessages().length+" messages");
+			println("Tree data consists of " + bulk.getMessages().length + " messages");
 			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
 
 			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
@@ -4657,7 +4775,7 @@ public class QRules {
 			}
 
 			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
-			println("Processed Tree data consists of "+newBulkMsg.getMessages().length+" messages");
+			println("Processed Tree data consists of " + newBulkMsg.getMessages().length + " messages");
 
 			this.publishCmd(newBulkMsg);
 
@@ -4666,17 +4784,17 @@ public class QRules {
 
 	public void startupEvent(String caller) {
 
-		// Save the existing token 
+		// Save the existing token
 		String token = this.token;
-		Map<String,Object> decodedToken = this.decodedTokenMap;
-		
+		Map<String, Object> decodedToken = this.decodedTokenMap;
+
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
 			this.generateTree();
 			this.reloadCache();
 		}
-		
+
 		// restore the existing token
 		this.setToken(token);
 		this.setDecodedTokenMap(decodedToken);
@@ -4700,24 +4818,25 @@ public class QRules {
 		cacheUtils.refresh(realm, "GRP_BEGS");
 		cacheUtils.refresh(realm, "ARCHIVED_PRODUCTS"); /* TODO: that might not be necessary */
 	}
-	
+
 	public void sendApplicationData() {
 
 		HashMap<String, List<String>> subscriptions = new HashMap<>();
 		List<String> bucketsForSeller = new ArrayList<>();
 		bucketsForSeller.add("GRP_NEW_ITEMS");
 		subscriptions.put("PRI_IS_SELLER", bucketsForSeller);
-		
+
 		this.sendApplicationData(subscriptions, new HashMap<>());
 	}
-		
+
 	public void sendApplicationData(HashMap<String, List<String>> subscriptions) {
 		this.sendApplicationData(subscriptions, new HashMap<>());
 	}
 
 	/* send application data with subscriptions and allowedBuckets */
-	public void sendApplicationData(HashMap<String, List<String>> subscriptions, HashMap<String, List<String>> bucketsToBeSent) {
-		
+	public void sendApplicationData(HashMap<String, List<String>> subscriptions,
+			HashMap<String, List<String>> bucketsToBeSent) {
+
 		Boolean isLogin = isState("LOOP_AUTH_INIT_EVT") || isState("AUTH_INIT");
 		Boolean isRegistration = isState("DID_REGISTER");
 		Boolean isProductTypeTagUpdated = isState("LOAD_TYPES_UPDATED");
@@ -4731,16 +4850,16 @@ public class QRules {
 		log.info("Entering new send application data ");
 
 		showLoading("Loading data...");
-		
+
 		this.sendCachedItem("GRP_APPLICATIONS", subscriptions, bucketsToBeSent);
 		this.sendCachedItem("GRP_DASHBOARD", subscriptions, bucketsToBeSent);
 		this.sendCachedItem("GRP_BEGS", subscriptions, bucketsToBeSent);
 
 		/* end of process, tell rules to show layouts */
 		this.setState("DATA_SENT_FINISHED");
-		
+
 	}
-	
+
 	public void sendCachedItem(String string, HashMap<String, List<String>> subscriptions) {
 		this.sendCachedItem(string, subscriptions, null);
 	}
@@ -4749,7 +4868,8 @@ public class QRules {
 		this.sendCachedItem(cachedItemKey, null, null);
 	}
 
-	public void sendCachedItem(final String cachedItemKey, final HashMap<String, List<String>> subscriptions, HashMap<String, List<String>> bucketsToBeSent) {
+	public void sendCachedItem(final String cachedItemKey, final HashMap<String, List<String>> subscriptions,
+			HashMap<String, List<String>> bucketsToBeSent) {
 
 		long startTime = System.nanoTime();
 		BaseEntity user = this.getUser();
@@ -4818,17 +4938,17 @@ public class QRules {
 		String[] resultArray = VertxUtils.getObject(realm(), SUB, subscriptionCode, String[].class);
 
 		String[] resultAdmins = VertxUtils.getObject(realm(), "SUBADMIN", "ADMINS", String[].class);
-		
-		if(resultArray != null && resultAdmins != null) {
+
+		if (resultArray != null && resultAdmins != null) {
 			String[] result = new String[resultArray.length + resultAdmins.length];
 			ArrayUtils.concat(resultArray, resultAdmins, result);
 			return result;
-		} else if(resultArray != null && resultAdmins == null) {
-			return resultArray;	
+		} else if (resultArray != null && resultAdmins == null) {
+			return resultArray;
 		} else {
 			return null;
 		}
-		
+
 	}
 
 	public void createServiceUser() {
@@ -4844,13 +4964,15 @@ public class QRules {
 		String keycloakId = getAsString("sub").toLowerCase();
 
 		// Check if already exists
-		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE","PER_SERVICE"); // do not check cache!
+		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE", "PER_SERVICE"); // do not
+																											// check
+																											// cache!
 
 		if (existing == null) {
 
 			try {
-				be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname, email, realm,
-						name, keycloakId);
+				be = QwandaUtils.createUser(GennySettings.qwandaServiceUrl, getToken(), username, firstname, lastname,
+						email, realm, name, keycloakId);
 				VertxUtils.writeCachedJson(be.getCode(), JsonUtils.toJson(be));
 				be = getUser();
 				set("USER", be);
@@ -4876,10 +4998,12 @@ public class QRules {
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
 				if (hasRole("admin")) {
+
 					if (isAdmin == null || !isAdmin) {
 						isAdminAnswer = new Answer(user.getCode(), user.getCode(), attributeCode, "TRUE");
 						isAdminAnswer.setWeight(1.0);
 						this.baseEntity.saveAnswer(isAdminAnswer);
+						VertxUtils.subscribeAdmin(realm(), user.getCode());
 						setState("USER_ROLE_ADMIN_SET");
 					}
 				} else if (!hasRole("admin")) {
@@ -5101,11 +5225,11 @@ public class QRules {
 		}
 		return paymentsUserId;
 	}
-	
+
 	/**
 	 * 
 	 * @param attributeCode of the slack-notification-channel
-	 * @param message to be sent to the webhook
+	 * @param message       to be sent to the webhook
 	 */
 	public void sendSlackNotification(String attributeCode, String message) {
 		/* send critical slack notifications only for production mode */
@@ -5544,7 +5668,7 @@ public class QRules {
 		cmdViewMessage.setToken(getToken());
 		JsonObject cmdViewMessageJson = new JsonObject().mapFrom(cmdViewMessage);
 		cmdViewMessageJson.put("root", rootCode);
-		publish("cmds",cmdViewMessageJson);
+		publish("cmds", cmdViewMessageJson);
 		setLastLayout("LIST_VIEW", rootCode);
 	}
 
@@ -5756,7 +5880,7 @@ public class QRules {
 
 	/* Fetch the one time use Payments card and bank tokens for a user */
 	public String fetchOneTimePaymentsToken(String paymentsUserId, String paymentToken, AuthorizationPaymentType type) {
-		String token = null; 
+		String token = null;
 
 		try {
 			QPaymentsUser user = new QPaymentsUser(paymentsUserId);
@@ -5911,18 +6035,18 @@ public class QRules {
 
 	}
 
-	public boolean isAddressPresent(final String personCode) {
+	public boolean isAddressPresent(final String beCode) {
 		boolean ret = false;
 
-		BaseEntity person = this.baseEntity.getBaseEntityByCode(personCode);
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(beCode);
 
-		if (person.containsEntityAttribute("PRI_ADDRESS_ADDRESS1")) {
-			if (person.containsEntityAttribute("PRI_ADDRESS_COUNTRY")) {
-				if (person.containsEntityAttribute("PRI_ADDRESS_FULL")) {
-					if (person.containsEntityAttribute("PRI_ADDRESS_LATITUDE")) {
-						if (person.containsEntityAttribute("PRI_ADDRESS_LONGITUDE")) {
-							if (person.containsEntityAttribute("PRI_ADDRESS_POSTCODE")) {
-								if (person.containsEntityAttribute("PRI_ADDRESS_SUBURB")) {
+		if (be.containsEntityAttribute("PRI_ADDRESS_ADDRESS1")) {
+			if (be.containsEntityAttribute("PRI_ADDRESS_COUNTRY")) {
+				if (be.containsEntityAttribute("PRI_ADDRESS_FULL")) {
+					if (be.containsEntityAttribute("PRI_ADDRESS_LATITUDE")) {
+						if (be.containsEntityAttribute("PRI_ADDRESS_LONGITUDE")) {
+							if (be.containsEntityAttribute("PRI_ADDRESS_POSTCODE")) {
+								if (be.containsEntityAttribute("PRI_ADDRESS_SUBURB")) {
 									return true;
 								}
 							}
@@ -5933,26 +6057,26 @@ public class QRules {
 		}
 
 		// okay, need to regenerate address attributes
-		String jsonAddress = person.getValue("PRI_ADDRESS_JSON", null);
+		String jsonAddress = be.getValue("PRI_ADDRESS_JSON", null);
 		if (jsonAddress != null) {
 
 			QDataAnswerMessage msg = new QDataAnswerMessage(
-					new Answer(personCode, personCode, "PRI_ADDRESS_JSON", jsonAddress));
+					new Answer(beCode, beCode, "PRI_ADDRESS_JSON", jsonAddress));
 			List<Answer> answers = processAddressAnswers(msg);
 			this.baseEntity.saveAnswers(answers);
-			log.info(person.getCode() + " fixed using existing JSON");
+			log.info(be.getCode() + " fixed using existing JSON");
 		} else {
-			String jsonFull = person.getValue("PRI_ADDRESS_FULL", null);
+			String jsonFull = be.getValue("PRI_ADDRESS_FULL", null);
 			if (jsonFull != null) {
 				String[] fullAddress = jsonFull.split(",");
 				String city = fullAddress[1];
 				List<Answer> answers = new ArrayList<Answer>();
-				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_CITY", city));
-				answers.add(new Answer(personCode, personCode, "PRI_ADDRESS_SUBURB", city));
+				answers.add(new Answer(beCode, beCode, "PRI_ADDRESS_CITY", city));
+				answers.add(new Answer(beCode, beCode, "PRI_ADDRESS_SUBURB", city));
 				this.baseEntity.saveAnswers(answers);
-				log.info(person.getCode() + " fixed using existing Full Address");
+				log.info(be.getCode() + " fixed using existing Full Address");
 			} else {
-				log.error("ERROR!! " + personCode + " does not contain Address Full");
+				log.error("ERROR!! " + beCode + " does not contain Address Full");
 			}
 		}
 		return ret;
@@ -6157,7 +6281,7 @@ public class QRules {
 
 		String[] recipient = { getUser().getCode() };
 
-		this.clearBaseEntityAndChildren("GRP_NOTES" , 1);
+		this.clearBaseEntityAndChildren("GRP_NOTES", 1);
 		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
 
 		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
@@ -6166,7 +6290,7 @@ public class QRules {
 		if (searchBE != null) {
 			/* Send search result */
 			try {
-				//this.sendSearchResults(searchBE, "GRP_NOTES");
+				// this.sendSearchResults(searchBE, "GRP_NOTES");
 				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
 				search.setLinkCode("LNK_MESSAGES");
 				search.setParentCode("GRP_NOTES");
@@ -6188,30 +6312,30 @@ public class QRules {
 
 	public void sendSplitView(final String parentCode, final String bucketCode) {
 
-        QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
-        JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
+		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "SPLIT_VIEW");
+		JsonObject cmdViewJson = JsonObject.mapFrom(cmdView);
 
-        JsonObject codeListView = new JsonObject();
-        codeListView.put("code", "LIST_VIEW");
-        codeListView.put("root", parentCode);
+		JsonObject codeListView = new JsonObject();
+		codeListView.put("code", "LIST_VIEW");
+		codeListView.put("root", parentCode);
 
-        JsonObject bucketListView = new JsonObject();
-        bucketListView.put("code", "BUCKET_VIEW");
-        bucketListView.put("root", bucketCode);
+		JsonObject bucketListView = new JsonObject();
+		bucketListView.put("code", "BUCKET_VIEW");
+		bucketListView.put("root", bucketCode);
 
-        JsonArray msgCodes = new JsonArray();
-        msgCodes.add(codeListView);
-        msgCodes.add(bucketListView);
-        System.out.println("The JsonArray is :: " + msgCodes);
-        cmdViewJson.put("data", msgCodes);
-        cmdViewJson.put("root", parentCode); /* root needs to be there */
-        cmdViewJson.put("token", getToken());
-        System.out.println(" The cmd msg is :: " + cmdViewJson);
+		JsonArray msgCodes = new JsonArray();
+		msgCodes.add(codeListView);
+		msgCodes.add(bucketListView);
+		System.out.println("The JsonArray is :: " + msgCodes);
+		cmdViewJson.put("data", msgCodes);
+		cmdViewJson.put("root", parentCode); /* root needs to be there */
+		cmdViewJson.put("token", getToken());
+		System.out.println(" The cmd msg is :: " + cmdViewJson);
 
-        publish("cmds", cmdViewJson);
-        //publishCmd(cmdViewJson);
+		publish("cmds", cmdViewJson);
+		// publishCmd(cmdViewJson);
 	}
-	
+
 	public void setLastView(LayoutViewData viewData) {
 		String sessionId = getAsString("session_state");
 		if (sessionId != null) {
@@ -6230,32 +6354,62 @@ public class QRules {
 		return null;
 	}
 
-	public String updateBucketCount(String baseEntityCode, String sourceCode, String targetCode){
-		
-		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
-		if(be != null){
+	public String updateBucketCount(String baseEntityCode, String sourceCode, String targetCode) {
 
-			Integer sourceGrpCount = be.getValue("PRI_COUNT_"+sourceCode, 0);
-			Integer targetGrpCount = be.getValue("PRI_COUNT_"+targetCode, 0);
+		BaseEntity be = this.baseEntity.getBaseEntityByCode(baseEntityCode);
+		if (be != null) {
+
+			Integer sourceGrpCount = be.getValue("PRI_COUNT_" + sourceCode, 0);
+			Integer targetGrpCount = be.getValue("PRI_COUNT_" + targetCode, 0);
 			try {
-	
-				if(sourceGrpCount > 0 ){
+
+				if (sourceGrpCount > 0) {
 					sourceGrpCount = sourceGrpCount - 1;
 					targetGrpCount = targetGrpCount + 1;
-		
-					this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(), "PRI_COUNT_"+sourceCode, sourceGrpCount.toString());
-					this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(), "PRI_COUNT_"+targetCode, targetGrpCount.toString());
+
+					this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(),
+							"PRI_COUNT_" + sourceCode, sourceGrpCount.toString());
+					this.baseEntity.updateBaseEntityAttribute(this.getUser().getCode(), be.getCode(),
+							"PRI_COUNT_" + targetCode, targetGrpCount.toString());
 				}
-			}catch (Exception e) {
+			} catch (Exception e) {
 			}
 		}
 
 		return null;
 	}
-	
+
+	// TODO: What is the point of this function? ACC
 	public String getUniqueCode(int numberOfDigitsForUniqueCode) {
 		String uniqueCode = QwandaUtils.getUniqueCode(numberOfDigitsForUniqueCode);
 		return uniqueCode;
 	}
- 
+
+	public void processAnswers(final Answer[] answers) {
+		Arrays.stream(answers).forEach(x -> {
+			drools.insert(x);
+		});
+		drools.setFocus("AnswerProcessing");
+	}
+
+	public void processAnswers(final List<Answer> answers) {
+		answers.stream().forEach(x -> {
+			drools.insert(x);
+		});
+		drools.setFocus("AnswerProcessing");
+	}
+
+	public void processAnswers(final Answer answer) {
+		drools.insert(answer);
+		drools.setFocus("AnswerProcessing");
+	}
+
+	public void processJsonAddress(final String sourceCode, final String targetCode, final String jsonAddressLine) {
+		QDataAnswerMessage msg = new QDataAnswerMessage(
+				new Answer(sourceCode, targetCode, "PRI_ADDRESS_JSON", jsonAddressLine));
+		List<Answer> answers = processAddressAnswers(msg);
+		this.baseEntity.saveAnswers(answers);
+
+	}
+
 }

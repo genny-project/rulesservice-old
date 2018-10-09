@@ -11,16 +11,20 @@ rule "Verify PassCode"
         
 			rules.setState("LOOP_USER_PASSCODE_VERIFIED");
 			String userCode = rules.getAsString("targetCode");
-			if(userCode != null){
+			if(userCode != null) {
+				
 				String usersPassCode = rules.baseEntity.getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE_USER");
-				if(usersPassCode != null){
-					if(!rules.verifyPassCode(userCode, usersPassCode)){
+				if(usersPassCode != null) {
+					
+					if(!rules.verifyPassCode(userCode, usersPassCode)) {
 						rules.setState("PASSCODE_VERIFICATION_FAILED");
-					}else{
+					}
+					else {
 						rules.setState("PASSCODE_VERIFICATION_SUCCEEDED");
 						rules.setState("MOBILE_VERIFIED");
 					}
-				}else{
+				}
+				else {
 					rules.println("Error!! The userPassCode is not available.");
 				}
 			}

@@ -31,8 +31,8 @@ ruleflow-group 'LinkChange'
     		if(link.getTargetCode().startsWith("BEG_")) {
     			
     			rules.println("====== BEG LINK CHANGE =========");
-    			//rules.cacheUtils.refresh(rules.realm(), "GRP_APPLICATIONS");
-    			//rules.cacheUtils.refresh(rules.realm(), "GRP_DASHBOARD");
+    			/* rules.cacheUtils.refresh(rules.realm(), "GRP_APPLICATIONS"); */
+    			/* rules.cacheUtils.refresh(rules.realm(), "GRP_DASHBOARD"); */
     			
     			String sourceCode = null;
     			String targetCode = link.getSourceCode();

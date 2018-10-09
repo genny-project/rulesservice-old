@@ -9,12 +9,13 @@ rule "Pre Init Focus Rule Group"
 /*	ruleflow-group 'Init' */
     when
           m : QEventMessage( event_type == "FOCUS_RULE_GROUP" )
-          rules: QRules(!isState("FOCUS_RULE_GROUP")  && (hasRole("dev") == true) ) 
+          $rules: QRules(!isState("FOCUS_RULE_GROUP") ) 
+          eval( $rules.hasRole("dev") ) 
      then    
-        rules.setDrools(drools);
-        rules.println("RULE INIT FOCUS RULE GROUP: "+m);
+        $rules.setDrools(drools);
+        $rules.println("RULE INIT FOCUS RULE GROUP: "+m);
  
-        rules.setState("FOCUS_RULE_GROUP");
+        $rules.setState("FOCUS_RULE_GROUP");
 
 		
        String ruleGroup = m.getData().getCode();

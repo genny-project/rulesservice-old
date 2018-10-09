@@ -22,7 +22,7 @@ rule "System Event Listener"
       	rules.header();
  
  		rules.println("System Event:"+$m.getData().getCode());
-		rules.startupEvent("System Event");  // load up everything except searches
+		rules.startupEvent("System Event");  /* load up everything except searches */
  		QwandaUtils.apiGet(GennySettings.startupWebHook,null);
 
    	    rules.footer();
