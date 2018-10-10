@@ -1,0 +1,17 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Create Chat - Step 0"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("BTN_CREATE_CONVERSATION") && 
+						!isState("LOOP_CREATE_CONVERSATION")) 
+	then
+	 	rules.header();
+		
+		rules.setState("LOOP_CREATE_CONVERSATION");
+
+		rules.setState("START_CHAT");
+
+	 	rules.footer();      
+end

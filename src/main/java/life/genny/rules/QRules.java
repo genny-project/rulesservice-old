@@ -2727,6 +2727,29 @@ public class QRules {
 	static String cache2 = null;
 
 	/*
+	 * Publish all the messages that belongs to the given chat
+	 */
+	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
+		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
+		// 0, 100, true);
+
+		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
+				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
+				.setSourceStakeholder(getUser().getCode()).addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%").setPageStart(pageStart)
+				.setPageSize(pageSize);
+
+		try {
+			sendSearchResults(sendAllMsgs);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			log.info("Error! Unable to get Search Rsults");
+			e.printStackTrace();
+		}
+
+	}
+	
+	/*
 	 * Method to send All the Chats for the current user
 	 */
 	public void sendAllChats(final int pageStart, final int pageSize) {
@@ -3767,30 +3790,7 @@ public class QRules {
 
 		publish("cmds", cmdViewJson);
 	}
-
-	/*
-	 * Publish all the messages that belongs to the given chat
-	 */
-	public void sendChatMessages(final String chatCode, final int pageStart, final int pageSize) {
-		// publishBaseEntitysByParentAndLinkCodeWithAttributes(chatCode, "LNK_MESSAGES",
-		// 0, 100, true);
-
-		SearchEntity sendAllMsgs = new SearchEntity("SBE_CHATMSGS", "Chat Messages").addColumn("PRI_MESSAGE", "Message")
-				.addColumn("PRI_CREATOR", "Creater ID").setSourceCode(chatCode)
-				.setSourceStakeholder(getUser().getCode()).addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
-				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%").setPageStart(pageStart)
-				.setPageSize(pageSize);
-
-		try {
-			sendSearchResults(sendAllMsgs);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			log.info("Error! Unable to get Search Rsults");
-			e.printStackTrace();
-		}
-
-	}
-
+	
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
 		// JsonArray columnsArray = new JsonArray();
@@ -4368,10 +4368,8 @@ public class QRules {
 	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
-
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
 	}
-
 	/*
 	 * Publish Search BE results setting the parentCode, linkValue in
 	 * QDataBaseEntityMessage
@@ -4469,51 +4467,30 @@ public class QRules {
 		return resultJson;
 	}
 
-	/*
-	 * Check if conversation between sender and receiver already exists
-	 */
-	public Boolean checkIfChatAlreadyExists(final String sender, final String receiver) {
-		List<BaseEntity> chats = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 500,
-				true);
+	public BaseEntity getChatConversation(List<String> userCodes) {
 
+		/* we get all the existing chats */
+		List<BaseEntity> chats = this.baseEntity.getLinkedBaseEntities("GRP_MESSAGES", "LNK_CHAT");
+		
 		if (chats != null) {
 
-			for (BaseEntity chat : chats) {
+			/* we loop through all of them */
+			for (BaseEntity chat: chats) {
 
-				List<BaseEntity> users = this.baseEntity.getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER",
-						0, 500, true);
-				if (users != null) {
-					if (users.contains(this.baseEntity.getBaseEntityByCode(sender))
-							&& users.contains(this.baseEntity.getBaseEntityByCode(receiver))) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+				/* we get the chat participants */
+				List<BaseEntity> chatParticipants = this.baseEntity.getLinkedBaseEntities(chat.getCode(), "LNK_USER");
+				if (chatParticipants != null) {
 
-	}
+					List<String> participantCodes = chatParticipants.stream().map(participant -> participant.getCode()).collect(Collectors.toList());
 
-	/*
-	 * Give oldChat for the given sender and receiver
-	 */
-	public BaseEntity getOldChatForSenderReceiver(final String sender, final String receiver) {
-		List<BaseEntity> chats = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_MESSAGES", "LNK_CHAT", 0, 100,
-				true);
-		if (chats != null) {
-
-			for (BaseEntity chat : chats) {
-
-				List<BaseEntity> users = this.baseEntity.getBaseEntitysByParentAndLinkCode(chat.getCode(), "LNK_USER",
-						0, 500, true);
-				if (users != null) {
-					if (users.contains(this.baseEntity.getBaseEntityByCode(sender))
-							&& users.contains(this.baseEntity.getBaseEntityByCode(receiver))) {
+					/* if the participants match the list of user codes, we have found the chat we were looking for */
+					if(participantCodes.equals(userCodes)) {
 						return chat;
 					}
 				}
 			}
 		}
+
 		return null;
 	}
 
