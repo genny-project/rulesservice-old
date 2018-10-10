@@ -1482,12 +1482,12 @@ public class QRules {
 		VertxUtils.publish(getUser(), channel, payload);
 	}
 
-	public void loadUserRole() {
+	public String loadUserRole() {
 
 		BaseEntity user = this.getUser();
-		if (user != null) {
+        String userRole = null;
 
-			Boolean has_role_been_found = false;
+		if (user != null) {
 
 			if (user != null) {
 
@@ -1505,18 +1505,20 @@ public class QRules {
 
 						if (isRole) {
 							this.setState(role.getAttributeCode());
-							has_role_been_found = true;
+							userRole = role.getAttributeCode();
 						}
 					}
 				}
 			}
 
-			if (has_role_been_found) {
+			if (userRole != null) {
 				this.setState("ROLE_FOUND");
 			} else {
 				this.setState("ROLE_NOT_FOUND");
 			}
 		}
+		
+		return userRole;
 	}
 
 	/*
