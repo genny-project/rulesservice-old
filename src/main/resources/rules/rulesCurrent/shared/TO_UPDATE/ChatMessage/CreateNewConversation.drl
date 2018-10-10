@@ -10,7 +10,7 @@ import java.util.List;
 rule "Create Conversation"
 
 when
-    $m :  QEventMessage( )
+    m :  QEventMessage( )
     rules: QRules( isState("EVENT_BTN_CLICK") && isState("BTN_CREATE_CONVERSATION") && !isState("CREATE_CONVERATION_MESSAGE") )
 then
 

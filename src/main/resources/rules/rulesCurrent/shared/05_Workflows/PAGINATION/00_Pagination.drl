@@ -26,19 +26,28 @@ rule "Pagination"
 		/* we fetch the next page for the given root code */
 		if(rootCode != null && pageStart != null && pageSize != null) {
 			
-			String searchEntityCode = rootCode;
+			/*String searchEntityCode = rootCode;
 			if(beCode != null) {
 				searchEntityCode = rootCode + "_" + beCode;
 			}
 						
-			/* first we grab the associated search */
 			SearchEntity searchEntity = rules.baseEntity.getSearchEntityByCode(searchEntityCode);
 			if(searchEntity != null) {
 				
 				searchEntity.setPageStart(pageStart + pageSize);
 				searchEntity.setPageSize(pageSize);
 				rules.sendSearchResults(searchEntity, rootCode);				 
-			}
+			} */
+			
+			SearchEntity paginatedSearch = new SearchEntity("SBE_PAGINATED_SEARCH", "SBE_PAGINATED_SEARCH")
+            .addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+            .setSourceCode(rootCode)
+            .addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, beCode + "%")
+            .setPageStart(pageStart)
+            .setPageSize(pageSize);
+
+            /* we publish the units */
+            rules.sendSearchResults(paginatedSearch, rootCode);
 		}
 		
 		rules.footer();
