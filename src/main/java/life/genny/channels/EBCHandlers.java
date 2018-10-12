@@ -67,10 +67,11 @@ public class EBCHandlers {
 		});
 
 		Consumer.getFromEvents().subscribe(arg -> {
+		
 			JsonObject payload = processMessage("Event", arg);
 
 			QEventMessage eventMsg = null;
-			String evtMsg = "Event:";
+				
 			if (payload.getString("event_type").equals("EVT_ATTRIBUTE_VALUE_CHANGE")) {
 				eventMsg = JsonUtils.fromJson(payload.toString(), QEventAttributeValueChangeMessage.class);
 			} else if (payload.getString("event_type").equals("BTN_CLICK")) {
@@ -93,7 +94,7 @@ public class EBCHandlers {
 			JsonObject payload = processMessage("Data", arg);
 
 			if (payload.getString("msg_type").equalsIgnoreCase("DATA_MSG")) { // should always be data if coming through
-																				// this channel
+															// this channel
 				QDataAnswerMessage dataMsg = null;
 
 				// Is it a Rule?
@@ -111,6 +112,7 @@ public class EBCHandlers {
 
 					RulesLoader.setupKieRules(rulesGroup, rules);
 				} else if (payload.getString("data_type").equals(Answer.class.getSimpleName())) {
+					System.out.println("DATA Msg :");;
 					try {
 						dataMsg = JsonUtils.fromJson(payload.toString(), QDataAnswerMessage.class);
 						processMsg("Data:"+dataMsg.getData_type(), payload.getString("ruleGroup"),dataMsg, eventBus, payload.getString("token"));
