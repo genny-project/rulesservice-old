@@ -17,7 +17,7 @@ rule "Delete BEG - Step 3"
          if(begCode != null && begCode != null) {
         	 
 			   	/* We move the BEG to GRP_BIN */
-		        rules.baseEntity.moveBaseEntitySetLinkValue(begCode, groupCode, "GRP_BIN", "LNK_CORE", "BEG");
+		        rules.baseEntity.moveBaseEntity(begCode, groupCode, "GRP_BIN", "LNK_CORE", "BEG");
 		        
 		        /*  publishing beg again as it was deleted and will be needed for GRP_BIN again  */
 		        rules.publishBaseEntityByCode(begCode);
