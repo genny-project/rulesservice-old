@@ -825,12 +825,12 @@ public class QRules {
 	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with recipientArr, NOT direct list of emailIds */
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType) {
-		
+
 		/* setting attachmentList as null, to reuse sendMessageMethod and reduce code */
 		sendMessage(recipientArray, contextMap, templateCode, messageType, null);
 
 	}
-	
+
 	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with attachments and with recipientArr, NOT direct list of emailIds */
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType, List<QBaseMSGAttachment> attachmentList) {
@@ -839,7 +839,7 @@ public class QRules {
 		sendMessage(recipientArray, contextMap, templateCode, messageType, attachmentList, null);
 
 	}
-	
+
 	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and no attachments */
 	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
 			String messageType) {
@@ -848,7 +848,7 @@ public class QRules {
 		sendMessage(null, contextMap, templateCode, messageType, null, to);
 
 	}
-	
+
 	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and having attachments */
 	/**
 	 * @param to
@@ -860,10 +860,10 @@ public class QRules {
 	 * userBe is a user BaseEntity <br>
 	 * String userEmailId = userBe.getValue("PRI_USER_EMAIL", null);	//Can use any appropriate userEmailId AttributeCode <br>
 		String[] directRecipientEmailIds = { userEmailId }; <br>
-		
+
 		HashMap<String, String> contextMap = new HashMap<>(); <br>
 		contextMap.put("USER", userBe); <br>
-		
+
 		 rules.sendMessage(directRecipientEmailIds, "MSG_USER_CONTACTED", contextMap, "EMAIL"); 
 	 */
 	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
@@ -881,19 +881,19 @@ public class QRules {
 		/* unsubscribe link for the template */
 		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
 		JsonObject message = null;
-		
+
 		/* Adding project code to context */
 		String projectCode = "PRJ_" + GennySettings.mainrealm.toUpperCase();
 		this.println("project code for messages ::"+projectCode);
 		contextMap.put("PROJECT", projectCode);
-		
+
 		/* adding unsubscribe url */
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
 
 		if (recipientArray != null && recipientArray.length > 0) {
-				
+
 			if(attachmentList == null) {
 				message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
 						recipientArray, getToken());
@@ -905,21 +905,21 @@ public class QRules {
 		} else {
 			log.error("Recipient array is null");
 		}
-		
+
 		if(to != null && to.length > 0) {
-			
+
 			if(attachmentList == null) {
 				message = MessageUtils.prepareMessageTemplateForDirectRecipients(templateCode, messageType, contextMap, to, getToken());
 			} else {
 				message = MessageUtils.prepareMessageTemplateWithAttachmentForDirectRecipients(templateCode, messageType, contextMap, to, attachmentList, getToken());
 			}
-			
+
 		}
-		
+
 		publish("messages", message);
 
 	}
-	
+
 
 	public BaseEntity createUser() {
 
@@ -1484,7 +1484,7 @@ public class QRules {
 	public String loadUserRole() {
 
 		BaseEntity user = this.getUser();
-        String userRole = null;
+		String userRole = null;
 
 		if (user != null) {
 
@@ -1516,7 +1516,7 @@ public class QRules {
 				this.setState("ROLE_NOT_FOUND");
 			}
 		}
-		
+
 		return userRole;
 	}
 
@@ -1555,7 +1555,7 @@ public class QRules {
 			}
 
 			this.baseEntity
-					.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()));
+			.saveAnswer(new Answer(userCode, userCode, targetAttributeCode, categoryTypeInBits.toString()));
 		}
 	}
 
@@ -3259,7 +3259,7 @@ public class QRules {
 
 		/* Get beg.getCode(), username, userCode, userFullName */
 		BaseEntity beg = this.baseEntity.getBaseEntityByCode(m.getItemCode()); // Get Baseentity once so we don't need
-																				// to keep
+		// to keep
 		// fetching...
 		println("beg.getCode()  ::   " + beg.getCode());
 
@@ -3309,7 +3309,7 @@ public class QRules {
 		List<Answer> answerList = new ArrayList<Answer>();
 		answerList.add(new Answer(getUser(), offer, "PRI_OFFER_PRICE", JsonUtils.toJson(begPrice)));
 		answerList
-				.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
+		.add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_EXC_GST", JsonUtils.toJson(ownerPriceExcGST)));
 		/*
 		 * answerList .add(new Answer(getUser(), offer, "PRI_OFFER_OWNER_PRICE_INC_GST",
 		 * JsonUtils.toJson(ownerPriceIncGST)));
@@ -4599,7 +4599,7 @@ public class QRules {
 		this.set("realm", serviceDecodedTokenMap.get("azp"));
 
 		println(RulesUtils.ANSI_YELLOW + "*********** setting new (" + serviceDecodedTokenMap.get("azp")
-				+ ") token username -> " + serviceDecodedTokenMap.get("preferred_username") + RulesUtils.ANSI_RESET);
+		+ ") token username -> " + serviceDecodedTokenMap.get("preferred_username") + RulesUtils.ANSI_RESET);
 		/* we reinit utils */
 		this.initUtils();
 	}
@@ -4645,154 +4645,99 @@ public class QRules {
 		return false;
 	}
 
-	public void generateTree() {
-
-		String token = RulesUtils.generateServiceToken(realm());
-		if (token != null) {
-			this.setNewTokenAndDecodedTokenMap(token);
-		}
-		
-		// we create the bulk message
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-		
-		// we grab the root
-		BaseEntity root = this.baseEntity.getBaseEntityByCode("GRP_ROOT");
-		BaseEntity[] bes = new BaseEntity[1];
-		bes[0] = root;
-		bulkmsg.add(new QDataBaseEntityMessage(bes, "GRP_ROOT", "LNK_CORE"));
-		
-		// we get the first branch
-		List<BaseEntity> rootGrp = this.baseEntity.getLinkedBaseEntities("GRP_ROOT", "LNK_CORE");
-		bulkmsg.add(new QDataBaseEntityMessage(rootGrp.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
-		
-		// we get the reports
-		List<BaseEntity> reportsHeader = this.baseEntity.getLinkedBaseEntities("GRP_REPORTS", "LNK_CORE");
-		bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]), "GRP_REPORTS", "LNK_CORE"));
-		
-		// we get the admin section
-		List<BaseEntity> admin = this.baseEntity.getLinkedBaseEntities("GRP_ADMIN", "LNK_CORE");
-		bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]), "GRP_ADMIN", "LNK_CORE"));
-
-		// Now get the buckets from GRP_APPLICATIONS
-		List<BaseEntity> buckets = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_APPLICATIONS", "LNK_CORE", 0,
-				20, false);
-		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]), "GRP_APPLICATIONS", "LNK_CORE"));
-
-		// Now get the buckets from GRP_DASHBOARD
-		List<BaseEntity> buckets2 = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0,
-				20, false);
-		bulkmsg.add(new QDataBaseEntityMessage(buckets2.toArray(new BaseEntity[0]), "GRP_DASHBOARD", "LNK_CORE"));
-
-		// Save the GRP_APPLICATIONS buckets for future use
-		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
-				"GRP_APPLICATIONS", "LNK_CORE");
-		VertxUtils.putObject(realm(), "GRP_APPLICATIONS", realm(), bucketMsg);
-
-		// Save the GRP_BEGS buckets for future use
-		QDataBaseEntityMessage bucketMsg2 = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
-				"GRP_DASHBOARD", "LNK_CORE");
-		VertxUtils.putObject(realm(), "GRP_DASHBOARD", realm(), bucketMsg2);
-
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
-	}
-
 	public void sendTreeData() {
 
 		println("treedata realm is " + realm());
-		
+
 		// list of QDataBaseEntityMessages
 		List<QDataBaseEntityMessage> baseEntityMessages = new ArrayList<>();
-		    
+
 		// we grab the root 
 		BaseEntity root = this.baseEntity.getBaseEntityByCode("GRP_ROOT");
 		QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(root);
 		rootMessage.setParentCode("GRP_ROOT_ROOT");
 		baseEntityMessages.add(rootMessage);
-		
+
 		// we grab the first branch 
 		List<BaseEntity> rootKids = this.baseEntity.getLinkedBaseEntities("GRP_ROOT");
-		 
+
 		// we create the message 
 		QDataBaseEntityMessage rootChildrenMessage = new QDataBaseEntityMessage(rootKids);
 		rootChildrenMessage.setParentCode("GRP_ROOT");
 		baseEntityMessages.add(rootChildrenMessage);
-		
+
 		// we get the kids of the kids 
 		for(BaseEntity kid: rootKids) {
-		  
-		  // we get the kid kids
-		  List<BaseEntity> kidKids = this.baseEntity.getLinkedBaseEntities(kid);
-		  
-		  // we create the message 
-		  QDataBaseEntityMessage kidKidMessage = new QDataBaseEntityMessage(kidKids);
-		  kidKidMessage.setParentCode(kid.getCode());
-		  baseEntityMessages.add(kidKidMessage);
+
+			// we get the kid kids
+			List<BaseEntity> kidKids = this.baseEntity.getLinkedBaseEntities(kid);
+
+			// we create the message 
+			QDataBaseEntityMessage kidKidMessage = new QDataBaseEntityMessage(kidKids);
+			kidKidMessage.setParentCode(kid.getCode());
+			baseEntityMessages.add(kidKidMessage);
 
 		}
-		
-        // we create the bulk 
-        QBulkMessage newBulkMsg = new QBulkMessage();
+
+		// we create the bulk 
+		QBulkMessage newBulkMsg = new QBulkMessage();
 
 		// we now loop through all the messages to check if the current user is allowed to see them 
 		for(QDataBaseEntityMessage message: baseEntityMessages) {
-		  
-		  // list for allowed base entities
-	      List<BaseEntity> allowedChildren = new ArrayList<>();
 
-		  for (BaseEntity child : message.getItems()) {
-		    
-		    if(message.getParentCode().equals("GRP_ROOT_ROOT") == false) {
-		       
-		      // we get the parent 
-	            BaseEntity parent = this.baseEntity.getBaseEntityByCode(message.getParentCode());
+			// list for allowed base entities
+			List<BaseEntity> allowedChildren = new ArrayList<>();
 
-	            // we get the kid code
-	            String childCode = child.getCode();
+			for (BaseEntity child : message.getItems()) {
 
-	            // Getting the attributes GRP_XX of parent that has roles not allowed
-	            Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
-	            if (roleAttribute.isPresent()) {
+				if(message.getParentCode().equals("GRP_ROOT_ROOT") == false) {
 
-	              // Getting the value of
-	              String rolesAllowedStr = roleAttribute.get().getValue();
+					// we get the parent 
+					BaseEntity parent = this.baseEntity.getBaseEntityByCode(message.getParentCode());
 
-	              // creating array as it can have multiple roles
-	              String[] rolesAllowed = rolesAllowedStr.split(",");
-	              Boolean match = false;
+					// we get the kid code
+					String childCode = child.getCode();
 
-	              for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
-	                if (ea.getAttributeCode().startsWith("PRI_IS_")) {
-	                  try { // handling exception when the value is not saved as valueBoolean
-	                    if (ea.getValueBoolean()) {
-	                      for (String role : rolesAllowed) {
-	                        match = role.equalsIgnoreCase(ea.getAttributeCode());
-	                        if (match) {
-	                          allowedChildren.add(child);
-	                        }
-	                      }
-	                    }
-	                  } catch (Exception e) {
-	                    log.error("Error!! The attribute value is not in boolean format");
-	                  }
-	                }
+					// Getting the attributes GRP_XX of parent that has roles not allowed
+					Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
+					if (roleAttribute.isPresent()) {
 
-	              }
-	            } 
-	            else {
-	              allowedChildren.add(child);
-	            }
-		    }
-		    else {
-		      
-		      allowedChildren.add(child);
-		    }
-		  }
+						// Getting the value of
+						String rolesAllowedStr = roleAttribute.get().getValue();
 
-		  // we create the final message 
-		  QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), message.getParentCode(), "LNK_CORE");
-		  filteredMsg.setToken(getToken());
-		  newBulkMsg.add(filteredMsg);
+						// creating array as it can have multiple roles
+						String[] rolesAllowed = rolesAllowedStr.split(",");
+						Boolean match = false;
+
+						for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+							if (ea.getAttributeCode().startsWith("PRI_IS_")) {
+								try { // handling exception when the value is not saved as valueBoolean
+									if (ea.getValueBoolean()) {
+										for (String role : rolesAllowed) {
+											match = role.equalsIgnoreCase(ea.getAttributeCode());
+											if (match) {
+												allowedChildren.add(child);
+											}
+										}
+									}
+								} catch (Exception e) {
+									log.error("Error!! The attribute value is not in boolean format");
+								}
+							}
+
+						}
+					}
+				}
+				else {
+
+					allowedChildren.add(child);
+				}
+			}
+
+			// we create the final message 
+			QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), message.getParentCode(), "LNK_CORE");
+			filteredMsg.setToken(getToken());
+			newBulkMsg.add(filteredMsg);
 		}
 
 		this.publishCmd(newBulkMsg);
@@ -4980,8 +4925,8 @@ public class QRules {
 
 		// Check if already exists
 		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE", "PER_SERVICE"); // do not
-																											// check
-																											// cache!
+		// check
+		// cache!
 
 		if (existing == null) {
 
@@ -5065,7 +5010,7 @@ public class QRules {
 
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
-					+ ". Please complete it for payments to get through.";
+			+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
@@ -5098,7 +5043,7 @@ public class QRules {
 
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
-					+ ". Please complete it for payments to get through.";
+			+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
@@ -5130,7 +5075,7 @@ public class QRules {
 
 			/* send toast to user */
 			String toastMessage = "User information during registration is incomplete : " + e.getMessage()
-					+ ". Please complete it for payments to get through.";
+			+ ". Please complete it for payments to get through.";
 			String[] recipientArr = { userBe.getCode() };
 			this.sendToastNotification(recipientArr, toastMessage, "warning");
 
@@ -5563,7 +5508,7 @@ public class QRules {
 					/* send toast to user */
 					String[] recipientArr = { userBe.getCode() };
 					String toastMessage = "Company information during registration is incomplete : " + e.getMessage()
-							+ ". Please complete it for payments to get through.";
+					+ ". Please complete it for payments to get through.";
 					this.sendToastNotification(recipientArr, toastMessage, "warning");
 				}
 			}
@@ -5855,8 +5800,8 @@ public class QRules {
 		} else {
 			redirectToHomePage();
 			String slackMessage = "Processing payment into driver's account for the job - " + begBe.getCode()
-					+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
-					+ offerBe.getCode();
+			+ " has failed. UserBE/BegBE/offerBE is null. User code :" + buyerBe.getCode() + ", Offer code :"
+			+ offerBe.getCode();
 			sendSlackNotification(slackMessage);
 		}
 		return isMakePaymentSuccess;
