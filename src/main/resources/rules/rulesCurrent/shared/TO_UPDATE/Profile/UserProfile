@@ -9,7 +9,6 @@ import java.util.List;
 
 import life.genny.qwanda.entity.BaseEntity;
 
-
 rule "User-Default-Profile"
     when
        m : QEventMessage( event_type == "PROFILE" && data.code == "PROFILE"  )
@@ -25,10 +24,9 @@ rule "User-Default-Profile"
         
 			// we fetch the profile question group code from the project attribute. 
 			// if it does not exist, we default it to the genny profile question group
-			
-            String profileQuestionGroup = project.getValue(rules.loadUserRole()+"_PROFILE_GRP", "QUE_DEFAULT_PROFILE_GRP");
-            System.out.println("Profile Question Group: " + project.getValue(rules.loadUserRole()+"_PROFILE_GRP"));
+            String profileQuestionGroup = project.getValue(rules.loadUserRole() + "_PROFILE_GRP", "QUE_DEFAULT_PROFILE_GRP");
             rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), profileQuestionGroup, true);
         }
+
         rules.footer();
 end
