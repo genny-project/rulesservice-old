@@ -784,8 +784,7 @@ public class QRules {
 						if (created.isBefore(lastWeek)) {
 
 							/* BEG was paid >1 week - we archive it */
-							this.baseEntity.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY",
-									"LNK_CORE", "BEG");
+							this.baseEntity.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
 						}
 					}
 				}
@@ -2950,7 +2949,7 @@ public class QRules {
 					this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
 
 					// moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-					this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE",
+					this.baseEntity.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE",
 							"BEG");
 					publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
@@ -3600,9 +3599,9 @@ public class QRules {
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
 					 * The moveBaseEntity without linkValue sets the linkValue to default value,
-					 * "LINK". So using moveBaseEntitySetLinkValue()
+					 * "LINK". So using moveBaseEntity()
 					 */
-					this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE",
+					this.baseEntity.moveBaseEntity(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE",
 							"BEG");
 
 					/* Get the sourceCode(Company code) for this User */
