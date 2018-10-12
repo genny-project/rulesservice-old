@@ -11,19 +11,33 @@ rule "Send Toast Notification"
    		rules.setState("LOOP_SEND_TOAST_NOTIFICATION");
 
         /* get message content from state map */
-        
         HashMap<String, Object> toastData = rules.getAsHashMap("toastData");
+        if(toastData != null){
 
-        String message = toastData.get("message").toString();
-        String priority = toastData.get("priority").toString();
-        String recipient = toastData.get("recipient").toString();
+            try { // handling exception 
 
-        String recipientArr[] = recipient.split(" ");
+                String message = (String)toastData.get("message");
+                String priority = (String)toastData.get("priority");
+                String[] recipient = (String[])toastData.get("recipient");
 
+                /* set default values if recipient and priority is not set */
+                if(recipient == null){
+                    recipient = new String[]{ rules.getUser().getCode() };
 
-        /* send a toast notificaiton */
-        rules.sendToastNotification(recipientArr, message, priority);
+                }
+                if(priority == null){
+                    priority = "info";
 
-   		rules.setState("SENT_TOAST_NOTIFICATION");
+                }
+               
+                /* send a toast notificaiton */
+                rules.sendToastNotification(recipient, message, priority);
+                rules.setState("SENT_TOAST_NOTIFICATION");
+
+            } 
+            catch (Exception e) {
+
+            }
+        }
 	 	rules.footer();
 end
