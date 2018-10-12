@@ -129,6 +129,7 @@ import life.genny.utils.QuestionUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
 import life.genny.utils.Layout.LayoutUtils;
+import life.genny.utils.ExportBaseEntityUtils;
 //import life.genny.rules.Layout.LayoutUtils;
 import life.genny.utils.Layout.LayoutViewData;
 
@@ -158,12 +159,13 @@ public class QRules {
 	public KnowledgeHelper getDrools() {
 		return this.drools;
 	}
-
+	
 	/* Utils */
 	public BaseEntityUtils baseEntity;
 	public LayoutUtils layoutUtils;
 	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
+	public ExportBaseEntityUtils exportBaseEntityUtils;
 
 	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
