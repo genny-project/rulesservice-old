@@ -49,6 +49,7 @@ import com.hazelcast.util.collection.ArrayUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.eventbus.EventBus;
+import life.genny.eventbus.EventBusInterface;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.Ask;
 import life.genny.qwanda.GPS;
@@ -142,7 +143,7 @@ public class QRules {
 	final static String DEFAULT_STATE = "NEW";
 
 	private String token;
-	private EventBus eventBus;
+	private EventBusInterface eventBus;
 	private Boolean started = false;
 	private Map<String, Object> decodedTokenMap;
 	private Map<String, Boolean> stateMap;
@@ -165,7 +166,7 @@ public class QRules {
 	public CacheUtils cacheUtils;
 	public PaymentUtils paymentUtils;
 
-	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap,
+	public QRules(final EventBusInterface eventBus, final String token, final Map<String, Object> decodedTokenMap,
 			String state) {
 		super();
 
@@ -179,7 +180,7 @@ public class QRules {
 		this.initUtils();
 	}
 
-	public QRules(final EventBus eventBus, final String token, final Map<String, Object> decodedTokenMap) {
+	public QRules(final EventBusInterface eventBus, final String token, final Map<String, Object> decodedTokenMap) {
 		this(eventBus, token, decodedTokenMap, DEFAULT_STATE);
 	}
 
@@ -218,14 +219,14 @@ public class QRules {
 	/**
 	 * @return the eventBus
 	 */
-	public EventBus getEventBus() {
+	public EventBusInterface getEventBus() {
 		return eventBus;
 	}
 
 	/**
 	 * @param eventBus the eventBus to set
 	 */
-	public void setEventBus(EventBus eventBus) {
+	public void setEventBus(EventBusInterface eventBus) {
 		this.eventBus = eventBus;
 	}
 
