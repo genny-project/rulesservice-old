@@ -940,7 +940,6 @@ public class QRules {
 			be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
-			this.setState("DID_CREATE_NEW_USER");
 
 			/*
 			 * we check if project requires to send slack notification on user registrtaion

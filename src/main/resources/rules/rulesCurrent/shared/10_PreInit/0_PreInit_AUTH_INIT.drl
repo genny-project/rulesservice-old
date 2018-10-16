@@ -14,6 +14,7 @@ rule "Pre Init"
         rules.setDrools(drools);
      	rules.header();
         rules.setState("LOOP_PRE_INIT_EVT");
+        rules.setState("AUTH_INIT");
         rules.setState("STARTED");
         /* rules.setState("TRIGGER_LOGIN_WORKFLOW"); */
         

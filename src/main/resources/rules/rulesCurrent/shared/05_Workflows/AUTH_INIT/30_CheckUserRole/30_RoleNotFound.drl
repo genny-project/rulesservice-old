@@ -1,0 +1,14 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Role Not Found"
+     when
+        rules: QRules(  isState("ROLE_NOT_FOUND") &&
+                        !isState("LOOP_ROLE_NOT_FOUND") )
+     then
+        rules.header();
+		rules.setState("LOOP_ROLE_NOT_FOUND");
+
+        rules.setState("TRIGGER_ASK_USER_ROLE");
+      	rules.footer();
+end
