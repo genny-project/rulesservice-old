@@ -3241,7 +3241,7 @@ public class QRules {
 	public void clearBaseEntity(String baseEntityCode) {
 
 		String[] recipients = new String[1];
-		recipients[0] = { this.getUser().getCode() };
+		recipients[0] = this.getUser().getCode();
 		this.clearBaseEntity(baseEntityCode, recipients);
 	}
 
