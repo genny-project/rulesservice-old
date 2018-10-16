@@ -14,11 +14,11 @@ rule "Send Toast Notification"
         HashMap<String, Object> toastData = rules.getAsHashMap("toastData");
         if(toastData != null){
 
-            try { // handling exception 
+            try { /*  handling exception */ 
 
-                String message = (String)toastData.get("message");
-                String priority = (String)toastData.get("priority");
-                String[] recipient = (String[])toastData.get("recipient");
+                Object message = toastData.get("message");
+                Object priority = toastData.get("priority");
+                Object recipient = toastData.get("recipient");
 
                 /* set default values if recipient and priority is not set */
                 if(recipient == null){
@@ -29,10 +29,11 @@ rule "Send Toast Notification"
                     priority = "info";
 
                 }
-               
-                /* send a toast notificaiton */
-                rules.sendToastNotification(recipient, message, priority);
-                rules.setState("SENT_TOAST_NOTIFICATION");
+                if( message != null && priority != null && recipient != null ){
+                    /* send a toast notificaiton */
+                    rules.sendToastNotification((String[])recipient, (String)message, (String)priority);
+                    rules.setState("SENT_TOAST_NOTIFICATION");
+                }
 
             } 
             catch (Exception e) {
