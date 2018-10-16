@@ -3261,6 +3261,14 @@ public class QRules {
 		this.clearBaseEntity(baseEntityCode, recipients);
 	}
 
+	/* sets delete field to true so that FE removes the BE from their store */
+	public void clearBaseEntity(String baseEntityCode) {
+
+		String[] recipients = new String[1];
+		recipients[0] = this.getUser().getCode();
+		this.clearBaseEntity(baseEntityCode, recipients);
+	}
+
 	public void clearBaseEntity(List<BaseEntity> bes, String recipientCode) {
 
 		for (BaseEntity be : bes) {
