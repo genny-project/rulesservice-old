@@ -349,6 +349,10 @@ public class QRules {
 		return (SearchEntity) get(key);
 	}
 
+	public HashMap<String, Object> getAsHashMap(final String key) {
+		return (HashMap) get(key);
+	}
+
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
 	}
@@ -784,8 +788,7 @@ public class QRules {
 						if (created.isBefore(lastWeek)) {
 
 							/* BEG was paid >1 week - we archive it */
-							this.baseEntity.moveBaseEntitySetLinkValue(be.getCode(), "GRP_PAID", "GRP_HISTORY",
-									"LNK_CORE", "BEG");
+							this.baseEntity.moveBaseEntity(be.getCode(), "GRP_PAID", "GRP_HISTORY", "LNK_CORE", "BEG");
 						}
 					}
 				}
@@ -823,16 +826,22 @@ public class QRules {
 		this.publishCmd(cmdReload);
 	}
 
-	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with recipientArr, NOT direct list of emailIds */
+	/*
+	 * TRADITIONAL WAY OF SENDING EMAIL -> send email with recipientArr, NOT direct
+	 * list of emailIds
+	 */
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType) {
-		
+
 		/* setting attachmentList as null, to reuse sendMessageMethod and reduce code */
 		sendMessage(recipientArray, contextMap, templateCode, messageType, null);
 
 	}
-	
-	/* TRADITIONAL WAY OF SENDING EMAIL -> send email with attachments and with recipientArr, NOT direct list of emailIds */
+
+	/*
+	 * TRADITIONAL WAY OF SENDING EMAIL -> send email with attachments and with
+	 * recipientArr, NOT direct list of emailIds
+	 */
 	public void sendMessage(String[] recipientArray, HashMap<String, String> contextMap, String templateCode,
 			String messageType, List<QBaseMSGAttachment> attachmentList) {
 
@@ -840,35 +849,38 @@ public class QRules {
 		sendMessage(recipientArray, contextMap, templateCode, messageType, attachmentList, null);
 
 	}
-	
-	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and no attachments */
-	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
-			String messageType) {
 
-		/* setting attachmentList and recipientArr as null, to reuse sendMessageMethod and reduce code */
+	/* SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and no attachments */
+	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap, String messageType) {
+
+		/*
+		 * setting attachmentList and recipientArr as null, to reuse sendMessageMethod
+		 * and reduce code
+		 */
 		sendMessage(null, contextMap, templateCode, messageType, null, to);
 
 	}
-	
-	/*  SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and having attachments */
+
+	/* SENDING EMAIL With DIRECT ARRAY OF EMAILIDs and having attachments */
 	/**
 	 * @param to
 	 * @param templateCode
-	 * @param contextMap : key-value map for merging
-	 * @param messageType : Can be "EMAIL","SMS"
+	 * @param contextMap     : key-value map for merging
+	 * @param messageType    : Can be "EMAIL","SMS"
 	 * @param attachmentList : Incase of email attachments
-	 * @example
-	 * userBe is a user BaseEntity <br>
-	 * String userEmailId = userBe.getValue("PRI_USER_EMAIL", null);	//Can use any appropriate userEmailId AttributeCode <br>
-		String[] directRecipientEmailIds = { userEmailId }; <br>
-		
-		HashMap<String, String> contextMap = new HashMap<>(); <br>
-		contextMap.put("USER", userBe); <br>
-		
-		 rules.sendMessage(directRecipientEmailIds, "MSG_USER_CONTACTED", contextMap, "EMAIL"); 
+	 * @example userBe is a user BaseEntity <br>
+	 *          String userEmailId = userBe.getValue("PRI_USER_EMAIL", null); //Can
+	 *          use any appropriate userEmailId AttributeCode <br>
+	 *          String[] directRecipientEmailIds = { userEmailId }; <br>
+	 * 
+	 *          HashMap<String, String> contextMap = new HashMap<>(); <br>
+	 *          contextMap.put("USER", userBe); <br>
+	 * 
+	 *          rules.sendMessage(directRecipientEmailIds, "MSG_USER_CONTACTED",
+	 *          contextMap, "EMAIL");
 	 */
-	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap,
-			String messageType, List<QBaseMSGAttachment> attachmentList) {
+	public void sendMessage(String[] to, String templateCode, HashMap<String, String> contextMap, String messageType,
+			List<QBaseMSGAttachment> attachmentList) {
 
 		/* setting recipientArr as null, to reuse sendMessageMethod and reduce code */
 		sendMessage(null, contextMap, templateCode, messageType, attachmentList, to);
@@ -882,45 +894,46 @@ public class QRules {
 		/* unsubscribe link for the template */
 		String unsubscribeUrl = getUnsubscribeLinkForEmailTemplate(GennySettings.projectUrl, templateCode);
 		JsonObject message = null;
-		
+
 		/* Adding project code to context */
 		String projectCode = "PRJ_" + GennySettings.mainrealm.toUpperCase();
-		this.println("project code for messages ::"+projectCode);
+		this.println("project code for messages ::" + projectCode);
 		contextMap.put("PROJECT", projectCode);
-		
+
 		/* adding unsubscribe url */
 		if (unsubscribeUrl != null) {
 			contextMap.put("URL", unsubscribeUrl);
 		}
 
 		if (recipientArray != null && recipientArray.length > 0) {
-				
-			if(attachmentList == null) {
-				message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap,
-						recipientArray, getToken());
+
+			if (attachmentList == null) {
+				message = MessageUtils.prepareMessageTemplate(templateCode, messageType, contextMap, recipientArray,
+						getToken());
 			} else {
-				message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType,
-						contextMap, recipientArray, attachmentList, getToken());
+				message = MessageUtils.prepareMessageTemplateWithAttachments(templateCode, messageType, contextMap,
+						recipientArray, attachmentList, getToken());
 			}
 
 		} else {
 			log.error("Recipient array is null");
 		}
-		
-		if(to != null && to.length > 0) {
-			
-			if(attachmentList == null) {
-				message = MessageUtils.prepareMessageTemplateForDirectRecipients(templateCode, messageType, contextMap, to, getToken());
+
+		if (to != null && to.length > 0) {
+
+			if (attachmentList == null) {
+				message = MessageUtils.prepareMessageTemplateForDirectRecipients(templateCode, messageType, contextMap,
+						to, getToken());
 			} else {
-				message = MessageUtils.prepareMessageTemplateWithAttachmentForDirectRecipients(templateCode, messageType, contextMap, to, attachmentList, getToken());
+				message = MessageUtils.prepareMessageTemplateWithAttachmentForDirectRecipients(templateCode,
+						messageType, contextMap, to, attachmentList, getToken());
 			}
-			
+
 		}
-		
+
 		publish("messages", message);
 
 	}
-	
 
 	public BaseEntity createUser() {
 
@@ -1492,12 +1505,12 @@ public class QRules {
 		VertxUtils.publish(getUser(), channel, payload);
 	}
 
-	public void loadUserRole() {
+	public String loadUserRole() {
 
 		BaseEntity user = this.getUser();
-		if (user != null) {
+		String userRole = null;
 
-			Boolean has_role_been_found = false;
+		if (user != null) {
 
 			if (user != null) {
 
@@ -1515,18 +1528,20 @@ public class QRules {
 
 						if (isRole) {
 							this.setState(role.getAttributeCode());
-							has_role_been_found = true;
+							userRole = role.getAttributeCode();
 						}
 					}
 				}
 			}
 
-			if (has_role_been_found) {
+			if (userRole != null) {
 				this.setState("ROLE_FOUND");
 			} else {
 				this.setState("ROLE_NOT_FOUND");
 			}
 		}
+
+		return userRole;
 	}
 
 	/*
@@ -2958,8 +2973,7 @@ public class QRules {
 					this.clearBaseEntity(begCode, "GRP_NEW_ITEMS", userCode);
 
 					// moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE");
-					this.baseEntity.moveBaseEntitySetLinkValue(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE",
-							"BEG");
+					this.baseEntity.moveBaseEntity(begCode, "GRP_NEW_ITEMS", "GRP_APPROVED", "LNK_CORE", "BEG");
 					publishBaseEntityByCode(begCode, "GRP_APPROVED", "LNK_CORE", offerRecipients);
 
 					/* Update PRI_NEXT_ACTION = OWNER */
@@ -3608,10 +3622,9 @@ public class QRules {
 					/* Moving the BEG to GRP_NEW_ITEMS */
 					/*
 					 * The moveBaseEntity without linkValue sets the linkValue to default value,
-					 * "LINK". So using moveBaseEntitySetLinkValue()
+					 * "LINK". So using moveBaseEntity()
 					 */
-					this.baseEntity.moveBaseEntitySetLinkValue(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE",
-							"BEG");
+					this.baseEntity.moveBaseEntity(jobCode, "GRP_DRAFTS", "GRP_NEW_ITEMS", "LNK_CORE", "BEG");
 
 					/* Get the sourceCode(Company code) for this User */
 					BaseEntity company = this.baseEntity.getParent(userCode, "LNK_STAFF");
