@@ -11,7 +11,9 @@ import life.genny.channel.Routers;
 import life.genny.channels.EBCHandlers;
 import life.genny.cluster.Cluster;
 import life.genny.cluster.CurrentVtxCtx;
+import life.genny.eventbus.EventBusInterface;
 import life.genny.qwandautils.GennySettings;
+import life.genny.rules.EventBusVertx;
 import life.genny.rules.RulesLoader;
 import life.genny.security.SecureResources;
 
@@ -20,7 +22,8 @@ public class ServiceVerticle extends AbstractVerticle {
 	protected static final Logger log = org.apache.logging.log4j.LogManager
 			.getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
 
-	
+	static EventBusInterface eventBus;
+
 
   @Override
   public void start() {
@@ -47,7 +50,8 @@ public class ServiceVerticle extends AbstractVerticle {
           rfut.complete();
         }, rfut);
         
-        EBCHandlers.registerHandlers(CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+        eventBus = new EventBusVertx(CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+        EBCHandlers.registerHandlers(eventBus);
         
 
         fut.complete();

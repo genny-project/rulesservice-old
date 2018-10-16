@@ -26,6 +26,7 @@ import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channels.EBCHandlers;
+import life.genny.eventbus.EventBusInterface;
 
 public class KieTest {
 	
@@ -98,7 +99,7 @@ public  void setupKieSessionTest()
 	
 	System.out.println("Loaded Test Kie Session with "+count+" ruleGroups");
 	
-	EventBus eb = null;
+	EventBusInterface eb = null;
 
 	 List<Object> facts = new ArrayList<Object>();
 	 facts.add(1);
@@ -135,7 +136,7 @@ public  void setupKieSessionTest()
 	String rulesGroup = "GRP_RULES_TEST";
 	List<Tuple3<String,String,String>> rules = new ArrayList<Tuple3<String,String,String>>();
 	List<Tuple2<String,Object>> globals = new ArrayList<Tuple2<String,Object>>();
-	EventBus eb = null;
+	EventBusInterface eb = null;
 	
 	rules.add(Tuple.of("genny","rule2.drl",rule));
 	

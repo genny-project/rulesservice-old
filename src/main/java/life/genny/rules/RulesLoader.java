@@ -43,6 +43,7 @@ import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channels.EBCHandlers;
 import life.genny.cluster.CurrentVtxCtx;
+import life.genny.eventbus.EventBusInterface;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.KeycloakUtils;
@@ -60,6 +61,8 @@ public class RulesLoader {
 	static KieServices ks = KieServices.Factory.get();
 
 	public static Set<String> realms = new HashSet<String>();
+	
+	private static EventBusInterface eventBus;
 
 	/**
 	 * @param vertx
@@ -109,7 +112,7 @@ public class RulesLoader {
 			// } else {
 			if (realms.isEmpty()) {
 				EBCHandlers.initMsg("Event:INIT_STARTUP", "genny", new QEventMessage("EVT_MSG", "INIT_STARTUP"),
-						CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+						eventBus);
 			}
 			// }
 			else {
@@ -118,7 +121,7 @@ public class RulesLoader {
 					// Trigger Startup Rules
 					log.info("---- Realm:" + realm + " Startup Rules ----------");
 					EBCHandlers.initMsg("Event:INIT_STARTUP", realm, new QEventMessage("EVT_MSG", "INIT_STARTUP"),
-							CurrentVtxCtx.getCurrentCtx().getClusterVtx().eventBus());
+							eventBus);
 				}
 			}
 			log.info("Startup Rules Triggered");
@@ -428,9 +431,11 @@ public class RulesLoader {
 	}
 
 	// fact = gson.fromJson(msg.toString(), QEventMessage.class)
-	public static void executeStatefull(final String rulesGroup, final EventBus bus,
+	public static void executeStatefull(final String rulesGroup, final EventBusInterface bus,
 			final List<Tuple2<String, Object>> globals, final List<Object> facts,
 			final Map<String, String> keyValueMap) {
+		
+		eventBus = bus;
 
 		try {
 			 KieSession  kieSession = null;

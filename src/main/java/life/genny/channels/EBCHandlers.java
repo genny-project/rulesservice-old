@@ -19,6 +19,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Consumer;
+import life.genny.eventbus.EventBusInterface;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.entity.User;
@@ -49,11 +50,12 @@ public class EBCHandlers {
 	private static Map<String, User> usersSession = new HashMap<String, User>();
 
 	
-
+	static EventBusInterface eventBus;
 
 	static String token;
 
-	public static void registerHandlers(final EventBus eventBus) {
+	public static void registerHandlers(final EventBusInterface eventBusInterface) {
+		eventBus = eventBusInterface;
 		Consumer.getFromCmds().subscribe(arg -> {
 			JsonObject payload = processMessage("Service Command", arg);
 
@@ -170,7 +172,7 @@ public class EBCHandlers {
 		return payload;
 	}
 
-	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
+	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBusInterface eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
 			
 			
@@ -233,7 +235,7 @@ public class EBCHandlers {
 
 	}
 
-	public static void initMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus) {
+	public static void initMsg(final String msgType,String ruleGroup,final Object msg, final EventBusInterface eventBus) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
 			Map<String,Object> adecodedTokenMap = new HashMap<String,Object>();
 			Set<String> auserRoles = new HashSet<String>();
