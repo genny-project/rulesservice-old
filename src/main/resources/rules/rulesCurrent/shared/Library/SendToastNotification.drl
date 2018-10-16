@@ -14,7 +14,7 @@ rule "Send Toast Notification"
         HashMap<String, Object> toastData = rules.getAsHashMap("toastData");
         if(toastData != null){
 
-            try { // handling exception 
+            try { /* handling exception  */
 
                 String message = (String)toastData.get("message");
                 String priority = (String)toastData.get("priority");
