@@ -10,15 +10,7 @@ rule "Exit Application Setup"
      	rules.header();
         rules.setState("LOOP_EXIT_APPLICATION_SETUP");
 
-        BaseEntity project = rules.getProject();
-        Boolean doesProjectRequireRole = project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE", null);
-        if (doesProjectRequireRole == null || doesProjectRequireRole == true) {
-        	 rules.setState("TRIGGER_ROLE_CHECK");
-        }
-        else {
-        	rules.setState("PRI_IS_BUYER");
-        	rules.setState("TRIGGER_PROFILE_CHECK");
-        }
+       rules.setState("TRIGGER_CHECK_USER_ROLE");
 
 	    rules.footer();
 end

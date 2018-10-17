@@ -4,11 +4,9 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
 
 rule "Pre Init Link Change"
-    no-loop true
-	ruleflow-group 'Init'
     when
          m: QEventLinkChangeMessage( event_type == "EVT_LINK_CHANGE" )
-          rules: QRules(!isState("STARTED")) 
+          rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
        rules.println("RULE INIT EVT_LINK_CHANGE: "+m);

@@ -10,5 +10,7 @@ rule "Setting Admin user role"
 		rules.setState("LOOP_SET_ADMIN_ROLE");
 
         rules.setAdminRoleIfAdmin();
+
+        rules.setState("EXIT_ROLE_CHECK");
       	rules.footer();
 end

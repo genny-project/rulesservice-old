@@ -4,12 +4,9 @@ import life.genny.rules.QRules;
 
 
 rule "Pre Init System Event"
-	no-loop true
-	salience 10000
-/*	ruleflow-group 'Init' */
     when
           m : QEventMessage( event_type == "EVT_SYSTEM" )
-          rules: QRules(!isState("STARTED")) 
+          rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
         rules.println("RULE INIT SYSTEM_EVENT: "+m);

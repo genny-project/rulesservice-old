@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject;
 rule "Pre Init Cron Event"
     when
       m : QEventMessage( event_type == "CRON_EVENT")
-  		rules: QRules(!isState("STARTED"))
+  		rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
         rules.println("RULE INIT CRON_EVT: "+m);

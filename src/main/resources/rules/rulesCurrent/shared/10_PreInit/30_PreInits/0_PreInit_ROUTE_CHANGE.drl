@@ -5,11 +5,9 @@ import life.genny.qwanda.message.QEventMessage;
 import io.vertx.core.json.JsonObject;
 
 rule "Pre Init Route Change"
-	no-loop true
-	ruleflow-group 'Init'
     when
 	  m : QEventMessage( event_type == "ROUTE_CHANGE" )
-	  rules: QRules(!isState("STARTED"))
+	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
         rules.println("RULE INIT ROUTE_CHANGE: "+m);
