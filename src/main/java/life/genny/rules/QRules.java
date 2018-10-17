@@ -349,6 +349,10 @@ public class QRules {
 		return (SearchEntity) get(key);
 	}
 
+	public HashMap<String, Object> getAsHashMap(final String key) {
+		return (HashMap) get(key);
+	}
+
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
 	}
@@ -701,7 +705,7 @@ public class QRules {
 
 	public <T extends QMessage> void publishData(T msg, final String[] recipientCodes) {
 		msg.setToken(getToken());
-		publish("data", JsonUtils.toJson(msg));
+		publish("webdata", JsonUtils.toJson(msg));
 	}
 
 	public <T extends QMessage> void publish(final String busChannel, T msg, final String[] recipientCodes) {
@@ -1249,7 +1253,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(be, null);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("data", msg);
+		publish("webdata", msg);
 		return msg;
 	}
 
@@ -1257,7 +1261,7 @@ public class QRules {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
 		msg.setRecipientCodeArray(recipientsCode);
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("webdata", RulesUtils.toJsonObject(msg));
 		return msg;
 	}
 
@@ -1271,7 +1275,7 @@ public class QRules {
 
 	public void publishData(final JsonObject msg) {
 		msg.put("token", getToken());
-		publish("data", msg);
+		publish("webdata", msg);
 	}
 
 	public void publishCmd(final QwandaMessage msg) {
@@ -1313,7 +1317,7 @@ public class QRules {
 
 	public QMessage publishData(final QDataMessage msg) {
 		msg.setToken(getToken());
-		publish("data", JsonUtils.toJson(msg));
+		publish("webdata", JsonUtils.toJson(msg));
 		return msg;
 	}
 
@@ -1346,22 +1350,27 @@ public class QRules {
 		}
 	}
 
-	public void publishData(final QDataAnswerMessage msg) {
+	public void publishEventBusData(final QDataAnswerMessage msg) {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
+	}
+	
+	public void publishData(final QDataAnswerMessage msg) {
+		msg.setToken(getToken());
+		publish("webdata", JsonUtils.toJson(msg));
 	}
 
 	public void publishData(final Answer answer) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(answer);
 		msg.setToken(getToken());
-		publish("data", JsonUtils.toJson(msg));
+		publish("webdata", JsonUtils.toJson(msg));
 	}
 
 	public void publishData(final List<Answer> answerList) {
 		Answer[] answerArray = answerList.toArray(new Answer[answerList.size()]);
 		QDataAnswerMessage msg = new QDataAnswerMessage(answerArray);
 		msg.setToken(getToken());
-		publish("data", JsonUtils.toJson(msg));
+		publish("webdata", JsonUtils.toJson(msg));
 	}
 
 	public void publishCmd(final Answer answer) {
@@ -1372,12 +1381,12 @@ public class QRules {
 
 	public void publishData(final QDataAskMessage msg) {
 		msg.setToken(getToken());
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("webdata", RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishData(final QDataAttributeMessage msg) {
 		msg.setToken(getToken());
-		publish("data", JsonUtils.toJson(msg));
+		publish("webdata", JsonUtils.toJson(msg));
 	}
 
 	public QDataBaseEntityMessage publishCmd(final List<BaseEntity> beList, final String parentCode,
@@ -1427,7 +1436,7 @@ public class QRules {
 			bigMsg.setRecipientCodeArray(recipientCodes);
 
 		}
-		publish("data", RulesUtils.toJsonObject(msg));
+		publish("webdata", RulesUtils.toJsonObject(msg));
 	}
 
 	public void publishCmd(final QCmdMessage cmdMsg) {
@@ -1447,7 +1456,7 @@ public class QRules {
 		}
 
 		json.put("recipientCodeArray", recipients);
-		publish("data", json);
+		publish("webdata", json);
 
 	}
 
@@ -1466,7 +1475,7 @@ public class QRules {
 		JsonObject json = new JsonObject(JsonUtils.toJson(cmdMsg));
 		json.put("recipientCodeArray", recipients);
 
-		publish("data", json);
+		publish("webdata", json);
 	}
 
 	public void publishMsg(final QMSGMessage msg) {
@@ -1478,6 +1487,11 @@ public class QRules {
 	public void publish(String channel, final QBulkMessage msg) {
 		msg.setToken(getToken());
 		VertxUtils.publish(getUser(), channel, msg);
+	}
+
+	public void publish(String channel, final QDataAnswerMessage msg) {
+		msg.setToken(getToken());
+		VertxUtils.publish(getUser(), channel, JsonUtils.toJson(msg));
 	}
 
 	public void publish(String channel, final QDataAskMessage msg) {
@@ -2748,7 +2762,7 @@ public class QRules {
 
 		SearchEntity sendAllChats = new SearchEntity("SBE_ALLMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On").setStakeholder(getUser().getCode())
-				.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
+			//	.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
 
@@ -5246,7 +5260,7 @@ public class QRules {
 
 		String toastJson = JsonUtils.toJson(toast);
 
-		publish("data", toastJson);
+		publish("webdata", toastJson);
 	}
 
 	/* To send direct toast messages to the front end without templates */
