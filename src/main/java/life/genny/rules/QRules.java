@@ -954,7 +954,6 @@ public class QRules {
 			be = getUser();
 			set("USER", be);
 			println("New User Created " + be);
-			this.setState("DID_CREATE_NEW_USER");
 
 			/*
 			 * we check if project requires to send slack notification on user registrtaion
@@ -1533,12 +1532,12 @@ public class QRules {
 					}
 				}
 			}
+		}
 
-			if (userRole != null) {
-				this.setState("ROLE_FOUND");
-			} else {
-				this.setState("ROLE_NOT_FOUND");
-			}
+		if (userRole != null) {
+			this.setState("ROLE_FOUND");
+		} else {
+			this.setState("ROLE_NOT_FOUND");
 		}
 
 		return userRole;
@@ -3290,7 +3289,7 @@ public class QRules {
 
 		/* Get beg.getCode(), username, userCode, userFullName */
 		BaseEntity beg = this.baseEntity.getBaseEntityByCode(m.getItemCode()); // Get Baseentity once so we don't need
-																				// to keep
+		// to keep
 		// fetching...
 		println("beg.getCode()  ::   " + beg.getCode());
 
@@ -4399,7 +4398,6 @@ public class QRules {
 	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
-
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
 	}
 
@@ -4408,7 +4406,6 @@ public class QRules {
 	 * QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode) throws IOException {
-
 		this.sendSearchResults(searchBE, parentCode, linkCode, "LINK");
 	}
 
@@ -4675,142 +4672,104 @@ public class QRules {
 		return false;
 	}
 
-	public void generateTree() {
-
-		String token = RulesUtils.generateServiceToken(realm());
-		if (token != null) {
-			this.setNewTokenAndDecodedTokenMap(token);
-		}
-
-		List<QDataBaseEntityMessage> bulkmsg = new ArrayList<QDataBaseEntityMessage>();
-
-		BaseEntity root = this.baseEntity.getBaseEntityByCode("GRP_ROOT");
-		BaseEntity[] bes = new BaseEntity[1];
-		bes[0] = root;
-		bulkmsg.add(new QDataBaseEntityMessage(bes, "GRP_ROOT", "LNK_CORE"));
-
-		List<BaseEntity> rootGrp = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ROOT", "LNK_CORE", 0, 50,
-				false);
-		bulkmsg.add(new QDataBaseEntityMessage(rootGrp.toArray(new BaseEntity[0]), "GRP_ROOT", "LNK_CORE"));
-		// println(root);
-
-		List<BaseEntity> reportsHeader = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_REPORTS", "LNK_CORE", 0,
-				50, false);
-		bulkmsg.add(new QDataBaseEntityMessage(reportsHeader.toArray(new BaseEntity[0]), "GRP_REPORTS", "LNK_CORE"));
-
-		List<BaseEntity> admin = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_ADMIN", "LNK_CORE", 0, 20,
-				false);
-		bulkmsg.add(new QDataBaseEntityMessage(admin.toArray(new BaseEntity[0]), "GRP_ADMIN", "LNK_CORE"));
-
-		// Now get the buckets from GRP_APPLICATIONS
-		List<BaseEntity> buckets = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_APPLICATIONS", "LNK_CORE", 0,
-				20, false);
-		bulkmsg.add(new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]), "GRP_APPLICATIONS", "LNK_CORE"));
-
-		// Now get the buckets from GRP_DASHBOARD
-		List<BaseEntity> buckets2 = this.baseEntity.getBaseEntitysByParentAndLinkCode("GRP_DASHBOARD", "LNK_CORE", 0,
-				20, false);
-		bulkmsg.add(new QDataBaseEntityMessage(buckets2.toArray(new BaseEntity[0]), "GRP_DASHBOARD", "LNK_CORE"));
-
-		// Save the GRP_APPLICATIONS buckets for future use
-		QDataBaseEntityMessage bucketMsg = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
-				"GRP_APPLICATIONS", "LNK_CORE");
-		VertxUtils.putObject(realm(), "GRP_APPLICATIONS", realm(), bucketMsg);
-
-		// Save the GRP_BEGS buckets for future use
-		QDataBaseEntityMessage bucketMsg2 = new QDataBaseEntityMessage(buckets.toArray(new BaseEntity[0]),
-				"GRP_DASHBOARD", "LNK_CORE");
-		VertxUtils.putObject(realm(), "GRP_DASHBOARD", realm(), bucketMsg2);
-
-		QBulkMessage bulk = new QBulkMessage(bulkmsg);
-		VertxUtils.putObject(realm(), "BASE_TREE", realm(), bulk);
-	}
-
 	public void sendTreeData() {
 
 		println("treedata realm is " + realm());
-		QBulkMessage bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
-		// startupEvent("Send Tree data");
 
-		if ((bulk == null) || (bulk.getMessages() == null) || (bulk.getMessages().length == 0)) {
-			log.error("Tree Data NOT in cache - forcing a cache load");
-			startupEvent("Send Tree data");
-			bulk = VertxUtils.getObject(realm(), "BASE_TREE", realm(), QBulkMessage.class);
+		// list of QDataBaseEntityMessages
+		List<QDataBaseEntityMessage> baseEntityMessages = new ArrayList<>();
+
+		// we grab the root
+		BaseEntity root = this.baseEntity.getBaseEntityByCode("GRP_ROOT");
+		QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(root);
+		rootMessage.setParentCode("GRP_ROOT_ROOT");
+		baseEntityMessages.add(rootMessage);
+
+		// we grab the first branch
+		List<BaseEntity> rootKids = this.baseEntity.getLinkedBaseEntities("GRP_ROOT");
+
+		// we create the message
+		QDataBaseEntityMessage rootChildrenMessage = new QDataBaseEntityMessage(rootKids);
+		rootChildrenMessage.setParentCode("GRP_ROOT");
+		baseEntityMessages.add(rootChildrenMessage);
+
+		// we get the kids of the kids
+		for (BaseEntity kid : rootKids) {
+
+			// we get the kid kids
+			List<BaseEntity> kidKids = this.baseEntity.getLinkedBaseEntities(kid);
+
+			// we create the message
+			QDataBaseEntityMessage kidKidMessage = new QDataBaseEntityMessage(kidKids);
+			kidKidMessage.setParentCode(kid.getCode());
+			baseEntityMessages.add(kidKidMessage);
+
 		}
-		if ((bulk != null) && (bulk.getMessages() != null) && (bulk.getMessages().length > 0)) {
-			println("Tree data consists of " + bulk.getMessages().length + " messages");
-			List<QDataBaseEntityMessage> baseEntityMsgs = new ArrayList<QDataBaseEntityMessage>();
 
-			for (QDataBaseEntityMessage msg : bulk.getMessages()) {
+		// we create the bulk
+		QBulkMessage newBulkMsg = new QBulkMessage();
 
-				if (msg instanceof QDataBaseEntityMessage) {
+		// we now loop through all the messages to check if the current user is allowed
+		// to see them
+		for (QDataBaseEntityMessage message : baseEntityMessages) {
 
-					String grpCode = msg.getParentCode();
-					BaseEntity parent = VertxUtils.readFromDDT(grpCode, getToken());
+			// list for allowed base entities
+			List<BaseEntity> allowedChildren = new ArrayList<>();
 
-					List<BaseEntity> allowedChildren = new ArrayList<BaseEntity>();
+			for (BaseEntity child : message.getItems()) {
 
-					/* GRP_ROOT does not have any parent, so we create its own message */
-					if (grpCode.equalsIgnoreCase("GRP_ROOT")) {
+				if (message.getParentCode().equals("GRP_ROOT_ROOT") == false) {
 
-						BaseEntity[] roots = new BaseEntity[1];
-						roots[0] = parent;
-						QDataBaseEntityMessage rootMessage = new QDataBaseEntityMessage(roots, "GRP_ROOT_ROOT",
-								"LNK_CORE");
-						rootMessage.setToken(getToken());
-						baseEntityMsgs.add(rootMessage);
-					}
+					// we get the parent
+					BaseEntity parent = this.baseEntity.getBaseEntityByCode(message.getParentCode());
 
-					for (BaseEntity child : msg.getItems()) {
+					// we get the kid code
+					String childCode = child.getCode();
 
-						String childCode = child.getCode();
+					// Getting the attributes GRP_XX of parent that has roles not allowed
+					Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
+					if (roleAttribute.isPresent()) {
 
-						// Getting the attributes GRP_XX of parent that has roles not allowed
-						Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
-						if (roleAttribute.isPresent()) {
+						// Getting the value of
+						String rolesAllowedStr = roleAttribute.get().getValue();
 
-							// Getting the value of
-							String rolesAllowedStr = roleAttribute.get().getValue();
+						// creating array as it can have multiple roles
+						String[] rolesAllowed = rolesAllowedStr.split(",");
+						Boolean match = false;
 
-							// creating array as it can have multiple roles
-							String[] rolesAllowed = rolesAllowedStr.split(",");
-							Boolean match = false;
-
-							for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
-								if (ea.getAttributeCode().startsWith("PRI_IS_")) {
-									try { // handling exception when the value is not saved as valueBoolean
-										if (ea.getValueBoolean()) {
-											for (String role : rolesAllowed) {
-												match = role.equalsIgnoreCase(ea.getAttributeCode());
-												if (match) {
-													allowedChildren.add(child);
-												}
+						for (EntityAttribute ea : getUser().getBaseEntityAttributes()) {
+							if (ea.getAttributeCode().startsWith("PRI_IS_")) {
+								try { // handling exception when the value is not saved as valueBoolean
+									if (ea.getValueBoolean()) {
+										for (String role : rolesAllowed) {
+											match = role.equalsIgnoreCase(ea.getAttributeCode());
+											if (match) {
+												allowedChildren.add(child);
 											}
 										}
-									} catch (Exception e) {
-										log.error("Error!! The attribute value is not in boolean format");
 									}
+								} catch (Exception e) {
+									log.error("Error!! The attribute value is not in boolean format");
 								}
-
 							}
-						} else {
-							allowedChildren.add(child);
+
 						}
 					}
+				} else {
 
-					QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
-							allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), grpCode, "LNK_CORE");
-					filteredMsg.setToken(getToken());
-					baseEntityMsgs.add(filteredMsg);
+					allowedChildren.add(child);
 				}
 			}
 
-			QBulkMessage newBulkMsg = new QBulkMessage(baseEntityMsgs);
-			println("Processed Tree data consists of " + newBulkMsg.getMessages().length + " messages");
-
-			this.publishCmd(newBulkMsg);
-
+			// we create the final message
+			QDataBaseEntityMessage filteredMsg = new QDataBaseEntityMessage(
+					allowedChildren.toArray(new BaseEntity[allowedChildren.size()]), message.getParentCode(),
+					"LNK_CORE");
+			filteredMsg.setToken(getToken());
+			newBulkMsg.add(filteredMsg);
 		}
+
+		this.publishCmd(newBulkMsg);
 	}
 
 	public void startupEvent(String caller) {
@@ -4822,7 +4781,6 @@ public class QRules {
 		println("Startup Event called from " + caller);
 		if (!isState("GENERATE_STARTUP")) {
 			this.loadRealmData();
-			this.generateTree();
 			this.reloadCache();
 		}
 
@@ -4996,8 +4954,8 @@ public class QRules {
 
 		// Check if already exists
 		BaseEntity existing = this.baseEntity.getBaseEntityByAttributeAndValue("PRI_CODE", "PER_SERVICE"); // do not
-																											// check
-																											// cache!
+		// check
+		// cache!
 
 		if (existing == null) {
 
@@ -5022,9 +4980,12 @@ public class QRules {
 	 * been removed from keycloak.
 	 */
 	public void setAdminRoleIfAdmin() {
+
 		String attributeCode = "PRI_IS_ADMIN";
 		BaseEntity user = getUser();
+
 		if (user != null) {
+
 			try {
 				Boolean isAdmin = user.getValue(attributeCode, null);
 				Answer isAdminAnswer;
@@ -5048,8 +5009,6 @@ public class QRules {
 			} catch (Exception e) {
 				log.info("Error!! while updating " + attributeCode + " attribute value");
 			}
-		} else {
-			log.info("Error!! User BaseEntity is null");
 		}
 	}
 
