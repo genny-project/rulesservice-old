@@ -16,7 +16,7 @@ rule "Delete BaseEntity"
         String sourceCode = rules.getAsString("sourceCode");
 
         /* optinal variables */
-        String targetGroupCode = rules.getAsString("targetCode");
+        String targetCode = rules.getAsString("targetCode");
         String linkValue = rules.getAsString("linkValue");
         String linkCode = rules.getAsString("linkCode");
 
