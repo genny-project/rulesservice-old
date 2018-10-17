@@ -2,6 +2,7 @@ package life.genny.rules;
 
 import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventBtnClickMessage;
+import life.genny.qwanda.entity.BaseEntity;
 
 rule "Check user company - Step 4"
 
