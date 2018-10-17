@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import org.apache.commons.lang.StringUtils;
 
 
 rule "Pre Init Answer"

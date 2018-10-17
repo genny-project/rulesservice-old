@@ -1,6 +1,7 @@
 package life.genny.rules;
 
 import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
 
 
 rule "Pre Init System Event"
@@ -17,6 +18,6 @@ rule "Pre Init System Event"
         rules.setState("EVT_SYSTEM");
         rules.setState("STARTED");
 		
-        	drools.setFocus("SystemEvent");
+        drools.setFocus("SystemEvent");
        		      
 end

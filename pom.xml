@@ -16,8 +16,8 @@
 	</licenses>
 
 	<properties>
-		<genny-verticle.version>1.0.59</genny-verticle.version>
-		<qwanda-utils.version>1.0.59</qwanda-utils.version>
+		<genny-rules.version>1.0.60</genny-rules.version>
+		<qwanda-utils.version>1.0.60</qwanda-utils.version>
 		<log4j-core-version>2.11.1</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
 		<junit-version>4.12</junit-version>
@@ -66,8 +66,8 @@
 		</dependency>
 		<dependency>
 			<groupId>life.genny</groupId>
-			<artifactId>genny-verticle</artifactId>
-			<version>${genny-verticle.version}</version>
+			<artifactId>genny-rules</artifactId>
+			<version>${genny-rules.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
