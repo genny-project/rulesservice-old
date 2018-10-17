@@ -1354,7 +1354,7 @@ public class QRules {
 		msg.setToken(getToken());
 		publish("data", JsonUtils.toJson(msg));
 	}
-	
+
 	public void publishData(final QDataAnswerMessage msg) {
 		msg.setToken(getToken());
 		publish("webdata", JsonUtils.toJson(msg));
@@ -2318,7 +2318,7 @@ public class QRules {
 		try {
 
 			QDataAttributeMessage msg = RulesUtils.loadAllAttributesIntoCache(getToken());
-			publishData(msg);
+			this.publishCmd(msg);
 			println("All the attributes sent");
 
 		} catch (Exception e) {
@@ -2762,7 +2762,8 @@ public class QRules {
 
 		SearchEntity sendAllChats = new SearchEntity("SBE_ALLMYCHAT", "All My Chats").addColumn("PRI_TITLE", "Title")
 				.addColumn("PRI_DATE_LAST_MESSAGE", "Last Message On").setStakeholder(getUser().getCode())
-			//	.addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC) // Sort doesn't work in
+				// .addSort("PRI_DATE_LAST_MESSAGE", "Recent Message", SearchEntity.Sort.DESC)
+				// // Sort doesn't work in
 				.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "CHT_%").setPageStart(pageStart)
 				.setPageSize(pageSize);
 
@@ -4464,7 +4465,21 @@ public class QRules {
 	 * Get search Results returns List<BaseEntity>
 	 */
 	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE) throws IOException {
-		return getSearchResultsAsList(searchBE, getToken());
+		return getSearchResultsAsList(searchBE, false);
+	}
+
+	/*
+	 * Get search Results returns List<BaseEntity>
+	 */
+	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, Boolean useServiceToken) throws IOException {
+
+		String token = null;
+		if (useServiceToken) {
+			token = RulesUtils.generateServiceToken(this.realm());
+		} else {
+			token = this.getToken();
+		}
+		return getSearchResultsAsList(searchBE, token);
 	}
 
 	/*
