@@ -4398,7 +4398,6 @@ public class QRules {
 	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
-
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
 	}
 
@@ -4407,7 +4406,6 @@ public class QRules {
 	 * QDataBaseEntityMessage
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode) throws IOException {
-
 		this.sendSearchResults(searchBE, parentCode, linkCode, "LINK");
 	}
 
