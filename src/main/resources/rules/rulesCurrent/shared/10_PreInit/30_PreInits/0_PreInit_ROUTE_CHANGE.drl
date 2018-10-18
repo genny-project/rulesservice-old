@@ -10,6 +10,7 @@ rule "Pre Init Route Change"
 	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT ROUTE_CHANGE: "+m);
 
         String route = m.getData().getCode();
@@ -27,5 +28,6 @@ rule "Pre Init Route Change"
 
         rules.setState("STARTED");
         rules.setState("EVENT_ROUTE_CHANGE");
+        rules.footer();
 
 end

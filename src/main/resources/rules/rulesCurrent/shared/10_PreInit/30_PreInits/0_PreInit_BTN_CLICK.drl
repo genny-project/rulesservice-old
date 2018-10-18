@@ -10,6 +10,7 @@ rule "Pre Init Btn Click"
 	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT BTN_CLICK: "+m);
 
         String btnCode = m.getData().getCode(); /* TODO : remove this if unused */
@@ -98,5 +99,6 @@ rule "Pre Init Btn Click"
         rules.setState("STARTED");
         rules.setState("EVENT_BTN_CLICK");
         rules.setState("EVENT_BUTTON_CLICK");
+        rules.footer();
 
 end

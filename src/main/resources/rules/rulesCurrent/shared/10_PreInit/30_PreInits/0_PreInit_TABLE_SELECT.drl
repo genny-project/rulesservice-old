@@ -10,6 +10,7 @@ rule "Pre Init Table Select"
 	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT TABLE_SELECT: "+m);
         rules.setState("EVENT_TABLE_SELECT");
         rules.setState("STARTED");
@@ -64,4 +65,5 @@ rule "Pre Init Table Select"
         if(quesCode != null) {
           rules.setState(quesCode);
         }
+        rules.footer();
 end

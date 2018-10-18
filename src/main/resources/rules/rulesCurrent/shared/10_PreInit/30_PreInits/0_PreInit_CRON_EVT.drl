@@ -10,6 +10,7 @@ rule "Pre Init Cron Event"
   		rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT CRON_EVT: "+m);
         rules.setState("CRON_EVENT");
         rules.setState("STARTED");
@@ -18,4 +19,5 @@ rule "Pre Init Cron Event"
     		if(dataCode != null) {
      	 		rules.setState(dataCode);
     		}
+    		rules.footer();
 end

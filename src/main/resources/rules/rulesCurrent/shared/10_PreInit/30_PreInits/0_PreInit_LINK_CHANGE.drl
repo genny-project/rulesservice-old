@@ -9,10 +9,12 @@ rule "Pre Init Link Change"
           rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
+        rules.header();
        rules.println("RULE INIT EVT_LINK_CHANGE: "+m);
  
         rules.setState("EVENT_LINK_CHANGE");
         rules.setState("STARTED");
 		
         drools.setFocus("LinkChange");
+        rules.footer();
 end
