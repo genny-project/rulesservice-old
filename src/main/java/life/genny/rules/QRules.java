@@ -592,10 +592,12 @@ public class QRules {
 		msg.setRecipientCodeArray(recipientCodes);
 		publishData(msg, recipientCodes);
 	}
-	
-	public void publishBaseEntityByCode(List<BaseEntity> bes, final String parentCode, final String linkCode, String linkValue) {
 
-		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(bes.toArray(new BaseEntity[0]), parentCode, linkCode, linkValue);
+	public void publishBaseEntityByCode(List<BaseEntity> bes, final String parentCode, final String linkCode,
+			String linkValue) {
+
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(bes.toArray(new BaseEntity[0]), parentCode, linkCode,
+				linkValue);
 
 		String[] recipientCodes = { this.getUser().getCode() };
 		msg.setRecipientCodeArray(recipientCodes);
@@ -636,6 +638,19 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
 		msg.setLinkValue(linkValue);
+		publishData(msg, recipientCodes);
+
+	}
+
+	/* Publish BaseEntityList with LinkValue Set */
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue, final Boolean delete) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
+		msg.setDelete(delete);
 		publishData(msg, recipientCodes);
 
 	}

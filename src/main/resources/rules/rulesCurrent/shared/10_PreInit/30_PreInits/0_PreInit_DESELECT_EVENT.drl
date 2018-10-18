@@ -19,7 +19,7 @@ rule "Pre Init De-Select Event"
         JsonObject dataJson = new JsonObject(dataString);
 
         String itemCode = dataJson.getString("itemCode");
-        String hintCode = dataJson.getString("hintCode"); 
+        String hintCode = dataJson.getString("hint"); 
 
         if(itemCode != null || hintCode != null) {
           rules.set("itemCode", itemCode);
