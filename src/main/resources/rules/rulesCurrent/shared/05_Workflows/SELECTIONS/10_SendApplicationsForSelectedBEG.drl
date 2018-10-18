@@ -56,7 +56,7 @@ rule "Send Applications For Selected BEG"
 		    		String parent = (String)pair.getKey();
 		    		List<BaseEntity> apps = (List<BaseEntity>)pair.getValue();
 		    		
-		        it.remove(); // avoids a ConcurrentModificationException
+		        it.remove(); /* avoids a ConcurrentModificationException */
 		        
 		        /* we publish the applications */
 		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", true);
