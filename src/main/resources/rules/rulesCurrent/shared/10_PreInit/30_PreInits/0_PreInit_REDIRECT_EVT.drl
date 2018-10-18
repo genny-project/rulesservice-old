@@ -10,6 +10,7 @@ rule "Pre Init Redirect Event"
 		rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then   
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT REDIRECT_EVT: "+m);
         rules.setState("REDIRECT_EVENT");
         rules.setState("STARTED");
@@ -26,4 +27,5 @@ rule "Pre Init Redirect Event"
 			rules.set("dataCode", dataCode);
 			rules.set("valueCode", valueCode);
 		}
+		rules.footer();
 end

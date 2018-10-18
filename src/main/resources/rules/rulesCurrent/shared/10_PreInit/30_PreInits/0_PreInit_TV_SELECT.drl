@@ -8,6 +8,7 @@ rule "Pre Init EVT_TV_SELECT"
         rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT TV_SELECT: "+m);
 
         rules.setState("EVENT_TV_SELECT");
@@ -27,4 +28,5 @@ rule "Pre Init EVT_TV_SELECT"
 
         rules.setState("STARTED");
         drools.setFocus("TV_SELECT"); /* Set focus to group of rules handling TreeView item selections */
+        rules.footer();
 end

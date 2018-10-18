@@ -8,11 +8,13 @@ rule "Pre Init Generate Reports"
           rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
+        rules.header();
          rules.println("RULE INIT GENERATE REPORTS: "+ m );
  
         rules.setState("GENERATE_REPORTS");
         rules.setState("STARTED");
 		
         	drools.setFocus("GenerateReports");
+        	rules.footer();
        		      
 end

@@ -8,6 +8,7 @@ rule "Pre Init Attribute Change"
         rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT ATTRIBUTE_CHANGE: "+m);
 
         String sourceCode = m.getAnswer().getSourceCode();
@@ -39,4 +40,5 @@ rule "Pre Init Attribute Change"
         rules.setState("EVT_ATTRIBUTE_VALUE_CHANGE");
         rules.setState("STARTED");
         drools.setFocus("AttributeChange");
+        rules.footer();
 end

@@ -9,6 +9,7 @@ rule "Pre Init Answer"
         rules: QRules( isState("PRE_INIT_READY") && !isState("STARTED"))
      then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT ANSWER: "+ m + " - " + m.getItems());
 		
 		/* we grab the data associated to the answers */
@@ -42,4 +43,5 @@ rule "Pre Init Answer"
             drools.setFocus("Answer");
         } 
         rules.processAnswers(answers);
+        rules.footer();
 end

@@ -10,6 +10,7 @@ rule "Pre Init FORM Submit"
         rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT FORM_SUBMIT: "+m);
         rules.setState("STARTED");
 
@@ -49,5 +50,5 @@ rule "Pre Init FORM Submit"
 		}
 		
         rules.setState("EVENT_FORM_SUBMIT");
-
+		rules.footer();
 end

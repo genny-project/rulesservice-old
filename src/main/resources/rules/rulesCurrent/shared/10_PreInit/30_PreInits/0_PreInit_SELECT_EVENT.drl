@@ -10,6 +10,7 @@ rule "Pre Init Select Event"
      
     then
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT BTN_CLICK: "+m);
         
         String dataString = m.getData().getValue();
@@ -35,4 +36,5 @@ rule "Pre Init Select Event"
         
         rules.setState("STARTED");
         rules.setState("EVENT_SELECT");
+        rules.footer();
  end

@@ -9,11 +9,13 @@ rule "Pre Init System Event"
           rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED")) 
      then    
         rules.setDrools(drools);
+        rules.header();
         rules.println("RULE INIT SYSTEM_EVENT: "+m);
  
         rules.setState("EVT_SYSTEM");
         rules.setState("STARTED");
 		
         	drools.setFocus("SystemEvent");
+        	rules.footer();
        		      
 end

@@ -10,6 +10,7 @@ rule "Pre Init Focus Rule Group"
           eval( $rules.hasRole("dev") ) 
      then    
         $rules.setDrools(drools);
+        $rules.header();
         $rules.println("RULE INIT FOCUS RULE GROUP: "+m);
  
         $rules.setState("FOCUS_RULE_GROUP");
@@ -17,5 +18,6 @@ rule "Pre Init Focus Rule Group"
 		
        String ruleGroup = m.getData().getCode();
 		drools.setFocus(ruleGroup);
+		$rules.footer();
        		      
 end
