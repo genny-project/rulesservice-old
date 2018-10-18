@@ -44,8 +44,6 @@ rule "Send Applications For Selected BEG"
             		}
             }
             
-            rules.println(JsonUtils.toJson(parents));
-            
             /* we iterate through our messages */
             Iterator it = parents.entrySet().iterator();
 		    while (it.hasNext()) {
