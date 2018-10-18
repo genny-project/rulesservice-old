@@ -49,6 +49,11 @@ rule "Generate Tree Roles PCSS"
 		rules.baseEntity.saveAnswer(new Answer("GRP_LEGAL", "GRP_LEGAL", "GRP_PRIVACY", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_LEGAL", "GRP_LEGAL", "GRP_TERMS", "PRI_IS_BUYER"));
 		
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORTS_NON_APPROVED", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORT_APPROVED", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_UNCONTACTABLE", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_DECLINED", "PRI_IS_BUYER"));
+		
 		rules.setState("GENERATE_TREE_RULES");
      	rules.footer();
 end
