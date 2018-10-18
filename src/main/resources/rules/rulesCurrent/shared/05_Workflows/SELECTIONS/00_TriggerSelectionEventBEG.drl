@@ -24,13 +24,13 @@ rule "Trigger Selection Event"
             .addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP%")
             .setPageStart(0)
             .setPageSize(10000);
-
+           
             /* we get a list of the base entities */
             List<BaseEntity> applications = rules.getSearchResultsAsList(search, true);
             
             /* we put the list in the map */
             rules.set("applications", applications);
-
+            
             rules.setState("DID_SELECT_BEG");
         }
 

@@ -1,5 +1,8 @@
 package life.genny.rules;
+import java.util.Map;
+
 import life.genny.rules.QRules;
+import java.util.Iterator;
 
 rule "Send Applications For Selected BEG"
 	when
@@ -15,9 +18,46 @@ rule "Send Applications For Selected BEG"
         /* we grab the applications */
         List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
         if(applications != null && !applications.isEmpty()) {
-
-            /* we publish the applications */
-            rules.publishBaseEntityByCode(applications, itemCode, "LNK_BEG");
+        	
+            /* we create a map of messages, the key being the parent of the apps */
+            HashMap<String, List<BaseEntity>> parents = new HashMap<>();
+            
+            /* we loop through the applications */
+            for(BaseEntity application: applications) {
+            		
+            		/* we get the parent */
+            		BaseEntity parent = rules.baseEntity.getParent(application.getCode(), "LNK_CORE");
+            		if(parent != null) {
+            			
+            			/* we add the application in the message */
+            			if(parents.get(parent.getCode()) == null) {
+            				parents.put(parent.getCode(), new ArrayList<BaseEntity>());
+            			}
+            			
+            			List<BaseEntity> parentApplications = parents.get(parent.getCode());
+            			parentApplications.add(application);
+            			
+            			parents.put(parent.getCode(), parentApplications);
+            		}
+            }
+            
+            rules.println(JsonUtils.toJson(parents));
+            
+            /* we iterate through our messages */
+            Iterator it = parents.entrySet().iterator();
+		    while (it.hasNext()) {
+		        
+		    		Map.Entry pair = (Map.Entry)it.next();
+		    		
+		    		/* we grab the parent and the list of apps */
+		    		String parent = (String)pair.getKey();
+		    		List<BaseEntity> apps = (List<BaseEntity>)pair.getValue();
+		    		
+		        it.remove(); // avoids a ConcurrentModificationException
+		        
+		        /* we publish the applications */
+		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", "APPLICATION");
+		    }
         }
 
 	 	rules.footer();      
