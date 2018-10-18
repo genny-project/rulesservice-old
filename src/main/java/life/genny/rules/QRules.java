@@ -565,18 +565,8 @@ public class QRules {
 	}
 
 	public void publishBaseEntityByCode(final String be) {
-		// String[] recipientArray = new String[1];
-		// recipientArray[0] = be;
 		publishBaseEntityByCode(be, null, null, null);
 	}
-
-	// public void publishBaseEntityByCode(final String be, final Boolean delete) {
-	// String[] recipientArray = new String[1];
-	// recipientArray[0] = be;
-	// publishBaseEntityByCode(be, null, null, recipientArray, delete);
-	// }
-	// removing this method and set it for replace instead below, as there is
-	// another method clearBaseEntity which does set delete true.
 
 	/* Publishes BaseEntity with replace true/false */
 	public void publishBaseEntityByCode(final String be, final Boolean replace) {
@@ -597,6 +587,15 @@ public class QRules {
 		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = item;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+
+		String[] recipientCodes = { this.getUser().getCode() };
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
+	
+	public void publishBaseEntityByCode(List<BaseEntity> bes, final String parentCode, final String linkCode, String linkValue) {
+
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(bes.toArray(new BaseEntity[0]), parentCode, linkCode, linkValue);
 
 		String[] recipientCodes = { this.getUser().getCode() };
 		msg.setRecipientCodeArray(recipientCodes);
