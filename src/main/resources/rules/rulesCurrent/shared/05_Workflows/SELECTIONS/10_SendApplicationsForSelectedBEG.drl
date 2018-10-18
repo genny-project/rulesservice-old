@@ -57,7 +57,7 @@ rule "Send Applications For Selected BEG"
 		        it.remove(); /* avoids a ConcurrentModificationException */
 		        
 		        /* we publish the applications */
-		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", true);
+		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true);
 		    }
         }
 
