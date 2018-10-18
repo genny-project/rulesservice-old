@@ -27,12 +27,12 @@ rule "Delete BaseEntity"
         }
            
         /* we do not properly delete the base entity, we move it to another group. default group: GRP_BIN. Can be overitten by passing 'targetCode' */
-        if(targetCode == null) {
-            targetCode = "GRP_BIN";
+        if(targetGroupCode == null) {
+            targetGroupCode = "GRP_BIN";
         }
 
         /* we move the base entity */
-        rules.baseEntity.moveBaseEntity(beCode, sourceCode, targetCode, linkCode, linkValue);
+        rules.baseEntity.moveBaseEntity(beCode, sourceCode, targetGroupCode, linkCode, linkValue);
 
 	    rules.footer();
 end
