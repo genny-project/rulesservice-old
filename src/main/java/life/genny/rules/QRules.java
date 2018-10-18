@@ -644,12 +644,26 @@ public class QRules {
 
 	/* Publish BaseEntityList with LinkValue Set */
 	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
-			final String[] recipientCodes, final String linkValue, final Boolean replace) {
+			final String[] recipientCodes, final String linkValue, final Boolean delete) {
 
 		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
 		msg.setLinkValue(linkValue);
+		msg.setDelete(delete);
+		publishData(msg, recipientCodes);
+
+	}
+
+	/* Publish BaseEntityList with LinkValue Set */
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue, final Boolean delete, Boolean replace) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
+		msg.setDelete(delete);
 		msg.setReplace(replace);
 		publishData(msg, recipientCodes);
 
@@ -691,20 +705,6 @@ public class QRules {
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
 		msg.setDelete(delete);
-		publishData(msg, recipientCodes);
-
-	}
-
-	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode,
-			final String[] recipientCodes, final Boolean delete, Boolean replace) {
-
-		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
-		BaseEntity[] itemArray = new BaseEntity[1];
-		itemArray[0] = item;
-		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
-		msg.setRecipientCodeArray(recipientCodes);
-		msg.setDelete(delete);
-		msg.setReplace(replace);
 		publishData(msg, recipientCodes);
 
 	}
