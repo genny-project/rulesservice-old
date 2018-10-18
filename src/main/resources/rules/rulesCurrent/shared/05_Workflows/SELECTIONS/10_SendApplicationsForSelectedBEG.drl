@@ -15,6 +15,9 @@ rule "Send Applications For Selected BEG"
         /* we grab the selected item */
         String itemCode = rules.getAsString("itemCode");
 
+		/* Get the recipients */
+		String[] recipients = {rules.getUser().getCode()};
+
         /* we grab the applications */
         List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
         if(applications != null && !applications.isEmpty()) {
@@ -56,7 +59,7 @@ rule "Send Applications For Selected BEG"
 		        it.remove(); // avoids a ConcurrentModificationException
 		        
 		        /* we publish the applications */
-		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", "APPLICATION");
+		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", true);
 		    }
         }
 
