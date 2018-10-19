@@ -43,6 +43,9 @@ rule "Send Applications For Selected BEG"
             			parents.put(parent.getCode(), parentApplications);
             		}
             }
+
+			/* we replace GRP_APPLICATIONS */
+			rules.publishBaseEntityByCode("GRP_APPLICATIONS", true);
             
             /* we iterate through our messages */
             Iterator it = parents.entrySet().iterator();
@@ -56,8 +59,8 @@ rule "Send Applications For Selected BEG"
 		    		
 		        it.remove(); /* avoids a ConcurrentModificationException */
 
-				/* we replace GRP_APPLICATIONS */
-				rules.publishBaseEntityByCode("GRP_APPLICATIONS", true);
+				/* we replace the parent */
+				rules.publishBaseEntityByCode(parent, true);
 		        
 		        /* we publish the applications */
 		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true);
