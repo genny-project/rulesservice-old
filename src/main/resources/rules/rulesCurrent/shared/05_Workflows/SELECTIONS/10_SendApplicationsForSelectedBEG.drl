@@ -20,8 +20,8 @@ rule "Send Applications For Selected BEG"
 
         /* we grab the applications */
         List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
-        if(applications != null && !applications.isEmpty()) {
-        	
+        if(applications != null) {
+        		
             /* we create a map of messages, the key being the parent of the apps */
             HashMap<String, List<BaseEntity>> parents = new HashMap<>();
             
@@ -33,7 +33,7 @@ rule "Send Applications For Selected BEG"
             		if(parent != null) {
             			
             			/* we add the application in the message */
-            			if(parents.get(parent.getCode()) == null) {
+            			if( !parents.containsKey( parent.getCode() ) ) {
             				parents.put(parent.getCode(), new ArrayList<BaseEntity>());
             			}
             			
@@ -52,12 +52,12 @@ rule "Send Applications For Selected BEG"
 		    		
 		    		/* we grab the parent and the list of apps */
 		    		String parent = (String)pair.getKey();
+		    		rules.println("parent ::"+parent);
 		    		List<BaseEntity> apps = (List<BaseEntity>)pair.getValue();
+		    		rules.println("apps ::"+apps);
 		    		
 		        it.remove(); /* avoids a ConcurrentModificationException */
 
-				/* we replace GRP_APPLICATIONS */
-				rules.publishBaseEntityByCode("GRP_APPLICATIONS", true);
 		        
 		        /* we publish the applications */
 		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true);
