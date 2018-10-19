@@ -41,6 +41,9 @@ rule "Send Applications For Selected BEG"
             			parentApplications.add(application);
             			
             			parents.put(parent.getCode(), parentApplications);
+
+						/* we clear the parent */
+						rules.publishBaseEntityByCode(parent, true);
             		}
             }
             
@@ -57,7 +60,6 @@ rule "Send Applications For Selected BEG"
 		    		rules.println("apps ::"+apps);
 		    		
 		        it.remove(); /* avoids a ConcurrentModificationException */
-
 		        
 		        /* we publish the applications */
 		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true);
