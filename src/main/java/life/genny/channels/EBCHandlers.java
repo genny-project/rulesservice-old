@@ -1,16 +1,10 @@
 package life.genny.channels;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -18,16 +12,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Consumer;
 import life.genny.eventbus.EventBusInterface;
-import life.genny.eventbus.EventBusVertx;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
-import life.genny.qwanda.entity.User;
 import life.genny.qwanda.message.QDataAnswerMessage;
-import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 import life.genny.qwanda.message.QDataGPSMessage;
+import life.genny.qwanda.message.QDataPaymentsCallbackMessage;
 import life.genny.qwanda.message.QEventAttributeValueChangeMessage;
 import life.genny.qwanda.message.QEventBtnClickMessage;
 import life.genny.qwanda.message.QEventLinkChangeMessage;
@@ -35,11 +26,7 @@ import life.genny.qwanda.message.QEventMessage;
 import life.genny.qwanda.rule.Rule;
 import life.genny.qwandautils.GennySettings;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.qwandautils.KeycloakUtils;
-import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
-
-import life.genny.utils.RulesUtils;
 
 
 public class EBCHandlers {
