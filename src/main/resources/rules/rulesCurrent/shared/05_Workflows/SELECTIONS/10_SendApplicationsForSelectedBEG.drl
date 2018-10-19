@@ -41,11 +41,16 @@ rule "Send Applications For Selected BEG"
             			parentApplications.add(application);
             			
             			parents.put(parent.getCode(), parentApplications);
-
-						/* we clear the parent */
-						rules.publishBaseEntityByCode(parent, true);
             		}
             }
+
+			/* we replace GRP_APPLICATIONS buckets */
+			List<BaseEntity> branches = rules.baseEntity.getLinkedBaseEntities("GRP_APPLICATIONS", "LNK_CORE");
+			if(branches != null) {
+				for(BaseEntity branch: branches) {
+					rules.publishBaseEntityByCode(branch.getCode(), true);
+				}
+			}
             
             /* we iterate through our messages */
             Iterator it = parents.entrySet().iterator();
