@@ -16,7 +16,7 @@
 	</licenses>
 
 	<properties>
-		<genny-rules.version>1.0.62</genny-rules.version>
+		<genny-rules.version>1.0.63</genny-rules.version>
 		<log4j-core-version>2.11.1</log4j-core-version>
 		<vertx.version>3.5.1</vertx.version>
 		<junit-version>4.12</junit-version>
@@ -99,13 +99,11 @@
 			<groupId>org.kie</groupId>
 			<artifactId>kie-api</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.drools</groupId>
 			<artifactId>drools-decisiontables</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -138,34 +136,29 @@
 			<groupId>org.drools</groupId>
 			<artifactId>drools-core</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.drools</groupId>
 			<artifactId>drools-compiler</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jbpm</groupId>
 			<artifactId>jbpm-flow</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jbpm</groupId>
 			<artifactId>jbpm-flow-builder</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jbpm</groupId>
 			<artifactId>jbpm-bpmn2</artifactId>
 			<version>${kie.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
@@ -177,7 +170,6 @@
 			<groupId>io.vavr</groupId>
 			<artifactId>vavr</artifactId>
 			<version>0.9.1</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
