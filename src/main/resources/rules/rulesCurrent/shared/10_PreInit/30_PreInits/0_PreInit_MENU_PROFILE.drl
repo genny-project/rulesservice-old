@@ -11,8 +11,8 @@ rule "Pre Init Menu Profile"
         rules.setDrools(drools);
         rules.header();
         rules.println("RULE INIT MENU_PROFILE: "+m);
+        rules.setState("STARTED");
  
         rules.setState("EVENT_MENU_PROFILE");
-        rules.setState("STARTED");
         rules.footer();
 end

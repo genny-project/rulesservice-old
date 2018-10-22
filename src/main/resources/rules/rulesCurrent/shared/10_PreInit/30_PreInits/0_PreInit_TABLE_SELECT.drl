@@ -11,9 +11,11 @@ rule "Pre Init Table Select"
      then
         rules.setDrools(drools);
         rules.header();
+
+        rules.setState("STARTED");
+
         rules.println("RULE INIT TABLE_SELECT: "+m);
         rules.setState("EVENT_TABLE_SELECT");
-        rules.setState("STARTED");
 
         String quesCode = m.getData().getCode();
 

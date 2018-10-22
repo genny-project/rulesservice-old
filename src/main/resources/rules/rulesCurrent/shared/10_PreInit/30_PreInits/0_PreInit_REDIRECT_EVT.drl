@@ -11,9 +11,10 @@ rule "Pre Init Redirect Event"
      then   
         rules.setDrools(drools);
         rules.header();
+        rules.setState("STARTED");
+
         rules.println("RULE INIT REDIRECT_EVT: "+m);
         rules.setState("REDIRECT_EVENT");
-        rules.setState("STARTED");
 
         String dataCode = m.getData().getCode();
         String valueCode = m.getData().getValue();

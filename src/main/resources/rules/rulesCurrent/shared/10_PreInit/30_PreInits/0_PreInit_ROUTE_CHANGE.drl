@@ -7,11 +7,13 @@ import io.vertx.core.json.JsonObject;
 rule "Pre Init Route Change"
     when
 	  m : QEventMessage( event_type == "ROUTE_CHANGE" )
-	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
+	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED") && !isState("ROUTE_CHANGE_LOOP"))
      then
         rules.setDrools(drools);
         rules.header();
         rules.println("RULE INIT ROUTE_CHANGE: "+m);
+
+        rules.setState("ROUTE_CHANGE_LOOP");
 
         String route = m.getData().getCode();
         String selectedItem = m.getData().getValue();

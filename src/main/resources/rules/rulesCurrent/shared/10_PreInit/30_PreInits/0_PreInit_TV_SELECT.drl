@@ -11,6 +11,8 @@ rule "Pre Init EVT_TV_SELECT"
         rules.header();
         rules.println("RULE INIT TV_SELECT: "+m);
 
+        rules.setState("STARTED");
+
         rules.setState("EVENT_TV_SELECT");
 
         String tvSelectCode = m.getData().getCode();
@@ -26,7 +28,6 @@ rule "Pre Init EVT_TV_SELECT"
           rules.setState(tvSelectValue);
         }
 
-        rules.setState("STARTED");
         drools.setFocus("TV_SELECT"); /* Set focus to group of rules handling TreeView item selections */
         rules.footer();
 end

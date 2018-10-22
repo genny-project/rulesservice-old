@@ -12,8 +12,9 @@ rule "Pre Init - Auth Init"
         rules.setDrools(drools);
      	rules.header();
         rules.setState("LOOP_AUTH_INIT_EVT");
-        rules.setState("TRIGGER_AUTH_INIT");
         rules.setState("STARTED");
+
+        rules.setState("TRIGGER_AUTH_INIT");
         
 	    rules.footer();
 end

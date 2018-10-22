@@ -6,11 +6,13 @@ import life.genny.rules.QRules;
 rule "Pre Init Answer"
     when
         m : QDataAnswerMessage( QDataAnswerMessage.getData_type().equals(Answer.class.getSimpleName()) )
-        rules: QRules( isState("PRE_INIT_READY") && !isState("STARTED"))
+        rules: QRules( isState("PRE_INIT_READY") && !isState("STARTED") && !isState("PREINIT_ANSWER_LOOP"))
      then
         rules.setDrools(drools);
         rules.header();
         rules.println("RULE INIT ANSWER: "+ m + " - " + m.getItems());
+
+		rules.setState("PREINIT_ANSWER_LOOP");
 		
 		/* we grab the data associated to the answers */
 		 Answer[] answers = m.getItems();
@@ -33,10 +35,10 @@ rule "Pre Init Answer"
 		 	    rules.set(attributeCode, firstAnswer);
 		 	}	 	
 		 }
-       
+	
+        rules.setState("STARTED");
         rules.setState("EVENT_ANSWER"); /* other rules listening for thos state */
         rules.setState("DATA_ANSWER");
-        rules.setState("STARTED");
         rules.setState("ANSWER");
         
         if (StringUtils.isBlank(m.getAliasCode())) {
