@@ -48,7 +48,7 @@ rule "Send Applications For Selected BEG"
 			List<BaseEntity> branches = rules.baseEntity.getLinkedBaseEntities("GRP_APPLICATIONS", "LNK_CORE");
 			if(branches != null) {
 				for(BaseEntity branch: branches) {
-					rules.publishBaseEntityByCode(branch.getCode(), true);
+					rules.publishBaseEntityByCode(branch.getCode(), true, 2);
 				}
 			}
             
@@ -67,7 +67,7 @@ rule "Send Applications For Selected BEG"
 		        it.remove(); /* avoids a ConcurrentModificationException */
 		        
 		        /* we publish the applications */
-		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true);
+		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true, 2);
 		    }
         }
 
