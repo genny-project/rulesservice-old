@@ -44,6 +44,6 @@ rule "Pre Init Answer"
         if (StringUtils.isBlank(m.getAliasCode())) {
             drools.setFocus("Answer");
         } 
-        rules.processAnswers(answers);
+       /* rules.processAnswers(answers); */
         rules.footer();
 end
