@@ -328,8 +328,8 @@ public class QRules {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object> getAsList(final String key) {
-		return (List<Object>) get(key);
+	public <T> T getAsList(final String key) {
+		return (T) get(key);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -581,6 +581,20 @@ public class QRules {
 		publishData(msg, recipientCodes);
 	}
 
+	/* Publishes BaseEntity with replace true/false */
+	public void publishBaseEntityByCode(final String be, final Boolean replace, int level) {
+
+		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
+		BaseEntity[] itemArray = new BaseEntity[1];
+		itemArray[0] = item;
+		String[] recipientCodes = { this.getUser().getCode() };
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setReplace(replace);
+		msg.setShouldDeleteLinkedBaseEntities(level);
+		publishData(msg, recipientCodes);
+	}
+
 	public void publishBaseEntityByCode(final String be, final String parentCode, final String linkCode) {
 
 		BaseEntity item = this.baseEntity.getBaseEntityByCode(be);
@@ -665,6 +679,20 @@ public class QRules {
 		msg.setLinkValue(linkValue);
 		msg.setDelete(delete);
 		msg.setReplace(replace);
+		publishData(msg, recipientCodes);
+	}
+
+	/* Publish BaseEntityList with LinkValue Set */
+	public void publishBaseEntityByCode(final List<BaseEntity> items, final String parentCode, final String linkCode,
+			final String[] recipientCodes, final String linkValue, final Boolean delete, Boolean replace, int level) {
+
+		BaseEntity[] itemArray = items.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
+		msg.setRecipientCodeArray(recipientCodes);
+		msg.setLinkValue(linkValue);
+		msg.setDelete(delete);
+		msg.setReplace(replace);
+		msg.setShouldDeleteLinkedBaseEntities(level);
 		publishData(msg, recipientCodes);
 
 	}
