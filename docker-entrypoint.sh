@@ -12,8 +12,7 @@ while IFS=$': \t' read -a line ;do
 if [ -z "${myip}" ]; then
    myip=127.0.0.1
 fi
-
-export MYIP=${myip}
+export MYIP=`ip a | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | grep -v 127.0.0.1 | grep -v 0.0.0.0 | head -n 1`
 
 KEYCLOAK_JSON_DIR=/realm
 KEYCLOAK_ORIGINAL_JSON_DIR=/opt/realm
