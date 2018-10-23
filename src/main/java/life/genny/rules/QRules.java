@@ -3594,6 +3594,7 @@ public class QRules {
 			pojo.setInferred(ea.getInferred());
 			pojo.setExpired(a.getExpired());
 			pojo.setRefused(a.getRefused());
+			pojo.setChangeEvent(false);
 			// pojo.setAskId(answer.getAskId());
 
 			QEventAttributeValueChangeMessage msg = new QEventAttributeValueChangeMessage(pojo, m.getOldValue(),
@@ -6473,24 +6474,24 @@ public class QRules {
 		return uniqueCode;
 	}
 
-	public void processAnswers(final Answer[] answers) {
-		Arrays.stream(answers).forEach(x -> {
-			drools.insert(x);
-		});
-		drools.setFocus("AnswerProcessing");
-	}
+	// public void processAnswers(final Answer[] answers) {
+	// 	Arrays.stream(answers).forEach(x -> {
+	// 		drools.insert(x);
+	// 	});
+	// 	drools.setFocus("AnswerProcessing");
+	// }
 
-	public void processAnswers(final List<Answer> answers) {
-		answers.stream().forEach(x -> {
-			drools.insert(x);
-		});
-		drools.setFocus("AnswerProcessing");
-	}
+	// public void processAnswers(final List<Answer> answers) {
+	// 	answers.stream().forEach(x -> {
+	// 		drools.insert(x);
+	// 	});
+	// 	drools.setFocus("AnswerProcessing");
+	// }
 
-	public void processAnswers(final Answer answer) {
-		drools.insert(answer);
-		drools.setFocus("AnswerProcessing");
-	}
+	// public void processAnswers(final Answer answer) {
+	// 	drools.insert(answer);
+	// 	drools.setFocus("AnswerProcessing");
+	// }
 
 	public void processJsonAddress(final String sourceCode, final String targetCode, final String jsonAddressLine) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(
