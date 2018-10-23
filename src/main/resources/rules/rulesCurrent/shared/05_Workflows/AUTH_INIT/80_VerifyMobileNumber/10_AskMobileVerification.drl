@@ -1,0 +1,25 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Ask Mobile Verification Question"
+    when
+        rules: QRules( isState("MOBILE_VERIFICATION_REQUIRED") &&
+                       !isState("LOOP_MOBILE_VERIFICATION_REQUIRED") )
+    then
+        rules.header();
+		rules.setState("LOOP_MOBILE_VERIFICATION_REQUIRED");
+
+		if(rules.didUserVerifyPhoneNumber()) { 
+
+            rules.setState("MOBILE_VERIFIED");
+        }
+        else {
+
+            /* we send the verification code */
+            rules.sendMobileVerificationPasscode(rules.getUser().getCode());
+
+            /* we ask user to validate form */
+            rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), "QUE_MOBILE_VERIFICATION_GRP", false);
+        }
+        rules.footer();
+end

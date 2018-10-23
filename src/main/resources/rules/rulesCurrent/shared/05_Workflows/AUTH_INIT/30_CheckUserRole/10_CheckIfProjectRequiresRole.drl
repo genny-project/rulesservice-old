@@ -1,0 +1,24 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Check if project requires role"
+
+    when
+         rules: QRules( isState("CHECK_IF_PROJECT_REQUIRES_ROLE") &&
+                        !isState("LOOP_CHECK_IF_PROJECT_REQUIRES_ROLE") )
+     then
+     	rules.header();
+        rules.setState("LOOP_CHECK_IF_PROJECT_REQUIRES_ROLE");
+
+        BaseEntity project = rules.getProject();
+        Boolean doesProjectRequireRole = project.getValue("PRI_DOES_PROJECT_ASK_FOR_ROLE", null);
+        if (doesProjectRequireRole == null || doesProjectRequireRole == true) {
+        	 rules.setState("IS_USER_ROLE_SET");
+        }
+        else {
+        	rules.setState("PRI_IS_BUYER");
+        	rules.setState("TRIGGER_PROFILE_CHECK");
+        }
+
+	    rules.footer();
+end

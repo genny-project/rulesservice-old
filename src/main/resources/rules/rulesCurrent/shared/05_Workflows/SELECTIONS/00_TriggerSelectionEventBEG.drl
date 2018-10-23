@@ -1,0 +1,38 @@
+
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* trigger selection for BEGS
+   state comes from the pre init SELECT EVENT
+*/
+rule "Trigger Selection Event"
+	when
+		rules: QRules(  isState("EVENT_SELECT") &&
+                        isState("BEG") &&
+						!isState("LOOP_TRIGGER_SELECTION_EVENT")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_SELECTION_EVENT");
+
+        /* we grab the code of the selected item */
+        String itemCode = rules.getAsString("itemCode");
+        if(itemCode != null) {
+
+            /* we search for the linked APPs */
+            SearchEntity search = new SearchEntity("SBE_" + itemCode, "SBE_" + itemCode)
+            .setSourceCode(itemCode)
+            .addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP%")
+            .setPageStart(0)
+            .setPageSize(10000);
+           
+            /* we get a list of the base entities */
+            List<BaseEntity> applications = rules.getSearchResultsAsList(search, true);
+            
+            /* we put the list in the map */
+            rules.set("applications", applications);
+            
+            rules.setState("DID_SELECT_BEG");
+        }
+
+	 	rules.footer();      
+end

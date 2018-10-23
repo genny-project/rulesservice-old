@@ -24,7 +24,7 @@ rule "Trigger Fill BEG"
 					rules.println("beg Code   ::   " + beg.getCode());
 					rules.println("beg's current parent is   ::   " + parentBe.getCode());
 					
-					rules.baseEntity.moveBaseEntitySetLinkValue(beg.getCode(), parentBe.getCode(), "GRP_FILLED", "LNK_CORE", "BEG");
+					rules.baseEntity.moveBaseEntity(beg.getCode(), parentBe.getCode(), "GRP_FILLED", "LNK_CORE", "BEG");
 					
                     /* Done to Go Back */
 

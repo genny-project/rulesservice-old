@@ -1,0 +1,44 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* This rule sends a toast notificaiton to the user if something goes wrong in the system */
+rule "Send Toast Notification"
+	when
+		rules: QRules(  isState("SEND_TOAST_NOTIFICATION") &&
+                    	!isState("LOOP_SEND_TOAST_NOTIFICATION") )
+  	then
+	 	rules.header();
+   		rules.setState("LOOP_SEND_TOAST_NOTIFICATION");
+
+        /* get message content from state map */
+        HashMap<String, Object> toastData = rules.getAsHashMap("toastData");
+        if(toastData != null){
+
+            try { /* handling exception  */
+
+                Object message = toastData.get("message");
+                Object priority = toastData.get("priority");
+                Object recipient = toastData.get("recipient");
+
+                /* set default values if recipient and priority is not set */
+                if(recipient == null){
+                    recipient = new String[]{ rules.getUser().getCode() };
+
+                }
+                if(priority == null){
+                    priority = "info";
+
+                }
+                if( message != null && priority != null && recipient != null ){
+                    /* send a toast notificaiton */
+                    rules.sendToastNotification((String[])recipient, (String)message, (String)priority);
+                    rules.setState("SENT_TOAST_NOTIFICATION");
+                }
+
+            } 
+            catch (Exception e) {
+
+            }
+        }
+	 	rules.footer();
+end
