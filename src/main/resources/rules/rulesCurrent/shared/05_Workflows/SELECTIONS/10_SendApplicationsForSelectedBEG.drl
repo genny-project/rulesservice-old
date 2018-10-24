@@ -20,6 +20,8 @@ rule "Send Applications For Selected BEG"
 
         /* we grab the applications */
         List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
+        rules.println("itemcode ::" + itemCode + ", applications in selected itemcode ::"+ applications);
+        
         if(applications != null) {
         		
             /* we create a map of messages, the key being the parent of the apps */
