@@ -7,11 +7,13 @@ import io.vertx.core.json.JsonObject;
 rule "Pre Init Btn Click"
     when
 	  m : QEventMessage( event_type == "BTN_CLICK" )
-	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
+	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED") && !isState("LOOP_PREINIT_BUTTON"))
      then
         rules.setDrools(drools);
         rules.header();
         rules.println("RULE INIT BTN_CLICK: "+m);
+
+        rules.setState("LOOP_PREINIT_BUTTON");
 
         String btnCode = m.getData().getCode(); /* TODO : remove this if unused */
         String quesCode = m.getData().getCode(); /* TODO: use this, don't remove. */

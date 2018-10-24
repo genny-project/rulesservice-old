@@ -1755,7 +1755,7 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode,
 			Boolean pushSelection) {
-
+		
 		QwandaMessage questions = QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token,
 				stakeholderCode, pushSelection);
 		if (questions != null) {
@@ -6452,23 +6452,23 @@ public class QRules {
 	}
 
 	public void processAnswers(final Answer[] answers) {
-		Arrays.stream(answers).forEach(x -> {
-			drools.insert(x);
-		});
-		drools.setFocus("AnswerProcessing");
-	}
+	 	Arrays.stream(answers).forEach(x -> {
+	 		drools.insert(x);
+	 	});
+	 	drools.setFocus("AnswerProcessing");
+	 }
 
-	public void processAnswers(final List<Answer> answers) {
-		answers.stream().forEach(x -> {
-			drools.insert(x);
-		});
-		drools.setFocus("AnswerProcessing");
-	}
+	 public void processAnswers(final List<Answer> answers) {
+	 	answers.stream().forEach(x -> {
+	 		drools.insert(x);
+	 	});
+	 	drools.setFocus("AnswerProcessing");
+	 }
 
-	public void processAnswers(final Answer answer) {
-		drools.insert(answer);
-		drools.setFocus("AnswerProcessing");
-	}
+	 public void processAnswers(final Answer answer) {
+	 	drools.insert(answer);
+	 	drools.setFocus("AnswerProcessing");
+	 }
 
 	public void processJsonAddress(final String sourceCode, final String targetCode, final String jsonAddressLine) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(
@@ -6476,6 +6476,23 @@ public class QRules {
 		List<Answer> answers = processAddressAnswers(msg);
 		this.baseEntity.saveAnswers(answers);
 
+	}
+	
+	/* to return the name of the attribute */
+	public String getAttributeName(BaseEntity parentBe, String attributeCode) {
+		
+		String attributeName = null;
+		
+		if(parentBe != null) {
+			Optional<EntityAttribute> updatedAttributeOp = parentBe.getBaseEntityAttributes().stream().filter(Objects::nonNull).filter(ea -> ea.getAttributeCode().equals(attributeCode)).findFirst();
+			if(updatedAttributeOp.isPresent()) {
+				EntityAttribute updatedAttribute = updatedAttributeOp.get();
+				attributeName = updatedAttribute.getAttributeName();
+			}
+		}
+		
+		
+		return attributeName;
 	}
 
 }

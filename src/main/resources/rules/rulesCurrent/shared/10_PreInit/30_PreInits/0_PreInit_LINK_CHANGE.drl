@@ -11,9 +11,9 @@ rule "Pre Init Link Change"
         rules.setDrools(drools);
         rules.header();
        rules.println("RULE INIT EVT_LINK_CHANGE: "+m);
- 
-        rules.setState("EVENT_LINK_CHANGE");
         rules.setState("STARTED");
+    
+        rules.setState("EVENT_LINK_CHANGE");
 		
         drools.setFocus("LinkChange");
         rules.footer();

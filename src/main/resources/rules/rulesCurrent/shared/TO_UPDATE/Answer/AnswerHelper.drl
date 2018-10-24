@@ -14,6 +14,8 @@ ruleflow-group 'Answer'
     then
         rules.header();
 
+		rules.setState("ANSWER_HELPER");
+
         Answer[] answers = $m.getItems();
 		if(answers != null && answers.length > 0) {
 			Answer firstAnswer = answers[0];
