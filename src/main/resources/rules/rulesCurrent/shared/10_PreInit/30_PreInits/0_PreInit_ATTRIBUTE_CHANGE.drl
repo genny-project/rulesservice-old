@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 
 rule "Pre Init Attribute Change"
     when
-        m : QEventAttributeValueChangeMessage( event_type == "EVT_ATTRIBUTE_VALUE_CHANGE" )
+        m : QEventAttributeValueChangeMessage()
         rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED") && !isState("LOOP_ATTRIBUTE_CHANGE")) 
      then    
         rules.setDrools(drools);
