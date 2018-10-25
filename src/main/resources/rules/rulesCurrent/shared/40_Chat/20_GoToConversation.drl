@@ -4,11 +4,11 @@ import life.genny.rules.QRules;
 rule "Trigger Create Chat - Step 3"
 	when
 		rules: QRules(  isState("GO_TO_CONVERSATION") &&
-						!isState("LOOP_CREATE_NEW_CONVERSATION")) 
+						!isState("LOOP_GO_TO_CONVERSATION")) 
 	 then
 	 	rules.header();
 		
-		rules.setState("LOOP_CREATE_NEW_CONVERSATION");
+		rules.setState("LOOP_GO_TO_CONVERSATION");
 
 		/* chat code should be sent as an itemCode*/
 	   	String userCode = rules.getAsString("itemCode");
