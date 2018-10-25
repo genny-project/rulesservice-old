@@ -42,7 +42,7 @@ rule "Generate internmatch Tree Roles"
         rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT,PRI_IS_BUYER"));
 		
 		/* Roles related to Bucket GRP_APPLICATIONS */
-        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF"));
         rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
         rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_SHORTLISTED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
         rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_INTERVIEWS", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));

@@ -568,6 +568,15 @@ public class QRules {
 		publishBaseEntityByCode(be, null, null, null);
 	}
 
+	public void publishBaseEntityByCode(List<BaseEntity> bes) {
+
+		BaseEntity[] itemArray = bes.toArray(new BaseEntity[0]);
+		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray);
+		String[] recipientCodes = { this.getUser().getCode() };
+		msg.setRecipientCodeArray(recipientCodes);
+		publishData(msg, recipientCodes);
+	}
+
 	/* Publishes BaseEntity with replace true/false */
 	public void publishBaseEntityByCode(final String be, final Boolean replace) {
 
