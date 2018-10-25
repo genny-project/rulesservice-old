@@ -22,32 +22,33 @@ rule "Generate internmatch Tree Roles"
 		rules.println("Generating specific Tree Roles for "+rules.realm());
 		
 		/* Roles related to TreeView Root */
-		List<Answer> grpRoot = new ArrayList<>();
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT,PRI_IS_BUYER"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
-		grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENTS", "PRI_IS_AGENT"));
-        grpRoot.add(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENCIES", "PRI_IS_AGENT"));
-
-		rules.baseEntity.saveAnswers(grpRoot);
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANIES", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDERS", "PRI_IS_AGENT"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENTS", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENCIES", "PRI_IS_AGENT"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_MESSAGES", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_SELLER,PRI_IS_AGENT"));
 
 		/* Roles related to TreeView GRP_BEGS */
-		List<Answer> grpBegs = new ArrayList<>();
-        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT,PRI_IS_BUYER"));
-        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT,PRI_IS_BUYER"));
-        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT,PRI_IS_BUYER"));
-        grpBegs.add(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT,PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswers(grpBegs);
+        rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_AGENT,PRI_IS_BUYER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_DRAFTS", "PRI_IS_AGENT,PRI_IS_BUYER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_AGENT,PRI_IS_BUYER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_FILLED", "PRI_IS_AGENT,PRI_IS_BUYER"));
 		
-		List<Answer> grpApplications = new ArrayList<>();
-        grpApplications.add(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT"));
-        rules.baseEntity.saveAnswers(grpApplications);
-
+		/* Roles related to Bucket GRP_APPLICATIONS */
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_NOT_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_APPLIED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_SHORTLISTED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_INTERVIEWS", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_OFFERED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_PLACED", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_IN_PROGRESS", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_AGENT,PRI_IS_BUYER,PRI_IS_SELLER"));
 
         rules.footer();
 end

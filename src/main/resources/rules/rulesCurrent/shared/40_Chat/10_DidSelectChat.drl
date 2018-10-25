@@ -1,0 +1,27 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Create Chat - Step 1 - Did Select Chat"
+	when
+		rules: QRules(  isState("DID_SELECT_CHAT") &&
+						!isState("LOOP_DID_SELECT_CHAT")) 
+	then
+	 	rules.header();
+		
+		rules.setState("LOOP_DID_SELECT_CHAT");
+
+		/* chat code should be sent as an itemCode */
+	   	String chatCode = rules.getAsString("itemCode");
+		String currentUserCode = rules.getUser().getCode();
+
+		/* we check if the chat actually exists; */
+		BaseEntity conversation = rules.baseEntity.getBaseEntityByCode(chatCode);
+		    
+		/* if the conversation is not null */
+		if(conversation != null) {
+			rules.set("conversationBe", conversation);
+			rules.setState("GO_TO_CONVERSATION");
+		}
+
+	 	rules.footer();      
+end

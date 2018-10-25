@@ -18,13 +18,14 @@ rule "User-Default-Profile"
         
         rules.setState("PROFILE_RULE_EXECUTED");
         
-        // we get the project
+        /* we get the project */
         BaseEntity project = rules.getProject();
         if (project != null) {
         
-			// we fetch the profile question group code from the project attribute. 
-			// if it does not exist, we default it to the genny profile question group
-            String profileQuestionGroup = project.getValue(rules.loadUserRole() + "_PROFILE_GRP", "QUE_DEFAULT_PROFILE_GRP");
+			/* we fetch the profile question group code from the project attribute.  */
+			/* if it does not exist, we default it to the genny profile question group */
+			
+            String profileQuestionGroup = project.getValue(rules.loadUserRole()+"_PROFILE_GRP", "QUE_DEFAULT_PROFILE_GRP");
             rules.askQuestions(rules.getUser().getCode(), rules.getUser().getCode(), profileQuestionGroup, true);
         }
 

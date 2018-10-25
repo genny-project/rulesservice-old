@@ -1,0 +1,39 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Create Chat - Step 3"
+	when
+		rules: QRules(  isState("GO_TO_CONVERSATION") &&
+						!isState("LOOP_GO_TO_CONVERSATION")) 
+	 then
+	 	rules.header();
+		
+		rules.setState("LOOP_GO_TO_CONVERSATION");
+
+		/* chat code should be sent as an itemCode*/
+	   	String userCode = rules.getAsString("itemCode");
+		String currentUserCode = rules.getUser().getCode();
+		BaseEntity conversation = rules.getAsBaseEntity("conversationBe");
+
+		/* we publish the conversation */
+		rules.publishBaseEntityByCode(conversation, "GRP_MESSAGES", "LNK_CHAT");
+
+		/* we send the messages of the conversation */
+		SearchEntity messageSearch = new SearchEntity("SBE_CHATMESSAGES", "Messages")
+		.setSourceCode(conversation.getCode())
+		.addSort("PRI_CREATED", "Created", SearchEntity.Sort.DESC)
+		.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "MSG_%")
+		.setPageStart(0)
+		.setPageSize(10000);
+
+		List<BaseEntity> messages = rules.getSearchResultsAsList(messageSearch, RulesUtils.generateServiceToken(rules.realm()));
+		rules.publishBaseEntityByCode(messages, conversation.getCode(), "LNK_CHAT");
+
+		/* we get parameters for the route change if any. could be null! */
+		JsonObject params = (JsonObject) rules.get("params");
+
+		/* we send a route change to frontend*/
+		rules.navigateTo("/chat/" + conversation.getCode(), params);
+
+	 	rules.footer();      
+end

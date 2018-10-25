@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Select Role - SELLER"
+	when
+		 rules: QRules( isState("BTN_SELECT_ROLE_SELLER") &&  
+		 				isState("ROLE_SELECTION") &&
+						!isState("SELLER_SELECTED") )
+	 then
+	    rules.header();
+		rules.setState("SELLER_SELECTED");
+
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_BUYER", "FALSE");
+		rules.baseEntity.updateBaseEntityAttribute(rules.getUser().getCode(), rules.getUser().getCode(), "PRI_IS_SELLER", "TRUE");
+
+		rules.setState("PRI_IS_SELLER");
+		rules.setState("ROLE_SET");
+	    rules.footer();
+end

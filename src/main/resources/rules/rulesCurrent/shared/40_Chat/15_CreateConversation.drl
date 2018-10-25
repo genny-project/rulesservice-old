@@ -1,0 +1,37 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Trigger Create Chat - Step 2"
+	when
+		rules: QRules(  isState("CREATE_NEW_CONVERSATION") &&
+						!isState("LOOP_CREATE_NEW_CONVERSATION")) 
+	 then
+	 	rules.header();
+		
+		rules.setState("LOOP_CREATE_NEW_CONVERSATION");
+
+		/* chat code should be sent as an itemCode*/
+	   	String userCode = rules.getAsString("itemCode");
+		String currentUserCode = rules.getUser().getCode();
+
+		/* we create the base entity*/
+		BaseEntity conversation = rules.baseEntity.create(currentUserCode, "CHT", "Conversation");
+
+		/* we add attributes */
+		List<Answer> answers = new ArrayList<>();
+		answers.add(new Answer(currentUserCode, conversation.getCode(), "PRI_TITLE", "Chat"));
+		rules.baseEntity.saveAnswers(answers);
+
+		/* we create links */
+		/* GRP_MESSAGES -> CHAT*/
+		rules.baseEntity.createLink("GRP_MESSAGES", conversation.getCode(), "LNK_CHAT",  "CHAT", 1.0);
+
+		/* CHAT -> participants*/
+		rules.baseEntity.createLink(conversation.getCode(), currentUserCode, "LNK_USER", "PARTICIPANT", 1.0);
+		rules.baseEntity.createLink(conversation.getCode(), userCode, "LNK_USER",  "PARTICIPANT", 1.0);
+
+		rules.set("conversationBe", conversation);
+		rules.setState("GO_TO_CONVERSATION");
+
+	 	rules.footer();      
+end
