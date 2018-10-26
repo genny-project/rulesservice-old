@@ -1809,7 +1809,7 @@ public class QRules {
 			cmdFormView.setIsPopup(isPopup);
 			publishCmd(cmdFormView);
 
-			this.navigateTo("/questions/" + questionGroupCode);
+			this.navigateTo("/questions/" + questionGroupCode, isPopup);
 		}
 	}
 
