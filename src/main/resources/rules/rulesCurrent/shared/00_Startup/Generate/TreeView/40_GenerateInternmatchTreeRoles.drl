@@ -22,8 +22,8 @@ rule "Generate internmatch Tree Roles"
 		rules.println("Generating specific Tree Roles for "+rules.realm());
 		
 		/* Roles related to TreeView Root */
-        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT, PRI_IS_BUYER"));
-        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOME", "PRI_IS_EDU_PROVIDER_STAFF, PRI_IS_SELLER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_AGENT,PRI_IS_BUYER"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOME", "PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_SELLER"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_INTERNS", "PRI_IS_AGENT"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_HOST_COMPANY_REPRESENTATIVES", "PRI_IS_AGENT"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_EDU_PROVIDER_REPRESENTATIVES", "PRI_IS_AGENT"));
