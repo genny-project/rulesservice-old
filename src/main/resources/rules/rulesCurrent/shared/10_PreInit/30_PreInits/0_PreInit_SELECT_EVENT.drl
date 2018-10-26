@@ -6,14 +6,14 @@ rule "Pre Init Select Event"
       m : QEventMessage( event_type == "BTN_CLICK" && 
                         getData() != null && 
                         getData().getCode().equals("SELECT_EVENT") )
-      rules: QRules(!isState("STARTED"))
+      rules: QRules(!isState("LOOP_PREINIT_SELECT_EVENT"))
      
     then
         rules.setDrools(drools);
         rules.header();
         rules.println("RULE INIT BTN_CLICK: "+m);
 
-        rules.setState("STARTED");
+        rules.setState("LOOP_PREINIT_SELECT_EVENT");
 
         
         String dataString = m.getData().getValue();
