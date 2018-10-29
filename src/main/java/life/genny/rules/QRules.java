@@ -352,6 +352,10 @@ public class QRules {
 	public HashMap<String, Object> getAsHashMap(final String key) {
 		return (HashMap) get(key);
 	}
+	
+	public HashMap<String, String> getAsHashMap1(final String key) {
+		return (HashMap) get(key);
+	}
 
 	public List<BaseEntity> getAsBaseEntitys(final String key) {
 		return (List<BaseEntity>) get(key);
