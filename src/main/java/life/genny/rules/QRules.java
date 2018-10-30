@@ -4545,8 +4545,10 @@ public class QRules {
 	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, String token) throws IOException {
 
 		QDataBaseEntityMessage msg = getSearchResults(searchBE, token);
-		if (msg.getItems() != null) {
-			return Arrays.asList(msg.getItems());
+		if (msg != null) {	
+			if(msg.getItems() != null) {
+				return Arrays.asList(msg.getItems());
+			}
 		}
 
 		return new ArrayList<>();
