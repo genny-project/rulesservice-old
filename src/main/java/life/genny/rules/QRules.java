@@ -616,6 +616,13 @@ public class QRules {
 		publishData(msg, recipientCodes);
 	}
 
+	public void publishBaseEntityByCode(BaseEntity[] bes, final String parentCode, final String linkCode,
+			String linkValue) {
+
+		List<BaseEntity> list = Arrays.asList(bes);
+		this.publishBaseEntityByCode(list, parentCode, linkCode, linkValue);
+	}
+
 	public void publishBaseEntityByCode(List<BaseEntity> bes, final String parentCode, final String linkCode,
 			String linkValue) {
 
@@ -4493,6 +4500,14 @@ public class QRules {
 	public void sendSearchResults(SearchEntity searchBE, String parentCode) throws IOException {
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK");
 	}
+
+	/*
+	 * Publish Search BE results setting the parentCode in QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, Boolean replace) throws IOException {
+		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK", replace);
+	}
+	
 	/*
 	 * Publish Search BE results setting the parentCode, linkValue in
 	 * QDataBaseEntityMessage
@@ -4502,10 +4517,18 @@ public class QRules {
 	}
 
 	/*
+	 * Publish Search BE results setting the parentCode, linkValue in
+	 * QDataBaseEntityMessage
+	 */
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue) throws IOException {
+		this.sendSearchResults(searchBE, parentCode, linkCode, linkValue, false);
+	}
+
+	/*
 	 * Publish Search BE results setting the parentCode, linkCode, linkValue in
 	 * QDataBaseEntityMessage
 	 */
-	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue)
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue, Boolean replace)
 			throws IOException {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
@@ -4520,6 +4543,7 @@ public class QRules {
 			msg.setToken(getToken());
 			msg.setLinkCode(linkCode);
 			msg.setLinkValue(linkValue);
+			msg.setReplace(replace);
 			publish("cmds", msg);
 		} else {
 			println("Warning: no results from search " + searchBE.getCode());
@@ -6072,6 +6096,7 @@ public class QRules {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
 			isDeleted = true;
 		} catch (PaymentException e) {
+ 
 		}
 		return isDeleted;
 	}
