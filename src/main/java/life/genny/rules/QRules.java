@@ -6352,6 +6352,7 @@ public class QRules {
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_CODE", getUser().getCode()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_NAME", getUser().getName()));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CREATOR_TYPE", noteType));
+		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_TYPE", noteType));
 		answers.add(new Answer(getUser().getCode(), note.getCode(), "PRI_CONTENT", content));
 		this.baseEntity.saveAnswers(answers);
 
