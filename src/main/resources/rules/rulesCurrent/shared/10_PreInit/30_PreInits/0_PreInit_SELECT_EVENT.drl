@@ -11,7 +11,7 @@ rule "Pre Init Select Event"
     then
         rules.setDrools(drools);
         rules.header();
-        rules.println("RULE INIT BTN_CLICK: "+m);
+        rules.println("RULE INIT SELECT_EVENT: "+m);
 
         rules.setState("LOOP_PREINIT_SELECT_EVENT");
 
