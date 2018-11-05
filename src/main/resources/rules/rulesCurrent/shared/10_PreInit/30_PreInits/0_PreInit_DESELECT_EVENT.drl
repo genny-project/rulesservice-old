@@ -6,12 +6,15 @@ rule "Pre Init De-Select Event"
       m : QEventMessage(  event_type == "BTN_CLICK" && 
                           getData() != null && 
                           getData().getCode().equals("DESELECT_EVENT") )
-      rules: QRules(!isState("STARTED"))
+      rules: QRules(!isState("LOOP_PREINIT_DESELECT_EVENT"))
     
     then
       rules.setDrools(drools);
       rules.header();
-      rules.println("RULE INIT BTN_CLICK: "+m);
+      rules.println("RULE INIT DESELECT_EVENT: "+m);
+
+      rules.setState("LOOP_PREINIT_DESELECT_EVENT");
+
 
       String dataString = m.getData().getValue();
       
@@ -34,7 +37,6 @@ rule "Pre Init De-Select Event"
           rules.println("Deselect event   ::   " +  m.getData());
       }
 
-      rules.setState("STARTED");
       rules.setState("EVENT_DESELECT");
       rules.footer();
   end
