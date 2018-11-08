@@ -14,6 +14,8 @@ rule "Pre Init - Auth Init"
         rules.setState("LOOP_AUTH_INIT_EVT");
         rules.setState("STARTED");
 
+        /* we get the state if any */
+        rules.println(JsonUtils.toJson(m));
         rules.setState("TRIGGER_AUTH_INIT");
         
 	    rules.footer();
