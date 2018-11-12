@@ -1,0 +1,19 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Check If Terms and Conditions Required"
+    when
+        rules: QRules( isState("CHECK_TERMS_AND_CONDITIONS") &&
+                       !isState("LOOP_CHECK_TERMS_AND_CONDITIONS") )
+    then
+        rules.header();
+		rules.setState("LOOP_CHECK_TERMS_AND_CONDITIONS");
+
+        if(rules.doesQuestionGroupExist("QUE_TERMS_AND_CONDITIONS_GRP")) {
+            rules.setState("TERMS_AND_CONDITIONS_NOT_ACCEPTED");
+        }
+        else {
+            rules.setState("TERMS_AND_CONDITIONS_ACCEPTED");
+        }
+        rules.footer();
+end

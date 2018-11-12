@@ -1,0 +1,71 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Table Select"
+    when
+	  m : QEventMessage( event_type == "TABLE_SELECT" )
+	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED"))
+     then
+        rules.setDrools(drools);
+        rules.header();
+
+        rules.setState("STARTED");
+
+        rules.println("RULE INIT TABLE_SELECT: "+m);
+        rules.setState("EVENT_TABLE_SELECT");
+
+        String quesCode = m.getData().getCode();
+
+        try {
+
+            String dataString = m.getData().getValue();
+            JsonObject dataJson = new JsonObject(dataString);
+
+            /* Get targetCode */
+            String targetCode = dataJson.getString("targetCode");
+            rules.println("targetCode   ::   " + targetCode);
+
+            /* Get itemCode */
+            String itemCode = dataJson.getString("itemCode");
+            rules.println("itemCode   ::   " + itemCode);
+
+            /* Get hintCode */
+            String hintCode = dataJson.getString("hint");
+            rules.println("hintCode   ::   " + hintCode);
+            
+            /* Get messageCode */
+            String messageCode = dataJson.getString("message");
+            rules.println("messageCode   ::   " + messageCode);
+
+            /* Get actionCode */
+            String actionCode = dataJson.getString("action");
+            rules.println("actionCode   ::   " + actionCode);
+
+
+          if(targetCode != null) {
+            rules.set("targetCode", targetCode);
+          }
+          if(itemCode != null) {
+            rules.set("itemCode", itemCode);
+            rules.setState(itemCode);
+          }
+          if(hintCode != null) {
+            rules.set("hintCode", hintCode);
+            rules.setState(hintCode);
+          }
+          if(messageCode != null) {
+            rules.set("messageCode", messageCode);
+          }
+        }
+        catch( Exception e) {
+          rules.println("button click event   ::   " +  m.getData());
+        }
+
+        if(quesCode != null) {
+          rules.setState(quesCode);
+        }
+        rules.footer();
+end

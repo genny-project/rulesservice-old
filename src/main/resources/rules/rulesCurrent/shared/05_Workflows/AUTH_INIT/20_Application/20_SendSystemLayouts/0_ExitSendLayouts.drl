@@ -1,0 +1,14 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Exit Send Layouts"
+
+    when
+         rules: QRules( isState("MAIN_LAYOUTS_SENT") && !isState("LOOP_EXIT_SEND_LAYOUTS") )
+     then
+     	rules.header();
+        rules.setState("LOOP_EXIT_SEND_LAYOUTS");
+    
+        rules.setState("EXIT_SEND_LAYOUTS");
+	    rules.footer();      		      
+end

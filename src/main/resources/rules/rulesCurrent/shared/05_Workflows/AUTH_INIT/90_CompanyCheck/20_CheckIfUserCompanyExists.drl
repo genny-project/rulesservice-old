@@ -1,0 +1,47 @@
+package life.genny.rules;
+
+import java.util.Arrays;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - step 1"
+	/* no-loop true */
+	when
+		 rules: QRules( 	isState("CHECK_USER_COMPANY") && !isState("COMPANY_IS_READY") && !isState("CHECKED_COMPANY") )
+	 then
+	    rules.header();
+		rules.setState("CHECKED_COMPANY");
+
+		String rolesInString = rules.getProject().getValue("PRI_USER_HAS_COMPANY", null);
+		Boolean roleFound = false;
+		if(rolesInString != null){
+			rolesInString = rolesInString.replaceAll("[\\[\\](){}\"]", "");
+
+			List<String> roles = new ArrayList<String>(Arrays.asList(rolesInString.split(",")));
+			for (String role : roles) {
+				rules.println(role);
+				if(rules.isUserRole(role.trim())){
+					rules.println("Role found is " + role);
+					roleFound = true;
+					break;
+				}
+			}
+		}
+		if(roleFound){
+
+			BaseEntity userCompany = rules.baseEntity.getParent(rules.getUser().getCode(), "LNK_STAFF");
+			rules.set("baseEntity", userCompany);
+
+			if(userCompany == null) {
+				rules.setState("COMPANY_DOES_NOT_EXIST");
+			}
+			else {
+				rules.setState("COMPANY_EXISTS");
+			}
+		}else{
+			rules.println("company not required");
+			rules.setState("COMPANY_IS_READY");
+		}
+	    rules.footer();
+end

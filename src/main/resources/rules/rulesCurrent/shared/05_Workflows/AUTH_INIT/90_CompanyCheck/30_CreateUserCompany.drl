@@ -1,0 +1,23 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.entity.BaseEntity;
+import life.genny.qwanda.message.QEventBtnClickMessage;
+
+rule "Check user company - step 2"
+
+	when
+		 rules: QRules( 	isState("COMPANY_DOES_NOT_EXIST") && isState("CHECKED_COMPANY") &&
+						!isState("HAS_CREATED_COMPANY") )   
+	 then
+	    rules.header();
+	
+		rules.setState("HAS_CREATED_COMPANY");
+
+		/* we create the new base entity company */
+		rules.set("bePrefix", "CPY");
+		rules.set("beName", "COMPANY");
+		rules.setState("CREATE_BASE_ENTITY");
+				
+	    rules.footer();     		      
+end

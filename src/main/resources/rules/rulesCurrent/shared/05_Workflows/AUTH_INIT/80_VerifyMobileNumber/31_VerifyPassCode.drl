@@ -1,0 +1,33 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Verify PassCode"
+	when
+	    rules: QRules( 	isState("QUE_MOBILE_VERIFICATION_GRP") &&
+						isState("VERIFY_USER_PASSCODE") &&
+						!isState("LOOP_USER_PASSCODE_VERIFIED")) 
+	 then
+	 	rules.header();
+        
+			rules.setState("LOOP_USER_PASSCODE_VERIFIED");
+			String userCode = rules.getAsString("targetCode");
+			if(userCode != null) {
+				
+				String usersPassCode = rules.baseEntity.getBaseEntityValueAsString(userCode, "PRI_VERIFICATION_CODE_USER");
+				if(usersPassCode != null) {
+					
+					if(!rules.verifyPassCode(userCode, usersPassCode)) {
+						rules.setState("PASSCODE_VERIFICATION_FAILED");
+					}
+					else {
+						rules.setState("PASSCODE_VERIFICATION_SUCCEEDED");
+						rules.setState("MOBILE_VERIFIED");
+					}
+				}
+				else {
+					rules.println("Error!! The userPassCode is not available.");
+				}
+			}
+		
+	 	rules.footer();      
+end

@@ -1,0 +1,15 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+rule "Setting user role"
+     when
+        rules: QRules(  isState("TRIGGER_ROLE_CHECK") &&
+                        !isState("LOOP_TRIGGER_ROLE_CHECK") )
+     then
+        rules.header();
+		rules.setState("LOOP_TRIGGER_ROLE_CHECK");
+
+        rules.loadUserRole();
+      	rules.setState("SET_ADMIN_ROLE_IF_NEEDED");
+      	rules.footer();
+end

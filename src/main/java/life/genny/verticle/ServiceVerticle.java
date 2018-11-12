@@ -1,30 +1,30 @@
 package life.genny.verticle;
 
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-
-import javax.naming.NamingException;
+import java.util.HashMap;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.kie.api.KieBase;
+import org.kie.api.KieServices;
 
-import com.google.common.io.Files;
-
+import io.vavr.Tuple3;
 import io.vertx.rxjava.core.AbstractVerticle;
 import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Routers;
 import life.genny.channels.EBCHandlers;
 import life.genny.cluster.Cluster;
-import life.genny.cluster.CurrentVtxCtx;
 import life.genny.eventbus.EventBusInterface;
 import life.genny.eventbus.EventBusVertx;
+import life.genny.eventbus.VertxCache;
 import life.genny.qwanda.message.QEventMessage;
+import life.genny.qwandautils.GennyCacheInterface;
 import life.genny.qwandautils.GennySettings;
 import life.genny.rules.RulesLoader;
 import life.genny.security.SecureResources;
+import life.genny.utils.VertxUtils;
 
 public class ServiceVerticle extends AbstractVerticle {
 	
@@ -41,7 +41,8 @@ public class ServiceVerticle extends AbstractVerticle {
     Cluster.joinCluster().compose(res -> {
       final Future<Void> fut = Future.future();
       EventBusInterface eventBus = new EventBusVertx();
-      
+      GennyCacheInterface vertxCache = new VertxCache();
+      VertxUtils.init(eventBus,vertxCache);
        loadInitialRules(GennySettings.rulesDir).compose(p -> {
   //      Routers.routers(vertx);
         
@@ -76,12 +77,27 @@ public class ServiceVerticle extends AbstractVerticle {
 	 * @param vertx
 	 * @return
 	 */
-	public static Future<Void> loadInitialRules(final String rulesDir) {
+	public  Future<Void> loadInitialRules(final String rulesDir) {
 		
 		final Future<Void> fut = Future.future();
 		Vertx.currentContext().owner().executeBlocking(exec -> {
-			RulesLoader.loadRules(rulesDir);
 
+//		vertx.executeBlocking(exec -> {
+			log.info("Load Rules using Vertx 1");
+			RulesLoader.loadRules(rulesDir);
+//			RulesLoader.setKieBaseCache(new HashMap<String, KieBase>()); // clear
+			log.info("Load Rules using Vertx 2");
+//			RulesLoader.ks = KieServices.Factory.get();
+//			log.info("Load Rules using Vertx 3");
+//			List<Tuple3<String, String, String>> rules = RulesLoader.processFileRealms("genny", rulesDir);
+//			log.info("Load Rules using Vertx 4");
+//			RulesLoader.realms = RulesLoader.getRealms(rules);
+//			RulesLoader.realms.stream().forEach(System.out::println);
+//			RulesLoader.realms.remove("genny");
+//			RulesLoader.setupKieRules("genny", rules); // run genny rules first
+//			for (String realm : RulesLoader.realms) {
+//				RulesLoader.setupKieRules(realm, rules);
+//			}
 			fut.complete();
 		}, failed -> {
 		});
@@ -93,7 +109,7 @@ public class ServiceVerticle extends AbstractVerticle {
 	 * @param vertx
 	 * @return
 	 */
-	public static Future<Void> triggerStartupRules(final String rulesDir, EventBusInterface eventBus) {
+	public  Future<Void> triggerStartupRules(final String rulesDir, EventBusInterface eventBus) {
 		log.info("Triggering Startup Rules for all realms");
 		final Future<Void> fut = Future.future();
 		Vertx.currentContext().owner().executeBlocking(exec -> {// Force Genny first
