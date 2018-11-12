@@ -4,7 +4,7 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.message.QEventMessage;
 import life.genny.utils.VertxUtils;
 import java.util.List;
-
+import org.apache.commons.lang3.StringUtils
 
 	rule "Email unsubscription submit"
 		no-loop true

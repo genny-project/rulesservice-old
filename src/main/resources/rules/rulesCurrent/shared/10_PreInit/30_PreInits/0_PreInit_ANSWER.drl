@@ -1,7 +1,5 @@
 package life.genny.rules;
 
-import org.apache.commons.lang3.StringUtils;
-
 import life.genny.rules.QRules;
 
 

@@ -9,9 +9,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.ArrayList;
 import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.entity.SearchEntity;
 import life.genny.utils.VertxUtils;
-import life.genny.qwandautils.JsonUtils;
 
 rule "SBE_TEST"
     ruleflow-group 'GenerateSearches'

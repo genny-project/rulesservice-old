@@ -1,7 +1,5 @@
 package life.genny.rules;
-
 import life.genny.rules.QRules;
-import java.util.HashMap;
 
 /* This rule sends a toast notificaiton to the user if something goes wrong in the system */
 rule "Send Toast Notification"

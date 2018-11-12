@@ -5,8 +5,6 @@ import life.genny.rules.QRules;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.message.QDataAnswerMessage;
 import life.genny.utils.RulesUtils;
-import java.util.List;
-import java.util.ArrayList;
 
 rule "RAW_SURNAME"
 ruleflow-group 'AnswerProcessing'

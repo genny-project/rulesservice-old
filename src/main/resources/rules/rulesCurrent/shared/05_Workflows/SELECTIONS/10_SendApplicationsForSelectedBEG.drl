@@ -1,6 +1,4 @@
 package life.genny.rules;
-
-import life.genny.qwanda.entity.SearchEntity;
 import java.util.Map;
 
 import life.genny.rules.QRules;
