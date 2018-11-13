@@ -24,17 +24,11 @@ rule "Generate Tree Roles PCSS"
 
 		rules.println("Generating Base Tree Rules for "+rules.realm());
 
-
-		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_BEGS", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_ADD_NEW_PROPERTY", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_REPORTS", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_APPLICATIONS", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_LEGAL", "PRI_IS_BUYER"));
-		
-		rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_BIN", "PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_ADD_NEW_PROPERTY", "PRI_IS_BUYER"));
-		rules.baseEntity.saveAnswer(new Answer("GRP_BEGS", "GRP_BEGS", "GRP_APPLICATIONS_BIN", "PRI_IS_BUYER"));
 			
 		rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_IDENTIFIED", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_APPLICATIONS", "GRP_APPLICATIONS", "GRP_CONTACTED", "PRI_IS_BUYER"));
@@ -49,9 +43,12 @@ rule "Generate Tree Roles PCSS"
 		rules.baseEntity.saveAnswer(new Answer("GRP_LEGAL", "GRP_LEGAL", "GRP_PRIVACY", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_LEGAL", "GRP_LEGAL", "GRP_TERMS", "PRI_IS_BUYER"));
 		
-		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORT_APPROVED", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_NEW_ITEMS", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_REPORT_METABASE", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_UNCONTACTABLE", "PRI_IS_BUYER"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_DECLINED", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_BIN", "PRI_IS_BUYER"));
+		rules.baseEntity.saveAnswer(new Answer("GRP_REPORTS", "GRP_REPORTS", "GRP_APPLICATIONS_BIN", "PRI_IS_BUYER"));
 		
 		rules.setState("GENERATE_TREE_RULES");
      	rules.footer();
