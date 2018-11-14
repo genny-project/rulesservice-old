@@ -4575,7 +4575,7 @@ public class QRules {
 		QDataBaseEntityMessage msg = getSearchResults(searchBE, token);
 		if (msg != null) {	
 			if(msg.getItems() != null) {
-				return Arrays.asList(msg.getItems());
+				return new ArrayList<>( Arrays.asList(msg.getItems()) );
 			}
 		}
 
