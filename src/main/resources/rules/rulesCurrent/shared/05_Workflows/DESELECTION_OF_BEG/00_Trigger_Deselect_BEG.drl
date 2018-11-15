@@ -26,7 +26,7 @@ rule "00_Trigger_Deselect_BEG"
 	                
         		for (BaseEntity bucket : buckets) {
 
-				SearchEntity applicationsOfBucket = new SearchEntity(drools.getRule().getName(), "APPLICATIONS OF BEG")
+				SearchEntity applicationsOfBucket = new SearchEntity(drools.getRule().getName(), "SBE_ALL_APPLICATIONS")
 						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP_%").setSourceCode(bucket.getCode())
 						.setPageStart(0).setPageSize(10000);
 	
