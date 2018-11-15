@@ -1,0 +1,51 @@
+package life.genny.rules;
+import life.genny.rules.QRules;
+import java.util.List;
+import life.genny.qwanda.entity.SearchEntity;
+import java.io.IOException;
+import life.genny.qwanda.message.QDataBaseEntityMessage;
+
+rule "00_Trigger_Deselect_BEG"
+	when
+		rules: QRules(  isState("EVENT_BTN_CLICK") &&
+						isState("DESELECT_EVENT") &&
+						(getAsString("itemCode") != null) && (getAsString("itemCode").startsWith("BEG_")) && 
+						!isState("LOOP_TRIGGER_DESELECT_BEG")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_DESELECT_BEG");
+		
+		/* get all the buckets linked to GRP_APPLICATIONS */
+		List<BaseEntity> buckets = rules.baseEntity.getLinkedBaseEntities("GRP_APPLICATIONS", "LNK_CORE");
+	
+		/* iterating through each bucket and hit search query, and collect it in a common collection */
+        List<BaseEntity> applications = new ArrayList<>();
+        if(buckets != null) {
+        		rules.println("total number of buckets ::"+buckets.size());
+
+	                
+        		for (BaseEntity bucket : buckets) {
+
+				SearchEntity applicationsOfBucket = new SearchEntity(drools.getRule().getName(), "APPLICATIONS OF BEG")
+						.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP_%").setSourceCode(bucket.getCode())
+						.setPageStart(0).setPageSize(10000);
+	
+				try {
+					List<BaseEntity> searchEntityResults = rules.getSearchResultsAsList(applicationsOfBucket, true);
+					if (searchEntityResults != null) {
+						if(searchEntityResults.size() > 0) {
+							applications.addAll(searchEntityResults);
+						}		
+					}
+	
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+        }
+        
+        rules.set("applications", applications);
+        rules.setState("SEND_DATA_FOR_BEG_DESELECTION");
+		
+	 	rules.footer();      
+end
