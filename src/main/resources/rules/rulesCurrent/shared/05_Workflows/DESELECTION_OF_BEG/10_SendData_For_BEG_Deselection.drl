@@ -20,18 +20,16 @@ rule "10_SendData_For_BEG_Deselection"
 		
 		for (BaseEntity bucket : buckets) {
 
-			SearchEntity applicationsOfBucket = new SearchEntity(drools.getRule().getName(), "SBE_ALL_APPLICATIONS")
+			SearchEntity applicationsOfBucket = new SearchEntity("SBE_ALL_APPLICATIONS", "SBE_ALL_APPLICATIONS")
 					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP_%").setSourceCode(bucket.getCode())
 					.setPageStart(0).setPageSize(10000);
 
 			try {
 				List<BaseEntity> searchEntityResults = rules.getSearchResultsAsList(applicationsOfBucket, true);
-				if (searchEntityResults != null) {
-					if(searchEntityResults.size() > 0) {
+				if (searchEntityResults != null && searchEntityResults.size() > 0) {
 						rules.println("bucket name ::"+bucket.getCode()+", number of applications ::"+searchEntityResults.size());
 
-						rules.publishBaseEntityByCode(searchEntityResults, bucket.getCode(), "LNK_APPLICATION", recipients, "APPLICATION", false, true, 2);
-					}		
+						rules.publishBaseEntityByCode(searchEntityResults, bucket.getCode(), "LNK_APPLICATION", recipients, "APPLICATION", false, true, 2);		
 				}
 
 			} catch (IOException e) {
