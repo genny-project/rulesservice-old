@@ -1,6 +1,5 @@
 package life.genny.rules;
 import life.genny.rules.QRules;
-import java.util.List;
 import life.genny.qwanda.entity.SearchEntity;
 import java.io.IOException;
 import life.genny.qwanda.message.QDataBaseEntityMessage;
@@ -13,9 +12,32 @@ rule "10_SendData_For_BEG_Deselection"
 	   
 	    rules.setState("LOOP_SEND_DATA_FOR_BEG_DESELECTION");
 
-		/* publish all applications */
-        List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
-        rules.publishBaseEntityByCode(applications);
+		/* get buckets */
+        List<BaseEntity> buckets = rules.getAsBaseEntitys("buckets");
+        
+        /* Get the recipients */
+		String[] recipients = {rules.getUser().getCode()};
+		
+		for (BaseEntity bucket : buckets) {
+
+			SearchEntity applicationsOfBucket = new SearchEntity(drools.getRule().getName(), "SBE_ALL_APPLICATIONS")
+					.addFilter("PRI_CODE", SearchEntity.StringFilter.LIKE, "APP_%").setSourceCode(bucket.getCode())
+					.setPageStart(0).setPageSize(10000);
+
+			try {
+				List<BaseEntity> searchEntityResults = rules.getSearchResultsAsList(applicationsOfBucket, true);
+				if (searchEntityResults != null) {
+					if(searchEntityResults.size() > 0) {
+						rules.println("bucket name ::"+bucket.getCode()+", number of applications ::"+searchEntityResults.size());
+
+						rules.publishBaseEntityByCode(searchEntityResults, bucket.getCode(), "LNK_APPLICATION", recipients, "APPLICATION", false, true, 2);
+					}		
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
        
 		rules.setState("SENT_DATA_FOR_BEG_DESELECTION");
 	    rules.footer();
