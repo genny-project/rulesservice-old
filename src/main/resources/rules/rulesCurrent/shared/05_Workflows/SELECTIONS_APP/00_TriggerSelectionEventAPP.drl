@@ -1,0 +1,28 @@
+
+package life.genny.rules;
+import life.genny.rules.QRules;
+
+/* trigger selection for APPs
+   state comes from the pre init SELECT EVENT
+*/
+rule "00_TriggerSelectionEventAPP"
+	when
+		rules: QRules(  isState("SELECT_EVENT") &&
+                        (getAsString("itemCode") != null) && (getAsString("itemCode").startsWith("APP_")) && 
+						!isState("LOOP_TRIGGER_APP_SELECT_EVENT")) 
+	 then
+	 	rules.header();
+		rules.setState("LOOP_TRIGGER_APP_SELECT_EVENT");
+
+        /* we grab the code of the selected item */
+        String applicationCode = rules.getAsString("itemCode");
+       	if(applicationCode != null) {
+       		BaseEntity application = rules.baseEntity.getBaseEntityByCode(applicationCode);
+       		if(application != null) {
+       			rules.set("application", application);
+       			rules.setState("SEND_NOTES_FOR_SELECTED_APPLICATION");
+       		}
+       	}
+
+	 	rules.footer();      
+end
