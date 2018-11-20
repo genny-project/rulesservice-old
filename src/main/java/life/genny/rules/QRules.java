@@ -352,7 +352,7 @@ public class QRules {
 	public HashMap<String, Object> getAsHashMap(final String key) {
 		return (HashMap) get(key);
 	}
-	
+
 	public HashMap<String, String> getAsHashMap1(final String key) {
 		return (HashMap) get(key);
 	}
@@ -721,7 +721,7 @@ public class QRules {
 	public void publishBaseEntityByCode(BaseEntity be, final String parentCode, final String linkCode,
 			final String[] recipientCodes, final String linkValue, final Boolean replace) {
 
-		BaseEntity[] itemArray =  new BaseEntity[1];
+		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
@@ -735,7 +735,7 @@ public class QRules {
 			final String[] recipientCodes, final String linkValue, final Boolean delete) {
 
 		BaseEntity be = this.baseEntity.getBaseEntityByCode(beCode);
-		BaseEntity[] itemArray =  new BaseEntity[1];
+		BaseEntity[] itemArray = new BaseEntity[1];
 		itemArray[0] = be;
 		QDataBaseEntityMessage msg = new QDataBaseEntityMessage(itemArray, parentCode, linkCode);
 		msg.setRecipientCodeArray(recipientCodes);
@@ -1707,7 +1707,7 @@ public class QRules {
 
 	public Boolean sendQuestions(String sourceCode, String targetCode, String questionGroupCode, String stakeholderCode,
 			Boolean pushSelection) {
-		
+
 		QwandaMessage questions = QuestionUtils.askQuestions(sourceCode, targetCode, questionGroupCode, this.token,
 				stakeholderCode, pushSelection);
 		if (questions != null) {
@@ -2612,7 +2612,7 @@ public class QRules {
 		}
 
 	}
-	
+
 	/*
 	 * Method to send All the Chats for the current user
 	 */
@@ -3024,7 +3024,7 @@ public class QRules {
 
 		publish("cmds", cmdViewJson);
 	}
-	
+
 	public void sendTableViewWithHeaders(final String parentCode, JsonArray columnHeaders) {
 		QCmdMessage cmdView = new QCmdMessage("CMD_VIEW", "TABLE_VIEW");
 		// JsonArray columnsArray = new JsonArray();
@@ -3309,7 +3309,7 @@ public class QRules {
 	public void sendSearchResults(SearchEntity searchBE, String parentCode, Boolean replace) throws IOException {
 		this.sendSearchResults(searchBE, parentCode, "LNK_CORE", "LINK", replace);
 	}
-	
+
 	/*
 	 * Publish Search BE results setting the parentCode, linkValue in
 	 * QDataBaseEntityMessage
@@ -3322,7 +3322,8 @@ public class QRules {
 	 * Publish Search BE results setting the parentCode, linkValue in
 	 * QDataBaseEntityMessage
 	 */
-	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue) throws IOException {
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue)
+			throws IOException {
 		this.sendSearchResults(searchBE, parentCode, linkCode, linkValue, false);
 	}
 
@@ -3330,8 +3331,8 @@ public class QRules {
 	 * Publish Search BE results setting the parentCode, linkCode, linkValue in
 	 * QDataBaseEntityMessage
 	 */
-	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue, Boolean replace)
-			throws IOException {
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue,
+			Boolean replace) throws IOException {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
@@ -3371,9 +3372,9 @@ public class QRules {
 	public List<BaseEntity> getSearchResultsAsList(SearchEntity searchBE, String token) throws IOException {
 
 		QDataBaseEntityMessage msg = getSearchResults(searchBE, token);
-		if (msg != null) {	
-			if(msg.getItems() != null) {
-				return new ArrayList<>( Arrays.asList(msg.getItems()) );
+		if (msg != null) {
+			if (msg.getItems() != null) {
+				return new ArrayList<>(Arrays.asList(msg.getItems()));
 			}
 		}
 
@@ -3435,20 +3436,24 @@ public class QRules {
 
 		/* we get all the existing chats */
 		List<BaseEntity> chats = this.baseEntity.getLinkedBaseEntities("GRP_MESSAGES", "LNK_CHAT");
-		
+
 		if (chats != null) {
 
 			/* we loop through all of them */
-			for (BaseEntity chat: chats) {
+			for (BaseEntity chat : chats) {
 
 				/* we get the chat participants */
 				List<BaseEntity> chatParticipants = this.baseEntity.getLinkedBaseEntities(chat.getCode(), "LNK_USER");
 				if (chatParticipants != null) {
 
-					List<String> participantCodes = chatParticipants.stream().map(participant -> participant.getCode()).collect(Collectors.toList());
+					List<String> participantCodes = chatParticipants.stream().map(participant -> participant.getCode())
+							.collect(Collectors.toList());
 
-					/* if the participants match the list of user codes, we have found the chat we were looking for */
-					if(participantCodes.equals(userCodes)) {
+					/*
+					 * if the participants match the list of user codes, we have found the chat we
+					 * were looking for
+					 */
+					if (participantCodes.equals(userCodes)) {
 						return chat;
 					}
 				}
@@ -4790,7 +4795,7 @@ public class QRules {
 			PaymentEndpoint.deleteBankAccount(bankAccountId, authKey);
 			isDeleted = true;
 		} catch (PaymentException e) {
- 
+
 		}
 		return isDeleted;
 	}
@@ -5074,12 +5079,7 @@ public class QRules {
 
 	public void sendNotes(String contextCode) {
 
-		String[] recipient = { getUser().getCode() };
-
-		this.clearBaseEntityAndChildren("GRP_NOTES", 1);
-		this.publishBaseEntityByCode("GRP_NOTES", null, null, recipient);
-
-		SearchEntity searchBE = new SearchEntity(drools.getRule().getName(), "Notes").setSourceCode("GRP_NOTES")
+		SearchEntity searchBE = new SearchEntity("SBE_NOTES", "SBE_NOTES").setSourceCode("GRP_NOTES")
 				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);
 
 		if (searchBE != null) {
@@ -5089,6 +5089,7 @@ public class QRules {
 				QDataBaseEntityMessage search = this.getSearchResults(searchBE);
 				search.setLinkCode("LNK_MESSAGES");
 				search.setParentCode("GRP_NOTES");
+				search.setReplace(true);
 				this.publishCmd(search);
 
 			} catch (IOException e) {
@@ -5181,23 +5182,23 @@ public class QRules {
 	}
 
 	public void processAnswers(final Answer[] answers) {
-	 	Arrays.stream(answers).forEach(x -> {
-	 		drools.insert(x);
-	 	});
-	 	drools.setFocus("AnswerProcessing");
-	 }
+		Arrays.stream(answers).forEach(x -> {
+			drools.insert(x);
+		});
+		drools.setFocus("AnswerProcessing");
+	}
 
-	 public void processAnswers(final List<Answer> answers) {
-	 	answers.stream().forEach(x -> {
-	 		drools.insert(x);
-	 	});
-	 	drools.setFocus("AnswerProcessing");
-	 }
+	public void processAnswers(final List<Answer> answers) {
+		answers.stream().forEach(x -> {
+			drools.insert(x);
+		});
+		drools.setFocus("AnswerProcessing");
+	}
 
-	 public void processAnswers(final Answer answer) {
-	 	drools.insert(answer);
-	 	drools.setFocus("AnswerProcessing");
-	 }
+	public void processAnswers(final Answer answer) {
+		drools.insert(answer);
+		drools.setFocus("AnswerProcessing");
+	}
 
 	public void processJsonAddress(final String sourceCode, final String targetCode, final String jsonAddressLine) {
 		QDataAnswerMessage msg = new QDataAnswerMessage(
@@ -5206,21 +5207,21 @@ public class QRules {
 		this.baseEntity.saveAnswers(answers);
 
 	}
-	
+
 	/* to return the name of the attribute */
 	public String getAttributeName(BaseEntity parentBe, String attributeCode) {
-		
+
 		String attributeName = null;
-		
-		if(parentBe != null) {
-			Optional<EntityAttribute> updatedAttributeOp = parentBe.getBaseEntityAttributes().stream().filter(Objects::nonNull).filter(ea -> ea.getAttributeCode().equals(attributeCode)).findFirst();
-			if(updatedAttributeOp.isPresent()) {
+
+		if (parentBe != null) {
+			Optional<EntityAttribute> updatedAttributeOp = parentBe.getBaseEntityAttributes().stream()
+					.filter(Objects::nonNull).filter(ea -> ea.getAttributeCode().equals(attributeCode)).findFirst();
+			if (updatedAttributeOp.isPresent()) {
 				EntityAttribute updatedAttribute = updatedAttributeOp.get();
 				attributeName = updatedAttribute.getAttributeName();
 			}
 		}
-		
-		
+
 		return attributeName;
 	}
 
