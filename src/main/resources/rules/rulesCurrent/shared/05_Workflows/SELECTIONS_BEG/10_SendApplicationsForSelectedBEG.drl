@@ -16,11 +16,12 @@ rule "Send Applications For Selected BEG"
         String itemCode = rules.getAsString("itemCode");
 
 		/* Get the recipients */
-		String[] recipients = {rules.getUser().getCode()};
+		BaseEntity user = rules.getUser();
+		String[] recipients = {user.getCode()};
 
         /* we grab the applications */
         List<BaseEntity> applications = rules.getAsBaseEntitys("applications");
-        rules.println("itemcode ::" + itemCode + ", applications in selected itemcode ::"+ applications);
+        rules.println("itemcode ::" + itemCode + ", number of applications in selected itemcode ::"+ applications.size());
         
         if(applications != null) {
         		
@@ -72,6 +73,11 @@ rule "Send Applications For Selected BEG"
 		        rules.publishBaseEntityByCode(apps, parent, "LNK_APP", recipients, "APPLICATION", false, true, 2);
 		    }
         }
+        
+        /* THIS IS FOR FRONT_END TO APPLY PROPS FOR "SELECTION OF A BEG" */ 
+        /* the itemCode is the BEG code of the selected item */
+        /* If the itemCode starts with BEG, we directly save it as the value for PRI_SELECTED_BEG */
+        rules.baseEntity.saveAnswer( new Answer(user.getCode(), user.getCode(), "PRI_SELECTED_BEG", itemCode) );
 
 	 	rules.footer();      
 end

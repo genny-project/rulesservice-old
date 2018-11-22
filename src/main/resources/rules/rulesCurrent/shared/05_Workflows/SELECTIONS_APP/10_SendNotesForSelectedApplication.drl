@@ -13,6 +13,15 @@ rule "10_SendNotesForSelectedApplication"
        
        	BaseEntity application = rules.getAsBaseEntity("application");
        	rules.sendNotes(application.getCode());
+       	BaseEntity user = rules.getUser();
+       	
+       	/* THIS IS FOR FRONT_END TO APPLY PROPS FOR "SELECTION OF A APP" */ 
+       	/* Since the itemCode of selection starts with APP, we fetch the parent of the APP and save it as the value for PRI_SELECTED_BEG */
+		String begCode = application.getValue("PRI_BEG_CODE", null);
+		if(begCode != null) {
+			rules.baseEntity.saveAnswer( new Answer(user.getCode(), user.getCode(), "PRI_SELECTED_BEG", begCode) );
+		}
+    		 
        	
        	rules.setState("SENT_NOTES_FOR_SELECTED_APPLICATION");
 
