@@ -17,8 +17,6 @@ rule "Pre Init Table Select"
         rules.println("RULE INIT TABLE_SELECT: "+m);
         rules.setState("EVENT_TABLE_SELECT");
 
-        String quesCode = m.getData().getCode();
-
         try {
 
             String dataString = m.getData().getValue();
@@ -51,6 +49,8 @@ rule "Pre Init Table Select"
           if(itemCode != null) {
             rules.set("itemCode", itemCode);
             rules.setState(itemCode);
+            rules.setState(itemCode.substring(0, 3));
+
           }
           if(hintCode != null) {
             rules.set("hintCode", hintCode);
@@ -64,8 +64,5 @@ rule "Pre Init Table Select"
           rules.println("button click event   ::   " +  m.getData());
         }
 
-        if(quesCode != null) {
-          rules.setState(quesCode);
-        }
         rules.footer();
 end

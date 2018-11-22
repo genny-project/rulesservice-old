@@ -7,7 +7,8 @@ import life.genny.rules.QRules;
 */
 rule "Trigger Selection Event"
 	when
-		rules: QRules(  isState("EVENT_SELECT") &&
+		rules: QRules(  (isState("EVENT_SELECT") ||
+                        isState("EVENT_TABLE_SELECT")) &&
                         isState("BEG") &&
 						!isState("LOOP_TRIGGER_SELECTION_EVENT")) 
 	 then
