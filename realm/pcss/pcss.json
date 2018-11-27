@@ -1,0 +1,10 @@
+{
+  "realm": "pcss",
+  "auth-server-url": "http://keycloak.genny.life:8180/auth",
+  "ssl-required": "none",
+  "resource": "pcss",
+  "credentials": {
+    "secret": "d4e9bda5-ee7c-458d-9234-d04fff3456da"
+  },
+  "policy-enforcer": {}
+}

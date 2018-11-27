@@ -1,8 +1,8 @@
 {
-  "realm": "genny",
-  "auth-server-url": "http://localhost:8180/auth",
+  "realm": "internmatch",
+  "auth-server-url": "http://keycloak.genny.life:8180/auth",
   "ssl-required": "none",
-  "resource": "genny",
+  "resource": "internmatch",
   "credentials": {
     "secret": "056b73c1-7078-411d-80ec-87d41c55c3b4"
   },
