@@ -5085,6 +5085,7 @@ public class QRules {
 		/* we send GRP_NOTES */
 		BaseEntity grpNotes = this.baseEntity.getBaseEntityByCode("GRP_NOTES");
 		QDataBaseEntityMessage grpNotesMessage = new QDataBaseEntityMessage(grpNotes);
+		grpNotesMessage.setShouldDeleteLinkedBaseEntities(1);
 		grpNotesMessage.setReplace(true);
 
 		bulk.add(grpNotesMessage);
