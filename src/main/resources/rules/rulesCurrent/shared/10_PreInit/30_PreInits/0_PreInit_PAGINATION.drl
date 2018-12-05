@@ -1,0 +1,37 @@
+package life.genny.rules;
+
+import life.genny.rules.QRules;
+import life.genny.qwanda.message.QEventMessage;
+import io.vertx.core.json.JsonObject;
+
+rule "Pre Init Pagination"
+    when
+	  m : QEventMessage( event_type == "PAGINATION" )
+	  rules: QRules(isState("PRE_INIT_READY") && !isState("STARTED") && !isState("PAGINATION_LOOP"))
+     then
+        rules.setDrools(drools);
+        rules.header();
+        rules.println("RULE INIT PAGINATION: "+m);
+
+        rules.setState("PAGINATION_LOOP");
+
+        String code = m.getData().getCode();
+        String value = m.getData().getValue();
+        
+        if(code != null) {
+            rules.setState(code);
+        }
+
+        try {
+
+            JsonObject dataJson = new JsonObject(value);
+            Integer pageIndex = dataJson.getInteger("pageIndex");
+            rules.set("pageIndex", pageIndex + 1);
+        }
+        catch(Exception e) {}
+
+        rules.setState("STARTED");
+        rules.setState("EVENT_PAGINATION");
+        rules.footer();
+
+end

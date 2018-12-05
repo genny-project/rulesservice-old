@@ -369,6 +369,11 @@ public class QRules {
 		return (Integer) get(key);
 	}
 
+	public Long getAsLong(final String key) {
+		return (Long) get(key);
+	}
+
+
 	public Double getAsDouble(final String key) {
 		return (Double) get(key);
 	}
@@ -3340,7 +3345,6 @@ public class QRules {
 				jsonSearchBE, serviceToken);
 
 		QDataBaseEntityMessage msg = JsonUtils.fromJson(resultJson, QDataBaseEntityMessage.class);
-		println("msg items size ::" + msg.getItems().length);
 		if (msg != null) {
 			msg.setParentCode(parentCode);
 			msg.setToken(getToken());
@@ -3400,6 +3404,20 @@ public class QRules {
 			token = this.getToken();
 		}
 		return getSearchResultsAsList(searchBE, token);
+	}
+
+	/*
+	 * Get search Results returns QDataBaseEntityMessage
+	 */
+	public QDataBaseEntityMessage getSearchResults(SearchEntity searchBE, boolean useServiceToken) throws IOException {
+	
+		String token = null;
+		if (useServiceToken) {
+			token = RulesUtils.generateServiceToken(this.realm());
+		} else {
+			token = this.getToken();
+		}
+		return this.getSearchResults(searchBE, token);
 	}
 
 	/*
@@ -5082,34 +5100,70 @@ public class QRules {
 		/* we create a bulk */
 		QBulkMessage bulk = new QBulkMessage();
 
-		/* we send GRP_NOTES */
-		BaseEntity grpNotes = this.baseEntity.getBaseEntityByCode("GRP_NOTES");
-		QDataBaseEntityMessage grpNotesMessage = new QDataBaseEntityMessage(grpNotes);
-		grpNotesMessage.setShouldDeleteLinkedBaseEntities(1);
-		grpNotesMessage.setReplace(true);
-
-		bulk.add(grpNotesMessage);
-
 		/* we send the notes */
-		SearchEntity searchBE = new SearchEntity("SBE_NOTES", "SBE_NOTES").setSourceCode("GRP_NOTES")
-				.setStakeholder(contextCode).setPageStart(0).setPageSize(10000);
+		SearchEntity searchBE = new SearchEntity("SBE_NOTES", "SBE_NOTES")
+				.setSourceCode("GRP_NOTES")
+				.setStakeholder(contextCode)
+				.setPageStart(0)
+				.setPageSize(10000);
 
-		if (searchBE != null) {
-			/* Send search result */
-			try {
-				// this.sendSearchResults(searchBE, "GRP_NOTES");
-				QDataBaseEntityMessage notesMessage = this.getSearchResults(searchBE);
-				this.println("search count ::" + notesMessage.getItems().length);
+		try {
+
+			/* we get GRP_NOTES */
+			BaseEntity grpNotes = this.baseEntity.getBaseEntityByCode("GRP_NOTES");
+
+			/* we get the search results */
+			QDataBaseEntityMessage notesMessage = this.getSearchResults(searchBE);
+
+			/* if we have at least one note */
+			if(notesMessage.getItems() != null && notesMessage.getItems().length > 0) {
+
+				/* we set the link code */
 				notesMessage.setLinkCode("LNK_MESSAGES");
+				
+				/* we set GRP_NOTES as the parent */
 				notesMessage.setParentCode("GRP_NOTES");
+
+				/* we replace the existing values */
 				notesMessage.setReplace(true);
+
+				/* we add to the bulk */
 				bulk.add(notesMessage);
 
-			} catch (IOException e) {
+				/* for each note, we compute the links to set into GRP_NOTES */
+				Set<EntityEntity> links = new HashSet<>();
+
+				/* we loop through the items */
+				for(BaseEntity note: notesMessage.getItems()) {
+
+					/* we create the attribute for the link */
+					Attribute linkAttribute = new Attribute("LINK_CODE", "LNK_MESSAGES", new DataType("string"));
+
+					/* we create a new EntityEntity */
+					EntityEntity link = new EntityEntity(grpNotes, note, linkAttribute, 1.0, "NOTE");
+
+					/* we add it to our set */
+					links.add(link);
+				}
+
+				/* we set the new links in GRP_NOTES */
+				grpNotes.setLinks(links);
 			}
+			
+			/* we create the message for GRP_NOTES */
+			QDataBaseEntityMessage grpNotesMessage = new QDataBaseEntityMessage(grpNotes);
+			grpNotesMessage.setShouldDeleteLinkedBaseEntities(1);
+			grpNotesMessage.setReplace(true);
+
+			/* we add to the bulk */
+			bulk.add(grpNotesMessage);
+
+		} catch (IOException e) {
 		}
 
-		this.publishCmd(bulk);
+		if(bulk.getMessages().length > 0) {
+			this.publishCmd(bulk);
+		}
 	}
 
 	public void sendNotes(BaseEntity context) {
