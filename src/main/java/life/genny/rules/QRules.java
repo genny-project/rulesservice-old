@@ -3642,6 +3642,8 @@ public class QRules {
 
 		}
 
+		this.println(JsonUtils.toJson(rootKids));
+
 		// we create the bulk
 		QBulkMessage newBulkMsg = new QBulkMessage();
 
@@ -3662,12 +3664,20 @@ public class QRules {
 					// we get the kid code
 					String childCode = child.getCode();
 
+					if(childCode.equals("GRP_CONTACTS")) {
+						this.println(" GOT CONTACTS ");
+					}
+
 					// Getting the attributes GRP_XX of parent that has roles not allowed
 					Optional<EntityAttribute> roleAttribute = parent.findEntityAttribute(childCode);
 					if (roleAttribute.isPresent()) {
 
 						// Getting the value of
 						String rolesAllowedStr = roleAttribute.get().getValue();
+
+						if(childCode.equals("GRP_CONTACTS")) {
+							this.println(rolesAllowedStr);
+						}
 
 						// creating array as it can have multiple roles
 						String[] rolesAllowed = rolesAllowedStr.split(",");
@@ -3703,6 +3713,8 @@ public class QRules {
 					"LNK_CORE");
 			filteredMsg.setToken(getToken());
 			newBulkMsg.add(filteredMsg);
+
+			this.println(JsonUtils.toJson(filteredMsg));
 		}
 
 		this.publishCmd(newBulkMsg);
