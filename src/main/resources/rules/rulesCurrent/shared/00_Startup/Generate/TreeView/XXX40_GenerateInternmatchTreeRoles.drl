@@ -32,6 +32,7 @@ rule "Generate internmatch Tree Roles"
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STUDENTS", "PRI_IS_EDU_PROVIDER_STAFF"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENTS", "PRI_IS_AGENT"));
+        rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_CONTACTS", "PRI_IS_EDU_PROVIDER_STAFF"));
         rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_AGENCIES", "PRI_IS_AGENT"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_STAFFS", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF"));
 		rules.baseEntity.saveAnswer(new Answer("GRP_ROOT", "GRP_ROOT", "GRP_MESSAGES", "PRI_IS_BUYER,PRI_IS_EDU_PROVIDER_STAFF,PRI_IS_SELLER,PRI_IS_AGENT"));

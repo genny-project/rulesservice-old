@@ -27,6 +27,14 @@ ruleflow-group 'LinkChange'
 
     		rules.publishData($m, recipientCodes);
 
+				String sourceCode = null;
+				String targetCode = link.getSourceCode();
+				
+				Link oldLink = $m.getOldLink();
+				if(oldLink != null) {
+					sourceCode = oldLink.getSourceCode();
+				}
+
         	/* if the base entity being moved is a BE we reload the cache */
     		if(link.getTargetCode().startsWith("BEG_")) {
     			
@@ -34,16 +42,23 @@ ruleflow-group 'LinkChange'
     			/* rules.cacheUtils.refresh(rules.realm(), "GRP_APPLICATIONS"); */
     			/* rules.cacheUtils.refresh(rules.realm(), "GRP_DASHBOARD"); */
     			
-    			String sourceCode = null;
-    			String targetCode = link.getSourceCode();
-    			
-    			Link oldLink = $m.getOldLink();
-    			if(oldLink != null) {
-    				sourceCode = oldLink.getSourceCode();
-    			}
-
     			rules.cacheUtils.moveBaseEntity(link.getTargetCode(), sourceCode, targetCode);
     		}
+
+				/* we publish the source and the target again */
+				if(sourceCode != null) {
+					BaseEntity sourceBe = rules.baseEntity.getBaseEntityByCode(sourceCode);
+					if(sourceBe != null) {
+						rules.publishBaseEntityByCode(sourceBe.getCode());
+					}
+				}
+
+				if(targetCode != null) {
+					BaseEntity targetBe = rules.baseEntity.getBaseEntityByCode(targetCode);
+					if(targetBe != null) {
+						rules.publishBaseEntityByCode(targetBe.getCode());
+					}
+				}
 
    	    rules.footer();
 
