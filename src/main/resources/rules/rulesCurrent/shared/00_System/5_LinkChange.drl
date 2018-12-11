@@ -47,16 +47,16 @@ ruleflow-group 'LinkChange'
 
 				/* we publish the source and the target again */
 				if(sourceCode != null) {
-					BaseEntity sourceBe = rules.getBaseEntityByCode(sourceCode);
+					BaseEntity sourceBe = rules.baseEntity.getBaseEntityByCode(sourceCode);
 					if(sourceBe != null) {
-						rules.publishBaseEntityByCode(sourceBe);
+						rules.publishBaseEntityByCode(sourceBe.getCode());
 					}
 				}
 
 				if(targetCode != null) {
-					BaseEntity targetBe = rules.getBaseEntityByCode(targetCode);
+					BaseEntity targetBe = rules.baseEntity.getBaseEntityByCode(targetCode);
 					if(targetBe != null) {
-						rules.publishBaseEntityByCode(targetBe);
+						rules.publishBaseEntityByCode(targetBe.getCode());
 					}
 				}
 
