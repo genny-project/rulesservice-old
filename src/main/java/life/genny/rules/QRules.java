@@ -2051,24 +2051,35 @@ public class QRules {
 		Answer[] answers = m.getItems();
 		if (answers.length > 0) {
 
+			/* we get the answer */
 			Answer answer = answers[0];
 			String sourceCode = answer.getSourceCode();
 			String targetCode = answer.getTargetCode();
 			answer.setSourceCode(answer.getTargetCode());
+
+			/* we get the value of the answer */
 			String value = answer.getValue();
 			if (value != null) {
 
-				JsonArray imagesJson = new JsonArray(value);
-				if (imagesJson != null) {
+				try {
 
-					JsonObject firstImage = imagesJson.getJsonObject(0);
-					if (firstImage != null) {
+					/* we serialise the array received */ 
+					JsonArray imageValue = new JsonArray(value);
 
-						this.println(firstImage);
-						String jsonStringImage = firstImage.getString("uploadURL");
-						this.baseEntity.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode,
-								jsonStringImage);
+					if (imageValue != null) {
+
+						JsonObject firstImage = imageValue.getJsonObject(0);
+						if (firstImage != null) {
+
+							this.println(firstImage);
+							String jsonStringImage = firstImage.getString("uploadURL");
+							this.baseEntity.updateBaseEntityAttribute(sourceCode, targetCode, finalAttributeCode,
+									jsonStringImage);
+						}
 					}
+				}
+				catch (Exception e) {
+					this.println("Could not save image attribute");
 				}
 			}
 		}
