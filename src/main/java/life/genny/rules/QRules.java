@@ -3349,6 +3349,11 @@ public class QRules {
 	 */
 	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue,
 			Boolean replace) throws IOException {
+				this.sendSearchResults(searchBE, parentCode, linkCode, linkValue, replace, null);
+	}
+
+	public void sendSearchResults(SearchEntity searchBE, String parentCode, String linkCode, String linkValue,
+			Boolean replace, Object shouldDeleteLinkedBaseEntities) throws IOException {
 
 		String serviceToken = RulesUtils.generateServiceToken(this.realm());
 		String jsonSearchBE = JsonUtils.toJson(searchBE);
@@ -3362,6 +3367,7 @@ public class QRules {
 			msg.setLinkCode(linkCode);
 			msg.setLinkValue(linkValue);
 			msg.setReplace(replace);
+			msg.setShouldDeleteLinkedBaseEntities(shouldDeleteLinkedBaseEntities);
 			publish("cmds", msg);
 		} else {
 			println("Warning: no results from search " + searchBE.getCode());
