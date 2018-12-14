@@ -5108,76 +5108,64 @@ public class QRules {
 	}
 
 	public void sendNotes(String contextCode) {
+        
+        /* we create a bulk */
+        QBulkMessage bulk = new QBulkMessage();
+        
+        /* we send GRP_NOTES */
+        BaseEntity grpNotes = this.baseEntity.getBaseEntityByCode("GRP_NOTES");
 
-		/* we create a bulk */
-		QBulkMessage bulk = new QBulkMessage();
+        /* we send the notes */
+        SearchEntity searchBE = new SearchEntity("SBE_NOTES", "SBE_NOTES")
+                .setSourceCode("GRP_NOTES")
+                .setStakeholder(contextCode)
+                .setPageStart(0)
+                .setPageSize(10000);
 
-		/* we send the notes */
-		SearchEntity searchBE = new SearchEntity("SBE_NOTES", "SBE_NOTES")
-				.setSourceCode("GRP_NOTES")
-				.setStakeholder(contextCode)
-				.setPageStart(0)
-				.setPageSize(10000);
+        if (searchBE != null) {
+	      
+        	/* Send search result */
+	        	try {
+	        		
+	        		/* we create the note message */
+	        		QDataBaseEntityMessage notesMessage = this.getSearchResults(searchBE);
+	
+	        		/* if we have at least one note */
+	        		Set<EntityEntity> links = new HashSet<>();
+	        		
+	        		/* we loop through the items */
+	        		for (BaseEntity note : notesMessage.getItems()) {
+	
+	        			/* we create the attribute for the link */
+	        			Attribute linkAttribute = new Attribute("LINK_CODE", "LNK_MESSAGES", new DataType("string"));
+	
+	        			/* we create a new EntityEntity */
+	        			EntityEntity link = new EntityEntity(grpNotes, note, linkAttribute, 1.0, "NOTE");
+	
+	        			/* we add it to our set */
+	        			links.add(link);
+	        		}
 
-		try {
-
-			/* we get GRP_NOTES */
-			BaseEntity grpNotes = this.baseEntity.getBaseEntityByCode("GRP_NOTES");
-
-			/* we get the search results */
-			QDataBaseEntityMessage notesMessage = this.getSearchResults(searchBE);
-
-			/* if we have at least one note */
-			if(notesMessage.getItems() != null && notesMessage.getItems().length > 0) {
-
-				/* we set the link code */
-				notesMessage.setLinkCode("LNK_MESSAGES");
-				
-				/* we set GRP_NOTES as the parent */
-				notesMessage.setParentCode("GRP_NOTES");
-
-				/* we replace the existing values */
-				notesMessage.setReplace(true);
-
-				/* we add to the bulk */
-				bulk.add(notesMessage);
-
-				/* for each note, we compute the links to set into GRP_NOTES */
-				Set<EntityEntity> links = new HashSet<>();
-
-				/* we loop through the items */
-				for(BaseEntity note: notesMessage.getItems()) {
-
-					/* we create the attribute for the link */
-					Attribute linkAttribute = new Attribute("LINK_CODE", "LNK_MESSAGES", new DataType("string"));
-
-					/* we create a new EntityEntity */
-					EntityEntity link = new EntityEntity(grpNotes, note, linkAttribute, 1.0, "NOTE");
-
-					/* we add it to our set */
-					links.add(link);
-				}
-
-				/* we set the new links in GRP_NOTES */
+	        		/* we set the new links in GRP_NOTES */
 				grpNotes.setLinks(links);
-			}
-			
-			/* we create the message for GRP_NOTES */
-			QDataBaseEntityMessage grpNotesMessage = new QDataBaseEntityMessage(grpNotes);
-			grpNotesMessage.setShouldDeleteLinkedBaseEntities(1);
-			grpNotesMessage.setReplace(true);
+				
+				QDataBaseEntityMessage grpNotesMessage = new QDataBaseEntityMessage(grpNotes);
+		        grpNotesMessage.setReplace(true);
+		        grpNotesMessage.setShouldDeleteLinkedBaseEntities(1);
+				bulk.add(grpNotesMessage);
+                
+                notesMessage.setLinkCode("LNK_MESSAGES");
+                notesMessage.setParentCode("GRP_NOTES");
+                notesMessage.setReplace(true);                
+                bulk.add(notesMessage);
 
-			/* we add to the bulk */
-			bulk.add(grpNotesMessage);
-
-		} catch (IOException e) {
-		}
-
-		if(bulk.getMessages().length > 0) {
-			this.publishCmd(bulk);
-		}
-	}
-
+            } catch (IOException e) {
+            }
+        }
+        
+        this.publishCmd(bulk);
+    }
+	
 	public void sendNotes(BaseEntity context) {
 		this.sendNotes(context.getCode());
 	}
