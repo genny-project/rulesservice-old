@@ -16,9 +16,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rxjava.core.Future;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.eventbus.EventBus;
 import life.genny.channel.Consumer;
+import life.genny.eventbus.EventBusInterface;
+import life.genny.eventbus.EventBusVertx;
 import life.genny.qwanda.Answer;
 import life.genny.qwanda.GPS;
 import life.genny.qwanda.entity.User;
@@ -35,7 +38,9 @@ import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.KeycloakUtils;
 import life.genny.rules.QRules;
 import life.genny.rules.RulesLoader;
+
 import life.genny.utils.RulesUtils;
+
 
 public class EBCHandlers {
 
@@ -45,22 +50,27 @@ public class EBCHandlers {
 	static Logger log = LoggerFactory.getLogger(EBCHandlers.class);
 
 	static Map<String, Object> decodedToken = null;
-	static Set<String> userRoles = null;
-	private static Map<String, User> usersSession = new HashMap<String, User>();
 
 	
 
 
 	static String token;
 
-	public static void registerHandlers(final EventBus eventBus) {
+	public static void registerHandlers(EventBusInterface eventBus) {
+		
 		Consumer.getFromCmds().subscribe(arg -> {
 			JsonObject payload = processMessage("Service Command", arg);
 
 			if ("CMD_RELOAD_RULES".equals(payload.getString("cmd_type"))) {
 				if ("RELOAD_RULES_FROM_FILES".equals(payload.getString("code"))) {
 					String rulesDir = payload.getString("rulesDir");
-					RulesLoader.loadInitialRules( rulesDir);
+					final Future<Void> fut = Future.future();
+					Vertx.currentContext().owner().executeBlocking(exec -> {
+						RulesLoader.loadRules(rulesDir);
+						fut.complete();
+					}, failed -> {
+					});
+				
 				}
 			}
 
@@ -170,60 +180,11 @@ public class EBCHandlers {
 		return payload;
 	}
 
-	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus, final String token) {
+	public static void processMsg(final String msgType,String ruleGroup,final Object msg, final EventBusInterface eventBus, final String token) {
 		Vertx.currentContext().owner().executeBlocking(future -> {
+						
+			RulesLoader.processMsg(msgType, ruleGroup, msg, eventBus, token);
 			
-			
-			Map<String,Object> adecodedTokenMap = RulesLoader.getDecodedTokenMap(token);
-			// check for token expiry
-			
-			
-			Set<String> auserRoles = KeycloakUtils.getRoleSet(adecodedTokenMap.get("realm_access").toString());
-			User userInSession = usersSession.get(adecodedTokenMap.get("preferred_username").toString());
-
-			String preferredUName = adecodedTokenMap.get("preferred_username").toString();
-			String fullName = adecodedTokenMap.get("name").toString();
-			String realm = adecodedTokenMap.get("realm").toString();
-			if ("genny".equalsIgnoreCase(realm)) {
-				realm = GennySettings.mainrealm;
-				adecodedTokenMap.put("realm", GennySettings.mainrealm);
-			}
-			String accessRoles = adecodedTokenMap.get("realm_access").toString();
-
-			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
-			qRules.set("realm", realm);
-
-
-			List<Tuple2<String, Object>> globals = new ArrayList<Tuple2<String, Object>>();
-			RulesLoader.getStandardGlobals();
-
-			List<Object> facts = new ArrayList<Object>();
-			facts.add(qRules);
-			facts.add(msg);
-			facts.add(adecodedTokenMap);
-			facts.add(auserRoles);
-			if(userInSession!=null)
-				facts.add(usersSession.get(preferredUName));
-			else {
-	            User currentUser = new User(preferredUName, fullName, realm, accessRoles);
-				usersSession.put(adecodedTokenMap.get("preferred_username").toString(), currentUser);
-				facts.add(currentUser);
-			}
-
-
-			Map<String, String> keyvalue = new HashMap<String, String>();
-			keyvalue.put("token", token);
-
-			if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+realm+") "+msgType); }
-
-		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
-			try {
-				RulesLoader.executeStatefull(realm, eventBus, globals, facts, keyvalue);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 			future.complete();
 		}, res -> {
 			if (res.succeeded()) {
@@ -233,81 +194,6 @@ public class EBCHandlers {
 
 	}
 
-	public static void initMsg(final String msgType,String ruleGroup,final Object msg, final EventBus eventBus) {
-		Vertx.currentContext().owner().executeBlocking(future -> {
-			Map<String,Object> adecodedTokenMap = new HashMap<String,Object>();
-			Set<String> auserRoles = new HashSet<String>();
-			auserRoles.add("admin");
-			auserRoles.add("user");
 
-			token = RulesUtils.generateServiceToken(ruleGroup); // ruleGroup matches realm
-
-			QRules qRules = new QRules(eventBus, token, adecodedTokenMap);
-			qRules.set("realm", ruleGroup);
-
-			List<Tuple2<String, Object>> globals = RulesLoader.getStandardGlobals();
-
-			List<Object> facts = new ArrayList<Object>();
-			facts.add(qRules);
-			facts.add(msg);
-			facts.add(adecodedTokenMap);
-			facts.add(auserRoles);
-	            User currentUser = new User("service", "Service", ruleGroup, "admin");
-				usersSession.put("user", currentUser);
-				facts.add(currentUser);
-
-
-
-			Map<String, String> keyvalue = new HashMap<String, String>();
-			// calculate service token for this ...
-			System.out.println("Realm:"+ruleGroup+" -> generated service token="+token);
-			keyvalue.put("token", token);
-
-		//	if (!"GPS".equals(msgType)) { System.out.println("FIRE RULES ("+ruleGroup+") "+msgType); }
-
-		//	String ruleGroupRealm = realm + (StringUtils.isBlank(ruleGroup)?"":(":"+ruleGroup));
-			try {
-				RulesLoader.executeStatefull(ruleGroup, eventBus, globals, facts, keyvalue);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			future.complete();
-		}, res -> {
-			if (res.succeeded()) {
-				//System.out.println("Processed "+msgType+" Msg");
-			}
-		});
-
-	}
-
-	  public static class Message {
-
-	        public static final int HELLO = 0;
-	        public static final int GOODBYE = 1;
-	        public static final int SEEYA = 2;
-
-	        private String message;
-
-	        private int status;
-
-	        public String getMessage() {
-	            return this.message;
-	        }
-
-	        public void setMessage(String message) {
-	            this.message = message;
-	        }
-
-	        public int getStatus() {
-	            return this.status;
-	        }
-
-	        public void setStatus(int status) {
-	            this.status = status;
-	        }
-
-	    }
 
 }
