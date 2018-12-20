@@ -1,0 +1,38 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< life.genny:rulesservice >-----------------------
+[INFO] Building rulesservice 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-dependency-plugin:2.8:list-repositories (default-cli) @ rulesservice ---
+[INFO] Repositories Used by this build:
+[INFO]       id: central
+      url: http://jcenter.bintray.com
+   layout: default
+snapshots: [enabled => false, update => daily]
+ releases: [enabled => true, update => daily]
+
+[INFO]       id: life.genny
+      url: http://nexus.outcome-hub.com/nexus/content/repositories/life.genny
+   layout: default
+snapshots: [enabled => true, update => daily]
+ releases: [enabled => true, update => daily]
+
+[INFO]       id: jboss-public-repository-group
+      url: https://repository.jboss.org/nexus/content/groups/public/
+   layout: default
+snapshots: [enabled => true, update => daily]
+ releases: [enabled => true, update => never]
+
+[INFO]       id: sonatype-nexus-snapshots
+      url: https://oss.sonatype.org/content/repositories/snapshots
+   layout: default
+snapshots: [enabled => true, update => daily]
+ releases: [enabled => false, update => daily]
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10.494 s
+[INFO] Finished at: 2018-11-12T14:36:24+11:00
+[INFO] ------------------------------------------------------------------------
