@@ -1,0 +1,528 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>life.genny</groupId>
+	<artifactId>rulesservice</artifactId>
+	<version>2.0.0</version>
+	<name>rulesservice</name>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<distribution>repo</distribution>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<genny-rules.version>2.0.0</genny-rules.version>
+		<qwanda-utils.version>2.0.0</qwanda-utils.version>
+		<log4j-core-version>2.11.1</log4j-core-version>
+		<vertx.version>3.5.1</vertx.version>
+		<junit-version>4.12</junit-version>
+		<keycloak-core.version>3.4.0.Final</keycloak-core.version>
+		<keycloak-adapter-core.version>3.4.0.Final</keycloak-adapter-core.version>
+		<version.resteasy>3.0.10.Final</version.resteasy>
+		<resteasy.version>3.0.9.Final</resteasy.version>
+		<hazelcast.version>3.8.2</hazelcast.version>
+		<kie.version>7.1.0.Final</kie.version>
+	</properties>
+	<distributionManagement>
+		<repository>
+			<id>life.genny</id>
+			<url>https://nexus.outcome-hub.com/nexus/content/repositories/life.genny</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<url>http://nexus.outcome-hub.com/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>bintray</name>
+			<url>http://jcenter.bintray.com</url>
+		</repository>
+		<repository>
+			<id>life.genny</id>
+			<url>http://nexus.outcome-hub.com/nexus/content/repositories/life.genny</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit-version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>life.genny</groupId>
+			<artifactId>genny-rules</artifactId>
+			<version>${genny-rules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<version>1.3</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>life.genny</groupId>
+			<artifactId>qwanda-utils</artifactId>
+			<version>${qwanda-utils.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20171018</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.vertx/vertx-rx-java -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j-core-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j-core-version}</version>
+		</dependency>
+		<!-- Thanks for using https://jar-download.com -->
+
+		<dependency>
+			<groupId>org.kie</groupId>
+			<artifactId>kie-api</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.drools</groupId>
+			<artifactId>drools-decisiontables</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.2</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.9.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.javamoney</groupId>
+			<artifactId>moneta</artifactId>
+			<version>1.1</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.drools</groupId>
+			<artifactId>drools-core</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.drools</groupId>
+			<artifactId>drools-compiler</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jbpm</groupId>
+			<artifactId>jbpm-flow</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jbpm</groupId>
+			<artifactId>jbpm-flow-builder</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jbpm</groupId>
+			<artifactId>jbpm-bpmn2</artifactId>
+			<version>${kie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.vavr/vavr -->
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-adapter-core</artifactId>
+			<version>${keycloak-core.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-adapter-spi</artifactId>
+			<version>${keycloak-core.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Contains KeycloakPrincipal -->
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-core</artifactId>
+			<version>${keycloak-core.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-admin-client</artifactId>
+			<version>${keycloak-core.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-jaxrs -->
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jaxrs</artifactId>
+			<version>2.3.2.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-client</artifactId>
+			<version>3.0.9.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.opensymphony.quartz</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>rules/rulesCurrent/prj_*/**</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> 
+				<version>2.6</version> <executions> <execution> <id>unpack-dependencies</id> 
+				<phase>package</phase> <goals> <goal>unpack-dependencies</goal> </goals> 
+				<configuration> <excludeScope>system</excludeScope> <excludes>META-INF/*.SF</excludes> 
+				<excludes>META-INF/*.DSA</excludes> <excludes>META-INF/*.RSA</excludes> <excludeGroupIds>junit,org.mockito,org.hamcrest</excludeGroupIds> 
+				<outputDirectory>${project.build.directory}/classes</outputDirectory> </configuration> 
+				</execution> </executions> </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>io.vertx.core.Starter</Main-Class>
+										<Main-Verticle>life.genny.verticle.ServiceVerticle</Main-Verticle>
+
+									</manifestEntries>
+								</transformer>
+							</transformers>
+							<artifactSet />
+							<outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar</outputFile>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.3</version>
+				<executions>
+					<execution>
+						<id>git-info</id>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+						<configuration>
+							<generateGitPropertiesFile>true</generateGitPropertiesFile>
+							<generateGitPropertiesFilename>target/classes/${project.name}-git.properties</generateGitPropertiesFilename>
+							<!-- If you'd like to tell the plugin where your .git directory is, 
+								use this setting, otherwise we'll perform a search trying to figure out the 
+								right directory. It's better to add it explicite IMHO. -->
+							<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+
+							<!-- that's the default value, you don't have to set it -->
+							<prefix>git</prefix>
+
+							<!-- that's the default value -->
+							<dateFormat>yyyy.MM.dd '@' HH:mm:ss z</dateFormat>
+
+							<!-- @since 2.2.0 -->
+							<!-- If you want to set the timezone of the dateformat to anything 
+								in particular you can do this by using this option. As a general warning 
+								try to avoid three-letter time zone IDs because the same abbreviation are 
+								often used for multiple time zones. The default value we'll use the timezone 
+								use the timezone that's shipped with java (java.util.TimeZone.getDefault().getID()). 
+								*Note*: If you plan to set the java's timezone by using `MAVEN_OPTS=-Duser.timezone=UTC 
+								mvn clean package`, `mvn clean package -Duser.timezone=UTC` or any other 
+								configuration keep in mind that this option will override those settings 
+								and will not take other configurations into account! -->
+							<dateFormatTimeZone>${user.timezone}</dateFormatTimeZone>
+
+							<!-- false is default here, it prints some more information during 
+								the build -->
+							<verbose>false</verbose>
+
+							<!-- ALTERNATE SETUP - GENERATE FILE -->
+							<!-- If you want to keep git information, even in your WAR file etc, 
+								use this mode, which will generate a properties file (with filled out values) 
+								which you can then normally read using new Properties().load(/**/) -->
+
+							<!-- this is false by default, forces the plugin to generate the git.properties 
+								file -->
+							<generateGitPropertiesFile>true</generateGitPropertiesFile>
+							<!-- The path for the to be generated properties file, it's relative 
+								to ${project.basedir} -->
+							<generateGitPropertiesFilename>src/main/resources/${project.name}-git.properties</generateGitPropertiesFilename>
+
+							<!-- Denotes the format to save properties in. Valid options are "properties" 
+								(default) and "json". Properties will be saved to the generateGitPropertiesFilename 
+								if generateGitPropertiesFile is set to `true`. -->
+							<format>properties</format>
+
+							<!-- this is true by default; You may want to set this to false, if 
+								the plugin should run inside a <packaging>pom</packaging> project. Most projects 
+								won't need to override this property. For an use-case for this kind of behaviour 
+								see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21 -->
+							<skipPoms>true</skipPoms>
+
+							<!-- @since 2.1.4 -->
+							<!-- Tell maven-git-commit-id to inject the git properties into all 
+								reactor projects not just the current one. For details about why you might 
+								want to skip this, read this issue: https://github.com/ktoso/maven-git-commit-id-plugin/pull/65 
+								The property is set to ``false`` by default to prevent the overriding of 
+								properties that may be unrelated to the project. -->
+							<injectAllReactorProjects>false</injectAllReactorProjects>
+
+							<!-- @since 2.0.4 -->
+							<!-- true by default, controls whether the plugin will fail when no 
+								.git directory is found, when set to false the plugin will just skip execution -->
+							<failOnNoGitDirectory>true</failOnNoGitDirectory>
+
+							<!-- @since 2.1.5 -->
+							<!-- true by default, controls whether the plugin will fail if it 
+								was unable to obtain enough data for a complete run, if you don't care about 
+								this, you may want to set this value to false. -->
+							<failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+
+							<!-- @since 2.1.8 -->
+							<!-- skip the plugin execution completely. This is useful for e.g. 
+								profile activated plugin invocations or to use properties to enable / disable 
+								pom features. Default value is 'false'. -->
+							<skip>false</skip>
+
+							<!-- @since 2.1.12 -->
+							<!-- Use with caution! In a multi-module build, only run once. This 
+								means that the plugins effects will only execute once, for the parent project. 
+								This probably won't "do the right thing" if your project has more than one 
+								git repository. Important: If you're using `generateGitPropertiesFile`, setting 
+								`runOnlyOnce` will make the plugin only generate the file in the directory 
+								where you started your build (!). The `git.*` maven properties are available 
+								in all modules. Default value is `false`. -->
+							<runOnlyOnce>false</runOnlyOnce>
+							<!-- @since 2.1.9 -->
+							<!-- Can be used to exclude certain properties from being emited into 
+								the resulting file. May be useful when you want to hide {@code git.remote.origin.url} 
+								(maybe because it contains your repo password?), or the email of the committer 
+								etc. Each value may be globbing, that is, you can write {@code git.commit.user.*} 
+								to exclude both, the {@code name}, as well as {@code email} properties from 
+								being emitted into the resulting files. Please note that the strings here 
+								are Java regexes ({@code .*} is globbing, not plain {@code *}). -->
+							<excludeProperties>
+								<!-- <excludeProperty>git.user.*</excludeProperty> -->
+							</excludeProperties>
+
+							<!-- @since 2.1.14 -->
+							<!-- Can be used to include only certain properties into the resulting 
+								file. Will be overruled by the exclude properties. Each value may be globbing, 
+								that is, you can write {@code git.commit.user.*} to include both, the {@code 
+								name}, as well as {@code email} properties into the resulting files. Please 
+								note that the strings here are Java regexes ({@code .*} is globbing, not 
+								plain {@code *}). -->
+							<includeOnlyProperties>
+								<!-- <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty> -->
+							</includeOnlyProperties>
+
+							<!-- @since 2.1.10 -->
+							<!-- false is default here, if set to true it uses native `git` excutable 
+								for extracting all data. This usually has better performance than the default 
+								(jgit) implemenation, but requires you to have git available as executable 
+								for the build as well as *might break unexpectedly* when you upgrade your 
+								system-wide git installation. As rule of thumb - stay on `jgit` (keep this 
+								`false`) until you notice performance problems. -->
+							<useNativeGit>false</useNativeGit>
+
+							<!-- @since v2.0.4 -->
+							<!-- Controls the length of the abbreviated git commit it (git.commit.id.abbrev) 
+								Defaults to `7`. `0` carries the special meaning. Maximum value is `40`, 
+								because of max SHA-1 length. -->
+							<abbrevLength>7</abbrevLength>
+
+							<!-- @since 2.1.0 -->
+							<!-- read up about git-describe on the in man, or it's homepage - 
+								it's a really powerful versioning helper and the recommended way to use git-commit-id-plugin. 
+								The configuration bellow is optional, by default describe will run "just 
+								like git-describe on the command line", even though it's a JGit reimplementation. -->
+							<gitDescribe>
+
+								<!-- don't generate the describe property -->
+								<skip>false</skip>
+
+
+								<!-- if no tag was found "near" this commit, just print the commit's 
+									id instead, helpful when you always expect this field to be not-empty -->
+								<always>false</always>
+								<!-- how many chars should be displayed as the commit object id? 
+									7 is git's default, 0 has a special meaning (see end of this README.md), 
+									and 40 is the maximum value here -->
+								<abbrev>7</abbrev>
+
+								<!-- when the build is triggered while the repo is in "dirty state", 
+									append this suffix -->
+								<dirty>-dirty</dirty>
+
+								<!-- Only consider tags matching the given pattern. This can be used 
+									to avoid leaking private tags from the repository. -->
+								<match>*</match>
+
+								<!-- always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" 
+									format, even if "on" a tag. The distance will always be 0 if you're "on" 
+									the tag. -->
+								<forceLongFormat>false</forceLongFormat>
+							</gitDescribe>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.5.1</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<serverId>life.genny</serverId>
+					<nexusUrl>https://nexus.outcome-hub.com/nexus/</nexusUrl>
+					<skipStaging>true</skipStaging>
+				</configuration>
+			</plugin>
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>exec-maven-plugin</artifactId> 
+				<version>1.2.1</version> </plugin> -->
+		</plugins>
+	</build>
+
+	<!-- <reporting> <plugins> <plugin> The JXR Plugin generates a cross-reference 
+		of the project's sources. <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-jxr-plugin</artifactId> 
+		<version>2.5</version> </plugin> <plugin> The Javadoc Plugin generates javadocs 
+		using the Javadoc tool. <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-plugin</artifactId> 
+		<version>2.10.3</version> <configuration> <additionalparam>-Xdoclint:none</additionalparam> 
+		</configuration> </plugin> <plugin> The Surefire Report Plugin generates 
+		reports for unit and integration tests. <groupId>org.apache.maven.plugins</groupId> 
+		<artifactId>maven-surefire-report-plugin</artifactId> <version>2.19.1</version> 
+		</plugin> <plugin> The Checkstyle Plugin generates a report regarding the 
+		code style used by the developers. <groupId>org.apache.maven.plugins</groupId> 
+		<artifactId>maven-checkstyle-plugin</artifactId> <version>2.17</version> 
+		<configuration> <configLocation>google_checks.xml</configLocation> </configuration> 
+		</plugin> <plugin> The PMD plugin generates PMD and CPD reports using the 
+		PMD code analysis tool. <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-pmd-plugin</artifactId> 
+		<version>3.6</version> <configuration> <skipEmptyReport>false</skipEmptyReport> 
+		<linkXref>true</linkXref> <minimumTokens>50</minimumTokens> <rulesets> <ruleset>rulesets/java/android.xml</ruleset> 
+		<ruleset>rulesets/java/basic.xml</ruleset> <ruleset>rulesets/java/braces.xml</ruleset> 
+		<ruleset>rulesets/java/clone.xml</ruleset> <ruleset>rulesets/java/codesize.xml</ruleset> 
+		<ruleset>rulesets/java/comments.xml</ruleset> <ruleset>rulesets/java/controversial.xml</ruleset> 
+		<ruleset>rulesets/java/coupling.xml</ruleset> <ruleset>rulesets/java/design.xml</ruleset> 
+		<ruleset>rulesets/java/empty.xml</ruleset> <ruleset>rulesets/java/finalizers.xml</ruleset> 
+		<ruleset>rulesets/java/imports.xml</ruleset> <ruleset>rulesets/java/j2ee.xml</ruleset> 
+		<ruleset>rulesets/java/javabeans.xml</ruleset> <ruleset>rulesets/java/junit.xml</ruleset> 
+		<ruleset>rulesets/java/logging-jakarta-commons.xml</ruleset> <ruleset>rulesets/java/logging-java.xml</ruleset> 
+		<ruleset>rulesets/java/migrating.xml</ruleset> <ruleset>rulesets/java/migrating_to_13.xml</ruleset> 
+		<ruleset>rulesets/java/migrating_to_14.xml</ruleset> <ruleset>rulesets/java/migrating_to_15.xml</ruleset> 
+		<ruleset>rulesets/java/migrating_to_junit4.xml</ruleset> <ruleset>rulesets/java/naming.xml</ruleset> 
+		<ruleset>rulesets/java/optimizations.xml</ruleset> <ruleset>rulesets/java/strictexception.xml</ruleset> 
+		<ruleset>rulesets/java/strings.xml</ruleset> <ruleset>rulesets/java/sunsecure.xml</ruleset> 
+		<ruleset>rulesets/java/typeresolution.xml</ruleset> <ruleset>rulesets/java/unnecessary.xml</ruleset> 
+		<ruleset>rulesets/java/unusedcode.xml</ruleset> </rulesets> </configuration> 
+		</plugin> <plugin> FindBugs Plugin looks for bugs in Java programs. It is 
+		based on the concept of bug patterns. <groupId>org.codehaus.mojo</groupId> 
+		<artifactId>findbugs-maven-plugin</artifactId> <version>3.0.0</version> </plugin> 
+		</plugins> </reporting> -->
+</project>
